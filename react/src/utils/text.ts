@@ -33,6 +33,14 @@ export function separateNumber(number: string): string {
 }
 
 /**
+ * Removes trailing zeros after a decimal point, e.g., 10.00 -> 10 and 7.50 -> 7.5.
+ */
+export function trimTrailingZeros(value: string): string {
+    if (!value.includes('.')) return value
+    return value.replace(/\.?0+$/g, '')
+}
+
+/**
  * Formats a number to the specified number of significant figures (default 3) without scientific notation.
  */
 export function formatToSignificantFigures(value: number, sigFigs: number = 3): string {

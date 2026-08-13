@@ -1,27 +1,42 @@
 import { MapUSS, mapUssParser } from '../mapper/settings/map-uss'
 import { assert } from '../utils/defensive'
 import { HumanReadableElement, HumanReadableName, joinHumanReadableNames } from '../utils/human-readable-name'
-import { formatToSignificantFigures, separateNumber } from '../utils/text'
+import { formatToSignificantFigures, separateNumber, trimTrailingZeros } from '../utils/text'
+import { displayQuantity, displayUnitFor, unitSuffix } from '../utils/unit'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import * as l from './literal-parser'
 import { noLocation } from './location'
-import { expressionOperatorMap } from './operators'
+import { BinaryOperatorSymbol, expressionOperatorMap } from './operators'
 import { TypeEnvironment } from './types-values'
+import { inferUnit, InferredUnit } from './unit-inference'
 
-function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment): HumanReadableElement[] | undefined {
+/**
+ * Operators whose operands are quantities of the same kind, so a bare number written as one
+ * operand is in the unit of the other one.
+ */
+const operatorsSharingUnits = new Set<BinaryOperatorSymbol>(['+', '-', '==', '!=', '<', '>', '<=', '>='])
+
+/**
+ * `unit` is the unit a numeric constant in this position is measured in, which is used to
+ * render, e.g., `commute_bike < 0.1` as `Commute Bike % < 10%`.
+ */
+function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, unit?: InferredUnit): HumanReadableElement[] | undefined {
     switch (ast.type) {
         case 'assignment':
-            return humanReadableElements(ast.value, typeEnvironment)
+            return humanReadableElements(ast.value, typeEnvironment, unit)
         case 'autoUXNode':
-            return humanReadableElements(ast.expr, typeEnvironment)
+            return humanReadableElements(ast.expr, typeEnvironment, unit)
         case 'binaryOperator': {
             const centerOp = expressionOperatorMap[ast.operator.node]
+            const sharesUnits = operatorsSharingUnits.has(ast.operator.node)
+            const leftUnit = sharesUnits ? inferUnit(ast.right, typeEnvironment) : undefined
+            const rightUnit = sharesUnits ? inferUnit(ast.left, typeEnvironment) : undefined
             /*
              * (A op1 B) op2 C => A op1 B op2 C iff prec(op1) > prec(op2) or op1 = op2
              * A op1 (B op2 C) => A op1 B op2 C iff prec(op2) > prec(op1) or (op1 = op2 and is_assoc(op1))
              */
-            let lhs = humanReadableElements(ast.left, typeEnvironment)
+            let lhs = humanReadableElements(ast.left, typeEnvironment, leftUnit)
             if (lhs === undefined) return
             if (ast.left.type === 'binaryOperator') {
                 const leftOp = expressionOperatorMap[ast.left.operator.node]
@@ -31,7 +46,7 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
                 }
             }
 
-            let rhs = humanReadableElements(ast.right, typeEnvironment)
+            let rhs = humanReadableElements(ast.right, typeEnvironment, rightUnit)
             if (rhs === undefined) return
             if (ast.right.type === 'binaryOperator') {
                 const rightOp = expressionOperatorMap[ast.right.operator.node]
@@ -94,12 +109,12 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
                 case 'humanReadableElements':
                     return ast.value.node.value
                 case 'number':
-                    return formatNumber(ast.value.node.value)
+                    return formatNumberWithUnit(ast.value.node.value, unit)
                 case 'string':
                     return [{ type: 'atom', value: ast.value.node.value }]
             }
         case 'unaryOperator': {
-            const operand = humanReadableElements(ast.expr, typeEnvironment)
+            const operand = humanReadableElements(ast.expr, typeEnvironment, unit)
             if (operand === undefined) return
             let operator: HumanReadableElement[]
             switch (ast.operator.node) {
@@ -116,9 +131,9 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
             return [...operator, ...operand]
         }
         case 'customNode':
-            return humanReadableElements(ast.expr, typeEnvironment)
+            return humanReadableElements(ast.expr, typeEnvironment, unit)
         case 'expression':
-            return humanReadableElements(ast.value, typeEnvironment)
+            return humanReadableElements(ast.value, typeEnvironment, unit)
         case 'call': {
             const fn = humanReadableElements(ast.fn, typeEnvironment)
             if (fn === undefined) return
@@ -252,9 +267,25 @@ export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, 
     }
 }
 
-function trimTrailingZeros(value: string): string {
-    if (!value.includes('.')) return value
-    return value.replace(/\.?0+$/g, '')
+/**
+ * Formats a constant written in the given unit, e.g., 0.1 as a percentage is 10%, and 600 as a
+ * number of minutes is 10 hours. The unit is only named when the number has to be rescaled to be
+ * read in it, so that, e.g., a population is still just a number of people.
+ */
+function formatNumberWithUnit(value: number, unit: InferredUnit): HumanReadableElement[] {
+    if (unit === undefined) {
+        return formatNumber(value)
+    }
+    // magnitude tiers are skipped because formatNumber abbreviates large numbers itself
+    const { scale, name, attached, custom } = displayUnitFor(value, unit, false, { includeTiers: false })
+    if (scale === 1) {
+        return formatNumber(value)
+    }
+    if (custom) {
+        const quantity = displayQuantity(value, unit, false, { includeTiers: false })
+        return [{ type: 'atom', value: `${quantity.value}${unitSuffix(quantity.unit, attached)}` }]
+    }
+    return [...formatNumber(value * scale), { type: 'atom', value: unitSuffix(name, attached) }]
 }
 
 function formatNumber(number: number): HumanReadableElement[] {

@@ -52,13 +52,15 @@ for (const [value, expected] of [
     })
 }
 
-// Every quantity is displayed in the unit it is stored in, and durations as h:mm
+// Durations are written as h:mm until they outgrow it; everything else is displayed in the unit
+// it is stored in
 for (const [unitType, value, expected] of [
     ['minutes', 34, '34'],
     ['minutes', 90, '1:30'],
     ['minutes', 600, '10:00'],
     ['minutes', 1234, '20:34'],
-    ['minutes', 5000, '83:20'],
+    ['minutes', 5000, '3.47 days'],
+    ['minutes', 1e6, '1.9 years'],
     ['time', 7.5, '7:30'],
     ['time', 0.5, '30'],
     ['distanceInM', 543, '543 m'],

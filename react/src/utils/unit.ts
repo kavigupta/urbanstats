@@ -1,4 +1,4 @@
-import { formatToSignificantFigures, separateNumber } from './text'
+import { formatToSignificantFigures, separateNumber, trimTrailingZeros } from './text'
 
 export type UnitType = 'percentage' | 'percentageChange' | 'fatalities' | 'fatalitiesPerCapita' | 'density' | 'population'
     | 'area' | 'distanceInKm' | 'distanceInM' | 'democraticMargin' | 'temperature' | 'time' | 'distancePerYear'
@@ -140,12 +140,46 @@ export function unitTypeToUnit(unitType: UnitType): Unit {
     return presentation === undefined ? { dimensions, multiplier } : { dimensions, multiplier, presentation }
 }
 
+export const dimensionless: Unit = { dimensions: {}, multiplier: 1 }
+
 export function renderDimensions(dimensions: Dimensions): string {
     return Object.entries(dimensions)
         .filter(([, exponent]) => exponent !== 0)
         .sort(([a], [b]) => a < b ? -1 : 1)
         .map(([base, exponent]) => `${base}^${exponent}`)
         .join(' ')
+}
+
+export function sameDimensions(left: Dimensions, right: Dimensions): boolean {
+    return renderDimensions(left) === renderDimensions(right)
+}
+
+/**
+ * The unit of `left * right` (or of `left / right` when rightExponent is -1).
+ */
+export function combineUnits(left: Unit, right: Unit, rightExponent: 1 | -1): Unit {
+    const dimensions = { ...left.dimensions }
+    for (const [base, exponent] of Object.entries(right.dimensions)) {
+        dimensions[base] = (dimensions[base] ?? 0) + exponent * rightExponent
+    }
+    return normalizeUnit({
+        dimensions,
+        multiplier: rightExponent === 1 ? left.multiplier * right.multiplier : left.multiplier / right.multiplier,
+    })
+}
+
+export function powerUnit(unit: Unit, exponent: number): Unit {
+    return normalizeUnit({
+        dimensions: Object.fromEntries(Object.entries(unit.dimensions).map(([base, e]) => [base, e * exponent])),
+        multiplier: Math.pow(unit.multiplier, exponent),
+    })
+}
+
+function normalizeUnit(unit: Unit): Unit {
+    return {
+        ...unit,
+        dimensions: Object.fromEntries(Object.entries(unit.dimensions).filter(([, exponent]) => exponent !== 0)),
+    }
 }
 
 /**
@@ -162,7 +196,8 @@ interface DisplayUnit {
     signed?: boolean
     /**
      * Whether this is a magnitude prefix on the unit below it, such as thousands, rather than a
-     * unit in its own right.
+     * unit in its own right. Tiers abbreviate large numbers, so they are skipped where the number
+     * is written out in full anyway.
      */
     tier?: boolean
     /** Whether groups of three digits are separated. Defaults to true. */
@@ -171,11 +206,11 @@ interface DisplayUnit {
     attached?: boolean
     /**
      * Decimal places: a fixed count, 'sigFigs' for 3 significant figures, 'precision' for 3
-     * significant figures of a number that is at least 1, 'hoursMinutes' for a duration written
-     * as h:mm, or a number of significant digits before the decimal point counts against the
-     * places shown.
+     * significant figures of a number that is at least 1, 'compact' for 3 significant figures
+     * without trailing zeros, 'hoursMinutes' for a duration written as h:mm, or a number of
+     * significant digits before the decimal point counts against the places shown.
      */
-    decimals: number | 'sigFigs' | 'precision' | 'hoursMinutes' | { significantDigits: number }
+    decimals: number | 'sigFigs' | 'precision' | 'compact' | 'hoursMinutes' | { significantDigits: number }
     /**
      * The smallest value (in base units) displayed in this unit. Defaults to just below the
      * multiplier, i.e., the unit is used once the displayed number reaches 1.
@@ -219,8 +254,12 @@ const displayUnits: Record<string, DisplayUnit[] | undefined> = {
         { multiplier: 1e-6, name: '/\u00a0km^2', decimals: { significantDigits: 2 }, system: 'metric' },
         { multiplier: 1 / squareMeterPerSquareMile, name: '/\u00a0mi^2', decimals: { significantDigits: 2 }, system: 'imperial' },
     ],
-    // durations are written as h:mm, dropping the hours when there are none
-    'time^1': [{ multiplier: 60 * 60, name: '', decimals: 'hoursMinutes' }],
+    // durations up to a day are written as h:mm, dropping the hours when there are none
+    'time^1': [
+        { multiplier: 60 * 60, name: '', decimals: 'hoursMinutes' },
+        { multiplier: 24 * 60 * 60, name: 'days', decimals: 'compact' },
+        { multiplier: secondsPerYear, name: 'years', decimals: 'compact' },
+    ],
     'length^1 time^-1': [
         { multiplier: 0.01 / secondsPerYear, name: 'cm/yr', decimals: 1, separators: false, system: 'metric' },
         { multiplier: 0.0254 / secondsPerYear, name: 'in/yr', decimals: 1, separators: false, system: 'imperial' },
@@ -318,6 +357,9 @@ function formatQuantity(value: number, displayUnit: { decimals: DisplayUnit['dec
     else if (decimals === 'precision') {
         formatted = value.toPrecision(3)
     }
+    else if (decimals === 'compact') {
+        formatted = trimTrailingZeros(formatToSignificantFigures(value, 3))
+    }
     else if (decimals === 'hoursMinutes') {
         const sign = value < 0 ? '-' : ''
         const totalMinutes = Math.round(Math.abs(value) * 60)
@@ -334,13 +376,16 @@ function formatQuantity(value: number, displayUnit: { decimals: DisplayUnit['dec
     return displayUnit.separators === false ? formatted : separateDigits(formatted)
 }
 
-function candidateDisplayUnits(unit: Unit, useImperial: boolean): DisplayUnit[] {
+function candidateDisplayUnits(unit: Unit, useImperial: boolean, includeTiers: boolean): DisplayUnit[] {
     const candidates = unit.presentation !== undefined
         ? presentationDisplayUnits[unit.presentation]
         : displayUnitsForStoredUnit[`${renderDimensions(unit.dimensions)}@${unit.multiplier}`]
         ?? displayUnits[renderDimensions(unit.dimensions)]
         ?? []
-    return candidates.filter(candidate => candidate.system !== (useImperial ? 'metric' : 'imperial'))
+    return candidates.filter(candidate =>
+        candidate.system !== (useImperial ? 'metric' : 'imperial')
+        && (includeTiers || candidate.tier !== true),
+    )
 }
 
 function prefixOf(displayUnit: DisplayUnit, value: number): string {
@@ -365,21 +410,33 @@ function selectDisplayUnit(valueInBaseUnits: number, candidates: DisplayUnit[]):
  * by to get the displayed number. Quantities with no display units are displayed in base units,
  * e.g., person·m^2.
  */
-export function displayUnitFor(value: number, unit: Unit, useImperial: boolean): { scale: number, name: string, prefix: string, attached: boolean } {
-    const displayUnit = selectDisplayUnit(value * unit.multiplier, candidateDisplayUnits(unit, useImperial))
+export function displayUnitFor(
+    value: number,
+    unit: Unit,
+    useImperial: boolean,
+    { includeTiers = true }: { includeTiers?: boolean } = {},
+): { scale: number, name: string, prefix: string, attached: boolean, custom: boolean } {
+    const displayUnit = selectDisplayUnit(value * unit.multiplier, candidateDisplayUnits(unit, useImperial, includeTiers))
     if (displayUnit === undefined) {
-        return { scale: unit.multiplier, name: nameOfDimensions(unit.dimensions), prefix: '', attached: false }
+        return { scale: unit.multiplier, name: nameOfDimensions(unit.dimensions), prefix: '', attached: false, custom: false }
     }
     return {
         scale: unit.multiplier / displayUnit.multiplier,
         name: displayUnit.name,
         prefix: prefixOf(displayUnit, value),
         attached: displayUnit.attached ?? /^[%/]/.test(displayUnit.name),
+        // the number cannot be written on its own, so callers must use displayQuantity
+        custom: displayUnit.decimals === 'hoursMinutes',
     }
 }
 
-export function displayQuantity(value: number, unit: Unit, useImperial: boolean): { value: string, unit: string } {
-    const displayUnit = selectDisplayUnit(value * unit.multiplier, candidateDisplayUnits(unit, useImperial))
+export function displayQuantity(
+    value: number,
+    unit: Unit,
+    useImperial: boolean,
+    { includeTiers = true }: { includeTiers?: boolean } = {},
+): { value: string, unit: string } {
+    const displayUnit = selectDisplayUnit(value * unit.multiplier, candidateDisplayUnits(unit, useImperial, includeTiers))
     if (displayUnit === undefined) {
         return {
             value: formatQuantity(value * unit.multiplier, { decimals: 'sigFigs' }),
