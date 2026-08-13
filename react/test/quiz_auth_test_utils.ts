@@ -28,7 +28,18 @@ const passwordInput = Selector('input[type=password]')
 
 async function popTOTP(t: TestController): Promise<string> {
     // https://script.google.com/u/2/home/projects/1CWDP4eezFo8fMhQb327VfSm3DnThl-8xg1fmg4cl9gHnK0NGB8XSz094/edit
-    const { useAfter } = z.object({ useAfter: z.number() }).parse(await (await fetch('https://script.google.com/macros/s/AKfycbxLMtid0yZ_JiX5Ymm02FXfbRXYrpF1AE9nUaDM8P9dhP7uOWJpMRH8SpG5TbCQCRc/exec')).json())
+    const response = await fetch('https://script.google.com/macros/s/AKfycbxLMtid0yZ_JiX5Ymm02FXfbRXYrpF1AE9nUaDM8P9dhP7uOWJpMRH8SpG5TbCQCRc/exec')
+    const body = await response.text()
+    let useAfter: number
+    try {
+        ({ useAfter } = z.object({ useAfter: z.number() }).parse(JSON.parse(body)))
+    }
+    catch (error) {
+        console.warn(`TOTP endpoint failed: ${response.status} ${response.statusText}, redirected to ${response.url}`)
+        console.warn(`headers: ${JSON.stringify(response.headers)}`)
+        console.warn(`body: ${body}`)
+        throw error
+    }
     const wait = useAfter - Date.now()
     if (wait > 0) {
         console.warn(`TOTP waiting ${wait} ms...`)
