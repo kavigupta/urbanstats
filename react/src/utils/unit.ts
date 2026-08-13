@@ -146,10 +146,10 @@ interface NumberFormat {
     /**
      * Decimal places: a fixed count; enough places that the number is written to
      * `significantDigits` digits, between `minDecimals` and `maxDecimals` of them (which default
-     * to none and to `significantDigits`); three significant figures wherever they fall; three
-     * significant figures of a number known to be at least one; or a duration written as h:mm.
+     * to none and to `significantDigits`); three significant figures wherever they fall; or a
+     * duration written as h:mm.
      */
-    decimals: number | SignificantDigits | 'significantFigures' | 'precision' | 'hoursMinutes'
+    decimals: number | SignificantDigits | 'significantFigures' | 'hoursMinutes'
     /** Whether groups of three digits are separated. Defaults to true. */
     separators?: boolean
 }
@@ -161,70 +161,120 @@ interface SignificantDigits {
 }
 
 /**
- * One of the units a quantity with these dimensions is written in: the number written is the
- * value in base units times the factor, followed by the name.
+ * One of the units a quantity of some dimensions can be written in, e.g., a kilometer, or people
+ * per square mile.
  */
-interface DisplayScale {
-    factor?: number
-    divisor?: number
-    offset?: number
+interface LadderUnit {
     name: HumanReadableName
-    /** Whether the name is written directly after the number, rather than after a space */
+    /** How many base units one of it is: a square kilometer is 1e6 square meters */
+    size: number
+    /**
+     * What writing a quantity in it costs, before the cost of the number that leaves. Zero for
+     * the unit a quantity of these dimensions is ordinarily written in, and more for one that
+     * only earns its place by making the number shorter.
+     */
+    cost: number
+    /** Whether the name is written directly after the number, as an abbreviation is */
     attached?: boolean
     /** Written immediately before the number, e.g., a dollar sign */
     prefix?: string
+    /** Subtracted before dividing, for a unit whose zero is somewhere else */
+    offset?: number
+    /** How the number is written once it is in this unit */
     format: NumberFormat
-    /**
-     * The smallest value in base units written in this scale, so that a quantity is written in
-     * the largest of them it reaches. Defaults to zero, i.e., the scale is always usable.
-     */
-    threshold?: number
-    system?: 'metric' | 'imperial'
 }
 
-/** Numbers too long to read are abbreviated, e.g., 12.3k rather than 12 345. */
-function magnitudeScales(prefix: string | undefined, thousandsThreshold: number): DisplayScale[] {
-    const tier = (divisor: number, name: string, threshold: number): DisplayScale =>
-        ({ divisor, name, prefix, attached: true, threshold, format: { decimals: 'precision' } })
-    return [tier(1e3, 'k', thousandsThreshold), tier(1e6, 'm', 999.5e3), tier(1e9, 'B', 999.5e6)]
+/** An abbreviation saves digits, but a number that does not need saving reads better without. */
+const abbreviated = 1
+/** A coarser unit is worth reaching for only once the finer one runs to too many digits. */
+const coarser = 0.5
+
+const threeFigures: NumberFormat = { decimals: 'significantFigures' }
+const threeDigits: NumberFormat = { decimals: { significantDigits: 3 } }
+const whole: NumberFormat = { decimals: 0 }
+
+/** Thousands, millions and billions, for a quantity that is counted. */
+function abbreviations(prefix?: string): LadderUnit[] {
+    return [
+        { name: 'k', size: 1e3, cost: abbreviated, attached: true, prefix, format: threeFigures },
+        { name: 'm', size: 1e6, cost: abbreviated, attached: true, prefix, format: threeFigures },
+        { name: 'B', size: 1e9, cost: abbreviated, attached: true, prefix, format: threeFigures },
+    ]
 }
 
 /**
- * How a quantity of each kind of dimensions is written, smallest scale first. A quantity whose
- * dimensions are not here is written in base units.
+ * The units a quantity of each dimensions can be written in. A quantity is written in whichever
+ * of them costs least once the number it leaves is taken into account, so these are ladders
+ * rather than a single choice: an area of a few hectares belongs in square meters and one the
+ * size of a country in square kilometers.
  */
-const displayScales: Record<string, DisplayScale[] | undefined> = {
-    '': [{ name: '', format: { decimals: 'significantFigures', separators: false } }],
-    'person^1': [{ name: '', format: { decimals: 0 } }, ...magnitudeScales(undefined, 1e4)],
-    'usd^1': [{ name: '', prefix: '$', format: { decimals: 0 } }, ...magnitudeScales('$', 1e3)],
-    'fatality^1': [{ name: '', format: { decimals: 0 } }],
-    'fatality^1 person^-1': [{ factor: 1e5, name: '/100k', attached: true, format: { decimals: 2, separators: false } }],
-    'm^-2 person^1': [
-        { factor: 1e6, name: hre`/\u00a0km^{2}`, attached: true, format: { decimals: { significantDigits: 2 } }, system: 'metric' },
-        { factor: 1e6 * squareMileInSquareKm, name: hre`/\u00a0mi^{2}`, attached: true, format: { decimals: { significantDigits: 2 } }, system: 'imperial' },
-    ],
-    'm^2': [
-        { name: hre`m^{2}`, format: { decimals: { significantDigits: 3 } }, system: 'metric' },
-        { divisor: 1e6, name: hre`km^{2}`, threshold: 1e4, format: { decimals: { significantDigits: 3 } }, system: 'metric' },
-        { factor: 640 / 1e6, divisor: squareMileInSquareKm, name: 'acres', format: { decimals: { significantDigits: 3 } }, system: 'imperial' },
-        { divisor: 1e6 * squareMileInSquareKm, name: hre`mi^{2}`, threshold: 1e6 * squareMileInSquareKm, format: { decimals: { significantDigits: 3 } }, system: 'imperial' },
+const metricLadders: Record<string, LadderUnit[] | undefined> = {
+    '': [{ name: '', size: 1, cost: 0, format: { decimals: 'significantFigures', separators: false } }],
+    'person^1': [{ name: '', size: 1, cost: 0, format: whole }, ...abbreviations()],
+    // money is counted in thousands sooner than people are, and never written out in full
+    'usd^1': [{ name: '', size: 1, cost: 0, prefix: '$', format: whole }, ...abbreviations('$')],
+    'fatality^1': [{ name: '', size: 1, cost: 0, format: whole }],
+    'fatality^1 person^-1': [
+        // a rate per person only reads well for something that happens to most of them
+        { name: '/person', size: 1, cost: abbreviated, attached: true, format: threeDigits },
+        { name: '/100k', size: 1e-5, cost: 0, attached: true, format: { decimals: 2, separators: false } },
     ],
     'm^1': [
-        { name: 'm', format: { decimals: 0 }, system: 'metric' },
-        { divisor: 1e3, name: 'km', threshold: 1e3, format: { decimals: 2, separators: false }, system: 'metric' },
-        { factor: 3.28084, name: 'ft', format: { decimals: 0 }, system: 'imperial' },
-        { divisor: 1e3 * mileInKm, name: 'mi', threshold: 1e3 * mileInKm, format: { decimals: 2, separators: false }, system: 'imperial' },
+        { name: 'm', size: 1, cost: 0, format: whole },
+        { name: 'km', size: 1e3, cost: coarser, format: { decimals: 2, separators: false } },
+    ],
+    'm^2': [
+        { name: hre`m^{2}`, size: 1, cost: 0, format: threeDigits },
+        { name: hre`km^{2}`, size: 1e6, cost: 0, format: threeDigits },
+    ],
+    'm^-2 person^1': [
+        { name: hre`/\u00a0km^{2}`, size: 1e-6, cost: 0, attached: true, format: { decimals: { significantDigits: 2 } } },
     ],
     // a duration is written as h:mm, dropping the hours when there are none
-    's^1': [{ divisor: 60 * 60, name: '', format: { decimals: 'hoursMinutes' } }],
-    'm^1 s^-1': [
-        { factor: 100 * secondsPerYear, name: 'cm/yr', format: { decimals: 1, separators: false }, system: 'metric' },
-        { factor: 100 * secondsPerYear, divisor: 2.54, name: 'in/yr', format: { decimals: 1, separators: false }, system: 'imperial' },
-    ],
-    'g^1 m^-3': [{ factor: 1e6, name: hre`\u03bcg/m^{3}`, format: { decimals: 2, separators: false } }],
+    's^1': [{ name: '', size: 60 * 60, cost: 0, format: { decimals: 'hoursMinutes' } }],
+    'm^1 s^-1': [{ name: 'cm/yr', size: 0.01 / secondsPerYear, cost: 0, format: { decimals: 1, separators: false } }],
+    'g^1 m^-3': [{ name: hre`\u03bcg/m^{3}`, size: 1e-6, cost: 0, format: { decimals: 2, separators: false } }],
 }
 
-function baseUnitScale(scales: { baseUnit: BaseUnit, power: number }[]): DisplayScale {
+const imperialLadders: Record<string, LadderUnit[] | undefined> = {
+    ...metricLadders,
+    'm^1': [
+        { name: 'ft', size: 1 / 3.28084, cost: 0, format: whole },
+        { name: 'mi', size: 1e3 * mileInKm, cost: coarser, format: { decimals: 2, separators: false } },
+    ],
+    'm^2': [
+        { name: 'acres', size: 1e6 * squareMileInSquareKm / 640, cost: 0, format: threeDigits },
+        { name: hre`mi^{2}`, size: 1e6 * squareMileInSquareKm, cost: 0, format: threeDigits },
+    ],
+    'm^-2 person^1': [
+        { name: hre`/\u00a0mi^{2}`, size: 1e-6 / squareMileInSquareKm, cost: 0, attached: true, format: { decimals: { significantDigits: 2 } } },
+    ],
+    'm^1 s^-1': [{ name: 'in/yr', size: 0.0254 / secondsPerYear, cost: 0, format: { decimals: 1, separators: false } }],
+}
+
+/**
+ * What a number costs to read in a given unit: one for every digit past the third before the
+ * point, and one for the point itself and every leading zero after it. The number is written out
+ * to count it, so that a value that rounds up into another unit, such as 999.5 thousand people,
+ * costs what a million costs rather than what nine hundred thousand costs.
+ */
+function digitCost(value: number, format: NumberFormat): number {
+    const written = formatNumber(value, { ...format, separators: false }).replaceAll('-', '')
+    const [integerPart, fraction = ''] = written.split('.')
+    if (!/^[0-9]+$/.test(integerPart)) {
+        return 0
+    }
+    if (integerPart !== '0') {
+        return Math.max(0, integerPart.length - 3)
+    }
+    // a shade less than a digit, since a number below one reads a little better than a long one
+    return 0.9 * (1 + (/^0*/.exec(fraction)?.[0].length ?? 0))
+}
+
+interface Dimension { baseUnit: BaseUnit, power: number }
+
+/** A quantity of dimensions with no ladder is written in the base units themselves. */
+function baseUnitLadder(scales: Dimension[]): LadderUnit {
     const name = scales
         .filter(({ power }) => power !== 0)
         .sort((a, b) => a.power !== b.power ? b.power - a.power : (a.baseUnit < b.baseUnit ? -1 : 1))
@@ -233,12 +283,33 @@ function baseUnitScale(scales: { baseUnit: BaseUnit, power: number }[]): Display
             { type: 'atom', value: baseUnit },
             ...power === 1 ? [] : [{ type: 'superscript', value: [{ type: 'atom', value: power.toString() }] } satisfies HumanReadableElement],
         ])
-    return { name, format: { decimals: 'significantFigures' } }
+    return { name, size: 1, cost: 0, format: { decimals: 'significantFigures' } }
 }
 
-const percentScale: DisplayScale = { factor: 100, name: '%', attached: true, format: { decimals: 2, separators: false } }
+/**
+ * The unit a value is best written in: the one on its ladder that costs least once the number it
+ * leaves behind is taken into account.
+ */
+function bestUnit(valueInBaseUnits: number, scales: Dimension[], settings: ReaderSettings): LadderUnit {
+    const ladder = (settings.useImperial === true ? imperialLadders : metricLadders)[renderDimensions(scales)]
+    if (ladder === undefined) {
+        return baseUnitLadder(scales)
+    }
+    let best = ladder[0]
+    let bestCost = Infinity
+    for (const unit of ladder) {
+        const cost = unit.cost + digitCost(valueInBaseUnits / unit.size, unit.format)
+        if (cost < bestCost) {
+            best = unit
+            bestCost = cost
+        }
+    }
+    return best
+}
+
+const percent: LadderUnit = { name: '%', size: 1 / 100, cost: 0, attached: true, format: { decimals: 2, separators: false } }
 /** A margin is written as the size of the lead, which is given to more digits the closer it is. */
-const marginScale: DisplayScale = { ...percentScale, format: { decimals: { significantDigits: 3, minDecimals: 1, maxDecimals: 4 }, separators: false } }
+const margin: LadderUnit = { ...percent, format: { decimals: { significantDigits: 3, minDecimals: 1, maxDecimals: 4 }, separators: false } }
 
 const partyLabels = {
     democratic: { positive: 'D', negative: 'R' },
@@ -250,7 +321,7 @@ const partyLabels = {
 const partyHues = {
     democratic: { positive: 'blue', negative: 'red' },
     left: { positive: 'red', negative: 'blue' },
-} as const satisfies Record<string, { positive: Hue, negative: Hue }>
+} as const
 /* eslint-enable no-restricted-syntax */
 
 export interface ReaderSettings {
@@ -258,36 +329,25 @@ export interface ReaderSettings {
     temperatureUnit?: string
 }
 
-function scalesFor(unit: Unit, settings: ReaderSettings): DisplayScale[] {
+/**
+ * How a value of this unit is written: which unit it is written in, and how the number is
+ * written once it is in it.
+ */
+function scaleFor(valueInBaseUnits: number, unit: Unit, settings: ReaderSettings): LadderUnit {
     switch (unit.kind) {
         case 'unknown':
-            return [{ name: '', format: { decimals: 'significantFigures', separators: false } }]
+            return { name: '', size: 1, cost: 0, format: { decimals: 'significantFigures', separators: false } }
         case 'raw-percentage':
-            return [percentScale]
+            return percent
         case 'delta-percentage':
-            return [unit.partySystem === undefined ? percentScale : marginScale]
+            return unit.partySystem === undefined ? percent : margin
         case 'temperature-F':
             return settings.temperatureUnit === 'celsius'
-                ? [{ factor: 5 / 9, offset: 32, name: '°C', format: { decimals: 1, separators: false } }]
-                : [{ name: '°F', format: { decimals: 1, separators: false } }]
+                ? { name: '°C', size: 9 / 5, offset: 32, cost: 0, format: { decimals: 1, separators: false } }
+                : { name: '°F', size: 1, cost: 0, format: { decimals: 1, separators: false } }
         case 'dimensionfull':
-            const forDimensions = displayScales[renderDimensions(unit.scales)] ?? [baseUnitScale(unit.scales)]
-            return forDimensions.filter(scale => scale.system !== (settings.useImperial === true ? 'metric' : 'imperial'))
+            return bestUnit(valueInBaseUnits, unit.scales, settings)
     }
-}
-
-/**
- * The scale a value is written in: the largest of the unit's applicable scales that it reaches.
- */
-function scaleFor(valueInBaseUnits: number, unit: Unit, settings: ReaderSettings): DisplayScale {
-    const scales = scalesFor(unit, settings)
-    let selected = scales[0]
-    for (const scale of scales) {
-        if (Math.abs(valueInBaseUnits) >= (scale.threshold ?? 0)) {
-            selected = scale
-        }
-    }
-    return selected
 }
 
 // e.g., to 3 significant digits, 123.4 is written with no decimal places and 1.234 with two
@@ -315,16 +375,9 @@ function formatNumber(value: number, { decimals, separators }: NumberFormat): st
         const minutes = totalMinutes % 60
         return hours > 0 ? `${sign}${hours}:${minutes.toString().padStart(2, '0')}` : `${sign}${minutes}`
     }
-    let written: string
-    if (decimals === 'significantFigures') {
-        written = formatToSignificantFigures(value, 3)
-    }
-    else if (decimals === 'precision') {
-        written = value.toPrecision(3)
-    }
-    else {
-        written = value.toFixed(typeof decimals === 'number' ? decimals : decimalPlaces(value, decimals))
-    }
+    const written = decimals === 'significantFigures'
+        ? formatToSignificantFigures(value, 3)
+        : value.toFixed(typeof decimals === 'number' ? decimals : decimalPlaces(value, decimals))
     return separators === false ? written : separateDigits(written)
 }
 
@@ -377,7 +430,7 @@ export function writeQuantity(value: number, stored: StoredUnit, settings: Reade
     }
     const lead = party(unit, value)
     const magnitude = (lead === undefined ? inBaseUnits : Math.abs(inBaseUnits)) - (scale.offset ?? 0)
-    const scaled = magnitude * (scale.factor ?? 1) / (scale.divisor ?? 1)
+    const scaled = magnitude / scale.size
     const explicitSign = unit.kind === 'delta-percentage' && lead === undefined && scaled >= 0 ? '+' : ''
     return { ...written, number: `${lead === undefined ? '' : `${lead.label}+`}${explicitSign}${scale.prefix ?? ''}${formatNumber(scaled, scale.format)}` }
 }
