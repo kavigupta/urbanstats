@@ -41,7 +41,7 @@ cMap(data=density_pw_1km_2000 / (density_pw_1km * density_pw_2km), scale=linearS
 testMapLabel(test,
     `condition(ped_cyclist_fatalities_per_capita > 1e-5)
 cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)`,
-    'PW Density (r=1km) where Pedestrian/Cyclist Fatalities Per Capita Per Year > 1x10^{-5}',
+    'PW Density (r=1km) where Pedestrian/Cyclist Fatalities Per Capita Per Year > 1/100k',
 )
 
 // Number formatting, in particular the boundaries where rounding to 3 significant
@@ -90,6 +90,44 @@ testMapLabel(test,
 testMapLabel(test,
     'cMap(data=population + 1234, scale=linearScale(), ramp=rampUridis)',
     'Population + 1 234',
+)
+
+// A bare number compared against a percentage is itself a percentage
+testMapLabel(test,
+    `condition (commute_bike < 0.1)
+cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)`,
+    'PW Density (r=1km) where Commute Bike % < 10%',
+)
+testMapLabel(test,
+    `condition (0.125 <= commute_bike)
+cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)`,
+    'PW Density (r=1km) where 12.5% ≤ Commute Bike %',
+)
+testMapLabel(test,
+    'cMap(data=commute_bike - 0.01, scale=linearScale(), ramp=rampUridis)',
+    'Commute Bike % − 1%',
+)
+// Only operators whose operands are the same kind of quantity get this treatment
+testMapLabel(test,
+    'cMap(data=commute_bike * 0.5, scale=linearScale(), ramp=rampUridis)',
+    'Commute Bike % × 0.5',
+)
+testMapLabel(test,
+    `condition (population > 0.1)
+cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)`,
+    'PW Density (r=1km) where Population > 0.1',
+)
+// A constant is written in whichever unit it is best read in
+testMapLabel(test,
+    `condition (commute_time_median > 600)
+cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)`,
+    'PW Density (r=1km) where Median Commute Time (min) > 10:00',
+)
+// Quantities displayed in the unit they are stored in are written as plain numbers
+testMapLabel(test,
+    `condition (elevation > 1234)
+cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)`,
+    'PW Density (r=1km) where PW Mean Elevation > 1\u202f234',
 )
 
 void test('map label cannot be derived for a raw vector literal', () => {

@@ -27,6 +27,7 @@ import { deriveMapLabel } from '../urban-stats-script/derive-human-readable-name
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { TypeEnvironment, USSOpaqueValue } from '../urban-stats-script/types-values'
+import { deriveMapUnit } from '../urban-stats-script/unit-inference'
 import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
 import { loadImage } from '../utils/Image'
 import { editIndex, EditSeq } from '../utils/array-edits'
@@ -36,6 +37,7 @@ import { makeDebugLogger } from '../utils/debug-logging'
 import { HumanReadableName } from '../utils/human-readable-name'
 import { ConsolidatedShapes, Feature, ICoordinate } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
+import { Unit, unitTypeToUnit } from '../utils/unit'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
 import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar'
@@ -138,6 +140,10 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         label = mapResultMain.value.label
     }
 
+    const unit = mapResultMain.value.unit !== undefined
+        ? unitTypeToUnit(mapResultMain.value.unit)
+        : deriveMapUnit(mapSettings.script.uss, typeEnvironment)
+
     const csvExportCallback: CSVExportData = () => {
         const csvData = generateMapperCSVData(mapResultMain, execResult.assignments)
         const csvFilename = `${mapSettings.geographyKind}-${mapSettings.universe}-data.csv`
@@ -147,7 +153,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         }
     }
 
-    const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind, cache, label })
+    const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind, cache, label, unit })
 
     function MapComponent({ props, exportImageRef }: { props: MapUIProps<{ loading: boolean }>, exportImageRef: (fn: () => Promise<HTMLCanvasElement>) => void }): ReactNode {
         const mapsRef: (MapRef | null)[] = []
@@ -418,13 +424,14 @@ type MapComponentCreator = (
     clickable: boolean,
 ) => ReactNode
 
-async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, geographyKind, cache, label }:
+async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, geographyKind, cache, label, unit }:
 {
     mapResultMain: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' | 'clusterMap' }
     universe: Universe
     geographyKind: typeof valid_geographies[number]
     cache: MapCache
     label: HumanReadableName
+    unit: Unit | undefined
 }): Promise<{ features: GeoJSON.Feature[], mapComponentCreator: MapComponentCreator, ramp: RampToDisplay }> {
     let ramp: RampToDisplay
     let colors: string[]
@@ -434,12 +441,12 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
         case 'pMap':
         case 'cMap':
             const furthest = furthestColor(value.ramp.map(x => x[1]))
-            const pcMapRamp = computeRampToDisplay(value, label)
+            const pcMapRamp = computeRampToDisplay(value, label, unit)
             ramp = pcMapRamp
             colors = value.data.map(val => interpolateColor(value.ramp, pcMapRamp.value.scale.forward(val), furthest))
             break
         case 'clusterMap':
-            const clusterRamp = computeRampToDisplay(value, label)
+            const clusterRamp = computeRampToDisplay(value, label, unit)
             ramp = clusterRamp
 
             // Discretize by scaled values to match the same bins used in legend interpolations.
@@ -578,12 +585,12 @@ function computeClusterRampBin(val: number, clusterRamp: RampToDisplay & { type:
     return clamped
 }
 
-function computeRampToDisplay(value: CommonMap, label: HumanReadableName): RampToDisplay & { type: 'ramp' } {
+function computeRampToDisplay(value: CommonMap, label: HumanReadableName, unit: Unit | undefined): RampToDisplay & { type: 'ramp' } {
     const scale = instantiate(value.scale)
     const hasValuesClampedToStart = value.data.some(val => scale.forward(val) < 0)
     const hasValuesClampedToEnd = value.data.some(val => scale.forward(val) > 1)
     const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
-    return { type: 'ramp', value: { ramp: value.ramp, interpolations, scale, label, unit: value.unit, hasValuesClampedToStart, hasValuesClampedToEnd } }
+    return { type: 'ramp', value: { ramp: value.ramp, interpolations, scale, label, unit, hasValuesClampedToStart, hasValuesClampedToEnd } }
 }
 
 const canonicalWidth = 1200
