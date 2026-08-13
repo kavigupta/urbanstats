@@ -12,9 +12,9 @@ function getTypeEnvironment(): ReturnType<typeof defaultTypeEnvironment> {
     return defaultTypeEnvironment('USA')
 }
 
-function renderQuantity(value: number, unit: Unit): string {
-    const { value: rendered, unit: name } = displayQuantity(value, unit, false)
-    const { attached } = displayUnitFor(value, unit, false)
+function renderQuantity(value: number, quantityUnit: Unit): string {
+    const { value: rendered, unit: name } = displayQuantity(value, quantityUnit, false)
+    const { attached } = displayUnitFor(value, quantityUnit, false)
     return `${rendered}${reifyString(unitSuffix(name, attached))}`
 }
 
