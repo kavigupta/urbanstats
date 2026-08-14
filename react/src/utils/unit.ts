@@ -333,19 +333,23 @@ function nameOf(written: Written[]): HumanReadableName {
     const join = (parts: HumanReadableElement[][]): HumanReadableElement[] =>
         parts.flatMap((elements, index) => index === 0 ? elements : [{ type: 'atom', value: '\u00b7' }, ...elements])
     const under = written.filter(({ power }) => power < 0).filter(named)
+    const over = written.filter(({ power }) => power > 0).filter(named)
+    // a quantity that is only a denominator, such as a density, is written /\u00a0km^2 rather than
+    // /km^2, unless what follows the slash is a number, as in /100k
+    const slash = over.length === 0 && /^[a-z]/i.test(under[0]?.unit.name ?? under[0]?.baseUnit ?? '') ? '/\u00a0' : '/'
     const name = [
-        ...join(written.filter(({ power }) => power > 0).filter(named).map(part)),
-        ...under.length === 0 ? [] : [{ type: 'atom', value: '/' } satisfies HumanReadableElement, ...join(under.map(part))],
+        ...join(over.map(part)),
+        ...under.length === 0 ? [] : [{ type: 'atom', value: slash } satisfies HumanReadableElement, ...join(under.map(part))],
     ]
     return name.length === 0 ? '' : name
 }
 
-function combinations(dimensions: Dimension[], ladder: Record<BaseUnit, LadderUnit[]>): Written[][] {
+function combinations(dimensions: Dimension[], rungs: (dimension: Dimension) => LadderUnit[]): Written[][] {
     if (dimensions.length === 0) {
         return [[]]
     }
-    const [{ baseUnit, power }, ...rest] = dimensions
-    return ladder[baseUnit].flatMap(unit => combinations(rest, ladder).map(tail => [{ baseUnit, power, unit }, ...tail]))
+    const [dimension, ...rest] = dimensions
+    return rungs(dimension).flatMap(unit => combinations(rest, rungs).map(tail => [{ ...dimension, unit }, ...tail]))
 }
 
 /** How a quantity is written: the units chosen for its dimensions, and the style they are in. */
@@ -382,9 +386,15 @@ function bestRepresentation(valueInBaseUnits: number, scales: Dimension[], setti
         // a unit raised to a power costs what it costs each time it is used
         return cost * Math.abs(power)
     }
+    const rungs = ({ baseUnit, power }: Dimension): LadderUnit[] => ladder[baseUnit].filter(unit =>
+        // a count is abbreviated only when it is the whole quantity, not inside people per km^2
+        unit.cost !== abbreviated
+        || convention?.[baseUnit] === unit.name
+        || (dimensions.length === 1 && Math.abs(power) === 1),
+    )
     let best: Representation | undefined
     let bestCost = Infinity
-    for (const written of combinations(dimensions, ladder)) {
+    for (const written of combinations(dimensions, rungs)) {
         const format = styleFor(signature, written)
         const size = written.reduce((product, { power, unit }) => product * Math.pow(unit.size, power), 1)
         const cost = written.reduce((total, unit, index) => total + costOf(unit, dimensions[index].baseUnit), 0)
