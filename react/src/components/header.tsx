@@ -1,7 +1,6 @@
 import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
 
 import '../common.css'
-import './header.css'
 import flag_dimensions from '../data/flag_dimensions'
 import statistic_name_list from '../data/statistic_name_list'
 import { Navigator } from '../navigation/Navigator'
@@ -375,34 +374,34 @@ function UniverseDropdown(
             }
             {filteredUniverses.map((altUniverse) => {
                 return (
-                    <div
+                    <button
                         key={altUniverse}
+                        type="button"
+                        className="borderless"
                         onClick={() => {
                             setUniverse(altUniverse)
                             closeDropdown()
                         }}
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            gap: '1em',
+                            alignItems: 'center',
+                            cursor: 'pointer',
+                            padding: '0.5em',
+                            width: '100%',
+                            fontSize: 'inherit',
+                            borderRadius: 0,
+                        }}
                     >
-                        <div
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'row',
-                                gap: '1em',
-                                // center vertically
-                                alignItems: 'center',
-                                cursor: 'pointer',
-                                padding: '0.5em',
-                            }}
-                            className="hoverable_elements"
-                        >
-                            <DropdownFlag
-                                height={flagSize}
-                                universe={altUniverse}
-                            />
-                            <div className="serif">
-                                {humanReadableUniverse(altUniverse)}
-                            </div>
+                        <DropdownFlag
+                            height={flagSize}
+                            universe={altUniverse}
+                        />
+                        <div className="serif">
+                            {humanReadableUniverse(altUniverse)}
                         </div>
-                    </div>
+                    </button>
                 )
             })}
         </div>
