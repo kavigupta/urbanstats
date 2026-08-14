@@ -40,9 +40,11 @@ export function formatToSignificantFigures(value: number, sigFigs: number = 3): 
         return value.toString()
     }
 
-    const magnitude = Math.floor(Math.log10(Math.abs(value)))
-    const factor = Math.pow(10, sigFigs - 1 - magnitude)
+    const factor = Math.pow(10, sigFigs - 1 - Math.floor(Math.log10(Math.abs(value))))
     const rounded = Math.round(value * factor) / factor
+
+    // taken from the rounded value, since rounding can carry into another digit, as 0.9995 does
+    const magnitude = Math.floor(Math.log10(Math.abs(rounded)))
 
     // Count significant figures needed after decimal point
     if (magnitude >= 0) {
