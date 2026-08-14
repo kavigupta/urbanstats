@@ -73,7 +73,6 @@ button, select {
 
 button.borderless {
     border: none;
-    background-color: transparent;
 }
 
 button:hover:not(:disabled) {
