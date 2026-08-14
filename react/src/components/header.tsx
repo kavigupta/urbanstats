@@ -435,7 +435,9 @@ function UniverseDropdown(
                                 closeDropdown()
                             }}
                             onFocus={() => { setHighlighted(index) }}
-                            onMouseEnter={() => { setHighlighted(index) }}
+                            // mousemove rather than mouseenter: scrolling the list under a stationary
+                            // cursor fires mouseenter, which would undo the arrow key that scrolled it
+                            onMouseMove={() => { setHighlighted(index) }}
                             style={{
                                 display: 'flex',
                                 flexDirection: 'row',
