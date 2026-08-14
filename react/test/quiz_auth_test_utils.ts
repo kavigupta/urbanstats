@@ -26,6 +26,13 @@ const nextButton = Selector('button').withExactText('Next')
 const emailInput = Selector('input[type=text][aria-label*=email i]:not([aria-hidden="true"])')
 const passwordInput = Selector('input[type=password]')
 
+// Headers is not iterable under our tsconfig's lib (DOM without DOM.Iterable)
+function headersJSON(headers: Headers): string {
+    const entries: Record<string, string> = {}
+    headers.forEach((value, key) => { entries[key] = value })
+    return JSON.stringify(entries)
+}
+
 async function popTOTP(t: TestController): Promise<string> {
     // https://script.google.com/u/2/home/projects/1CWDP4eezFo8fMhQb327VfSm3DnThl-8xg1fmg4cl9gHnK0NGB8XSz094/edit
     // Apps Script runs the script at /exec, then 302s to a script.googleusercontent.com URL that
@@ -34,7 +41,7 @@ async function popTOTP(t: TestController): Promise<string> {
     const location = exec.headers.get('location')
     if (location === null) {
         console.warn(`TOTP exec hop did not redirect: ${exec.status} ${exec.statusText}`)
-        console.warn(`headers: ${JSON.stringify(Object.fromEntries(exec.headers))}`)
+        console.warn(`headers: ${headersJSON(exec.headers)}`)
         console.warn(`body: ${await exec.text()}`)
         throw new Error('TOTP exec hop did not redirect')
     }
@@ -52,7 +59,7 @@ async function popTOTP(t: TestController): Promise<string> {
     }
     catch (error) {
         console.warn(`TOTP echo hop failed: ${echo.status} ${echo.statusText} for ${location}`)
-        console.warn(`headers: ${JSON.stringify(Object.fromEntries(echo.headers))}`)
+        console.warn(`headers: ${headersJSON(echo.headers)}`)
         console.warn(`body: ${body}`)
         throw error
     }
