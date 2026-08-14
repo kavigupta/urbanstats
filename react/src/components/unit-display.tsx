@@ -102,8 +102,16 @@ function perSquared(name: string): ReactNode {
     )
 }
 
-function hoursAndMinutes(hours: number, minutes: number): string[] {
-    return [`${hours}`, ':', minutes.toString().padStart(2, '0')]
+/** Durations read as hours and minutes, dropping the hours where there are none. */
+function hoursAndMinutes(hours: number): string[] {
+    const totalMinutes = Math.round(Math.abs(hours) * 60)
+    const sign = hours < 0 && totalMinutes > 0 ? '-' : ''
+    const wholeHours = Math.floor(totalMinutes / 60)
+    const minutes = totalMinutes % 60
+    if (wholeHours === 0) {
+        return [`${sign}${minutes}`]
+    }
+    return [`${sign}${wholeHours}`, ':', minutes.toString().padStart(2, '0')]
 }
 
 function percentage(value: number): string {
@@ -250,13 +258,9 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                 return { number: separateNumber(converted.value.toFixed(1)), unit: <span>{converted.unit}</span> }
             })
         case 'time':
-            return display(value => ({ number: hoursAndMinutes(Math.floor(value), Math.floor((value - Math.floor(value)) * 60)), unit: blank }))
+            return display(value => ({ number: hoursAndMinutes(value), unit: blank }))
         case 'minutes':
-            return display((value) => {
-                const hours = Math.floor(value / 60)
-                const minutes = Math.floor(value % 60)
-                return { number: hours > 0 ? hoursAndMinutes(hours, minutes) : `${minutes}`, unit: blank }
-            })
+            return display(value => ({ number: hoursAndMinutes(value / 60), unit: blank }))
         case 'distancePerYear':
             return display((value, { useImperial }) => {
                 const converted = convertPrecipitation(value, useImperial)
