@@ -54,23 +54,24 @@ for (const [value, expected] of [
 
 // Every quantity is displayed in the unit it is stored in, and durations as h:mm
 for (const [unitType, value, expected] of [
-    ['minutes', 34, '34'],
+    ['minutes', 34, '34.0 min'],
     ['minutes', 90, '1:30'],
     ['minutes', 600, '10:00'],
     ['minutes', 1234, '20:34'],
     ['minutes', 5000, '83:20'],
+    ['minutes', 1e6, '694 days'],
     ['time', 7.5, '7:30'],
-    ['time', 0.5, '30'],
+    ['time', 0.5, '30.0 min'],
     // a length is a length: an elevation and a distance are written the same way
     ['distanceInM', 543, '543 m'],
     ['distanceInM', 1234, '1.23 km'],
-    ['distanceInM', 12345, '12.35 km'],
+    ['distanceInM', 12345, '12.3 km'],
     ['distanceInKm', 3.42, '3.42 km'],
     ['distanceInKm', 0.543, '543 m'],
     // a rate is written per whichever number of people leaves a readable number
     ['fatalitiesPerCapita', 1.2e-5, '1.20/100k'],
-    ['fatalitiesPerCapita', 0.5, '0.500/person'],
-    ['density', 1234, '1\u202f234/\u00a0km^{2}'],
+    ['fatalitiesPerCapita', 0.5, '0.50/person'],
+    ['density', 1234, '1\u202f234/km^{2}'],
     ['area', 0.005, '5\u202f000 m^{2}'],
     ['area', 12.5, '12.5 km^{2}'],
     ['usd', 75000, '$75.0k'],
@@ -78,7 +79,7 @@ for (const [unitType, value, expected] of [
     ['percentage', 0.125, '12.50%'],
     ['percentageChange', 0.125, '+12.50%'],
     ['population', 1234, '1\u202f234'],
-    ['density', 5.67, '5.7/\u00a0km^{2}'],
+    ['density', 5.67, '5.7/km^{2}'],
     ['area', 0.5, '0.500 km^{2}'],
     ['fatalities', 1234, '1\u202f234'],
     ['contaminantLevel', 8.2, '8.20 \u03bcg/m^{3}'],
@@ -95,8 +96,9 @@ for (const [unitType, value, expected] of [
     ['distanceInM', 543, '1\u202f781 ft'],
     ['distanceInM', 12345, '7.67 mi'],
     ['area', 12.5, '4.83 mi^{2}'],
-    ['density', 1234, '3\u202f196/\u00a0mi^{2}'],
-    ['area', 0.5, '124 acres'],
+    ['density', 1234, '3\u202f196/mi^{2}'],
+    // an acre is not a power of any length, so an imperial area stays in square miles
+    ['area', 0.5, '0.193 mi^{2}'],
     ['distancePerYear', 1.2, '47.2 in/yr'],
 ] as const) {
     void test(`${unitType} renders ${value} in imperial as ${expected}`, () => {
@@ -110,12 +112,12 @@ for (const [unitType, value, expected] of [
     ['population', -1234, '-1\u202f234'],
     ['population', -12345, '-12.3k'],
     ['population', NaN, 'NaN'],
-    ['density', 0, '0.00/\u00a0km^{2}'],
-    ['density', -5.67, '-5.7/\u00a0km^{2}'],
+    ['density', 0, '0.00/km^{2}'],
+    ['density', -5.67, '-5.7/km^{2}'],
     ['percentage', -0.125, '-12.50%'],
     ['percentageChange', -0.125, '-12.50%'],
     ['usd', -12345, '$-12.3k'],
-    ['minutes', 0, '0'],
+    ['minutes', 0, '0.000 s'],
     ['number', 0, '0'],
     ['number', Infinity, 'Infinity'],
 ] as const) {

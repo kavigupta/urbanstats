@@ -1,7 +1,7 @@
 import { HueColors } from '../page_template/color-themes'
 
+import { assert } from './defensive'
 import { HumanReadableElement, HumanReadableName } from './human-readable-name'
-import { hre } from './human-readable-template'
 import { formatToSignificantFigures, separateNumber } from './text'
 
 export type UnitType = 'percentage' | 'percentageChange' | 'fatalities' | 'fatalitiesPerCapita' | 'density' | 'population'
@@ -90,7 +90,6 @@ function dimensionfull(scales: Partial<Record<BaseUnit, number>>, toBaseUnits = 
 
 const secondsPerYear = 365.25 * 24 * 60 * 60
 const mileInKm = 1.60934
-const squareMileInSquareKm = mileInKm * mileInKm
 
 /* eslint-disable no-restricted-syntax -- these name the theme's hues, they are not css colors */
 const storedUnits: Record<UnitType, StoredUnit> = {
@@ -161,105 +160,158 @@ interface SignificantDigits {
 }
 
 /**
- * One of the units a quantity of some dimensions can be written in, e.g., a kilometer, or people
- * per square mile.
+ * One of the units a base unit can be written in, e.g., a kilometer, or a million people.
  */
 interface LadderUnit {
-    name: HumanReadableName
-    /** How many base units one of it is: a square kilometer is 1e6 square meters */
+    name: string
+    /** How many base units one of it is: a kilometer is a thousand meters */
     size: number
     /**
-     * What writing a quantity in it costs, before the cost of the number that leaves. Zero for
-     * the unit a quantity of these dimensions is ordinarily written in, and more for one that
-     * only earns its place by making the number shorter.
+     * What reaching for it costs, before the digits it saves. Zero for the unit a quantity is
+     * ordinarily measured in, and more for one that only earns its place by shortening the
+     * number, such as an abbreviation.
      */
     cost: number
-    /** Whether the name is written directly after the number, as an abbreviation is */
-    attached?: boolean
-    /** Written immediately before the number, e.g., a dollar sign */
-    prefix?: string
-    /** Subtracted before dividing, for a unit whose zero is somewhere else */
-    offset?: number
-    /** How the number is written once it is in this unit */
-    format: NumberFormat
 }
 
-/** An abbreviation saves digits, but a number that does not need saving reads better without. */
-const abbreviated = 1
-/** A coarser unit is worth reaching for only once the finer one runs to too many digits. */
+/** A unit off the base of its ladder is worth reaching for only once it shortens the number. */
 const coarser = 0.5
+/** An abbreviation is a unit of its own only in the sense that it saves digits. */
+const abbreviated = 1
 
-const threeFigures: NumberFormat = { decimals: 'significantFigures' }
-const threeDigits: NumberFormat = { decimals: { significantDigits: 3 } }
-const whole: NumberFormat = { decimals: 0 }
+/** Thousands, millions and billions, for a quantity that is counted rather than measured. */
+const abbreviations: LadderUnit[] = [
+    { name: 'k', size: 1e3, cost: abbreviated },
+    { name: 'm', size: 1e6, cost: abbreviated },
+    { name: 'B', size: 1e9, cost: abbreviated },
+]
 
-/** Thousands, millions and billions, for a quantity that is counted. */
-function abbreviations(prefix?: string): LadderUnit[] {
-    return [
-        { name: 'k', size: 1e3, cost: abbreviated, attached: true, prefix, format: threeFigures },
-        { name: 'm', size: 1e6, cost: abbreviated, attached: true, prefix, format: threeFigures },
-        { name: 'B', size: 1e9, cost: abbreviated, attached: true, prefix, format: threeFigures },
-    ]
+const sharedLadders = {
+    person: [{ name: '', size: 1, cost: 0 }, ...abbreviations, { name: '100k', size: 1e5, cost: abbreviated }],
+    usd: [{ name: '', size: 1, cost: 0 }, ...abbreviations],
+    fatality: [{ name: '', size: 1, cost: 0 }],
+    s: [
+        { name: 's', size: 1, cost: 0 },
+        // minutes give way to hours and minutes together as soon as there is an hour to give
+        { name: 'min', size: 60, cost: coarser + 0.1 },
+        { name: 'hours', size: 60 * 60, cost: coarser },
+        { name: 'days', size: 24 * 60 * 60, cost: coarser },
+        { name: 'yr', size: secondsPerYear, cost: coarser },
+    ],
+    g: [
+        { name: 'g', size: 1, cost: 0 },
+        { name: 'μg', size: 1e-6, cost: coarser },
+        { name: 'mg', size: 1e-3, cost: coarser },
+        { name: 'kg', size: 1e3, cost: coarser },
+    ],
+} satisfies Partial<Record<BaseUnit, LadderUnit[]>>
+
+/**
+ * The units each base unit can be written in, in the system of measurement the reader reads in.
+ * A quantity is written by choosing one of them for each base unit it is measured in.
+ */
+const ladders: Record<'metric' | 'imperial', Record<BaseUnit, LadderUnit[]>> = {
+    metric: {
+        ...sharedLadders,
+        m: [
+            { name: 'm', size: 1, cost: 0 },
+            { name: 'cm', size: 0.01, cost: coarser },
+            { name: 'km', size: 1e3, cost: coarser },
+        ],
+    },
+    imperial: {
+        ...sharedLadders,
+        m: [
+            { name: 'ft', size: 1 / 3.28084, cost: 0 },
+            { name: 'in', size: 1 / (12 * 3.28084), cost: coarser },
+            { name: 'mi', size: 1e3 * mileInKm, cost: coarser },
+            // not a unit a reader of feet and miles measures in, but conventions may still ask for it
+            { name: 'm', size: 1, cost: 10 },
+        ],
+    },
 }
 
 /**
- * The units a quantity of each dimensions can be written in. A quantity is written in whichever
- * of them costs least once the number it leaves is taken into account, so these are ladders
- * rather than a single choice: an area of a few hectares belongs in square meters and one the
- * size of a country in square kilometers.
+ * The unit a quantity of these dimensions is conventionally written in, for each base unit it is
+ * measured in. Nothing in a ladder can say that people per area belong in square kilometers while
+ * an area itself belongs in square meters until it is large, since both are the same step up the
+ * same ladder, so the convention says it here.
  */
-const metricLadders: Record<string, LadderUnit[] | undefined> = {
-    '': [{ name: '', size: 1, cost: 0, format: { decimals: 'significantFigures', separators: false } }],
-    'person^1': [{ name: '', size: 1, cost: 0, format: whole }, ...abbreviations()],
-    // money is counted in thousands sooner than people are, and never written out in full
-    'usd^1': [{ name: '', size: 1, cost: 0, prefix: '$', format: whole }, ...abbreviations('$')],
-    'fatality^1': [{ name: '', size: 1, cost: 0, format: whole }],
-    'fatality^1 person^-1': [
-        // a rate per person only reads well for something that happens to most of them
-        { name: '/person', size: 1, cost: abbreviated, attached: true, format: threeDigits },
-        { name: '/100k', size: 1e-5, cost: 0, attached: true, format: { decimals: 2, separators: false } },
-    ],
-    'm^1': [
-        { name: 'm', size: 1, cost: 0, format: whole },
-        { name: 'km', size: 1e3, cost: coarser, format: { decimals: 2, separators: false } },
-    ],
-    'm^2': [
-        { name: hre`m^{2}`, size: 1, cost: 0, format: threeDigits },
-        { name: hre`km^{2}`, size: 1e6, cost: 0, format: threeDigits },
-    ],
-    'm^-2 person^1': [
-        { name: hre`/\u00a0km^{2}`, size: 1e-6, cost: 0, attached: true, format: { decimals: { significantDigits: 2 } } },
-    ],
-    // a duration is written as h:mm, dropping the hours when there are none
-    's^1': [{ name: '', size: 60 * 60, cost: 0, format: { decimals: 'hoursMinutes' } }],
-    'm^1 s^-1': [{ name: 'cm/yr', size: 0.01 / secondsPerYear, cost: 0, format: { decimals: 1, separators: false } }],
-    'g^1 m^-3': [{ name: hre`\u03bcg/m^{3}`, size: 1e-6, cost: 0, format: { decimals: 2, separators: false } }],
+type Conventions = Record<string, Partial<Record<BaseUnit, string>> | undefined>
+
+const conventions: Record<'metric' | 'imperial', Conventions> = {
+    metric: {
+        'm^-2 person^1': { m: 'km' },
+        'm^2': { m: 'km' },
+        'g^1 m^-3': { g: 'μg', m: 'm' },
+        'm^1 s^-1': { m: 'cm', s: 'yr' },
+        'fatality^1 person^-1': { person: '100k' },
+    },
+    imperial: {
+        'm^-2 person^1': { m: 'mi' },
+        'm^2': { m: 'mi' },
+        // a concentration is scientific, and stays in the units science is written in
+        'g^1 m^-3': { g: 'μg', m: 'm' },
+        'm^1 s^-1': { m: 'in', s: 'yr' },
+        'fatality^1 person^-1': { person: '100k' },
+    },
 }
 
-const imperialLadders: Record<string, LadderUnit[] | undefined> = {
-    ...metricLadders,
-    'm^1': [
-        { name: 'ft', size: 1 / 3.28084, cost: 0, format: whole },
-        { name: 'mi', size: 1e3 * mileInKm, cost: coarser, format: { decimals: 2, separators: false } },
-    ],
-    'm^2': [
-        { name: 'acres', size: 1e6 * squareMileInSquareKm / 640, cost: 0, format: threeDigits },
-        { name: hre`mi^{2}`, size: 1e6 * squareMileInSquareKm, cost: 0, format: threeDigits },
-    ],
-    'm^-2 person^1': [
-        { name: hre`/\u00a0mi^{2}`, size: 1e-6 / squareMileInSquareKm, cost: 0, attached: true, format: { decimals: { significantDigits: 2 } } },
-    ],
-    'm^1 s^-1': [{ name: 'in/yr', size: 0.0254 / secondsPerYear, cost: 0, format: { decimals: 1, separators: false } }],
+/** Departing from the convention has to be worth as much as a coarser unit is. */
+const unconventional = coarser
+
+/**
+ * How the number is written once a unit has been chosen for it. Separate from the units: what a
+ * quantity is measured in does not say how precisely it is worth writing.
+ */
+const styles: Record<string, NumberFormat | undefined> = {
+    '': { decimals: 'significantFigures', separators: false },
+    // things that are counted come in whole numbers, unless they are counted in thousands
+    'person^1': { decimals: 0 },
+    'usd^1': { decimals: 0 },
+    'fatality^1': { decimals: 0 },
+    // a density is not worth a third digit, and the rest are read against each other
+    'm^-2 person^1': { decimals: { significantDigits: 2 } },
+    'g^1 m^-3': { decimals: 2, separators: false },
+    'fatality^1 person^-1': { decimals: 2, separators: false },
+    'm^1 s^-1': { decimals: 1, separators: false },
+}
+
+const defaultStyle: NumberFormat = { decimals: { significantDigits: 3 } }
+/** An abbreviated number is worth three figures, wherever they fall. */
+const abbreviatedStyle: NumberFormat = { decimals: 'significantFigures' }
+/** A duration of hours reads as hours and minutes rather than as a fraction of an hour. */
+const hoursMinutes: NumberFormat = { decimals: 'hoursMinutes' }
+
+const prefixes: Record<string, string | undefined> = { 'usd^1': '$' }
+
+interface Dimension { baseUnit: BaseUnit, power: number }
+interface Written { baseUnit: BaseUnit, power: number, unit: LadderUnit }
+
+function styleFor(signature: string, written: Written[]): NumberFormat {
+    if (signature === 's^1' && written[0].unit.name === 'hours') {
+        return hoursMinutes
+    }
+    if (written.some(({ unit }) => unit.cost === abbreviated)) {
+        return abbreviatedStyle
+    }
+    return styles[signature] ?? defaultStyle
 }
 
 /**
  * What a number costs to read in a given unit: one for every digit past the third before the
- * point, and one for the point itself and every leading zero after it. The number is written out
- * to count it, so that a value that rounds up into another unit, such as 999.5 thousand people,
- * costs what a million costs rather than what nine hundred thousand costs.
+ * point, and nine tenths of one for the point itself and each leading zero after it. The number
+ * is written out to count it, so that a value that rounds up into another unit, such as 999.5
+ * thousand people, costs what a million costs rather than what nine hundred thousand costs.
  */
 function digitCost(value: number, format: NumberFormat): number {
-    const written = formatNumber(value, { ...format, separators: false }).replaceAll('-', '')
+    if (value === 0) {
+        // nothing is shorter than zero in any unit
+        return 0
+    }
+    // a duration written as h:mm is counted by the hours it is written in
+    const counted: NumberFormat = format.decimals === 'hoursMinutes' ? defaultStyle : format
+    const written = formatNumber(value, { ...counted, separators: false }).replaceAll('-', '')
     const [integerPart, fraction = ''] = written.split('.')
     if (!/^[0-9]+$/.test(integerPart)) {
         return 0
@@ -271,45 +323,89 @@ function digitCost(value: number, format: NumberFormat): number {
     return 0.9 * (1 + (/^0*/.exec(fraction)?.[0].length ?? 0))
 }
 
-interface Dimension { baseUnit: BaseUnit, power: number }
+function nameOf(written: Written[]): HumanReadableName {
+    // a unit with no name of its own, such as a person, is named after itself below the line
+    const named = ({ power, unit }: Written): boolean => unit.name !== '' || power < 0
+    const part = ({ baseUnit, unit, power }: Written): HumanReadableElement[] => [
+        { type: 'atom', value: unit.name === '' ? baseUnit : unit.name },
+        ...Math.abs(power) === 1 ? [] : [{ type: 'superscript', value: [{ type: 'atom', value: Math.abs(power).toString() }] } satisfies HumanReadableElement],
+    ]
+    const join = (parts: HumanReadableElement[][]): HumanReadableElement[] =>
+        parts.flatMap((elements, index) => index === 0 ? elements : [{ type: 'atom', value: '\u00b7' }, ...elements])
+    const under = written.filter(({ power }) => power < 0).filter(named)
+    const name = [
+        ...join(written.filter(({ power }) => power > 0).filter(named).map(part)),
+        ...under.length === 0 ? [] : [{ type: 'atom', value: '/' } satisfies HumanReadableElement, ...join(under.map(part))],
+    ]
+    return name.length === 0 ? '' : name
+}
 
-/** A quantity of dimensions with no ladder is written in the base units themselves. */
-function baseUnitLadder(scales: Dimension[]): LadderUnit {
-    const name = scales
-        .filter(({ power }) => power !== 0)
-        .sort((a, b) => a.power !== b.power ? b.power - a.power : (a.baseUnit < b.baseUnit ? -1 : 1))
-        .flatMap(({ baseUnit, power }, index): HumanReadableElement[] => [
-            ...index === 0 ? [] : [{ type: 'atom', value: '·' } satisfies HumanReadableElement],
-            { type: 'atom', value: baseUnit },
-            ...power === 1 ? [] : [{ type: 'superscript', value: [{ type: 'atom', value: power.toString() }] } satisfies HumanReadableElement],
-        ])
-    return { name, size: 1, cost: 0, format: { decimals: 'significantFigures' } }
+function combinations(dimensions: Dimension[], ladder: Record<BaseUnit, LadderUnit[]>): Written[][] {
+    if (dimensions.length === 0) {
+        return [[]]
+    }
+    const [{ baseUnit, power }, ...rest] = dimensions
+    return ladder[baseUnit].flatMap(unit => combinations(rest, ladder).map(tail => [{ baseUnit, power, unit }, ...tail]))
+}
+
+/** How a quantity is written: the units chosen for its dimensions, and the style they are in. */
+interface Representation {
+    /** Base units per unit written in */
+    size: number
+    /** Subtracted before dividing, for a unit whose zero is somewhere else */
+    offset?: number
+    name: HumanReadableName
+    attached: boolean
+    prefix: string
+    format: NumberFormat
+}
+
+// a name that begins with a symbol, such as /km^2 or %, is written straight after the number
+function startsWithSymbol(name: HumanReadableName): boolean {
+    const first = typeof name === 'string' ? name : (name.length > 0 && name[0].type === 'atom' ? name[0].value : '')
+    return first.startsWith('/') || first.startsWith('%')
 }
 
 /**
- * The unit a value is best written in: the one on its ladder that costs least once the number it
- * leaves behind is taken into account.
+ * The best way of writing a value of these dimensions: of every combination of units from the
+ * ladders of the base units it is measured in, the one that costs least once the number it
+ * leaves behind is counted.
  */
-function bestUnit(valueInBaseUnits: number, scales: Dimension[], settings: ReaderSettings): LadderUnit {
-    const ladder = (settings.useImperial === true ? imperialLadders : metricLadders)[renderDimensions(scales)]
-    if (ladder === undefined) {
-        return baseUnitLadder(scales)
+function bestRepresentation(valueInBaseUnits: number, scales: Dimension[], settings: ReaderSettings): Representation {
+    const signature = renderDimensions(scales)
+    const dimensions = scales.filter(({ power }) => power !== 0)
+    const ladder = ladders[settings.useImperial === true ? 'imperial' : 'metric']
+    const convention = conventions[settings.useImperial === true ? 'imperial' : 'metric'][signature]
+    const costOf = ({ power, unit }: Written, baseUnit: BaseUnit): number => {
+        const conventional = convention?.[baseUnit]
+        const cost = conventional === undefined ? unit.cost : (unit.name === conventional ? 0 : unit.cost + unconventional)
+        // a unit raised to a power costs what it costs each time it is used
+        return cost * Math.abs(power)
     }
-    let best = ladder[0]
+    let best: Representation | undefined
     let bestCost = Infinity
-    for (const unit of ladder) {
-        const cost = unit.cost + digitCost(valueInBaseUnits / unit.size, unit.format)
+    for (const written of combinations(dimensions, ladder)) {
+        const format = styleFor(signature, written)
+        const size = written.reduce((product, { power, unit }) => product * Math.pow(unit.size, power), 1)
+        const cost = written.reduce((total, unit, index) => total + costOf(unit, dimensions[index].baseUnit), 0)
+            + digitCost(valueInBaseUnits / size, format)
         if (cost < bestCost) {
-            best = unit
+            // a duration written as h:mm says so by being written that way
+            const name = format.decimals === 'hoursMinutes' ? '' : nameOf(written)
+            // an abbreviation is written against the number, as in 12.3k, and a symbol likewise
+            const abbreviationOnly = written.every(({ unit }) => unit.name === '' || unit.cost === abbreviated)
+            const attached = startsWithSymbol(name) || (name !== '' && abbreviationOnly)
+            best = { size, name, attached, format, prefix: prefixes[signature] ?? '' }
             bestCost = cost
         }
     }
+    assert(best !== undefined, 'every quantity has at least one way of being written')
     return best
 }
 
-const percent: LadderUnit = { name: '%', size: 1 / 100, cost: 0, attached: true, format: { decimals: 2, separators: false } }
+const percent: Representation = { name: '%', size: 1 / 100, attached: true, prefix: '', format: { decimals: 2, separators: false } }
 /** A margin is written as the size of the lead, which is given to more digits the closer it is. */
-const margin: LadderUnit = { ...percent, format: { decimals: { significantDigits: 3, minDecimals: 1, maxDecimals: 4 }, separators: false } }
+const margin: Representation = { ...percent, format: { decimals: { significantDigits: 3, minDecimals: 1, maxDecimals: 4 }, separators: false } }
 
 const partyLabels = {
     democratic: { positive: 'D', negative: 'R' },
@@ -333,20 +429,20 @@ export interface ReaderSettings {
  * How a value of this unit is written: which unit it is written in, and how the number is
  * written once it is in it.
  */
-function scaleFor(valueInBaseUnits: number, unit: Unit, settings: ReaderSettings): LadderUnit {
+function scaleFor(valueInBaseUnits: number, unit: Unit, settings: ReaderSettings): Representation {
     switch (unit.kind) {
         case 'unknown':
-            return { name: '', size: 1, cost: 0, format: { decimals: 'significantFigures', separators: false } }
+            return { name: '', size: 1, attached: false, prefix: '', format: { decimals: 'significantFigures', separators: false } }
         case 'raw-percentage':
             return percent
         case 'delta-percentage':
             return unit.partySystem === undefined ? percent : margin
         case 'temperature-F':
             return settings.temperatureUnit === 'celsius'
-                ? { name: '°C', size: 9 / 5, offset: 32, cost: 0, format: { decimals: 1, separators: false } }
-                : { name: '°F', size: 1, cost: 0, format: { decimals: 1, separators: false } }
+                ? { name: '\u00b0C', size: 9 / 5, offset: 32, attached: false, prefix: '', format: { decimals: 1, separators: false } }
+                : { name: '\u00b0F', size: 1, attached: false, prefix: '', format: { decimals: 1, separators: false } }
         case 'dimensionfull':
-            return bestUnit(valueInBaseUnits, unit.scales, settings)
+            return bestRepresentation(valueInBaseUnits, unit.scales, settings)
     }
 }
 
@@ -423,7 +519,7 @@ export function writeQuantity(value: number, stored: StoredUnit, settings: Reade
     const inBaseUnits = value * stored.toBaseUnits
     const scale = scaleFor(inBaseUnits, unit, settings)
     const hue = hueFor(unit, value)
-    const written = { name: scale.name, attached: scale.attached ?? false, hue }
+    const written = { name: scale.name, attached: scale.attached, hue }
     if (hue !== undefined && !isFinite(value)) {
         // a quantity written in a party's color has no party, and no color, when it is missing
         return { ...written, number: 'N/A', hue: undefined }
@@ -432,7 +528,7 @@ export function writeQuantity(value: number, stored: StoredUnit, settings: Reade
     const magnitude = (lead === undefined ? inBaseUnits : Math.abs(inBaseUnits)) - (scale.offset ?? 0)
     const scaled = magnitude / scale.size
     const explicitSign = unit.kind === 'delta-percentage' && lead === undefined && scaled >= 0 ? '+' : ''
-    return { ...written, number: `${lead === undefined ? '' : `${lead.label}+`}${explicitSign}${scale.prefix ?? ''}${formatNumber(scaled, scale.format)}` }
+    return { ...written, number: `${lead === undefined ? '' : `${lead.label}+`}${explicitSign}${scale.prefix}${formatNumber(scaled, scale.format)}` }
 }
 
 /**
