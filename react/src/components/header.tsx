@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
+import React, { ReactNode, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import '../common.css'
 import flag_dimensions from '../data/flag_dimensions'
@@ -209,6 +209,31 @@ function UniverseSelector(): ReactNode {
         }
     }, [])
 
+    // We need to do some programmatic placement of the dropdown to prevent it from expanding the page on mobile
+    const [dropdownPlacement, setDropdownPlacement] = useState<{ left: number, width: number }>()
+
+    useLayoutEffect(() => {
+        if (!dropdownOpen) {
+            return
+        }
+        const place = (): void => {
+            if (divRef.current === null) {
+                return
+            }
+            const anchorLeft = divRef.current.getBoundingClientRect().left
+            const margin = 5
+            const viewportWidth = document.documentElement.clientWidth
+            const dropdownWidth = Math.min(divRef.current.offsetWidth * 5, viewportWidth - 2 * margin)
+            setDropdownPlacement({
+                left: Math.max(margin - anchorLeft, Math.min(0, viewportWidth - margin - dropdownWidth - anchorLeft)),
+                width: dropdownWidth,
+            })
+        }
+        place()
+        window.addEventListener('resize', place)
+        return () => { window.removeEventListener('resize', place) }
+    }, [dropdownOpen])
+
     let dropdown = dropdownOpen
         ? (
                 <UniverseDropdown
@@ -226,7 +251,8 @@ function UniverseSelector(): ReactNode {
             zIndex: zIndex.universeDropdown,
             borderRadius: '0.25em',
             display: dropdownOpen ? 'block' : 'none',
-            width: '500%',
+            left: dropdownPlacement?.left ?? 0,
+            width: dropdownPlacement?.width ?? '500%',
             maxHeight: universeCtx.universes.length > showSearchThreshold ? '22em' : '20em',
             overflowY: 'auto',
             border: `1px solid ${colors.ordinalTextColor}`,
