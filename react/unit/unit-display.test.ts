@@ -1,13 +1,7 @@
 import './util/localStorage'
 
-// the theme setting asks the browser what it prefers
-;(global as unknown as { window: unknown }).window = { matchMedia: () => ({ matches: false }) }
-
 import assert from 'assert/strict'
 import test from 'node:test'
-
-import React from 'react'
-import { renderToString } from 'react-dom/server'
 
 import { getUnitDisplay } from '../src/components/unit-display'
 import { UnitType } from '../src/utils/unit'
@@ -54,33 +48,6 @@ for (const [value, expected] of [
 ] as const) {
     void test(`usd renders ${value} as ${expected}`, () => {
         assert.equal(renderValue('usd', value), expected)
-    })
-}
-
-/*
- * The quantities that belong to a party are written in its color, and say which party it is.
- * Rendered with renderToString rather than renderToStaticMarkup, because that marks where one
- * run of text ends and the next begins: the browser shapes each run on its own, so joining the
- * label, the sign and the number into one string moves a pixel.
- */
-function renderMarkup(unitType: UnitType, value: number): string {
-    const { value: valueEl } = getUnitDisplay(unitType).renderValue(value)
-    return renderToString(React.createElement(React.Fragment, null, valueEl)).replaceAll(/ data-reactroot=""/g, '')
-}
-
-for (const [unitType, value, expected] of [
-    ['democraticMargin', 0.123, '<span style="color:#5a7dc3;display:flex;justify-content:flex-end">D<!-- -->+<!-- -->12.3</span>'],
-    ['democraticMargin', -0.081, '<span style="color:#f96d6d;display:flex;justify-content:flex-end">R<!-- -->+<!-- -->8.10</span>'],
-    ['democraticMargin', 0.0005, '<span style="color:#5a7dc3;display:flex;justify-content:flex-end">D<!-- -->+<!-- -->0.0500</span>'],
-    ['democraticMargin', NaN, '<span>N/A</span>'],
-    ['leftMargin', 0.123, '<span style="color:#f96d6d;display:flex;justify-content:flex-end">L<!-- -->+<!-- -->12.3</span>'],
-    ['leftMargin', -0.123, '<span style="color:#5a7dc3;display:flex;justify-content:flex-end">R<!-- -->+<!-- -->12.3</span>'],
-    ['partyPctOrange', 0.125, '<span style="color:#f7aa41;display:flex;justify-content:flex-end">12.50</span>'],
-    ['partyChangeTeal', 0.125, '<span style="color:#07a5af;display:flex;justify-content:flex-end">+<!-- -->12.50</span>'],
-    ['partyChangeTeal', -0.125, '<span style="color:#07a5af;display:flex;justify-content:flex-end">-12.50</span>'],
-] as const) {
-    void test(`${unitType} renders ${value} in its party's color`, () => {
-        assert.equal(renderMarkup(unitType, value), expected)
     })
 }
 

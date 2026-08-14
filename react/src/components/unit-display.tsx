@@ -71,11 +71,6 @@ function PartyPercentage({ value, emphasis }: { value: number, emphasis: PartyEm
         display: 'flex',
         justifyContent: 'flex-end',
     }
-    /*
-     * The label, the sign and the number are separate children rather than one string, because
-     * the browser shapes each run of text on its own and a lead is rendered a pixel differently
-     * when they are joined.
-     */
     switch (emphasis.kind) {
         case 'lead':
             const magnitude = Math.abs(value) * 100
