@@ -51,6 +51,37 @@ for (const [value, expected] of [
     })
 }
 
+// Every number's digits are separated, whatever it is measured in
+for (const [unitType, value, expected] of [
+    ['population', 1234, '1\u202f234'],
+    ['fatalities', 1234, '1\u202f234'],
+    ['density', 1234, '1\u202f234/\u00a0km2'],
+    ['distanceInM', 1234, '1\u202f234m'],
+    ['area', 1234, '1\u202f234km2'],
+    ['distanceInKm', 1234, '1\u202f234.00km'],
+    ['contaminantLevel', 1234, '1\u202f234.00\u03bcg/m3'],
+    ['percentage', 12.34, '1\u202f234.00%'],
+    ['fatalitiesPerCapita', 0.01234, '1\u202f234.00/100k'],
+    ['distancePerYear', 12.34, '1\u202f234.0cm/yr'],
+    ['number', 1234, '1\u202f230'],
+    ['temperature', 1234, '1\u202f234.0°F'],
+] as const) {
+    void test(`${unitType} separates the digits of ${value}`, () => {
+        assert.equal(renderValue(unitType, value), expected)
+    })
+}
+
+// A number below one keeps its digits together, and a sign stays where it is
+for (const [value, expected] of [
+    [0.123456, '0.123'],
+    [-476, '-476'],
+    [-1234, '-1\u202f230'],
+] as const) {
+    void test(`number renders ${value} as ${expected}`, () => {
+        assert.equal(renderValue('number', value), expected)
+    })
+}
+
 // How large a number is, rather than which side of zero it falls, decides the unit it is
 // written in and the places it is written to
 for (const [unitType, value, expected] of [

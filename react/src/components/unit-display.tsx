@@ -2,7 +2,7 @@ import React, { CSSProperties, ReactNode } from 'react'
 
 import { HueColors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
-import { abbreviate, decimalPlaces, formatToSignificantFigures, roundToDigits, separateNumber } from '../utils/text'
+import { abbreviate, formatToSignificantFigures, roundToDigits, separateNumber } from '../utils/text'
 import { convertPrecipitation, convertTemperature, UnitType } from '../utils/unit'
 
 type Hue = keyof HueColors
@@ -104,7 +104,7 @@ function hoursAndMinutes(hours: number, minutes: number): string[] {
 }
 
 function percentage(value: number): string {
-    return (value * asPercent).toFixed(2)
+    return separateNumber((value * asPercent).toFixed(2))
 }
 
 type PartyNumberStyling = (
@@ -133,7 +133,7 @@ function PartyPercentage({ value, emphasis }: { value: number, emphasis: PartyNu
                 <span style={spanStyle}>
                     {emphasis.labels[side]}
                     +
-                    {magnitude.toFixed(decimalPlaces(magnitude, { significantDigits: 3, minDecimals: 1, maxDecimals: 4 }))}
+                    {roundToDigits(magnitude, { significantDigits: 3, minDecimals: 1, maxDecimals: 4 })}
                 </span>
             )
         case 'change':
@@ -198,7 +198,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
             return display(value => ({ number: separateNumber(value.toFixed(0)), unit: blank }))
         case 'fatalitiesPerCapita':
             return display(value => ({
-                number: (perHundredThousand * value).toFixed(2),
+                number: separateNumber((perHundredThousand * value).toFixed(2)),
                 unit: <span>/100k</span>,
             }))
         case 'density':
@@ -233,7 +233,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
             })
         case 'distanceInKm':
             return display((value, { useImperial }) => ({
-                number: (useImperial ? value / kmPerMile : value).toFixed(2),
+                number: separateNumber((useImperial ? value / kmPerMile : value).toFixed(2)),
                 unit: <span>{useImperial ? 'mi' : 'km'}</span>,
             }))
         case 'distanceInM':
@@ -244,7 +244,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'temperature':
             return display((value, { temperatureUnit }) => {
                 const converted = convertTemperature(value, temperatureUnit)
-                return { number: converted.value.toFixed(1), unit: <span>{converted.unit}</span> }
+                return { number: separateNumber(converted.value.toFixed(1)), unit: <span>{converted.unit}</span> }
             })
         case 'time':
             return display(value => ({ number: hoursAndMinutes(Math.floor(value), Math.floor((value - Math.floor(value)) * 60)), unit: blank }))
@@ -258,7 +258,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
             return display((value, { useImperial }) => {
                 const converted = convertPrecipitation(value, useImperial)
                 return {
-                    number: converted.value.toFixed(1),
+                    number: separateNumber(converted.value.toFixed(1)),
                     unit: (
                         <span>
                             {converted.unit}
@@ -269,7 +269,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
             })
         case 'contaminantLevel':
             return display(value => ({
-                number: value.toFixed(2),
+                number: separateNumber(value.toFixed(2)),
                 unit: (
                     <span>
                         &mu;g/m
@@ -278,7 +278,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                 ),
             }))
         case 'number':
-            return display(value => ({ number: formatToSignificantFigures(value, 3), unit: blank }))
+            return display(value => ({ number: separateNumber(formatToSignificantFigures(value, 3)), unit: blank }))
     }
 }
 /* eslint-enable no-restricted-syntax */
