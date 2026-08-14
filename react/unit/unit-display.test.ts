@@ -51,6 +51,18 @@ for (const [value, expected] of [
     })
 }
 
+// A solidus with nothing in front of it is set with a space, as a per reads better that way
+for (const [unitType, value, expected] of [
+    ['density', 5.67, '5.7/\u00a0km2'],
+    ['fatalitiesPerCapita', 1.2e-5, '1.20/\u00a0100k'],
+    ['contaminantLevel', 8.2, '8.20\u03bcg/m3'],
+    ['distancePerYear', 1.2, '120.0cm/yr'],
+] as const) {
+    void test(`${unitType} writes ${value} as ${expected}`, () => {
+        assert.equal(renderValue(unitType, value), expected)
+    })
+}
+
 // Every number's digits are separated, whatever it is measured in
 for (const [unitType, value, expected] of [
     ['population', 1234, '1\u202f234'],
@@ -61,7 +73,7 @@ for (const [unitType, value, expected] of [
     ['distanceInKm', 1234, '1\u202f234.00km'],
     ['contaminantLevel', 1234, '1\u202f234.00\u03bcg/m3'],
     ['percentage', 12.34, '1\u202f234.00%'],
-    ['fatalitiesPerCapita', 0.01234, '1\u202f234.00/100k'],
+    ['fatalitiesPerCapita', 0.01234, '1\u202f234.00/\u00a0100k'],
     ['distancePerYear', 12.34, '1\u202f234.0cm/yr'],
     ['number', 1234, '1\u202f230'],
     ['temperature', 1234, '1\u202f234.0°F'],

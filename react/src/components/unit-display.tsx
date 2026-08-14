@@ -92,13 +92,22 @@ function squared(name: string): ReactNode {
     )
 }
 
-function perSquared(name: string): ReactNode {
+/** A solidus with a numerator in front of it is set tight; one without gets a space. */
+function per(name: ReactNode): ReactNode {
     return (
         <span>
             /&nbsp;
             {name}
-            <sup>2</sup>
         </span>
+    )
+}
+
+function perSquared(name: string): ReactNode {
+    return per(
+        <>
+            {name}
+            <sup>2</sup>
+        </>,
     )
 }
 
@@ -210,7 +219,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'fatalitiesPerCapita':
             return display(value => ({
                 number: separateNumber((perHundredThousand * value).toFixed(2)),
-                unit: <span>/100k</span>,
+                unit: per('100k'),
             }))
         case 'density':
             return display((value, { useImperial }) => ({
