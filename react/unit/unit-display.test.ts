@@ -15,8 +15,8 @@ function textOf(node: unknown): string {
     return textOf((node as { props?: { children?: unknown } }).props?.children)
 }
 
-function renderValue(unitType: UnitType, value: number): string {
-    const { value: valueEl, unit: unitEl } = getUnitDisplay(unitType).renderValue(value)
+function renderValue(unitType: UnitType, value: number, useImperial = false): string {
+    const { value: valueEl, unit: unitEl } = getUnitDisplay(unitType).renderValue(value, useImperial)
     return `${textOf(valueEl)}${textOf(unitEl)}`.trim()
 }
 
@@ -48,6 +48,72 @@ for (const [value, expected] of [
 ] as const) {
     void test(`usd renders ${value} as ${expected}`, () => {
         assert.equal(renderValue('usd', value), expected)
+    })
+}
+
+// Every number's digits are separated, whatever it is measured in
+for (const [unitType, value, expected] of [
+    ['population', 1234, '1\u202f234'],
+    ['fatalities', 1234, '1\u202f234'],
+    ['density', 1234, '1\u202f234/\u00a0km2'],
+    ['distanceInM', 1234, '1\u202f234m'],
+    ['area', 1234, '1\u202f234km2'],
+    ['distanceInKm', 1234, '1\u202f234.00km'],
+    ['contaminantLevel', 1234, '1\u202f234.00\u03bcg/m3'],
+    ['percentage', 12.34, '1\u202f234.00%'],
+    ['fatalitiesPerCapita', 0.01234, '1\u202f234.00/100k'],
+    ['distancePerYear', 12.34, '1\u202f234.0cm/yr'],
+    ['number', 1234, '1\u202f230'],
+    ['temperature', 1234, '1\u202f234.0°F'],
+] as const) {
+    void test(`${unitType} separates the digits of ${value}`, () => {
+        assert.equal(renderValue(unitType, value), expected)
+    })
+}
+
+// A quantity we do not have reads the same way whatever it would have been measured in.
+// The party-colored ones render through a component, and said N/A already.
+for (const unitType of ['population', 'usd', 'density', 'area', 'time', 'minutes', 'temperature', 'number'] as const) {
+    void test(`${unitType} renders a missing value as N/A`, () => {
+        assert.ok(renderValue(unitType, NaN).startsWith('N/A'))
+    })
+}
+
+// A magnitude, not a signed value, decides the unit and the places a number is written to
+for (const [unitType, value, expected] of [
+    ['area', -1234, '-1\u202f234km2'],
+    ['area', -0.5, '-0.500km2'],
+    ['density', -1234, '-1\u202f234/\u00a0km2'],
+    ['usd', -12345, '$-12.3k'],
+] as const) {
+    void test(`${unitType} renders ${value} as ${expected}`, () => {
+        assert.equal(renderValue(unitType, value), expected)
+    })
+}
+
+// A duration reads as hours and minutes, rounded to the minute, wherever it came from
+for (const [unitType, value, expected] of [
+    ['minutes', 34, '34'],
+    ['minutes', 90, '1:30'],
+    ['minutes', 99.5, '1:40'],
+    ['minutes', -90, '-1:30'],
+    ['time', 7.5, '7:30'],
+    ['time', 0.5, '30'],
+] as const) {
+    void test(`${unitType} renders ${value} as ${expected}`, () => {
+        assert.equal(renderValue(unitType, value), expected)
+    })
+}
+
+// Money and people are counted in thousands at the same point
+for (const [unitType, value, expected] of [
+    ['usd', 1234, '$1\u202f234'],
+    ['usd', 12345, '$12.3k'],
+    ['population', 1234, '1\u202f234'],
+    ['population', 12345, '12.3k'],
+] as const) {
+    void test(`${unitType} renders ${value} as ${expected}`, () => {
+        assert.equal(renderValue(unitType, value), expected)
     })
 }
 
