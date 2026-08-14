@@ -75,8 +75,8 @@ export function roundToDigits(value: number, rounding: Rounding): string {
  * digits is promoted a tier instead, which keeps toPrecision(3) below 1000 and so keeps it out of
  * scientific notation.
  */
-export function abbreviate(value: number, writeOutBelow = 1e4): { number: string, suffix: string } {
-    for (const [threshold, divisor, suffix] of [[999.5e6, 1e9, 'B'], [999.5e3, 1e6, 'm'], [writeOutBelow, 1e3, 'k']] as const) {
+export function abbreviate(value: number): { number: string, suffix: string } {
+    for (const [threshold, divisor, suffix] of [[999.5e6, 1e9, 'B'], [999.5e3, 1e6, 'm'], [1e4, 1e3, 'k']] as const) {
         if (Math.abs(value) >= threshold) {
             return { number: (value / divisor).toPrecision(3), suffix }
         }
