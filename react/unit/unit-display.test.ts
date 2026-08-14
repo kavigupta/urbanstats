@@ -82,6 +82,14 @@ for (const [value, expected] of [
     })
 }
 
+// A quantity we do not have reads the same way whatever it would have been measured in.
+// The party-colored ones render through a component, and said N/A already.
+for (const unitType of ['population', 'usd', 'density', 'area', 'time', 'minutes', 'temperature', 'number', 'fatalities'] as const) {
+    void test(`${unitType} renders a missing value as N/A`, () => {
+        assert.ok(renderValue(unitType, NaN).startsWith('N/A'))
+    })
+}
+
 // How large a number is, rather than which side of zero it falls, decides the unit it is
 // written in and the places it is written to
 for (const [unitType, value, expected] of [

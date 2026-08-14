@@ -40,6 +40,9 @@ const renderMarginInequality: RenderInequality = (value, inequality) => {
     return renderInequality(value, inequality)
 }
 
+/** A quantity we do not have reads the same way whatever it would have been measured in. */
+const missing = 'N/A'
+
 const kmPerMile = 1.60934
 const squareKmPerSquareMile = kmPerMile * kmPerMile
 const acresPerSquareMile = 640
@@ -67,7 +70,7 @@ function display(write: (value: number, settings: ReaderSettings) => Written, in
     return {
         renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
             const { number, unit } = write(value, { useImperial: useImperial ?? false, temperatureUnit: temperatureUnit ?? 'fahrenheit' })
-            const pieces = typeof number === 'string' ? [number] : number
+            const pieces = isFinite(value) ? (typeof number === 'string' ? [number] : number) : [missing]
             return {
                 value: <span>{pieces.map((piece, index) => <React.Fragment key={index}>{piece}</React.Fragment>)}</span>,
                 unit,
@@ -115,8 +118,8 @@ type PartyNumberStyling = (
 
 function PartyPercentage({ value, emphasis }: { value: number, emphasis: PartyNumberStyling }): ReactNode {
     const colors = useColors()
-    if (value !== value) { // nan check
-        return <span>N/A</span>
+    if (!isFinite(value)) {
+        return <span>{missing}</span>
     }
     const side = value > 0 ? 'positive' : 'negative'
     const spanStyle: CSSProperties = {
