@@ -1,9 +1,11 @@
-import React, { ReactNode } from 'react'
+import React, { CSSProperties, ReactNode } from 'react'
 
+import { HueColors } from '../page_template/color-themes'
+import { useColors } from '../page_template/colors'
 import { formatToSignificantFigures, separateNumber } from '../utils/text'
 import { convertPrecipitation, convertTemperature, UnitType } from '../utils/unit'
 
-import { ElectionResult, GenericPartyChange, GenericPartyPercentage, LeftMargin } from './display-stats'
+type Hue = keyof HueColors
 
 type RenderInequality = (value: number, inequality: 'leq' | 'geq') => string
 
@@ -38,6 +40,64 @@ const renderMarginInequality: RenderInequality = (value, inequality) => {
     return renderInequality(value, inequality)
 }
 
+type PartyNumberStyling = (
+    { kind: 'lead', labels: { positive: string, negative: string }, hues: { positive: Hue, negative: Hue } }
+    | { kind: 'share', hue: Hue }
+    | { kind: 'change', hue: Hue }
+)
+
+function leadPlaces(magnitude: number): number {
+    if (magnitude > 10) return 1
+    if (magnitude > 1) return 2
+    if (magnitude > 0.1) return 3
+    return 4
+}
+
+function PartyPercentage({ value, emphasis }: { value: number, emphasis: PartyNumberStyling }): ReactNode {
+    const colors = useColors()
+    if (value !== value) { // nan check
+        return <span>N/A</span>
+    }
+    const side = value > 0 ? 'positive' : 'negative'
+    const spanStyle: CSSProperties = {
+        color: colors.hueColors[emphasis.kind === 'lead' ? emphasis.hues[side] : emphasis.hue],
+        // So that on 4 digits, we overflow left
+        display: 'flex',
+        justifyContent: 'flex-end',
+    }
+    switch (emphasis.kind) {
+        case 'lead':
+            const magnitude = Math.abs(value) * 100
+            return (
+                <span style={spanStyle}>
+                    {emphasis.labels[side]}
+                    +
+                    {magnitude.toFixed(leadPlaces(magnitude))}
+                </span>
+            )
+        case 'change':
+            return (
+                <span style={spanStyle}>
+                    {value >= 0 ? '+' : ''}
+                    {(value * 100).toFixed(2)}
+                </span>
+            )
+        case 'share':
+            return <span style={spanStyle}>{(value * 100).toFixed(2)}</span>
+    }
+}
+
+function partyDisplay(emphasis: PartyNumberStyling): UnitDisplay {
+    return {
+        renderValue: (value: number) => ({
+            value: <PartyPercentage value={value} emphasis={emphasis} />,
+            unit: <span>%</span>,
+        }),
+        renderInequality: emphasis.kind === 'lead' ? renderMarginInequality : renderInequality,
+    }
+}
+
+/* eslint-disable no-restricted-syntax -- these name the theme's hues, they are not css colors */
 export function getUnitDisplay(unitType: UnitType): UnitDisplay {
     switch (unitType) {
         case 'percentage':
@@ -245,59 +305,35 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                 renderInequality,
             }
         case 'democraticMargin':
-            return {
-                renderValue: (value: number) => {
-                    return {
-                        value: <ElectionResult value={value} />,
-                        unit: <span>%</span>,
-                    }
-                },
-                renderInequality: renderMarginInequality,
-            }
+            return partyDisplay({ kind: 'lead', labels: { positive: 'D', negative: 'R' }, hues: { positive: 'blue', negative: 'red' } })
         case 'partyPctBlue':
+            return partyDisplay({ kind: 'share', hue: 'blue' })
         case 'partyPctRed':
+            return partyDisplay({ kind: 'share', hue: 'red' })
         case 'partyPctOrange':
+            return partyDisplay({ kind: 'share', hue: 'orange' })
         case 'partyPctTeal':
+            return partyDisplay({ kind: 'share', hue: 'cyan' })
         case 'partyPctGreen':
-        case 'partyPctPurple': {
-            const capturedUnitType = unitType
-            return {
-                renderValue: (value: number) => {
-                    return {
-                        value: <GenericPartyPercentage value={value} unitType={capturedUnitType} />,
-                        unit: <span>%</span>,
-                    }
-                },
-                renderInequality,
-            }
-        }
+            return partyDisplay({ kind: 'share', hue: 'green' })
+        case 'partyPctPurple':
+            return partyDisplay({ kind: 'share', hue: 'purple' })
         case 'partyChangeBlue':
+            return partyDisplay({ kind: 'change', hue: 'blue' })
         case 'partyChangeRed':
+            return partyDisplay({ kind: 'change', hue: 'red' })
         case 'partyChangeOrange':
+            return partyDisplay({ kind: 'change', hue: 'orange' })
         case 'partyChangeTeal':
+            return partyDisplay({ kind: 'change', hue: 'cyan' })
         case 'partyChangeGreen':
-        case 'partyChangePurple': {
-            const capturedUnitType = unitType
-            return {
-                renderValue: (value: number) => {
-                    return {
-                        value: <GenericPartyChange value={value} unitType={capturedUnitType} />,
-                        unit: <span>%</span>,
-                    }
-                },
-                renderInequality,
-            }
-        }
+            return partyDisplay({ kind: 'change', hue: 'green' })
+        case 'partyChangePurple':
+            return partyDisplay({ kind: 'change', hue: 'purple' })
         case 'leftMargin':
-            return {
-                renderValue: (value: number) => {
-                    return {
-                        value: <LeftMargin value={value} />,
-                        unit: <span>%</span>,
-                    }
-                },
-                renderInequality: renderMarginInequality,
-            }
+            // in Canada, left is red
+            return partyDisplay({ kind: 'lead', labels: { positive: 'L', negative: 'R' }, hues: { positive: 'red', negative: 'blue' } })
+        /* eslint-enable no-restricted-syntax */
         case 'temperature':
             return {
                 renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
