@@ -71,6 +71,11 @@ button, select {
     cursor: pointer;
 }
 
+button.borderless {
+    border: none;
+    background-color: transparent;
+}
+
 button:hover:not(:disabled) {
     background-color: var(--slightly-different-background-focused);
 }
