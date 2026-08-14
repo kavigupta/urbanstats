@@ -10,6 +10,9 @@ void describe('formatToSignificantFigures', () => {
         assert.equal(formatToSignificantFigures(1.23456), '1.23')
         assert.equal(formatToSignificantFigures(1000.5), '1000')
         assert.equal(formatToSignificantFigures(999.9), '1000')
+        // rounding carries into another digit, so the places are counted after it
+        assert.equal(formatToSignificantFigures(0.9995), '1.00')
+        assert.equal(formatToSignificantFigures(0.09995), '0.100')
         assert.equal(formatToSignificantFigures(78.5), '78.5')
         assert.equal(formatToSignificantFigures(78.45), '78.5')
         assert.equal(formatToSignificantFigures(78.456), '78.5')
