@@ -24,6 +24,9 @@ RUN apt-get -y update \
         chromium=143.* chromium-common=143.* \
         xvfb \
         sqlite3 \
+        # the checkout step clones inside the container, and the runner diffs against the
+        # base ref; procps is for the pkill in quiz_test_utils.ts
+        git procps \
         # needed for window resizing in Testcafe
         libc6:i386 libx11-6:i386 fluxbox \
         # needed for downloads directory in TestCafe
