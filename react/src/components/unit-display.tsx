@@ -15,12 +15,13 @@ export interface DisplayedQuantity {
 
 export function renderQuantity(value: number, unit: StoredUnit, colors: Colors, settings: ReaderSettings = {}): DisplayedQuantity {
     const { number, name, hue } = writeQuantity(value, unit, settings)
+    const parts = number.map((part, index) => <React.Fragment key={index}>{part}</React.Fragment>)
     return {
         value: hue === undefined
-            ? <span>{number}</span>
+            ? <span>{parts}</span>
             : (
                     <span style={{ color: colors.hueColors[hue], display: 'flex', justifyContent: 'flex-end' }}>
-                        {number}
+                        {parts}
                     </span>
                 ),
         // an empty unit still occupies its column

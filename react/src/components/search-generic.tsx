@@ -150,6 +150,7 @@ export function GenericSearchBox<T>(
                     backgroundColor: colors.slightlyDifferentBackground,
                     borderRadius: '0.25em',
                     zIndex: zIndex.searchResults,
+                    border: isFocused && matches.length > 0 ? `1px solid ${colors.ordinalTextColor}` : undefined,
                 }}
             >
                 {isFocused && matches.map((_, idx) => (
@@ -207,6 +208,7 @@ function LoadingIndicator({ type, message }: { type: 'dropdown' | 'field', messa
                         zIndex: zIndex.searchResults,
                         position: 'absolute',
                         width: '100%',
+                        border: `1px solid ${colors.ordinalTextColor}`,
                     }}
                     data-test-id="search-load-dropdown"
                 >

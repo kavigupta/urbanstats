@@ -65,7 +65,8 @@ export type BaseUnit = 'person' | 'm' | 's' | 'usd' | 'fatality' | 'g'
 export type Unit = (
     { kind: 'unknown' }
     | { kind: 'raw-percentage', partyColor?: Hue }
-    | { kind: 'delta-percentage', partySystem?: 'democratic' | 'left', partyColor?: Hue }
+    | { kind: 'delta-percentage', partyColor?: Hue }
+    | { kind: 'lead-percentage', partySystem: 'democratic' | 'left' }
     | { kind: 'temperature-F' }
     | { kind: 'dimensionfull', scales: { baseUnit: BaseUnit, power: number }[] }
 )
@@ -95,8 +96,8 @@ const mileInKm = 1.60934
 const storedUnits: Record<UnitType, StoredUnit> = {
     percentage: { unit: { kind: 'raw-percentage' }, toBaseUnits: 1 },
     percentageChange: { unit: { kind: 'delta-percentage' }, toBaseUnits: 1 },
-    democraticMargin: { unit: { kind: 'delta-percentage', partySystem: 'democratic' }, toBaseUnits: 1 },
-    leftMargin: { unit: { kind: 'delta-percentage', partySystem: 'left' }, toBaseUnits: 1 },
+    democraticMargin: { unit: { kind: 'lead-percentage', partySystem: 'democratic' }, toBaseUnits: 1 },
+    leftMargin: { unit: { kind: 'lead-percentage', partySystem: 'left' }, toBaseUnits: 1 },
     partyPctBlue: { unit: { kind: 'raw-percentage', partyColor: 'blue' }, toBaseUnits: 1 },
     partyPctRed: { unit: { kind: 'raw-percentage', partyColor: 'red' }, toBaseUnits: 1 },
     partyPctOrange: { unit: { kind: 'raw-percentage', partyColor: 'orange' }, toBaseUnits: 1 },
@@ -311,7 +312,7 @@ function digitCost(value: number, format: NumberFormat): number {
     }
     // a duration written as h:mm is counted by the hours it is written in
     const counted: NumberFormat = format.decimals === 'hoursMinutes' ? defaultStyle : format
-    const written = formatNumber(value, { ...counted, separators: false }).replaceAll('-', '')
+    const written = formatNumber(value, { ...counted, separators: false }).join('').replaceAll('-', '')
     const [integerPart, fraction = ''] = written.split('.')
     if (!/^[0-9]+$/.test(integerPart)) {
         return 0
@@ -343,7 +344,18 @@ function nameOf(written: Written[]): HumanReadableName {
         ...join(over.map(part)),
         ...under.length === 0 ? [] : [{ type: 'atom', value: slash } satisfies HumanReadableElement, ...join(under.map(part))],
     ]
-    return name.length === 0 ? '' : name
+    // adjacent atoms are one run of text, except across the space a bare denominator opens with
+    const merged: HumanReadableElement[] = []
+    for (const element of name) {
+        const last = merged.length === 0 ? undefined : merged[merged.length - 1]
+        if (last?.type === 'atom' && element.type === 'atom' && !last.value.endsWith('\u00a0')) {
+            merged[merged.length - 1] = { type: 'atom', value: last.value + element.value }
+        }
+        else {
+            merged.push(element)
+        }
+    }
+    return merged.length === 0 ? '' : merged
 }
 
 function combinations(dimensions: Dimension[], rungs: (dimension: Dimension) => LadderUnit[]): Written[][] {
@@ -448,7 +460,9 @@ function scaleFor(valueInBaseUnits: number, unit: Unit, settings: ReaderSettings
         case 'raw-percentage':
             return percent
         case 'delta-percentage':
-            return unit.partySystem === undefined ? percent : margin
+            return percent
+        case 'lead-percentage':
+            return margin
         case 'temperature-F':
             return settings.temperatureUnit === 'celsius'
                 ? { name: '\u00b0C', size: 9 / 5, offset: 32, attached: false, prefix: '', format: { decimals: 1, separators: false } }
@@ -472,26 +486,30 @@ function separateDigits(value: string): string {
     return sign + [separateNumber(integerPart), ...rest].join('.')
 }
 
-function formatNumber(value: number, { decimals, separators }: NumberFormat): string {
+/**
+ * Writes a number out, in the pieces the browser shapes separately: the hours and minutes of a
+ * duration are written either side of a colon, and shaped either side of it too.
+ */
+function formatNumber(value: number, { decimals, separators }: NumberFormat): string[] {
     if (!isFinite(value)) {
-        return value.toString()
+        return [value.toString()]
     }
     if (decimals === 'hoursMinutes') {
         const totalMinutes = Math.round(Math.abs(value) * 60)
         const sign = value < 0 && totalMinutes > 0 ? '-' : ''
         const hours = Math.floor(totalMinutes / 60)
         const minutes = totalMinutes % 60
-        return hours > 0 ? `${sign}${hours}:${minutes.toString().padStart(2, '0')}` : `${sign}${minutes}`
+        return hours > 0 ? [`${sign}${hours}`, ':', minutes.toString().padStart(2, '0')] : [`${sign}${minutes}`]
     }
     const written = decimals === 'significantFigures'
         ? formatToSignificantFigures(value, 3)
         : value.toFixed(typeof decimals === 'number' ? decimals : decimalPlaces(value, decimals))
-    return separators === false ? written : separateDigits(written)
+    return [separators === false ? written : separateDigits(written)]
 }
 
 /** The party a quantity written as a lead belongs to, if it is written as one. */
 function party(unit: Unit, value: number): { label: string, hue: Hue } | undefined {
-    if (unit.kind !== 'delta-percentage' || unit.partySystem === undefined) {
+    if (unit.kind !== 'lead-percentage') {
         return undefined
     }
     const side = value > 0 ? 'positive' : 'negative'
@@ -501,9 +519,10 @@ function party(unit: Unit, value: number): { label: string, hue: Hue } | undefin
 function hueFor(unit: Unit, value: number): Hue | undefined {
     switch (unit.kind) {
         case 'raw-percentage':
-            return unit.partyColor
         case 'delta-percentage':
-            return party(unit, value)?.hue ?? unit.partyColor
+            return unit.partyColor
+        case 'lead-percentage':
+            return party(unit, value)?.hue
         case 'unknown':
         case 'temperature-F':
         case 'dimensionfull':
@@ -516,7 +535,11 @@ function hueFor(unit: Unit, value: number): Hue | undefined {
  * hue to write it in, for the quantities that are written in a party's color.
  */
 export interface WrittenQuantity {
-    number: string
+    /**
+     * What the number reads as, in the pieces it is written in: a lead is written as its party,
+     * a plus, and its size, which the browser shapes separately from one another.
+     */
+    number: string[]
     name: HumanReadableName
     /** Whether the name is written directly after the number, rather than after a space */
     attached: boolean
@@ -534,13 +557,21 @@ export function writeQuantity(value: number, stored: StoredUnit, settings: Reade
     const written = { name: scale.name, attached: scale.attached, hue }
     if (hue !== undefined && !isFinite(value)) {
         // a quantity written in a party's color has no party, and no color, when it is missing
-        return { ...written, number: 'N/A', hue: undefined }
+        return { ...written, number: ['N/A'], hue: undefined }
     }
     const lead = party(unit, value)
     const magnitude = (lead === undefined ? inBaseUnits : Math.abs(inBaseUnits)) - (scale.offset ?? 0)
     const scaled = magnitude / scale.size
-    const explicitSign = unit.kind === 'delta-percentage' && lead === undefined && scaled >= 0 ? '+' : ''
-    return { ...written, number: `${lead === undefined ? '' : `${lead.label}+`}${explicitSign}${scale.prefix}${formatNumber(scaled, scale.format)}` }
+    const explicitSign = unit.kind === 'delta-percentage' && scaled >= 0 ? '+' : ''
+    return {
+        ...written,
+        number: [
+            ...lead === undefined ? [] : [lead.label, '+'],
+            ...explicitSign === '' ? [] : [explicitSign],
+            ...scale.prefix === '' ? [] : [scale.prefix],
+            ...formatNumber(scaled, scale.format),
+        ],
+    }
 }
 
 /**
@@ -548,7 +579,7 @@ export function writeQuantity(value: number, stored: StoredUnit, settings: Reade
  * below zero for a lead, which is written as a size rather than as a signed number.
  */
 export function flipsInequality(unit: Unit, value: number): boolean {
-    return unit.kind === 'delta-percentage' && unit.partySystem !== undefined && value <= 0
+    return unit.kind === 'lead-percentage' && value <= 0
 }
 
 /**

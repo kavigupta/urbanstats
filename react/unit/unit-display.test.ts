@@ -18,7 +18,7 @@ function textOf(node: unknown): string {
 
 function renderValue(unitType: UnitType, value: number, settings: ReaderSettings = {}): string {
     const { number, name, attached } = writeQuantity(value, unitTypeToStoredUnit(unitType), settings)
-    return `${number}${reifyString(unitSuffix(name, attached))}`
+    return `${number.join('')}${reifyString(unitSuffix(name, attached))}`
 }
 
 // Regression tests for toPrecision(3) emitting scientific notation at tier boundaries.
@@ -172,7 +172,7 @@ for (const [unitType, value, expected, hue] of [
 ] as const) {
     void test(`${unitType} writes ${value} as ${expected} in ${hue ?? 'no color'}`, () => {
         const written = writeQuantity(value, unitTypeToStoredUnit(unitType))
-        assert.equal(`${written.number}${reifyString(unitSuffix(written.name, written.attached))}`, expected)
+        assert.equal(`${written.number.join('')}${reifyString(unitSuffix(written.name, written.attached))}`, expected)
         assert.equal(written.hue, hue)
     })
 }
