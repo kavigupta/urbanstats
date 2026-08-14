@@ -329,6 +329,52 @@ function UniverseDropdown(
     const { universes, setUniverse } = universeCtx
     const filteredUniverses = universes.filter(universe => universe.toLowerCase().includes(searchTerm.toLowerCase()))
 
+    const searchInputRef = useRef<HTMLInputElement>(null)
+
+    useEffect(() => {
+        searchInputRef.current?.focus()
+    }, [])
+
+    const [highlighted, setHighlighted] = useState(0)
+    const highlightedRef = useRef<HTMLButtonElement>(null)
+    const optionsRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        if (optionsRef.current?.contains(document.activeElement) ?? false) {
+            highlightedRef.current?.focus()
+        }
+        else {
+            highlightedRef.current?.scrollIntoView({ block: 'nearest' })
+        }
+    }, [highlighted])
+
+    useEffect(() => {
+        const listener = (e: KeyboardEvent): void => {
+            switch (e.key) {
+                case 'ArrowDown':
+                    setHighlighted(h => Math.max(0, Math.min(h + 1, filteredUniverses.length - 1)))
+                    break
+                case 'ArrowUp':
+                    setHighlighted(h => Math.max(h - 1, 0))
+                    break
+                case 'Enter':
+                    if (optionsRef.current?.contains(document.activeElement) ?? false) {
+                        return // the focused option will be clicked
+                    }
+                    if (filteredUniverses.length > 0) {
+                        setUniverse(filteredUniverses[highlighted])
+                        closeDropdown()
+                    }
+                    break
+                default:
+                    return
+            }
+            e.preventDefault()
+        }
+        document.addEventListener('keydown', listener)
+        return () => { document.removeEventListener('keydown', listener) }
+    }, [filteredUniverses, highlighted, setUniverse, closeDropdown])
+
     return (
         <div>
             <div
@@ -351,6 +397,7 @@ function UniverseDropdown(
                             }}
                             >
                                 <input
+                                    ref={searchInputRef}
                                     type="text"
                                     placeholder="Search Universes"
                                     className="serif"
@@ -363,7 +410,10 @@ function UniverseDropdown(
                                         e.target.select()
                                     }, 0)}
                                     value={searchTerm}
-                                    onChange={(e) => { setSearchTerm(e.target.value) }}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value)
+                                        setHighlighted(0)
+                                    }}
                                     data-test-id="universe-search"
                                 >
 
@@ -372,38 +422,45 @@ function UniverseDropdown(
                         )
                     : null
             }
-            {filteredUniverses.map((altUniverse) => {
-                return (
-                    <button
-                        key={altUniverse}
-                        type="button"
-                        className="borderless"
-                        onClick={() => {
-                            setUniverse(altUniverse)
-                            closeDropdown()
-                        }}
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            gap: '1em',
-                            alignItems: 'center',
-                            cursor: 'pointer',
-                            padding: '0.5em',
-                            width: '100%',
-                            fontSize: 'inherit',
-                            borderRadius: 0,
-                        }}
-                    >
-                        <DropdownFlag
-                            height={flagSize}
-                            universe={altUniverse}
-                        />
-                        <div className="serif">
-                            {humanReadableUniverse(altUniverse)}
-                        </div>
-                    </button>
-                )
-            })}
+            <div ref={optionsRef}>
+                {filteredUniverses.map((altUniverse, index) => {
+                    return (
+                        <button
+                            key={altUniverse}
+                            ref={index === highlighted ? highlightedRef : null}
+                            type="button"
+                            className="borderless"
+                            onClick={() => {
+                                setUniverse(altUniverse)
+                                closeDropdown()
+                            }}
+                            onFocus={() => { setHighlighted(index) }}
+                            onMouseEnter={() => { setHighlighted(index) }}
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                gap: '1em',
+                                alignItems: 'center',
+                                cursor: 'pointer',
+                                padding: '0.5em',
+                                width: '100%',
+                                fontSize: 'inherit',
+                                borderRadius: 0,
+                                // overrides the :hover rule, so hovering moves the highlight instead of adding a second one
+                                backgroundColor: index === highlighted ? colors.slightlyDifferentBackgroundFocused : 'transparent',
+                            }}
+                        >
+                            <DropdownFlag
+                                height={flagSize}
+                                universe={altUniverse}
+                            />
+                            <div className="serif">
+                                {humanReadableUniverse(altUniverse)}
+                            </div>
+                        </button>
+                    )
+                })}
+            </div>
         </div>
     )
 }
