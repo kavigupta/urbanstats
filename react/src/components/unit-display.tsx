@@ -40,17 +40,12 @@ const renderMarginInequality: RenderInequality = (value, inequality) => {
     return renderInequality(value, inequality)
 }
 
-/**
- * How a percentage that belongs to a party is written: in the party's color, and, where it is a
- * margin between two of them, as the size of the lead labelled with whoever holds it.
- */
-type PartyEmphasis = (
+type PartyNumberStyling = (
     { kind: 'lead', labels: { positive: string, negative: string }, hues: { positive: Hue, negative: Hue } }
     | { kind: 'share', hue: Hue }
     | { kind: 'change', hue: Hue }
 )
 
-// a lead is given more digits the closer it is
 function leadPlaces(magnitude: number): number {
     if (magnitude > 10) return 1
     if (magnitude > 1) return 2
@@ -58,10 +53,9 @@ function leadPlaces(magnitude: number): number {
     return 4
 }
 
-function PartyPercentage({ value, emphasis }: { value: number, emphasis: PartyEmphasis }): ReactNode {
+function PartyPercentage({ value, emphasis }: { value: number, emphasis: PartyNumberStyling }): ReactNode {
     const colors = useColors()
-    // check if value is NaN
-    if (value !== value) {
+    if (value !== value) { // nan check
         return <span>N/A</span>
     }
     const side = value > 0 ? 'positive' : 'negative'
@@ -93,7 +87,7 @@ function PartyPercentage({ value, emphasis }: { value: number, emphasis: PartyEm
     }
 }
 
-function partyDisplay(emphasis: PartyEmphasis): UnitDisplay {
+function partyDisplay(emphasis: PartyNumberStyling): UnitDisplay {
     return {
         renderValue: (value: number) => ({
             value: <PartyPercentage value={value} emphasis={emphasis} />,
@@ -337,7 +331,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'partyChangePurple':
             return partyDisplay({ kind: 'change', hue: 'purple' })
         case 'leftMargin':
-            // the left is drawn in red, as it is outside the US
+            // in Canada, left is red
             return partyDisplay({ kind: 'lead', labels: { positive: 'L', negative: 'R' }, hues: { positive: 'red', negative: 'blue' } })
         /* eslint-enable no-restricted-syntax */
         case 'temperature':
