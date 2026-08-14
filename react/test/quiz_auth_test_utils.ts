@@ -26,17 +26,40 @@ const nextButton = Selector('button').withExactText('Next')
 const emailInput = Selector('input[type=text][aria-label*=email i]:not([aria-hidden="true"])')
 const passwordInput = Selector('input[type=password]')
 
+// Headers is not iterable under our tsconfig's lib (DOM without DOM.Iterable)
+function headersJSON(headers: Headers): string {
+    const entries: Record<string, string> = {}
+    headers.forEach((value, key) => { entries[key] = value })
+    return JSON.stringify(entries)
+}
+
 async function popTOTP(t: TestController): Promise<string> {
     // https://script.google.com/u/2/home/projects/1CWDP4eezFo8fMhQb327VfSm3DnThl-8xg1fmg4cl9gHnK0NGB8XSz094/edit
-    const response = await fetch('https://script.google.com/macros/s/AKfycbxLMtid0yZ_JiX5Ymm02FXfbRXYrpF1AE9nUaDM8P9dhP7uOWJpMRH8SpG5TbCQCRc/exec')
-    const body = await response.text()
+    // Apps Script runs the script at /exec, then 302s to a script.googleusercontent.com URL that
+    // serves the output. The hops are followed by hand so a failure says which one broke.
+    const exec = await fetch('https://script.google.com/macros/s/AKfycbxLMtid0yZ_JiX5Ymm02FXfbRXYrpF1AE9nUaDM8P9dhP7uOWJpMRH8SpG5TbCQCRc/exec', { redirect: 'manual' })
+    const location = exec.headers.get('location')
+    if (location === null) {
+        console.warn(`TOTP exec hop did not redirect: ${exec.status} ${exec.statusText}`)
+        console.warn(`headers: ${headersJSON(exec.headers)}`)
+        console.warn(`body: ${await exec.text()}`)
+        throw new Error('TOTP exec hop did not redirect')
+    }
+    // Re-running the exec hop would pop a new TOTP slot, so only this hop is retried.
+    let echo = await fetch(location, { redirect: 'manual' })
+    for (let attempt = 1; attempt <= 2 && !echo.ok; attempt++) {
+        console.warn(`TOTP echo hop ${echo.status} ${echo.statusText}, retry ${attempt}`)
+        await t.wait(1000)
+        echo = await fetch(location, { redirect: 'manual' })
+    }
+    const body = await echo.text()
     let useAfter: number
     try {
         ({ useAfter } = z.object({ useAfter: z.number() }).parse(JSON.parse(body)))
     }
     catch (error) {
-        console.warn(`TOTP endpoint failed: ${response.status} ${response.statusText}, redirected to ${response.url}`)
-        console.warn(`headers: ${JSON.stringify(response.headers)}`)
+        console.warn(`TOTP echo hop failed: ${echo.status} ${echo.statusText} for ${location}`)
+        console.warn(`headers: ${headersJSON(echo.headers)}`)
         console.warn(`body: ${body}`)
         throw error
     }

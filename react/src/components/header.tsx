@@ -26,6 +26,7 @@ export function Header(props: {
     hamburgerOpen: boolean
     setHamburgerOpen: (newValue: boolean) => void
     hasScreenshot: boolean
+    screenshotInProgress: boolean
     hasCSV: boolean
     initiateScreenshot: (currentUniverse: string | undefined) => void
     exportCSV: () => void
@@ -55,6 +56,7 @@ export function Header(props: {
                             ? (
                                     <ScreenshotButton
                                         onClick={() => { props.initiateScreenshot(currentUniverse) }}
+                                        loading={props.screenshotInProgress}
                                     />
                                 )
                             : undefined
