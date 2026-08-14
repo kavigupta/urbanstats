@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import React, { CSSProperties, ReactNode } from 'react'
 
 import { HueColors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
@@ -67,20 +67,36 @@ function PartyPercentage({ value, emphasis }: { value: number, emphasis: PartyEm
         return <span>N/A</span>
     }
     const side = value > 0 ? 'positive' : 'negative'
-    const hue = typeof emphasis.hue === 'string' ? emphasis.hue : emphasis.hue[side]
-    let text: string
-    if (emphasis.labels === undefined) {
-        text = `${emphasis.explicitSign === true && value >= 0 ? '+' : ''}${(value * 100).toFixed(2)}`
+    const spanStyle: CSSProperties = {
+        color: colors.hueColors[typeof emphasis.hue === 'string' ? emphasis.hue : emphasis.hue[side]],
+        // So that on 4 digits, we overflow left
+        display: 'flex',
+        justifyContent: 'flex-end',
     }
-    else {
+    /*
+     * The label, the sign and the number are separate children rather than one string, because
+     * the browser shapes each run of text on its own and a lead is rendered a pixel differently
+     * when they are joined.
+     */
+    if (emphasis.labels !== undefined) {
         const magnitude = Math.abs(value) * 100
-        text = `${emphasis.labels[side]}+${magnitude.toFixed(leadPlaces(magnitude))}`
+        return (
+            <span style={spanStyle}>
+                {emphasis.labels[side]}
+                +
+                {magnitude.toFixed(leadPlaces(magnitude))}
+            </span>
+        )
     }
-    return (
-        <span style={{ color: colors.hueColors[hue], display: 'flex', justifyContent: 'flex-end' }}>
-            {text}
-        </span>
-    )
+    if (emphasis.explicitSign === true) {
+        return (
+            <span style={spanStyle}>
+                {value >= 0 ? '+' : ''}
+                {(value * 100).toFixed(2)}
+            </span>
+        )
+    }
+    return <span style={spanStyle}>{(value * 100).toFixed(2)}</span>
 }
 
 function partyDisplay(emphasis: PartyEmphasis): UnitDisplay {
