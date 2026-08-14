@@ -1,7 +1,7 @@
 import { HueColors } from '../page_template/color-themes'
 
 import { assert } from './defensive'
-import { HumanReadableElement, HumanReadableName } from './human-readable-name'
+import { HumanReadableElement } from './human-readable-name'
 import { formatToSignificantFigures, separateNumber } from './text'
 
 export type UnitType = 'percentage' | 'percentageChange' | 'fatalities' | 'fatalitiesPerCapita' | 'density' | 'population'
@@ -324,7 +324,11 @@ function digitCost(value: number, format: NumberFormat): number {
     return 0.9 * (1 + (/^0*/.exec(fraction)?.[0].length ?? 0))
 }
 
-function nameOf(written: Written[]): HumanReadableName {
+function atom(value: string): HumanReadableElement[] {
+    return [{ type: 'atom', value }]
+}
+
+function nameOf(written: Written[]): HumanReadableElement[] {
     // a unit with no name of its own, such as a person, is named after itself below the line
     const named = ({ power, unit }: Written): boolean => unit.name !== '' || power < 0
     const reifyPart = ({ baseUnit, unit }: Written): string => unit.name === '' ? baseUnit : unit.name
@@ -355,7 +359,7 @@ function nameOf(written: Written[]): HumanReadableName {
             merged.push(element)
         }
     }
-    return merged.length === 0 ? '' : merged
+    return merged
 }
 
 function combinations(dimensions: Dimension[], rungs: (dimension: Dimension) => LadderUnit[]): Written[][] {
@@ -372,16 +376,16 @@ interface Representation {
     size: number
     /** Subtracted before dividing, for a unit whose zero is somewhere else */
     offset?: number
-    name: HumanReadableName
+    name: HumanReadableElement[]
     attached: boolean
     prefix: string
     format: NumberFormat
 }
 
 // a name that begins with a symbol, such as /km^2 or %, is written straight after the number
-function startsWithSymbol(name: HumanReadableName): boolean {
-    const first = typeof name === 'string' ? name : (name.length > 0 && name[0].type === 'atom' ? name[0].value : '')
-    return first.startsWith('/') || first.startsWith('%')
+function startsWithSymbol(name: HumanReadableElement[]): boolean {
+    const first: HumanReadableElement | undefined = name.length === 0 ? undefined : name[0]
+    return first?.type === 'atom' && /^[%/]/.test(first.value)
 }
 
 /**
@@ -415,10 +419,10 @@ function bestRepresentation(valueInBaseUnits: number, scales: Dimension[], setti
             + digitCost(valueInBaseUnits / size, format)
         if (cost < bestCost) {
             // a duration written as h:mm says so by being written that way
-            const name = format.decimals === 'hoursMinutes' ? '' : nameOf(written)
+            const name = format.decimals === 'hoursMinutes' ? [] : nameOf(written)
             // an abbreviation is written against the number, as in 12.3k, and a symbol likewise
             const abbreviationOnly = written.every(({ unit }) => unit.name === '' || unit.cost === abbreviated)
-            const attached = startsWithSymbol(name) || (name !== '' && abbreviationOnly)
+            const attached = startsWithSymbol(name) || (name.length > 0 && abbreviationOnly)
             best = { size, name, attached, format, prefix: prefixes[signature] ?? '' }
             bestCost = cost
         }
@@ -427,7 +431,7 @@ function bestRepresentation(valueInBaseUnits: number, scales: Dimension[], setti
     return best
 }
 
-const percent: Representation = { name: '%', size: 1 / 100, attached: true, prefix: '', format: { decimals: 2, separators: false } }
+const percent: Representation = { name: atom('%'), size: 1 / 100, attached: true, prefix: '', format: { decimals: 2, separators: false } }
 /** A margin is written as the size of the lead, which is given to more digits the closer it is. */
 const margin: Representation = { ...percent, format: { decimals: { significantDigits: 3, minDecimals: 1, maxDecimals: 4 }, separators: false } }
 
@@ -456,7 +460,7 @@ export interface ReaderSettings {
 function scaleFor(valueInBaseUnits: number, unit: Unit, settings: ReaderSettings): Representation {
     switch (unit.kind) {
         case 'unknown':
-            return { name: '', size: 1, attached: false, prefix: '', format: { decimals: 'significantFigures', separators: false } }
+            return { name: [], size: 1, attached: false, prefix: '', format: { decimals: 'significantFigures', separators: false } }
         case 'raw-percentage':
             return percent
         case 'delta-percentage':
@@ -465,8 +469,8 @@ function scaleFor(valueInBaseUnits: number, unit: Unit, settings: ReaderSettings
             return margin
         case 'temperature-F':
             return settings.temperatureUnit === 'celsius'
-                ? { name: '\u00b0C', size: 9 / 5, offset: 32, attached: false, prefix: '', format: { decimals: 1, separators: false } }
-                : { name: '\u00b0F', size: 1, attached: false, prefix: '', format: { decimals: 1, separators: false } }
+                ? { name: atom('\u00b0C'), size: 9 / 5, offset: 32, attached: false, prefix: '', format: { decimals: 1, separators: false } }
+                : { name: atom('\u00b0F'), size: 1, attached: false, prefix: '', format: { decimals: 1, separators: false } }
         case 'dimensionfull':
             return bestRepresentation(valueInBaseUnits, unit.scales, settings)
     }
@@ -540,7 +544,7 @@ export interface WrittenQuantity {
      * a plus, and its size, which the browser shapes separately from one another.
      */
     number: string[]
-    name: HumanReadableName
+    name: HumanReadableElement[]
     /** Whether the name is written directly after the number, rather than after a space */
     attached: boolean
     hue?: Hue
@@ -585,9 +589,8 @@ export function flipsInequality(unit: Unit, value: number): boolean {
 /**
  * A unit name as it is written after a number, e.g., " hours" but "%".
  */
-export function unitSuffix(name: HumanReadableName, attached: boolean): HumanReadableElement[] {
-    const elements = typeof name === 'string' ? (name === '' ? [] : [{ type: 'atom', value: name } satisfies HumanReadableElement]) : name
-    return elements.length === 0 || attached ? elements : [{ type: 'atom', value: ' ' }, ...elements]
+export function unitSuffix(name: HumanReadableElement[], attached: boolean): HumanReadableElement[] {
+    return name.length === 0 || attached ? name : [{ type: 'atom', value: ' ' }, ...name]
 }
 
 function fahrenheitToCelsius(value: number): number {

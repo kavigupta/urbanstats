@@ -25,7 +25,7 @@ export function renderQuantity(value: number, unit: StoredUnit, colors: Colors, 
                     </span>
                 ),
         // an empty unit still occupies its column
-        unit: <span>{name === '' ? ' ' : reifyReact(name)}</span>,
+        unit: <span>{name.length === 0 ? ' ' : reifyReact(name)}</span>,
     }
 }
 
