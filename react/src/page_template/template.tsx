@@ -36,6 +36,7 @@ export function PageTemplate({
     hideSidebar?: boolean
 }): ReactNode {
     const [hamburgerOpen, setHamburgerOpen] = useState(false)
+    const [screenshotInProgress, setScreenshotInProgress] = useState(false)
     const ownScreenshotContext = useRef<ScreenshotContextType>({ render: new Set(), wait: new Set() })
     const screenshotContext = inheritedScreenshotContext ?? ownScreenshotContext.current
     const colors = useColors()
@@ -78,11 +79,15 @@ export function PageTemplate({
         if (screencap === undefined) {
             return
         }
+        setScreenshotInProgress(true)
         try {
             await screencap(currentUniverse, colors, screenshotContext)
         }
         catch (e) {
             console.error(e)
+        }
+        finally {
+            setScreenshotInProgress(false)
         }
     }
 
@@ -115,6 +120,7 @@ export function PageTemplate({
                             hamburgerOpen={hamburgerOpen}
                             setHamburgerOpen={setHamburgerOpen}
                             hasScreenshot={hasScreenshotButton}
+                            screenshotInProgress={screenshotInProgress}
                             hasCSV={hasCSVButton}
                             initiateScreenshot={(currentUniverse) => { void doScreencap(currentUniverse) }}
                             exportCSV={exportCSV}

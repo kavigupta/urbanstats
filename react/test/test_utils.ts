@@ -163,7 +163,7 @@ async function prepForImage(t: TestController, options: { hover: boolean, remove
     await t.eval(() => {
         if (options.removeEntireMap) {
             // disable the map, so that we're not testing the tiles
-            for (const x of Array.from(document.getElementsByClassName('maplibregl-canvas-container'))) {
+            for (const x of document.getElementsByClassName('maplibregl-canvas-container')) {
                 if (x instanceof HTMLElement) {
                     x.style.visibility = 'hidden'
                 }
@@ -174,7 +174,7 @@ async function prepForImage(t: TestController, options: { hover: boolean, remove
             (window as unknown as TestWindow).testUtils.disableBasemapLayers()
         }
 
-        for (const x of Array.from(document.getElementsByClassName('juxtastat-user-id'))) {
+        for (const x of document.getElementsByClassName('juxtastat-user-id')) {
             x.innerHTML = '&lt;USER ID&gt;'
         }
 

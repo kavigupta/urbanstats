@@ -50,3 +50,15 @@ for (const [value, expected] of [
         assert.equal(renderValue('usd', value), expected)
     })
 }
+
+// The inequalities on a colorbar point the other way for a lead, which is written as a size
+for (const [unitType, value, inequality, expected] of [
+    ['percentage', 0.5, 'leq', '\u2264'],
+    ['democraticMargin', 0.5, 'leq', '\u2264'],
+    ['democraticMargin', -0.5, 'leq', '\u2265'],
+    ['leftMargin', -0.5, 'geq', '\u2264'],
+] as const) {
+    void test(`${unitType} renders a ${inequality} at ${value} as ${expected}`, () => {
+        assert.equal(getUnitDisplay(unitType).renderInequality(value, inequality), expected)
+    })
+}
