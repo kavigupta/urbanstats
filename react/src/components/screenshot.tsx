@@ -18,13 +18,13 @@ export function ScreenshotButton(props: { onClick: () => void, loading: boolean 
     const screencapButton = (
         <button
             type="button"
+            className="borderless"
             aria-label="Take screenshot"
             onClick={props.onClick}
             style={{
                 height: '100%',
                 cursor: 'pointer',
                 background: 'none',
-                border: 'none',
                 padding: 0,
             }}
         >

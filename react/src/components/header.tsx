@@ -262,11 +262,10 @@ function UniverseSelector(): ReactNode {
                 }
             }
             >
-                <Flag
+                <SelectorFlag
                     height={headerBarSize}
                     onClick={() => { setDropdownOpen(!dropdownOpen) }}
                     universe={universeCtx.universe}
-                    classNameToUse="universe-selector"
                 />
             </div>
             {dropdown}
@@ -274,7 +273,7 @@ function UniverseSelector(): ReactNode {
     )
 }
 
-function Flag(props: { height: number, onClick?: () => void, universe: string, classNameToUse: string }): ReactNode {
+function SelectorFlag(props: { height: number, onClick: () => void, universe: string }): ReactNode {
     const imageAR = flag_dimensions[props.universe]
     const usableHeight = props.height * flagIconMaxHeightPercent
     const usableWidth = Math.min(usableHeight * imageAR, props.height * flagIconWidthRatio)
@@ -288,16 +287,36 @@ function Flag(props: { height: number, onClick?: () => void, universe: string, c
                 src={universePath(props.universe)}
                 alt={props.universe}
                 width={`${usableWidth}px`}
-                className={props.classNameToUse}
+                className="universe-selector"
                 onClick={props.onClick}
-                role={props.onClick && 'button'}
-                tabIndex={props.onClick && 0}
-                onKeyDown={props.onClick && ((e) => {
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
                     if (e.key === ' ' || e.key === 'Enter') {
                         e.preventDefault()
-                        props.onClick!()
+                        props.onClick()
                     }
-                })}
+                }}
+            />
+        </div>
+    )
+}
+
+function DropdownFlag(props: { height: number, universe: string }): ReactNode {
+    const imageAR = flag_dimensions[props.universe]
+    const usableHeight = props.height * flagIconMaxHeightPercent
+    const usableWidth = Math.min(usableHeight * imageAR, props.height * flagIconWidthRatio)
+
+    return (
+        <div style={{ width: props.height * flagIconWidthRatio, height: props.height, display: 'flex' }}>
+            <img
+                style={{
+                    margin: 'auto',
+                }}
+                src={universePath(props.universe)}
+                alt={props.universe}
+                width={`${usableWidth}px`}
+                className="universe-selector-option"
             />
         </div>
     )
@@ -377,10 +396,9 @@ function UniverseDropdown(
                             }}
                             className="hoverable_elements"
                         >
-                            <Flag
+                            <DropdownFlag
                                 height={flagSize}
                                 universe={altUniverse}
-                                classNameToUse="universe-selector-option"
                             />
                             <div className="serif">
                                 {humanReadableUniverse(altUniverse)}

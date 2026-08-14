@@ -50,13 +50,13 @@ export function CSVButton(props: { onClick: () => void }): ReactNode {
     return (
         <button
             type="button"
+            className="borderless"
             aria-label="Export as CSV"
             onClick={props.onClick}
             style={{
                 height: '100%',
                 cursor: 'pointer',
                 background: 'none',
-                border: 'none',
                 padding: 0,
             }}
         >
