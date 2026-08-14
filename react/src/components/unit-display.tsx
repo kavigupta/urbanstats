@@ -41,16 +41,14 @@ const renderMarginInequality: RenderInequality = (value, inequality) => {
 }
 
 /**
- * How a percentage that belongs to a party is written: in the party's color, and, for a margin
- * between two of them, as the size of the lead labelled with whoever holds it.
+ * How a percentage that belongs to a party is written: in the party's color, and, where it is a
+ * margin between two of them, as the size of the lead labelled with whoever holds it.
  */
-interface PartyEmphasis {
-    hue: Hue | { positive: Hue, negative: Hue }
-    /** Written as a lead, e.g., D+12.3 against R+8.10, rather than as a signed number */
-    labels?: { positive: string, negative: string }
-    /** Non-negative values are written with a leading plus sign */
-    explicitSign?: boolean
-}
+type PartyEmphasis = (
+    { kind: 'lead', labels: { positive: string, negative: string }, hues: { positive: Hue, negative: Hue } }
+    | { kind: 'share', hue: Hue }
+    | { kind: 'change', hue: Hue }
+)
 
 // a lead is given more digits the closer it is
 function leadPlaces(magnitude: number): number {
@@ -68,7 +66,7 @@ function PartyPercentage({ value, emphasis }: { value: number, emphasis: PartyEm
     }
     const side = value > 0 ? 'positive' : 'negative'
     const spanStyle: CSSProperties = {
-        color: colors.hueColors[typeof emphasis.hue === 'string' ? emphasis.hue : emphasis.hue[side]],
+        color: colors.hueColors[emphasis.kind === 'lead' ? emphasis.hues[side] : emphasis.hue],
         // So that on 4 digits, we overflow left
         display: 'flex',
         justifyContent: 'flex-end',
@@ -78,25 +76,26 @@ function PartyPercentage({ value, emphasis }: { value: number, emphasis: PartyEm
      * the browser shapes each run of text on its own and a lead is rendered a pixel differently
      * when they are joined.
      */
-    if (emphasis.labels !== undefined) {
-        const magnitude = Math.abs(value) * 100
-        return (
-            <span style={spanStyle}>
-                {emphasis.labels[side]}
-                +
-                {magnitude.toFixed(leadPlaces(magnitude))}
-            </span>
-        )
+    switch (emphasis.kind) {
+        case 'lead':
+            const magnitude = Math.abs(value) * 100
+            return (
+                <span style={spanStyle}>
+                    {emphasis.labels[side]}
+                    +
+                    {magnitude.toFixed(leadPlaces(magnitude))}
+                </span>
+            )
+        case 'change':
+            return (
+                <span style={spanStyle}>
+                    {value >= 0 ? '+' : ''}
+                    {(value * 100).toFixed(2)}
+                </span>
+            )
+        case 'share':
+            return <span style={spanStyle}>{(value * 100).toFixed(2)}</span>
     }
-    if (emphasis.explicitSign === true) {
-        return (
-            <span style={spanStyle}>
-                {value >= 0 ? '+' : ''}
-                {(value * 100).toFixed(2)}
-            </span>
-        )
-    }
-    return <span style={spanStyle}>{(value * 100).toFixed(2)}</span>
 }
 
 function partyDisplay(emphasis: PartyEmphasis): UnitDisplay {
@@ -105,7 +104,7 @@ function partyDisplay(emphasis: PartyEmphasis): UnitDisplay {
             value: <PartyPercentage value={value} emphasis={emphasis} />,
             unit: <span>%</span>,
         }),
-        renderInequality: emphasis.labels === undefined ? renderInequality : renderMarginInequality,
+        renderInequality: emphasis.kind === 'lead' ? renderMarginInequality : renderInequality,
     }
 }
 
@@ -317,34 +316,34 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                 renderInequality,
             }
         case 'democraticMargin':
-            return partyDisplay({ labels: { positive: 'D', negative: 'R' }, hue: { positive: 'blue', negative: 'red' } })
+            return partyDisplay({ kind: 'lead', labels: { positive: 'D', negative: 'R' }, hues: { positive: 'blue', negative: 'red' } })
         case 'partyPctBlue':
-            return partyDisplay({ hue: 'blue' })
+            return partyDisplay({ kind: 'share', hue: 'blue' })
         case 'partyPctRed':
-            return partyDisplay({ hue: 'red' })
+            return partyDisplay({ kind: 'share', hue: 'red' })
         case 'partyPctOrange':
-            return partyDisplay({ hue: 'orange' })
+            return partyDisplay({ kind: 'share', hue: 'orange' })
         case 'partyPctTeal':
-            return partyDisplay({ hue: 'cyan' })
+            return partyDisplay({ kind: 'share', hue: 'cyan' })
         case 'partyPctGreen':
-            return partyDisplay({ hue: 'green' })
+            return partyDisplay({ kind: 'share', hue: 'green' })
         case 'partyPctPurple':
-            return partyDisplay({ hue: 'purple' })
+            return partyDisplay({ kind: 'share', hue: 'purple' })
         case 'partyChangeBlue':
-            return partyDisplay({ hue: 'blue', explicitSign: true })
+            return partyDisplay({ kind: 'change', hue: 'blue' })
         case 'partyChangeRed':
-            return partyDisplay({ hue: 'red', explicitSign: true })
+            return partyDisplay({ kind: 'change', hue: 'red' })
         case 'partyChangeOrange':
-            return partyDisplay({ hue: 'orange', explicitSign: true })
+            return partyDisplay({ kind: 'change', hue: 'orange' })
         case 'partyChangeTeal':
-            return partyDisplay({ hue: 'cyan', explicitSign: true })
+            return partyDisplay({ kind: 'change', hue: 'cyan' })
         case 'partyChangeGreen':
-            return partyDisplay({ hue: 'green', explicitSign: true })
+            return partyDisplay({ kind: 'change', hue: 'green' })
         case 'partyChangePurple':
-            return partyDisplay({ hue: 'purple', explicitSign: true })
+            return partyDisplay({ kind: 'change', hue: 'purple' })
         case 'leftMargin':
             // the left is drawn in red, as it is outside the US
-            return partyDisplay({ labels: { positive: 'L', negative: 'R' }, hue: { positive: 'red', negative: 'blue' } })
+            return partyDisplay({ kind: 'lead', labels: { positive: 'L', negative: 'R' }, hues: { positive: 'red', negative: 'blue' } })
         /* eslint-enable no-restricted-syntax */
         case 'temperature':
             return {
