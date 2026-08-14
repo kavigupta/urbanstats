@@ -326,9 +326,10 @@ function digitCost(value: number, format: NumberFormat): number {
 function nameOf(written: Written[]): HumanReadableName {
     // a unit with no name of its own, such as a person, is named after itself below the line
     const named = ({ power, unit }: Written): boolean => unit.name !== '' || power < 0
-    const part = ({ baseUnit, unit, power }: Written): HumanReadableElement[] => [
-        { type: 'atom', value: unit.name === '' ? baseUnit : unit.name },
-        ...Math.abs(power) === 1 ? [] : [{ type: 'superscript', value: [{ type: 'atom', value: Math.abs(power).toString() }] } satisfies HumanReadableElement],
+    const reifyPart = ({ baseUnit, unit }: Written): string => unit.name === '' ? baseUnit : unit.name
+    const part = (one: Written): HumanReadableElement[] => [
+        { type: 'atom', value: reifyPart(one) },
+        ...Math.abs(one.power) === 1 ? [] : [{ type: 'superscript', value: [{ type: 'atom', value: Math.abs(one.power).toString() }] } satisfies HumanReadableElement],
     ]
     const join = (parts: HumanReadableElement[][]): HumanReadableElement[] =>
         parts.flatMap((elements, index) => index === 0 ? elements : [{ type: 'atom', value: '\u00b7' }, ...elements])
@@ -336,7 +337,8 @@ function nameOf(written: Written[]): HumanReadableName {
     const over = written.filter(({ power }) => power > 0).filter(named)
     // a quantity that is only a denominator, such as a density, is written /\u00a0km^2 rather than
     // /km^2, unless what follows the slash is a number, as in /100k
-    const slash = over.length === 0 && /^[a-z]/i.test(under[0]?.unit.name ?? under[0]?.baseUnit ?? '') ? '/\u00a0' : '/'
+    const belowFirst = under.length === 0 ? '' : reifyPart(under[0])
+    const slash = over.length === 0 && /^[a-z]/i.test(belowFirst) ? '/\u00a0' : '/'
     const name = [
         ...join(over.map(part)),
         ...under.length === 0 ? [] : [{ type: 'atom', value: slash } satisfies HumanReadableElement, ...join(under.map(part))],
