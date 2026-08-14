@@ -13,22 +13,28 @@ RUN apt-get -y update \
     && curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
     && apt-get -y install nodejs \
     && dpkg --add-architecture i386 \
+    # needed for window resizing in Testcafe. These come from the base image's own repo
+    # rather than the snapshot below: libc6:i386 has to match the already-installed libc6
+    # exactly, and the snapshot is older than the base image.
+    && apt-get -y update \
+    && apt-get -y install libc6:i386 libx11-6:i386 \
     # Use only the snapshot repo so all packages come from the same consistent state
     # This is primarily so we can install older Chromium and not have to update all the time
     # The timestamp may need to be bumped if installing newer packages
     && echo 'deb [check-valid-until=no] https://snapshot.debian.org/archive/debian/20260115T000000Z/ bookworm main' \
         > /etc/apt/sources.list \
-    && rm -f /etc/apt/sources.list.d/*.list \
+    # Not *.list: Debian's config is debian.sources, in deb822 format, so the old glob left
+    # deb.debian.org enabled and apt took its newer packages over the snapshot's.
+    && rm -f /etc/apt/sources.list.d/* \
     && apt-get -o Acquire::Check-Valid-Until=false -y update \
     && apt-get -y install \
         chromium=143.* chromium-common=143.* \
         xvfb \
         sqlite3 \
+        fluxbox \
         # the checkout step clones inside the container, and the runner diffs against the
         # base ref; procps is for the pkill in quiz_test_utils.ts
         git procps \
-        # needed for window resizing in Testcafe
-        libc6:i386 libx11-6:i386 fluxbox \
         # needed for downloads directory in TestCafe
         xdg-user-dirs \
         # needed for emoji display in tests
