@@ -104,7 +104,7 @@ test('disclaimer-and-expand-buttons-vertically-aligned', async (t) => {
     await t.resizeWindow(1400, 800)
     await waitForLoading()
     const centers = await t.eval(() => {
-        for (const disclaimer of Array.from(document.getElementsByClassName('disclaimer-toggle'))) {
+        for (const disclaimer of document.getElementsByClassName('disclaimer-toggle')) {
             // climb to the stat-name row that also holds the expand "+" button
             let container = disclaimer.parentElement
             while (container !== null && container.getElementsByClassName('expand-toggle').length === 0) {
