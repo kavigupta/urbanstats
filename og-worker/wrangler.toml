@@ -10,7 +10,12 @@ routes = [
   { pattern = "us.lbtunnel.uk/*", zone_name = "lbtunnel.uk" },
 ]
 
+# Fonts are bundled rather than fetched: satori needs the bytes on every render, and they never
+# change. .wasm is picked up as a compiled module by default.
+[[rules]]
+type = "Data"
+globs = ["**/*.ttf"]
+fallthrough = true
+
 [vars]
 SITE_ORIGIN = "https://urbanstats.org"
-# The renderer on the VPS, published by its own cloudflared.
-RENDER_ORIGIN = "https://ogrender.lbtunnel.uk"

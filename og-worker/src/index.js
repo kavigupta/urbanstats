@@ -3,16 +3,26 @@
  *
  * Every article shares one static article.html with one fixed og:image, so a crawler asking for
  * ?longname=Chicago gets the generic preview. This rewrites the meta tags per query string on the
- * way through, and points og:image at a renderer that screenshots the page itself.
+ * way through, and renders the image here at the edge -- reading the same static data files the
+ * site does, so no browser is involved.
  */
+import { Resvg, initWasm } from '@resvg/resvg-wasm'
+import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm'
+import satori from 'satori'
+
+import jostRegular from '../assets/Jost-400.ttf'
+import jostSemiBold from '../assets/Jost-600.ttf'
+
+import { loadArticle, loadShape } from './data.js'
+import { embedCard } from './embed.js'
 
 // syau.html is left out deliberately: it has no per-URL identity to describe, and its existing
 // static preview is already the right one.
 const embeddable = new Set(['/article.html', '/comparison.html', '/statistic.html'])
 
-// A crawler gives up long before a cold render finishes, so a miss serves the static preview and
-// leaves the render running to fill the cache for whoever shares the link next.
-const renderBudgetMs = 2500
+// Pages the image renderer can actually draw. The others still get a rewritten title and
+// description, which is most of the value, and keep the static preview image.
+const renderable = new Set(['/article.html'])
 
 function describe(pathname, params) {
     switch (pathname) {
@@ -60,7 +70,11 @@ class RewriteMeta {
                 element.setAttribute('content', this.embed.description)
                 break
             case 'og:image':
-                element.setAttribute('content', this.embed.image)
+                // Left alone for pages we can describe but not yet draw, so they keep the static
+                // preview rather than pointing at an image that does not render.
+                if (this.embed.image !== undefined) {
+                    element.setAttribute('content', this.embed.image)
+                }
                 break
             default:
         }
@@ -77,6 +91,8 @@ class RewriteTitle {
     }
 }
 
+let resvgReady
+
 async function renderImage(env, target, ctx) {
     const cache = caches.default
     const key = new Request(target.toString(), { method: 'GET' })
@@ -85,26 +101,37 @@ async function renderImage(env, target, ctx) {
         return cached
     }
 
-    const upstream = new URL(`/render${target.pathname}${target.search}`, env.RENDER_ORIGIN)
-    const render = fetch(upstream.toString()).then(async (response) => {
-        if (!response.ok) {
-            return response
-        }
-        const stored = new Response(response.body, response)
-        stored.headers.set('cache-control', 'public, max-age=86400')
-        ctx.waitUntil(cache.put(key, stored.clone()))
-        return stored
-    })
-
-    const timeout = new Promise(resolve => setTimeout(() => { resolve(undefined) }, renderBudgetMs))
-    const raced = await Promise.race([render.catch(() => undefined), timeout])
-    if (raced !== undefined && raced.ok) {
-        return raced
+    const longname = target.searchParams.get('longname')
+    if (longname === null) {
+        return new Response('no longname', { status: 400 })
     }
 
-    // Keep the render going even though this request is giving up on it.
-    ctx.waitUntil(render.catch(() => {}))
-    return fetch(new URL('/link-preview.png', env.SITE_ORIGIN).toString())
+    const [article, rings] = await Promise.all([
+        loadArticle(env.SITE_ORIGIN, longname, target.searchParams.get('universe') ?? undefined),
+        loadShape(env.SITE_ORIGIN, longname).catch(() => []),
+    ])
+    if (article === undefined) {
+        return new Response('no such article', { status: 404 })
+    }
+
+    const size = { width: 1200, height: 630 }
+    const svg = await satori(embedCard(article, rings ?? [], size), {
+        ...size,
+        fonts: [
+            { name: 'Jost', data: jostRegular, weight: 400, style: 'normal' },
+            { name: 'Jost', data: jostSemiBold, weight: 600, style: 'normal' },
+        ],
+    })
+
+    resvgReady ??= initWasm(resvgWasm)
+    await resvgReady
+    const png = new Resvg(svg, { fitTo: { mode: 'width', value: size.width } }).render().asPng()
+
+    const response = new Response(png, {
+        headers: { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400' },
+    })
+    ctx.waitUntil(cache.put(key, response.clone()))
+    return response
 }
 
 export default {
@@ -113,7 +140,7 @@ export default {
 
         if (url.pathname.startsWith('/og/')) {
             const target = new URL(url.pathname.slice('/og'.length) + url.search, env.SITE_ORIGIN)
-            if (!embeddable.has(target.pathname)) {
+            if (!renderable.has(target.pathname)) {
                 return new Response('not embeddable', { status: 404 })
             }
             return renderImage(env, target, ctx)
@@ -126,10 +153,12 @@ export default {
             return origin
         }
 
-        embed.image = new URL(`/og${url.pathname}${url.search}`, url.origin).toString()
-        // Start the render now rather than when the crawler asks for the image, buying it roughly
-        // one round trip of head start.
-        ctx.waitUntil(fetch(embed.image).catch(() => {}))
+        if (renderable.has(url.pathname)) {
+            embed.image = new URL(`/og${url.pathname}${url.search}`, url.origin).toString()
+            // Start the render now rather than when the crawler asks for the image, buying it
+            // roughly one round trip of head start.
+            ctx.waitUntil(fetch(embed.image).catch(() => {}))
+        }
 
         return new HTMLRewriter()
             .on('meta', new RewriteMeta(embed))

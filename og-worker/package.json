@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@resvg/resvg-wasm": "^2.6.2",
+    "protobufjs": "^8.7.2",
+    "satori": "^0.29.0"
+  }
+}
