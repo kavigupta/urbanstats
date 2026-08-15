@@ -42,7 +42,7 @@ interface Rule {
  * walks the transportation layer three times rather than eight, and landuse and buildings not at
  * all. Flip to draw the whole style instead.
  */
-const simplified: boolean = true
+const simplified: boolean = false
 
 function widthAt(stops: [number, number][], zoom: number): number {
     if (zoom <= stops[0][0]) {
