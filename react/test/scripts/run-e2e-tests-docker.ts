@@ -20,6 +20,11 @@ export async function runE2eTestsDocker(args: string[], hostArch: boolean): Prom
             '--network', 'host',
             ...process.stdout.isTTY ? ['-it'] : [],
             '-v', `${repoRoot}:/urbanstats`,
+            // A tmpfs purely as a way to leave an empty directory here. Otherwise react/node_modules
+            // is the host's, built for the host's platform, and Node finds it long before it
+            // consults NODE_PATH. With nothing in it, the resolution walk falls through to
+            // /node_modules, which is the install that matches the container.
+            '--mount', 'type=tmpfs,dst=/urbanstats/react/node_modules',
             '-w', '/urbanstats/react',
             ...(['PORT', 'TESTCAFE_PORT'].flatMap(envVar => process.env[envVar] ? ['-e', `${envVar}=${process.env[envVar]}`] : [])),
             imageName,
