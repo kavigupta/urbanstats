@@ -5,6 +5,8 @@ WORKDIR /urbanstats
 
 # Install node_modules at root so that it doesn't conflict with the volume that will be mounted
 ENV NODE_PATH=/node_modules
+# For scripts run inside the container
+ENV PATH=/node_modules/.bin:$PATH
 COPY react/package.json react/package-lock.json /
 RUN npm ci --prefix /
 
