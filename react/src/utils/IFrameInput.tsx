@@ -15,7 +15,7 @@ function IFrameInputRef(props: React.DetailedHTMLProps<React.InputHTMLAttributes
 
     useEffect(() => {
         const doc = frameRef.current!.contentWindow!.document
-        for (const style of Array.from(document.head.querySelectorAll('style'))) {
+        for (const style of document.head.querySelectorAll('style')) {
             doc.head.appendChild(style.cloneNode(true))
         }
         setFrameDoc(doc)
