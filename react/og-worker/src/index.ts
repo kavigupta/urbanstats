@@ -14,36 +14,54 @@ import { Resvg, initWasm } from '@resvg/resvg-wasm'
 import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm'
 import satori from 'satori'
 
-import { PageData } from '../../src/navigation/PageDescriptor'
+import { pageDescriptorFromURL } from '../../src/navigation/PageDescriptor'
 import jostRegular from '../assets/Jost-400.ttf'
 import jostSemiBold from '../assets/Jost-600.ttf'
 
 import { articleCard, loadPage, loadShape } from './data'
 import { embedCard } from './embed'
 
-// The page kinds worth describing. 'syau' is left out deliberately: it has no per-URL identity, and
-// its existing static preview is already the right one.
-const embeddable = new Set<PageData['kind']>(['article', 'comparison', 'statistic'])
-
 interface Embed {
     title: string
-    description?: string
+    description: string
     image?: string
 }
 
 /**
- * The site has titles but no notion of a description, so this is the one piece of embed text we
- * write ourselves. Titles come from `pageTitle`, the same function that sets document.title.
+ * Everything the tags say, read off the URL alone. Loading the page would give nicer titles -- an
+ * article's shortname rather than its longname -- but it means fetching the article's data on every
+ * HTML request, real browsers included, for something only a crawler reads. The image render is the
+ * one place that has to pay it.
  */
-function describe(pageData: PageData, title: string): string | undefined {
-    switch (pageData.kind) {
+function describe(url: URL): Embed | undefined {
+    let descriptor
+    try {
+        descriptor = pageDescriptorFromURL(url)
+    }
+    catch {
+        return undefined
+    }
+    switch (descriptor.kind) {
         case 'article':
-            return `Statistics for ${pageData.article.longname} on Urban Stats.`
+            return {
+                title: descriptor.longname,
+                description: `Statistics for ${descriptor.longname} on Urban Stats.`,
+                // Only articles have a renderer. The rest still get a rewritten title and
+                // description, which is most of the value, and keep the static preview image.
+                image: new URL(`/og${url.pathname}${url.search}`, url.origin).toString(),
+            }
         case 'comparison':
-            return `Comparing ${pageData.articles.map(article => article.longname).join(', ')} on Urban Stats.`
-        case 'statistic':
-            return `${title} rankings on Urban Stats.`
+            return {
+                title: descriptor.longnames.join(' vs '),
+                description: `Comparing ${descriptor.longnames.join(', ')} on Urban Stats.`,
+            }
+        case 'statistic': {
+            const title = 'statname' in descriptor ? descriptor.statname : 'Urban Stats: Custom Table'
+            return { title, description: `${title} rankings on Urban Stats.` }
+        }
         default:
+            // 'syau' is left out deliberately: it has no per-URL identity, and its existing static
+            // preview is already the right one.
             return undefined
     }
 }
@@ -58,9 +76,7 @@ class RewriteMeta implements RewriterHandler {
                 element.setAttribute('content', this.embed.title)
                 break
             case 'og:description':
-                if (this.embed.description !== undefined) {
-                    element.setAttribute('content', this.embed.description)
-                }
+                element.setAttribute('content', this.embed.description)
                 break
             case 'og:image':
                 // Left alone for pages we can describe but not yet draw, so they keep the static
@@ -194,25 +210,11 @@ export default {
             return devCors(await renderImage(env, target, ctx), request)
         }
 
+        const embed = describe(url)
+
         const origin = await fetch(new URL(url.pathname + url.search, env.SITE_ORIGIN).toString(), request)
-        if (!(origin.headers.get('content-type') ?? '').includes('text/html')) {
-            return origin
-        }
-
-        const page = await loadPage(env.SITE_ORIGIN, url).catch(() => undefined)
-        if (page === undefined || !embeddable.has(page.pageData.kind)) {
+        if (embed === undefined || !(origin.headers.get('content-type') ?? '').includes('text/html')) {
             return devCors(origin, request)
-        }
-
-        const embed: Embed = { title: page.title, description: describe(page.pageData, page.title) }
-
-        // Only articles have a renderer. The rest still get a rewritten title and description, which
-        // is most of the value, and keep the static preview image.
-        if (page.pageData.kind === 'article') {
-            embed.image = new URL(`/og${url.pathname}${url.search}`, url.origin).toString()
-            // Start the render now rather than when the crawler asks for the image, buying it
-            // roughly one round trip of head start.
-            ctx.waitUntil(fetch(embed.image).catch(() => undefined))
         }
 
         const rewritten = new HTMLRewriter()

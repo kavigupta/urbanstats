@@ -7,7 +7,7 @@
  * handling is ours: those modules fetch root-relative paths, which a Worker has no base URL for.
  */
 import { loadFeatureFromConsolidatedShard } from '../../src/load_json'
-import { loadPageDescriptor, PageData, pageDescriptorFromURL, pageTitle } from '../../src/navigation/PageDescriptor'
+import { loadPageDescriptor, PageData, pageDescriptorFromURL } from '../../src/navigation/PageDescriptor'
 import { shapeLink } from '../../src/navigation/links'
 import { Settings, SettingsDictionary } from '../../src/page_template/settings'
 import { groupYearKeys } from '../../src/page_template/statistic-settings'
@@ -40,7 +40,6 @@ const maxRows = 5
 export interface Page {
     pageData: PageData
     settings: Settings
-    title: string
 }
 
 /**
@@ -65,7 +64,7 @@ export async function loadPage(origin: string, url: URL): Promise<Page | undefin
     // No await between here and reading the settings back: the isolate is single-threaded, so that
     // is what keeps a concurrent request from seeing this one's staged settings.
     effects()
-    return { pageData, settings, title: pageTitle(pageData) }
+    return { pageData, settings }
 }
 
 export type Units = Pick<SettingsDictionary, 'use_imperial' | 'temperature_unit'>
