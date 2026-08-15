@@ -1,3 +1,4 @@
+import { createConnection } from 'net'
 import { tmpdir } from 'os'
 import { join } from 'path'
 
@@ -24,6 +25,22 @@ export async function runOgWorkerForTest(): Promise<void> {
         return
     }
     console.warn('No embed Worker found. Starting new embed Worker...')
+    await startOgWorker()
+}
+
+/**
+ * For the resources test, which measures a render over workerd's inspector and deadlocks it doing
+ * so: the Worker it runs against is good for that one file and nothing after it. Refusing to share
+ * is better than handing back a wedged one, or taking down a Worker we did not start.
+ */
+export async function runOwnOgWorkerForTest(): Promise<void> {
+    if (await isPortListening(ogPort)) {
+        throw new Error(`Something is already listening on port ${ogPort}. Measuring a render leaves the Worker deadlocked, so this test has to start its own. Stop yours and run this file by itself.`)
+    }
+    await startOgWorker()
+}
+
+async function startOgWorker(): Promise<void> {
     // Its own process group, so that killing it also takes down the wrangler and workerd
     // processes that `npm run og-preview` spawns underneath itself.
     const worker = execa('npm', ['run', 'og-preview'], {
@@ -50,13 +67,32 @@ export async function runOgWorkerForTest(): Promise<void> {
 }
 
 async function isWorkerAvailable(): Promise<boolean> {
+    // A deadlocked Worker takes the connection and never answers, and node's fetch would wait five
+    // minutes on that.
+    const giveUp = new AbortController()
+    const timer = setTimeout(() => { giveUp.abort() }, 10_000)
     try {
-        await fetch(`http://localhost:${ogPort}/index.html`)
+        await fetch(`http://localhost:${ogPort}/index.html`, { signal: giveUp.signal })
         return true
     }
     catch {
         return false
     }
+    finally {
+        clearTimeout(timer)
+    }
+}
+
+/**
+ * Whether anything at all holds the port, which a request cannot tell us: a Worker that is still
+ * starting and one that is deadlocked both take the connection and answer later or never.
+ */
+async function isPortListening(port: number): Promise<boolean> {
+    return new Promise((resolve) => {
+        const socket = createConnection({ port, host: '127.0.0.1' })
+        socket.on('connect', () => { socket.destroy(); resolve(true) })
+        socket.on('error', () => { resolve(false) })
+    })
 }
 
 /**
