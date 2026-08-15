@@ -68,20 +68,9 @@ function PartyPercentage({ value, emphasis }: { value: number, emphasis: PartyNu
     switch (emphasis.kind) {
         case 'lead':
             const magnitude = Math.abs(value) * 100
-            return (
-                <span style={spanStyle}>
-                    {emphasis.labels[side]}
-                    +
-                    {magnitude.toFixed(leadPlaces(magnitude))}
-                </span>
-            )
+            return <span style={spanStyle}>{`${emphasis.labels[side]}+${magnitude.toFixed(leadPlaces(magnitude))}`}</span>
         case 'change':
-            return (
-                <span style={spanStyle}>
-                    {value >= 0 ? '+' : ''}
-                    {(value * 100).toFixed(2)}
-                </span>
-            )
+            return <span style={spanStyle}>{`${value >= 0 ? '+' : ''}${(value * 100).toFixed(2)}`}</span>
         case 'share':
             return <span style={spanStyle}>{(value * 100).toFixed(2)}</span>
     }
@@ -116,12 +105,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                     const displayValue = (value * 100).toFixed(2)
                     const sign = value >= 0 ? '+' : ''
                     return {
-                        value: (
-                            <span>
-                                {sign}
-                                {displayValue}
-                            </span>
-                        ),
+                        value: <span>{`${sign}${displayValue}`}</span>,
                         unit: <span>%</span>,
                     }
                 },
@@ -167,8 +151,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         value: <span>{separateNumber(adjustedValue.toFixed(places))}</span>,
                         unit: (
                             <span>
-                                /&nbsp;
-                                {unitName}
+                                {`/\u00a0${unitName}`}
                                 <sup>2</sup>
                             </span>
                         ),
@@ -351,13 +334,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                     const hours = Math.floor(value)
                     const minutes = Math.floor((value - hours) * 60)
                     return {
-                        value: (
-                            <span>
-                                {hours}
-                                :
-                                {minutes.toString().padStart(2, '0')}
-                            </span>
-                        ),
+                        value: <span>{`${hours}:${minutes.toString().padStart(2, '0')}`}</span>,
                         unit: <span>&nbsp;</span>,
                     }
                 },
@@ -369,12 +346,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                     const { value: adjustedValue, unit } = convertPrecipitation(value, useImperial ?? false)
                     return {
                         value: <span>{adjustedValue.toFixed(1)}</span>,
-                        unit: (
-                            <span>
-                                {unit}
-                                /yr
-                            </span>
-                        ),
+                        unit: <span>{`${unit}/yr`}</span>,
                     }
                 },
                 renderInequality,
@@ -415,45 +387,25 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                      */
                     if (value >= 999.5e6) {
                         return {
-                            value: (
-                                <span>
-                                    $
-                                    {(value / 1e9).toPrecision(3)}
-                                </span>
-                            ),
+                            value: <span>{`$${(value / 1e9).toPrecision(3)}`}</span>,
                             unit: <span>B</span>,
                         }
                     }
                     if (value >= 999.5e3) {
                         return {
-                            value: (
-                                <span>
-                                    $
-                                    {(value / 1e6).toPrecision(3)}
-                                </span>
-                            ),
+                            value: <span>{`$${(value / 1e6).toPrecision(3)}`}</span>,
                             unit: <span>m</span>,
                         }
                     }
                     else if (value > 1e3) {
                         return {
-                            value: (
-                                <span>
-                                    $
-                                    {(value / 1e3).toPrecision(3)}
-                                </span>
-                            ),
+                            value: <span>{`$${(value / 1e3).toPrecision(3)}`}</span>,
                             unit: <span>k</span>,
                         }
                     }
                     else {
                         return {
-                            value: (
-                                <span>
-                                    $
-                                    {separateNumber(value.toFixed(0))}
-                                </span>
-                            ),
+                            value: <span>{`$${separateNumber(value.toFixed(0))}`}</span>,
                             unit: <span>&nbsp;</span>,
                         }
                     }
@@ -468,13 +420,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
 
                     if (hours > 0) {
                         return {
-                            value: (
-                                <span>
-                                    {hours}
-                                    :
-                                    {minutes.toString().padStart(2, '0')}
-                                </span>
-                            ),
+                            value: <span>{`${hours}:${minutes.toString().padStart(2, '0')}`}</span>,
                             unit: <span>&nbsp;</span>,
                         }
                     }
