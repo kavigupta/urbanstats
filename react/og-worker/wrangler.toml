@@ -5,11 +5,17 @@ compatibility_date = "2026-08-01"
 compatibility_flags = ["nodejs_compat"]
 
 # The prototype runs on its own subdomain rather than in front of urbanstats.org, so sharing a
-# us.lbtunnel.uk link exercises the whole path without touching the real site. This route stays
-# inert until an `us` record exists on the zone -- a Worker route only fires for a hostname that
-# resolves.
+# us.lbtunnel.uk link exercises the whole path without touching the real site.
+#
+# Only the pages `describe` rewrites, plus the image renders. Everything else -- scripts, the data
+# files, the pages that keep the static preview -- is redirected to urbanstats.org by a zone
+# redirect rule whose filter excludes exactly these four patterns, so it never reaches the Worker.
+# A route pattern is matched against the query string too, hence the trailing `*` on each page.
 routes = [
-  { pattern = "us.lbtunnel.uk/*", zone_name = "lbtunnel.uk" },
+  { pattern = "us.lbtunnel.uk/article.html*", zone_name = "lbtunnel.uk" },
+  { pattern = "us.lbtunnel.uk/comparison.html*", zone_name = "lbtunnel.uk" },
+  { pattern = "us.lbtunnel.uk/statistic.html*", zone_name = "lbtunnel.uk" },
+  { pattern = "us.lbtunnel.uk/og/*", zone_name = "lbtunnel.uk" },
 ]
 
 # Fonts are bundled rather than fetched: satori needs the bytes on every render, and they never
