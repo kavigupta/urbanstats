@@ -308,7 +308,7 @@ function SelectorFlag(props: { universe: string, onClick: () => void }): ReactNo
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
-                borderRadius: '0 0 7px 7px',
+                borderRadius: 0,
             }}
         >
             <img
@@ -326,7 +326,7 @@ function SelectorFlag(props: { universe: string, onClick: () => void }): ReactNo
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                padding: 1,
+                padding: `3px 1px 0px 1px`,
             }}
             >
                 <div style={{
