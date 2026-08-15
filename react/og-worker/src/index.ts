@@ -7,27 +7,35 @@
  * site does, so no browser is involved.
  */
 // Must come first: it installs the browser globals the site's modules touch as they evaluate.
-import './browser-shim.js'
+// eslint-disable-next-line import/no-unassigned-import -- Installing those globals is the point.
+import './browser-shim'
 
 import { Resvg, initWasm } from '@resvg/resvg-wasm'
 import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm'
 import satori from 'satori'
 
+import { PageData } from '../../src/navigation/PageDescriptor'
 import jostRegular from '../assets/Jost-400.ttf'
 import jostSemiBold from '../assets/Jost-600.ttf'
 
-import { articleCard, loadPage, loadShape } from './data.js'
-import { embedCard } from './embed.js'
+import { articleCard, loadPage, loadShape } from './data'
+import { embedCard } from './embed'
 
 // The page kinds worth describing. 'syau' is left out deliberately: it has no per-URL identity, and
 // its existing static preview is already the right one.
-const embeddable = new Set(['article', 'comparison', 'statistic'])
+const embeddable = new Set<PageData['kind']>(['article', 'comparison', 'statistic'])
+
+interface Embed {
+    title: string
+    description?: string
+    image?: string
+}
 
 /**
  * The site has titles but no notion of a description, so this is the one piece of embed text we
  * write ourselves. Titles come from `pageTitle`, the same function that sets document.title.
  */
-function describe(pageData, title) {
+function describe(pageData: PageData, title: string): string | undefined {
     switch (pageData.kind) {
         case 'article':
             return `Statistics for ${pageData.article.longname} on Urban Stats.`
@@ -40,19 +48,19 @@ function describe(pageData, title) {
     }
 }
 
-class RewriteMeta {
-    constructor(embed) {
-        this.embed = embed
-    }
+class RewriteMeta implements RewriterHandler {
+    constructor(private embed: Embed) {}
 
-    element(element) {
+    element(element: RewriterElement): void {
         const key = element.getAttribute('property') ?? element.getAttribute('name')
         switch (key) {
             case 'og:title':
                 element.setAttribute('content', this.embed.title)
                 break
             case 'og:description':
-                element.setAttribute('content', this.embed.description)
+                if (this.embed.description !== undefined) {
+                    element.setAttribute('content', this.embed.description)
+                }
                 break
             case 'og:image':
                 // Left alone for pages we can describe but not yet draw, so they keep the static
@@ -66,19 +74,17 @@ class RewriteMeta {
     }
 }
 
-class RewriteTitle {
-    constructor(embed) {
-        this.embed = embed
-    }
+class RewriteTitle implements RewriterHandler {
+    constructor(private embed: Embed) {}
 
-    element(element) {
+    element(element: RewriterElement): void {
         element.setInnerContent(this.embed.title)
     }
 }
 
-let resvgReady
+let resvgReady: Promise<void> | undefined
 
-async function renderImage(env, target, ctx) {
+async function renderImage(env: WorkerEnv, target: URL, ctx: WorkerContext): Promise<Response> {
     const cache = caches.default
     const key = new Request(target.toString(), { method: 'GET' })
     const cached = await cache.match(key)
@@ -100,7 +106,10 @@ async function renderImage(env, target, ctx) {
     }
 
     const size = { width: 1200, height: 630 }
-    const svg = await satori(embedCard(articleCard(page), rings ?? [], size), {
+    const card = embedCard(articleCard(page.pageData, page.settings), rings, size)
+    // Satori's element type is React's; these are plain objects with the same shape, which is all
+    // it reads.
+    const svg = await satori(card as unknown as Parameters<typeof satori>[0], {
         ...size,
         fonts: [
             { name: 'Jost', data: jostRegular, weight: 400, style: 'normal' },
@@ -119,13 +128,30 @@ async function renderImage(env, target, ctx) {
     return response
 }
 
+/*
+ * Lets the site's embed-preview dev panel read what a crawler would see.
+ *
+ * Scoped to localhost callers: the panel is served by the local site on one port and talks to this
+ * Worker on another, so without it the preview cannot read back its own rewritten tags. Nothing
+ * deployed is ever a localhost origin, so this stays inert in production.
+ */
+function devCors(response: Response, request: Request): Response {
+    const origin = request.headers.get('origin')
+    if (origin === null || !/^http:\/\/(localhost|127\.0\.0\.1)(:|$)/.test(origin)) {
+        return response
+    }
+    const withCors = new Response(response.body, response)
+    withCors.headers.set('access-control-allow-origin', origin)
+    return withCors
+}
+
 export default {
-    async fetch(request, env, ctx) {
+    async fetch(request: Request, env: WorkerEnv, ctx: WorkerContext): Promise<Response> {
         const url = new URL(request.url)
 
         if (url.pathname.startsWith('/og/')) {
             const target = new URL(url.pathname.slice('/og'.length) + url.search, env.SITE_ORIGIN)
-            return renderImage(env, target, ctx)
+            return devCors(await renderImage(env, target, ctx), request)
         }
 
         const origin = await fetch(new URL(url.pathname + url.search, env.SITE_ORIGIN).toString(), request)
@@ -135,10 +161,10 @@ export default {
 
         const page = await loadPage(env.SITE_ORIGIN, url).catch(() => undefined)
         if (page === undefined || !embeddable.has(page.pageData.kind)) {
-            return origin
+            return devCors(origin, request)
         }
 
-        const embed = { title: page.title, description: describe(page.pageData, page.title) }
+        const embed: Embed = { title: page.title, description: describe(page.pageData, page.title) }
 
         // Only articles have a renderer. The rest still get a rewritten title and description, which
         // is most of the value, and keep the static preview image.
@@ -146,12 +172,13 @@ export default {
             embed.image = new URL(`/og${url.pathname}${url.search}`, url.origin).toString()
             // Start the render now rather than when the crawler asks for the image, buying it
             // roughly one round trip of head start.
-            ctx.waitUntil(fetch(embed.image).catch(() => {}))
+            ctx.waitUntil(fetch(embed.image).catch(() => undefined))
         }
 
-        return new HTMLRewriter()
+        const rewritten = new HTMLRewriter()
             .on('meta', new RewriteMeta(embed))
             .on('title', new RewriteTitle(embed))
             .transform(origin)
+        return devCors(rewritten, request)
     },
 }

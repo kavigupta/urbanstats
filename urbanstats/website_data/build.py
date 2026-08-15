@@ -307,6 +307,7 @@ def build_urbanstats(
         "editor",
         "oauth-callback",
         "screenshot-diff-viewer",
+        "embed-preview",
     ]:
         with open(f"{site_folder}/{entrypoint}.html", "w") as f_entry:
             f_entry.write(html_index())

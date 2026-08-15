@@ -5,12 +5,27 @@
  * rather than a rendering of the real page. The values inside it are not ours though: they come
  * from the site's own renderers, so the numbers cannot drift from the page they describe.
  */
-// By path, because the dispatcher below has to go on the instance the site's own components call
-// hooks through, and og-worker deliberately has no react of its own to resolve a bare specifier to.
-import * as siteReact from '../../react/node_modules/react/index.js'
+import * as siteReact from 'react'
 
-import { getUnitDisplay } from '../../react/src/components/unit-display.tsx'
-import { classifyStatistic } from '../../react/src/utils/unit.ts'
+import { getUnitDisplay } from '../../src/components/unit-display'
+import { classifyStatistic } from '../../src/utils/unit'
+
+import { ArticleCard, Ring, Units } from './data'
+
+/**
+ * What satori reads off a node: a tag and its props. Deliberately not React's ReactElement, since
+ * these are written as plain objects rather than created by React.
+ */
+export interface Element {
+    type: string
+    props: {
+        style?: Record<string, unknown>
+        children?: unknown
+        src?: string
+        width?: number
+        height?: number
+    }
+}
 
 /*
  * Lets satori call the site's function components.
@@ -23,26 +38,37 @@ import { classifyStatistic } from '../../react/src/utils/unit.ts'
  * than at module scope, because React's internals are not populated yet while the module graph is
  * still evaluating.
  */
-function installHooks() {
-    const dispatcher = siteReact.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactCurrentDispatcher
+/* eslint-disable no-restricted-syntax -- React's own names for its internals, which are deliberately absent from @types/react. */
+interface ReactInternals {
+    __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED: { ReactCurrentDispatcher: { current: unknown } }
+}
+
+interface ReactContext {
+    _currentValue: unknown
+}
+/* eslint-enable no-restricted-syntax */
+
+function installHooks(): void {
+    const { ReactCurrentDispatcher: dispatcher } = (siteReact as unknown as ReactInternals).__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED
     if (dispatcher.current !== null) {
         return
     }
     dispatcher.current = {
-        useContext: context => context._currentValue,
-        useState: initial => [typeof initial === 'function' ? initial() : initial, () => {}],
-        useReducer: (reducer, initial) => [initial, () => {}],
-        useMemo: factory => factory(),
-        useCallback: callback => callback,
-        useRef: initial => ({ current: initial }),
-        useEffect: () => {},
-        useLayoutEffect: () => {},
-        useDebugValue: () => {},
-        useSyncExternalStore: (subscribe, getSnapshot) => getSnapshot(),
+        useContext: (context: ReactContext) => context._currentValue,
+        useState: (initial: unknown) => [typeof initial === 'function' ? (initial as () => unknown)() : initial, () => undefined],
+        useReducer: (reducer: unknown, initial: unknown) => [initial, () => undefined],
+        useMemo: (factory: () => unknown) => factory(),
+        useCallback: (callback: unknown) => callback,
+        useRef: (initial: unknown) => ({ current: initial }),
+        useEffect: () => undefined,
+        useLayoutEffect: () => undefined,
+        useDebugValue: () => undefined,
+        useSyncExternalStore: (subscribe: unknown, getSnapshot: () => unknown) => getSnapshot(),
         useId: () => 'og',
     }
 }
 
+/* eslint-disable no-restricted-syntax -- The card is a fixed light image wherever it is unfurled, so it has a palette rather than a theme. */
 const colors = {
     background: '#fff8f0',
     text: '#1e1e1e',
@@ -50,9 +76,10 @@ const colors = {
     rule: '#d8cfc4',
     shape: '#5a6ebd',
 }
+/* eslint-enable no-restricted-syntax */
 
 // Web Mercator, which is what the site's maps use, so shapes keep the shape people expect.
-function project([lon, lat]) {
+function project([lon, lat]: [number, number]): [number, number] {
     const x = (lon + 180) / 360
     const clamped = Math.max(-85.05, Math.min(85.05, lat)) * Math.PI / 180
     const y = (1 - Math.log(Math.tan(clamped) + 1 / Math.cos(clamped)) / Math.PI) / 2
@@ -63,8 +90,8 @@ function project([lon, lat]) {
  * The rings as one SVG path, fitted to the box. Returned as a data URI because satori renders
  * images but not arbitrary SVG children.
  */
-function mapImage(rings, width, height) {
-    const projected = rings.map(ring => ring.map(coord => project([coord.lon, coord.lat])))
+function mapImage(rings: Ring[], width: number, height: number): string {
+    const projected = rings.map(ring => ring.map(project))
     const xs = projected.flat().map(p => p[0])
     const ys = projected.flat().map(p => p[1])
     const [minX, maxX] = [Math.min(...xs), Math.max(...xs)]
@@ -74,7 +101,7 @@ function mapImage(rings, width, height) {
     const scale = Math.min((width - pad * 2) / (maxX - minX || 1), (height - pad * 2) / (maxY - minY || 1))
     const offsetX = (width - (maxX - minX) * scale) / 2
     const offsetY = (height - (maxY - minY) * scale) / 2
-    const place = ([x, y]) => [
+    const place = ([x, y]: [number, number]): string[] => [
         ((x - minX) * scale + offsetX).toFixed(1),
         ((y - minY) * scale + offsetY).toFixed(1),
     ]
@@ -98,30 +125,31 @@ function mapImage(rings, width, height) {
  * Satori has no user-agent stylesheet, so tags whose meaning is purely presentational arrive
  * unstyled -- `<sup>2</sup>` would render as a full-size "2". Restores the ones the site uses.
  */
-function styleBareTags(node) {
+function styleBareTags(node: unknown): unknown {
     if (Array.isArray(node)) {
         return node.map(styleBareTags)
     }
-    if (node === null || typeof node !== 'object' || node.props === undefined) {
+    if (node === null || typeof node !== 'object' || !('props' in node)) {
         return node
     }
-    const children = styleBareTags(node.props.children)
-    if (node.type === 'sup') {
+    const element = node as Element
+    const children = styleBareTags(element.props.children)
+    if (element.type === 'sup') {
         // Satori's transform only accepts absolute lengths, so the raise is in px against the
         // font size the stat value is rendered at.
         return { type: 'span', props: { style: { fontSize: 17, transform: 'translateY(-8px)' }, children } }
     }
-    return { ...node, props: { ...node.props, children } }
+    return { ...element, props: { ...element.props, children } }
 }
 
-function formatValue({ name, value }, units) {
+function formatValue({ name, value }: ArticleCard['stats'][number], units: Units): unknown[] {
     // renderValue takes the unit preferences separately from the value, and `?s` carries both, so
     // dropping them here would silently pin every card to Fahrenheit and metric.
     const rendered = getUnitDisplay(classifyStatistic(name)).renderValue(value, units.use_imperial, units.temperature_unit)
     return [styleBareTags(rendered.value), styleBareTags(rendered.unit)]
 }
 
-const ordinalSuffix = (n) => {
+function ordinalSuffix(n: number): string {
     const rem100 = n % 100
     if (rem100 >= 11 && rem100 <= 13) {
         return 'th'
@@ -129,30 +157,32 @@ const ordinalSuffix = (n) => {
     return ['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'
 }
 
-const row = (stat, index, units) => ({
-    type: 'div',
-    props: {
-        style: {
-            display: 'flex',
-            alignItems: 'center',
-            padding: '10px 0',
-            borderTop: index === 0 ? `2px solid ${colors.text}` : `1px solid ${colors.rule}`,
-        },
-        children: [
-            { type: 'div', props: { style: { flex: 1, fontSize: 24 }, children: stat.name } },
-            { type: 'div', props: { style: { width: 170, fontSize: 26, justifyContent: 'flex-end', display: 'flex' }, children: formatValue(stat, units) } },
-            {
-                type: 'div',
-                props: {
-                    style: { width: 60, fontSize: 20, color: colors.muted, justifyContent: 'flex-end', display: 'flex' },
-                    children: `${stat.percentile}${ordinalSuffix(stat.percentile)}`,
-                },
+function row(stat: ArticleCard['stats'][number], index: number, units: Units): Element {
+    return {
+        type: 'div',
+        props: {
+            style: {
+                display: 'flex',
+                alignItems: 'center',
+                padding: '10px 0',
+                borderTop: index === 0 ? `2px solid ${colors.text}` : `1px solid ${colors.rule}`,
             },
-        ],
-    },
-})
+            children: [
+                { type: 'div', props: { style: { flex: 1, fontSize: 24 }, children: stat.name } },
+                { type: 'div', props: { style: { width: 170, fontSize: 26, justifyContent: 'flex-end', display: 'flex' }, children: formatValue(stat, units) } },
+                {
+                    type: 'div',
+                    props: {
+                        style: { width: 60, fontSize: 20, color: colors.muted, justifyContent: 'flex-end', display: 'flex' },
+                        children: `${stat.percentile}${ordinalSuffix(stat.percentile)}`,
+                    },
+                },
+            ],
+        },
+    }
+}
 
-export function embedCard(article, rings, { width, height }) {
+export function embedCard(article: ArticleCard, rings: Ring[], { width, height }: { width: number, height: number }): Element {
     installHooks()
     const mapSize = { width: 380, height: 340 }
     return {

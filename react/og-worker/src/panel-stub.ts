@@ -7,7 +7,7 @@
  */
 
 /** Only called to lay out comparison maps, which the Worker does not draw. */
-export function partitionLongnames() {
+export function partitionLongnames(): number[][] {
     return []
 }
 

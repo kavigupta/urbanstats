@@ -6,7 +6,7 @@ cd "$(dirname "$0")"
 
 # The site's own dev-server port, so a preview reads the build you are working on rather than
 # production. Set SITE_ORIGIN to point somewhere else.
-site_port=$(node -e "import('../react/port.js').then(m => process.stdout.write(String(m.port())))")
+site_port=$(node -e "import('../port.js').then(m => process.stdout.write(String(m.port())))")
 site_origin=${SITE_ORIGIN:-http://localhost:$site_port}
 
 # Not PORT: that already means the site's port here, and the two cannot share one.

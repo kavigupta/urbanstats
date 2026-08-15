@@ -8,33 +8,37 @@
  *
  * The rest is what `loadPageDescriptor` touches on the way through, not an attempt at a real DOM.
  */
-globalThis.window ??= globalThis
-globalThis.location ??= new URL('https://urbanstats.org/')
-globalThis.history ??= {
+// The globals below are all typed by the DOM lib as things a Worker does not have, so they are
+// installed through an untyped view of the global object rather than cast one at a time.
+const shim = globalThis as unknown as Record<string, unknown>
+
+shim.window ??= globalThis
+shim.location ??= new URL('https://urbanstats.org/')
+shim.history ??= {
     scrollRestoration: 'manual',
     state: null,
-    pushState: () => {},
-    replaceState: () => {},
+    pushState: () => undefined,
+    replaceState: () => undefined,
 }
 
 // Wide enough to clear the site's 1100px mobile breakpoint: the card is a desktop-shaped image, so
 // it should get the desktop stat rows.
-globalThis.document ??= {
+shim.document ??= {
     documentElement: { clientWidth: 1200, clientHeight: 800 },
 }
 
 // The default theme is 'System Theme', so useCurrentTheme asks the media query. A card is a light
 // image on every platform that shows it, so answer as a light-mode client.
-globalThis.matchMedia ??= () => ({ matches: false, addEventListener: () => {}, removeEventListener: () => {} })
+shim.matchMedia ??= () => ({ matches: false, addEventListener: () => undefined, removeEventListener: () => undefined })
 
-const store = new Map()
+const store = new Map<string, string>()
 
-globalThis.localStorage ??= {
-    getItem: key => store.get(key) ?? null,
-    setItem: (key, value) => { store.set(key, String(value)) },
-    removeItem: (key) => { store.delete(key) },
+shim.localStorage ??= {
+    getItem: (key: string) => store.get(key) ?? null,
+    setItem: (key: string, value: string) => { store.set(key, value) },
+    removeItem: (key: string) => { store.delete(key) },
     clear: () => { store.clear() },
-    key: index => [...store.keys()][index] ?? null,
+    key: (index: number) => [...store.keys()][index] ?? null,
     get length() {
         return store.size
     },
