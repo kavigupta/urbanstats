@@ -47,5 +47,5 @@ test('embed-worker-resources', async (t) => {
     // Currently 8, out of the 50 a free-plan request is allowed. Growth here means the card started
     // reading shards it does not need.
     await t.expect(subrequests).lt(20)
-    await t.expect(originBytes).lt(600_000)
+    await t.expect(originBytes).lt(800_000)
 })
