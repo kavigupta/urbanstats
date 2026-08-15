@@ -35,7 +35,7 @@ function setOrigin(origin: string): void {
 }
 
 /** How many rows fit the card before it overflows. */
-const maxRows = 5
+const maxRows = 6
 
 export interface Page {
     pageData: PageData
