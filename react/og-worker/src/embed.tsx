@@ -10,7 +10,9 @@ import React, { ReactElement, ReactNode, cloneElement, isValidElement } from 're
 import { getUnitDisplay } from '../../src/components/unit-display'
 import { classifyStatistic } from '../../src/utils/unit'
 
-import { ArticleCard, Ring, Units } from './data'
+import { Label, basemap, labelStyle } from './basemap'
+import { ArticleCard, Units } from './data'
+import { MapLayout, Ring, fitRings, place } from './map-layout'
 
 /*
  * Lets satori call the site's function components.
@@ -63,145 +65,42 @@ const colors = {
 }
 /* eslint-enable no-restricted-syntax */
 
-// Web Mercator, which is what the site's maps use, so shapes keep the shape people expect.
-function project([lon, lat]: [number, number]): [number, number] {
-    const x = (lon + 180) / 360
-    const clamped = Math.max(-85.05, Math.min(85.05, lat)) * Math.PI / 180
-    const y = (1 - Math.log(Math.tan(clamped) + 1 / Math.cos(clamped)) / Math.PI) / 2
-    return [x, y]
-}
+// openfreemap's own credit line, as its TileJSON states it.
+const tileAttribution = 'OpenFreeMap © OpenMapTiles · Data from OpenStreetMap'
 
-/*
- * A basemap behind the shape, composited from raster tiles.
- *
- * The site's own maps are maplibre over openfreemap's vector tiles, which wants a GL context there
- * is none of here. These are the same OSM cartography as raster, placed by hand at the zoom the
- * shape fits, which is all a slippy map does anyway.
+/**
+ * The basemap and the shape over it, as one SVG data URI: satori renders images but not arbitrary
+ * SVG children, and one image beats a tile apiece because resvg then decodes one thing.
  */
-const tileSize = 256
-// Where OSM's standard style stops.
-const maxZoom = 19
-const tileAttribution = '© OpenStreetMap'
+function mapImage(paint: string, rings: Ring[], layout: MapLayout, width: number, height: number): string {
+    const d = rings
+        .map(ring => `M${ring.map(point => place(layout, point).map(n => n.toFixed(1)).join(',')).join('L')}Z`)
+        .join('')
 
-interface MapLayout {
-    /** Box pixels per unit of projected space, chosen so the rings fill the box. */
-    scale: number
-    zoom: number
-    /** The box's top-left corner, in that same scaled space. */
-    originX: number
-    originY: number
-}
-
-function fitRings(rings: Ring[], width: number, height: number): MapLayout {
-    const projected = rings.flat().map(project)
-    const xs = projected.map(p => p[0])
-    const ys = projected.map(p => p[1])
-    const [minX, maxX] = [Math.min(...xs), Math.max(...xs)]
-    const [minY, maxY] = [Math.min(...ys), Math.max(...ys)]
-
-    const pad = 8
-    const fit = Math.min((width - pad * 2) / (maxX - minX || 1), (height - pad * 2) / (maxY - minY || 1))
-    // Tiles only exist at whole zooms, so the nearest one renders near its own resolution and the
-    // rest of the fit is taken up by scaling it.
-    const zoom = Math.max(0, Math.min(maxZoom, Math.round(Math.log2(fit / tileSize))))
-    // Past max zoom a small shape stops filling the box, rather than tiles being blown up to suit it.
-    const scale = Math.min(fit, tileSize * 2 ** (zoom + 1))
-    return {
-        scale,
-        zoom,
-        originX: (minX + maxX) / 2 * scale - width / 2,
-        originY: (minY + maxY) / 2 * scale - height / 2,
-    }
-}
-
-async function fetchTile(zoom: number, x: number, y: number): Promise<string | undefined> {
-    const response = await fetch(`https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`, {
-        // OSM's tile policy wants an identifiable caller.
-        headers: { 'user-agent': 'urbanstats-og (+https://urbanstats.org)' },
-    }).catch(() => undefined)
-    if (!response?.ok) {
-        return undefined
-    }
-    const bytes = new Uint8Array(await response.arrayBuffer())
-    // btoa takes a string, and spreading a whole tile's worth of bytes at once overflows the
-    // argument limit.
-    let binary = ''
-    for (let i = 0; i < bytes.length; i += 0x8000) {
-        binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
-    }
-    return `data:image/png;base64,${btoa(binary)}`
-}
-
-/** The tiles the box covers, as positioned images. Ones that fail to load are simply left out. */
-async function tileImages(layout: MapLayout, width: number, height: number): Promise<ReactElement[]> {
-    const tilePx = layout.scale / 2 ** layout.zoom
-    const across = 2 ** layout.zoom
-    const range = (origin: number, extent: number): number[] => {
-        const first = Math.floor(origin / tilePx)
-        const last = Math.floor((origin + extent) / tilePx)
-        return Array.from({ length: last - first + 1 }, (_, i) => first + i)
-    }
-
-    const images = await Promise.all(
-        range(layout.originX, width).flatMap(x => range(layout.originY, height).map(async (y): Promise<ReactElement | undefined> => {
-            if (y < 0 || y >= across) {
-                return undefined
-            }
-            // x wraps, the way a map that scrolls past the antimeridian does.
-            const src = await fetchTile(layout.zoom, ((x % across) + across) % across, y)
-            if (src === undefined) {
-                return undefined
-            }
-            return (
-                <img
-                    key={`${x},${y}`}
-                    style={{ position: 'absolute', left: x * tilePx - layout.originX, top: y * tilePx - layout.originY }}
-                    src={src}
-                    // The extra pixel covers the seam left when tilePx lands between pixels.
-                    width={tilePx + 1}
-                    height={tilePx + 1}
-                />
-            )
-        })),
-    )
-    return images.filter(image => image !== undefined)
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${paint}`
+        + `<path d="${d}" fill="${colors.shape}" fill-opacity="0.2" stroke="${colors.shape}" stroke-width="2.5" stroke-linejoin="round" fill-rule="evenodd"/></svg>`
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
 }
 
 /**
- * The rings as one SVG path over the same layout. Returned as a data URI because satori renders
- * images but not arbitrary SVG children.
+ * Centred on its point by being placed half its estimated width to the left of it, since satori's
+ * transforms take absolute lengths only and so cannot translate by a percentage of the text.
  */
-function shapeImage(rings: Ring[], layout: MapLayout, width: number, height: number): string {
-    const place = (point: [number, number]): string => {
-        const [x, y] = project(point)
-        return `${(x * layout.scale - layout.originX).toFixed(1)},${(y * layout.scale - layout.originY).toFixed(1)}`
-    }
-    const d = rings.map(ring => `M${ring.map(place).join('L')}Z`).join('')
-
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`
-        + `<path d="${d}" fill="${colors.shape}" fill-opacity="0.3" stroke="${colors.shape}" stroke-width="2.5" stroke-linejoin="round" fill-rule="evenodd"/>`
-        + '</svg>'
-    return `data:image/svg+xml;base64,${btoa(svg)}`
+function label({ name, x, y, size, width }: Label): ReactElement {
+    return (
+        <div key={`${name}${x}`} style={{ position: 'absolute', left: x - width / 2, top: y - size, width, display: 'flex', justifyContent: 'center' }}>
+            <div style={{ flexShrink: 0, whiteSpace: 'nowrap', fontSize: size, color: labelStyle.color, textShadow: `0 0 3px ${labelStyle.halo}` }}>{name}</div>
+        </div>
+    )
 }
 
 async function mapPanel(rings: Ring[], { width, height }: { width: number, height: number }): Promise<ReactElement> {
     const layout = fitRings(rings, width, height)
+    const { paint, labels } = await basemap(layout, width, height)
     return (
-        <div
-            style={{
-                display: 'flex',
-                position: 'relative',
-                overflow: 'hidden',
-                width,
-                height,
-                flexShrink: 0,
-                borderRadius: 5,
-                // Shows through wherever a tile did not arrive.
-                backgroundColor: colors.rule,
-            }}
-        >
-            {await tileImages(layout, width, height)}
-            <img style={{ position: 'absolute', left: 0, top: 0 }} src={shapeImage(rings, layout, width, height)} width={width} height={height} />
+        <div style={{ display: 'flex', position: 'relative', overflow: 'hidden', width, height, flexShrink: 0, borderRadius: 5 }}>
+            <img style={{ position: 'absolute', left: 0, top: 0 }} src={mapImage(paint, rings, layout, width, height)} width={width} height={height} />
+            {labels.map(label)}
         </div>
     )
 }

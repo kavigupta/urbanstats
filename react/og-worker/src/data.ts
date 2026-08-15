@@ -14,6 +14,8 @@ import { groupYearKeys } from '../../src/page_template/statistic-settings'
 import { StatName } from '../../src/page_template/statistic-tree'
 import { sanitize } from '../../src/utils/paths'
 
+import { Ring } from './map-layout'
+
 let siteOrigin: string | undefined
 
 /**
@@ -93,9 +95,6 @@ export function articleCard(pageData: Extract<PageData, { kind: 'article' }>, se
     const units = settings.getMultiple(['use_imperial', 'temperature_unit'])
     return { shortname, longname, articleType, stats, units }
 }
-
-/** A closed ring of [lon, lat] pairs. */
-export type Ring = [number, number][]
 
 export async function loadShape(origin: string, longname: string): Promise<Ring[]> {
     setOrigin(origin)

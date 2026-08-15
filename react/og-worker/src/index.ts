@@ -138,7 +138,12 @@ async function renderImage(env: WorkerEnv, target: URL, ctx: WorkerContext): Pro
 
     resvgReady ??= initWasm(resvgWasm)
     await resvgReady
-    const png = new Resvg(svg, { fitTo: { mode: 'width', value: size.width } }).render().asPng()
+    const png = new Resvg(svg, {
+        fitTo: { mode: 'width', value: size.width },
+        // Satori turns the card's own text into paths, but the basemap's place names reach resvg as
+        // <text> inside the map image, and it has no system fonts to set them in.
+        font: { fontBuffers: [new Uint8Array(jostRegular)], defaultFontFamily: 'Jost' },
+    }).render().asPng()
 
     const response = new Response(png, {
         headers: { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400' },
