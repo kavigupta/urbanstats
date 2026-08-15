@@ -10,16 +10,7 @@
 // eslint-disable-next-line import/no-unassigned-import -- Installing those globals is the point.
 import './browser-shim'
 
-import { Resvg, initWasm } from '@resvg/resvg-wasm'
-import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm'
-import satori from 'satori'
-
 import { pageDescriptorFromURL } from '../../src/navigation/PageDescriptor'
-import jostRegular from '../assets/Jost-400.ttf'
-import jostSemiBold from '../assets/Jost-600.ttf'
-
-import { articleCard, loadPage, loadShape } from './data'
-import { embedCard } from './embed'
 
 interface Embed {
     title: string
@@ -102,8 +93,6 @@ class RewriteTitle implements RewriterHandler {
     }
 }
 
-let resvgReady: Promise<void> | undefined
-
 let reloadEpoch: string | undefined
 
 function servingLocalSite(env: WorkerEnv): boolean {
@@ -147,32 +136,12 @@ async function renderImage(env: WorkerEnv, target: URL, ctx: WorkerContext): Pro
         return new Response('no longname', { status: 400 })
     }
 
-    const [page, rings] = await Promise.all([
-        loadPage(env.SITE_ORIGIN, target).catch(() => undefined),
-        loadShape(env.SITE_ORIGIN, longname).catch(() => []),
-    ])
-    if (page?.pageData.kind !== 'article') {
+    // Deferred so that only a render evaluates the drawing half. See render.ts.
+    const { renderCard } = await import('./render')
+    const png = await renderCard(env.SITE_ORIGIN, target, longname)
+    if (png === undefined) {
         return new Response('no such article', { status: 404 })
     }
-
-    const size = { width: 1200, height: 630 }
-    const card = await embedCard(await articleCard(page.pageData, page.settings), rings, size)
-    const svg = await satori(card, {
-        ...size,
-        fonts: [
-            { name: 'Jost', data: jostRegular, weight: 400, style: 'normal' },
-            { name: 'Jost', data: jostSemiBold, weight: 600, style: 'normal' },
-        ],
-    })
-
-    resvgReady ??= initWasm(resvgWasm)
-    await resvgReady
-    const png = new Resvg(svg, {
-        fitTo: { mode: 'width', value: size.width },
-        // Satori turns the card's own text into paths, but the basemap's place names reach resvg as
-        // <text> inside the map image, and it has no system fonts to set them in.
-        font: { fontBuffers: [new Uint8Array(jostRegular)], defaultFontFamily: 'Jost' },
-    }).render().asPng()
 
     const response = new Response(png, {
         headers: { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400' },

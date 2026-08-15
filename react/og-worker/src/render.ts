@@ -1,0 +1,52 @@
+/*
+ * The drawing half, kept behind a dynamic import in index.ts.
+ *
+ * Evaluating satori is most of this Worker's startup, and rewriting a page's tags -- what every
+ * real browser request does -- has no use for it. Behind an import() only a render pays for it.
+ */
+import { Resvg, initWasm } from '@resvg/resvg-wasm'
+import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm'
+// The default satori build carries Yoga as base64 and compiles it as it evaluates, and Workers only
+// permit compiling wasm while the global scope runs -- so under a dynamic import that throws. The
+// standalone build takes the binary as a module wrangler compiled at deploy time instead.
+import satori, { init as initYoga } from 'satori/standalone'
+import yogaWasm from 'satori/yoga.wasm'
+
+import jostRegular from '../assets/Jost-400.ttf'
+import jostSemiBold from '../assets/Jost-600.ttf'
+
+import { articleCard, loadPage, loadShape } from './data'
+import { embedCard } from './embed'
+
+let wasmReady: Promise<unknown> | undefined
+
+/** The card as a PNG, or undefined if the URL names no article. */
+export async function renderCard(origin: string, target: URL, longname: string): Promise<Uint8Array | undefined> {
+    const [page, rings] = await Promise.all([
+        loadPage(origin, target).catch(() => undefined),
+        loadShape(origin, longname).catch(() => []),
+    ])
+    if (page?.pageData.kind !== 'article') {
+        return undefined
+    }
+
+    wasmReady ??= Promise.all([initYoga(yogaWasm), initWasm(resvgWasm)])
+    await wasmReady
+
+    const size = { width: 1200, height: 630 }
+    const card = await embedCard(await articleCard(page.pageData, page.settings), rings, size)
+    const svg = await satori(card, {
+        ...size,
+        fonts: [
+            { name: 'Jost', data: jostRegular, weight: 400, style: 'normal' },
+            { name: 'Jost', data: jostSemiBold, weight: 600, style: 'normal' },
+        ],
+    })
+
+    return new Resvg(svg, {
+        fitTo: { mode: 'width', value: size.width },
+        // Satori turns the card's own text into paths, but the basemap's place names reach resvg as
+        // <text> inside the map image, and it has no system fonts to set them in.
+        font: { fontBuffers: [new Uint8Array(jostRegular)], defaultFontFamily: 'Jost' },
+    }).render().asPng()
+}
