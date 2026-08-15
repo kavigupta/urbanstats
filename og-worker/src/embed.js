@@ -5,8 +5,43 @@
  * rather than a rendering of the real page. The values inside it are not ours though: they come
  * from the site's own renderers, so the numbers cannot drift from the page they describe.
  */
+// Deliberately the site's React, by path. og-worker has its own copy at a different major, and the
+// dispatcher has to be installed on the instance the site's components actually call hooks through.
+import * as siteReact from '../../react/node_modules/react/index.js'
+
 import { getUnitDisplay } from '../../react/src/components/unit-display.tsx'
 import { classifyStatistic } from '../../react/src/utils/unit.ts'
+
+/*
+ * Lets satori call the site's function components.
+ *
+ * Most unit displays hand back plain elements, but the election ones return <PartyPercentage/>,
+ * which reads the party hues out of useColors(). Satori calls the component; React installs a hook
+ * dispatcher only while a renderer is running, so without one every hook inside it throws.
+ *
+ * These resolve the way a first render with no state changes would. Installed on first use rather
+ * than at module scope, because React's internals are not populated yet while the module graph is
+ * still evaluating.
+ */
+function installHooks() {
+    const dispatcher = siteReact.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactCurrentDispatcher
+    if (dispatcher.current !== null) {
+        return
+    }
+    dispatcher.current = {
+        useContext: context => context._currentValue,
+        useState: initial => [typeof initial === 'function' ? initial() : initial, () => {}],
+        useReducer: (reducer, initial) => [initial, () => {}],
+        useMemo: factory => factory(),
+        useCallback: callback => callback,
+        useRef: initial => ({ current: initial }),
+        useEffect: () => {},
+        useLayoutEffect: () => {},
+        useDebugValue: () => {},
+        useSyncExternalStore: (subscribe, getSnapshot) => getSnapshot(),
+        useId: () => 'og',
+    }
+}
 
 const colors = {
     background: '#fff8f0',
@@ -118,6 +153,7 @@ const row = (stat, index, units) => ({
 })
 
 export function embedCard(article, rings, { width, height }) {
+    installHooks()
     const mapSize = { width: 380, height: 340 }
     return {
         type: 'div',

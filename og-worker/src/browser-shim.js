@@ -23,6 +23,10 @@ globalThis.document ??= {
     documentElement: { clientWidth: 1200, clientHeight: 800 },
 }
 
+// The default theme is 'System Theme', so useCurrentTheme asks the media query. A card is a light
+// image on every platform that shows it, so answer as a light-mode client.
+globalThis.matchMedia ??= () => ({ matches: false, addEventListener: () => {}, removeEventListener: () => {} })
+
 const store = new Map()
 
 globalThis.localStorage ??= {
