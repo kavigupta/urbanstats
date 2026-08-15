@@ -31,7 +31,18 @@ interface Rule {
     dash?: string
     /** Below this display zoom the rule is skipped, the way the style's own minzooms work. */
     minZoom?: number
+    /** Whether the simplified basemap keeps this rule. */
+    simple?: true
 }
+
+/*
+ * The card's map box is a few hundred pixels wide against the site's own full-width map, and the
+ * full style at that size is a mesh of roads with no room to read as anything. The simplified set
+ * keeps water, green, boundaries and the major-road skeleton, and costs about a third less: it
+ * walks the transportation layer three times rather than eight, and landuse and buildings not at
+ * all. Flip to draw the whole style instead.
+ */
+const simplified: boolean = true
 
 function widthAt(stops: [number, number][], zoom: number): number {
     if (zoom <= stops[0][0]) {
@@ -60,7 +71,7 @@ const minorWidth: [number, number][] = [[12, 0.5], [14, 3], [16, 8]]
 const background = '#f8f4f0'
 
 const rules: Rule[] = [
-    { layer: 'landcover', where: p => p.class === 'wood', fill: '#66aa44', opacity: 0.1 },
+    { layer: 'landcover', where: p => p.class === 'wood', fill: '#66aa44', opacity: 0.1, simple: true },
     { layer: 'landcover', where: p => p.class === 'grass', fill: '#d8e8c8' },
     { layer: 'landcover', where: p => p.class === 'sand', fill: '#f5eebc' },
     { layer: 'landcover', where: p => p.class === 'ice', fill: '#ffffff', opacity: 0.5 },
@@ -70,15 +81,17 @@ const rules: Rule[] = [
     { layer: 'landuse', where: p => p.class === 'cemetery', fill: '#e0e4dd' },
     { layer: 'landuse', where: p => p.class === 'hospital', fill: '#ffddee' },
     { layer: 'landuse', where: p => p.class === 'school', fill: '#f0e8f8' },
-    { layer: 'park', fill: '#d8e8c8', opacity: 0.35 },
-    { layer: 'water', where: p => p.intermittent !== 1 && p.brunnel !== 'tunnel', fill: '#aecfe2' },
+    { layer: 'park', fill: '#d8e8c8', opacity: 0.35, simple: true },
+    { layer: 'water', where: p => p.intermittent !== 1 && p.brunnel !== 'tunnel', fill: '#aecfe2', simple: true },
     { layer: 'waterway', stroke: '#a0c8f0', width: [[10, 0.8], [14, 1.5], [17, 4]] },
     { layer: 'aeroway', where: p => p.class === 'runway' || p.class === 'taxiway', stroke: '#dddddd', width: [[11, 2], [16, 12]] },
 
-    { layer: 'transportation', where: roadClass('minor', 'service', 'track'), stroke: '#cfcdca', width: minorWidth, minZoom: 12 },
+    // Kept simplified too: at a zoom this close a small shape has nothing else around it, and the
+    // minzoom means a city-wide card never pays for it.
+    { layer: 'transportation', where: roadClass('minor', 'service', 'track'), stroke: '#cfcdca', width: minorWidth, minZoom: 12, simple: true },
     { layer: 'transportation', where: roadClass('secondary', 'tertiary'), stroke: '#e9ac77', width: secondaryWidth },
-    { layer: 'transportation', where: roadClass('trunk', 'primary'), stroke: '#e9ac77', width: trunkWidth },
-    { layer: 'transportation', where: roadClass('motorway'), stroke: '#e9ac77', width: motorwayWidth },
+    { layer: 'transportation', where: roadClass('trunk', 'primary'), stroke: '#e9ac77', width: trunkWidth, simple: true },
+    { layer: 'transportation', where: roadClass('motorway'), stroke: '#e9ac77', width: motorwayWidth, simple: true },
 
     { layer: 'transportation', where: roadClass('path'), stroke: '#ccbbaa', width: [[14, 0.8], [18, 3]], minZoom: 14 },
     { layer: 'transportation', where: roadClass('rail'), stroke: '#bbbbbb', width: [[12, 0.5], [18, 2]], minZoom: 11 },
@@ -88,8 +101,8 @@ const rules: Rule[] = [
     { layer: 'transportation', where: roadClass('trunk', 'primary'), stroke: '#ffeeaa', width: trunkWidth.map(([z, w]): [number, number] => [z, Math.max(w - 1.6, 0.4)]) },
     { layer: 'transportation', where: roadClass('motorway'), stroke: '#ffcc88', width: motorwayWidth.map(([z, w]): [number, number] => [z, Math.max(w - 1.8, 0.4)]) },
 
-    { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 6 && p.maritime !== 1, stroke: '#b3b3b3', width: [[7, 1], [11, 2]], dash: '2 2' },
-    { layer: 'boundary', where: p => Number(p.admin_level) === 2 && p.maritime !== 1, stroke: '#a8a6b0', width: [[3, 1], [12, 3]] },
+    { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 6 && p.maritime !== 1, stroke: '#b3b3b3', width: [[7, 1], [11, 2]], dash: '2 2', simple: true },
+    { layer: 'boundary', where: p => Number(p.admin_level) === 2 && p.maritime !== 1, stroke: '#a8a6b0', width: [[3, 1], [12, 3]], simple: true },
 ]
 
 const labelColor = '#5c5343'
@@ -295,8 +308,10 @@ export async function basemap(layout: MapLayout, width: number, height: number):
         return { paint: '', labels: [] }
     }
     const painted = rules
-        .filter(rule => rule.minZoom === undefined || layout.zoom >= rule.minZoom)
-        .map(rule => rulePath(rule, rule.width === undefined ? 1 : widthAt(rule.width, layout.zoom), tiles, width, height))
+        .filter(rule => (!simplified || rule.simple === true) && (rule.minZoom === undefined || layout.zoom >= rule.minZoom))
+        // Simplified roads are the casing rules with their fills dropped, so they draw at the width
+        // meant to sit under another line. Narrowed back to about what the fill would have been.
+        .map(rule => rulePath(rule, rule.width === undefined ? 1 : widthAt(rule.width, layout.zoom) * (simplified ? 0.6 : 1), tiles, width, height))
         .join('')
     return {
         paint: `<rect width="${width}" height="${height}" fill="${background}"/>${painted}`,
