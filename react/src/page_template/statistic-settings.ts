@@ -1,6 +1,7 @@
 import { useContext, useEffect, useMemo } from 'react'
 
 import { dataSources } from '../data/statistics_tree'
+import { Navigator } from '../navigation/Navigator'
 
 import { isStagedChange, Settings, settingValue, sourceEnabledKey, StatGroupKey, StatYearKey, StatSourceKey, useSetting, useSettings, useSettingsInfo } from './settings'
 import { allGroups, allYears, AmbiguousSources, Category, DataSource, DataSourceCheckboxes, findAmbiguousSourcesAll, Group, SourceIdentifier, sourceDisambiguation, statParents, StatPath, statsTree, Year, yearStatPaths } from './statistic-tree'
@@ -430,19 +431,8 @@ function consolidateGroupsIn({ categories: availableCategories, groups: availabl
  * This allows us to not show the user checkboxes that do nothing.
  */
 
-/*
- * Provided by the Navigator on load rather than imported from it. Importing the router here would
- * drag the whole page graph in behind it, which keeps this module -- and everything that reads
- * settings, including the link-embed renderer -- from being usable outside a browser.
- */
-let statPathsSource: (() => StatPath[][] | undefined) | undefined
-
-export function provideStatPaths(source: () => StatPath[][] | undefined): void {
-    statPathsSource = source
-}
-
 export function useStatPathsAll(): StatPath[][] {
-    return statPathsSource?.() ?? (() => { throw new Error('Current page does not have StatPath information') })()
+    return useContext(Navigator.Context).useStatPathsAll() ?? (() => { throw new Error('Current page does not have StatPath information') })()
 }
 
 function intersectsPage(statPaths: Set<StatPath>, pageStatPaths: Set<StatPath>): boolean {
