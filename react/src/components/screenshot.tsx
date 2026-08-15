@@ -16,7 +16,7 @@ const debugLog = makeDebugLogger('mapExport')
 // matches the corners of the screenshot icon
 const screenshotButtonRadius = '7px 7px 3px 7px'
 
-export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
+export function ScreenshotButton(props: { onClick: () => void, loading: boolean }): ReactNode {
     const colors = useColors()
     const screencapButton = (
         <button
@@ -34,8 +34,8 @@ export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
             <img src="/screenshot.png" alt="" style={{ height: '100%' }} />
         </button>
     )
-    // if screenshot mode is on, put a loading circle over the image
-    if (useScreenshotMode()) {
+    // while a capture is running, put a loading circle over the image
+    if (props.loading) {
         const pad = 10 // pct
         const loadingCircle = (
             <div style={{

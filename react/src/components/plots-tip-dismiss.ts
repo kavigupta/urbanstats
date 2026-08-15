@@ -71,7 +71,7 @@ export function dismissButtonTipIndex(target: EventTarget | null): number | null
 export function attachDismissButtons(plot: Element, transpose: boolean, onDismiss: (tipIndex: number) => void): void {
     // transposed plots draw at double the font size, so the buttons scale to match
     const scale = transpose ? 2 : 1
-    for (const tip of Array.from(plot.querySelectorAll(`g.${pinnedTipClassName}`))) {
+    for (const tip of plot.querySelectorAll(`g.${pinnedTipClassName}`)) {
         const tipIndex = Number(tip.getAttribute(tipIndexAttribute))
         // the tooltip proper is the first child of the mark's group, which may also hold the leader
         // drawn back to a displaced tooltip's point -- measuring that too would misplace the button

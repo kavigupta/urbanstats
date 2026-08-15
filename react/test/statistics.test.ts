@@ -125,6 +125,14 @@ test('universe search field', async (t) => {
     await t.expect(getLocation()).eql(`${target}/statistic.html?statname=Population&article_type=City&start=501&amount=20&universe=New+Mexico%2C+USA`)
 })
 
+test('universe keyboard navigation', async (t) => {
+    // no click on the search field: opening the dropdown should focus it
+    await t.click(universeSelector).pressKey('n e w')
+    await t.expect(Selector('img.universe-selector-option').count).eql(4)
+    await t.pressKey('down down down up enter')
+    await t.expect(getLocation()).eql(`${target}/statistic.html?statname=Population&article_type=City&start=501&amount=20&universe=New+Mexico%2C+USA`)
+})
+
 urbanstatsFixture('statistic universe availability test', `${target}/statistic.html?statname=Commute+Car+__PCT__&article_type=Subnational+Region&start=21&amount=20&universe=USA`)
 
 test('statistic-universe availability test', async (t) => {
