@@ -126,8 +126,10 @@
           URBANSTATS_ORIGIN={{ urbanstats_origin }}
           POOL_SIZE={{ pool_size }}
           CAPTURE_SCALE={{ capture_scale }}
+          TUNNEL_TOKEN={{ tunnel_token }}
         dest: "{{ app_dir }}/.env"
         mode: "0640"
+      no_log: true
       register: environment_file
 
     # Cheap when nothing changed, because the layer cache covers both the base image

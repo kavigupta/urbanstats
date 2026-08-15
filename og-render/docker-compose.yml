@@ -32,5 +32,14 @@ services:
       - "127.0.0.1:8010:8010"
     restart: unless-stopped
 
+  # Publishes og-render without opening a port. The token is issued per tunnel in the Cloudflare
+  # dashboard, which is also where its public hostname is pointed at http://og-render:8010.
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+    depends_on:
+      - og-render
+    restart: unless-stopped
+
 volumes:
   browser-cache:

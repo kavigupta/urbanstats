@@ -1,0 +1,16 @@
+name = "urbanstats-og"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+
+# The prototype runs on its own subdomain rather than in front of urbanstats.org, so sharing a
+# us.lbtunnel.uk link exercises the whole path without touching the real site. This route stays
+# inert until an `us` record exists on the zone -- a Worker route only fires for a hostname that
+# resolves.
+routes = [
+  { pattern = "us.lbtunnel.uk/*", zone_name = "lbtunnel.uk" },
+]
+
+[vars]
+SITE_ORIGIN = "https://urbanstats.org"
+# The renderer on the VPS, published by its own cloudflared.
+RENDER_ORIGIN = "https://ogrender.lbtunnel.uk"
