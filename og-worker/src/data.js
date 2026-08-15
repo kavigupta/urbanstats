@@ -68,7 +68,9 @@ export function articleCard({ pageData, settings }) {
             percentile: row.percentileByPopulation,
         }))
     const { shortname, longname, articleType } = pageData.article
-    return { shortname, longname, articleType, stats }
+    // Unit preferences reach the value renderer separately from the rows, and `?s` carries them.
+    const units = settings.getMultiple(['use_imperial', 'temperature_unit'])
+    return { shortname, longname, articleType, stats, units }
 }
 
 export async function loadShape(origin, longname) {

@@ -79,8 +79,10 @@ function styleBareTags(node) {
     return { ...node, props: { ...node.props, children } }
 }
 
-function formatValue({ name, value }) {
-    const rendered = getUnitDisplay(classifyStatistic(name)).renderValue(value)
+function formatValue({ name, value }, units) {
+    // renderValue takes the unit preferences separately from the value, and `?s` carries both, so
+    // dropping them here would silently pin every card to Fahrenheit and metric.
+    const rendered = getUnitDisplay(classifyStatistic(name)).renderValue(value, units.use_imperial, units.temperature_unit)
     return [styleBareTags(rendered.value), styleBareTags(rendered.unit)]
 }
 
@@ -92,7 +94,7 @@ const ordinalSuffix = (n) => {
     return ['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'
 }
 
-const row = (stat, index) => ({
+const row = (stat, index, units) => ({
     type: 'div',
     props: {
         style: {
@@ -103,7 +105,7 @@ const row = (stat, index) => ({
         },
         children: [
             { type: 'div', props: { style: { flex: 1, fontSize: 24 }, children: stat.name } },
-            { type: 'div', props: { style: { width: 170, fontSize: 26, justifyContent: 'flex-end', display: 'flex' }, children: formatValue(stat) } },
+            { type: 'div', props: { style: { width: 170, fontSize: 26, justifyContent: 'flex-end', display: 'flex' }, children: formatValue(stat, units) } },
             {
                 type: 'div',
                 props: {
@@ -139,7 +141,7 @@ export function embedCard(article, rings, { width, height }) {
                     props: {
                         style: { display: 'flex', flex: 1, alignItems: 'flex-start' },
                         children: [
-                            { type: 'div', props: { style: { display: 'flex', flexDirection: 'column', flex: 1, paddingRight: 32 }, children: article.stats.map(row) } },
+                            { type: 'div', props: { style: { display: 'flex', flexDirection: 'column', flex: 1, paddingRight: 32 }, children: article.stats.map((stat, index) => row(stat, index, article.units)) } },
                             rings.length === 0
                                 ? { type: 'div', props: { style: { display: 'flex' }, children: '' } }
                                 : { type: 'img', props: { src: mapImage(rings, mapSize.width, mapSize.height), ...mapSize } },
