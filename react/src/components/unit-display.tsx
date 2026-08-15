@@ -55,11 +55,11 @@ interface ReaderSettings {
 
 /**
  * What a quantity reads as: the number in the pieces the browser shapes separately, and the name
- * of the unit it is in. A number written as one string where the reference writes it as several
+ * of the unit it is in. A number written as one string where it used to be written as several
  * rasterizes differently, so the pieces are kept apart.
  */
 interface Written {
-    number: string | string[]
+    number: string[]
     unit: ReactNode
 }
 
@@ -67,9 +67,8 @@ function display(write: (value: number, settings: ReaderSettings) => Written, in
     return {
         renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
             const { number, unit } = write(value, { useImperial: useImperial ?? false, temperatureUnit: temperatureUnit ?? 'fahrenheit' })
-            const pieces = typeof number === 'string' ? [number] : number
             return {
-                value: <span>{pieces.map((piece, index) => <React.Fragment key={index}>{piece}</React.Fragment>)}</span>,
+                value: <span>{number.map((piece, index) => <React.Fragment key={index}>{piece}</React.Fragment>)}</span>,
                 unit,
             }
         },
@@ -162,7 +161,7 @@ function partyDisplay(emphasis: PartyNumberStyling): UnitDisplay {
 export function getUnitDisplay(unitType: UnitType): UnitDisplay {
     switch (unitType) {
         case 'percentage':
-            return display(value => ({ number: percentage(value), unit: percentSign }))
+            return display(value => ({ number: [percentage(value)], unit: percentSign }))
         case 'percentageChange':
             return display(value => ({ number: [value >= 0 ? '+' : '', percentage(value)], unit: percentSign }))
         case 'democraticMargin':
@@ -195,21 +194,21 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'partyChangePurple':
             return partyDisplay({ kind: 'change', hue: 'purple' })
         case 'fatalities':
-            return display(value => ({ number: separateNumber(value.toFixed(0)), unit: blank }))
+            return display(value => ({ number: [separateNumber(value.toFixed(0))], unit: blank }))
         case 'fatalitiesPerCapita':
             return display(value => ({
-                number: (perHundredThousand * value).toFixed(2),
+                number: [(perHundredThousand * value).toFixed(2)],
                 unit: <span>/100k</span>,
             }))
         case 'density':
             return display((value, { useImperial }) => ({
-                number: roundToDigits(useImperial ? value * squareKmPerSquareMile : value, { significantDigits: 2 }),
+                number: [roundToDigits(useImperial ? value * squareKmPerSquareMile : value, { significantDigits: 2 })],
                 unit: perSquared(useImperial ? 'mi' : 'km'),
             }))
         case 'population':
             return display((value) => {
                 const { number, suffix } = abbreviate(value)
-                return { number, unit: suffix === '' ? blank : <span>{suffix}</span> }
+                return { number: [number], unit: suffix === '' ? blank : <span>{suffix}</span> }
             })
         case 'usd':
             return display((value) => {
@@ -222,29 +221,29 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                 if (useImperial) {
                     const squareMiles = value / squareKmPerSquareMile
                     if (Math.abs(squareMiles) < 1) {
-                        return { number: roundToDigits(squareMiles * acresPerSquareMile, { significantDigits: 3 }), unit: <span>acres</span> }
+                        return { number: [roundToDigits(squareMiles * acresPerSquareMile, { significantDigits: 3 })], unit: <span>acres</span> }
                     }
-                    return { number: roundToDigits(squareMiles, { significantDigits: 3 }), unit: squared('mi') }
+                    return { number: [roundToDigits(squareMiles, { significantDigits: 3 })], unit: squared('mi') }
                 }
                 if (Math.abs(value) < 0.01) {
-                    return { number: roundToDigits(value * squareMetersPerSquareKm, { significantDigits: 3 }), unit: squared('m') }
+                    return { number: [roundToDigits(value * squareMetersPerSquareKm, { significantDigits: 3 })], unit: squared('m') }
                 }
-                return { number: roundToDigits(value, { significantDigits: 3 }), unit: squared('km') }
+                return { number: [roundToDigits(value, { significantDigits: 3 })], unit: squared('km') }
             })
         case 'distanceInKm':
             return display((value, { useImperial }) => ({
-                number: (useImperial ? value / kmPerMile : value).toFixed(2),
+                number: [(useImperial ? value / kmPerMile : value).toFixed(2)],
                 unit: <span>{useImperial ? 'mi' : 'km'}</span>,
             }))
         case 'distanceInM':
             return display((value, { useImperial }) => ({
-                number: separateNumber((useImperial ? value * feetPerMeter : value).toFixed(0)),
+                number: [separateNumber((useImperial ? value * feetPerMeter : value).toFixed(0))],
                 unit: <span>{useImperial ? 'ft' : 'm'}</span>,
             }))
         case 'temperature':
             return display((value, { temperatureUnit }) => {
                 const converted = convertTemperature(value, temperatureUnit)
-                return { number: converted.value.toFixed(1), unit: <span>{converted.unit}</span> }
+                return { number: [converted.value.toFixed(1)], unit: <span>{converted.unit}</span> }
             })
         case 'time':
             return display(value => ({ number: hoursAndMinutes(Math.floor(value), Math.floor((value - Math.floor(value)) * 60)), unit: blank }))
@@ -252,13 +251,13 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
             return display((value) => {
                 const hours = Math.floor(value / 60)
                 const minutes = Math.floor(value % 60)
-                return { number: hours > 0 ? hoursAndMinutes(hours, minutes) : `${minutes}`, unit: blank }
+                return { number: hours > 0 ? hoursAndMinutes(hours, minutes) : [`${minutes}`], unit: blank }
             })
         case 'distancePerYear':
             return display((value, { useImperial }) => {
                 const converted = convertPrecipitation(value, useImperial)
                 return {
-                    number: converted.value.toFixed(1),
+                    number: [converted.value.toFixed(1)],
                     unit: (
                         <span>
                             {converted.unit}
@@ -269,7 +268,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
             })
         case 'contaminantLevel':
             return display(value => ({
-                number: value.toFixed(2),
+                number: [value.toFixed(2)],
                 unit: (
                     <span>
                         &mu;g/m
@@ -278,7 +277,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                 ),
             }))
         case 'number':
-            return display(value => ({ number: formatToSignificantFigures(value, 3), unit: blank }))
+            return display(value => ({ number: [formatToSignificantFigures(value, 3)], unit: blank }))
     }
 }
 /* eslint-enable no-restricted-syntax */
