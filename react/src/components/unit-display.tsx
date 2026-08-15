@@ -56,13 +56,9 @@ interface ReaderSettings {
     temperatureUnit: string
 }
 
-/**
- * What a quantity reads as: the number in the pieces the browser shapes separately, and the name
- * of the unit it is in. A number written as one string where it used to be written as several
- * rasterizes differently, so the pieces are kept apart.
- */
+/** What a quantity reads as: the number, and the name of the unit it is in. */
 interface Written {
-    number: string[]
+    number: string
     unit: ReactNode
 }
 
@@ -70,11 +66,7 @@ function display(write: (value: number, settings: ReaderSettings) => Written, in
     return {
         renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
             const { number, unit } = write(value, { useImperial: useImperial ?? false, temperatureUnit: temperatureUnit ?? 'fahrenheit' })
-            const pieces = isFinite(value) ? number : [missing]
-            return {
-                value: <span>{pieces.map((piece, index) => <React.Fragment key={index}>{piece}</React.Fragment>)}</span>,
-                unit,
-            }
+            return { value: <span>{isFinite(value) ? number : missing}</span>, unit }
         },
         renderInequality: inequality,
     }
@@ -93,34 +85,29 @@ function squared(name: string): ReactNode {
 }
 
 /** A solidus with a numerator in front of it is set tight; one without gets a space. */
-function per(name: ReactNode): ReactNode {
+function per(name: string): string {
+    return `/\u00a0${name}`
+}
+
+function perSquared(name: string): ReactNode {
     return (
         <span>
-            /&nbsp;
-            {name}
+            {per(name)}
+            <sup>2</sup>
         </span>
     )
 }
 
-function perSquared(name: string): ReactNode {
-    return per(
-        <>
-            {name}
-            <sup>2</sup>
-        </>,
-    )
-}
-
 /** Durations read as hours and minutes, dropping the hours where there are none. */
-function hoursAndMinutes(hours: number): string[] {
+function hoursAndMinutes(hours: number): string {
     const totalMinutes = Math.round(Math.abs(hours) * 60)
     const sign = hours < 0 && totalMinutes > 0 ? '-' : ''
     const wholeHours = Math.floor(totalMinutes / 60)
     const minutes = totalMinutes % 60
     if (wholeHours === 0) {
-        return [`${sign}${minutes}`]
+        return `${sign}${minutes}`
     }
-    return [`${sign}${wholeHours}`, ':', minutes.toString().padStart(2, '0')]
+    return `${sign}${wholeHours}:${minutes.toString().padStart(2, '0')}`
 }
 
 function percentage(value: number): string {
@@ -151,18 +138,11 @@ function PartyPercentage({ value, emphasis }: { value: number, emphasis: PartyNu
             const magnitude = Math.abs(value) * asPercent
             return (
                 <span style={spanStyle}>
-                    {emphasis.labels[side]}
-                    +
-                    {roundToDigits(magnitude, { significantDigits: 3, minDecimals: 1, maxDecimals: 4 })}
+                    {`${emphasis.labels[side]}+${roundToDigits(magnitude, { significantDigits: 3, minDecimals: 1, maxDecimals: 4 })}`}
                 </span>
             )
         case 'change':
-            return (
-                <span style={spanStyle}>
-                    {value >= 0 ? '+' : ''}
-                    {percentage(value)}
-                </span>
-            )
+            return <span style={spanStyle}>{`${value >= 0 ? '+' : ''}${percentage(value)}`}</span>
         case 'share':
             return <span style={spanStyle}>{percentage(value)}</span>
     }
@@ -182,9 +162,9 @@ function partyDisplay(emphasis: PartyNumberStyling): UnitDisplay {
 export function getUnitDisplay(unitType: UnitType): UnitDisplay {
     switch (unitType) {
         case 'percentage':
-            return display(value => ({ number: [percentage(value)], unit: percentSign }))
+            return display(value => ({ number: percentage(value), unit: percentSign }))
         case 'percentageChange':
-            return display(value => ({ number: [value >= 0 ? '+' : '', percentage(value)], unit: percentSign }))
+            return display(value => ({ number: `${value >= 0 ? '+' : ''}${percentage(value)}`, unit: percentSign }))
         case 'democraticMargin':
             return partyDisplay({ kind: 'lead', labels: { positive: 'D', negative: 'R' }, hues: { positive: 'blue', negative: 'red' } })
         case 'leftMargin':
@@ -215,55 +195,55 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'partyChangePurple':
             return partyDisplay({ kind: 'change', hue: 'purple' })
         case 'fatalities':
-            return display(value => ({ number: [separateNumber(value.toFixed(0))], unit: blank }))
+            return display(value => ({ number: separateNumber(value.toFixed(0)), unit: blank }))
         case 'fatalitiesPerCapita':
             return display(value => ({
-                number: [separateNumber((perHundredThousand * value).toFixed(2))],
-                unit: per('100k'),
+                number: separateNumber((perHundredThousand * value).toFixed(2)),
+                unit: <span>{per('100k')}</span>,
             }))
         case 'density':
             return display((value, { useImperial }) => ({
-                number: [roundToDigits(useImperial ? value * squareKmPerSquareMile : value, { significantDigits: 2 })],
+                number: roundToDigits(useImperial ? value * squareKmPerSquareMile : value, { significantDigits: 2 }),
                 unit: perSquared(useImperial ? 'mi' : 'km'),
             }))
         case 'population':
             return display((value) => {
                 const { number, suffix } = abbreviate(value)
-                return { number: [number], unit: suffix === '' ? blank : <span>{suffix}</span> }
+                return { number, unit: suffix === '' ? blank : <span>{suffix}</span> }
             })
         case 'usd':
             return display((value) => {
                 const { number, suffix } = abbreviate(value)
-                return { number: ['$', number], unit: suffix === '' ? blank : <span>{suffix}</span> }
+                return { number: `$${number}`, unit: suffix === '' ? blank : <span>{suffix}</span> }
             })
         case 'area':
             return display((value, { useImperial }) => {
                 if (useImperial) {
                     const squareMiles = value / squareKmPerSquareMile
                     if (Math.abs(squareMiles) < 1) {
-                        return { number: [roundToDigits(squareMiles * acresPerSquareMile, { significantDigits: 3 })], unit: <span>acres</span> }
+                        return { number: roundToDigits(squareMiles * acresPerSquareMile, { significantDigits: 3 }), unit: <span>acres</span> }
                     }
-                    return { number: [roundToDigits(squareMiles, { significantDigits: 3 })], unit: squared('mi') }
+                    return { number: roundToDigits(squareMiles, { significantDigits: 3 }), unit: squared('mi') }
                 }
                 if (Math.abs(value) < 0.01) {
-                    return { number: [roundToDigits(value * squareMetersPerSquareKm, { significantDigits: 3 })], unit: squared('m') }
+                    return { number: roundToDigits(value * squareMetersPerSquareKm, { significantDigits: 3 }), unit: squared('m') }
                 }
-                return { number: [roundToDigits(value, { significantDigits: 3 })], unit: squared('km') }
+                return { number: roundToDigits(value, { significantDigits: 3 }), unit: squared('km') }
             })
         case 'distanceInKm':
             return display((value, { useImperial }) => ({
-                number: [separateNumber((useImperial ? value / kmPerMile : value).toFixed(2))],
+                number: separateNumber((useImperial ? value / kmPerMile : value).toFixed(2)),
                 unit: <span>{useImperial ? 'mi' : 'km'}</span>,
             }))
         case 'distanceInM':
             return display((value, { useImperial }) => ({
-                number: [separateNumber((useImperial ? value * feetPerMeter : value).toFixed(0))],
+                number: separateNumber((useImperial ? value * feetPerMeter : value).toFixed(0)),
                 unit: <span>{useImperial ? 'ft' : 'm'}</span>,
             }))
         case 'temperature':
             return display((value, { temperatureUnit }) => {
                 const converted = convertTemperature(value, temperatureUnit)
-                return { number: [separateNumber(converted.value.toFixed(1))], unit: <span>{converted.unit}</span> }
+                return { number: separateNumber(converted.value.toFixed(1)), unit: <span>{converted.unit}</span> }
             })
         case 'time':
             return display(value => ({ number: hoursAndMinutes(value), unit: blank }))
@@ -273,18 +253,13 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
             return display((value, { useImperial }) => {
                 const converted = convertPrecipitation(value, useImperial)
                 return {
-                    number: [separateNumber(converted.value.toFixed(1))],
-                    unit: (
-                        <span>
-                            {converted.unit}
-                            /yr
-                        </span>
-                    ),
+                    number: separateNumber(converted.value.toFixed(1)),
+                    unit: <span>{`${converted.unit}/yr`}</span>,
                 }
             })
         case 'contaminantLevel':
             return display(value => ({
-                number: [separateNumber(value.toFixed(2))],
+                number: separateNumber(value.toFixed(2)),
                 unit: (
                     <span>
                         &mu;g/m
@@ -293,7 +268,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                 ),
             }))
         case 'number':
-            return display(value => ({ number: [separateNumber(formatToSignificantFigures(value, 3))], unit: blank }))
+            return display(value => ({ number: separateNumber(formatToSignificantFigures(value, 3)), unit: blank }))
     }
 }
 /* eslint-enable no-restricted-syntax */
