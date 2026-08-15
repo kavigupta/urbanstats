@@ -8,6 +8,7 @@
 import React, { ReactElement, ReactNode, cloneElement, isValidElement } from 'react'
 
 import { getUnitDisplay } from '../../src/components/unit-display'
+import flagDimensions from '../../src/data/flag_dimensions'
 import { classifyStatistic } from '../../src/utils/unit'
 
 import { Label, basemap, labelStyle } from './basemap'
@@ -185,6 +186,25 @@ function row(stat: ArticleCard['stats'][number], index: number, units: Units): R
     )
 }
 
+/**
+ * Sized the way the header's flag is: a fixed height, with the site's cap on how wide a wide flag
+ * gets. A column's baseline is its first child's, so the image's bottom is what the title's baseline
+ * lines up with and the label hangs below it.
+ */
+function flag(article: ArticleCard): ReactElement {
+    if (article.flag === undefined) {
+        return <div style={{ display: 'flex' }}></div>
+    }
+    const aspectRatio = flagDimensions[article.universe]
+    const width = 76 * Math.min(aspectRatio, 1.8)
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+            <img src={article.flag} width={width} height={width / aspectRatio} />
+            <div style={{ display: 'flex', fontSize: 16, color: colors.muted, marginTop: 6 }}>UNIVERSE</div>
+        </div>
+    )
+}
+
 export async function embedCard(article: ArticleCard, rings: Ring[], { width, height }: { width: number, height: number }): Promise<ReactElement> {
     installHooks()
     const mapSize = { width: 380, height: 340 }
@@ -201,8 +221,13 @@ export async function embedCard(article: ArticleCard, rings: Ring[], { width, he
                 padding: '36px 48px',
             }}
         >
-            <div style={{ fontSize: 60, fontWeight: 600 }}>{article.shortname}</div>
-            <div style={{ fontSize: 26, color: colors.muted, marginBottom: 16 }}>{article.longname}</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingRight: 24, overflow: 'hidden' }}>
+                    <div style={{ fontSize: 60, fontWeight: 600 }}>{article.shortname}</div>
+                    <div style={{ fontSize: 26, color: colors.muted }}>{article.longname}</div>
+                </div>
+                {flag(article)}
+            </div>
             {/* Stats and map side by side, so neither has to fit in the other's leftovers. */}
             <div style={{ display: 'flex', flex: 1, alignItems: 'flex-start' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingRight: 32 }}>

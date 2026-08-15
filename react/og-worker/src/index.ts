@@ -152,7 +152,7 @@ async function renderImage(env: WorkerEnv, target: URL, ctx: WorkerContext): Pro
     }
 
     const size = { width: 1200, height: 630 }
-    const card = await embedCard(articleCard(page.pageData, page.settings), rings, size)
+    const card = await embedCard(await articleCard(page.pageData, page.settings), rings, size)
     const svg = await satori(card, {
         ...size,
         fonts: [

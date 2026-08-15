@@ -8,7 +8,7 @@
  */
 import { loadFeatureFromConsolidatedShard } from '../../src/load_json'
 import { loadPageDescriptor, PageData, pageDescriptorFromURL } from '../../src/navigation/PageDescriptor'
-import { shapeLink } from '../../src/navigation/links'
+import { shapeLink, universePath } from '../../src/navigation/links'
 import { Settings, SettingsDictionary } from '../../src/page_template/settings'
 import { groupYearKeys } from '../../src/page_template/statistic-settings'
 import { StatName } from '../../src/page_template/statistic-tree'
@@ -73,11 +73,28 @@ export interface ArticleCard {
     shortname: string
     longname: string
     articleType: string
+    universe: string
+    /** The flag as a data URI, or undefined if it could not be read. */
+    flag: string | undefined
     stats: { name: StatName, value: number, ordinal: number, percentile: number }[]
     units: Units
 }
 
-export function articleCard(pageData: Extract<PageData, { kind: 'article' }>, settings: Settings): ArticleCard {
+/** Inlined rather than left as a source for satori to fetch, which has no origin to resolve against. */
+async function flagImage(universe: string): Promise<string | undefined> {
+    const response = await fetch(universePath(universe)).catch(() => undefined)
+    if (response?.ok !== true) {
+        return undefined
+    }
+    const bytes = new Uint8Array(await response.arrayBuffer())
+    let binary = ''
+    for (const byte of bytes) {
+        binary += String.fromCharCode(byte)
+    }
+    return `data:image/png;base64,${btoa(binary)}`
+}
+
+export async function articleCard(pageData: Extract<PageData, { kind: 'article' }>, settings: Settings): Promise<ArticleCard> {
     const stats = pageData.rows(settings.getMultiple(groupYearKeys()))[0]
         // Metadata rows carry a representative or a string where a statistic row carries a number,
         // and the card has nothing to do with either.
@@ -92,7 +109,8 @@ export function articleCard(pageData: Extract<PageData, { kind: 'article' }>, se
     const { shortname, longname, articleType } = pageData.article
     // Unit preferences reach the value renderer separately from the rows, and `?s` carries them.
     const units = settings.getMultiple(['use_imperial', 'temperature_unit'])
-    return { shortname, longname, articleType, stats, units }
+    const universe = pageData.universe
+    return { shortname, longname, articleType, universe, flag: await flagImage(universe), stats, units }
 }
 
 export async function loadShape(origin: string, longname: string): Promise<Ring[]> {
