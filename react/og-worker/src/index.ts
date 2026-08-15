@@ -86,22 +86,31 @@ let resvgReady: Promise<void> | undefined
 
 let reloadEpoch: string | undefined
 
+function servingLocalSite(env: WorkerEnv): boolean {
+    return /^https?:\/\/(localhost|127\.0\.0\.1)(:|$)/.test(env.SITE_ORIGIN)
+}
+
 /**
- * A cache key that a dev reload leaves behind.
- *
- * Otherwise the first render of a URL is what you keep seeing for a day, however much the card's
- * code changes underneath it. Wrangler reloads by starting a fresh isolate, so module state that
- * outlives one request but not one reload is exactly the right lifetime. Deployed renders keep the
- * plain key: up there a new isolate means nothing more than the last one going idle.
+ * An id a dev reload leaves behind: wrangler reloads by starting a fresh isolate, so module state
+ * that outlives one request but not one reload is exactly the right lifetime.
  */
-function cacheKey(env: WorkerEnv, target: URL): Request {
-    if (!/^https?:\/\/(localhost|127\.0\.0\.1)(:|$)/.test(env.SITE_ORIGIN)) {
-        return new Request(target.toString(), { method: 'GET' })
-    }
+function isolateID(): string {
     // Not at module scope: Workers disallow generating randomness while the global scope evaluates.
     reloadEpoch ??= crypto.randomUUID()
+    return reloadEpoch
+}
+
+/**
+ * Otherwise the first render of a URL is what you keep seeing for a day, however much the card's
+ * code changes underneath it. Deployed renders keep the plain key: up there a new isolate means
+ * nothing more than the last one going idle.
+ */
+function cacheKey(env: WorkerEnv, target: URL): Request {
+    if (!servingLocalSite(env)) {
+        return new Request(target.toString(), { method: 'GET' })
+    }
     const key = new URL(target)
-    key.searchParams.set('__reload', reloadEpoch)
+    key.searchParams.set('__reload', isolateID())
     return new Request(key.toString(), { method: 'GET' })
 }
 
@@ -172,6 +181,13 @@ function devCors(response: Response, request: Request): Response {
 export default {
     async fetch(request: Request, env: WorkerEnv, ctx: WorkerContext): Promise<Response> {
         const url = new URL(request.url)
+
+        // Wrangler watches this Worker's own sources, which the site's dev server knows nothing
+        // about, so the preview panel polls here to see the card's code reload.
+        if (servingLocalSite(env) && url.pathname === '/__reload') {
+            const response = new Response(isolateID(), { headers: { 'cache-control': 'no-store' } })
+            return devCors(response, request)
+        }
 
         if (url.pathname.startsWith('/og/')) {
             const target = new URL(url.pathname.slice('/og'.length) + url.search, env.SITE_ORIGIN)

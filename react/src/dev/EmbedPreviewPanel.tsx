@@ -20,7 +20,7 @@ type Status =
 async function fetchEmbed(workerOrigin: string, target: string): Promise<Status> {
     let html: string
     try {
-        const response = await fetch(new URL(target, workerOrigin), { headers: { accept: 'text/html' } })
+        const response = await fetch(new URL(target, workerOrigin), { headers: { accept: 'text/html' }, cache: 'no-store' })
         if (!response.ok) {
             return { kind: 'down' }
         }
@@ -41,16 +41,20 @@ async function fetchEmbed(workerOrigin: string, target: string): Promise<Status>
     if (image === undefined || title === undefined) {
         return { kind: 'down' }
     }
+    const imageURL = new URL(image, workerOrigin)
     // The static preview means the Worker looked at this page and had nothing per-URL to say.
-    if (new URL(image, workerOrigin).pathname === '/link-preview.png') {
+    if (imageURL.pathname === '/link-preview.png') {
         return { kind: 'notEmbeddable' }
     }
+    // The card is served with a day of cache-control, under a URL that stays the same while the code
+    // drawing it changes, so the preview asks for a render of the code as it is now.
+    imageURL.searchParams.set('__preview', Date.now().toString())
     return {
         kind: 'ready',
         embed: {
             title,
             description: meta('og:description') ?? '',
-            image: new URL(image, workerOrigin).toString(),
+            image: imageURL.toString(),
         },
     }
 }
@@ -68,6 +72,7 @@ export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: 
 
     const frame = useRef<HTMLIFrameElement>(null)
     const seen = useRef(target)
+    const isolate = useRef<string | undefined>(undefined)
 
     /*
      * The site navigates with pushState, which fires no load event on the frame, so watching is the
@@ -96,6 +101,26 @@ export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: 
         }, 250)
         return () => { clearInterval(interval) }
     }, [])
+
+    /*
+     * Editing the Worker restarts it, and the site's own hot reload never hears about that, so the
+     * card would sit there drawn by code that no longer exists. The first id seen is only recorded:
+     * a reload is a change from one id to another.
+     */
+    useEffect(() => {
+        const interval = setInterval(() => {
+            void fetch(new URL('/__reload', workerOrigin), { cache: 'no-store' })
+                .then(response => response.text())
+                .then((id) => {
+                    if (isolate.current !== undefined && id !== isolate.current) {
+                        setAttempt(a => a + 1)
+                    }
+                    isolate.current = id
+                })
+                .catch(() => undefined)
+        }, 1000)
+        return () => { clearInterval(interval) }
+    }, [workerOrigin])
 
     useEffect(() => {
         let current = true
