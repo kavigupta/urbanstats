@@ -56,7 +56,6 @@ export function CSVButton(props: { onClick: () => void }): ReactNode {
             style={{
                 height: '100%',
                 cursor: 'pointer',
-                background: 'none',
                 padding: 0,
             }}
         >

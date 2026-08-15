@@ -44,20 +44,17 @@ export function Header(props: {
             <div className="right_panel_top" style={{ height: `${headerBarSize}px` }}>
                 {/* flex but stretch to fill */}
                 <div style={{ display: 'flex', flexDirection: 'row', height: '100%' }}>
-                    {!isMobile && currentUniverse
-                        ? (
-                                <div style={{ paddingRight: '0.5em' }}>
-                                    <UniverseSelector />
-                                </div>
-                            )
-                        : undefined}
+                    {currentUniverse ? <UniverseSelector /> : undefined}
                     {
                         props.hasScreenshot
                             ? (
-                                    <ScreenshotButton
-                                        onClick={() => { props.initiateScreenshot(currentUniverse) }}
-                                        loading={props.screenshotInProgress}
-                                    />
+                                    <>
+                                        <div className="hgap"></div>
+                                        <ScreenshotButton
+                                            onClick={() => { props.initiateScreenshot(currentUniverse) }}
+                                            loading={props.screenshotInProgress}
+                                        />
+                                    </>
                                 )
                             : undefined
                     }
@@ -144,16 +141,10 @@ function TopLeft(props: {
     const universeCtx = useUniverseContext()
     if (useMobileLayout()) {
         return (
-            <div className="left_panel_top" style={{ minWidth: '28%' }}>
+            <div className="left_panel_top">
                 <Nav hamburgerOpen={props.hamburgerOpen} setHamburgerOpen={props.setHamburgerOpen} />
                 <div className="hgap"></div>
-                {
-                    universeCtx
-                        ? (
-                                <UniverseSelector />
-                            )
-                        : <HeaderImage />
-                }
+                {universeCtx === undefined ? <HeaderImage /> : undefined}
             </div>
         )
     }
@@ -282,13 +273,12 @@ function UniverseSelector(): ReactNode {
                     height: `${headerBarSize}px`,
                     display: 'flex',
                     flexDirection: 'row',
-                    justifyContent: 'center',
+                    justifyContent: 'right',
                     alignItems: 'center',
                 }
             }
             >
                 <SelectorFlag
-                    height={headerBarSize}
                     onClick={() => { setDropdownOpen(!dropdownOpen) }}
                     universe={universeCtx.universe}
                 />
@@ -298,32 +288,58 @@ function UniverseSelector(): ReactNode {
     )
 }
 
-function SelectorFlag(props: { height: number, onClick: () => void, universe: string }): ReactNode {
+const universeLabelHeight = 12
+
+function SelectorFlag(props: { universe: string, onClick: () => void }): ReactNode {
+    const colors = useColors()
     const imageAR = flag_dimensions[props.universe]
-    const usableHeight = props.height * flagIconMaxHeightPercent
-    const usableWidth = Math.min(usableHeight * imageAR, props.height * flagIconWidthRatio)
+    const flagImageWidth = Math.min((headerBarSize - universeLabelHeight) * imageAR, headerBarSize * flagIconWidthRatio)
 
     return (
-        <div style={{ width: props.height * flagIconWidthRatio, height: props.height, display: 'flex' }}>
+        <button
+            type="button"
+            className="borderless"
+            aria-label="Switch Universes"
+            onClick={props.onClick}
+            style={{
+                height: '100%',
+                cursor: 'pointer',
+                padding: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                borderRadius: 0,
+            }}
+        >
             <img
-                style={{
-                    margin: 'auto',
-                }}
+                className="universe-selector"
                 src={universePath(props.universe)}
                 alt={props.universe}
-                width={`${usableWidth}px`}
-                className="universe-selector"
-                onClick={props.onClick}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                    if (e.key === ' ' || e.key === 'Enter') {
-                        e.preventDefault()
-                        props.onClick()
-                    }
+                style={{
+                    height: flagImageWidth / imageAR,
+                    width: flagImageWidth,
+                    margin: 'auto',
                 }}
             />
-        </div>
+            <div style={{
+                height: universeLabelHeight,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: `3px 1px 0px 1px`,
+            }}
+            >
+                <div style={{
+                    fontSize: 12,
+                    color: colors.brandingColor,
+                    fontWeight: 'bold',
+                    lineHeight: 0.9,
+                }}
+                >
+                    UNIVERSE
+                </div>
+            </div>
+        </button>
     )
 }
 
