@@ -273,7 +273,7 @@ export async function createScreenshot(config: () => ScreencapElements, universe
         // Resolved inside screenshot mode, so callers can lay out elements differently for
         // the screenshot (e.g. move a header into a footnote) and have that reflected here.
         const resolved = config()
-        const overallWidth = resolved.overallWidth * captureScale
+        const overallWidth = resolved.overallWidth
 
         const canvases = []
         for (const ref of resolved.elementsToRender) {
@@ -326,41 +326,10 @@ export async function createScreenshot(config: () => ScreencapElements, universe
             drawImageIfNotTesting(ctx, canvases.length, flag, padAround + offset, start + offset, flagWidth, flagHeight, TestUtils.shared.isTesting)
         }
 
-        if (deliverCanvas !== undefined) {
-            deliverCanvas(canvas)
-            return
-        }
-
         canvas.toBlob(function (blob) {
             saveAs(blob!, resolved.path)
         })
     })
-}
-
-let deliverCanvas: ((canvas: HTMLCanvasElement) => void) | undefined
-let captureScale = 1
-
-/**
- * Runs a screencap and hands back its image rather than downloading it, so a capture can be driven
- * from outside the page and still go through exactly the path the screenshot button uses. `scale`
- * multiplies the width the page asked for, for callers that want something other than a full-size
- * capture.
- */
-export async function screencapToDataURL(screencap: () => Promise<void>, { scale = 1, type = 'image/png' }: { scale?: number, type?: string } = {}): Promise<string> {
-    let canvas: HTMLCanvasElement | undefined
-    deliverCanvas = (result) => { canvas = result }
-    captureScale = scale
-    try {
-        await screencap()
-    }
-    finally {
-        deliverCanvas = undefined
-        captureScale = 1
-    }
-    if (canvas === undefined) {
-        throw new Error('screencap produced no image')
-    }
-    return canvas.toDataURL(type)
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Context declaration

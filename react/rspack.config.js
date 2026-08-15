@@ -74,8 +74,7 @@ export default env => ({
             writeToDisk: true,
         },
         allowedHosts: [
-            '.local',
-            'urbanstats.lbtunnel.uk'
+            '.local'
         ],
     },
     watchOptions: {

@@ -1,4 +1,0 @@
----
-- import_playbook: swap.yml
-- import_playbook: firewall.yml
-- import_playbook: deploy.yml

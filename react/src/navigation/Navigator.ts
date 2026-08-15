@@ -89,10 +89,6 @@ export class Navigator {
                 },
             }
         }
-        TestUtils.shared.navigate = async (url) => {
-            await this.navigate(pageDescriptorFromURL(new URL(url)), { history: 'replace', scroll: { kind: 'none' } })
-        }
-
         window.addEventListener('hashchange', () => {
             void this.navigate(pageDescriptorFromURL(new URL(discordFix(window.location.href))), { history: 'replace', scroll: { kind: 'none' } })
         })
