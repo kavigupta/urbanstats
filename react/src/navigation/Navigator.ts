@@ -1,8 +1,9 @@
-import React, { createContext, useEffect, useState, useSyncExternalStore } from 'react'
+import React, { createContext, useContext, useEffect, useState, useSyncExternalStore } from 'react'
 import { z } from 'zod'
 
 import { discordFix } from '../discord-fix'
 import { Settings } from '../page_template/settings'
+import { provideStatPaths } from '../page_template/statistic-settings'
 import { StatPath } from '../page_template/statistic-tree'
 import { TestUtils } from '../utils/TestUtils'
 import { assert } from '../utils/defensive'
@@ -404,3 +405,7 @@ export class Navigator {
     }
     /* eslint-enable react-hooks/rules-of-hooks, no-restricted-syntax */
 }
+
+// Registered here rather than imported there, so the settings modules stay free of the router.
+// eslint-disable-next-line react-hooks/rules-of-hooks -- Delegates to a hook, called as one
+provideStatPaths(() => useContext(Navigator.Context).useStatPathsAll())

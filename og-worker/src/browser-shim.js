@@ -7,6 +7,20 @@
  * which is what an embed wants: it should render the page a first-time visitor would see, not
  * whatever the last request happened to configure.
  */
+/*
+ * Enough of a browser for the site's modules to evaluate. Importing its article loader reaches
+ * Navigator, which on load stamps history.scrollRestoration and parses location.href -- so these
+ * are what a module graph touches on the way up, not an attempt at a real DOM.
+ */
+globalThis.window ??= globalThis
+globalThis.location ??= new URL('https://urbanstats.org/')
+globalThis.history ??= {
+    scrollRestoration: 'manual',
+    state: null,
+    pushState: () => {},
+    replaceState: () => {},
+}
+
 const store = new Map()
 
 globalThis.localStorage ??= {

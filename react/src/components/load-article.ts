@@ -265,7 +265,7 @@ function availableMetadataPathsForArticle(article: Article, representativeTable:
     })
 }
 
-function unpackBytes(bytes: Uint8Array): number[] {
+export function unpackBytes(bytes: Uint8Array): number[] {
     const result = []
     for (let i = 0; i < bytes.length; i += 1) {
         const byte = bytes[i]

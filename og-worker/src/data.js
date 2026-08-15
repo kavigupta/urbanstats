@@ -5,8 +5,13 @@
  * does the fetch and decode -- so an embed cannot drift from the page it describes. Only the origin
  * handling is ours: those modules fetch root-relative paths, which a Worker has no base URL for.
  */
+import { getCountsByArticleType } from '../../react/src/components/countsByArticleType.ts'
+import { loadArticles } from '../../react/src/components/load-article.ts'
 import { loadArticleFromConsolidatedShard, loadFeatureFromConsolidatedShard } from '../../react/src/load_json.ts'
 import { dataLink, shapeLink } from '../../react/src/navigation/links.ts'
+import { Settings } from '../../react/src/page_template/settings.ts'
+import { fromVector } from '../../react/src/page_template/settings-vector.ts'
+import { groupYearKeys } from '../../react/src/page_template/statistic-settings.ts'
 import { sanitize } from '../../react/src/utils/paths.ts'
 
 let siteOrigin
@@ -27,27 +32,21 @@ export function useOrigin(origin) {
     siteOrigin = origin
 }
 
-/*
- * Copied rather than imported: it lives in load-article.ts, whose import graph reaches the app's
- * settings and UI, and from there to katex and the webfonts. Everything else here comes from the
- * site's own modules.
+/** How many rows fit the card before it overflows. */
+const maxRows = 5
+
+/**
+ * The stat selection the link carries. `?s` is the settings vector the site puts on shared links,
+ * so decoding it here is what makes an embed show the same rows the sharer was looking at rather
+ * than the defaults.
  */
-function unpackBytes(bytes) {
-    const result = []
-    for (let i = 0; i < bytes.length; i++) {
-        for (let j = 0; j < 8; j++) {
-            if (bytes[i] & (1 << j)) {
-                result.push(i * 8 + j)
-            }
-        }
-    }
-    return result
+function statSettings(vector) {
+    const settings = Settings.shared
+    const fromLink = vector === undefined ? undefined : fromVector(vector, settings)
+    return Object.fromEntries(groupYearKeys().map(key => [key, fromLink?.[key] ?? settings.get(key)]))
 }
 
-/** The stats the embed shows, in the order it shows them. */
-const shown = ['Population', 'PW Density (r=1km)', 'AW Density', 'Area', 'Compactness']
-
-export async function loadArticle(origin, longname, universe) {
+export async function loadArticle(origin, longname, universe, vector) {
     useOrigin(origin)
     const sanitized = sanitize(longname)
     // Resolves symlinked names too, which is why this is worth importing rather than reproducing.
@@ -56,24 +55,20 @@ export async function loadArticle(origin, longname, universe) {
         return undefined
     }
 
-    const statIndices = unpackBytes(article.statisticIndicesPacked)
     // Falls back to the first universe, which is the broadest one the article belongs to.
-    const universeIdx = Math.max(0, article.universes.indexOf(universe ?? article.universes[0]))
+    const chosenUniverse = article.universes.includes(universe) ? universe : article.universes[0]
 
-    const { default: statNames } = await import('../../react/src/data/statistic_name_list.ts')
-    const stats = shown.flatMap((name) => {
-        const row = statIndices.indexOf(statNames.indexOf(name))
-        if (row < 0) {
-            return []
-        }
-        const { statval, ordinalByUniverse, percentileByPopulationByUniverse } = article.rows[row]
-        return [{
-            name,
-            value: statval,
-            ordinal: ordinalByUniverse[universeIdx],
-            percentile: percentileByPopulationByUniverse[universeIdx],
-        }]
-    })
+    // The page's own row assembly, so the embed shows the rows the article page would.
+    const { rows } = await loadArticles([article], await getCountsByArticleType(), chosenUniverse)
+    const stats = rows(statSettings(vector))[0]
+        .filter(row => row.statval !== undefined && row.statname !== undefined)
+        .slice(0, maxRows)
+        .map(row => ({
+            name: row.statname,
+            value: row.statval,
+            ordinal: row.ordinal,
+            percentile: row.percentileByPopulation,
+        }))
 
     return { shortname: article.shortname, longname, articleType: article.articleType, stats }
 }

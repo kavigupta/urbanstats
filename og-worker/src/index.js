@@ -110,7 +110,12 @@ async function renderImage(env, target, ctx) {
     }
 
     const [article, rings] = await Promise.all([
-        loadArticle(env.SITE_ORIGIN, longname, target.searchParams.get('universe') ?? undefined),
+        loadArticle(
+            env.SITE_ORIGIN,
+            longname,
+            target.searchParams.get('universe') ?? undefined,
+            target.searchParams.get('s') ?? undefined,
+        ),
         loadShape(env.SITE_ORIGIN, longname).catch(() => []),
     ])
     if (article === undefined) {
