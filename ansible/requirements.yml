@@ -1,0 +1,6 @@
+---
+collections:
+  - name: community.general
+  # For synchronize, which ships the frontend bundle by rsync so a redeploy only
+  # transfers what actually changed.
+  - name: ansible.posix

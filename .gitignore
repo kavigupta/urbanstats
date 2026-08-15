@@ -4,6 +4,9 @@ quiz.ipynb
 *.ipynb_checkpoints
 output-shapefiles
 dist
+# Production bundle built for the link-embed renderer, kept separate so it does not
+# clobber the dev server's dist.
+dist-prod
 .vscode
 *Copy1.ipynb*
 .DS_Store

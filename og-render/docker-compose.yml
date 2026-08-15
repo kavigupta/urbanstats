@@ -1,0 +1,36 @@
+services:
+  # Stands in for urbanstats.org until the TestUtils hooks ship there. Keeping it on the
+  # host removes the tunnel from the render path, which is otherwise the dominant cost.
+  site:
+    image: caddy:2-alpine
+    volumes:
+      - ./caddy:/etc/caddy
+      - ./site:/site:ro
+    restart: unless-stopped
+
+  og-render:
+    build: .
+    depends_on:
+      - site
+    # Chrome spawns a tree of processes and leaves zombies behind without a real init.
+    init: true
+    # Chrome maps shared memory for its renderers, and the 64MB Docker gives by
+    # default is not enough for a page holding a map. It crashes rather than degrading.
+    shm_size: 1gb
+    environment:
+      URBANSTATS_ORIGIN: ${URBANSTATS_ORIGIN}
+      POOL_SIZE: ${POOL_SIZE}
+      CAPTURE_SCALE: ${CAPTURE_SCALE}
+      CACHE_DIR: /cache
+    volumes:
+      # Keeps the bundle, data files, and map tiles across restarts, so a redeploy
+      # does not pay for a cold cache.
+      - browser-cache:/cache
+    # Loopback only. The service drives a real browser at whatever it is asked for,
+    # so it should not be reachable from the internet until something fronts it.
+    ports:
+      - "127.0.0.1:8010:8010"
+    restart: unless-stopped
+
+volumes:
+  browser-cache:

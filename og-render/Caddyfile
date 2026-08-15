@@ -1,0 +1,19 @@
+# Serves the locally built bundle and defers everything else to production.
+#
+# Only the bundle has to be local: it is what carries the TestUtils hooks the renderer
+# drives, and urbanstats.org does not have them yet. The data, shape, and index files
+# are generated content that the frontend change does not affect, so they come from the
+# real origin -- which keeps this to a few MB rather than the 3.2GB the full site is.
+:8000 {
+	root * /site
+
+	handle /scripts/* {
+		file_server
+	}
+
+	handle {
+		reverse_proxy https://urbanstats.org {
+			header_up Host urbanstats.org
+		}
+	}
+}

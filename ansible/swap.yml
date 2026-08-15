@@ -1,0 +1,44 @@
+---
+- name: Configure swap
+  hosts: render
+  become: true
+
+  tasks:
+    - name: Check for an existing swap file
+      ansible.builtin.stat:
+        path: "{{ swap_file }}"
+      register: swap_file_stat
+
+    # fallocate is safe here because the root filesystem is ext4. On btrfs a
+    # swap file needs dd and chattr +C instead.
+    - name: Create the swap file
+      ansible.builtin.command:
+        cmd: fallocate -l {{ swap_size }} {{ swap_file }}
+      when: not swap_file_stat.stat.exists
+      changed_when: true
+
+    # Set before mkswap: swapon refuses a world-readable swap file.
+    - name: Restrict the swap file to root
+      ansible.builtin.file:
+        path: "{{ swap_file }}"
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Format the swap file
+      ansible.builtin.command:
+        cmd: mkswap {{ swap_file }}
+      when: not swap_file_stat.stat.exists
+      changed_when: true
+
+    - name: Enable the swap file on boot
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        line: "{{ swap_file }} none swap sw 0 0"
+        state: present
+
+    - name: Enable the swap file now
+      ansible.builtin.command:
+        cmd: swapon {{ swap_file }}
+      when: ansible_swaptotal_mb | int == 0
+      changed_when: true
