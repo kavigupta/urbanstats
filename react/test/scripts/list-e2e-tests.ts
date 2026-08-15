@@ -16,7 +16,7 @@ import { DefaultMap } from '../../src/utils/DefaultMap'
  * This scenario is an instance of the bin packing problem.
  * While a simple heuristic using nested loops can provide a near-optimal solution, a provably optimal solution can be obtained using linear programming (LP).
  * Due to the scale of the problem (approximately 2000 variables), the HiGHS LP solver is required for efficient computation.
- * This approach has reduced the number of jobs in the pipeline from 55 to 35.
+ * This approach packs the 87 test files into 27 jobs.
  */
 
 // This is a command line tool, we take in the test durations via JSON passed to a CLI flag
@@ -76,17 +76,21 @@ for (let t = 0; t < knownTests.length; t++) {
 /*
  * The e2e phase takes as long as its longest job, so the job count is only a means to
  * a wall-clock time. Runner minutes are free on a public repo, so the reason not to
- * shard further is that jobs past the account's concurrency ceiling queue instead of
- * running, which adds latency rather than removing it. 28 shards have been observed
- * starting together; this leaves room for the rest of the pipeline on top.
+ * shard further is that jobs past the account's 40-slot concurrency ceiling queue
+ * instead of running, which adds latency rather than removing it.
+ *
+ * That ceiling is shared with every other run in flight, so the best number depends on
+ * how contended the pool is, and no single value wins everywhere. Replaying a trace of
+ * 60 real runs: 26 costs about two minutes when the pool is free and saves two to five
+ * when it is busy, breaking even at roughly a fifth of the pool occupied.
  */
-const jobBudget = 36
+const jobBudget = 26
 
 /*
  * A single test file cannot be divided, so the longest one sets a floor under the whole
  * phase and packing below it just buys jobs that finish early while everyone waits on
- * that file anyway. Taking the max means splitting up a long test file is what turns
- * into a faster pipeline, with no constant here to retune afterwards.
+ * that file anyway. The budget currently sits above that floor and is what binds, so
+ * splitting up the longest test file would not on its own make the pipeline faster.
  */
 const durationLimit = knownTests.length === 0
     ? 0
@@ -126,8 +130,11 @@ await execa(
         'test/scripts/lp.lp',
         '--solution_file', 'test/scripts/solution',
         // Stopping early only costs us a few extra jobs: it is the duration constraint,
-        // not the objective, that decides how long the pipeline takes.
-        '--time_limit', '60',
+        // not the objective, that decides how long the pipeline takes. The budget leaves
+        // the bins almost no slack, so the last job is usually unprovable rather than
+        // findable and the solver would otherwise spend the whole limit on it. This job
+        // is on the critical path, so that time comes straight off every run.
+        '--time_limit', '10',
     ],
     { stderr: process.stderr, stdout: process.stderr },
 )
