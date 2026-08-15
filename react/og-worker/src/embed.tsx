@@ -118,9 +118,24 @@ function keyed(node: ReactNode, key: string | number): ReactNode {
     return isValidElement(node) ? cloneElement(node, { key }) : node
 }
 
+/**
+ * Jost has no U+202F, the digit group separator, and satori renders a missing glyph as a 0.5em gap
+ * -- far wider than the fallback font a browser reaches for. Spacer elements instead.
+ */
+function narrowSpaces(text: string): ReactNode {
+    const parts = text.split('\u202f')
+    if (parts.length === 1) {
+        return text
+    }
+    return parts.flatMap((part, index) => index === 0 ? [part] : [<div key={index} style={{ width: '0.2em' }} />, part])
+}
+
 function styleBareTags(node: ReactNode): ReactNode {
     if (Array.isArray(node)) {
         return (node as ReactNode[]).map((child, index) => keyed(styleBareTags(child), index))
+    }
+    if (typeof node === 'string') {
+        return narrowSpaces(node)
     }
     if (!isValidElement(node)) {
         return node
