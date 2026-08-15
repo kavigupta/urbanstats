@@ -1,0 +1,45 @@
+name: Deploy OG Worker
+
+# The Worker bundles the site's own page-loading code and reads the site's data files at request
+# time, so a site deploy that changes either leaves the deployed Worker rendering against data it
+# no longer matches. Redeploying it whenever the Pages site is built keeps the two in step.
+#
+# page_build fires for the branch Pages serves, which is what a site deploy pushes to. The Worker
+# is built from urbanstats main, on the assumption that whatever built the site is on main by the
+# time it is deployed; workflow_dispatch is here for the times it isn't.
+on:
+  page_build:
+  workflow_dispatch:
+
+concurrency: deploy-og-worker
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    if: github.event_name != 'page_build' || github.event.build.status == 'built'
+    steps:
+      - name: Checkout urbanstats
+        uses: actions/checkout@v4
+        with:
+          repository: kavigupta/urbanstats
+          token: ${{ secrets.URBANSTATS_TOKEN }}
+          # Everything the Worker bundles lives under react/, and the rest of the repo is large.
+          sparse-checkout: react
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: react/package-lock.json
+
+      - name: Install dependencies
+        working-directory: react
+        run: npm ci
+
+      - name: Deploy
+        working-directory: react/og-worker
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
