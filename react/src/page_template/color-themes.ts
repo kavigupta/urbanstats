@@ -33,6 +33,7 @@ export interface Colors {
     blueLink: string
     mapInsetBorderColor: string
     buttonTextWhite: string
+    brandingColor: string
     bannerURL: string
     mixPct: number
     hueColors: HueColors
@@ -76,6 +77,7 @@ export const colorThemes: Record<Theme, Colors> = {
         blueLink: '#22f',
         mapInsetBorderColor: '#000000',
         buttonTextWhite: '#ffffff',
+        brandingColor: '#8686bf',
         bannerURL: '/banner.png',
         mixPct: 70,
         hueColors: defaultHueColors,
@@ -103,6 +105,7 @@ export const colorThemes: Record<Theme, Colors> = {
         blueLink: '#aaaaff',
         mapInsetBorderColor: '#000000',
         buttonTextWhite: '#ffffff',
+        brandingColor: '#8686bf',
         bannerURL: '/banner-dark.png',
         mixPct: 50,
         hueColors: defaultHueColors,

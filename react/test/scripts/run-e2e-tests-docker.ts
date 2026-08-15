@@ -20,6 +20,9 @@ export async function runE2eTestsDocker(args: string[], hostArch: boolean): Prom
             '--network', 'host',
             ...process.stdout.isTTY ? ['-it'] : [],
             '-v', `${repoRoot}:/urbanstats`,
+            // Empty, so that resolution falls past the host's install to /node_modules, which is
+            // built for the container.
+            '--mount', 'type=tmpfs,dst=/urbanstats/react/node_modules',
             '-w', '/urbanstats/react',
             ...(['PORT', 'TESTCAFE_PORT'].flatMap(envVar => process.env[envVar] ? ['-e', `${envVar}=${process.env[envVar]}`] : [])),
             imageName,
