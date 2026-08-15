@@ -5,7 +5,7 @@
  * rather than a rendering of the real page. The values inside it are not ours though: they come
  * from the site's own renderers, so the numbers cannot drift from the page they describe.
  */
-import { formatToSignificantFigures, separateNumber } from '../../react/src/utils/text.ts'
+import { getUnitDisplay } from '../../react/src/components/unit-display.tsx'
 import { classifyStatistic } from '../../react/src/utils/unit.ts'
 
 const colors = {
@@ -55,29 +55,33 @@ function mapImage(rings, width, height) {
 }
 
 /*
- * Mirrors the site's own value rendering, using its classifier and its separator so numbers read
- * the same -- notably the narrow no-break space in "6 850" rather than a comma.
- *
- * The tiering below duplicates getUnitDisplay, which cannot be imported here: it lives in a .tsx
- * module whose import graph drags in katex and the webfonts. Splitting the pure renderers out of
- * that module would let this go away entirely.
+ * The site's own value rendering, not an imitation of it. `renderValue` hands back React elements,
+ * which is exactly what satori consumes, so the separators, significant figures and unit tiers are
+ * whatever the page uses -- including when they change.
  */
-function formatValue({ name, value }) {
-    switch (classifyStatistic(name)) {
-        case 'population':
-            if (value >= 999.5e6) {
-                return `${(value / 1e9).toPrecision(3)}B`
-            }
-            return value >= 999.5e3 ? `${(value / 1e6).toPrecision(3)}m` : `${(value / 1e3).toPrecision(3)}k`
-        case 'density': {
-            const places = value > 10 ? 0 : (value > 1 ? 1 : 2)
-            return `${separateNumber(value.toFixed(places))}/km²`
-        }
-        case 'area':
-            return `${separateNumber(formatToSignificantFigures(value))} km²`
-        default:
-            return formatToSignificantFigures(value)
+/**
+ * Satori has no user-agent stylesheet, so tags whose meaning is purely presentational arrive
+ * unstyled -- `<sup>2</sup>` would render as a full-size "2". Restores the ones the site uses.
+ */
+function styleBareTags(node) {
+    if (Array.isArray(node)) {
+        return node.map(styleBareTags)
     }
+    if (node === null || typeof node !== 'object' || node.props === undefined) {
+        return node
+    }
+    const children = styleBareTags(node.props.children)
+    if (node.type === 'sup') {
+        // Satori's transform only accepts absolute lengths, so the raise is in px against the
+        // font size the stat value is rendered at.
+        return { type: 'span', props: { style: { fontSize: 17, transform: 'translateY(-8px)' }, children } }
+    }
+    return { ...node, props: { ...node.props, children } }
+}
+
+function formatValue({ name, value }) {
+    const rendered = getUnitDisplay(classifyStatistic(name)).renderValue(value)
+    return [styleBareTags(rendered.value), styleBareTags(rendered.unit)]
 }
 
 const ordinalSuffix = (n) => {

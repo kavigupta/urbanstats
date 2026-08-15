@@ -6,6 +6,9 @@
  * way through, and renders the image here at the edge -- reading the same static data files the
  * site does, so no browser is involved.
  */
+// Must come first: it installs the browser globals the site's modules touch as they evaluate.
+import './browser-shim.js'
+
 import { Resvg, initWasm } from '@resvg/resvg-wasm'
 import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm'
 import satori from 'satori'
