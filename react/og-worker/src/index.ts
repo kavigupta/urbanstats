@@ -28,11 +28,15 @@ interface Embed {
 }
 
 /**
- * Everything the tags say, read off the URL alone. Loading the page would give nicer titles -- an
- * article's shortname rather than its longname -- but it means fetching the article's data on every
- * HTML request, real browsers included, for something only a crawler reads. The image render is the
- * one place that has to pay it.
+ * Everything the tags say, read off the URL alone. Loading the page would give the real shortname
+ * for a title, but it means fetching the article's data on every HTML request, real browsers
+ * included, for something only a crawler reads. The image render is the one place that has to pay
+ * it, so titles here approximate the shortname by cutting the longname at its first comma.
  */
+function shortenLongname(longname: string): string {
+    return longname.split(',')[0]
+}
+
 function describe(url: URL): Embed | undefined {
     let descriptor
     try {
@@ -44,7 +48,7 @@ function describe(url: URL): Embed | undefined {
     switch (descriptor.kind) {
         case 'article':
             return {
-                title: descriptor.longname,
+                title: shortenLongname(descriptor.longname),
                 description: `Statistics for ${descriptor.longname} on Urban Stats.`,
                 // Only articles have a renderer. The rest still get a rewritten title and
                 // description, which is most of the value, and keep the static preview image.
@@ -52,7 +56,7 @@ function describe(url: URL): Embed | undefined {
             }
         case 'comparison':
             return {
-                title: descriptor.longnames.join(' vs '),
+                title: descriptor.longnames.map(shortenLongname).join(' vs '),
                 description: `Comparing ${descriptor.longnames.join(', ')} on Urban Stats.`,
             }
         case 'statistic': {
