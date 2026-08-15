@@ -1,16 +1,12 @@
 /*
- * The site's modules assume a browser. Importing any of them reaches `settings.ts`, whose static
- * initializer reads localStorage at module-evaluation time, so this has to be installed before any
- * of them are imported -- keep it first in the entry's import list.
+ * Enough of a browser for the site's modules to evaluate and for its router to run.
  *
- * Backing settings with a plain Map gives every request a Settings instance holding the defaults,
- * which is what an embed wants: it should render the page a first-time visitor would see, not
- * whatever the last request happened to configure.
- */
-/*
- * Enough of a browser for the site's modules to evaluate. Importing its article loader reaches
- * Navigator, which on load stamps history.scrollRestoration and parses location.href -- so these
- * are what a module graph touches on the way up, not an attempt at a real DOM.
+ * `settings.ts` reads localStorage in a static initializer, so this has to be installed before any
+ * site module is imported -- keep it first in the entry's import list. Backing that store with a
+ * plain Map means every Settings instance starts from the defaults, which is what an embed wants:
+ * the page a first-time visitor would see, not whatever the last request configured.
+ *
+ * The rest is what `loadPageDescriptor` touches on the way through, not an attempt at a real DOM.
  */
 globalThis.window ??= globalThis
 globalThis.location ??= new URL('https://urbanstats.org/')
@@ -19,6 +15,12 @@ globalThis.history ??= {
     state: null,
     pushState: () => {},
     replaceState: () => {},
+}
+
+// Wide enough to clear the site's 1100px mobile breakpoint: the card is a desktop-shaped image, so
+// it should get the desktop stat rows.
+globalThis.document ??= {
+    documentElement: { clientWidth: 1200, clientHeight: 800 },
 }
 
 const store = new Map()

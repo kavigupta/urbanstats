@@ -16,43 +16,25 @@ import satori from 'satori'
 import jostRegular from '../assets/Jost-400.ttf'
 import jostSemiBold from '../assets/Jost-600.ttf'
 
-import { loadArticle, loadShape } from './data.js'
+import { articleCard, loadPage, loadShape } from './data.js'
 import { embedCard } from './embed.js'
 
-// syau.html is left out deliberately: it has no per-URL identity to describe, and its existing
-// static preview is already the right one.
-const embeddable = new Set(['/article.html', '/comparison.html', '/statistic.html'])
+// The page kinds worth describing. 'syau' is left out deliberately: it has no per-URL identity, and
+// its existing static preview is already the right one.
+const embeddable = new Set(['article', 'comparison', 'statistic'])
 
-// Pages the image renderer can actually draw. The others still get a rewritten title and
-// description, which is most of the value, and keep the static preview image.
-const renderable = new Set(['/article.html'])
-
-function describe(pathname, params) {
-    switch (pathname) {
-        case '/article.html': {
-            const longname = params.get('longname')
-            return longname === null
-                ? undefined
-                : { title: longname, description: `Statistics for ${longname} on Urban Stats.` }
-        }
-        case '/comparison.html': {
-            let longnames
-            try {
-                longnames = JSON.parse(params.get('longnames') ?? '')
-            }
-            catch {
-                return undefined
-            }
-            return Array.isArray(longnames) && longnames.length > 0
-                ? { title: longnames.join(' vs '), description: `Comparing ${longnames.join(', ')} on Urban Stats.` }
-                : undefined
-        }
-        case '/statistic.html': {
-            const statname = params.get('statname')?.replaceAll('__PCT__', '%')
-            return statname === undefined
-                ? undefined
-                : { title: statname, description: `${statname} rankings on Urban Stats.` }
-        }
+/**
+ * The site has titles but no notion of a description, so this is the one piece of embed text we
+ * write ourselves. Titles come from `pageTitle`, the same function that sets document.title.
+ */
+function describe(pageData, title) {
+    switch (pageData.kind) {
+        case 'article':
+            return `Statistics for ${pageData.article.longname} on Urban Stats.`
+        case 'comparison':
+            return `Comparing ${pageData.articles.map(article => article.longname).join(', ')} on Urban Stats.`
+        case 'statistic':
+            return `${title} rankings on Urban Stats.`
         default:
             return undefined
     }
@@ -109,21 +91,16 @@ async function renderImage(env, target, ctx) {
         return new Response('no longname', { status: 400 })
     }
 
-    const [article, rings] = await Promise.all([
-        loadArticle(
-            env.SITE_ORIGIN,
-            longname,
-            target.searchParams.get('universe') ?? undefined,
-            target.searchParams.get('s') ?? undefined,
-        ),
+    const [page, rings] = await Promise.all([
+        loadPage(env.SITE_ORIGIN, target).catch(() => undefined),
         loadShape(env.SITE_ORIGIN, longname).catch(() => []),
     ])
-    if (article === undefined) {
+    if (page?.pageData.kind !== 'article') {
         return new Response('no such article', { status: 404 })
     }
 
     const size = { width: 1200, height: 630 }
-    const svg = await satori(embedCard(article, rings ?? [], size), {
+    const svg = await satori(embedCard(articleCard(page), rings ?? [], size), {
         ...size,
         fonts: [
             { name: 'Jost', data: jostRegular, weight: 400, style: 'normal' },
@@ -148,20 +125,24 @@ export default {
 
         if (url.pathname.startsWith('/og/')) {
             const target = new URL(url.pathname.slice('/og'.length) + url.search, env.SITE_ORIGIN)
-            if (!renderable.has(target.pathname)) {
-                return new Response('not embeddable', { status: 404 })
-            }
             return renderImage(env, target, ctx)
         }
 
         const origin = await fetch(new URL(url.pathname + url.search, env.SITE_ORIGIN).toString(), request)
-
-        const embed = embeddable.has(url.pathname) ? describe(url.pathname, url.searchParams) : undefined
-        if (embed === undefined || !(origin.headers.get('content-type') ?? '').includes('text/html')) {
+        if (!(origin.headers.get('content-type') ?? '').includes('text/html')) {
             return origin
         }
 
-        if (renderable.has(url.pathname)) {
+        const page = await loadPage(env.SITE_ORIGIN, url).catch(() => undefined)
+        if (page === undefined || !embeddable.has(page.pageData.kind)) {
+            return origin
+        }
+
+        const embed = { title: page.title, description: describe(page.pageData, page.title) }
+
+        // Only articles have a renderer. The rest still get a rewritten title and description, which
+        // is most of the value, and keep the static preview image.
+        if (page.pageData.kind === 'article') {
             embed.image = new URL(`/og${url.pathname}${url.search}`, url.origin).toString()
             // Start the render now rather than when the crawler asks for the image, buying it
             // roughly one round trip of head start.

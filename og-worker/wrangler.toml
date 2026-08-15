@@ -21,3 +21,30 @@ fallthrough = true
 
 [vars]
 SITE_ORIGIN = "https://urbanstats.org"
+
+# `loadPageDescriptor` can load any page kind, so bundling it pulls every panel and everything they
+# reach -- maps, plotly, katex -- for the sake of two pages we draw ourselves. These are the modules
+# only reachable from page kinds the Worker never loads; stubbing them keeps the bundle at ~1.3 MiB
+# gzip instead of ~2.2. Written exactly as PageDescriptor.ts imports them, since esbuild matches the
+# specifier string.
+[alias]
+"../components/article-panel" = "./src/panel-stub.js"
+"../map-partition" = "./src/panel-stub.js"
+"../components/comparison-panel" = "./src/panel-stub.js"
+"../stat/StatisticPanel" = "./src/panel-stub.js"
+"../stat/utils" = "./src/panel-stub.js"
+"../data-credit" = "./src/panel-stub.js"
+"../uss-documentation" = "./src/panel-stub.js"
+"../mapper/components/DebugMapTextBox" = "./src/panel-stub.js"
+"../urban-stats-script/DebugEditorPanel" = "./src/panel-stub.js"
+"../components/quiz-panel" = "./src/panel-stub.js"
+"../quiz/quiz" = "./src/panel-stub.js"
+"../quiz/statistics" = "./src/panel-stub.js"
+"../quiz/infinite" = "./src/panel-stub.js"
+"../quiz/friends" = "./src/panel-stub.js"
+"../syau/syau-panel" = "./src/panel-stub.js"
+"../mapper/components/MapperPanel" = "./src/panel-stub.js"
+"../mapper/settings/utils" = "./src/panel-stub.js"
+"../quiz/OauthCallbackPanel" = "./src/panel-stub.js"
+"../quiz/AuthenticationStateMachine" = "./src/panel-stub.js"
+"../dev/ScreenshotDiffViewerPanel" = "./src/panel-stub.js"
