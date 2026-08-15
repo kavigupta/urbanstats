@@ -114,9 +114,13 @@ async function mapPanel(rings: Ring[], { width, height }: { width: number, heigh
  * Satori has no user-agent stylesheet, so tags whose meaning is purely presentational arrive
  * unstyled -- `<sup>2</sup>` would render as a full-size "2". Restores the ones the site uses.
  */
+function keyed(node: ReactNode, key: string | number): ReactNode {
+    return isValidElement(node) ? cloneElement(node, { key }) : node
+}
+
 function styleBareTags(node: ReactNode): ReactNode {
     if (Array.isArray(node)) {
-        return node.map(styleBareTags)
+        return (node as ReactNode[]).map((child, index) => keyed(styleBareTags(child), index))
     }
     if (!isValidElement(node)) {
         return node
@@ -134,7 +138,8 @@ function formatValue({ name, value }: ArticleCard['stats'][number], units: Units
     // renderValue takes the unit preferences separately from the value, and `?s` carries both, so
     // dropping them here would silently pin every card to Fahrenheit and metric.
     const rendered = getUnitDisplay(classifyStatistic(name)).renderValue(value, units.use_imperial, units.temperature_unit)
-    return [styleBareTags(rendered.value), styleBareTags(rendered.unit)]
+    // These go into the row as an array, and satori has no fragments to wrap them in.
+    return [keyed(styleBareTags(rendered.value), 'value'), keyed(styleBareTags(rendered.unit), 'unit')]
 }
 
 function ordinalSuffix(n: number): string {
