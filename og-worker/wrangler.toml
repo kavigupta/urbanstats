@@ -1,6 +1,8 @@
 name = "urbanstats-og"
 main = "src/index.js"
 compatibility_date = "2026-08-01"
+# The site's data code decompresses with node's zlib, so the Worker needs it too.
+compatibility_flags = ["nodejs_compat"]
 
 # The prototype runs on its own subdomain rather than in front of urbanstats.org, so sharing a
 # us.lbtunnel.uk link exercises the whole path without touching the real site. This route stays

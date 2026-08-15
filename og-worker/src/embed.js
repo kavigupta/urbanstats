@@ -1,9 +1,12 @@
 /*
  * The embed layout, as a satori element tree.
  *
- * Satori supports a flexbox subset of CSS and no canvas, so this is a purpose-built card rather
- * than a rendering of the real page. It carries the same numbers, in the site's font and colours.
+ * Satori supports a flexbox subset of CSS and no canvas, so the layout is a purpose-built card
+ * rather than a rendering of the real page. The values inside it are not ours though: they come
+ * from the site's own renderers, so the numbers cannot drift from the page they describe.
  */
+import { formatToSignificantFigures, separateNumber } from '../../react/src/utils/text.ts'
+import { classifyStatistic } from '../../react/src/utils/unit.ts'
 
 const colors = {
     background: '#fff8f0',
@@ -51,17 +54,30 @@ function mapImage(rings, width, height) {
     return `data:image/svg+xml;base64,${btoa(svg)}`
 }
 
+/*
+ * Mirrors the site's own value rendering, using its classifier and its separator so numbers read
+ * the same -- notably the narrow no-break space in "6 850" rather than a comma.
+ *
+ * The tiering below duplicates getUnitDisplay, which cannot be imported here: it lives in a .tsx
+ * module whose import graph drags in katex and the webfonts. Splitting the pure renderers out of
+ * that module would let this go away entirely.
+ */
 function formatValue({ name, value }) {
-    if (name === 'Population') {
-        return value >= 1e6 ? `${(value / 1e6).toPrecision(3)}m` : `${(value / 1e3).toPrecision(3)}k`
+    switch (classifyStatistic(name)) {
+        case 'population':
+            if (value >= 999.5e6) {
+                return `${(value / 1e9).toPrecision(3)}B`
+            }
+            return value >= 999.5e3 ? `${(value / 1e6).toPrecision(3)}m` : `${(value / 1e3).toPrecision(3)}k`
+        case 'density': {
+            const places = value > 10 ? 0 : (value > 1 ? 1 : 2)
+            return `${separateNumber(value.toFixed(places))}/km²`
+        }
+        case 'area':
+            return `${separateNumber(formatToSignificantFigures(value))} km²`
+        default:
+            return formatToSignificantFigures(value)
     }
-    if (name === 'Area') {
-        return `${Number(value.toPrecision(3)).toLocaleString('en-US')} km²`
-    }
-    if (name === 'Compactness') {
-        return value.toPrecision(3)
-    }
-    return `${Number(value.toPrecision(4)).toLocaleString('en-US')}/km²`
 }
 
 const ordinalSuffix = (n) => {
@@ -83,7 +99,7 @@ const row = (stat, index) => ({
         },
         children: [
             { type: 'div', props: { style: { flex: 1, fontSize: 24 }, children: stat.name } },
-            { type: 'div', props: { style: { width: 150, fontSize: 26, justifyContent: 'flex-end', display: 'flex' }, children: formatValue(stat) } },
+            { type: 'div', props: { style: { width: 170, fontSize: 26, justifyContent: 'flex-end', display: 'flex' }, children: formatValue(stat) } },
             {
                 type: 'div',
                 props: {
