@@ -40,9 +40,13 @@ class PagePool {
     async newPage() {
         const page = await this.context.newPage()
         await page.goto(`${origin}${warmupPath}`, { waitUntil: 'load' })
-        await page.waitForFunction(() => window.testUtils?.screencap !== undefined && window.testUtils.navigate !== undefined, undefined, { timeout: renderTimeout })
+        await page.waitForFunction(
+            () => window.testUtils?.screencap !== undefined && window.testUtils.navigate !== undefined,
+            undefined,
+            { timeout: renderTimeout },
+        )
         // The first capture on a page is slower than the rest, so spend it here rather than on a request.
-        await page.evaluate(options => window.testUtils.screencap(options), captureOptions)
+        await screencap(page)
         return page
     }
 
@@ -71,6 +75,8 @@ class PagePool {
     }
 }
 
+const screencap = page => page.evaluate(options => window.testUtils.screencap(options), captureOptions)
+
 async function render(pool, path) {
     const page = await pool.acquire()
     try {
@@ -86,7 +92,7 @@ async function render(pool, path) {
         // `evaluate` has no timeout of its own, and a capture that never settles would hold a page
         // out of the pool forever.
         const dataUrl = await Promise.race([
-            page.evaluate(options => window.testUtils.screencap(options), captureOptions),
+            screencap(page),
             new Promise((_, reject) => setTimeout(() => { reject(new Error('screencap timed out')) }, renderTimeout)),
         ])
         pool.release(page)
