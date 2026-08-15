@@ -44,17 +44,20 @@ export function Header(props: {
             <div className="right_panel_top" style={{ height: `${headerBarSize}px` }}>
                 {/* flex but stretch to fill */}
                 <div style={{ display: 'flex', flexDirection: 'row', height: '100%' }}>
-                    {currentUniverse ? <UniverseSelector /> : undefined}
+                    {!isMobile && currentUniverse
+                        ? (
+                                <div style={{ paddingRight: '0.5em' }}>
+                                    <UniverseSelector />
+                                </div>
+                            )
+                        : undefined}
                     {
                         props.hasScreenshot
                             ? (
-                                    <>
-                                        <div className="hgap"></div>
-                                        <ScreenshotButton
-                                            onClick={() => { props.initiateScreenshot(currentUniverse) }}
-                                            loading={props.screenshotInProgress}
-                                        />
-                                    </>
+                                    <ScreenshotButton
+                                        onClick={() => { props.initiateScreenshot(currentUniverse) }}
+                                        loading={props.screenshotInProgress}
+                                    />
                                 )
                             : undefined
                     }
@@ -141,10 +144,16 @@ function TopLeft(props: {
     const universeCtx = useUniverseContext()
     if (useMobileLayout()) {
         return (
-            <div className="left_panel_top">
+            <div className="left_panel_top" style={{ minWidth: '28%' }}>
                 <Nav hamburgerOpen={props.hamburgerOpen} setHamburgerOpen={props.setHamburgerOpen} />
                 <div className="hgap"></div>
-                {universeCtx === undefined ? <HeaderImage /> : undefined}
+                {
+                    universeCtx
+                        ? (
+                                <UniverseSelector />
+                            )
+                        : <HeaderImage />
+                }
             </div>
         )
     }
