@@ -5,8 +5,8 @@
  * rather than a rendering of the real page. The values inside it are not ours though: they come
  * from the site's own renderers, so the numbers cannot drift from the page they describe.
  */
-// Deliberately the site's React, by path. og-worker has its own copy at a different major, and the
-// dispatcher has to be installed on the instance the site's components actually call hooks through.
+// By path, because the dispatcher below has to go on the instance the site's own components call
+// hooks through, and og-worker deliberately has no react of its own to resolve a bare specifier to.
 import * as siteReact from '../../react/node_modules/react/index.js'
 
 import { getUnitDisplay } from '../../react/src/components/unit-display.tsx'
