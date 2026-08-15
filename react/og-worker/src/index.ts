@@ -84,9 +84,30 @@ class RewriteTitle implements RewriterHandler {
 
 let resvgReady: Promise<void> | undefined
 
+let reloadEpoch: string | undefined
+
+/**
+ * A cache key that a dev reload leaves behind.
+ *
+ * Otherwise the first render of a URL is what you keep seeing for a day, however much the card's
+ * code changes underneath it. Wrangler reloads by starting a fresh isolate, so module state that
+ * outlives one request but not one reload is exactly the right lifetime. Deployed renders keep the
+ * plain key: up there a new isolate means nothing more than the last one going idle.
+ */
+function cacheKey(env: WorkerEnv, target: URL): Request {
+    if (!/^https?:\/\/(localhost|127\.0\.0\.1)(:|$)/.test(env.SITE_ORIGIN)) {
+        return new Request(target.toString(), { method: 'GET' })
+    }
+    // Not at module scope: Workers disallow generating randomness while the global scope evaluates.
+    reloadEpoch ??= crypto.randomUUID()
+    const key = new URL(target)
+    key.searchParams.set('__reload', reloadEpoch)
+    return new Request(key.toString(), { method: 'GET' })
+}
+
 async function renderImage(env: WorkerEnv, target: URL, ctx: WorkerContext): Promise<Response> {
     const cache = caches.default
-    const key = new Request(target.toString(), { method: 'GET' })
+    const key = cacheKey(env, target)
     const cached = await cache.match(key)
     if (cached !== undefined) {
         return cached
@@ -106,10 +127,8 @@ async function renderImage(env: WorkerEnv, target: URL, ctx: WorkerContext): Pro
     }
 
     const size = { width: 1200, height: 630 }
-    const card = embedCard(articleCard(page.pageData, page.settings), rings, size)
-    // Satori's element type is React's; these are plain objects with the same shape, which is all
-    // it reads.
-    const svg = await satori(card as unknown as Parameters<typeof satori>[0], {
+    const card = await embedCard(articleCard(page.pageData, page.settings), rings, size)
+    const svg = await satori(card, {
         ...size,
         fonts: [
             { name: 'Jost', data: jostRegular, weight: 400, style: 'normal' },

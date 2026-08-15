@@ -12,11 +12,15 @@ site_origin=${SITE_ORIGIN:-http://localhost:$site_port}
 # Not PORT: that already means the site's port here, and the two cannot share one.
 og_port=${OG_PORT:-8787}
 
+# Wrangler would put this on 9229 whatever --port says, so two checkouts would collide on it.
+inspector_port=$((og_port + 1))
+
 # --local-upstream is what makes the rewritten og:image point back at this server. Without it
 # wrangler gives request.url the hostname from the route in wrangler.toml, so following the tag
 # would quietly show you the deployed Worker's render instead of your local one.
 exec npx wrangler dev \
     --port "$og_port" \
+    --inspector-port "$inspector_port" \
     --local-upstream "localhost:$og_port" \
     --upstream-protocol http \
     --var "SITE_ORIGIN:$site_origin"
