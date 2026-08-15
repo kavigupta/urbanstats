@@ -32,9 +32,9 @@ async function fetchEmbed(workerOrigin: string, target: string): Promise<Status>
         return { kind: 'down' }
     }
 
-    const document_ = new DOMParser().parseFromString(html, 'text/html')
+    const parsed = new DOMParser().parseFromString(html, 'text/html')
     const meta = (property: string): string | undefined =>
-        document_.querySelector(`meta[property="${property}"]`)?.getAttribute('content') ?? undefined
+        parsed.querySelector(`meta[property="${property}"]`)?.getAttribute('content') ?? undefined
 
     const image = meta('og:image')
     const title = meta('og:title')
@@ -152,7 +152,7 @@ export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: 
 function Card({ embed }: { embed: Embed }): ReactNode {
     const colors = useColors()
     return (
-        <div style={{ maxWidth: '520px', border: `1px solid ${colors.borderNonShadow}`, borderRadius: '8px', overflow: 'hidden', backgroundColor: colors.slightlyDifferentBackground }}>
+        <div data-test-id="embed-card" style={{ maxWidth: '520px', border: `1px solid ${colors.borderNonShadow}`, borderRadius: '8px', overflow: 'hidden', backgroundColor: colors.slightlyDifferentBackground }}>
             <img src={embed.image} alt="" style={{ display: 'block', width: '100%', aspectRatio: '1200 / 630' }} />
             <div style={{ padding: '10px 12px' }}>
                 <div style={{ fontSize: '13px', color: colors.ordinalTextColor }}>urbanstats.org</div>
