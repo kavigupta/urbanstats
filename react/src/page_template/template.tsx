@@ -2,10 +2,11 @@ import React, { ReactNode, useEffect, useRef, useState } from 'react'
 
 import { exportToCSV, CSVExportData } from '../components/csv-export'
 import { Header } from '../components/header'
-import { ScreenshotContext, ScreenshotContextType } from '../components/screenshot'
+import { ScreenshotContext, ScreenshotContextType, screencapToDataURL } from '../components/screenshot'
 import { Sidebar } from '../components/sidebar'
 import '../common.css'
 import '../components/article.css'
+import { useUniverse } from '../universe'
 import { TestUtils } from '../utils/TestUtils'
 import { useMobileLayout } from '../utils/responsive'
 import { zIndex } from '../utils/zIndex'
@@ -90,6 +91,20 @@ export function PageTemplate({
             setScreenshotInProgress(false)
         }
     }
+
+    const currentUniverse = useUniverse()
+    useEffect(() => {
+        if (screencap === undefined) {
+            return
+        }
+        const capture = async (options?: { scale?: number, type?: string }): Promise<string> => screencapToDataURL(() => screencap(currentUniverse, colors, screenshotContext), options)
+        TestUtils.shared.screencap = capture
+        return () => {
+            if (TestUtils.shared.screencap === capture) {
+                TestUtils.shared.screencap = undefined
+            }
+        }
+    })
 
     // https://stackoverflow.com/a/55451665
     const runningInTestCafe = (window as unknown as { '%hammerhead%': unknown })['%hammerhead%'] !== undefined

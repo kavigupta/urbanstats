@@ -1,0 +1,11 @@
+{
+  "name": "urbanstats-og-render",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
+}

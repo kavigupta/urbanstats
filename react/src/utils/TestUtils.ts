@@ -43,6 +43,18 @@ export class TestUtils {
         }
     }
 
+    /**
+     * Registered by `PageTemplate` on pages that have a screenshot button, and returns a PNG data
+     * URL. Undefined until such a page has mounted, which is what an external driver waits on.
+     */
+    screencap: ((options?: { scale?: number, type?: string }) => Promise<string>) | undefined
+
+    /**
+     * Registered by `Navigator`. Navigates in-page, so a driver can render many pages off one
+     * loaded document rather than paying for a document load per page.
+     */
+    navigate: ((url: string) => Promise<void>) | undefined
+
     readonly maps = new Map<string, maplibregl.Map>()
 
     readonly clickableMaps = new Map<string, {
