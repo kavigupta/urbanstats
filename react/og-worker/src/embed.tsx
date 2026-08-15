@@ -210,7 +210,7 @@ export async function embedCard(article: ArticleCard, rings: Ring[], { width, he
                 </div>
                 {rings.length === 0 ? <div style={{ display: 'flex' }}></div> : await mapPanel(rings, mapSize)}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 24, color: colors.muted }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 24, color: colors.muted, alignItems: 'baseline' }}>
                 <div style={{ display: 'flex' }}>urbanstats.org</div>
                 <div style={{ display: 'flex', fontSize: 18 }}>{rings.length === 0 ? '' : tileAttribution}</div>
             </div>
