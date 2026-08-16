@@ -68,9 +68,9 @@ for (const [unitType, value, expected] of [
     ['distanceInM', 12345, '12.3 km'],
     ['distanceInKm', 3.42, '3.42 km'],
     ['distanceInKm', 0.543, '543 m'],
-    // a rate is written per whichever number of people leaves a readable number
+    // a rate is written per the number of people it is conventionally counted per, whatever its size
     ['fatalitiesPerCapita', 1.2e-5, '1.20/\u00a0100k'],
-    ['fatalitiesPerCapita', 0.5, '0.50/\u00a0person'],
+    ['fatalitiesPerCapita', 0.5, '50\u202f000.00/\u00a0100k'],
     ['density', 1234, '1\u202f234/\u00a0km^{2}'],
     ['area', 0.005, '5\u202f000 m^{2}'],
     ['area', 12.5, '12.5 km^{2}'],

@@ -291,7 +291,8 @@ function styleFor(signature: string, written: Written[]): NumberFormat {
     if (signature === 's^1' && written[0].unit.name === 'hours') {
         return hoursMinutes
     }
-    if (written.some(({ unit }) => unit.cost === abbreviated)) {
+    // an abbreviation shortens the number only over the line: a rate per 100k is not abbreviated
+    if (written.some(({ power, unit }) => power > 0 && unit.cost === abbreviated)) {
         return abbreviatedStyle
     }
     return styles[signature] ?? defaultStyle
@@ -401,12 +402,20 @@ function bestRepresentation(valueInBaseUnits: number, scales: Dimension[], setti
         // a unit raised to a power costs what it costs each time it is used
         return cost * Math.abs(power)
     }
-    const rungs = ({ baseUnit, power }: Dimension): LadderUnit[] => ladder[baseUnit].filter(unit =>
-        // a count is abbreviated only when it is the whole quantity, not inside people per km^2
-        unit.cost !== abbreviated
-        || convention?.[baseUnit] === unit.name
-        || (dimensions.length === 1 && Math.abs(power) === 1),
-    )
+    const rungs = ({ baseUnit, power }: Dimension): LadderUnit[] => {
+        const conventional = convention?.[baseUnit]
+        if (power < 0 && conventional !== undefined) {
+            // what a quantity is written per is part of what it says: rainfall is per year however
+            // many digits per hour would save, and a death rate is per the same number of people
+            return ladder[baseUnit].filter(unit => unit.name === conventional)
+        }
+        return ladder[baseUnit].filter(unit =>
+            // a count is abbreviated only when it is the whole quantity, not inside people per km^2
+            unit.cost !== abbreviated
+            || conventional === unit.name
+            || (dimensions.length === 1 && Math.abs(power) === 1),
+        )
+    }
     let best: Representation | undefined
     let bestCost = Infinity
     for (const written of combinations(dimensions, rungs)) {
