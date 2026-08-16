@@ -1,9 +1,7 @@
 /*
- * The embed layout, as a satori element tree.
- *
- * Satori supports a flexbox subset of CSS and no canvas, so the layout is a purpose-built card
- * rather than a rendering of the real page. The values inside it are not ours though: they come
- * from the site's own renderers, so the numbers cannot drift from the page they describe.
+ * The embed layout, as a satori element tree. Satori supports a flexbox subset of CSS and no
+ * canvas, so this is a purpose-built card rather than a rendering of the real page. The values in
+ * it still come from the site's own renderers.
  */
 import React, { ReactElement, ReactNode, cloneElement, isValidElement } from 'react'
 
@@ -16,15 +14,9 @@ import { ArticleCard, Units } from './data'
 import { MapLayout, Ring, fitRings, place } from './map-layout'
 
 /*
- * Lets satori call the site's function components.
- *
- * Most unit displays hand back plain elements, but the election ones return <PartyPercentage/>,
- * which reads the party hues out of useColors(). Satori calls the component; React installs a hook
- * dispatcher only while a renderer is running, so without one every hook inside it throws.
- *
- * These resolve the way a first render with no state changes would. Installed on first use rather
- * than at module scope, because React's internals are not populated yet while the module graph is
- * still evaluating.
+ * Lets satori call the site's function components: React installs a hook dispatcher only while a
+ * renderer is running, so without one every hook inside them throws. These resolve the way a first
+ * render with no state changes would.
  */
 /* eslint-disable no-restricted-syntax -- React's own names for its internals, which are deliberately absent from @types/react. */
 interface ReactInternals {
@@ -36,6 +28,7 @@ interface ReactContext {
 }
 /* eslint-enable no-restricted-syntax */
 
+// Not at module scope: React's internals are not populated while the module graph is evaluating.
 function installHooks(): void {
     const { ReactCurrentDispatcher: dispatcher } = (React as unknown as ReactInternals).__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED
     if (dispatcher.current !== null) {
@@ -56,7 +49,7 @@ function installHooks(): void {
     }
 }
 
-/* eslint-disable no-restricted-syntax -- The card is a fixed light image wherever it is unfurled, so it has a palette rather than a theme. */
+/* eslint-disable no-restricted-syntax -- The card is a fixed light image wherever it is unfurled, so it has no theme. */
 const colors = {
     background: '#fff8f0',
     text: '#1e1e1e',
@@ -66,13 +59,10 @@ const colors = {
 }
 /* eslint-enable no-restricted-syntax */
 
-// openfreemap's own credit line, as its TileJSON states it.
+// openfreemap's credit line, as its TileJSON states it.
 const tileAttribution = 'OpenFreeMap © OpenMapTiles · Data from OpenStreetMap'
 
-/**
- * The basemap and the shape over it, as one SVG data URI: satori renders images but not arbitrary
- * SVG children, and one image beats a tile apiece because resvg then decodes one thing.
- */
+/** The basemap and the shape over it: satori renders images but not arbitrary SVG children. */
 function mapImage(paint: string, rings: Ring[], layout: MapLayout, width: number, height: number): string {
     const d = rings
         .map(ring => `M${ring.map(point => place(layout, point).map(n => n.toFixed(1)).join(',')).join('L')}Z`)
@@ -84,8 +74,8 @@ function mapImage(paint: string, rings: Ring[], layout: MapLayout, width: number
 }
 
 /**
- * Centred on its point by being placed half its estimated width to the left of it, since satori's
- * transforms take absolute lengths only and so cannot translate by a percentage of the text.
+ * Centred by being placed half its estimated width left of its point, since satori's transforms
+ * take absolute lengths only.
  */
 function label({ name, x, y, size, width }: Label): ReactElement {
     return (
@@ -106,22 +96,13 @@ async function mapPanel(rings: Ring[], { width, height }: { width: number, heigh
     )
 }
 
-/*
- * The site's own value rendering, not an imitation of it. `renderValue` hands back React elements,
- * which is exactly what satori consumes, so the separators, significant figures and unit tiers are
- * whatever the page uses -- including when they change.
- */
-/**
- * Satori has no user-agent stylesheet, so tags whose meaning is purely presentational arrive
- * unstyled -- `<sup>2</sup>` would render as a full-size "2". Restores the ones the site uses.
- */
 function keyed(node: ReactNode, key: string | number): ReactNode {
     return isValidElement(node) ? cloneElement(node, { key }) : node
 }
 
 /**
- * Jost has no U+202F, the digit group separator, and satori renders a missing glyph as a 0.5em gap
- * -- far wider than the fallback font a browser reaches for. Spacer elements instead.
+ * Jost has no U+202F, the digit group separator, and satori renders a missing glyph as a 0.5em gap.
+ * Spacer elements instead.
  */
 function narrowSpaces(text: string): ReactNode {
     const parts = text.split('\u202f')
@@ -131,6 +112,10 @@ function narrowSpaces(text: string): ReactNode {
     return parts.flatMap((part, index) => index === 0 ? [part] : [<div key={index} style={{ width: '0.2em' }} />, part])
 }
 
+/**
+ * Satori has no user-agent stylesheet, so presentational tags arrive unstyled -- `<sup>2</sup>`
+ * would render as a full-size "2". Restores the ones the site uses.
+ */
 function styleBareTags(node: ReactNode): ReactNode {
     if (Array.isArray(node)) {
         return (node as ReactNode[]).map((child, index) => keyed(styleBareTags(child), index))
@@ -143,18 +128,15 @@ function styleBareTags(node: ReactNode): ReactNode {
     }
     const children = styleBareTags((node.props as { children?: ReactNode }).children)
     if (node.type === 'sup') {
-        // Satori's transform only accepts absolute lengths, so the raise is in px against the
-        // font size the stat value is rendered at.
+        // In px because satori's transform only accepts absolute lengths.
         return <span style={{ fontSize: 17, transform: 'translateY(-8px)' }}>{children}</span>
     }
     return cloneElement(node, undefined, children)
 }
 
 function formatValue({ name, value }: ArticleCard['stats'][number], units: Units): ReactNode[] {
-    // renderValue takes the unit preferences separately from the value, and `?s` carries both, so
-    // dropping them here would silently pin every card to Fahrenheit and metric.
     const rendered = getUnitDisplay(classifyStatistic(name)).renderValue(value, units.use_imperial, units.temperature_unit)
-    // These go into the row as an array, and satori has no fragments to wrap them in.
+    // An array rather than a fragment, which satori does not have.
     return [keyed(styleBareTags(rendered.value), 'value'), keyed(styleBareTags(rendered.unit), 'unit')]
 }
 
@@ -186,11 +168,7 @@ function row(stat: ArticleCard['stats'][number], index: number, units: Units): R
     )
 }
 
-/**
- * Sized the way the header's flag is: a fixed height, with the site's cap on how wide a wide flag
- * gets. A column's baseline is its first child's, so the image's bottom is what the title's baseline
- * lines up with and the label hangs below it.
- */
+/** Sized the way the header's flag is: a fixed height, with the site's cap on a wide flag. */
 function flag(article: ArticleCard): ReactElement {
     if (article.flag === undefined) {
         return <div style={{ display: 'flex' }}></div>
@@ -228,7 +206,6 @@ export async function embedCard(article: ArticleCard, rings: Ring[], { width, he
                 </div>
                 {flag(article)}
             </div>
-            {/* Stats and map side by side, so neither has to fit in the other's leftovers. */}
             <div style={{ display: 'flex', flex: 1, alignItems: 'flex-start' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingRight: 32 }}>
                     {article.stats.map((stat, index) => row(stat, index, article.units))}

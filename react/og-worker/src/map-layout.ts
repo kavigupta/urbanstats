@@ -1,7 +1,4 @@
-/*
- * Where a shape sits on the map, shared by the basemap and the outline drawn over it so the two
- * cannot disagree about it.
- */
+// Where a shape sits on the map, shared by the basemap and the outline drawn over it.
 
 /** A closed ring of [lon, lat] pairs. */
 export type Ring = [number, number][]
@@ -11,7 +8,7 @@ export const tileSize = 256
 /** Past this the tiles stop adding detail, so a shape smaller than the box just stays smaller. */
 const maxZoom = 17
 
-// Web Mercator, which is what the site's maps use, so shapes keep the shape people expect.
+// Web Mercator, as the site's maps use.
 export function project([lon, lat]: [number, number]): [number, number] {
     const x = (lon + 180) / 360
     const clamped = Math.max(-85.05, Math.min(85.05, lat)) * Math.PI / 180
@@ -22,7 +19,7 @@ export function project([lon, lat]: [number, number]): [number, number] {
 export interface MapLayout {
     /** Box pixels per unit of projected space, chosen so the rings fill the box. */
     scale: number
-    /** The zoom the map reads as, which is what line widths and label sizes are picked against. */
+    /** The zoom the map reads as, which line widths and label sizes are picked against. */
     zoom: number
     /** The box's top-left corner, in that same scaled space. */
     originX: number

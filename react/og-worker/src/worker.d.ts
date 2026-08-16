@@ -1,10 +1,8 @@
 /*
  * The slice of the Workers runtime this Worker touches, plus the module types wrangler's bundler
- * gives the bundled assets.
- *
- * Hand-written rather than taken from @cloudflare/workers-types or `wrangler types`: those redeclare
- * every global they share with the DOM lib, which the site's sources -- and so this tsconfig -- are
- * typed against. Names are Worker-prefixed because these land in the app's global scope too.
+ * gives the bundled assets. Hand-written rather than taken from @cloudflare/workers-types, which
+ * redeclares every global it shares with the DOM lib that the site's sources are typed against.
+ * Names are Worker-prefixed because these land in the app's global scope too.
  */
 
 interface WorkerEnv {

@@ -1,9 +1,6 @@
 /*
- * Stands in for every module the router pulls in only to render a page with.
- *
- * The Worker never renders one -- it wants the loaded data, not the panel -- and letting those
- * imports through would drag the whole app, maps included, into the bundle. Aliased in
- * wrangler.toml; see the [alias] list there for what it replaces.
+ * Stands in for every module the router pulls in only to render a page with, which would otherwise
+ * drag the whole app into the bundle. See the [alias] list in wrangler.toml for what it replaces.
  */
 
 /** Only called to lay out comparison maps, which the Worker does not draw. */

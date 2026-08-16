@@ -10,15 +10,12 @@ import { target } from './test_utils'
 // Matches OG_PORT's default in og-worker/preview.sh and ogPort's default in PageDescriptor.
 export const ogPort = 8787
 
-// Matches preview.sh, which derives it from the same port for the reason given there.
+// Matches preview.sh, which derives it the same way.
 const inspectorPort = ogPort + 1
 
 const startupTimeoutMs = 120_000
 
-/**
- * Brings up the embed Worker the same way quiz_test_utils brings up the quiz server: reuse whatever
- * is already listening, otherwise start one and take it down with the runner.
- */
+/** Reuses whatever is already listening, otherwise starts one and takes it down with the runner. */
 export async function runOgWorkerForTest(): Promise<void> {
     if (await isWorkerAvailable()) {
         console.warn('Embed Worker found. Using existing embed Worker.')
@@ -29,9 +26,8 @@ export async function runOgWorkerForTest(): Promise<void> {
 }
 
 /**
- * For the resources test, which measures a render over workerd's inspector and deadlocks it doing
- * so: the Worker it runs against is good for that one file and nothing after it. Refusing to share
- * is better than handing back a wedged one, or taking down a Worker we did not start.
+ * For the resources test, which deadlocks workerd's inspector measuring a render: the Worker it
+ * runs against is good for that one file and nothing after it.
  */
 export async function runOwnOgWorkerForTest(): Promise<void> {
     if (await isPortListening(ogPort)) {
@@ -41,8 +37,8 @@ export async function runOwnOgWorkerForTest(): Promise<void> {
 }
 
 async function startOgWorker(): Promise<void> {
-    // Its own process group, so that killing it also takes down the wrangler and workerd
-    // processes that `npm run og-preview` spawns underneath itself.
+    // Its own process group, so killing it also takes down the wrangler and workerd processes
+    // underneath.
     const worker = execa('npm', ['run', 'og-preview'], {
         stdio: 'inherit',
         detached: true,
@@ -67,7 +63,7 @@ async function startOgWorker(): Promise<void> {
 }
 
 async function isWorkerAvailable(): Promise<boolean> {
-    // A deadlocked Worker takes the connection and never answers, and node's fetch would wait five
+    // A deadlocked Worker takes the connection and never answers; node's fetch would wait five
     // minutes on that.
     const giveUp = new AbortController()
     const timer = setTimeout(() => { giveUp.abort() }, 10_000)
@@ -84,8 +80,8 @@ async function isWorkerAvailable(): Promise<boolean> {
 }
 
 /**
- * Whether anything at all holds the port, which a request cannot tell us: a Worker that is still
- * starting and one that is deadlocked both take the connection and answer later or never.
+ * Whether anything at all holds the port, which a request cannot tell us: a Worker still starting
+ * and a deadlocked one both take the connection.
  */
 async function isPortListening(port: number): Promise<boolean> {
     return new Promise((resolve) => {
@@ -106,7 +102,7 @@ export async function ogWorkerBundleCost(): Promise<{ gzipKiB: number, startupCp
         env: { WRANGLER_SEND_METRICS: 'false' },
     })
     const gzipKiB = /gzip: ([\d.]+) KiB/.exec(all!)
-    // Excludes the profile's idle time, so it is the number the 400ms startup limit is measured against.
+    // Excludes idle time, so this is what the 400ms startup limit is measured against.
     const startupCpuMs = /Active: ([\d.]+) ms/.exec(all!)
     if (gzipKiB === null || startupCpuMs === null) {
         throw new Error(`Could not read bundle cost from wrangler:\n${all}`)
@@ -122,8 +118,7 @@ interface RenderCost {
 
 /**
  * What one card render costs. `wrangler dev` reports wall time, which on a local origin is mostly
- * fetch latency; workerd's inspector is the only place the CPU and subrequest numbers that
- * Cloudflare actually meters show up.
+ * fetch latency; workerd's inspector is the only place the metered numbers show up.
  */
 export async function ogRenderCost(articleUrl: string): Promise<RenderCost> {
     const socket = new WebSocket(`ws://localhost:${inspectorPort}/ws`)
@@ -144,8 +139,8 @@ export async function ogRenderCost(articleUrl: string): Promise<RenderCost> {
             originBytes += message.params!.encodedDataLength!
         }
     })
-    // Editing the Worker's source restarts wrangler, and a reply that will never arrive is a test
-    // that hangs until the whole run times out rather than one that says what happened.
+    // Editing the Worker's source restarts wrangler, and a reply that never arrives would hang the
+    // test until the whole run times out.
     const disconnected = new Promise<never>((_, reject) => {
         const fail = (): void => { reject(new Error(`Embed Worker's inspector on port ${inspectorPort} closed mid-measurement; was the Worker restarted?`)) }
         socket.on('close', fail)
@@ -163,12 +158,12 @@ export async function ogRenderCost(articleUrl: string): Promise<RenderCost> {
         await send('Profiler.enable')
         await send('Profiler.setSamplingInterval', { interval: 100 })
 
-        // The Worker memoizes the site's indices, so a request into a cold isolate fetches things
-        // no later one does. Renders are measured against a warm isolate, which is the steady state.
+        // The Worker memoizes the site's indices, so a cold isolate fetches things no later request
+        // does. A warm isolate is the steady state.
         const run = Date.now()
         await render(articleUrl, `${run}-warmup`)
         // JIT and GC make a single render's CPU vary by half again as much as the render itself, so
-        // several renders and the cheapest of them. Subrequests and bytes do not vary.
+        // take the cheapest of several. Subrequests and bytes do not vary.
         const cpus: number[] = []
         for (const attempt of [1, 2, 3]) {
             subrequests = 0
@@ -188,13 +183,13 @@ export async function ogRenderCost(articleUrl: string): Promise<RenderCost> {
 
 /**
  * `caches.default` would serve every render after the first, and wrangler persists it across runs.
- * The page's zod schemas drop params they do not know, so this changes the cache key and nothing else.
+ * The page's zod schemas drop params they do not know, so the buster changes only the cache key.
  */
 async function render(articleUrl: string, cacheBuster: string): Promise<void> {
     const url = new URL(articleUrl, `http://localhost:${ogPort}`)
     url.searchParams.set('renderCost', cacheBuster)
     const image = `http://localhost:${ogPort}/og${url.pathname}${url.search}`
-    // Otherwise a Worker that went away mid-run surfaces as a bare 'fetch failed'.
+    // Otherwise a Worker that went away mid-run is a bare 'fetch failed'.
     const response = await fetch(image).catch((error: unknown) => {
         throw new Error(`Could not reach the embed Worker at ${image}: ${String(error)}`)
     })

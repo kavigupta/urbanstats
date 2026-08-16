@@ -3,8 +3,7 @@
  *
  * Every article shares one static article.html with one fixed og:image, so a crawler asking for
  * ?longname=Chicago gets the generic preview. This rewrites the meta tags per query string on the
- * way through, and renders the image here at the edge -- reading the same static data files the
- * site does, so no browser is involved.
+ * way through, and renders the image at the edge from the site's own static data files.
  */
 // Must come first: it installs the browser globals the site's modules touch as they evaluate.
 // eslint-disable-next-line import/no-unassigned-import -- Installing those globals is the point.
@@ -19,10 +18,8 @@ interface Embed {
 }
 
 /**
- * Everything the tags say, read off the URL alone. Loading the page would give the real shortname
- * for a title, but it means fetching the article's data on every HTML request, real browsers
- * included, for something only a crawler reads. The image render is the one place that has to pay
- * it, so titles here approximate the shortname by cutting the longname at its first comma.
+ * Approximates the shortname. Loading the page would give the real one, but that means fetching the
+ * article's data on every HTML request, browsers included, for something only a crawler reads.
  */
 function shortenLongname(longname: string): string {
     return longname.split(',')[0]
@@ -41,8 +38,7 @@ function describe(url: URL): Embed | undefined {
             return {
                 title: shortenLongname(descriptor.longname),
                 description: `Statistics for ${descriptor.longname} on Urban Stats.`,
-                // Only articles have a renderer. The rest still get a rewritten title and
-                // description, which is most of the value, and keep the static preview image.
+                // Only articles have a renderer; the rest keep the static preview image.
                 image: new URL(`/og${url.pathname}${url.search}`, url.origin).toString(),
             }
         case 'comparison':
@@ -55,8 +51,7 @@ function describe(url: URL): Embed | undefined {
             return { title, description: `${title} rankings on Urban Stats.` }
         }
         default:
-            // 'syau' is left out deliberately: it has no per-URL identity, and its existing static
-            // preview is already the right one.
+            // 'syau' is left out deliberately: it has no per-URL identity.
             return undefined
     }
 }
@@ -74,8 +69,7 @@ class RewriteMeta implements RewriterHandler {
                 element.setAttribute('content', this.embed.description)
                 break
             case 'og:image':
-                // Left alone for pages we can describe but not yet draw, so they keep the static
-                // preview rather than pointing at an image that does not render.
+                // Left alone for pages we can describe but not draw.
                 if (this.embed.image !== undefined) {
                     element.setAttribute('content', this.embed.image)
                 }
@@ -99,10 +93,7 @@ function servingLocalSite(env: WorkerEnv): boolean {
     return /^https?:\/\/(localhost|127\.0\.0\.1)(:|$)/.test(env.SITE_ORIGIN)
 }
 
-/**
- * An id a dev reload leaves behind: wrangler reloads by starting a fresh isolate, so module state
- * that outlives one request but not one reload is exactly the right lifetime.
- */
+/** Changes on a dev reload, since wrangler reloads by starting a fresh isolate. */
 function isolateID(): string {
     // Not at module scope: Workers disallow generating randomness while the global scope evaluates.
     reloadEpoch ??= crypto.randomUUID()
@@ -110,9 +101,8 @@ function isolateID(): string {
 }
 
 /**
- * Otherwise the first render of a URL is what you keep seeing for a day, however much the card's
- * code changes underneath it. Deployed renders keep the plain key: up there a new isolate means
- * nothing more than the last one going idle.
+ * Keyed by isolate in dev, so an edit to the card's code is not hidden behind a day-old render.
+ * Deployed, a new isolate means nothing more than the last one going idle.
  */
 function cacheKey(env: WorkerEnv, target: URL): Request {
     if (!servingLocalSite(env)) {
@@ -151,11 +141,8 @@ async function renderImage(env: WorkerEnv, target: URL, ctx: WorkerContext): Pro
 }
 
 /*
- * Lets the site's embed-preview dev panel read what a crawler would see.
- *
- * Scoped to localhost callers: the panel is served by the local site on one port and talks to this
- * Worker on another, so without it the preview cannot read back its own rewritten tags. Nothing
- * deployed is ever a localhost origin, so this stays inert in production.
+ * Lets the embed-preview dev panel read what a crawler would see: it is served by the local site on
+ * one port and talks to this Worker on another. Nothing deployed is ever a localhost origin.
  */
 function devCors(response: Response, request: Request): Response {
     const origin = request.headers.get('origin')
@@ -171,8 +158,8 @@ export default {
     async fetch(request: Request, env: WorkerEnv, ctx: WorkerContext): Promise<Response> {
         const url = new URL(request.url)
 
-        // Wrangler watches this Worker's own sources, which the site's dev server knows nothing
-        // about, so the preview panel polls here to see the card's code reload.
+        // The preview panel polls this to see the card's code reload, which the site's own dev
+        // server knows nothing about.
         if (servingLocalSite(env) && url.pathname === '/__reload') {
             const response = new Response(isolateID(), { headers: { 'cache-control': 'no-store' } })
             return devCors(response, request)

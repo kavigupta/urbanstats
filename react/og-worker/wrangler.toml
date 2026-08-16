@@ -4,12 +4,10 @@ compatibility_date = "2026-08-01"
 # The site's data code decompresses with node's zlib, so the Worker needs it too.
 compatibility_flags = ["nodejs_compat"]
 
-# The prototype runs on its own subdomain rather than in front of urbanstats.org, so sharing a
-# us.lbtunnel.uk link exercises the whole path without touching the real site.
+# The prototype runs on its own subdomain, so sharing a us.lbtunnel.uk link exercises the whole path
+# without touching the real site. Everything not matched here is redirected to urbanstats.org by a
+# zone redirect rule that excludes exactly these four patterns.
 #
-# Only the pages `describe` rewrites, plus the image renders. Everything else -- scripts, the data
-# files, the pages that keep the static preview -- is redirected to urbanstats.org by a zone
-# redirect rule whose filter excludes exactly these four patterns, so it never reaches the Worker.
 # A route pattern is matched against the query string too, hence the trailing `*` on each page.
 routes = [
   { pattern = "us.lbtunnel.uk/article.html*", zone_name = "lbtunnel.uk" },
@@ -18,8 +16,8 @@ routes = [
   { pattern = "us.lbtunnel.uk/og/*", zone_name = "lbtunnel.uk" },
 ]
 
-# Fonts are bundled rather than fetched: satori needs the bytes on every render, and they never
-# change. .wasm is picked up as a compiled module by default.
+# Fonts are bundled rather than fetched: satori needs the bytes on every render. .wasm is picked up
+# as a compiled module by default.
 [[rules]]
 type = "Data"
 globs = ["**/*.ttf"]
@@ -29,10 +27,9 @@ fallthrough = true
 SITE_ORIGIN = "https://urbanstats.org"
 
 # `loadPageDescriptor` can load any page kind, so bundling it pulls every panel and everything they
-# reach -- maps, plotly, katex -- for the sake of two pages we draw ourselves. These are the modules
-# only reachable from page kinds the Worker never loads; stubbing them keeps the bundle at ~1.3 MiB
-# gzip instead of ~2.2. Written exactly as PageDescriptor.ts imports them, since esbuild matches the
-# specifier string.
+# reach. These are the modules only reachable from page kinds the Worker never loads; stubbing them
+# keeps the bundle at ~1.3 MiB gzip instead of ~2.2. Written exactly as PageDescriptor.ts imports
+# them, since esbuild matches the specifier string.
 [alias]
 "../components/article-panel" = "./src/panel-stub.ts"
 "../map-partition" = "./src/panel-stub.ts"

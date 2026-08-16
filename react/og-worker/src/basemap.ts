@@ -1,13 +1,9 @@
 /*
- * A basemap drawn straight from openfreemap's vector tiles -- the same source the site's own maps
- * read, so a card looks like the page it came from.
+ * A basemap drawn from openfreemap's vector tiles, the same source the site's own maps read.
  *
  * maplibre cannot run here: it wants a GL context, and a Worker has neither that nor a DOM. So the
- * tiles are decoded and painted by hand into SVG, which is what satori and resvg already speak. The
- * styling below is a reading of openfreemap's "bright" -- its colours, its layer order, a coarser
- * set of its width ramps -- not a general implementation of the maplibre style spec. Labels are
- * point labels only; the collision detection that road and water labels need is the expensive part
- * of a renderer, and this is a preview map.
+ * tiles are decoded and painted by hand into SVG, which satori and resvg already speak. The styling
+ * below is a reading of openfreemap's "bright", not an implementation of the maplibre style spec.
  */
 import { VectorTile, VectorTileLayer } from '@mapbox/vector-tile'
 import Pbf from 'pbf'
@@ -21,26 +17,22 @@ type Props = Record<string, string | number | boolean>
 
 interface Rule {
     layer: string
-    /** Which features of that layer this rule paints. Absent means all of them. */
+    /** Absent means all of the layer's features. */
     where?: (props: Props) => boolean
     fill?: string
     stroke?: string
-    /** Stroke width in card pixels, against the zoom the map is displayed at. */
     width?: [zoom: number, px: number][]
     opacity?: number
     dash?: string
-    /** Below this display zoom the rule is skipped, the way the style's own minzooms work. */
     minZoom?: number
     /** Whether the simplified basemap keeps this rule. */
     simple?: true
 }
 
 /*
- * The card's map box is a few hundred pixels wide against the site's own full-width map, and the
- * full style at that size is a mesh of roads with no room to read as anything. The simplified set
- * keeps water, green, boundaries and the major-road skeleton, and costs about a third less: it
- * walks the transportation layer three times rather than eight, and landuse and buildings not at
- * all. Flip to draw the whole style instead.
+ * The full style in a map box a few hundred pixels wide is a mesh of roads with no room to read as
+ * anything. The simplified set keeps water, green, boundaries and the major roads, and costs about
+ * a third less. Flip to draw the whole style instead.
  */
 const simplified: boolean = false
 
@@ -61,7 +53,7 @@ function widthAt(stops: [number, number][], zoom: number): number {
 const roadClass = (...classes: string[]) => (props: Props): boolean => classes.includes(String(props.class))
 
 // Casings are drawn under every fill rather than under their own, so a road passing beneath another
-// does not cut a notch in it. That is what the style's own layer order does.
+// does not cut a notch in it.
 const motorwayWidth: [number, number][] = [[5, 0.5], [7, 1.5], [12, 6], [16, 14]]
 const trunkWidth: [number, number][] = [[7, 0.5], [9, 1.5], [12, 5], [16, 13]]
 const secondaryWidth: [number, number][] = [[9, 0.5], [13, 4], [16, 11]]
@@ -86,8 +78,7 @@ const rules: Rule[] = [
     { layer: 'waterway', stroke: '#a0c8f0', width: [[10, 0.8], [14, 1.5], [17, 4]] },
     { layer: 'aeroway', where: p => p.class === 'runway' || p.class === 'taxiway', stroke: '#dddddd', width: [[11, 2], [16, 12]] },
 
-    // Kept simplified too: at a zoom this close a small shape has nothing else around it, and the
-    // minzoom means a city-wide card never pays for it.
+    // Kept simplified too: at a zoom this close there is nothing else around the shape.
     { layer: 'transportation', where: roadClass('minor', 'service', 'track'), stroke: '#cfcdca', width: minorWidth, minZoom: 12, simple: true },
     { layer: 'transportation', where: roadClass('secondary', 'tertiary'), stroke: '#e9ac77', width: secondaryWidth },
     { layer: 'transportation', where: roadClass('trunk', 'primary'), stroke: '#e9ac77', width: trunkWidth, simple: true },
@@ -119,10 +110,7 @@ interface Tile {
 
 let tileTemplate: Promise<string> | undefined
 
-/**
- * openfreemap versions its tile path by planet build, so the template is read from the TileJSON
- * rather than written down here, where it would rot the next time they publish.
- */
+/** Read from the TileJSON because openfreemap versions its tile path by planet build. */
 async function templateUrl(): Promise<string> {
     tileTemplate ??= fetch('https://tiles.openfreemap.org/planet')
         .then(async response => ((await response.json()) as { tiles: string[] }).tiles[0])
@@ -161,7 +149,7 @@ async function coveringTiles(layout: MapLayout, width: number, height: number): 
         if (y < 0 || y >= across) {
             return undefined
         }
-        // x wraps, the way a map scrolled past the antimeridian does.
+        // x wraps past the antimeridian.
         const tile = await fetchTile(template, zoom, ((x % across) + across) % across, y)
         return tile === undefined
             ? undefined
@@ -171,11 +159,8 @@ async function coveringTiles(layout: MapLayout, width: number, height: number): 
 }
 
 /**
- * Every feature a rule matches, as one path.
- *
- * One path per rule rather than per feature: a dense tile holds thousands of roads, and resvg has
- * to parse whatever we emit. Polygons and lines both go in -- they differ only in the closing Z,
- * and a rule paints one or the other.
+ * Every feature a rule matches, as one path rather than one apiece: a dense tile holds thousands of
+ * roads, and resvg has to parse whatever we emit.
  */
 function rulePath(rule: Rule, strokeWidth: number, tiles: Tile[], width: number, height: number): string {
     const parts: string[] = []
@@ -191,8 +176,8 @@ function rulePath(rule: Rule, strokeWidth: number, tiles: Tile[], width: number,
                 continue
             }
             for (const ring of feature.loadGeometry()) {
-                // Tiles carry a buffer of geometry beyond their own edges, and neighbouring tiles
-                // repeat it. Dropping what falls outside the card keeps both out of the SVG.
+                // Tiles carry a buffer of geometry beyond their own edges, which neighbouring tiles
+                // repeat. Dropping what falls outside the card keeps both out of the SVG.
                 const points: string[] = []
                 let visible = false
                 for (const point of ring) {
@@ -220,15 +205,11 @@ function rulePath(rule: Rule, strokeWidth: number, tiles: Tile[], width: number,
 }
 
 /**
- * Place names, from the point features the rules skip.
+ * Place names, from the point features the rules skip. Handed back as positions rather than drawn,
+ * because resvg silently drops <text> inside a nested SVG image, which is how the basemap reaches
+ * it; satori sets them instead.
  *
- * Handed back as positions rather than drawn, because resvg silently drops <text> inside a nested
- * SVG image and the basemap reaches it as exactly that. Satori sets them instead, in the same font
- * as the rest of the card and as paths by the time resvg sees them.
- *
- * No collision detection beyond one pass that drops a label overlapping one already placed, and
- * bigger places are considered first so it is the minor ones that lose. Real label placement is a
- * renderer's hardest job; a preview can settle for legible.
+ * Collision handling is one pass in rank order that drops a label overlapping one already placed.
  */
 function labels(tiles: Tile[], width: number, height: number, zoom: number): Label[] {
     const candidates: { name: string, x: number, y: number, size: number, rank: number }[] = []
@@ -248,8 +229,8 @@ function labels(tiles: Tile[], width: number, height: number, zoom: number): Lab
                 continue
             }
             const size = kind === 'city' ? 15 : kind === 'town' ? 13 : 11
-            // A town label is worth less than a city one whatever its own rank says. Places with no
-            // rank at all sort as if they were middling.
+            // A town label is worth less than a city one whatever its own rank says. Unranked
+            // places sort as middling.
             const ranked = Number(rank)
             const order = (kind === 'city' ? 0 : kind === 'town' ? 100 : 200) + (Number.isNaN(ranked) ? 50 : ranked)
             for (const ring of feature.loadGeometry()) {
@@ -267,8 +248,7 @@ function labels(tiles: Tile[], width: number, height: number, zoom: number): Lab
         }
         // Jost is narrow; half the font size per character is close enough to reserve space with.
         const box = { x: label.x - label.name.length * label.size * 0.25, y: label.y - label.size, w: label.name.length * label.size * 0.5, h: label.size * 1.4 }
-        // Names are centred on their point, so one near an edge has to be dropped whole rather than
-        // left running off the side of the card.
+        // Names are centred on their point, so one near an edge is dropped rather than clipped.
         if (box.x < 2 || box.x + box.w > width - 2 || box.y < 2 || box.y + box.h > height - 2) {
             continue
         }
@@ -299,7 +279,7 @@ export interface Basemap {
 
 export const labelStyle = { color: labelColor, halo: labelHalo }
 
-/** Flip to read the shape against the basemap on its own. Annotated so flipping it stays a one-word edit. */
+/** Flip to read the shape against the basemap on its own. */
 const showLabels: boolean = false
 
 export async function basemap(layout: MapLayout, width: number, height: number): Promise<Basemap> {
@@ -309,7 +289,7 @@ export async function basemap(layout: MapLayout, width: number, height: number):
     }
     const painted = rules
         .filter(rule => (!simplified || rule.simple === true) && (rule.minZoom === undefined || layout.zoom >= rule.minZoom))
-        // Simplified roads are the casing rules with their fills dropped, so they draw at the width
+        // Simplified roads are casing rules with their fills dropped, so they draw at the width
         // meant to sit under another line. Narrowed back to about what the fill would have been.
         .map(rule => rulePath(rule, rule.width === undefined ? 1 : widthAt(rule.width, layout.zoom) * (simplified ? 0.6 : 1), tiles, width, height))
         .join('')

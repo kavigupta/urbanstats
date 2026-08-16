@@ -1,14 +1,12 @@
 /*
- * The drawing half, kept behind a dynamic import in index.ts.
- *
- * Evaluating satori is most of this Worker's startup, and rewriting a page's tags -- what every
- * real browser request does -- has no use for it. Behind an import() only a render pays for it.
+ * The drawing half, kept behind a dynamic import in index.ts: evaluating satori is most of this
+ * Worker's startup, and rewriting a page's tags has no use for it.
  */
 import { Resvg, initWasm } from '@resvg/resvg-wasm'
 import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm'
-// The default satori build carries Yoga as base64 and compiles it as it evaluates, and Workers only
-// permit compiling wasm while the global scope runs -- so under a dynamic import that throws. The
-// standalone build takes the binary as a module wrangler compiled at deploy time instead.
+// The default satori build compiles Yoga from base64 as it evaluates, which throws under a dynamic
+// import because Workers only permit compiling wasm while the global scope runs. The standalone
+// build takes the binary as a module wrangler compiled at deploy time instead.
 import satori, { init as initYoga } from 'satori/standalone'
 import yogaWasm from 'satori/yoga.wasm'
 
@@ -46,7 +44,7 @@ export async function renderCard(origin: string, target: URL, longname: string):
     return new Resvg(svg, {
         fitTo: { mode: 'width', value: size.width },
         // Satori turns the card's own text into paths, but the basemap's place names reach resvg as
-        // <text> inside the map image, and it has no system fonts to set them in.
+        // <text>, and it has no system fonts to set them in.
         font: { fontBuffers: [new Uint8Array(jostRegular)], defaultFontFamily: 'Jost' },
     }).render().asPng()
 }

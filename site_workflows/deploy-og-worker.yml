@@ -1,12 +1,10 @@
 name: Deploy OG Worker
 
-# The Worker bundles the site's own page-loading code and reads the site's data files at request
-# time, so a site deploy that changes either leaves the deployed Worker rendering against data it
-# no longer matches. Redeploying it whenever the Pages site is built keeps the two in step.
+# The Worker bundles the site's page-loading code and reads its data files, so redeploying whenever
+# the Pages site is built keeps the two in step.
 #
-# page_build fires for the branch Pages serves, which is what a site deploy pushes to. The Worker
-# is built from urbanstats main, on the assumption that whatever built the site is on main by the
-# time it is deployed; workflow_dispatch is here for the times it isn't.
+# The Worker is built from urbanstats main, on the assumption that whatever built the site is on
+# main by the time it is deployed; workflow_dispatch is here for the times it isn't.
 on:
   page_build:
   workflow_dispatch:
@@ -23,7 +21,7 @@ jobs:
         with:
           repository: kavigupta/urbanstats
           token: ${{ secrets.URBANSTATS_TOKEN }}
-          # Everything the Worker bundles lives under react/, and the rest of the repo is large.
+          # Everything the Worker bundles lives under react/.
           sparse-checkout: react
 
       - name: Set up Node

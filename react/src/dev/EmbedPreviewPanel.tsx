@@ -2,9 +2,7 @@ import React, { ReactNode, useEffect, useRef, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
 
-/**
- * What a crawler gets back for a page: the tags the Worker rewrote on the way through.
- */
+/** What a crawler gets back for a page: the tags the Worker rewrote on the way through. */
 interface Embed {
     title: string
     description: string
@@ -27,8 +25,8 @@ async function fetchEmbed(workerOrigin: string, target: string): Promise<Status>
         html = await response.text()
     }
     catch {
-        // A dead port and a blocked cross-origin read are indistinguishable here, and both mean the
-        // same thing to whoever is looking at this: start the Worker.
+        // A dead port and a blocked cross-origin read are indistinguishable, and both mean the same
+        // thing to whoever is looking: start the Worker.
         return { kind: 'down' }
     }
 
@@ -46,8 +44,7 @@ async function fetchEmbed(workerOrigin: string, target: string): Promise<Status>
     if (imageURL.pathname === '/link-preview.png') {
         return { kind: 'notEmbeddable' }
     }
-    // The card is served with a day of cache-control, under a URL that stays the same while the code
-    // drawing it changes, so the preview asks for a render of the code as it is now.
+    // Busts the card's day of cache-control, which its URL does not change with the code.
     imageURL.searchParams.set('__preview', Date.now().toString())
     return {
         kind: 'ready',
@@ -64,8 +61,8 @@ export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: 
     const workerOrigin = `http://localhost:${ogPort}`
 
     const [path, setPath] = useState(target)
-    // Separate from `path` so that following the frame does not reload the frame, which would undo
-    // whatever navigation we just followed. Only committing the input reloads it.
+    // Separate from `path` so that following the frame does not reload it, undoing the navigation
+    // we just followed. Only committing the input reloads it.
     const [src, setSrc] = useState(target)
     const [status, setStatus] = useState<Status>({ kind: 'loading' })
     const [attempt, setAttempt] = useState(0)
@@ -75,11 +72,9 @@ export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: 
     const isolate = useRef<string | undefined>(undefined)
 
     /*
-     * The site navigates with pushState, which fires no load event on the frame, so watching is the
-     * only way to follow it. Reading the location is allowed because the frame is same-origin.
-     *
-     * Compared against the last location we saw rather than against `path`, so that typing in the
-     * input is never overwritten by a poll that found nothing new.
+     * The site navigates with pushState, which fires no load event on the frame, so polling is the
+     * only way to follow it. Compared against the last location seen rather than against `path`, so
+     * typing in the input is never overwritten by a poll that found nothing new.
      */
     useEffect(() => {
         const interval = setInterval(() => {
@@ -92,7 +87,7 @@ export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: 
                 here = location.pathname + location.search + location.hash
             }
             catch {
-                return // navigated off-origin, which is not something we can preview anyway
+                return // navigated off-origin
             }
             if (here !== seen.current) {
                 seen.current = here
@@ -103,9 +98,8 @@ export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: 
     }, [])
 
     /*
-     * Editing the Worker restarts it, and the site's own hot reload never hears about that, so the
-     * card would sit there drawn by code that no longer exists. The first id seen is only recorded:
-     * a reload is a change from one id to another.
+     * Editing the Worker restarts it, which the site's own hot reload never hears about. The first
+     * id seen is only recorded: a reload is a change from one id to another.
      */
     useEffect(() => {
         const interval = setInterval(() => {
@@ -173,7 +167,7 @@ export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: 
     )
 }
 
-/** Roughly how a large-image link unfurl looks, so the card can be judged at the size it ships at. */
+/** Roughly how a large-image link unfurl looks. */
 function Card({ embed }: { embed: Embed }): ReactNode {
     const colors = useColors()
     return (
