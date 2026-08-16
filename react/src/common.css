@@ -47,7 +47,7 @@
 }
 
 .hgap {
-    margin-inline-end: 1em;
+    margin-inline-end: 0.75em;
 }
 
 .gap_small {
@@ -69,6 +69,12 @@ button, select {
 
 [role=button] {
     cursor: pointer;
+}
+
+button.borderless {
+    border: none;
+    background-color: transparent;
+    border-radius: 7px;
 }
 
 button:hover:not(:disabled) {
