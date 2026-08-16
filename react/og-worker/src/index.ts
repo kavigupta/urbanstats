@@ -160,10 +160,24 @@ export default {
     async fetch(request: Request, env: WorkerEnv, ctx: WorkerContext): Promise<Response> {
         const url = new URL(request.url)
 
-        // The preview panel polls this to see the card's code reload, which the site's own dev
-        // server knows nothing about.
+        // Lets the preview panel see the card's code reload, which the site's own dev server knows
+        // nothing about. Held open rather than polled, so an idle panel costs one request log line
+        // per Worker restart instead of one per second.
         if (servingLocalSite(env) && url.pathname === '/__reload') {
-            const response = new Response(isolateID(), { headers: { 'cache-control': 'no-store' } })
+            const encoder = new TextEncoder()
+            const body = new ReadableStream({
+                start(controller) {
+                    controller.enqueue(encoder.encode(`retry: 500\ndata: ${isolateID()}\n\n`))
+                },
+                // A stream with nothing pending on it is canceled as a hang, so it has to tick.
+                pull: async (controller) => {
+                    await new Promise(resolve => setTimeout(resolve, 30000))
+                    controller.enqueue(encoder.encode(':\n\n'))
+                },
+            })
+            const response = new Response(body, {
+                headers: { 'content-type': 'text/event-stream', 'cache-control': 'no-store' },
+            })
             return devCors(response, request)
         }
 

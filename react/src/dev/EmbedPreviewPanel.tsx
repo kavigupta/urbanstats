@@ -1,4 +1,5 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react'
+import { z } from 'zod'
 
 import { useColors } from '../page_template/colors'
 
@@ -98,22 +99,19 @@ export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: 
     }, [])
 
     /*
-     * Editing the Worker restarts it, which the site's own hot reload never hears about. The first
-     * id seen is only recorded: a reload is a change from one id to another.
+     * Editing the Worker restarts it, which the site's own hot reload never hears about. The restart
+     * drops this stream and EventSource reconnects to the new isolate, which announces its id. The
+     * first id seen is only recorded: a reload is a change from one id to another.
      */
     useEffect(() => {
-        const interval = setInterval(() => {
-            void fetch(new URL('/__reload', workerOrigin), { cache: 'no-store' })
-                .then(response => response.text())
-                .then((id) => {
-                    if (isolate.current !== undefined && id !== isolate.current) {
-                        setAttempt(a => a + 1)
-                    }
-                    isolate.current = id
-                })
-                .catch(() => undefined)
-        }, 1000)
-        return () => { clearInterval(interval) }
+        const source = new EventSource(new URL('/__reload', workerOrigin))
+        source.onmessage = (event) => {
+            if (isolate.current !== undefined && event.data !== isolate.current) {
+                setAttempt(a => a + 1)
+            }
+            isolate.current = z.string().parse(event.data)
+        }
+        return () => { source.close() }
     }, [workerOrigin])
 
     useEffect(() => {
