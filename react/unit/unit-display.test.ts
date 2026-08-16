@@ -84,12 +84,12 @@ for (const [value, expected] of [
 
 // A duration reads as hours and minutes, rounded to the minute, wherever it arrived from
 for (const [unitType, value, expected] of [
-    ['minutes', 34, '34'],
-    ['minutes', 90, '1:30'],
-    ['minutes', 99.5, '1:40'],
-    ['minutes', -90, '-1:30'],
-    ['time', 7.5, '7:30'],
-    ['time', 0.5, '30'],
+    ['minutes', 34, '34min'],
+    ['minutes', 90, '1:30hr'],
+    ['minutes', 99.5, '1:40hr'],
+    ['minutes', -90, '-1:30hr'],
+    ['time', 7.5, '7:30hr'],
+    ['time', 0.5, '30min'],
 ] as const) {
     void test(`${unitType} renders ${value} as ${expected}`, () => {
         assert.equal(renderValue(unitType, value), expected)
