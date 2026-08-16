@@ -19,7 +19,6 @@ import { embedCard } from './embed'
 
 let wasmReady: Promise<unknown> | undefined
 
-/** The card as a PNG, or undefined for a page we have no card for. */
 export async function renderCard(origin: string, descriptor: PageDescriptor): Promise<Uint8Array | undefined> {
     if (descriptor.kind !== 'article') {
         return undefined

@@ -26,9 +26,8 @@ shim.document ??= {
 // The default theme is 'System Theme', so useCurrentTheme asks the media query. Cards are light.
 shim.matchMedia ??= () => ({ matches: false, addEventListener: () => undefined, removeEventListener: () => undefined })
 
-// Always empty, so settings start from a first-time visitor's defaults. The site only saves
-// settings when some are already saved, so a write means that assumption stopped holding: dropping
-// it keeps requests independent, which is what the emptiness was buying.
+// Always empty, so settings start from a first-time visitor's defaults. A write means that
+// assumption stopped holding; dropping it keeps requests independent.
 shim.localStorage ??= {
     getItem: () => null,
     setItem: (key: string) => { console.error(`dropped localStorage write to ${key}`) },

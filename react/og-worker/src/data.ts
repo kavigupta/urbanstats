@@ -15,7 +15,6 @@ import { Ring } from './map-layout'
 
 let siteOrigin: string | undefined
 
-/** Resolves the root-relative paths the site's data code asks for, which it expects a page for. */
 const originalFetch = globalThis.fetch
 globalThis.fetch = (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     if (typeof input === 'string' && input.startsWith('/') && siteOrigin !== undefined) {

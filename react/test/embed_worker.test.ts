@@ -31,8 +31,8 @@ const cardImageLoaded = ClientFunction(() => {
 test('embed-worker-article-card', async (t) => {
     // The Worker renders on demand, and the first render is the one that pulls in the drawing half.
     await t.expect(cardImageLoaded()).ok({ timeout: 60_000 })
-    // Just the card: a full-page shot would include the article in the frame, map and all.
-    // fullPage: false because the panel fills a zero-height body.
+    // Just the card: a whole-page shot would include the article in the frame, map and all.
+    // fullPage only skips screencap's hover reset here, which fails on a zero-height body.
     await screencap(t, { fullPage: false, selector: card })
 })
 

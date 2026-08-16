@@ -43,8 +43,6 @@ function widthAt(stops: [number, number][], zoom: number): number {
 
 const roadClass = (...classes: string[]) => (props: Props): boolean => classes.includes(String(props.class))
 
-// Casings are drawn under every fill rather than under their own, so a road passing beneath another
-// does not cut a notch in it.
 const motorwayWidth: [number, number][] = [[5, 0.5], [7, 1.5], [12, 6], [16, 14]]
 const trunkWidth: [number, number][] = [[7, 0.5], [9, 1.5], [12, 5], [16, 13]]
 const secondaryWidth: [number, number][] = [[9, 0.5], [13, 4], [16, 11]]
@@ -69,6 +67,7 @@ const rules: Rule[] = [
     { layer: 'waterway', stroke: '#a0c8f0', width: [[10, 0.8], [14, 1.5], [17, 4]] },
     { layer: 'aeroway', where: p => p.class === 'runway' || p.class === 'taxiway', stroke: '#dddddd', width: [[11, 2], [16, 12]] },
 
+    // Casings first, all of them, so a road passing beneath another does not cut a notch in it.
     { layer: 'transportation', where: roadClass('minor', 'service', 'track'), stroke: '#cfcdca', width: minorWidth, minZoom: 12 },
     { layer: 'transportation', where: roadClass('secondary', 'tertiary'), stroke: '#e9ac77', width: secondaryWidth },
     { layer: 'transportation', where: roadClass('trunk', 'primary'), stroke: '#e9ac77', width: trunkWidth },
