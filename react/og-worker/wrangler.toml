@@ -4,16 +4,15 @@ compatibility_date = "2026-08-01"
 # The site's data code decompresses with node's zlib, so the Worker needs it too.
 compatibility_flags = ["nodejs_compat"]
 
-# The prototype runs on its own subdomain, so sharing a us.lbtunnel.uk link exercises the whole path
-# without touching the real site. Everything not matched here is redirected to urbanstats.org by a
-# zone redirect rule that excludes exactly these four patterns.
+# Only the pages whose embeds differ by query string, plus the card renderer. Everything else on the
+# zone reaches the origin without the Worker running at all.
 #
 # A route pattern is matched against the query string too, hence the trailing `*` on each page.
 routes = [
-  { pattern = "us.lbtunnel.uk/article.html*", zone_name = "lbtunnel.uk" },
-  { pattern = "us.lbtunnel.uk/comparison.html*", zone_name = "lbtunnel.uk" },
-  { pattern = "us.lbtunnel.uk/statistic.html*", zone_name = "lbtunnel.uk" },
-  { pattern = "us.lbtunnel.uk/og/*", zone_name = "lbtunnel.uk" },
+  { pattern = "urbanstats.org/article.html*", zone_name = "urbanstats.org" },
+  { pattern = "urbanstats.org/comparison.html*", zone_name = "urbanstats.org" },
+  { pattern = "urbanstats.org/statistic.html*", zone_name = "urbanstats.org" },
+  { pattern = "urbanstats.org/og/*", zone_name = "urbanstats.org" },
 ]
 
 # Fonts are bundled rather than fetched: satori needs the bytes on every render. .wasm is picked up
@@ -24,6 +23,7 @@ globs = ["**/*.ttf"]
 fallthrough = true
 
 [vars]
+# The same host the routes above are on. Fetching it does not re-enter the Worker; see index.ts.
 SITE_ORIGIN = "https://urbanstats.org"
 
 # `loadPageDescriptor` can load any page kind, so bundling it pulls every panel and everything they

@@ -174,6 +174,11 @@ export default {
 
         const embed = describe(url)
 
+        /*
+         * SITE_ORIGIN is the host this Worker is installed on, and asking it for the very page we
+         * were called for is not a loop: Cloudflare sends a Worker's subrequest that matches one of
+         * its own routes to the origin server rather than invoking the Worker again.
+         */
         const origin = await fetch(new URL(url.pathname + url.search, env.SITE_ORIGIN).toString(), request)
         if (embed === undefined || !(origin.headers.get('content-type') ?? '').includes('text/html')) {
             return devCors(origin, request)
