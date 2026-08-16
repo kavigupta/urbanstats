@@ -1,0 +1,60 @@
+name = "urbanstats-og"
+main = "src/index.ts"
+compatibility_date = "2026-08-01"
+# The site's data code decompresses with node's zlib, so the Worker needs it too.
+compatibility_flags = ["nodejs_compat"]
+
+# A render costs ~230 ms of CPU, so anything near this is a runaway. Exceeding it is not catchable
+# — the isolate is killed and the crawler gets Cloudflare's 1102 page rather than the static
+# preview index.ts falls back to — so this only bounds what a runaway bills, against a 30 s default.
+[limits]
+cpu_ms = 2_000
+
+# Only the pages whose embeds differ by query string, plus the card renderer. Everything else on the
+# zone reaches the origin without the Worker running at all.
+#
+# A route pattern is matched against the query string too, hence the trailing `*` on each page.
+routes = [
+  { pattern = "urbanstats.org/article.html*", zone_name = "urbanstats.org" },
+  { pattern = "urbanstats.org/comparison.html*", zone_name = "urbanstats.org" },
+  { pattern = "urbanstats.org/statistic.html*", zone_name = "urbanstats.org" },
+  { pattern = "urbanstats.org/og/*", zone_name = "urbanstats.org" },
+]
+
+# Fonts are bundled rather than fetched: satori needs the bytes on every render. .wasm is picked up
+# as a compiled module by default.
+[[rules]]
+type = "Data"
+globs = ["**/*.ttf"]
+fallthrough = true
+
+[vars]
+# The same host the routes above are on. Fetching it does not re-enter the Worker; see index.ts.
+SITE_ORIGIN = "https://urbanstats.org"
+
+# `loadPageDescriptor` can load any page kind, so bundling it pulls every panel and everything they
+# reach. These are the modules only reachable from page kinds the Worker never loads; stubbing them
+# keeps the bundle at ~1.3 MiB gzip instead of ~2.2. Written exactly as PageDescriptor.ts imports
+# them, since esbuild matches the specifier string.
+[alias]
+"../components/article-panel" = "./src/panel-stub.ts"
+"../map-partition" = "./src/panel-stub.ts"
+"../components/comparison-panel" = "./src/panel-stub.ts"
+"../stat/StatisticPanel" = "./src/panel-stub.ts"
+"../stat/utils" = "./src/panel-stub.ts"
+"../data-credit" = "./src/panel-stub.ts"
+"../uss-documentation" = "./src/panel-stub.ts"
+"../mapper/components/DebugMapTextBox" = "./src/panel-stub.ts"
+"../urban-stats-script/DebugEditorPanel" = "./src/panel-stub.ts"
+"../components/quiz-panel" = "./src/panel-stub.ts"
+"../quiz/quiz" = "./src/panel-stub.ts"
+"../quiz/statistics" = "./src/panel-stub.ts"
+"../quiz/infinite" = "./src/panel-stub.ts"
+"../quiz/friends" = "./src/panel-stub.ts"
+"../syau/syau-panel" = "./src/panel-stub.ts"
+"../mapper/components/MapperPanel" = "./src/panel-stub.ts"
+"../mapper/settings/utils" = "./src/panel-stub.ts"
+"../quiz/OauthCallbackPanel" = "./src/panel-stub.ts"
+"../quiz/AuthenticationStateMachine" = "./src/panel-stub.ts"
+"../dev/ScreenshotDiffViewerPanel" = "./src/panel-stub.ts"
+"../dev/EmbedPreviewPanel" = "./src/panel-stub.ts"

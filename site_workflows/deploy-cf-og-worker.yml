@@ -1,0 +1,48 @@
+name: Deploy CF OG Worker
+
+# The Worker sits in front of the site's HTML pages, rewriting their og: meta tags per query string
+# and rendering the article preview images at the edge.
+#
+# It bundles the site's page-loading code and reads its data files, so redeploying whenever
+# the Pages site is built keeps the two in step.
+#
+# The Worker is built from urbanstats main, on the assumption that whatever built the site is on
+# main by the time it is deployed; workflow_dispatch is here for the times it isn't.
+on:
+  page_build:
+  workflow_dispatch:
+
+concurrency: deploy-cf-og-worker
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    if: github.event_name != 'page_build' || github.event.build.status == 'built'
+    steps:
+      - name: Checkout urbanstats
+        uses: actions/checkout@v4
+        with:
+          repository: kavigupta/urbanstats
+          token: ${{ secrets.URBANSTATS_TOKEN }}
+          # Everything the Worker bundles lives under react/.
+          sparse-checkout: react
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: react/package-lock.json
+
+      - name: Install dependencies
+        working-directory: react
+        run: npm ci
+
+      - name: Deploy
+        working-directory: react/cf-og-worker
+        run: npx wrangler deploy
+        env:
+          # The token needs Account / Workers Scripts: Edit to upload the script, and
+          # Zone / Workers Routes: Edit on urbanstats.org to attach the routes in wrangler.toml.
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

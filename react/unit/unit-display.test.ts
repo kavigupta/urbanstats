@@ -97,12 +97,12 @@ for (const [unitType, value, expected] of [
 
 // A duration reads as hours and minutes, rounded to the minute, wherever it arrived from
 for (const [unitType, value, expected] of [
-    ['minutes', 34, '34'],
-    ['minutes', 90, '1:30'],
-    ['minutes', 99.5, '1:40'],
-    ['minutes', -90, '-1:30'],
-    ['time', 7.5, '7:30'],
-    ['time', 0.5, '30'],
+    ['minutes', 34, '34min'],
+    ['minutes', 90, '1:30h'],
+    ['minutes', 99.5, '1:40h'],
+    ['minutes', -90, '-1:30h'],
+    ['time', 7.5, '7:30h'],
+    ['time', 0.5, '30min'],
 ] as const) {
     void test(`${unitType} renders ${value} as ${expected}`, () => {
         assert.equal(renderValue(unitType, value), expected)
@@ -112,8 +112,8 @@ for (const [unitType, value, expected] of [
 // A quantity we do not have reads the same way whatever it would have been measured in.
 // The party-colored ones render through a component, and said N/A already.
 for (const unitType of ['population', 'usd', 'density', 'area', 'time', 'minutes', 'temperature', 'number', 'fatalities'] as const) {
-    void test(`${unitType} renders a missing value as N/A`, () => {
-        assert.ok(renderValue(unitType, NaN).startsWith('N/A'))
+    void test(`${unitType} renders a missing value as N/A, with no unit`, () => {
+        assert.equal(renderValue(unitType, NaN), 'N/A')
     })
 }
 
