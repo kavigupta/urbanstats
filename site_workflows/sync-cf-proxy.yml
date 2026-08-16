@@ -8,7 +8,8 @@ name: Sync CF Proxy
 #
 # Keep the zone on Full rather than Full (Strict). If a renewal is ever missed entirely, strict mode
 # refuses the expired origin with a 526, which takes the site down and blocks the challenge that
-# would fix it.
+# would fix it. Full also means an already-expired certificate is safest left proxied, so this fails
+# rather than grey-clouding in that case.
 #
 # Runs in the Pages repo, since that is where the certificate lives.
 on:
@@ -46,7 +47,14 @@ jobs:
 
           days=0
           if [ -n "$expires" ]; then
-            days=$(( ($(date -d "$expires" +%s) - $(date +%s)) / 86400 ))
+            left=$(( $(date -d "$expires" +%s) - $(date +%s) ))
+            days=$(( left / 86400 ))
+            # Grey-clouding an expired certificate would serve it straight to browsers; staying
+            # proxied keeps Cloudflare's edge certificate in front of it. Needs a human either way.
+            if [ "$left" -le 0 ]; then
+              echo "Certificate expired at $expires; leaving the proxy as it is." >&2
+              exit 1
+            fi
           fi
 
           if [ "$state" = approved ] && [ "$days" -gt "$MIN_DAYS_LEFT" ]; then
