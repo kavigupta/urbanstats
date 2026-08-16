@@ -1,7 +1,7 @@
-import { ClientFunction, Selector } from 'testcafe'
+import { Selector } from 'testcafe'
 
-import { ogPort, runOgWorkerForTest } from './og_worker_test_utils'
-import { safeReload, screencap, urbanstatsFixture } from './test_utils'
+import { noTiles, ogPort, runOgWorkerForTest, runTileServerForTest, snapshotTiles } from './og_worker_test_utils'
+import { saveImage, urbanstatsFixture } from './test_utils'
 
 const article = '/article.html?longname=San Marino city, California, USA'
 const comparison = '/comparison.html?longnames=["San Marino city, California, USA","Chicago city, Illinois, USA"]'
@@ -12,48 +12,60 @@ const manyStats = `${article}&s=29ZqGgHgeNSXMA9`
 const antimeridian = '/article.html?longname=Northern, Fiji'
 const workerOrigin = `http://localhost:${ogPort}`
 
-function previewPage(target: string): string {
-    return `/embed-preview.html?target=${encodeURIComponent(target)}&ogPort=${ogPort}`
+// Nothing here goes through the dev panel, which is embed_preview's; the browser is barely used.
+urbanstatsFixture('embed worker', '/index.html', async () => {
+    await runTileServerForTest()
+    await runOgWorkerForTest()
+})
+
+/**
+ * The card itself, rather than a browser's picture of one: a shot taken through the preview panel
+ * would be drawn from whatever URL the panel had followed the frame to by then.
+ */
+async function cardPng(target: string, tiles?: string): Promise<Buffer> {
+    const url = new URL(`/og${target}`, workerOrigin)
+    if (tiles !== undefined) {
+        url.searchParams.set('__tiles', tiles)
+    }
+    // The card's day of cache-control outlives the site build it was drawn from.
+    url.searchParams.set('__preview', Date.now().toString())
+    const response = await fetch(url)
+    return Buffer.from(await response.arrayBuffer())
 }
 
-// The card is a PNG a crawler fetches, and the dev panel is the one place a browser shows it.
-urbanstatsFixture('embed worker', previewPage(article), async (t) => {
-    await runOgWorkerForTest()
-    // The panel gave up on the Worker when the page first loaded, before we had started it.
-    await safeReload(t)
-})
-
-const card = Selector('[data-test-id=embed-card]')
-
-const cardImageLoaded = ClientFunction(() => {
-    const image = document.querySelector('[data-test-id=embed-card] img')
-    return image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0
-})
+/**
+ * Screenshots elsewhere drop the map, which is maplibre's to get right. This one is basemap.ts's,
+ * so the shots keep it, drawn from tiles openfreemap's next planet build cannot move.
+ */
+async function snapshotCard(t: TestController, target: string): Promise<void> {
+    saveImage(t, await cardPng(target, snapshotTiles))
+}
 
 test('embed-worker-article-card', async (t) => {
-    // The Worker renders on demand, and the first render is the one that pulls in the drawing half.
-    await t.expect(cardImageLoaded()).ok({ timeout: 60_000 })
-    // Just the card: a whole-page shot would include the article in the frame, map and all.
-    // fullPage only skips screencap's hover reset here, which fails on a zero-height body.
-    await screencap(t, { fullPage: false, selector: card })
+    await snapshotCard(t, article)
 })
 
 test('embed-worker-card-cut-off', async (t) => {
-    await t.navigateTo(previewPage(manyStats))
-    // The rows the card is drawn from are the frame's own, so this is the premise of the shot below.
-    await t.switchToIframe(Selector('iframe'))
+    // The rows the card is drawn from are the article's own, so this is the premise of the shot.
+    await t.navigateTo(manyStats)
     await t.expect(Selector('[data-test-id=statistic-link]').count).gt(6)
-    await t.switchToMainWindow()
-    await t.expect(cardImageLoaded()).ok({ timeout: 60_000 })
-    await screencap(t, { fullPage: false, selector: card })
+    await snapshotCard(t, manyStats)
 })
 
 // Unwrapped longitudes are what keep the fit tight here: rewrapping them into [-180, 180] would
 // spread the ring across the whole world and collapse the shape to nothing.
 test('embed-worker-antimeridian-card', async (t) => {
-    await t.navigateTo(previewPage(antimeridian))
-    await t.expect(cardImageLoaded()).ok({ timeout: 60_000 })
-    await screencap(t, { fullPage: false, selector: card })
+    await snapshotCard(t, antimeridian)
+})
+
+/** The shots above are drawn from a snapshot, so this is what notices openfreemap moving. */
+test('embed-worker-live-tiles', async (t) => {
+    const live = await cardPng(article)
+    // What a render that threw falls back to, which is what unreachable tiles would produce.
+    const staticPreview = await fetch(new URL('/link-preview.png', workerOrigin))
+    await t.expect(live.equals(Buffer.from(await staticPreview.arrayBuffer()))).notOk()
+    // Same card with no tiles to draw from, so what differs is the basemap.
+    await t.expect(live.equals(await cardPng(article, noTiles))).notOk()
 })
 
 interface CrawlerTags {

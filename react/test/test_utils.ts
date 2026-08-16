@@ -267,15 +267,19 @@ export async function waitForDownload(t: TestController, laterThan: number, suff
     }
 }
 
-async function copyMostRecentFile(t: TestController, laterThan: number, suffix: string): Promise<void> {
-    // copy the file to the screenshots folder
+/** Puts an image the browser never drew in front of the screenshot comparison. */
+export function saveImage(t: TestController, image: Buffer): void {
     // @ts-expect-error -- TestCafe doesn't have a public API for the screenshots folder
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- TestCafe doesn't have a public API for the screenshots folder
     const screenshotsFolder: string = t.testRun.opts.screenshots.path ?? (() => { throw new Error() })()
-    const mrdp = await waitForDownload(t, laterThan, suffix)
     const dest = path.join(screenshotsFolder, screenshotPath(t))
     fs.mkdirSync(path.dirname(dest), { recursive: true })
-    fs.copyFileSync(mrdp, dest)
+    fs.writeFileSync(dest, image)
+}
+
+async function copyMostRecentFile(t: TestController, laterThan: number, suffix: string): Promise<void> {
+    const mrdp = await waitForDownload(t, laterThan, suffix)
+    saveImage(t, fs.readFileSync(mrdp))
 }
 
 export async function downloadOrCheckString(t: TestController, string: string, name: string, format: 'json' | 'xml' | 'txt' | 'csv', gzip = true): Promise<void> {

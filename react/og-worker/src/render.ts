@@ -21,7 +21,7 @@ type ArticleDescriptor = Extract<PageDescriptor, { kind: 'article' }>
 
 let wasmReady: Promise<unknown> | undefined
 
-export async function renderCard(origin: string, descriptor: ArticleDescriptor): Promise<Uint8Array | undefined> {
+export async function renderCard(origin: string, descriptor: ArticleDescriptor, tileOrigin: string): Promise<Uint8Array | undefined> {
     const [page, rings] = await Promise.all([
         loadPage(origin, descriptor).catch(() => undefined),
         loadShape(origin, descriptor.longname).catch(() => []),
@@ -34,7 +34,7 @@ export async function renderCard(origin: string, descriptor: ArticleDescriptor):
     await wasmReady
 
     const size = { width: 1200, height: 630 }
-    const card = await embedCard(await articleCard(page.pageData, page.settings), rings, size)
+    const card = await embedCard(await articleCard(page.pageData, page.settings), rings, size, tileOrigin)
     const svg = await satori(card, {
         ...size,
         fonts: [

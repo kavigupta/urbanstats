@@ -94,18 +94,23 @@ interface Tile {
     px: number
 }
 
-let tileTemplate: Promise<string> | undefined
+/** More than one because a dev render may be pointed at a snapshot of the tiles. */
+const tileTemplates = new Map<string, Promise<string>>()
 
 /** Read from the TileJSON because openfreemap versions its tile path by planet build. */
-async function templateUrl(): Promise<string> {
-    tileTemplate ??= fetch('https://tiles.openfreemap.org/planet')
-        .then(async response => ((await response.json()) as { tiles: string[] }).tiles[0])
+async function templateUrl(tileOrigin: string): Promise<string> {
+    let template = tileTemplates.get(tileOrigin)
+    if (template === undefined) {
+        template = fetch(`${tileOrigin}/planet`)
+            .then(async response => ((await response.json()) as { tiles: string[] }).tiles[0])
+        tileTemplates.set(tileOrigin, template)
+    }
     try {
-        return await tileTemplate
+        return await template
     }
     catch (error) {
         // Otherwise one failed lookup poisons the isolate for as long as it lives.
-        tileTemplate = undefined
+        tileTemplates.delete(tileOrigin)
         throw error
     }
 }
@@ -119,7 +124,7 @@ async function fetchTile(template: string, zoom: number, x: number, y: number): 
     return new VectorTile(new Pbf(await response.arrayBuffer()))
 }
 
-async function coveringTiles(layout: MapLayout, width: number, height: number): Promise<Tile[]> {
+async function coveringTiles(layout: MapLayout, width: number, height: number, tileOrigin: string): Promise<Tile[]> {
     const zoom = Math.min(layout.zoom, dataMaxZoom)
     const px = layout.scale / 2 ** zoom
     const across = 2 ** zoom
@@ -129,7 +134,7 @@ async function coveringTiles(layout: MapLayout, width: number, height: number): 
         return Array.from({ length: last - first + 1 }, (_, i) => first + i)
     }
 
-    const template = await templateUrl()
+    const template = await templateUrl(tileOrigin)
     const wanted = range(layout.originX, width).flatMap(x => range(layout.originY, height).map(y => ({ x, y })))
     const loaded = await Promise.all(wanted.map(async ({ x, y }): Promise<Tile | undefined> => {
         if (y < 0 || y >= across) {
@@ -191,8 +196,8 @@ function rulePath(rule: Rule, strokeWidth: number, tiles: Tile[], width: number,
 }
 
 /** SVG markup sized to the map box. Empty if no tile could be loaded. */
-export async function basemap(layout: MapLayout, width: number, height: number): Promise<string> {
-    const tiles = await coveringTiles(layout, width, height)
+export async function basemap(layout: MapLayout, width: number, height: number, tileOrigin: string): Promise<string> {
+    const tiles = await coveringTiles(layout, width, height, tileOrigin)
     if (tiles.length === 0) {
         return ''
     }

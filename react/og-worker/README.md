@@ -24,6 +24,9 @@ own port serves the whole site.
 crawler would get on the other. It follows the frame's navigation, and it redraws when you edit the
 Worker, which restarts it — the site's own hot reload knows nothing about that.
 
+A card URL served against a local site takes `__tiles=<origin>`, which draws the basemap from that
+origin rather than openfreemap. The card screenshot tests point it at a snapshot of the tiles.
+
 # Deploying
 
 [`site_workflows/deploy-cloudflare-worker.yml`](../../site_workflows/deploy-cloudflare-worker.yml)

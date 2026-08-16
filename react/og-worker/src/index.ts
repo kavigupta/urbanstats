@@ -112,6 +112,19 @@ function cacheKey(env: WorkerEnv, target: URL): Request {
     return new Request(key.toString(), { method: 'GET' })
 }
 
+const openfreemap = 'https://tiles.openfreemap.org'
+
+/**
+ * A local render may be pointed at a snapshot of the tiles, which is how a card screenshot stays
+ * put when openfreemap rebuilds the planet. Deployed, the parameter is ignored, and has to be:
+ * whoever chooses the tile origin chooses what the basemap shows, and this card goes out under
+ * urbanstats.org's own name.
+ */
+function tileOrigin(env: WorkerEnv, target: URL): string {
+    const snapshot = target.searchParams.get('__tiles')
+    return servingLocalSite(env) && snapshot !== null ? snapshot : openfreemap
+}
+
 /*
  * A crawler that gets anything but an image here shows no preview at all, so a failed render
  * answers with the site's generic one instead. Kept out of the cache, and cacheable downstream for
@@ -147,7 +160,7 @@ async function renderImage(env: WorkerEnv, target: URL, ctx: WorkerContext): Pro
     try {
         // Deferred so that only a render evaluates the drawing half. See render.ts.
         const { renderCard } = await import('./render')
-        png = await renderCard(env.SITE_ORIGIN, descriptor)
+        png = await renderCard(env.SITE_ORIGIN, descriptor, tileOrigin(env, target))
     }
     catch (error) {
         console.error(error)

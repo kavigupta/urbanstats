@@ -73,9 +73,9 @@ function mapImage(paint: string, rings: Ring[], layout: MapLayout, width: number
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
 }
 
-async function mapPanel(rings: Ring[], { width, height }: { width: number, height: number }): Promise<ReactElement> {
+async function mapPanel(rings: Ring[], { width, height }: { width: number, height: number }, tileOrigin: string): Promise<ReactElement> {
     const layout = fitRings(rings, width, height)
-    const paint = await basemap(layout, width, height)
+    const paint = await basemap(layout, width, height, tileOrigin)
     return (
         <div style={{ display: 'flex', overflow: 'hidden', width, height, flexShrink: 0, borderRadius: 5 }}>
             <img src={mapImage(paint, rings, layout, width, height)} width={width} height={height} />
@@ -170,7 +170,7 @@ function flag(article: ArticleCard): ReactElement {
     )
 }
 
-export async function embedCard(article: ArticleCard, rings: Ring[], { width, height }: { width: number, height: number }): Promise<ReactElement> {
+export async function embedCard(article: ArticleCard, rings: Ring[], { width, height }: { width: number, height: number }, tileOrigin: string): Promise<ReactElement> {
     installHooks()
     const mapSize = { width: 380, height: 340 }
     return (
@@ -197,7 +197,7 @@ export async function embedCard(article: ArticleCard, rings: Ring[], { width, he
                 <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingRight: 32 }}>
                     {article.stats.map((stat, index) => row(stat, index, article.units))}
                 </div>
-                {rings.length === 0 ? <div style={{ display: 'flex' }}></div> : await mapPanel(rings, mapSize)}
+                {rings.length === 0 ? <div style={{ display: 'flex' }}></div> : await mapPanel(rings, mapSize, tileOrigin)}
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 24, color: colors.muted, alignItems: 'baseline' }}>
                 <div style={{ display: 'flex' }}>urbanstats.org</div>
