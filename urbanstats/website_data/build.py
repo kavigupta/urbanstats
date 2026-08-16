@@ -364,7 +364,7 @@ def build_urbanstats(
     shutil.copy("icons/main/arrow-right.png", f"{site_folder}/")
 
     os.makedirs(f"{site_folder}/.github/workflows", exist_ok=True)
-    for workflow in ["update-retrostat.yml", "deploy-og-worker.yml"]:
+    for workflow in ["update-retrostat.yml", "deploy-cloudflare-worker.yml"]:
         shutil.copy(f"site_workflows/{workflow}", f"{site_folder}/.github/workflows/")
 
     with open(f"{site_folder}/CNAME", "w") as f_cname:

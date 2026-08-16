@@ -1,6 +1,9 @@
-name: Deploy OG Worker
+name: Deploy Cloudflare Worker
 
-# The Worker bundles the site's page-loading code and reads its data files, so redeploying whenever
+# The Worker sits in front of the site's HTML pages, rewriting their og: meta tags per query string
+# and rendering the article preview images at the edge.
+#
+# It bundles the site's page-loading code and reads its data files, so redeploying whenever
 # the Pages site is built keeps the two in step.
 #
 # The Worker is built from urbanstats main, on the assumption that whatever built the site is on
@@ -9,7 +12,7 @@ on:
   page_build:
   workflow_dispatch:
 
-concurrency: deploy-og-worker
+concurrency: deploy-cloudflare-worker
 
 jobs:
   deploy:
