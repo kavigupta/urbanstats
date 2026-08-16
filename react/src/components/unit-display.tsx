@@ -209,8 +209,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
             })
         case 'usd':
             return display((value) => {
-                // money has always been counted in thousands sooner than people are
-                const { number, suffix } = abbreviate(value, 1e3)
+                const { number, suffix } = abbreviate(value)
                 return { number: `$${number}`, unit: suffix === '' ? blank : <span>{suffix}</span> }
             })
         case 'area':

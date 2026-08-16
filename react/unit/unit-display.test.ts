@@ -82,6 +82,19 @@ for (const [value, expected] of [
     })
 }
 
+// Money and people are counted in thousands at the same point
+for (const [unitType, value, expected] of [
+    ['usd', 1234, '$1\u202f234'],
+    ['usd', 9999, '$9\u202f999'],
+    ['usd', 12345, '$12.3k'],
+    ['population', 1234, '1\u202f234'],
+    ['population', 12345, '12.3k'],
+] as const) {
+    void test(`${unitType} renders ${value} as ${expected}`, () => {
+        assert.equal(renderValue(unitType, value), expected)
+    })
+}
+
 // A duration reads as hours and minutes, rounded to the minute, wherever it arrived from
 for (const [unitType, value, expected] of [
     ['minutes', 34, '34min'],
