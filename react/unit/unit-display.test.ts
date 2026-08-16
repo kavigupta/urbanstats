@@ -82,6 +82,20 @@ for (const [value, expected] of [
     })
 }
 
+// A duration reads as hours and minutes, rounded to the minute, wherever it arrived from
+for (const [unitType, value, expected] of [
+    ['minutes', 34, '34min'],
+    ['minutes', 90, '1:30h'],
+    ['minutes', 99.5, '1:40h'],
+    ['minutes', -90, '-1:30h'],
+    ['time', 7.5, '7:30h'],
+    ['time', 0.5, '30min'],
+] as const) {
+    void test(`${unitType} renders ${value} as ${expected}`, () => {
+        assert.equal(renderValue(unitType, value), expected)
+    })
+}
+
 // A quantity we do not have reads the same way whatever it would have been measured in.
 // The party-colored ones render through a component, and said N/A already.
 for (const unitType of ['population', 'usd', 'density', 'area', 'time', 'minutes', 'temperature', 'number', 'fatalities'] as const) {
