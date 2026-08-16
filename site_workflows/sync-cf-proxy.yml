@@ -1,0 +1,86 @@
+name: Sync CF Proxy
+
+# Cloudflare's Worker routes only fire on proxied records, but GitHub only renews the Pages
+# certificate for urbanstats.org while the apex A records resolve to GitHub's own servers — which
+# they don't while Cloudflare is proxying them. Rather than choosing, this drops the orange cloud
+# whenever GitHub stops reporting a healthy certificate and restores it once a renewal lands, so the
+# apex is proxied except for the few hours every couple of months that a renewal takes.
+#
+# Keep the zone on Full rather than Full (Strict). If a renewal is ever missed entirely, strict mode
+# refuses the expired origin with a 526, which takes the site down and blocks the challenge that
+# would fix it.
+#
+# Runs in the Pages repo, since that is where the certificate lives.
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+concurrency: sync-cf-proxy
+
+permissions:
+  # If this endpoint 403s, some accounts require admin rather than pages:read — swap GH_TOKEN for a
+  # PAT carrying it.
+  pages: read
+
+env:
+  RECORD_NAME: urbanstats.org
+  # Grey-cloud this far ahead of expiry even while GitHub still says `approved`, so a renewal that
+  # stalls without the state ever changing can't run the certificate down to zero. The state check
+  # should fire around 30 days out and leave this unreached.
+  MIN_DAYS_LEFT: 14
+
+jobs:
+  sync:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Read GitHub's certificate state
+        id: decide
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          pages=$(gh api "repos/$GITHUB_REPOSITORY/pages")
+          state=$(jq -r '.https_certificate.state // "missing"' <<<"$pages")
+          expires=$(jq -r '.https_certificate.expires_at // empty' <<<"$pages")
+
+          days=0
+          if [ -n "$expires" ]; then
+            days=$(( ($(date -d "$expires" +%s) - $(date +%s)) / 86400 ))
+          fi
+
+          if [ "$state" = approved ] && [ "$days" -gt "$MIN_DAYS_LEFT" ]; then
+            want=true
+          else
+            want=false
+          fi
+
+          echo "state=$state expires=${expires:-none} days_left=$days -> proxied=$want"
+          echo "want=$want" >> "$GITHUB_OUTPUT"
+
+      - name: Apply it to the apex A records
+        env:
+          # Needs Zone / DNS: Edit on urbanstats.org, on top of the Workers scopes the deploy
+          # workflow uses this token for.
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          WANT: ${{ steps.decide.outputs.want }}
+        run: |
+          set -euo pipefail
+          api() { curl -sS -H "Authorization: Bearer $CF_TOKEN" -H 'content-type: application/json' "$@"; }
+          base="https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records"
+
+          records=$(api "$base?type=A&name=$RECORD_NAME&per_page=100")
+          [ "$(jq -r .success <<<"$records")" = true ] || { echo "$records"; exit 1; }
+
+          stale=$(jq -r --argjson want "$WANT" '.result[] | select(.proxied != $want) | .id' <<<"$records")
+          if [ -z "$stale" ]; then
+            echo "Already proxied=$WANT."
+            exit 0
+          fi
+
+          for id in $stale; do
+            result=$(api -X PATCH "$base/$id" --data "{\"proxied\":$WANT}")
+            [ "$(jq -r .success <<<"$result")" = true ] || { echo "$result"; exit 1; }
+            echo "$id -> proxied=$WANT"
+          done
