@@ -38,6 +38,18 @@ export async function loadJSON(filePath: string): Promise<unknown> {
     return response.json()
 }
 
+/** The bytes of one of the site's data files, which are all gzipped protobuf. */
+export async function loadGzipped(filePath: string, errorOnMissing: boolean = true): Promise<Uint8Array | undefined> {
+    const response = await fetch(filePath)
+    if (response.status < 200 || response.status > 299) {
+        if (!errorOnMissing) {
+            return undefined
+        }
+        throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
+    }
+    return new Uint8Array(gunzipSync(Buffer.from(await response.arrayBuffer())))
+}
+
 // Load a protobuf file from the server
 export async function loadProtobuf(filePath: string, name: 'Article', errorOnMissing: boolean): Promise<Article | undefined>
 export async function loadProtobuf(filePath: string, name: 'Feature', errorOnMissing: boolean): Promise<Feature>
@@ -61,26 +73,13 @@ export async function loadProtobuf(filePath: string, name: 'ShardIndex'): Promis
 export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | CongressionalRepresentativeTable | ConsolidatedShapes | ConsolidatedArticles | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | ArticleUniverseList | DefaultUniverseTable | ShardIndex | undefined> {
     let perfCheckpoint = performance.now()
 
-    const response = await fetch(filePath)
-    if (response.status < 200 || response.status > 299) {
-        if (!errorOnMissing) {
-            return undefined
-        }
-        throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
+    const arr = await loadGzipped(filePath, errorOnMissing)
+    if (arr === undefined) {
+        return undefined
     }
 
-    const compressedBuffer = await response.arrayBuffer()
-
     if (name === 'SearchIndex') {
-        debugPerformance(`Took ${performance.now() - perfCheckpoint}ms networking to load search index`)
-    }
-    perfCheckpoint = performance.now()
-
-    const buffer = gunzipSync(Buffer.from(compressedBuffer))
-    const arr = new Uint8Array(buffer)
-
-    if (name === 'SearchIndex') {
-        debugPerformance(`Took ${performance.now() - perfCheckpoint}ms to decompress search index`)
+        debugPerformance(`Took ${performance.now() - perfCheckpoint}ms to fetch and decompress search index`)
     }
     perfCheckpoint = performance.now()
 

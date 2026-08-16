@@ -5,10 +5,11 @@ import { MapInstance, MapRef } from 'react-map-gl/maplibre'
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
 import { Basemap as BasemapComponent, CommonMaplibreMap, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
 import { screencapElement, ScreenshotContext, ScreenshotContextType, withScreenshotMode } from '../components/screenshot'
+import { shapesInUniverse } from '../consolidated-shapes'
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
-import { loadProtobuf } from '../load_json'
-import { boundingBox, geometry } from '../map-partition'
+import { loadGzipped, loadProtobuf } from '../load_json'
+import { boundingBox } from '../map-partition'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
 import { RelativeLoader } from '../navigation/loading'
 import { Colors, colorThemes } from '../page_template/color-themes'
@@ -34,8 +35,7 @@ import { furthestColor, interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { makeDebugLogger } from '../utils/debug-logging'
 import { HumanReadableName } from '../utils/human-readable-name'
-import { ConsolidatedShapes, Feature, ICoordinate } from '../utils/protos'
-import { NormalizeProto } from '../utils/types'
+import { ICoordinate } from '../utils/protos'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
 import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar'
@@ -705,19 +705,14 @@ async function pointsGeojson(geographyKind: typeof valid_geographies[number], un
 
 async function polygonsGeojson(geographyKind: typeof valid_geographies[number], universe: Universe, polygons: Polygon[], cache: MapCache): Promise<GeoJSON.Feature[]> {
     if (cache.geo?.type !== 'polygons' || cache.geo.universe !== universe || cache.geo.geographyKind !== geographyKind) {
-        const universeIdx = universes_ordered.indexOf(universe)
-        const shapes = (await loadProtobuf(consolidatedShapeLink(geographyKind), 'ConsolidatedShapes')) as NormalizeProto<ConsolidatedShapes>
-        const polygonsByName = new Map<string, GeoJSON.Geometry>()
-        for (let i = 0; i < shapes.longnames.length; i++) {
-            if (shapes.universes[i].universeIdxs.includes(universeIdx)) {
-                polygonsByName.set(shapes.longnames[i], geometry(shapes.shapes[i] as NormalizeProto<Feature>))
-            }
-        }
         cache.geo = {
             type: 'polygons',
             universe,
             geographyKind,
-            polygonsByName,
+            polygonsByName: shapesInUniverse(
+                (await loadGzipped(consolidatedShapeLink(geographyKind)))!,
+                universes_ordered.indexOf(universe),
+            ),
         }
     }
 
