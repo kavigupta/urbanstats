@@ -60,18 +60,21 @@ interface Written {
     unit: ReactNode
 }
 
+const blank = <span>&nbsp;</span>
+const percentSign = <span>%</span>
+
 function display(write: (value: number, settings: ReaderSettings) => Written, inequality = renderInequality): UnitDisplay {
     return {
         renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
+            if (!isFinite(value)) {
+                return { value: <span>{missing}</span>, unit: blank }
+            }
             const { number, unit } = write(value, { useImperial: useImperial ?? false, temperatureUnit: temperatureUnit ?? 'fahrenheit' })
-            return { value: <span>{isFinite(value) ? number : missing}</span>, unit }
+            return { value: <span>{number}</span>, unit }
         },
         renderInequality: inequality,
     }
 }
-
-const blank = <span>&nbsp;</span>
-const percentSign = <span>%</span>
 
 function squared(name: string): ReactNode {
     return (
