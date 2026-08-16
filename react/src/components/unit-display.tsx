@@ -53,7 +53,6 @@ interface ReaderSettings {
     temperatureUnit: string
 }
 
-/** What a quantity reads as: the number, and the name of the unit it is in. */
 interface Written {
     number: string
     unit: ReactNode

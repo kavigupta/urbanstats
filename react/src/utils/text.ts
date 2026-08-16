@@ -39,11 +39,12 @@ export function separateNumber(number: string): string {
     return [sign + grouped, ...rest].join('.')
 }
 
-/**
- * How many digits a number is written to, counting the ones before the point. A density written to
- * two digits is 1 234, 12.3 or 0.12; an area written to three is 1 234, 12.3 or 0.123.
- */
+/** How closely a number is rounded. */
 export interface Rounding {
+    /**
+     * Digits to write in all, counting those before the point: at two digits 0.5 reads 0.50 and
+     * 12.3 reads 12. Digits before the point are never dropped, so 1 234 reads 1 234.
+     */
     significantDigits: number
     /** Never fewer places than this, so that a quantity read against others keeps its column */
     minDecimals?: number
