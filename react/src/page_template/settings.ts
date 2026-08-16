@@ -132,7 +132,7 @@ export class Settings {
      */
     private readonly settings: SettingsDictionary
 
-    private constructor() {
+    constructor() {
         const savedSettings = localStorage.getItem('settings')
         const loadedSettings = JSON.parse(savedSettings ?? '{}') as Partial<SettingsDictionary>
         this.settings = { ...defaultSettings, ...loadedSettings }

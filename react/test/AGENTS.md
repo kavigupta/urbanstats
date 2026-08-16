@@ -27,6 +27,24 @@ That's the whole thing. In particular:
   A `PreToolUse` hook in [`.claude/settings.json`](../../.claude/settings.json) rejects
   the piped form.
 
+## The embed Worker tests
+
+These are the exception to the rule above: they need a second server, the embed Worker, and they
+start it themselves.
+
+- `embed_worker.test.ts` reuses a Worker already listening on 8787 and otherwise starts one, taking
+  it down with the runner. Starting your own first with `npm run og-preview` saves the wait.
+- `embed_worker_resources.test.ts` has to run by itself, with nothing on 8787 — it refuses to start
+  otherwise. Measuring a render deadlocks workerd's inspector, so the Worker it starts is unusable
+  afterwards. Make sure it is gone before running anything else against 8787.
+- The card screenshots are the Worker's PNG itself, drawn from the vector tiles snapshotted in
+  `test/assets/og-tiles` rather than from openfreemap, so openfreemap's next planet build cannot
+  move them. A test that needs tiles the snapshot does not have records them with
+  `RECORD_OG_TILES=1` — commit what that writes. `embed-worker-live-tiles` is what still renders
+  against openfreemap, and it takes no screenshot.
+
+See [`../cf-og-worker/README.md`](../cf-og-worker/README.md).
+
 ## Ports
 
 Tests target `http://localhost:$PORT`, defaulting to 8000. A checkout that runs
