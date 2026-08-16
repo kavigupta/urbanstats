@@ -4,7 +4,7 @@
  * root-relative paths, which a Worker has no base URL for.
  */
 import { loadFeatureFromConsolidatedShard } from '../../src/load_json'
-import { loadPageDescriptor, PageData, pageDescriptorFromURL } from '../../src/navigation/PageDescriptor'
+import { loadPageDescriptor, PageData, PageDescriptor } from '../../src/navigation/PageDescriptor'
 import { shapeLink, universePath } from '../../src/navigation/links'
 import { Settings, SettingsDictionary } from '../../src/page_template/settings'
 import { groupYearKeys } from '../../src/page_template/statistic-settings'
@@ -37,19 +37,12 @@ export interface Page {
 }
 
 /**
- * Runs the navigation the crawler's URL describes, stopping short of rendering a panel. Settings
- * are per-call rather than `Settings.shared` because `?s` mutates them, and one link's stat
- * selection must not leak into the next request's embed.
+ * Runs the navigation the descriptor describes, stopping short of rendering a panel. Settings are
+ * per-call rather than `Settings.shared` because `?s` mutates them, and one link's stat selection
+ * must not leak into the next request's embed.
  */
-export async function loadPage(origin: string, url: URL): Promise<Page | undefined> {
+export async function loadPage(origin: string, descriptor: PageDescriptor): Promise<Page> {
     setOrigin(origin)
-    let descriptor
-    try {
-        descriptor = pageDescriptorFromURL(url)
-    }
-    catch {
-        return undefined
-    }
     const settings = new Settings()
     const { pageData, effects } = await loadPageDescriptor(descriptor, settings)
     effects()

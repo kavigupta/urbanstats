@@ -10,6 +10,7 @@ import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm'
 import satori, { init as initYoga } from 'satori/standalone'
 import yogaWasm from 'satori/yoga.wasm'
 
+import { PageDescriptor } from '../../src/navigation/PageDescriptor'
 import jostRegular from '../assets/Jost-400.ttf'
 import jostSemiBold from '../assets/Jost-600.ttf'
 
@@ -18,11 +19,14 @@ import { embedCard } from './embed'
 
 let wasmReady: Promise<unknown> | undefined
 
-/** The card as a PNG, or undefined if the URL names no article. */
-export async function renderCard(origin: string, target: URL, longname: string): Promise<Uint8Array | undefined> {
+/** The card as a PNG, or undefined for a page we have no card for. */
+export async function renderCard(origin: string, descriptor: PageDescriptor): Promise<Uint8Array | undefined> {
+    if (descriptor.kind !== 'article') {
+        return undefined
+    }
     const [page, rings] = await Promise.all([
-        loadPage(origin, target).catch(() => undefined),
-        loadShape(origin, longname).catch(() => []),
+        loadPage(origin, descriptor).catch(() => undefined),
+        loadShape(origin, descriptor.longname).catch(() => []),
     ])
     if (page?.pageData.kind !== 'article') {
         return undefined

@@ -51,7 +51,6 @@ function describe(url: URL): Embed | undefined {
             return { title, description: `${title} rankings on Urban Stats.` }
         }
         default:
-            // 'syau' is left out deliberately: it has no per-URL identity.
             return undefined
     }
 }
@@ -121,16 +120,19 @@ async function renderImage(env: WorkerEnv, target: URL, ctx: WorkerContext): Pro
         return cached
     }
 
-    const longname = target.searchParams.get('longname')
-    if (longname === null) {
-        return new Response('no longname', { status: 400 })
+    let descriptor
+    try {
+        descriptor = pageDescriptorFromURL(target)
+    }
+    catch {
+        return new Response('unrecognized url', { status: 400 })
     }
 
     // Deferred so that only a render evaluates the drawing half. See render.ts.
     const { renderCard } = await import('./render')
-    const png = await renderCard(env.SITE_ORIGIN, target, longname)
+    const png = await renderCard(env.SITE_ORIGIN, descriptor)
     if (png === undefined) {
-        return new Response('no such article', { status: 404 })
+        return new Response('nothing to draw', { status: 404 })
     }
 
     const response = new Response(png, {
