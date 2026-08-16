@@ -103,7 +103,7 @@ function hoursAndMinutes(hours: number): Written {
     if (wholeHours === 0) {
         return { number: `${sign}${minutes}`, unit: <span>min</span> }
     }
-    return { number: `${sign}${wholeHours}:${minutes.toString().padStart(2, '0')}`, unit: <span>hr</span> }
+    return { number: `${sign}${wholeHours}:${minutes.toString().padStart(2, '0')}`, unit: <span>h</span> }
 }
 
 function percentage(value: number): string {
