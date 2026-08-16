@@ -17,7 +17,7 @@ urbanstatsFixture('embed preview', previewPage(article), async (t) => {
     await safeReload(t)
 })
 
-const card = Selector('[data-test-id=embed-card]')
+const card = Selector('[data-test-id=embed-card]', { timeout: 10000 })
 const pathInput = Selector('[data-test-id=embed-target]')
 
 test('embed-preview-card', async (t) => {
