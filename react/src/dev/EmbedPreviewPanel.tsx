@@ -133,6 +133,7 @@ export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: 
     return (
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', gap: '12px', padding: '12px', backgroundColor: colors.background, color: colors.textMain }}>
             <input
+                data-test-id="embed-target"
                 value={path}
                 onChange={(e) => { setPath(e.target.value) }}
                 onKeyDown={(e) => {
@@ -171,7 +172,7 @@ export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: 
 function Card({ embed }: { embed: Embed }): ReactNode {
     const colors = useColors()
     return (
-        <div data-test-id="embed-card" style={{ maxWidth: '520px', border: `1px solid ${colors.borderNonShadow}`, borderRadius: '8px', overflow: 'hidden', backgroundColor: colors.slightlyDifferentBackground }}>
+        <div data-test-id="embed-card" data-test-hide-corners style={{ maxWidth: '520px', border: `1px solid ${colors.borderNonShadow}`, borderRadius: '8px', overflow: 'hidden', backgroundColor: colors.slightlyDifferentBackground }}>
             <img src={embed.image} alt="" style={{ display: 'block', width: '100%', aspectRatio: '1200 / 630' }} />
             <div style={{ padding: '10px 12px' }}>
                 <div style={{ fontSize: '13px', color: colors.ordinalTextColor }}>urbanstats.org</div>
