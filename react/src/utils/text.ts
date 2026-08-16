@@ -47,7 +47,7 @@ export interface Rounding {
     maxDecimals?: number
 }
 
-export function decimalPlaces(value: number, { significantDigits, minDecimals, maxDecimals }: Rounding): number {
+function decimalPlaces(value: number, { significantDigits, minDecimals, maxDecimals }: Rounding): number {
     const most = maxDecimals ?? significantDigits
     if (value === 0 || !isFinite(value)) {
         // nothing is known about how large it is, so it is written to as many places as any
