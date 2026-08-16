@@ -96,6 +96,13 @@ test('embed-worker-crawler-tags', async (t) => {
         ogDescription: 'Population rankings on Urban Stats.',
         ogImage: '/link-preview.png',
     })
+    // The quiz has embed tags of its own, which the Worker has nothing to add to.
+    await t.expect(await crawlerTags('/quiz.html')).eql({
+        title: 'Juxtastat',
+        ogTitle: 'Juxtastat',
+        ogDescription: undefined,
+        ogImage: 'https://urbanstats.org/juxtastat-link-preview.png',
+    })
     // A page kind the Worker has nothing to say about passes through untouched.
     await t.expect(await crawlerTags('/index.html')).eql({
         title: 'Urban Stats',

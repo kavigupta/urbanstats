@@ -41,7 +41,16 @@ test('embed-preview-follows-frame', async (t) => {
     await t.switchToMainWindow()
     // The frame navigates with pushState, which fires no load event: the panel polls for this.
     await t.expect(pathInput.value).contains('/statistic.html', { timeout: 30_000 })
-    await t.expect(Selector('div').withText(/keeps the static preview/).exists).ok({ timeout: 30_000 })
+    await t.expect(card.innerText).contains('Population', { timeout: 30_000 })
+    // The Worker draws no card for this page kind, so the site's static preview stands.
+    await t.expect(card.find('img').getAttribute('src')).contains('/link-preview.png')
+})
+
+test('embed-preview-juxtastat', async (t) => {
+    await t.navigateTo(previewPage('/quiz.html'))
+    await t.expect(card.innerText).contains('Juxtastat', { timeout: 30_000 })
+    await t.expect(card.innerText).contains('New quiz every day')
+    await t.expect(card.find('img').getAttribute('src')).contains('juxtastat-link-preview.png')
 })
 
 // Nothing is listening here, which is the state the panel is in until the Worker is started.

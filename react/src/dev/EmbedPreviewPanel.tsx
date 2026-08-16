@@ -14,7 +14,6 @@ type Status =
     { kind: 'loading' }
     | { kind: 'ready', embed: Embed }
     | { kind: 'down' }
-    | { kind: 'notEmbeddable' }
 
 async function fetchEmbed(workerOrigin: string, target: string): Promise<Status> {
     let html: string
@@ -41,10 +40,6 @@ async function fetchEmbed(workerOrigin: string, target: string): Promise<Status>
         return { kind: 'down' }
     }
     const imageURL = new URL(image, workerOrigin)
-    // The static preview means the Worker looked at this page and had nothing per-URL to say.
-    if (imageURL.pathname === '/link-preview.png') {
-        return { kind: 'notEmbeddable' }
-    }
     // Busts the card's day of cache-control, which its URL does not change with the code.
     imageURL.searchParams.set('__preview', Date.now().toString())
     return {
@@ -157,7 +152,6 @@ export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: 
                     <div style={{ flex: 1, overflow: 'auto' }}>
                         {status.kind === 'loading' ? <div>Loading…</div> : null}
                         {status.kind === 'ready' ? <Card embed={status.embed} /> : null}
-                        {status.kind === 'notEmbeddable' ? <div>This page keeps the static preview — the Worker only draws articles.</div> : null}
                         {status.kind === 'down' ? <WorkerDown onRetry={() => { setAttempt(a => a + 1) }} /> : null}
                     </div>
                 </div>
