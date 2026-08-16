@@ -67,7 +67,7 @@ SITE_ORIGIN = "https://urbanstats.org"
 enabled = true
 head_sampling_rate = 1
 
-# Free only through the beta — from 2026-10-01 each span bills as an observability event against the
-# same quota as logs, and a render emits one per subrequest. Turn head_sampling_rate down then.
+# A render emits a span per subrequest, and from 2026-10-01 each one bills against the same quota as
+# the logs, which are the half worth having.
 [observability.traces]
-enabled = true
+enabled = false
