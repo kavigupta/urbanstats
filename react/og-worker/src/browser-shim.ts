@@ -26,16 +26,14 @@ shim.document ??= {
 // The default theme is 'System Theme', so useCurrentTheme asks the media query. Cards are light.
 shim.matchMedia ??= () => ({ matches: false, addEventListener: () => undefined, removeEventListener: () => undefined })
 
-// Empty per isolate, so settings always start from the defaults a first-time visitor would see.
-const store = new Map<string, string>()
-
+// Always empty, so settings start from a first-time visitor's defaults. The site only saves
+// settings when some are already saved, so a write means that assumption stopped holding: dropping
+// it keeps requests independent, which is what the emptiness was buying.
 shim.localStorage ??= {
-    getItem: (key: string) => store.get(key) ?? null,
-    setItem: (key: string, value: string) => { store.set(key, value) },
-    removeItem: (key: string) => { store.delete(key) },
-    clear: () => { store.clear() },
-    key: (index: number) => [...store.keys()][index] ?? null,
-    get length() {
-        return store.size
-    },
+    getItem: () => null,
+    setItem: (key: string) => { console.error(`dropped localStorage write to ${key}`) },
+    removeItem: () => undefined,
+    clear: () => undefined,
+    key: () => null,
+    length: 0,
 }
