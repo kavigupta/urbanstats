@@ -25,16 +25,7 @@ interface Rule {
     opacity?: number
     dash?: string
     minZoom?: number
-    /** Whether the simplified basemap keeps this rule. */
-    simple?: true
 }
-
-/*
- * The full style in a map box a few hundred pixels wide is a mesh of roads with no room to read as
- * anything. The simplified set keeps water, green, boundaries and the major roads, and costs about
- * a third less. Flip to draw the whole style instead.
- */
-const simplified: boolean = false
 
 function widthAt(stops: [number, number][], zoom: number): number {
     if (zoom <= stops[0][0]) {
@@ -63,7 +54,7 @@ const minorWidth: [number, number][] = [[12, 0.5], [14, 3], [16, 8]]
 const background = '#f8f4f0'
 
 const rules: Rule[] = [
-    { layer: 'landcover', where: p => p.class === 'wood', fill: '#66aa44', opacity: 0.1, simple: true },
+    { layer: 'landcover', where: p => p.class === 'wood', fill: '#66aa44', opacity: 0.1 },
     { layer: 'landcover', where: p => p.class === 'grass', fill: '#d8e8c8' },
     { layer: 'landcover', where: p => p.class === 'sand', fill: '#f5eebc' },
     { layer: 'landcover', where: p => p.class === 'ice', fill: '#ffffff', opacity: 0.5 },
@@ -73,16 +64,15 @@ const rules: Rule[] = [
     { layer: 'landuse', where: p => p.class === 'cemetery', fill: '#e0e4dd' },
     { layer: 'landuse', where: p => p.class === 'hospital', fill: '#ffddee' },
     { layer: 'landuse', where: p => p.class === 'school', fill: '#f0e8f8' },
-    { layer: 'park', fill: '#d8e8c8', opacity: 0.35, simple: true },
-    { layer: 'water', where: p => p.intermittent !== 1 && p.brunnel !== 'tunnel', fill: '#aecfe2', simple: true },
+    { layer: 'park', fill: '#d8e8c8', opacity: 0.35 },
+    { layer: 'water', where: p => p.intermittent !== 1 && p.brunnel !== 'tunnel', fill: '#aecfe2' },
     { layer: 'waterway', stroke: '#a0c8f0', width: [[10, 0.8], [14, 1.5], [17, 4]] },
     { layer: 'aeroway', where: p => p.class === 'runway' || p.class === 'taxiway', stroke: '#dddddd', width: [[11, 2], [16, 12]] },
 
-    // Kept simplified too: at a zoom this close there is nothing else around the shape.
-    { layer: 'transportation', where: roadClass('minor', 'service', 'track'), stroke: '#cfcdca', width: minorWidth, minZoom: 12, simple: true },
+    { layer: 'transportation', where: roadClass('minor', 'service', 'track'), stroke: '#cfcdca', width: minorWidth, minZoom: 12 },
     { layer: 'transportation', where: roadClass('secondary', 'tertiary'), stroke: '#e9ac77', width: secondaryWidth },
-    { layer: 'transportation', where: roadClass('trunk', 'primary'), stroke: '#e9ac77', width: trunkWidth, simple: true },
-    { layer: 'transportation', where: roadClass('motorway'), stroke: '#e9ac77', width: motorwayWidth, simple: true },
+    { layer: 'transportation', where: roadClass('trunk', 'primary'), stroke: '#e9ac77', width: trunkWidth },
+    { layer: 'transportation', where: roadClass('motorway'), stroke: '#e9ac77', width: motorwayWidth },
 
     { layer: 'transportation', where: roadClass('path'), stroke: '#ccbbaa', width: [[14, 0.8], [18, 3]], minZoom: 14 },
     { layer: 'transportation', where: roadClass('rail'), stroke: '#bbbbbb', width: [[12, 0.5], [18, 2]], minZoom: 11 },
@@ -92,12 +82,9 @@ const rules: Rule[] = [
     { layer: 'transportation', where: roadClass('trunk', 'primary'), stroke: '#ffeeaa', width: trunkWidth.map(([z, w]): [number, number] => [z, Math.max(w - 1.6, 0.4)]) },
     { layer: 'transportation', where: roadClass('motorway'), stroke: '#ffcc88', width: motorwayWidth.map(([z, w]): [number, number] => [z, Math.max(w - 1.8, 0.4)]) },
 
-    { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 6 && p.maritime !== 1, stroke: '#b3b3b3', width: [[7, 1], [11, 2]], dash: '2 2', simple: true },
-    { layer: 'boundary', where: p => Number(p.admin_level) === 2 && p.maritime !== 1, stroke: '#a8a6b0', width: [[3, 1], [12, 3]], simple: true },
+    { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 6 && p.maritime !== 1, stroke: '#b3b3b3', width: [[7, 1], [11, 2]], dash: '2 2' },
+    { layer: 'boundary', where: p => Number(p.admin_level) === 2 && p.maritime !== 1, stroke: '#a8a6b0', width: [[3, 1], [12, 3]] },
 ]
-
-const labelColor = '#5c5343'
-const labelHalo = '#f8f4f0'
 /* eslint-enable no-restricted-syntax */
 
 interface Tile {
@@ -204,97 +191,15 @@ function rulePath(rule: Rule, strokeWidth: number, tiles: Tile[], width: number,
     return `<path d="${parts.join('')}" ${paint}${opacity}/>`
 }
 
-/**
- * Place names, from the point features the rules skip. Handed back as positions rather than drawn,
- * because resvg silently drops <text> inside a nested SVG image, which is how the basemap reaches
- * it; satori sets them instead.
- *
- * Collision handling is one pass in rank order that drops a label overlapping one already placed.
- */
-function labels(tiles: Tile[], width: number, height: number, zoom: number): Label[] {
-    const candidates: { name: string, x: number, y: number, size: number, rank: number }[] = []
-    for (const { tile, left, top, px } of tiles) {
-        if (!Object.hasOwn(tile.layers, 'place')) {
-            continue
-        }
-        const layer: VectorTileLayer = tile.layers.place
-        const unit = px / layer.extent
-        for (let i = 0; i < layer.length; i++) {
-            const feature = layer.feature(i)
-            const { name, class: kind, rank } = feature.properties
-            if (feature.type !== 1 || typeof name !== 'string') {
-                continue
-            }
-            if (!['city', 'town', 'village', 'suburb'].includes(String(kind))) {
-                continue
-            }
-            const size = kind === 'city' ? 15 : kind === 'town' ? 13 : 11
-            // A town label is worth less than a city one whatever its own rank says. Unranked
-            // places sort as middling.
-            const ranked = Number(rank)
-            const order = (kind === 'city' ? 0 : kind === 'town' ? 100 : 200) + (Number.isNaN(ranked) ? 50 : ranked)
-            for (const ring of feature.loadGeometry()) {
-                candidates.push({ name, x: left + ring[0].x * unit, y: top + ring[0].y * unit, size, rank: order })
-            }
-        }
-    }
-
-    candidates.sort((a, b) => a.rank - b.rank)
-    const placed: { x: number, y: number, w: number, h: number }[] = []
-    const kept: Label[] = []
-    for (const label of candidates) {
-        if (zoom < 9 && label.size < 15) {
-            continue
-        }
-        // Jost is narrow; half the font size per character is close enough to reserve space with.
-        const box = { x: label.x - label.name.length * label.size * 0.25, y: label.y - label.size, w: label.name.length * label.size * 0.5, h: label.size * 1.4 }
-        // Names are centred on their point, so one near an edge is dropped rather than clipped.
-        if (box.x < 2 || box.x + box.w > width - 2 || box.y < 2 || box.y + box.h > height - 2) {
-            continue
-        }
-        if (placed.some(other => box.x < other.x + other.w && box.x + box.w > other.x && box.y < other.y + other.h && box.y + box.h > other.y)) {
-            continue
-        }
-        placed.push(box)
-        kept.push({ name: label.name, x: label.x, y: label.y, size: label.size, width: box.w })
-    }
-    return kept
-}
-
-export interface Label {
-    name: string
-    /** Where the name is centred, in the card's map box. */
-    x: number
-    y: number
-    size: number
-    /** The estimated text width the collision box was reserved from, so placement agrees with it. */
-    width: number
-}
-
-export interface Basemap {
-    /** SVG markup sized to the map box. Empty if no tile could be loaded. */
-    paint: string
-    labels: Label[]
-}
-
-export const labelStyle = { color: labelColor, halo: labelHalo }
-
-/** Flip to read the shape against the basemap on its own. */
-const showLabels: boolean = false
-
-export async function basemap(layout: MapLayout, width: number, height: number): Promise<Basemap> {
+/** SVG markup sized to the map box. Empty if no tile could be loaded. */
+export async function basemap(layout: MapLayout, width: number, height: number): Promise<string> {
     const tiles = await coveringTiles(layout, width, height)
     if (tiles.length === 0) {
-        return { paint: '', labels: [] }
+        return ''
     }
     const painted = rules
-        .filter(rule => (!simplified || rule.simple === true) && (rule.minZoom === undefined || layout.zoom >= rule.minZoom))
-        // Simplified roads are casing rules with their fills dropped, so they draw at the width
-        // meant to sit under another line. Narrowed back to about what the fill would have been.
-        .map(rule => rulePath(rule, rule.width === undefined ? 1 : widthAt(rule.width, layout.zoom) * (simplified ? 0.6 : 1), tiles, width, height))
+        .filter(rule => rule.minZoom === undefined || layout.zoom >= rule.minZoom)
+        .map(rule => rulePath(rule, rule.width === undefined ? 1 : widthAt(rule.width, layout.zoom), tiles, width, height))
         .join('')
-    return {
-        paint: `<rect width="${width}" height="${height}" fill="${background}"/>${painted}`,
-        labels: showLabels ? labels(tiles, width, height, layout.zoom) : [],
-    }
+    return `<rect width="${width}" height="${height}" fill="${background}"/>${painted}`
 }

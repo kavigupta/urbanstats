@@ -9,7 +9,7 @@ import { getUnitDisplay } from '../../src/components/unit-display'
 import flagDimensions from '../../src/data/flag_dimensions'
 import { classifyStatistic } from '../../src/utils/unit'
 
-import { Label, basemap, labelStyle } from './basemap'
+import { basemap } from './basemap'
 import { ArticleCard, Units } from './data'
 import { MapLayout, Ring, fitRings, place } from './map-layout'
 
@@ -73,25 +73,12 @@ function mapImage(paint: string, rings: Ring[], layout: MapLayout, width: number
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
 }
 
-/**
- * Centred by being placed half its estimated width left of its point, since satori's transforms
- * take absolute lengths only.
- */
-function label({ name, x, y, size, width }: Label): ReactElement {
-    return (
-        <div key={`${name}${x}`} style={{ position: 'absolute', left: x - width / 2, top: y - size, width, display: 'flex', justifyContent: 'center' }}>
-            <div style={{ flexShrink: 0, whiteSpace: 'nowrap', fontSize: size, color: labelStyle.color, textShadow: `0 0 3px ${labelStyle.halo}` }}>{name}</div>
-        </div>
-    )
-}
-
 async function mapPanel(rings: Ring[], { width, height }: { width: number, height: number }): Promise<ReactElement> {
     const layout = fitRings(rings, width, height)
-    const { paint, labels } = await basemap(layout, width, height)
+    const paint = await basemap(layout, width, height)
     return (
-        <div style={{ display: 'flex', position: 'relative', overflow: 'hidden', width, height, flexShrink: 0, borderRadius: 5 }}>
-            <img style={{ position: 'absolute', left: 0, top: 0 }} src={mapImage(paint, rings, layout, width, height)} width={width} height={height} />
-            {labels.map(label)}
+        <div style={{ display: 'flex', overflow: 'hidden', width, height, flexShrink: 0, borderRadius: 5 }}>
+            <img src={mapImage(paint, rings, layout, width, height)} width={width} height={height} />
         </div>
     )
 }
