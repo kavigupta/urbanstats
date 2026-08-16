@@ -31,11 +31,18 @@ export interface MapLayout {
 }
 
 export function fitRings(rings: Ring[], width: number, height: number): MapLayout {
-    const projected = rings.flat().map(project)
-    const xs = projected.map(p => p[0])
-    const ys = projected.map(p => p[1])
-    const [minX, maxX] = [Math.min(...xs), Math.max(...xs)]
-    const [minY, maxY] = [Math.min(...ys), Math.max(...ys)]
+    // A loop rather than Math.min(...xs): a country's outline carries more points than an argument
+    // list takes, and the RangeError would land as a card that silently fell back.
+    let [minX, maxX, minY, maxY] = [Infinity, -Infinity, Infinity, -Infinity]
+    for (const ring of rings) {
+        for (const point of ring) {
+            const [x, y] = project(point)
+            minX = Math.min(minX, x)
+            maxX = Math.max(maxX, x)
+            minY = Math.min(minY, y)
+            maxY = Math.max(maxY, y)
+        }
+    }
 
     const pad = 8
     const fit = Math.min((width - pad * 2) / (maxX - minX || 1), (height - pad * 2) / (maxY - minY || 1))

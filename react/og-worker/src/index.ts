@@ -9,7 +9,7 @@
 // eslint-disable-next-line import/no-unassigned-import -- Installing those globals is the point.
 import './browser-shim'
 
-import { pageDescriptorFromURL } from '../../src/navigation/PageDescriptor'
+import { PageDescriptor, pageDescriptorFromURL } from '../../src/navigation/PageDescriptor'
 
 interface Embed {
     title: string
@@ -100,12 +100,19 @@ function isolateID(): string {
 }
 
 /**
- * Keyed by isolate in dev, so an edit to the card's code is not hidden behind a day-old render.
- * Deployed, a new isolate means nothing more than the last one going idle.
+ * Deployed, the key is what the card is drawn from rather than the URL it was asked for: the page's
+ * schemas drop parameters they do not know, so keying on the raw URL would let a crawler appending
+ * `&x=1`, `&x=2`, ... force a fresh render for every request.
+ *
+ * Locally the raw URL stands instead, carrying the isolate's ID: the parameters that steer and
+ * repeat a dev render live there, and an edit to the card's code starts a fresh isolate rather than
+ * being hidden behind a day-old render.
  */
-function cacheKey(env: WorkerEnv, target: URL): Request {
+function cacheKey(env: WorkerEnv, target: URL, descriptor: PageDescriptor): Request {
     if (!servingLocalSite(env)) {
-        return new Request(target.toString(), { method: 'GET' })
+        const key = new URL(target.pathname, target.origin)
+        key.searchParams.set('card', JSON.stringify(descriptor))
+        return new Request(key.toString(), { method: 'GET' })
     }
     const key = new URL(target)
     key.searchParams.set('__reload', isolateID())
@@ -138,13 +145,6 @@ async function staticPreview(env: WorkerEnv): Promise<Response> {
 }
 
 async function renderImage(env: WorkerEnv, target: URL, ctx: WorkerContext): Promise<Response> {
-    const cache = caches.default
-    const key = cacheKey(env, target)
-    const cached = await cache.match(key)
-    if (cached !== undefined) {
-        return cached
-    }
-
     let descriptor
     try {
         descriptor = pageDescriptorFromURL(target)
@@ -154,6 +154,13 @@ async function renderImage(env: WorkerEnv, target: URL, ctx: WorkerContext): Pro
     }
     if (descriptor.kind !== 'article') {
         return new Response('nothing to draw', { status: 404 })
+    }
+
+    const cache = caches.default
+    const key = cacheKey(env, target, descriptor)
+    const cached = await cache.match(key)
+    if (cached !== undefined) {
+        return cached
     }
 
     let png
