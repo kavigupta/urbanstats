@@ -3,8 +3,7 @@
  *
  * Decoding the file through protobufjs costs ~130 MiB on the largest geography, because the schema
  * makes every coordinate its own message and so its own object. This walks the message instead,
- * noting where each shape's bytes start and decoding only the ones the universe holds, straight into
- * the GeoJSON its callers want.
+ * noting where each shape's bytes start and decoding only the ones the universe holds.
  */
 import Pbf from 'pbf'
 
@@ -132,7 +131,7 @@ function readUniverses(pbf: Pbf, end: number): number[] {
     return idxs
 }
 
-/** The geometry of every shape in the file that the universe contains, by longname. */
+/** Keyed by longname. */
 export function shapesInUniverse(shapeFile: Uint8Array, universeIdx: number): Map<string, GeoJSON.Geometry> {
     const pbf = new Pbf(shapeFile)
     const longnames: string[] = []

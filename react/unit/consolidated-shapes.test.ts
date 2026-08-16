@@ -11,10 +11,6 @@ import { NormalizeProto } from '../src/utils/types'
 
 import './util/fetch'
 
-/*
- * The reader walks the message rather than decoding it, so what keeps it honest is agreeing with
- * protobufjs on the same file, shape for shape and coordinate for coordinate.
- */
 async function checkAgainstProtobuf(geographyKind: string, universe: string): Promise<number> {
     const universeIdx = universes_ordered.indexOf(universe as typeof universes_ordered[number])
     const lean = shapesInUniverse((await loadGzipped(consolidatedShapeLink(geographyKind)))!, universeIdx)

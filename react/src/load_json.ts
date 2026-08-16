@@ -38,7 +38,7 @@ export async function loadJSON(filePath: string): Promise<unknown> {
     return response.json()
 }
 
-/** The bytes of one of the site's data files, which are all gzipped protobuf. */
+/** The still-encoded protobuf bytes of a data file. Undefined if it is missing and !errorOnMissing. */
 export async function loadGzipped(filePath: string, errorOnMissing: boolean = true): Promise<Uint8Array | undefined> {
     const response = await fetch(filePath)
     if (response.status < 200 || response.status > 299) {
