@@ -40,6 +40,8 @@ const renderMarginInequality: RenderInequality = (value, inequality) => {
     return renderInequality(value, inequality)
 }
 
+const missing = 'N/A'
+
 const kmPerMile = 1.60934
 const squareKmPerSquareMile = kmPerMile * kmPerMile
 const acresPerSquareMile = 640
@@ -58,18 +60,21 @@ interface Written {
     unit: ReactNode
 }
 
+const blank = <span>&nbsp;</span>
+const percentSign = <span>%</span>
+
 function display(write: (value: number, settings: ReaderSettings) => Written, inequality = renderInequality): UnitDisplay {
     return {
         renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
+            if (!isFinite(value)) {
+                return { value: <span>{missing}</span>, unit: blank }
+            }
             const { number, unit } = write(value, { useImperial: useImperial ?? false, temperatureUnit: temperatureUnit ?? 'fahrenheit' })
             return { value: <span>{number}</span>, unit }
         },
         renderInequality: inequality,
     }
 }
-
-const blank = <span>&nbsp;</span>
-const percentSign = <span>%</span>
 
 function squared(name: string): ReactNode {
     return (
@@ -105,8 +110,8 @@ type PartyNumberStyling = (
 
 function PartyPercentage({ value, emphasis }: { value: number, emphasis: PartyNumberStyling }): ReactNode {
     const colors = useColors()
-    if (value !== value) { // nan check
-        return <span>N/A</span>
+    if (!isFinite(value)) {
+        return <span>{missing}</span>
     }
     const side = value > 0 ? 'positive' : 'negative'
     const spanStyle: CSSProperties = {
