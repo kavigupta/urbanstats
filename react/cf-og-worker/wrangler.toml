@@ -4,22 +4,24 @@ compatibility_date = "2026-08-01"
 # The site's data code decompresses with node's zlib, so the Worker needs it too.
 compatibility_flags = ["nodejs_compat"]
 
-# A render costs ~230 ms of CPU, so anything near this is a runaway. Exceeding it is not catchable
-# — the isolate is killed and the crawler gets Cloudflare's 1102 page rather than the static
-# preview index.ts falls back to — so this only bounds what a runaway bills, against a 30 s default.
-[limits]
-cpu_ms = 2_000
-
 # Only the pages whose embeds differ by query string, plus the card renderer. Everything else on the
 # zone reaches the origin without the Worker running at all.
 #
 # A route pattern is matched against the query string too, hence the trailing `*` on each page.
+# Must stay above the first [table] header, or TOML nests it inside that table and wrangler
+# silently deploys no routes.
 routes = [
   { pattern = "urbanstats.org/article.html*", zone_name = "urbanstats.org" },
   { pattern = "urbanstats.org/comparison.html*", zone_name = "urbanstats.org" },
   { pattern = "urbanstats.org/statistic.html*", zone_name = "urbanstats.org" },
   { pattern = "urbanstats.org/og/*", zone_name = "urbanstats.org" },
 ]
+
+# A render costs ~230 ms of CPU, so anything near this is a runaway. Exceeding it is not catchable
+# — the isolate is killed and the crawler gets Cloudflare's 1102 page rather than the static
+# preview index.ts falls back to — so this only bounds what a runaway bills, against a 30 s default.
+[limits]
+cpu_ms = 2_000
 
 # Fonts are bundled rather than fetched: satori needs the bytes on every render. .wasm is picked up
 # as a compiled module by default.
@@ -58,3 +60,14 @@ SITE_ORIGIN = "https://urbanstats.org"
 "../quiz/AuthenticationStateMachine" = "./src/panel-stub.ts"
 "../dev/ScreenshotDiffViewerPanel" = "./src/panel-stub.ts"
 "../dev/EmbedPreviewPanel" = "./src/panel-stub.ts"
+
+# Only the top-level switch is documented, so it carries the intent; the defaults under it are
+# already what we want.
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+# A render emits a span per subrequest, and from 2026-10-01 each one bills against the same quota as
+# the logs, which are the half worth having.
+[observability.traces]
+enabled = false
