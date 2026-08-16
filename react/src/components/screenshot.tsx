@@ -13,19 +13,22 @@ import { zIndex } from '../utils/zIndex'
 
 const debugLog = makeDebugLogger('mapExport')
 
+// matches the corners of the screenshot icon
+const screenshotButtonRadius = '7px 7px 3px 7px'
+
 export function ScreenshotButton(props: { onClick: () => void, loading: boolean }): ReactNode {
     const colors = useColors()
     const screencapButton = (
         <button
             type="button"
+            className="borderless"
             aria-label="Take screenshot"
             onClick={props.onClick}
             style={{
                 height: '100%',
                 cursor: 'pointer',
-                background: 'none',
-                border: 'none',
                 padding: 0,
+                borderRadius: screenshotButtonRadius,
             }}
         >
             <img src="/screenshot.png" alt="" style={{ height: '100%' }} />
@@ -60,6 +63,7 @@ export function ScreenshotButton(props: { onClick: () => void, loading: boolean 
                 left: 0,
                 backgroundColor: `${colors.textMain}80`,
                 zIndex: zIndex.screenshotDim,
+                borderRadius: screenshotButtonRadius,
             }}
             >
             </div>

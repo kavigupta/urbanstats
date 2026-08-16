@@ -18,7 +18,7 @@ function textOf(node: unknown): string {
 
 function renderValue(unitType: UnitType, value: number, settings: ReaderSettings = {}): string {
     const { number, name, attached } = writeQuantity(value, unitTypeToStoredUnit(unitType), settings)
-    return `${number.join('')}${reifyString(unitSuffix(name, attached))}`
+    return `${number}${reifyString(unitSuffix(name, attached))}`
 }
 
 // Regression tests for toPrecision(3) emitting scientific notation at tier boundaries.
@@ -55,12 +55,12 @@ for (const [value, expected] of [
 // Every quantity is displayed in the unit it is stored in, and durations as h:mm
 for (const [unitType, value, expected] of [
     ['minutes', 34, '34.0 min'],
-    ['minutes', 90, '1:30'],
-    ['minutes', 600, '10:00'],
-    ['minutes', 1234, '20:34'],
-    ['minutes', 5000, '83:20'],
+    ['minutes', 90, '1:30 h'],
+    ['minutes', 600, '10:00 h'],
+    ['minutes', 1234, '20:34 h'],
+    ['minutes', 5000, '83:20 h'],
     ['minutes', 1e6, '694 days'],
-    ['time', 7.5, '7:30'],
+    ['time', 7.5, '7:30 h'],
     ['time', 0.5, '30.0 min'],
     // a length is a length: an elevation and a distance are written the same way
     ['distanceInM', 543, '543 m'],
@@ -69,7 +69,7 @@ for (const [unitType, value, expected] of [
     ['distanceInKm', 3.42, '3.42 km'],
     ['distanceInKm', 0.543, '543 m'],
     // a rate is written per whichever number of people leaves a readable number
-    ['fatalitiesPerCapita', 1.2e-5, '1.20/100k'],
+    ['fatalitiesPerCapita', 1.2e-5, '1.20/\u00a0100k'],
     ['fatalitiesPerCapita', 0.5, '0.50/\u00a0person'],
     ['density', 1234, '1\u202f234/\u00a0km^{2}'],
     ['area', 0.005, '5\u202f000 m^{2}'],
@@ -84,7 +84,7 @@ for (const [unitType, value, expected] of [
     ['fatalities', 1234, '1\u202f234'],
     ['contaminantLevel', 8.2, '8.20 \u03bcg/m^{3}'],
     ['distancePerYear', 1.2, '120.0 cm/yr'],
-    ['number', 1234, '1230'],
+    ['number', 1234, '1\u202f230'],
 ] as const) {
     void test(`${unitType} renders ${value} as ${expected}`, () => {
         assert.equal(renderValue(unitType, value), expected)
@@ -111,7 +111,7 @@ for (const [unitType, value, expected] of [
     ['population', 0, '0'],
     ['population', -1234, '-1\u202f234'],
     ['population', -12345, '-12.3k'],
-    ['population', NaN, 'NaN'],
+    ['population', NaN, 'N/A'],
     ['density', 0, '0.00/\u00a0km^{2}'],
     ['density', -5.67, '-5.7/\u00a0km^{2}'],
     ['percentage', -0.125, '-12.50%'],
@@ -119,7 +119,7 @@ for (const [unitType, value, expected] of [
     ['usd', -12345, '$-12.3k'],
     ['minutes', 0, '0.000 s'],
     ['number', 0, '0'],
-    ['number', Infinity, 'Infinity'],
+    ['number', Infinity, 'N/A'],
 ] as const) {
     void test(`${unitType} renders ${value} as ${expected}`, () => {
         assert.equal(renderValue(unitType, value), expected)
@@ -163,7 +163,7 @@ for (const [unitType, value, expected, hue] of [
     ['democraticMargin', 0.123, 'D+12.3%', 'blue'],
     ['democraticMargin', -0.081, 'R+8.10%', 'red'],
     ['democraticMargin', 0.0005, 'D+0.0500%', 'blue'],
-    ['democraticMargin', NaN, 'N/A%', undefined],
+    ['democraticMargin', NaN, 'N/A', undefined],
     ['leftMargin', 0.123, 'L+12.3%', 'red'],
     ['leftMargin', -0.123, 'R+12.3%', 'blue'],
     ['partyPctOrange', 0.125, '12.50%', 'orange'],
@@ -172,7 +172,7 @@ for (const [unitType, value, expected, hue] of [
 ] as const) {
     void test(`${unitType} writes ${value} as ${expected} in ${hue ?? 'no color'}`, () => {
         const written = writeQuantity(value, unitTypeToStoredUnit(unitType))
-        assert.equal(`${written.number.join('')}${reifyString(unitSuffix(written.name, written.attached))}`, expected)
+        assert.equal(`${written.number}${reifyString(unitSuffix(written.name, written.attached))}`, expected)
         assert.equal(written.hue, hue)
     })
 }

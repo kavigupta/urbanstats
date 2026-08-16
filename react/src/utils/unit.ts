@@ -2,7 +2,7 @@ import { HueColors } from '../page_template/color-themes'
 
 import { assert } from './defensive'
 import { HumanReadableElement } from './human-readable-name'
-import { formatToSignificantFigures, separateNumber } from './text'
+import { formatToSignificantFigures, roundToDigits, separateNumber } from './text'
 
 export type UnitType = 'percentage' | 'percentageChange' | 'fatalities' | 'fatalitiesPerCapita' | 'density' | 'population'
     | 'area' | 'distanceInKm' | 'distanceInM' | 'democraticMargin' | 'temperature' | 'time' | 'distancePerYear'
@@ -131,7 +131,7 @@ export function unitTypeToStoredUnit(unitType: UnitType): StoredUnit {
     return storedUnits[unitType]
 }
 
-export function renderDimensions(scales: { baseUnit: BaseUnit, power: number }[]): string {
+function renderDimensions(scales: { baseUnit: BaseUnit, power: number }[]): string {
     return scales
         .filter(({ power }) => power !== 0)
         .sort((a, b) => a.baseUnit < b.baseUnit ? -1 : 1)
@@ -150,8 +150,6 @@ interface NumberFormat {
      * duration written as h:mm.
      */
     decimals: number | SignificantDigits | 'significantFigures' | 'hoursMinutes'
-    /** Whether groups of three digits are separated. Defaults to true. */
-    separators?: boolean
 }
 
 interface SignificantDigits {
@@ -266,16 +264,16 @@ const unconventional = coarser
  * quantity is measured in does not say how precisely it is worth writing.
  */
 const styles: Record<string, NumberFormat | undefined> = {
-    '': { decimals: 'significantFigures', separators: false },
+    '': { decimals: 'significantFigures' },
     // things that are counted come in whole numbers, unless they are counted in thousands
     'person^1': { decimals: 0 },
     'usd^1': { decimals: 0 },
     'fatality^1': { decimals: 0 },
     // a density is not worth a third digit, and the rest are read against each other
     'm^-2 person^1': { decimals: { significantDigits: 2 } },
-    'g^1 m^-3': { decimals: 2, separators: false },
-    'fatality^1 person^-1': { decimals: 2, separators: false },
-    'm^1 s^-1': { decimals: 1, separators: false },
+    'g^1 m^-3': { decimals: 2 },
+    'fatality^1 person^-1': { decimals: 2 },
+    'm^1 s^-1': { decimals: 1 },
 }
 
 const defaultStyle: NumberFormat = { decimals: { significantDigits: 3 } }
@@ -312,7 +310,8 @@ function digitCost(value: number, format: NumberFormat): number {
     }
     // a duration written as h:mm is counted by the hours it is written in
     const counted: NumberFormat = format.decimals === 'hoursMinutes' ? defaultStyle : format
-    const written = formatNumber(value, { ...counted, separators: false }).join('').replaceAll('-', '')
+    // the digits alone: neither the sign nor the separators between them make it harder to read
+    const written = formatNumber(value, counted).replaceAll('-', '').replaceAll('\u202f', '')
     const [integerPart, fraction = ''] = written.split('.')
     if (!/^[0-9]+$/.test(integerPart)) {
         return 0
@@ -340,19 +339,17 @@ function nameOf(written: Written[]): HumanReadableElement[] {
         parts.flatMap((elements, index) => index === 0 ? elements : [{ type: 'atom', value: '\u00b7' }, ...elements])
     const under = written.filter(({ power }) => power < 0).filter(named)
     const over = written.filter(({ power }) => power > 0).filter(named)
-    // a quantity that is only a denominator, such as a density, is written /\u00a0km^2 rather than
-    // /km^2, unless what follows the slash is a number, as in /100k
-    const belowFirst = under.length === 0 ? '' : reifyPart(under[0])
-    const slash = over.length === 0 && /^[a-z]/i.test(belowFirst) ? '/\u00a0' : '/'
+    // a quantity that is only a denominator, such as a density, is written /\u00a0km^2 rather than /km^2
+    const slash = over.length === 0 ? '/\u00a0' : '/'
     const name = [
         ...join(over.map(part)),
         ...under.length === 0 ? [] : [{ type: 'atom', value: slash } satisfies HumanReadableElement, ...join(under.map(part))],
     ]
-    // adjacent atoms are one run of text, except across the space a bare denominator opens with
+    // adjacent atoms are one run of text
     const merged: HumanReadableElement[] = []
     for (const element of name) {
         const last = merged.length === 0 ? undefined : merged[merged.length - 1]
-        if (last?.type === 'atom' && element.type === 'atom' && !last.value.endsWith('\u00a0')) {
+        if (last?.type === 'atom' && element.type === 'atom') {
             merged[merged.length - 1] = { type: 'atom', value: last.value + element.value }
         }
         else {
@@ -418,8 +415,7 @@ function bestRepresentation(valueInBaseUnits: number, scales: Dimension[], setti
         const cost = written.reduce((total, unit, index) => total + costOf(unit, dimensions[index].baseUnit), 0)
             + digitCost(valueInBaseUnits / size, format)
         if (cost < bestCost) {
-            // a duration written as h:mm says so by being written that way
-            const name = format.decimals === 'hoursMinutes' ? [] : nameOf(written)
+            const name = format.decimals === 'hoursMinutes' ? atom('h') : nameOf(written)
             // an abbreviation is written against the number, as in 12.3k, and a symbol likewise
             const abbreviationOnly = written.every(({ unit }) => unit.name === '' || unit.cost === abbreviated)
             const attached = startsWithSymbol(name) || (name.length > 0 && abbreviationOnly)
@@ -431,9 +427,9 @@ function bestRepresentation(valueInBaseUnits: number, scales: Dimension[], setti
     return best
 }
 
-const percent: Representation = { name: atom('%'), size: 1 / 100, attached: true, prefix: '', format: { decimals: 2, separators: false } }
+const percent: Representation = { name: atom('%'), size: 1 / 100, attached: true, prefix: '', format: { decimals: 2 } }
 /** A margin is written as the size of the lead, which is given to more digits the closer it is. */
-const margin: Representation = { ...percent, format: { decimals: { significantDigits: 3, minDecimals: 1, maxDecimals: 4 }, separators: false } }
+const margin: Representation = { ...percent, format: { decimals: { significantDigits: 3, minDecimals: 1, maxDecimals: 4 } } }
 
 const partyLabels = {
     democratic: { positive: 'D', negative: 'R' },
@@ -460,7 +456,7 @@ export interface ReaderSettings {
 function scaleFor(valueInBaseUnits: number, unit: Unit, settings: ReaderSettings): Representation {
     switch (unit.kind) {
         case 'unknown':
-            return { name: [], size: 1, attached: false, prefix: '', format: { decimals: 'significantFigures', separators: false } }
+            return { name: [], size: 1, attached: false, prefix: '', format: { decimals: 'significantFigures' } }
         case 'raw-percentage':
             return percent
         case 'delta-percentage':
@@ -469,46 +465,28 @@ function scaleFor(valueInBaseUnits: number, unit: Unit, settings: ReaderSettings
             return margin
         case 'temperature-F':
             return settings.temperatureUnit === 'celsius'
-                ? { name: atom('\u00b0C'), size: 9 / 5, offset: 32, attached: false, prefix: '', format: { decimals: 1, separators: false } }
-                : { name: atom('\u00b0F'), size: 1, attached: false, prefix: '', format: { decimals: 1, separators: false } }
+                ? { name: atom('\u00b0C'), size: 9 / 5, offset: 32, attached: false, prefix: '', format: { decimals: 1 } }
+                : { name: atom('\u00b0F'), size: 1, attached: false, prefix: '', format: { decimals: 1 } }
         case 'dimensionfull':
             return bestRepresentation(valueInBaseUnits, unit.scales, settings)
     }
 }
 
-// e.g., to 3 significant digits, 123.4 is written with no decimal places and 1.234 with two
-function decimalPlaces(value: number, { significantDigits, minDecimals, maxDecimals }: SignificantDigits): number {
-    const most = maxDecimals ?? significantDigits
-    const places = value === 0 ? most : significantDigits - Math.ceil(Math.log10(Math.abs(value)))
-    return Math.min(Math.max(places, minDecimals ?? 0), most)
-}
-
-// separateNumber groups digits from the left, so it needs the integer part on its own
-function separateDigits(value: string): string {
-    const sign = value.startsWith('-') ? '-' : ''
-    const [integerPart, ...rest] = value.slice(sign.length).split('.')
-    return sign + [separateNumber(integerPart), ...rest].join('.')
-}
-
-/**
- * Writes a number out, in the pieces the browser shapes separately: the hours and minutes of a
- * duration are written either side of a colon, and shaped either side of it too.
- */
-function formatNumber(value: number, { decimals, separators }: NumberFormat): string[] {
-    if (!isFinite(value)) {
-        return [value.toString()]
-    }
+function formatNumber(value: number, { decimals }: NumberFormat): string {
     if (decimals === 'hoursMinutes') {
         const totalMinutes = Math.round(Math.abs(value) * 60)
         const sign = value < 0 && totalMinutes > 0 ? '-' : ''
         const hours = Math.floor(totalMinutes / 60)
         const minutes = totalMinutes % 60
-        return hours > 0 ? [`${sign}${hours}`, ':', minutes.toString().padStart(2, '0')] : [`${sign}${minutes}`]
+        return hours > 0 ? `${sign}${hours}:${minutes.toString().padStart(2, '0')}` : `${sign}${minutes}`
     }
-    const written = decimals === 'significantFigures'
-        ? formatToSignificantFigures(value, 3)
-        : value.toFixed(typeof decimals === 'number' ? decimals : decimalPlaces(value, decimals))
-    return [separators === false ? written : separateDigits(written)]
+    if (decimals === 'significantFigures') {
+        return separateNumber(formatToSignificantFigures(value, 3))
+    }
+    if (typeof decimals === 'number') {
+        return separateNumber(value.toFixed(decimals))
+    }
+    return roundToDigits(value, decimals)
 }
 
 /** The party a quantity written as a lead belongs to, if it is written as one. */
@@ -539,11 +517,8 @@ function hueFor(unit: Unit, value: number): Hue | undefined {
  * hue to write it in, for the quantities that are written in a party's color.
  */
 export interface WrittenQuantity {
-    /**
-     * What the number reads as, in the pieces it is written in: a lead is written as its party,
-     * a plus, and its size, which the browser shapes separately from one another.
-     */
-    number: string[]
+    /** What the number reads as, a lead including its party and a plus, as in D+4.5 */
+    number: string
     name: HumanReadableElement[]
     /** Whether the name is written directly after the number, rather than after a space */
     attached: boolean
@@ -554,27 +529,21 @@ export interface WrittenQuantity {
  * Writes out a value stored in the given unit, e.g., 0.125 of a vote as `12.50` and `%`.
  */
 export function writeQuantity(value: number, stored: StoredUnit, settings: ReaderSettings = {}): WrittenQuantity {
+    if (!isFinite(value)) {
+        // a quantity we do not have is not measured in anything, and belongs to no party
+        return { number: 'N/A', name: [], attached: false }
+    }
     const { unit } = stored
     const inBaseUnits = value * stored.toBaseUnits
     const scale = scaleFor(inBaseUnits, unit, settings)
-    const hue = hueFor(unit, value)
-    const written = { name: scale.name, attached: scale.attached, hue }
-    if (hue !== undefined && !isFinite(value)) {
-        // a quantity written in a party's color has no party, and no color, when it is missing
-        return { ...written, number: ['N/A'], hue: undefined }
-    }
+    const written = { name: scale.name, attached: scale.attached, hue: hueFor(unit, value) }
     const lead = party(unit, value)
     const magnitude = (lead === undefined ? inBaseUnits : Math.abs(inBaseUnits)) - (scale.offset ?? 0)
     const scaled = magnitude / scale.size
     const explicitSign = unit.kind === 'delta-percentage' && scaled >= 0 ? '+' : ''
     return {
         ...written,
-        number: [
-            ...lead === undefined ? [] : [lead.label, '+'],
-            ...explicitSign === '' ? [] : [explicitSign],
-            ...scale.prefix === '' ? [] : [scale.prefix],
-            ...formatNumber(scaled, scale.format),
-        ],
+        number: `${lead === undefined ? '' : `${lead.label}+`}${explicitSign}${scale.prefix}${formatNumber(scaled, scale.format)}`,
     }
 }
 

@@ -187,5 +187,7 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             )
         case 'screenshotDiffViewer':
             return <pageData.panel {...pageData} />
+        case 'embedPreview':
+            return <pageData.panel {...pageData} />
     }
 }

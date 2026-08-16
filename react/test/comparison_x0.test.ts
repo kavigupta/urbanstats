@@ -177,7 +177,7 @@ test('comparison-american-vs-canada-population-stats', async (t) => {
     await t.expect(await dataValues()).eql(['14.2', '39.5'])
     await checkTextboxes(t, ['US Census'])
     // these are the values for StatCan
-    await t.expect(await dataValues()).eql(['14.2', 'NaN'])
+    await t.expect(await dataValues()).eql(['14.2', 'N/A'])
     // enable everything
     await checkTextboxes(t, ['US Census', 'GHSL'])
     await t.expect(await dataValues()).eql(['14.2', '39.5', '14.3', '40.4'])
@@ -195,7 +195,7 @@ test('comparison-american-vs-international-population-stats', async (t) => {
     await t.expect(await checkboxStatus(t, 'US Census')).eql('enabled')
     await t.expect(await checkboxStatus(t, 'GHSL')).eql('disabled')
     // these are the values for the US Census
-    await t.expect(await dataValues()).eql(['NaN', '39.5', '20.8', '40.4'])
+    await t.expect(await dataValues()).eql(['N/A', '39.5', '20.8', '40.4'])
     await checkTextboxes(t, ['US Census'])
     ghslLocation = await getLocation()
     // these are the values for GHSL
