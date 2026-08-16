@@ -15,8 +15,8 @@ function textOf(node: unknown): string {
     return textOf((node as { props?: { children?: unknown } }).props?.children)
 }
 
-function renderValue(unitType: UnitType, value: number): string {
-    const { value: valueEl, unit: unitEl } = getUnitDisplay(unitType).renderValue(value)
+function renderValue(unitType: UnitType, value: number, useImperial = false): string {
+    const { value: valueEl, unit: unitEl } = getUnitDisplay(unitType).renderValue(value, useImperial)
     return `${textOf(valueEl)}${textOf(unitEl)}`.trim()
 }
 
@@ -48,6 +48,36 @@ for (const [value, expected] of [
 ] as const) {
     void test(`usd renders ${value} as ${expected}`, () => {
         assert.equal(renderValue('usd', value), expected)
+    })
+}
+
+// How large a number is, rather than which side of zero it falls, decides the unit it is
+// written in and the places it is written to
+for (const [unitType, value, expected] of [
+    ['area', -1234, '-1\u202f234km2'],
+    ['area', -0.5, '-0.500km2'],
+    ['area', -0.005, '-5\u202f000m2'],
+    ['density', -1234, '-1\u202f234/\u00a0km2'],
+    ['usd', -12345, '$-12.3k'],
+] as const) {
+    void test(`${unitType} renders ${value} as ${expected}`, () => {
+        assert.equal(renderValue(unitType, value), expected)
+    })
+}
+
+// The places a number is written to, where that depends on how large it is
+for (const [unitType, value, expected] of [
+    ['density', 1234, '1\u202f234/\u00a0km2'],
+    ['density', 12.3, '12/\u00a0km2'],
+    ['density', 5.67, '5.7/\u00a0km2'],
+    ['density', 0.5, '0.50/\u00a0km2'],
+    ['density', 0, '0.00/\u00a0km2'],
+    ['area', 1234, '1\u202f234km2'],
+    ['area', 12.34, '12.3km2'],
+    ['area', 0.5, '0.500km2'],
+] as const) {
+    void test(`${unitType} writes ${value} as ${expected}`, () => {
+        assert.equal(renderValue(unitType, value), expected)
     })
 }
 
