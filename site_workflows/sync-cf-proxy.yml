@@ -78,21 +78,23 @@ jobs:
           api() { curl -sS -H "Authorization: Bearer $CF_TOKEN" -H 'content-type: application/json' "$@"; }
           base="https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records"
 
-          # GitHub Pages publishes both A and AAAA for the apex, and a challenge served over either
-          # family has to reach GitHub, so the two have to move together.
+          # A challenge served over either family has to reach GitHub, so if the apex holds real AAAA
+          # records they have to move with the A records. Cloudflare answers proxied hostnames over
+          # IPv6 whether or not the zone holds any, so finding none here is normal.
+          found=0
           for rtype in A AAAA; do
             records=$(api "$base?type=$rtype&name=$RECORD_NAME&per_page=100")
             [ "$(jq -r .success <<<"$records")" = true ] || { echo "$records"; exit 1; }
+            found=$(( found + $(jq '.result | length' <<<"$records") ))
 
-            stale=$(jq -r --argjson want "$WANT" '.result[] | select(.proxied != $want) | .id' <<<"$records")
-            if [ -z "$stale" ]; then
-              echo "$rtype already proxied=$WANT."
-              continue
-            fi
-
-            for id in $stale; do
+            for id in $(jq -r --argjson want "$WANT" '.result[] | select(.proxied != $want) | .id' <<<"$records"); do
               result=$(api -X PATCH "$base/$id" --data "{\"proxied\":$WANT}")
               [ "$(jq -r .success <<<"$result")" = true ] || { echo "$result"; exit 1; }
               echo "$rtype $id -> proxied=$WANT"
             done
           done
+
+          # An empty pair means the apex is no longer the A records this steers — a flattened CNAME,
+          # say — and the whole job would otherwise pass while doing nothing.
+          [ "$found" -gt 0 ] || { echo "No A or AAAA records for $RECORD_NAME." >&2; exit 1; }
+          echo "$found record(s) now at proxied=$WANT."

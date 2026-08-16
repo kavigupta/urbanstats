@@ -61,11 +61,13 @@ SITE_ORIGIN = "https://urbanstats.org"
 "../dev/ScreenshotDiffViewerPanel" = "./src/panel-stub.ts"
 "../dev/EmbedPreviewPanel" = "./src/panel-stub.ts"
 
-# Logs on, traces off. Only the top-level switch is documented, so it carries the intent and the
-# traces block is the one thing turned back off; the log defaults are already what we want.
+# Only the top-level switch is documented, so it carries the intent; the defaults under it are
+# already what we want.
 [observability]
 enabled = true
 head_sampling_rate = 1
 
+# Free only through the beta — from 2026-10-01 each span bills as an observability event against the
+# same quota as logs, and a render emits one per subrequest. Turn head_sampling_rate down then.
 [observability.traces]
-enabled = false
+enabled = true
