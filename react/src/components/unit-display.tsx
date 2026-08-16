@@ -40,7 +40,6 @@ const renderMarginInequality: RenderInequality = (value, inequality) => {
     return renderInequality(value, inequality)
 }
 
-/** A quantity we do not have reads the same way whatever it would have been measured in. */
 const missing = 'N/A'
 
 const kmPerMile = 1.60934
@@ -56,24 +55,26 @@ interface ReaderSettings {
     temperatureUnit: string
 }
 
-/** What a quantity reads as: the number, and the name of the unit it is in. */
 interface Written {
     number: string
     unit: ReactNode
 }
 
+const blank = <span>&nbsp;</span>
+const percentSign = <span>%</span>
+
 function display(write: (value: number, settings: ReaderSettings) => Written, inequality = renderInequality): UnitDisplay {
     return {
         renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
+            if (!isFinite(value)) {
+                return { value: <span>{missing}</span>, unit: blank }
+            }
             const { number, unit } = write(value, { useImperial: useImperial ?? false, temperatureUnit: temperatureUnit ?? 'fahrenheit' })
-            return { value: <span>{isFinite(value) ? number : missing}</span>, unit }
+            return { value: <span>{number}</span>, unit }
         },
         renderInequality: inequality,
     }
 }
-
-const blank = <span>&nbsp;</span>
-const percentSign = <span>%</span>
 
 function squared(name: string): ReactNode {
     return (
