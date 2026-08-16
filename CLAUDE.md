@@ -5,7 +5,7 @@ Urban Stats (urbanstats.org) is a website for viewing statistics of geographic a
 - **`urbanstats/`** — Python data processing pipeline that generates the website's static data
 - **`react/`** — TypeScript/React frontend
 - **`urbanstats-persistent-data/`** — FastAPI backend for persistent user data (quizzes, etc.)
-- **`react/og-worker/`** — Cloudflare Worker that gives pages per-URL link embeds, bundling frontend code
+- **`react/cf-og-worker/`** — Cloudflare Worker that gives pages per-URL link embeds, bundling frontend code
 
 ## Key Architecture Notes
 
@@ -22,7 +22,7 @@ Read these when the task calls for them, rather than up front:
 | --- | --- |
 | [`react/test/AGENTS.md`](react/test/AGENTS.md) | running or writing e2e tests |
 | [`react/unit/AGENTS.md`](react/unit/AGENTS.md) | running or writing unit tests |
-| [`react/og-worker/README.md`](react/og-worker/README.md) | working on link embeds or the preview card |
+| [`react/cf-og-worker/README.md`](react/cf-og-worker/README.md) | working on link embeds or the preview card |
 | [`scripts/AGENTS.md`](scripts/AGENTS.md) | moving commits between a stacked chain of PR branches (`01-*`, `02-*`, ...) |
 | [`.github/code-review-guidelines.md`](.github/code-review-guidelines.md) | reviewing a change |
 

@@ -818,7 +818,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 pageData: {
                     ...newDescriptor,
                     target: newDescriptor.target ?? '/article.html?longname=Chicago city, Illinois, USA',
-                    // Matches OG_PORT's default in og-worker/preview.sh.
+                    // Matches OG_PORT's default in cf-og-worker/preview.sh.
                     ogPort: newDescriptor.ogPort ?? 8787,
                     panel: (await import('../dev/EmbedPreviewPanel')).EmbedPreviewPanel,
                 },

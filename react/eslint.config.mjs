@@ -73,7 +73,7 @@ export default tseslint.config(
         },
     },
     {
-        ignores: ['**/*.{js,mjs}', 'src/utils/protos.d.ts', 'src/utils/urbanstats-persistent-data.d.ts', 'src/utils/google-drive.d.ts', 'src/data/**', 'og-worker/.wrangler/**'],
+        ignores: ['**/*.{js,mjs}', 'src/utils/protos.d.ts', 'src/utils/urbanstats-persistent-data.d.ts', 'src/utils/google-drive.d.ts', 'src/data/**', 'cf-og-worker/.wrangler/**'],
     },
     {
         rules: {

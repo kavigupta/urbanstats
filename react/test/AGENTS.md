@@ -43,7 +43,7 @@ start it themselves.
   `RECORD_OG_TILES=1` — commit what that writes. `embed-worker-live-tiles` is what still renders
   against openfreemap, and it takes no screenshot.
 
-See [`../og-worker/README.md`](../og-worker/README.md).
+See [`../cf-og-worker/README.md`](../cf-og-worker/README.md).
 
 ## Ports
 

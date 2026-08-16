@@ -1,4 +1,4 @@
-name: Deploy Cloudflare Worker
+name: Deploy CF OG Worker
 
 # The Worker sits in front of the site's HTML pages, rewriting their og: meta tags per query string
 # and rendering the article preview images at the edge.
@@ -12,7 +12,7 @@ on:
   page_build:
   workflow_dispatch:
 
-concurrency: deploy-cloudflare-worker
+concurrency: deploy-cf-og-worker
 
 jobs:
   deploy:
@@ -39,7 +39,7 @@ jobs:
         run: npm ci
 
       - name: Deploy
-        working-directory: react/og-worker
+        working-directory: react/cf-og-worker
         run: npx wrangler deploy
         env:
           # The token needs Account / Workers Scripts: Edit to upload the script, and

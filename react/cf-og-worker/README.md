@@ -29,7 +29,7 @@ origin rather than openfreemap. The card screenshot tests point it at a snapshot
 
 # Deploying
 
-[`site_workflows/deploy-cloudflare-worker.yml`](../../site_workflows/deploy-cloudflare-worker.yml)
+[`site_workflows/deploy-cf-og-worker.yml`](../../site_workflows/deploy-cf-og-worker.yml)
 is copied into the site repository by
 [`urbanstats/website_data/build.py`](../../urbanstats/website_data/build.py) along with the rest of
 the site, and runs *there*, on that repo's `page_build` event. It checks out urbanstats `main` and

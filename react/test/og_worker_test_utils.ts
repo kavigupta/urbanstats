@@ -10,7 +10,7 @@ import { WebSocket } from 'ws'
 
 import { target } from './test_utils'
 
-// Matches OG_PORT's default in og-worker/preview.sh and ogPort's default in PageDescriptor.
+// Matches OG_PORT's default in cf-og-worker/preview.sh and ogPort's default in PageDescriptor.
 export const ogPort = 8787
 
 // Matches preview.sh, which derives it the same way.
@@ -187,8 +187,8 @@ async function startTileServer(): Promise<void> {
  * bundle it has to ship, and the CPU the top level of that bundle burns on a cold isolate.
  */
 export async function ogWorkerBundleCost(): Promise<{ gzipKiB: number, startupCpuMs: number }> {
-    const { all } = await execa('npx', ['wrangler', 'check', 'startup', '--outfile', join(tmpdir(), 'og-worker-startup.cpuprofile')], {
-        cwd: 'og-worker',
+    const { all } = await execa('npx', ['wrangler', 'check', 'startup', '--outfile', join(tmpdir(), 'cf-og-worker-startup.cpuprofile')], {
+        cwd: 'cf-og-worker',
         all: true,
         env: { WRANGLER_SEND_METRICS: 'false' },
     })
