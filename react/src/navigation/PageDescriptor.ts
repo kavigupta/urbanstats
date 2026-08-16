@@ -8,6 +8,7 @@ import { ArticleRow, loadArticles } from '../components/load-article'
 import type { QuizPanel } from '../components/quiz-panel'
 import statnames from '../data/statistic_name_list'
 import type { DataCreditPanel } from '../data-credit'
+import type { EmbedPreviewPanel } from '../dev/EmbedPreviewPanel'
 import type { ScreenshotDiffViewerPanel } from '../dev/ScreenshotDiffViewerPanel'
 import { loadJSON } from '../load_json'
 import type { DebugMapTextBoxPanel } from '../mapper/components/DebugMapTextBox'
@@ -197,6 +198,11 @@ const screenshotDiffViewerSchema = z.object({
     index: z.optional(z.coerce.number()),
 })
 
+const embedPreviewSchema = z.object({
+    target: z.optional(z.string()),
+    ogPort: z.optional(z.coerce.number()),
+})
+
 export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('article') }).and(articleSchema),
     z.object({ kind: z.literal('comparison') }).and(comparisonSchema),
@@ -212,6 +218,7 @@ export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('editor') }).and(editorSchema),
     z.object({ kind: z.literal('oauthCallback'), params: z.record(z.string()) }),
     z.object({ kind: z.literal('screenshotDiffViewer') }).and(screenshotDiffViewerSchema),
+    z.object({ kind: z.literal('embedPreview') }).and(embedPreviewSchema),
 ])
 
 export type PageDescriptor = z.infer<typeof pageDescriptorSchema>
@@ -249,6 +256,7 @@ export type PageData =
     }
     | { kind: 'initialLoad', descriptor: PageDescriptor }
     | { kind: 'screenshotDiffViewer', artifactId: string, hash: string, index: number, panel: typeof ScreenshotDiffViewerPanel }
+    | { kind: 'embedPreview', target: string, ogPort: number, panel: typeof EmbedPreviewPanel }
 
 export function pageDescriptorFromURL(url: URL): PageDescriptor {
     /**
@@ -291,6 +299,8 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
             return { kind: 'oauthCallback', params }
         case '/screenshot-diff-viewer.html':
             return { kind: 'screenshotDiffViewer', ...screenshotDiffViewerSchema.parse(params) }
+        case '/embed-preview.html':
+            return { kind: 'embedPreview', ...embedPreviewSchema.parse(params) }
         default:
             throw new Error('404 not found')
     }
@@ -421,6 +431,13 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
                 artifactId: pageDescriptor.artifactId,
                 hash: pageDescriptor.hash,
                 index: pageDescriptor.index?.toString(),
+            }
+            break
+        case 'embedPreview':
+            pathname = '/embed-preview.html'
+            searchParams = {
+                target: pageDescriptor.target,
+                ogPort: pageDescriptor.ogPort?.toString(),
             }
     }
     // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
@@ -796,6 +813,18 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
             }
+        case 'embedPreview':
+            return {
+                pageData: {
+                    ...newDescriptor,
+                    target: newDescriptor.target ?? '/article.html?longname=Chicago city, Illinois, USA',
+                    // Matches OG_PORT's default in cf-og-worker/preview.sh.
+                    ogPort: newDescriptor.ogPort ?? 8787,
+                    panel: (await import('../dev/EmbedPreviewPanel')).EmbedPreviewPanel,
+                },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
     }
 }
 
@@ -839,5 +868,7 @@ export function pageTitle(pageData: PageData): string {
             return 'Error'
         case 'screenshotDiffViewer':
             return 'Screenshot Diff Viewer'
+        case 'embedPreview':
+            return 'Embed Preview'
     }
 }
