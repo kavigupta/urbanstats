@@ -61,17 +61,11 @@ SITE_ORIGIN = "https://urbanstats.org"
 "../dev/ScreenshotDiffViewerPanel" = "./src/panel-stub.ts"
 "../dev/EmbedPreviewPanel" = "./src/panel-stub.ts"
 
+# Logs on, traces off. Only the top-level switch is documented, so it carries the intent and the
+# traces block is the one thing turned back off; the log defaults are already what we want.
 [observability]
-enabled = false
-head_sampling_rate = 1
-
-[observability.logs]
 enabled = true
 head_sampling_rate = 1
-persist = true
-invocation_logs = true
 
 [observability.traces]
 enabled = false
-persist = true
-head_sampling_rate = 1

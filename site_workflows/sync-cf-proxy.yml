@@ -1,7 +1,7 @@
 name: Sync CF Proxy
 
 # Cloudflare's Worker routes only fire on proxied records, but GitHub only renews the Pages
-# certificate for urbanstats.org while the apex A records resolve to GitHub's own servers — which
+# certificate for urbanstats.org while the apex records resolve to GitHub's own servers — which
 # they don't while Cloudflare is proxying them. Rather than choosing, this drops the orange cloud
 # whenever GitHub stops reporting a healthy certificate and restores it once a renewal lands, so the
 # apex is proxied except for the few hours every couple of months that a renewal takes.
@@ -66,7 +66,7 @@ jobs:
           echo "state=$state expires=${expires:-none} days_left=$days -> proxied=$want"
           echo "want=$want" >> "$GITHUB_OUTPUT"
 
-      - name: Apply it to the apex A records
+      - name: Apply it to the apex records
         env:
           # Needs Zone / DNS: Edit on urbanstats.org, on top of the Workers scopes the deploy
           # workflow uses this token for.
@@ -78,17 +78,21 @@ jobs:
           api() { curl -sS -H "Authorization: Bearer $CF_TOKEN" -H 'content-type: application/json' "$@"; }
           base="https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records"
 
-          records=$(api "$base?type=A&name=$RECORD_NAME&per_page=100")
-          [ "$(jq -r .success <<<"$records")" = true ] || { echo "$records"; exit 1; }
+          # GitHub Pages publishes both A and AAAA for the apex, and a challenge served over either
+          # family has to reach GitHub, so the two have to move together.
+          for rtype in A AAAA; do
+            records=$(api "$base?type=$rtype&name=$RECORD_NAME&per_page=100")
+            [ "$(jq -r .success <<<"$records")" = true ] || { echo "$records"; exit 1; }
 
-          stale=$(jq -r --argjson want "$WANT" '.result[] | select(.proxied != $want) | .id' <<<"$records")
-          if [ -z "$stale" ]; then
-            echo "Already proxied=$WANT."
-            exit 0
-          fi
+            stale=$(jq -r --argjson want "$WANT" '.result[] | select(.proxied != $want) | .id' <<<"$records")
+            if [ -z "$stale" ]; then
+              echo "$rtype already proxied=$WANT."
+              continue
+            fi
 
-          for id in $stale; do
-            result=$(api -X PATCH "$base/$id" --data "{\"proxied\":$WANT}")
-            [ "$(jq -r .success <<<"$result")" = true ] || { echo "$result"; exit 1; }
-            echo "$id -> proxied=$WANT"
+            for id in $stale; do
+              result=$(api -X PATCH "$base/$id" --data "{\"proxied\":$WANT}")
+              [ "$(jq -r .success <<<"$result")" = true ] || { echo "$result"; exit 1; }
+              echo "$rtype $id -> proxied=$WANT"
+            done
           done
