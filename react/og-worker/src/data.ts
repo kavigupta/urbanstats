@@ -50,8 +50,7 @@ export async function loadPage(origin: string, url: URL): Promise<Page | undefin
     catch {
         return undefined
     }
-    // Private because the site wants one shared instance, which is what we are avoiding.
-    const settings = new (Settings as unknown as new () => Settings)()
+    const settings = new Settings()
     const { pageData, effects } = await loadPageDescriptor(descriptor, settings)
     // No await between here and reading the settings back, so a concurrent request cannot see this
     // one's staged settings.
