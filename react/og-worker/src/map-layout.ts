@@ -8,7 +8,11 @@ export const tileSize = 256
 /** Past this the tiles stop adding detail, so a shape smaller than the box just stays smaller. */
 const maxZoom = 17
 
-// Web Mercator, as the site's maps use.
+/*
+ * Web Mercator, as the site's maps use. Shapes crossing the antimeridian carry longitudes past
+ * ±180 rather than wrapping, so x runs outside [0, 1] for them and the fit below stays tight;
+ * `coveringTiles` wraps the tile x it asks for, which is where the world is round again.
+ */
 export function project([lon, lat]: [number, number]): [number, number] {
     const x = (lon + 180) / 360
     const clamped = Math.max(-85.05, Math.min(85.05, lat)) * Math.PI / 180

@@ -8,6 +8,8 @@ const comparison = '/comparison.html?longnames=["San Marino city, California, US
 const statistic = '/statistic.html?statname=Population&article_type=City&start=1&amount=20&order=descending&universe=USA'
 // A link that carries several statistic categories, which the article shows more of than fit.
 const manyStats = `${article}&s=29ZqGgHgeNSXMA9`
+// A shape crossing the antimeridian, stored as 178.3E to 180.4E rather than wrapping to -179.7.
+const antimeridian = '/article.html?longname=Northern, Fiji'
 const workerOrigin = `http://localhost:${ogPort}`
 
 function previewPage(target: string): string {
@@ -42,6 +44,14 @@ test('embed-worker-card-cut-off', async (t) => {
     await t.switchToIframe(Selector('iframe'))
     await t.expect(Selector('[data-test-id=statistic-link]').count).gt(6)
     await t.switchToMainWindow()
+    await t.expect(cardImageLoaded()).ok({ timeout: 60_000 })
+    await screencap(t, { fullPage: false, selector: card })
+})
+
+// Unwrapped longitudes are what keep the fit tight here: rewrapping them into [-180, 180] would
+// spread the ring across the whole world and collapse the shape to nothing.
+test('embed-worker-antimeridian-card', async (t) => {
+    await t.navigateTo(previewPage(antimeridian))
     await t.expect(cardImageLoaded()).ok({ timeout: 60_000 })
     await screencap(t, { fullPage: false, selector: card })
 })
