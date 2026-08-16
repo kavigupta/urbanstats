@@ -4,6 +4,12 @@ compatibility_date = "2026-08-01"
 # The site's data code decompresses with node's zlib, so the Worker needs it too.
 compatibility_flags = ["nodejs_compat"]
 
+# A render costs ~230 ms of CPU, so anything near this is a runaway. Exceeding it is not catchable
+# — the isolate is killed and the crawler gets Cloudflare's 1102 page rather than the static
+# preview index.ts falls back to — so this only bounds what a runaway bills, against a 30 s default.
+[limits]
+cpu_ms = 2_000
+
 # Only the pages whose embeds differ by query string, plus the card renderer. Everything else on the
 # zone reaches the origin without the Worker running at all.
 #
