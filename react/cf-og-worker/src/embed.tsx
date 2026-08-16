@@ -5,6 +5,7 @@
  */
 import React, { ReactElement, ReactNode, cloneElement, isValidElement } from 'react'
 
+import { percentileSuffix } from '../../src/components/display-stats'
 import { getUnitDisplay } from '../../src/components/unit-display'
 import flagDimensions from '../../src/data/flag_dimensions'
 import { classifyStatistic } from '../../src/utils/unit'
@@ -127,14 +128,6 @@ function formatValue({ name, value }: ArticleCard['stats'][number], units: Units
     return [keyed(styleBareTags(rendered.value), 'value'), keyed(styleBareTags(rendered.unit), 'unit')]
 }
 
-function ordinalSuffix(n: number): string {
-    const rem100 = n % 100
-    if (rem100 >= 11 && rem100 <= 13) {
-        return 'th'
-    }
-    return ['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'
-}
-
 function row(stat: ArticleCard['stats'][number], index: number, units: Units): ReactElement {
     return (
         <div
@@ -149,7 +142,7 @@ function row(stat: ArticleCard['stats'][number], index: number, units: Units): R
             <div style={{ flex: 1, fontSize: 24 }}>{stat.name}</div>
             <div style={{ width: 170, fontSize: 26, justifyContent: 'flex-end', display: 'flex' }}>{formatValue(stat, units)}</div>
             <div style={{ width: 60, fontSize: 20, color: colors.muted, justifyContent: 'flex-end', display: 'flex' }}>
-                {`${stat.percentile}${ordinalSuffix(stat.percentile)}`}
+                {`${stat.percentile}${percentileSuffix(stat.percentile)}`}
             </div>
         </div>
     )
