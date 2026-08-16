@@ -40,7 +40,6 @@ const renderMarginInequality: RenderInequality = (value, inequality) => {
     return renderInequality(value, inequality)
 }
 
-/** A quantity we do not have reads the same way whatever it would have been measured in. */
 const missing = 'N/A'
 
 const kmPerMile = 1.60934
