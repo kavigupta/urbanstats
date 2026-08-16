@@ -106,4 +106,11 @@ test('embed-worker-image-endpoint', async (t) => {
 
     const notAPage = await fetch(new URL('/og/nonsense.html', workerOrigin))
     await t.expect(notAPage.status).eql(400)
+
+    // An article whose data will not load stands in for any failed render.
+    const failed = await fetch(new URL('/og/article.html?longname=Nowhere city, Nowhere, USA', workerOrigin))
+    await t.expect(failed.status).eql(200)
+    await t.expect(failed.headers.get('content-type')).eql('image/png')
+    const staticPreview = await fetch(new URL('/link-preview.png', workerOrigin))
+    await t.expect((await failed.arrayBuffer()).byteLength).eql((await staticPreview.arrayBuffer()).byteLength)
 })

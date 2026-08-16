@@ -17,12 +17,11 @@ import jostSemiBold from '../assets/Jost-600.ttf'
 import { articleCard, loadPage, loadShape } from './data'
 import { embedCard } from './embed'
 
+type ArticleDescriptor = Extract<PageDescriptor, { kind: 'article' }>
+
 let wasmReady: Promise<unknown> | undefined
 
-export async function renderCard(origin: string, descriptor: PageDescriptor): Promise<Uint8Array | undefined> {
-    if (descriptor.kind !== 'article') {
-        return undefined
-    }
+export async function renderCard(origin: string, descriptor: ArticleDescriptor): Promise<Uint8Array | undefined> {
     const [page, rings] = await Promise.all([
         loadPage(origin, descriptor).catch(() => undefined),
         loadShape(origin, descriptor.longname).catch(() => []),

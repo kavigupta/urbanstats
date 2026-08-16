@@ -112,6 +112,18 @@ function cacheKey(env: WorkerEnv, target: URL): Request {
     return new Request(key.toString(), { method: 'GET' })
 }
 
+/*
+ * A crawler that gets anything but an image here shows no preview at all, so a failed render
+ * answers with the site's generic one instead. Kept out of the cache, and cacheable downstream for
+ * minutes rather than the card's day, so a passing failure is not what the next crawler sees.
+ */
+async function staticPreview(env: WorkerEnv): Promise<Response> {
+    const png = await fetch(new URL('/link-preview.png', env.SITE_ORIGIN).toString())
+    return new Response(png.body, {
+        headers: { 'content-type': 'image/png', 'cache-control': 'public, max-age=300' },
+    })
+}
+
 async function renderImage(env: WorkerEnv, target: URL, ctx: WorkerContext): Promise<Response> {
     const cache = caches.default
     const key = cacheKey(env, target)
@@ -127,12 +139,21 @@ async function renderImage(env: WorkerEnv, target: URL, ctx: WorkerContext): Pro
     catch {
         return new Response('unrecognized url', { status: 400 })
     }
-
-    // Deferred so that only a render evaluates the drawing half. See render.ts.
-    const { renderCard } = await import('./render')
-    const png = await renderCard(env.SITE_ORIGIN, descriptor)
-    if (png === undefined) {
+    if (descriptor.kind !== 'article') {
         return new Response('nothing to draw', { status: 404 })
+    }
+
+    let png
+    try {
+        // Deferred so that only a render evaluates the drawing half. See render.ts.
+        const { renderCard } = await import('./render')
+        png = await renderCard(env.SITE_ORIGIN, descriptor)
+    }
+    catch (error) {
+        console.error(error)
+    }
+    if (png === undefined) {
+        return staticPreview(env)
     }
 
     const response = new Response(png, {
