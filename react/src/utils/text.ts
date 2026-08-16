@@ -41,14 +41,9 @@ export function separateNumber(number: string): string {
 
 /** How closely a number is rounded. */
 export interface Rounding {
-    /**
-     * Digits to write in all, counting those before the point: at two digits 0.5 reads 0.50 and
-     * 12.3 reads 12. Digits before the point are never dropped, so 1 234 reads 1 234.
-     */
     significantDigits: number
-    /** Never fewer places than this, so that a quantity read against others keeps its column */
+    // decimals after the decimal point
     minDecimals?: number
-    /** Never more places than this, however small the number is */
     maxDecimals?: number
 }
 
@@ -61,21 +56,11 @@ export function decimalPlaces(value: number, { significantDigits, minDecimals, m
     return Math.min(Math.max(significantDigits - Math.ceil(Math.log10(Math.abs(value))), minDecimals ?? 0), most)
 }
 
-/**
- * A number written to the given rounding, with its digits separated.
- */
 export function roundToDigits(value: number, rounding: Rounding): string {
     return separateNumber(value.toFixed(decimalPlaces(value, rounding)))
 }
 
-/**
- * A number too long to read, written short: 12 345 as 12.3 and a suffix of k. The suffix is
- * returned separately because callers write it in a place of their own.
- *
- * The boundaries are at 999.5 rather than 1000 so that a value that rounds up to four significant
- * digits is promoted a tier instead, which keeps toPrecision(3) below 1000 and so keeps it out of
- * scientific notation.
- */
+// add in the B/m/k suffixes.
 export function abbreviate(value: number, writeOutBelow = 1e4): { number: string, suffix: string } {
     for (const [threshold, divisor, suffix] of [[999.5e6, 1e9, 'B'], [999.5e3, 1e6, 'm'], [writeOutBelow, 1e3, 'k']] as const) {
         if (Math.abs(value) >= threshold) {
@@ -85,9 +70,7 @@ export function abbreviate(value: number, writeOutBelow = 1e4): { number: string
     return { number: separateNumber(value.toFixed(0)), suffix: '' }
 }
 
-/**
- * Formats a number to the specified number of significant figures (default 3) without scientific notation.
- */
+// NOT scientific notation, but still use sig figs.
 export function formatToSignificantFigures(value: number, sigFigs: number = 3): string {
     if (value === 0 || !isFinite(value)) {
         return value.toString()
