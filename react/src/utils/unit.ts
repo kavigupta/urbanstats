@@ -46,10 +46,6 @@ function checkAllIncluded(unitType: UnitType): (typeof allUnitTypes)[number] {
     return unitType
 }
 
-/**
- * What each unit type is a quantity of. Filled in a kind at a time as the unit types move over to
- * being written by `writeQuantity` rather than by an arm of their own.
- */
 /* eslint-disable no-restricted-syntax -- these name the theme's hues, they are not css colors */
 export const storedUnits = {
     percentage: { unit: { kind: 'raw-percentage' }, toBaseUnits: 1 },

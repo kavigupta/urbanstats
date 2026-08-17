@@ -87,18 +87,18 @@ function hoursAndMinutes(hours: number): Written {
 }
 
 /** A quantity written in a party's color, set flush right so that a fourth digit overflows left. */
-function InParty({ number, hue }: { number: string, hue: Hue }): ReactNode {
+function InParty({ value, hue }: { value: string, hue: Hue }): ReactNode {
     const colors = useColors()
     const spanStyle: CSSProperties = { color: colors.hueColors[hue], display: 'flex', justifyContent: 'flex-end' }
-    return <span style={spanStyle}>{number}</span>
+    return <span style={spanStyle}>{value}</span>
 }
 
 function quantity(stored: StoredUnit): UnitDisplay {
     return {
         renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
-            const { number, unitName, hue } = writeQuantity(value, stored, { useImperial, temperatureUnit })
+            const { renderedValue, unitName, hue } = writeQuantity(value, stored, { useImperial, temperatureUnit })
             return {
-                value: hue === undefined ? <span>{number}</span> : <InParty number={number} hue={hue} />,
+                value: hue === undefined ? <span>{renderedValue}</span> : <InParty value={renderedValue} hue={hue} />,
                 unit: unitColumn(unitName),
             }
         },

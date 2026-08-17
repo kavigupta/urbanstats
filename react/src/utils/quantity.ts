@@ -83,7 +83,6 @@ function formatNumber(value: number, format: NumberFormat): string {
     }
 }
 
-/** The party a quantity written as a lead belongs to, if it is written as one. */
 function party(unit: Unit, value: number): { label: string, hue: Hue } | undefined {
     if (unit.kind !== 'lead-percentage') {
         return undefined
@@ -104,13 +103,9 @@ function hueFor(unit: Unit, value: number): Hue | undefined {
     }
 }
 
-/**
- * A quantity written out: the number as it reads, the name of the unit it is written in, and the
- * hue to write it in, for the quantities that are written in a party's color.
- */
 export interface WrittenQuantity {
     /** What the number reads as, a lead including its party and a plus, as in D+4.5 */
-    number: string
+    renderedValue: string
     unitName: HumanReadableElement[]
     hue?: Hue
 }
@@ -119,7 +114,7 @@ export interface WrittenQuantity {
 export function writeQuantity(value: number, stored: StoredUnit, settings: ReaderSettings = {}): WrittenQuantity {
     if (!isFinite(value)) {
         // a quantity we do not have is not measured in anything, and belongs to no party
-        return { number: missingValue, unitName: [] }
+        return { renderedValue: missingValue, unitName: [] }
     }
     const { unit } = stored
     const inBaseUnits = value * stored.toBaseUnits
@@ -130,7 +125,7 @@ export function writeQuantity(value: number, stored: StoredUnit, settings: Reade
     const explicitSign = unit.kind === 'delta-percentage' && magnitude >= 0 ? '+' : ''
     const written = formatNumber(representation.scale(magnitude), representation.format)
     return {
-        number: `${lead === undefined ? '' : `${lead.label}+`}${explicitSign}${written}`,
+        renderedValue: `${lead === undefined ? '' : `${lead.label}+`}${explicitSign}${written}`,
         unitName: representation.unitName,
         hue: hueFor(unit, value),
     }
