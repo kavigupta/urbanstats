@@ -93,14 +93,13 @@ function InParty({ number, hue }: { number: string, hue: Hue }): ReactNode {
     return <span style={spanStyle}>{number}</span>
 }
 
-/** The unit types that writeQuantity writes, rather than an arm of their own. */
 function quantity(stored: StoredUnit): UnitDisplay {
     return {
         renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
-            const { number, name, hue } = writeQuantity(value, stored, { useImperial, temperatureUnit })
+            const { number, unitName, hue } = writeQuantity(value, stored, { useImperial, temperatureUnit })
             return {
                 value: hue === undefined ? <span>{number}</span> : <InParty number={number} hue={hue} />,
-                unit: unitColumn(name),
+                unit: unitColumn(unitName),
             }
         },
     }

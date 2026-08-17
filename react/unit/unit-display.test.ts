@@ -198,7 +198,7 @@ for (const [unitType, value, expected, hue] of [
 // A quantity we do not have belongs to no party, and is measured in nothing
 for (const unitType of ['democraticMargin', 'partyPctOrange', 'percentage', 'temperature'] as const) {
     void test(`${unitType} writes a missing value plainly`, () => {
-        assert.deepEqual(writeQuantity(NaN, storedUnits[unitType]), { number: 'N/A', name: [] })
+        assert.deepEqual(writeQuantity(NaN, storedUnits[unitType]), { number: 'N/A', unitName: [] })
     })
 }
 

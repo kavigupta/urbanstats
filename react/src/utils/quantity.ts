@@ -5,10 +5,7 @@ import { Rounding, roundToDigits, separateNumber } from './text'
 
 export type Hue = keyof HueColors
 
-/**
- * What kind of quantity a number is. A share of a vote and a lead in one are both fractions, but
- * they are not written the same way, so what a number means is kept apart from how large it is.
- */
+// Abstract interpretation of a quantity as a unit.
 export type Unit = (
     { kind: 'raw-percentage', partyColor?: Hue }
     | { kind: 'delta-percentage', partyColor?: Hue }
@@ -16,12 +13,9 @@ export type Unit = (
     | { kind: 'temperature-F' }
 )
 
-/**
- * A unit together with what numbers written in it are multiplied by to be in base units. Units are
- * abstract, so how a particular column of numbers is stored belongs here rather than in the unit.
- */
 export interface StoredUnit {
     unit: Unit
+    // e.g., a value stored in cm will have 0.01 for this field
     toBaseUnits: number
 }
 
@@ -33,13 +27,15 @@ export interface ReaderSettings {
 export const missingValue = 'N/A'
 
 /** How the number is written: to a fixed number of decimal places, or to a number of digits. */
-type NumberFormat = number | Rounding
+type NumberFormat = (
+    { kind: 'fixed', places: number }
+    | ({ kind: 'rounded' } & Rounding)
+)
 
-/** How a quantity is written: the unit chosen for it, and the style the number is in. */
 interface Representation {
-    /** What a value in base units reads as in this unit */
+    /** E.g., for cm this is x => x * 100 */
     scale: (inBaseUnits: number) => number
-    name: HumanReadableElement[]
+    unitName: HumanReadableElement[]
     format: NumberFormat
 }
 
@@ -47,9 +43,9 @@ function atom(value: string): HumanReadableElement[] {
     return [{ type: 'atom', value }]
 }
 
-const percent: Representation = { name: atom('%'), scale: value => value * 100, format: 2 }
+const percent: Representation = { unitName: atom('%'), scale: value => value * 100, format: { kind: 'fixed', places: 2 } }
 /** A margin is written as the size of the lead, which is given more digits the closer it is. */
-const margin: Representation = { ...percent, format: { significantDigits: 3, minDecimals: 1, maxDecimals: 4 } }
+const margin: Representation = { ...percent, format: { kind: 'rounded', significantDigits: 3, minDecimals: 1, maxDecimals: 4 } }
 
 const partyLabels = {
     democratic: { positive: 'D', negative: 'R' },
@@ -73,13 +69,18 @@ function representationFor(unit: Unit, settings: ReaderSettings): Representation
             return margin
         case 'temperature-F':
             return settings.temperatureUnit === 'celsius'
-                ? { name: atom('°C'), scale: value => (value - 32) * (5 / 9), format: 1 }
-                : { name: atom('°F'), scale: value => value, format: 1 }
+                ? { unitName: atom('°C'), scale: value => (value - 32) * (5 / 9), format: { kind: 'fixed', places: 1 } }
+                : { unitName: atom('°F'), scale: value => value, format: { kind: 'fixed', places: 1 } }
     }
 }
 
 function formatNumber(value: number, format: NumberFormat): string {
-    return typeof format === 'number' ? separateNumber(value.toFixed(format)) : roundToDigits(value, format)
+    switch (format.kind) {
+        case 'fixed':
+            return separateNumber(value.toFixed(format.places))
+        case 'rounded':
+            return roundToDigits(value, format)
+    }
 }
 
 /** The party a quantity written as a lead belongs to, if it is written as one. */
@@ -110,7 +111,7 @@ function hueFor(unit: Unit, value: number): Hue | undefined {
 export interface WrittenQuantity {
     /** What the number reads as, a lead including its party and a plus, as in D+4.5 */
     number: string
-    name: HumanReadableElement[]
+    unitName: HumanReadableElement[]
     hue?: Hue
 }
 
@@ -118,7 +119,7 @@ export interface WrittenQuantity {
 export function writeQuantity(value: number, stored: StoredUnit, settings: ReaderSettings = {}): WrittenQuantity {
     if (!isFinite(value)) {
         // a quantity we do not have is not measured in anything, and belongs to no party
-        return { number: missingValue, name: [] }
+        return { number: missingValue, unitName: [] }
     }
     const { unit } = stored
     const inBaseUnits = value * stored.toBaseUnits
@@ -130,7 +131,7 @@ export function writeQuantity(value: number, stored: StoredUnit, settings: Reade
     const written = formatNumber(representation.scale(magnitude), representation.format)
     return {
         number: `${lead === undefined ? '' : `${lead.label}+`}${explicitSign}${written}`,
-        name: representation.name,
+        unitName: representation.unitName,
         hue: hueFor(unit, value),
     }
 }
