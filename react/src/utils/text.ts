@@ -77,7 +77,8 @@ export function formatToSignificantFigures(value: number, sigFigs: number = 3): 
     }
 
     const factor = Math.pow(10, sigFigs - 1 - Math.floor(Math.log10(Math.abs(value))))
-    const rounded = Math.round(value * factor) / factor
+    // by size, so that a half goes the same way whichever side of zero it falls
+    const rounded = Math.sign(value) * Math.round(Math.abs(value) * factor) / factor
 
     // taken from the rounded value, since rounding can carry into another digit, as 0.9995 does
     const magnitude = Math.floor(Math.log10(Math.abs(rounded)))
