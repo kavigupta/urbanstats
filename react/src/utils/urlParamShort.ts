@@ -1,9 +1,15 @@
-import { gunzipSync, gzipSync } from 'zlib'
+import { gunzip, gzip } from './gzip'
 
-export function base64Gzip(data: string): string {
-    return gzipSync(data).toString('base64')
+export async function base64Gzip(data: string): Promise<string> {
+    const compressed = await gzip(new TextEncoder().encode(data))
+    let binary = ''
+    for (const byte of compressed) {
+        binary += String.fromCharCode(byte)
+    }
+    return btoa(binary)
 }
 
-export function base64Gunzip(data: string): string {
-    return gunzipSync(Buffer.from(data, 'base64')).toString()
+export async function base64Gunzip(data: string): Promise<string> {
+    const compressed = Uint8Array.from(atob(data), character => character.charCodeAt(0))
+    return new TextDecoder().decode(await gunzip(compressed))
 }

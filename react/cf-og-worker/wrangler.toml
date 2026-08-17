@@ -1,7 +1,8 @@
 name = "urbanstats-og"
 main = "src/index.ts"
 compatibility_date = "2026-08-01"
-# The site's data code decompresses with node's zlib, so the Worker needs it too.
+# Bundled dependencies reach for `process` without guarding on it (satori's style layer reads
+# `process.env.JEST_WORKER_ID`), so the Worker needs node's globals.
 compatibility_flags = ["nodejs_compat"]
 
 # Only the pages whose embeds differ by query string, plus the card renderer. Everything else on the

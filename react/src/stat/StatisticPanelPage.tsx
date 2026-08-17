@@ -106,7 +106,7 @@ function ConvertToMapButton({ stat, flexWidth, typeEnvironment }: { stat: Statis
         () => tableToMapper(mapUSSFromStat(stat), typeEnvironment),
         [stat, typeEnvironment],
     )
-    const handleConvertToMap = useCallback((): void => {
+    const handleConvertToMap = useCallback(async (): Promise<void> => {
         if (!mapperExpression) return
         const settingsJson = JSON.stringify({
             geographyKind: stat.articleType,
@@ -115,8 +115,8 @@ function ConvertToMapButton({ stat, flexWidth, typeEnvironment }: { stat: Statis
                 uss: mapperExpression,
             },
         })
-        const encodedSettings = base64Gzip(settingsJson)
-        void navContext.navigate({
+        const encodedSettings = await base64Gzip(settingsJson)
+        await navContext.navigate({
             kind: 'mapper',
             settings: encodedSettings,
             view: false,
@@ -133,7 +133,7 @@ function ConvertToMapButton({ stat, flexWidth, typeEnvironment }: { stat: Statis
     return (
         <button
             data-test-id="convert-to-map"
-            onClick={handleConvertToMap}
+            onClick={() => { void handleConvertToMap() }}
             style={{
                 flex: flexWidth ? `0 0 ${flexWidth}` : undefined,
                 padding: '0.25em 0.5em',

@@ -1,5 +1,3 @@
-import { gunzipSync } from 'zlib'
-
 import data_links from './data/data_links'
 import order_links from './data/order_links'
 import statistic_path_list from './data/statistic_path_list'
@@ -8,6 +6,7 @@ import { dataLink, indexLink, orderingDataLink, orderingLink, shapeLink } from '
 import { Universe } from './universe'
 import { makeDebugLogger } from './utils/debug-logging'
 import { assert } from './utils/defensive'
+import { gunzip } from './utils/gzip'
 import {
     Article, ConsolidatedArticles, ConsolidatedShapes, CountsByArticleUniverseAndType, DataLists,
     Feature, IOrderList, OrderList,
@@ -76,8 +75,7 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
     }
     perfCheckpoint = performance.now()
 
-    const buffer = gunzipSync(Buffer.from(compressedBuffer))
-    const arr = new Uint8Array(buffer)
+    const arr = await gunzip(compressedBuffer)
 
     if (name === 'SearchIndex') {
         debugPerformance(`Took ${performance.now() - perfCheckpoint}ms to decompress search index`)

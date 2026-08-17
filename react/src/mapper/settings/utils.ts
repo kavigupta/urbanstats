@@ -1,5 +1,3 @@
-import { gunzipSync } from 'zlib'
-
 import { z } from 'zod'
 
 import valid_geographies from '../../data/mapper/used_geographies'
@@ -7,6 +5,7 @@ import universes_ordered from '../../data/universes_ordered'
 import { Universe } from '../../universe'
 import { toStatement, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
+import { base64Gunzip } from '../../utils/urlParamShort'
 import { defaultTypeEnvironment } from '../context'
 
 import { attemptParseAsTopLevel, MapUSS, mapUSSFromString, rootBlockIdent, validMapperOutputs } from './map-uss'
@@ -79,10 +78,10 @@ export const mapperMetaFields = z.object({
 })
 
 /** @public this is included dynamically */
-export function mapSettingsFromURLParam(encodedSettings: string | undefined): MapSettings {
+export async function mapSettingsFromURLParam(encodedSettings: string | undefined): Promise<MapSettings> {
     let settings: Partial<MapSettings> = {}
     if (encodedSettings !== undefined) {
-        const jsonedSettings = gunzipSync(Buffer.from(encodedSettings, 'base64')).toString()
+        const jsonedSettings = await base64Gunzip(encodedSettings)
         const rawSettings = z.object({
             ...mapperMetaFields.shape,
             script: z.object({
