@@ -710,7 +710,7 @@ async function polygonsGeojson(geographyKind: typeof valid_geographies[number], 
             universe,
             geographyKind,
             polygonsByName: shapesInUniverse(
-                (await loadGzipped(consolidatedShapeLink(geographyKind)))!,
+                await loadGzipped(consolidatedShapeLink(geographyKind)),
                 universes_ordered.indexOf(universe),
             ),
         }

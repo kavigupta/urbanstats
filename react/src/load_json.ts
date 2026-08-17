@@ -38,7 +38,9 @@ export async function loadJSON(filePath: string): Promise<unknown> {
     return response.json()
 }
 
-/** The still-encoded protobuf bytes of a data file. Undefined if it is missing and !errorOnMissing. */
+/** The still-encoded protobuf bytes of a data file. */
+export async function loadGzipped(filePath: string): Promise<Uint8Array>
+export async function loadGzipped(filePath: string, errorOnMissing: boolean): Promise<Uint8Array | undefined>
 export async function loadGzipped(filePath: string, errorOnMissing: boolean = true): Promise<Uint8Array | undefined> {
     const response = await fetch(filePath)
     if (response.status < 200 || response.status > 299) {
@@ -47,7 +49,7 @@ export async function loadGzipped(filePath: string, errorOnMissing: boolean = tr
         }
         throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
     }
-    return new Uint8Array(gunzipSync(Buffer.from(await response.arrayBuffer())))
+    return gunzipSync(Buffer.from(await response.arrayBuffer()))
 }
 
 // Load a protobuf file from the server

@@ -3,131 +3,74 @@
  *
  * Decoding the file through protobufjs costs ~130 MiB on the largest geography, because the schema
  * makes every coordinate its own message and so its own object. This walks the message instead,
- * noting where each shape's bytes start and decoding only the ones the universe holds.
+ * noting where each shape's bytes start and decoding only the ones the universe holds. The field
+ * numbers here are the ones in data_files.proto.
  */
 import Pbf from 'pbf'
 
-interface Span {
-    start: number
-    end: number
+/** pbf's own readFloat goes through an ieee754 polyfill, which costs about a third of a decode. */
+const float = new Float32Array(1)
+const bits = new Uint32Array(float.buffer)
+
+function readFloat(pbf: Pbf): number {
+    bits[0] = pbf.readFixed32()
+    return float[0]
 }
 
-function span(pbf: Pbf): Span {
-    const length = pbf.readVarint()
-    const start = pbf.pos
-    return { start, end: start + length }
-}
-
-function readCoordinate(pbf: Pbf, end: number): GeoJSON.Position {
-    let lon = 0
-    let lat = 0
-    while (pbf.pos < end) {
-        const tag = pbf.readVarint()
-        switch (tag >> 3) {
+function readCoordinate(pbf: Pbf): GeoJSON.Position {
+    const coordinate: GeoJSON.Position = [0, 0]
+    pbf.readMessage((tag) => {
+        switch (tag) {
             case 1:
-                lon = pbf.readFloat()
+                coordinate[0] = readFloat(pbf)
                 break
             case 2:
-                lat = pbf.readFloat()
+                coordinate[1] = readFloat(pbf)
                 break
-            default:
-                pbf.skip(tag)
         }
-    }
-    return [lon, lat]
+    })
+    return coordinate
 }
 
-function readRing(pbf: Pbf, end: number): GeoJSON.Position[] {
-    const ring: GeoJSON.Position[] = []
-    while (pbf.pos < end) {
-        const tag = pbf.readVarint()
-        if (tag >> 3 === 1) {
-            const coordinate = span(pbf)
-            ring.push(readCoordinate(pbf, coordinate.end))
-            pbf.pos = coordinate.end
+/** Ring, Polygon and MultiPolygon are each a message holding one repeated field 1. */
+function repeated<T>(pbf: Pbf, readItem: (pbf: Pbf) => T): T[] {
+    const items: T[] = []
+    pbf.readMessage((tag) => {
+        if (tag === 1) {
+            items.push(readItem(pbf))
         }
-        else {
-            pbf.skip(tag)
-        }
-    }
-    return ring
+    })
+    return items
 }
 
-function readPolygon(pbf: Pbf, end: number): GeoJSON.Position[][] {
-    const rings: GeoJSON.Position[][] = []
-    while (pbf.pos < end) {
-        const tag = pbf.readVarint()
-        if (tag >> 3 === 1) {
-            const ring = span(pbf)
-            rings.push(readRing(pbf, ring.end))
-            pbf.pos = ring.end
-        }
-        else {
-            pbf.skip(tag)
-        }
-    }
-    return rings
-}
-
-function readMultiPolygon(pbf: Pbf, end: number): GeoJSON.Position[][][] {
-    const polygons: GeoJSON.Position[][][] = []
-    while (pbf.pos < end) {
-        const tag = pbf.readVarint()
-        if (tag >> 3 === 1) {
-            const polygon = span(pbf)
-            polygons.push(readPolygon(pbf, polygon.end))
-            pbf.pos = polygon.end
-        }
-        else {
-            pbf.skip(tag)
-        }
-    }
-    return polygons
-}
+const readRing = (pbf: Pbf): GeoJSON.Position[] => repeated(pbf, readCoordinate)
+const readPolygon = (pbf: Pbf): GeoJSON.Position[][] => repeated(pbf, readRing)
+const readMultiPolygon = (pbf: Pbf): GeoJSON.Position[][][] => repeated(pbf, readPolygon)
 
 /** A shape with neither geometry field set reads as an empty polygon, as protobufjs's would. */
-function readFeature(pbf: Pbf, feature: Span): GeoJSON.Geometry {
+function readFeature(pbf: Pbf, start: number): GeoJSON.Geometry {
     let geometry: GeoJSON.Geometry = { type: 'Polygon', coordinates: [] }
-    pbf.pos = feature.start
-    while (pbf.pos < feature.end) {
-        const tag = pbf.readVarint()
-        switch (tag >> 3) {
-            case 1: {
-                const polygon = span(pbf)
-                geometry = { type: 'Polygon', coordinates: readPolygon(pbf, polygon.end) }
-                pbf.pos = polygon.end
+    pbf.pos = start
+    pbf.readMessage((tag) => {
+        switch (tag) {
+            case 1:
+                geometry = { type: 'Polygon', coordinates: readPolygon(pbf) }
                 break
-            }
-            case 2: {
-                const multipolygon = span(pbf)
-                geometry = { type: 'MultiPolygon', coordinates: readMultiPolygon(pbf, multipolygon.end) }
-                pbf.pos = multipolygon.end
+            case 2:
+                geometry = { type: 'MultiPolygon', coordinates: readMultiPolygon(pbf) }
                 break
-            }
-            default:
-                pbf.skip(tag)
         }
-    }
+    })
     return geometry
 }
 
-function readUniverses(pbf: Pbf, end: number): number[] {
+function readUniverses(pbf: Pbf): number[] {
     const idxs: number[] = []
-    while (pbf.pos < end) {
-        const tag = pbf.readVarint()
-        if (tag >> 3 !== 1) {
-            pbf.skip(tag)
+    pbf.readMessage((tag) => {
+        if (tag === 1) {
+            pbf.readPackedVarint(idxs)
         }
-        else if ((tag & 7) === 2) {
-            const packed = span(pbf)
-            while (pbf.pos < packed.end) {
-                idxs.push(pbf.readVarint())
-            }
-        }
-        else {
-            idxs.push(pbf.readVarint())
-        }
-    }
+    })
     return idxs
 }
 
@@ -136,35 +79,27 @@ export function shapesInUniverse(shapeFile: Uint8Array, universeIdx: number): Ma
     const pbf = new Pbf(shapeFile)
     const longnames: string[] = []
     const universes: number[][] = []
-    const shapes: Span[] = []
+    const shapeStarts: number[] = []
 
-    while (pbf.pos < pbf.length) {
-        const tag = pbf.readVarint()
-        switch (tag >> 3) {
+    pbf.readFields((tag) => {
+        switch (tag) {
             case 1:
                 longnames.push(pbf.readString())
                 break
-            case 2: {
-                const shape = span(pbf)
-                shapes.push(shape)
-                pbf.pos = shape.end
+            case 2:
+                // leaving pos on the length varint both records the shape and makes readFields skip it
+                shapeStarts.push(pbf.pos)
                 break
-            }
-            case 3: {
-                const universe = span(pbf)
-                universes.push(readUniverses(pbf, universe.end))
-                pbf.pos = universe.end
+            case 3:
+                universes.push(readUniverses(pbf))
                 break
-            }
-            default:
-                pbf.skip(tag)
         }
-    }
+    })
 
     const geometries = new Map<string, GeoJSON.Geometry>()
     for (let i = 0; i < longnames.length; i++) {
         if (universes[i].includes(universeIdx)) {
-            geometries.set(longnames[i], readFeature(pbf, shapes[i]))
+            geometries.set(longnames[i], readFeature(pbf, shapeStarts[i]))
         }
     }
     return geometries
