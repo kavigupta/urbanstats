@@ -5,11 +5,13 @@ import { Rounding, roundToDigits, separateNumber } from './text'
 
 export type Hue = keyof HueColors
 
+type PartySystem = 'democratic' | 'left'
+
 // Abstract interpretation of a quantity as a unit.
 export type Unit = (
     { kind: 'raw-percentage', partyColor?: Hue }
     | { kind: 'delta-percentage', partyColor?: Hue }
-    | { kind: 'lead-percentage', partySystem: 'democratic' | 'left' }
+    | { kind: 'lead-percentage', partySystem: PartySystem }
     | { kind: 'temperature-F' }
 )
 
@@ -83,21 +85,17 @@ function formatNumber(value: number, format: NumberFormat): string {
     }
 }
 
-function party(unit: Unit, value: number): { label: string, hue: Hue } | undefined {
-    if (unit.kind !== 'lead-percentage') {
-        return undefined
-    }
+function getParty(partySystem: PartySystem, value: number): { label: string, hue: Hue } {
     const side = value > 0 ? 'positive' : 'negative'
-    return { label: partyLabels[unit.partySystem][side], hue: partyHues[unit.partySystem][side] }
+    return { label: partyLabels[partySystem][side], hue: partyHues[partySystem][side] }
 }
 
-function hueFor(unit: Unit, value: number): Hue | undefined {
+function hueFor(unit: Unit): Hue | undefined {
     switch (unit.kind) {
         case 'raw-percentage':
         case 'delta-percentage':
             return unit.partyColor
         case 'lead-percentage':
-            return party(unit, value)?.hue
         case 'temperature-F':
             return undefined
     }
@@ -110,21 +108,23 @@ export interface WrittenQuantity {
     hue?: Hue
 }
 
-/** Writes out a value stored in the given unit, e.g., 0.125 of a vote as `12.50` and `%`. */
 export function writeQuantity(value: number, stored: StoredUnit, settings: ReaderSettings = {}): WrittenQuantity {
     if (!isFinite(value)) {
         return { renderedValue: missingValue, unitName: [] }
     }
     const { unit } = stored
-    const inBaseUnits = value * stored.toBaseUnits
+    let inBaseUnits = value * stored.toBaseUnits
     const representation = representationFor(unit, settings)
-    const lead = party(unit, value)
-    const magnitude = lead === undefined ? inBaseUnits : Math.abs(inBaseUnits)
-    const explicitSign = unit.kind === 'delta-percentage' && magnitude >= 0 ? '+' : ''
-    const written = formatNumber(representation.scale(magnitude), representation.format)
+    let party = undefined
+    if (unit.kind === 'lead-percentage') {
+        party = getParty(unit.partySystem, inBaseUnits)
+        inBaseUnits = Math.abs(inBaseUnits)
+    }
+    const explicitSign = unit.kind === 'delta-percentage' && inBaseUnits >= 0 ? '+' : ''
+    const written = formatNumber(representation.scale(inBaseUnits), representation.format)
     return {
-        renderedValue: `${lead === undefined ? '' : `${lead.label}+`}${explicitSign}${written}`,
+        renderedValue: `${party === undefined ? '' : `${party.label}+`}${explicitSign}${written}`,
         unitName: representation.unitName,
-        hue: hueFor(unit, value),
+        hue: party?.hue ?? hueFor(unit),
     }
 }
