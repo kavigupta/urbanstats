@@ -2,6 +2,7 @@ import React, { CSSProperties, ReactNode } from 'react'
 
 import { HueColors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
+import { HumanReadableElement, reifyReact } from '../utils/human-readable-name'
 import { abbreviate, formatToSignificantFigures, roundToDigits, separateNumber } from '../utils/text'
 import { convertPrecipitation, convertTemperature, UnitType } from '../utils/unit'
 
@@ -57,46 +58,43 @@ interface ReaderSettings {
 
 interface Written {
     number: string
-    unit: ReactNode
+    unit: HumanReadableElement[]
 }
 
-const blank = <span>&nbsp;</span>
-const percentSign = <span>%</span>
+/** No unit, for the quantities that are just a count, and for the ones we do not have. */
+const blank: HumanReadableElement[] = []
+
+function atom(value: string): HumanReadableElement[] {
+    return [{ type: 'atom', value }]
+}
+
+function raised(name: string, power: string): HumanReadableElement[] {
+    return [{ type: 'atom', value: name }, { type: 'superscript', value: atom(power) }]
+}
+
+const percentSign = atom('%')
+
+/** A unit with no name still occupies its column, which is set against the values above it. */
+function unitColumn(name: HumanReadableElement[]): ReactNode {
+    return <span>{name.length === 0 ? '\u00a0' : reifyReact(name)}</span>
+}
 
 function display(write: (value: number, settings: ReaderSettings) => Written, inequality = renderInequality): UnitDisplay {
     return {
         renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
             if (!isFinite(value)) {
-                return { value: <span>{missing}</span>, unit: blank }
+                return { value: <span>{missing}</span>, unit: unitColumn(blank) }
             }
             const { number, unit } = write(value, { useImperial: useImperial ?? false, temperatureUnit: temperatureUnit ?? 'fahrenheit' })
-            return { value: <span>{number}</span>, unit }
+            return { value: <span>{number}</span>, unit: unitColumn(unit) }
         },
         renderInequality: inequality,
     }
 }
 
-function squared(name: string): ReactNode {
-    return (
-        <span>
-            {name}
-            <sup>2</sup>
-        </span>
-    )
-}
-
 /** A solidus with a numerator in front of it is set tight; one without gets a space. */
 function per(name: string): string {
     return `/\u00a0${name}`
-}
-
-function perSquared(name: string): ReactNode {
-    return (
-        <span>
-            {per(name)}
-            <sup>2</sup>
-        </span>
-    )
 }
 
 /** Durations read as hours and minutes, or as minutes alone where there are no hours. */
@@ -106,9 +104,9 @@ function hoursAndMinutes(hours: number): Written {
     const wholeHours = Math.floor(totalMinutes / 60)
     const minutes = totalMinutes % 60
     if (wholeHours === 0) {
-        return { number: `${sign}${minutes}`, unit: <span>min</span> }
+        return { number: `${sign}${minutes}`, unit: atom('min') }
     }
-    return { number: `${sign}${wholeHours}:${minutes.toString().padStart(2, '0')}`, unit: <span>h</span> }
+    return { number: `${sign}${wholeHours}:${minutes.toString().padStart(2, '0')}`, unit: atom('h') }
 }
 
 function percentage(value: number): string {
@@ -149,10 +147,10 @@ function PartyPercentage({ value, emphasis }: { value: number, emphasis: PartyNu
 function partyDisplay(emphasis: PartyNumberStyling): UnitDisplay {
     return {
         renderValue: (value: number) => !isFinite(value)
-            ? { value: <span>{missing}</span>, unit: blank }
+            ? { value: <span>{missing}</span>, unit: unitColumn(blank) }
             : {
                     value: <PartyPercentage value={value} emphasis={emphasis} />,
-                    unit: percentSign,
+                    unit: unitColumn(percentSign),
                 },
         renderInequality: emphasis.kind === 'lead' ? renderMarginInequality : renderInequality,
     }
@@ -199,51 +197,51 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'fatalitiesPerCapita':
             return display(value => ({
                 number: separateNumber((perHundredThousand * value).toFixed(2)),
-                unit: <span>{per('100k')}</span>,
+                unit: atom(per('100k')),
             }))
         case 'density':
             return display((value, { useImperial }) => ({
                 number: roundToDigits(useImperial ? value * squareKmPerSquareMile : value, { significantDigits: 2 }),
-                unit: perSquared(useImperial ? 'mi' : 'km'),
+                unit: raised(per(useImperial ? 'mi' : 'km'), '2'),
             }))
         case 'population':
             return display((value) => {
                 const { number, suffix } = abbreviate(value)
-                return { number, unit: suffix === '' ? blank : <span>{suffix}</span> }
+                return { number, unit: suffix === '' ? blank : atom(suffix) }
             })
         case 'usd':
             return display((value) => {
                 const { number, suffix } = abbreviate(value)
-                return { number: `$${number}`, unit: suffix === '' ? blank : <span>{suffix}</span> }
+                return { number: `$${number}`, unit: suffix === '' ? blank : atom(suffix) }
             })
         case 'area':
             return display((value, { useImperial }) => {
                 if (useImperial) {
                     const squareMiles = value / squareKmPerSquareMile
                     if (Math.abs(squareMiles) < 1) {
-                        return { number: roundToDigits(squareMiles * acresPerSquareMile, { significantDigits: 3 }), unit: <span>acres</span> }
+                        return { number: roundToDigits(squareMiles * acresPerSquareMile, { significantDigits: 3 }), unit: atom('acres') }
                     }
-                    return { number: roundToDigits(squareMiles, { significantDigits: 3 }), unit: squared('mi') }
+                    return { number: roundToDigits(squareMiles, { significantDigits: 3 }), unit: raised('mi', '2') }
                 }
                 if (Math.abs(value) < 0.01) {
-                    return { number: roundToDigits(value * squareMetersPerSquareKm, { significantDigits: 3 }), unit: squared('m') }
+                    return { number: roundToDigits(value * squareMetersPerSquareKm, { significantDigits: 3 }), unit: raised('m', '2') }
                 }
-                return { number: roundToDigits(value, { significantDigits: 3 }), unit: squared('km') }
+                return { number: roundToDigits(value, { significantDigits: 3 }), unit: raised('km', '2') }
             })
         case 'distanceInKm':
             return display((value, { useImperial }) => ({
                 number: separateNumber((useImperial ? value / kmPerMile : value).toFixed(2)),
-                unit: <span>{useImperial ? 'mi' : 'km'}</span>,
+                unit: atom(useImperial ? 'mi' : 'km'),
             }))
         case 'distanceInM':
             return display((value, { useImperial }) => ({
                 number: separateNumber((useImperial ? value * feetPerMeter : value).toFixed(0)),
-                unit: <span>{useImperial ? 'ft' : 'm'}</span>,
+                unit: atom(useImperial ? 'ft' : 'm'),
             }))
         case 'temperature':
             return display((value, { temperatureUnit }) => {
                 const converted = convertTemperature(value, temperatureUnit)
-                return { number: separateNumber(converted.value.toFixed(1)), unit: <span>{converted.unit}</span> }
+                return { number: separateNumber(converted.value.toFixed(1)), unit: atom(converted.unit) }
             })
         case 'time':
             return display(value => hoursAndMinutes(value))
@@ -254,18 +252,13 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                 const converted = convertPrecipitation(value, useImperial)
                 return {
                     number: separateNumber(converted.value.toFixed(1)),
-                    unit: <span>{`${converted.unit}/yr`}</span>,
+                    unit: atom(`${converted.unit}/yr`),
                 }
             })
         case 'contaminantLevel':
             return display(value => ({
                 number: separateNumber(value.toFixed(2)),
-                unit: (
-                    <span>
-                        &mu;g/m
-                        <sup>3</sup>
-                    </span>
-                ),
+                unit: raised('\u03bcg/m', '3'),
             }))
         case 'number':
             return display(value => ({ number: separateNumber(formatToSignificantFigures(value, 3)), unit: blank }))
