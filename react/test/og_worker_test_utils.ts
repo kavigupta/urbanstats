@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { createServer } from 'http'
+import { createConnection } from 'net'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { gunzipSync, gzipSync } from 'zlib'
@@ -36,9 +37,10 @@ export async function runOgWorkerForTest(): Promise<void> {
 
 /** For the resources test, whose Worker is left deadlocked and so is nobody else's to share. */
 export async function runMeasuredOgWorkerForTest(): Promise<void> {
-    if (await isWorkerAvailable(measuredPort)) {
-        // A previous file in the same runner measured a render against it, so it is deadlocked.
-        throw new Error(`Something is already listening on port ${measuredPort}, which is the resources test's alone.`)
+    if (await isPortListening(measuredPort)) {
+        // Whatever holds it is almost certainly the deadlocked Worker of an earlier measurement,
+        // which will not answer and will not let go, so waiting for the port is waiting forever.
+        throw new Error(`Something is already listening on port ${measuredPort}, which only the resources test uses. Nothing can measure a render after that one has.`)
     }
     await startOgWorker(measuredPort)
 }
@@ -84,6 +86,18 @@ async function isWorkerAvailable(port: number): Promise<boolean> {
     finally {
         clearTimeout(timer)
     }
+}
+
+/**
+ * Whether anything at all holds the port, which a request cannot tell us: a Worker still starting
+ * and a deadlocked one both take the connection without answering.
+ */
+async function isPortListening(port: number): Promise<boolean> {
+    return new Promise((resolve) => {
+        const socket = createConnection({ port, host: '127.0.0.1' })
+        socket.on('connect', () => { socket.destroy(); resolve(true) })
+        socket.on('error', () => { resolve(false) })
+    })
 }
 
 /*
