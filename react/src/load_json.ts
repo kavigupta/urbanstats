@@ -68,17 +68,16 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
         throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
     }
 
-    const compressedBuffer = await response.arrayBuffer()
-
     if (name === 'SearchIndex') {
-        debugPerformance(`Took ${performance.now() - perfCheckpoint}ms networking to load search index`)
+        debugPerformance(`Took ${performance.now() - perfCheckpoint}ms to get the search index response`)
     }
     perfCheckpoint = performance.now()
 
-    const arr = await gunzip(compressedBuffer)
+    assert(response.body !== null, `Expected a body for ${filePath}`)
+    const arr = await gunzip(response.body)
 
     if (name === 'SearchIndex') {
-        debugPerformance(`Took ${performance.now() - perfCheckpoint}ms to decompress search index`)
+        debugPerformance(`Took ${performance.now() - perfCheckpoint}ms to download and decompress search index`)
     }
     perfCheckpoint = performance.now()
 
