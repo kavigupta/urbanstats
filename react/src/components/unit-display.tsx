@@ -123,9 +123,6 @@ type PartyNumberStyling = (
 
 function PartyPercentage({ value, emphasis }: { value: number, emphasis: PartyNumberStyling }): ReactNode {
     const colors = useColors()
-    if (!isFinite(value)) {
-        return <span>{missing}</span>
-    }
     const side = value > 0 ? 'positive' : 'negative'
     const spanStyle: CSSProperties = {
         color: colors.hueColors[emphasis.kind === 'lead' ? emphasis.hues[side] : emphasis.hue],
@@ -151,10 +148,12 @@ function PartyPercentage({ value, emphasis }: { value: number, emphasis: PartyNu
 
 function partyDisplay(emphasis: PartyNumberStyling): UnitDisplay {
     return {
-        renderValue: (value: number) => ({
-            value: <PartyPercentage value={value} emphasis={emphasis} />,
-            unit: percentSign,
-        }),
+        renderValue: (value: number) => !isFinite(value)
+            ? { value: <span>{missing}</span>, unit: blank }
+            : {
+                    value: <PartyPercentage value={value} emphasis={emphasis} />,
+                    unit: percentSign,
+                },
         renderInequality: emphasis.kind === 'lead' ? renderMarginInequality : renderInequality,
     }
 }
