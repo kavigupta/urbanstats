@@ -1,11 +1,23 @@
 import { HueColors } from '../page_template/color-themes'
 
 import { HumanReadableElement } from './human-readable-name'
-import { Rounding, roundToDigits, separateNumber } from './text'
+import { formatToSignificantFigures, Rounding, roundToDigits, separateNumber } from './text'
 
 export type Hue = keyof HueColors
 
 type PartySystem = 'democratic' | 'left'
+
+/**
+ * The units everything else is measured in. A value is put in these before it is written out, so
+ * that quantities of the same kind are written the same way however they happen to be stored.
+ */
+export type BaseUnit = 'fatality'
+
+/** A base unit raised to a power, e.g., fatalities, or square meters. */
+export interface Dimension {
+    baseUnit: BaseUnit
+    power: number
+}
 
 // Abstract interpretation of a quantity as a unit.
 export type Unit = (
@@ -13,6 +25,7 @@ export type Unit = (
     | { kind: 'delta-percentage', partyColor?: Hue }
     | { kind: 'lead-percentage', partySystem: PartySystem }
     | { kind: 'temperature-F' }
+    | { kind: 'dimensionfull', scales: Dimension[] }
 )
 
 export interface StoredUnit {
@@ -32,6 +45,7 @@ export const missingValue = 'N/A'
 type NumberFormat = (
     { kind: 'fixed', places: number }
     | ({ kind: 'rounded' } & Rounding)
+    | { kind: 'significantFigures' }
 )
 
 interface Representation {
@@ -62,6 +76,26 @@ const partyHues = {
 } as const
 /* eslint-enable no-restricted-syntax */
 
+/** What the dimensions of a quantity are called when they are looked up in a table. */
+function signatureOf(scales: Dimension[]): string {
+    return scales
+        .filter(({ power }) => power !== 0)
+        .map(({ baseUnit, power }) => `${baseUnit}^${power}`)
+        .join(' ')
+}
+
+/**
+ * How the number is written once a unit has been chosen for it. Separate from the units: what a
+ * quantity is measured in does not say how precisely it is worth writing.
+ */
+const styles: Record<string, NumberFormat | undefined> = {
+    '': { kind: 'significantFigures' },
+    // things that are counted come in whole numbers
+    'fatality^1': { kind: 'fixed', places: 0 },
+}
+
+const defaultStyle: NumberFormat = { kind: 'rounded', significantDigits: 3 }
+
 function representationFor(unit: Unit, settings: ReaderSettings): Representation {
     switch (unit.kind) {
         case 'raw-percentage':
@@ -73,6 +107,9 @@ function representationFor(unit: Unit, settings: ReaderSettings): Representation
             return settings.temperatureUnit === 'celsius'
                 ? { unitName: atom('°C'), scale: value => (value - 32) * (5 / 9), format: { kind: 'fixed', places: 1 } }
                 : { unitName: atom('°F'), scale: value => value, format: { kind: 'fixed', places: 1 } }
+        case 'dimensionfull':
+            // a count is named by the statistic it counts, so it has no name of its own here
+            return { unitName: [], scale: value => value, format: styles[signatureOf(unit.scales)] ?? defaultStyle }
     }
 }
 
@@ -82,6 +119,8 @@ function formatNumber(value: number, format: NumberFormat): string {
             return separateNumber(value.toFixed(format.places))
         case 'rounded':
             return roundToDigits(value, format)
+        case 'significantFigures':
+            return separateNumber(formatToSignificantFigures(value, 3))
     }
 }
 
@@ -97,6 +136,7 @@ function hueFor(unit: Unit): Hue | undefined {
             return unit.partyColor
         case 'lead-percentage':
         case 'temperature-F':
+        case 'dimensionfull':
             return undefined
     }
 }
