@@ -1,6 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { createServer } from 'http'
-import { createConnection } from 'net'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { gunzipSync, gzipSync } from 'zlib'
@@ -13,40 +12,45 @@ import { target } from './test_utils'
 // Matches OG_PORT's default in cf-og-worker/preview.sh and ogPort's default in PageDescriptor.
 export const ogPort = 8787
 
-// Matches preview.sh, which derives it the same way.
-const inspectorPort = ogPort + 1
+/**
+ * The Worker the resources test measures, which is on a port of its own: measuring a render
+ * deadlocks workerd's inspector, so the Worker it happens to is no use to anything afterwards.
+ * Clear of the shared Worker's inspector and of the tile server below.
+ */
+const measuredPort = ogPort + 10
+
+// Matches preview.sh, which derives each of them the same way.
+const inspectorPort = (port: number): number => port + 1
 
 const startupTimeoutMs = 120_000
 
 /** Reuses whatever is already listening, otherwise starts one and takes it down with the runner. */
 export async function runOgWorkerForTest(): Promise<void> {
-    if (await isWorkerAvailable()) {
+    if (await isWorkerAvailable(ogPort)) {
         console.warn('Embed Worker found. Using existing embed Worker.')
         return
     }
     console.warn('No embed Worker found. Starting new embed Worker...')
-    await startOgWorker()
+    await startOgWorker(ogPort)
 }
 
-/**
- * For the resources test, which deadlocks workerd's inspector measuring a render: the Worker it
- * runs against is good for that one file and nothing after it.
- */
-export async function runOwnOgWorkerForTest(): Promise<void> {
-    if (await isPortListening(ogPort)) {
-        throw new Error(`Something is already listening on port ${ogPort}. Measuring a render leaves the Worker deadlocked, so this test has to start its own. Stop yours and run this file by itself.`)
+/** For the resources test, whose Worker is left deadlocked and so is nobody else's to share. */
+export async function runMeasuredOgWorkerForTest(): Promise<void> {
+    if (await isWorkerAvailable(measuredPort)) {
+        // A previous file in the same runner measured a render against it, so it is deadlocked.
+        throw new Error(`Something is already listening on port ${measuredPort}, which is the resources test's alone.`)
     }
-    await startOgWorker()
+    await startOgWorker(measuredPort)
 }
 
-async function startOgWorker(): Promise<void> {
+async function startOgWorker(port: number): Promise<void> {
     // Its own process group, so killing it also takes down the wrangler and workerd processes
     // underneath.
     const worker = execa('npm', ['run', 'og-preview'], {
         stdio: 'inherit',
         detached: true,
         env: {
-            OG_PORT: `${ogPort}`,
+            OG_PORT: `${port}`,
             SITE_ORIGIN: target,
             // Otherwise wrangler's first run stops to ask about usage metrics.
             WRANGLER_SEND_METRICS: 'false',
@@ -56,7 +60,7 @@ async function startOgWorker(): Promise<void> {
     process.on('exit', () => { process.kill(-worker.pid!, 'SIGKILL') })
 
     const deadline = Date.now() + startupTimeoutMs
-    while (!(await isWorkerAvailable())) {
+    while (!(await isWorkerAvailable(port))) {
         if (worker.exitCode !== null || Date.now() > deadline) {
             throw new Error('Embed Worker did not start')
         }
@@ -65,13 +69,13 @@ async function startOgWorker(): Promise<void> {
     console.warn('Embed Worker started.')
 }
 
-async function isWorkerAvailable(): Promise<boolean> {
+async function isWorkerAvailable(port: number): Promise<boolean> {
     // A deadlocked Worker takes the connection and never answers; node's fetch would wait five
     // minutes on that.
     const giveUp = new AbortController()
     const timer = setTimeout(() => { giveUp.abort() }, 10_000)
     try {
-        await fetch(`http://localhost:${ogPort}/index.html`, { signal: giveUp.signal })
+        await fetch(`http://localhost:${port}/index.html`, { signal: giveUp.signal })
         return true
     }
     catch {
@@ -80,18 +84,6 @@ async function isWorkerAvailable(): Promise<boolean> {
     finally {
         clearTimeout(timer)
     }
-}
-
-/**
- * Whether anything at all holds the port, which a request cannot tell us: a Worker still starting
- * and a deadlocked one both take the connection.
- */
-async function isPortListening(port: number): Promise<boolean> {
-    return new Promise((resolve) => {
-        const socket = createConnection({ port, host: '127.0.0.1' })
-        socket.on('connect', () => { socket.destroy(); resolve(true) })
-        socket.on('error', () => { resolve(false) })
-    })
 }
 
 /*
@@ -212,7 +204,7 @@ interface RenderCost {
  * fetch latency; workerd's inspector is the only place the metered numbers show up.
  */
 export async function ogRenderCost(articleUrl: string): Promise<RenderCost> {
-    const socket = new WebSocket(`ws://localhost:${inspectorPort}/ws`)
+    const socket = new WebSocket(`ws://localhost:${inspectorPort(measuredPort)}/ws`)
     let nextId = 0
     const replies = new Map<number, (result: unknown) => void>()
     let subrequests = 0
@@ -233,7 +225,7 @@ export async function ogRenderCost(articleUrl: string): Promise<RenderCost> {
     // Editing the Worker's source restarts wrangler, and a reply that never arrives would hang the
     // test until the whole run times out.
     const disconnected = new Promise<never>((_, reject) => {
-        const fail = (): void => { reject(new Error(`Embed Worker's inspector on port ${inspectorPort} closed mid-measurement; was the Worker restarted?`)) }
+        const fail = (): void => { reject(new Error(`Embed Worker's inspector on port ${inspectorPort(measuredPort)} closed mid-measurement; was the Worker restarted?`)) }
         socket.on('close', fail)
         socket.on('error', fail)
     })
@@ -277,9 +269,9 @@ export async function ogRenderCost(articleUrl: string): Promise<RenderCost> {
  * The page's zod schemas drop params they do not know, so the buster changes only the cache key.
  */
 async function render(articleUrl: string, cacheBuster: string): Promise<void> {
-    const url = new URL(articleUrl, `http://localhost:${ogPort}`)
+    const url = new URL(articleUrl, `http://localhost:${measuredPort}`)
     url.searchParams.set('renderCost', cacheBuster)
-    const image = `http://localhost:${ogPort}/og${url.pathname}${url.search}`
+    const image = `http://localhost:${measuredPort}/og${url.pathname}${url.search}`
     // Otherwise a Worker that went away mid-run is a bare 'fetch failed'.
     const response = await fetch(image).catch((error: unknown) => {
         throw new Error(`Could not reach the embed Worker at ${image}: ${String(error)}`)
