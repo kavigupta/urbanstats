@@ -1,12 +1,10 @@
 import React, { CSSProperties, ReactNode } from 'react'
 
-import { HueColors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { HumanReadableElement, reifyReact } from '../utils/human-readable-name'
+import { Hue, missingValue, StoredUnit, writeQuantity } from '../utils/quantity'
 import { abbreviate, formatToSignificantFigures, roundToDigits, separateNumber } from '../utils/text'
-import { convertPrecipitation, convertTemperature, UnitType } from '../utils/unit'
-
-type Hue = keyof HueColors
+import { convertPrecipitation, storedUnits, UnitType } from '../utils/unit'
 
 export interface UnitDisplay {
     renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
@@ -28,15 +26,12 @@ export function renderInequality(value: number, unitType: UnitType, inequality: 
     return reads === 'leq' ? '\u2264' /* ≤ */ : '\u2265' /* ≥ */
 }
 
-const missing = 'N/A'
-
 const kmPerMile = 1.60934
 const squareKmPerSquareMile = kmPerMile * kmPerMile
 const acresPerSquareMile = 640
 const feetPerMeter = 3.28084
 const squareMetersPerSquareKm = 1000 * 1000
 const perHundredThousand = 100_000
-const asPercent = 100
 
 interface ReaderSettings {
     useImperial: boolean
@@ -58,8 +53,6 @@ function raised(name: string, power: string): HumanReadableElement[] {
     return [{ type: 'atom', value: name }, { type: 'superscript', value: atom(power) }]
 }
 
-const percentSign = atom('%')
-
 function unitColumn(name: HumanReadableElement[]): ReactNode {
     return <span>{name.length === 0 ? <>&nbsp;</> : reifyReact(name)}</span>
 }
@@ -68,7 +61,7 @@ function display(write: (value: number, settings: ReaderSettings) => Written): U
     return {
         renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
             if (!isFinite(value)) {
-                return { value: <span>{missing}</span>, unit: unitColumn(unitlessDisplay) }
+                return { value: <span>{missingValue}</span>, unit: unitColumn(unitlessDisplay) }
             }
             const { number, unit } = write(value, { useImperial: useImperial ?? false, temperatureUnit: temperatureUnit ?? 'fahrenheit' })
             return { value: <span>{number}</span>, unit: unitColumn(unit) }
@@ -93,88 +86,45 @@ function hoursAndMinutes(hours: number): Written {
     return { number: `${sign}${wholeHours}:${minutes.toString().padStart(2, '0')}`, unit: atom('h') }
 }
 
-function percentage(value: number): string {
-    return separateNumber((value * asPercent).toFixed(2))
-}
-
-type PartyNumberStyling = (
-    { kind: 'lead', labels: { positive: string, negative: string }, hues: { positive: Hue, negative: Hue } }
-    | { kind: 'share', hue: Hue }
-    | { kind: 'change', hue: Hue }
-)
-
-function PartyPercentage({ value, emphasis }: { value: number, emphasis: PartyNumberStyling }): ReactNode {
+/** A quantity written in a party's color, set flush right so that a fourth digit overflows left. */
+function InParty({ value, hue }: { value: string, hue: Hue }): ReactNode {
     const colors = useColors()
-    const side = value > 0 ? 'positive' : 'negative'
-    const spanStyle: CSSProperties = {
-        color: colors.hueColors[emphasis.kind === 'lead' ? emphasis.hues[side] : emphasis.hue],
-        // So that on 4 digits, we overflow left
-        display: 'flex',
-        justifyContent: 'flex-end',
-    }
-    switch (emphasis.kind) {
-        case 'lead':
-            // a lead is given more digits the closer it is
-            const magnitude = Math.abs(value) * asPercent
-            return (
-                <span style={spanStyle}>
-                    {`${emphasis.labels[side]}+${roundToDigits(magnitude, { significantDigits: 3, minDecimals: 1, maxDecimals: 4 })}`}
-                </span>
-            )
-        case 'change':
-            return <span style={spanStyle}>{`${value >= 0 ? '+' : ''}${percentage(value)}`}</span>
-        case 'share':
-            return <span style={spanStyle}>{percentage(value)}</span>
-    }
+    const spanStyle: CSSProperties = { color: colors.hueColors[hue], display: 'flex', justifyContent: 'flex-end' }
+    return <span style={spanStyle}>{value}</span>
 }
 
-function partyDisplay(emphasis: PartyNumberStyling): UnitDisplay {
+function quantity(stored: StoredUnit): UnitDisplay {
     return {
-        renderValue: (value: number) => !isFinite(value)
-            ? { value: <span>{missing}</span>, unit: unitColumn(unitlessDisplay) }
-            : {
-                    value: <PartyPercentage value={value} emphasis={emphasis} />,
-                    unit: unitColumn(percentSign),
-                },
+        renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
+            const { renderedValue, unitName, hue } = writeQuantity(value, stored, { useImperial, temperatureUnit })
+            return {
+                value: hue === undefined ? <span>{renderedValue}</span> : <InParty value={renderedValue} hue={hue} />,
+                unit: unitColumn(unitName),
+            }
+        },
     }
 }
 
-/* eslint-disable no-restricted-syntax -- these name the theme's hues, they are not css colors */
 export function getUnitDisplay(unitType: UnitType): UnitDisplay {
     switch (unitType) {
         case 'percentage':
-            return display(value => ({ number: percentage(value), unit: percentSign }))
         case 'percentageChange':
-            return display(value => ({ number: `${value >= 0 ? '+' : ''}${percentage(value)}`, unit: percentSign }))
         case 'democraticMargin':
-            return partyDisplay({ kind: 'lead', labels: { positive: 'D', negative: 'R' }, hues: { positive: 'blue', negative: 'red' } })
         case 'leftMargin':
-            // in Canada, left is red
-            return partyDisplay({ kind: 'lead', labels: { positive: 'L', negative: 'R' }, hues: { positive: 'red', negative: 'blue' } })
         case 'partyPctBlue':
-            return partyDisplay({ kind: 'share', hue: 'blue' })
         case 'partyPctRed':
-            return partyDisplay({ kind: 'share', hue: 'red' })
         case 'partyPctOrange':
-            return partyDisplay({ kind: 'share', hue: 'orange' })
         case 'partyPctTeal':
-            return partyDisplay({ kind: 'share', hue: 'cyan' })
         case 'partyPctGreen':
-            return partyDisplay({ kind: 'share', hue: 'green' })
         case 'partyPctPurple':
-            return partyDisplay({ kind: 'share', hue: 'purple' })
         case 'partyChangeBlue':
-            return partyDisplay({ kind: 'change', hue: 'blue' })
         case 'partyChangeRed':
-            return partyDisplay({ kind: 'change', hue: 'red' })
         case 'partyChangeOrange':
-            return partyDisplay({ kind: 'change', hue: 'orange' })
         case 'partyChangeTeal':
-            return partyDisplay({ kind: 'change', hue: 'cyan' })
         case 'partyChangeGreen':
-            return partyDisplay({ kind: 'change', hue: 'green' })
         case 'partyChangePurple':
-            return partyDisplay({ kind: 'change', hue: 'purple' })
+        case 'temperature':
+            return quantity(storedUnits[unitType])
         case 'fatalities':
             return display(value => ({ number: separateNumber(value.toFixed(0)), unit: unitlessDisplay }))
         case 'fatalitiesPerCapita':
@@ -221,11 +171,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                 number: separateNumber((useImperial ? value * feetPerMeter : value).toFixed(0)),
                 unit: atom(useImperial ? 'ft' : 'm'),
             }))
-        case 'temperature':
-            return display((value, { temperatureUnit }) => {
-                const converted = convertTemperature(value, temperatureUnit)
-                return { number: separateNumber(converted.value.toFixed(1)), unit: atom(converted.unit) }
-            })
         case 'time':
             return display(value => hoursAndMinutes(value))
         case 'minutes':
@@ -247,7 +192,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
             return display(value => ({ number: separateNumber(formatToSignificantFigures(value, 3)), unit: unitlessDisplay }))
     }
 }
-/* eslint-enable no-restricted-syntax */
 
 export function getUnit(unit: UnitType): ReactNode {
     switch (unit) {
