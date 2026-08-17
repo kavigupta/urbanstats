@@ -113,13 +113,11 @@ export interface WrittenQuantity {
 /** Writes out a value stored in the given unit, e.g., 0.125 of a vote as `12.50` and `%`. */
 export function writeQuantity(value: number, stored: StoredUnit, settings: ReaderSettings = {}): WrittenQuantity {
     if (!isFinite(value)) {
-        // a quantity we do not have is not measured in anything, and belongs to no party
         return { renderedValue: missingValue, unitName: [] }
     }
     const { unit } = stored
     const inBaseUnits = value * stored.toBaseUnits
     const representation = representationFor(unit, settings)
-    // a lead is written as a size, with the party that holds it in front of the number
     const lead = party(unit, value)
     const magnitude = lead === undefined ? inBaseUnits : Math.abs(inBaseUnits)
     const explicitSign = unit.kind === 'delta-percentage' && magnitude >= 0 ? '+' : ''
