@@ -59,7 +59,7 @@ for (const [unitType, value, expected] of [
     ['distanceInM', 1234, '1\u202f234m'],
     ['area', 1234, '1\u202f234km2'],
     ['distanceInKm', 1234, '1\u202f234.00km'],
-    ['contaminantLevel', 1234, '1\u202f234.00\u03bcg/m3'],
+    ['contaminantLevel', 1234, '1\u202f234.00μg/m3'],
     ['percentage', 12.34, '1\u202f234.00%'],
     ['fatalitiesPerCapita', 0.01234, '1\u202f234.00/\u00a0100k'],
     ['distancePerYear', 12.34, '1\u202f234.0cm/yr'],
@@ -86,7 +86,7 @@ for (const [value, expected] of [
 for (const [unitType, value, expected] of [
     ['density', 5.67, '5.7/\u00a0km2'],
     ['fatalitiesPerCapita', 1.2e-5, '1.20/\u00a0100k'],
-    ['contaminantLevel', 8.2, '8.20\u03bcg/m3'],
+    ['contaminantLevel', 8.2, '8.20μg/m3'],
     ['distancePerYear', 1.2, '120.0cm/yr'],
 ] as const) {
     void test(`${unitType} writes ${value} as ${expected}`, () => {

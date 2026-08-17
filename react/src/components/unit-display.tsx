@@ -61,8 +61,7 @@ interface Written {
     unit: HumanReadableElement[]
 }
 
-/** No unit, for the quantities that are just a count, and for the ones we do not have. */
-const blank: HumanReadableElement[] = []
+const unitlessDisplay: HumanReadableElement[] = []
 
 function atom(value: string): HumanReadableElement[] {
     return [{ type: 'atom', value }]
@@ -74,16 +73,15 @@ function raised(name: string, power: string): HumanReadableElement[] {
 
 const percentSign = atom('%')
 
-/** A unit with no name still occupies its column, which is set against the values above it. */
 function unitColumn(name: HumanReadableElement[]): ReactNode {
-    return <span>{name.length === 0 ? '\u00a0' : reifyReact(name)}</span>
+    return <span>{name.length === 0 ? <>&nbsp;</> : reifyReact(name)}</span>
 }
 
 function display(write: (value: number, settings: ReaderSettings) => Written, inequality = renderInequality): UnitDisplay {
     return {
         renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
             if (!isFinite(value)) {
-                return { value: <span>{missing}</span>, unit: unitColumn(blank) }
+                return { value: <span>{missing}</span>, unit: unitColumn(unitlessDisplay) }
             }
             const { number, unit } = write(value, { useImperial: useImperial ?? false, temperatureUnit: temperatureUnit ?? 'fahrenheit' })
             return { value: <span>{number}</span>, unit: unitColumn(unit) }
@@ -147,7 +145,7 @@ function PartyPercentage({ value, emphasis }: { value: number, emphasis: PartyNu
 function partyDisplay(emphasis: PartyNumberStyling): UnitDisplay {
     return {
         renderValue: (value: number) => !isFinite(value)
-            ? { value: <span>{missing}</span>, unit: unitColumn(blank) }
+            ? { value: <span>{missing}</span>, unit: unitColumn(unitlessDisplay) }
             : {
                     value: <PartyPercentage value={value} emphasis={emphasis} />,
                     unit: unitColumn(percentSign),
@@ -193,7 +191,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'partyChangePurple':
             return partyDisplay({ kind: 'change', hue: 'purple' })
         case 'fatalities':
-            return display(value => ({ number: separateNumber(value.toFixed(0)), unit: blank }))
+            return display(value => ({ number: separateNumber(value.toFixed(0)), unit: unitlessDisplay }))
         case 'fatalitiesPerCapita':
             return display(value => ({
                 number: separateNumber((perHundredThousand * value).toFixed(2)),
@@ -207,12 +205,12 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'population':
             return display((value) => {
                 const { number, suffix } = abbreviate(value)
-                return { number, unit: suffix === '' ? blank : atom(suffix) }
+                return { number, unit: suffix === '' ? unitlessDisplay : atom(suffix) }
             })
         case 'usd':
             return display((value) => {
                 const { number, suffix } = abbreviate(value)
-                return { number: `$${number}`, unit: suffix === '' ? blank : atom(suffix) }
+                return { number: `$${number}`, unit: suffix === '' ? unitlessDisplay : atom(suffix) }
             })
         case 'area':
             return display((value, { useImperial }) => {
@@ -258,10 +256,10 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'contaminantLevel':
             return display(value => ({
                 number: separateNumber(value.toFixed(2)),
-                unit: raised('\u03bcg/m', '3'),
+                unit: raised('μg/m', '3'),
             }))
         case 'number':
-            return display(value => ({ number: separateNumber(formatToSignificantFigures(value, 3)), unit: blank }))
+            return display(value => ({ number: separateNumber(formatToSignificantFigures(value, 3)), unit: unitlessDisplay }))
     }
 }
 /* eslint-enable no-restricted-syntax */
