@@ -37,6 +37,21 @@ export async function loadJSON(filePath: string): Promise<unknown> {
     return response.json()
 }
 
+/** The still-encoded protobuf bytes of a data file. */
+export async function loadGzipped(filePath: string): Promise<Uint8Array>
+export async function loadGzipped(filePath: string, errorOnMissing: boolean): Promise<Uint8Array | undefined>
+export async function loadGzipped(filePath: string, errorOnMissing: boolean = true): Promise<Uint8Array | undefined> {
+    const response = await fetch(filePath)
+    if (response.status < 200 || response.status > 299) {
+        if (!errorOnMissing) {
+            return undefined
+        }
+        throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
+    }
+    assert(response.body !== null, `Expected a body for ${filePath}`)
+    return await gunzip(response.body)
+}
+
 // Load a protobuf file from the server
 export async function loadProtobuf(filePath: string, name: 'Article', errorOnMissing: boolean): Promise<Article | undefined>
 export async function loadProtobuf(filePath: string, name: 'Feature', errorOnMissing: boolean): Promise<Feature>
@@ -60,24 +75,13 @@ export async function loadProtobuf(filePath: string, name: 'ShardIndex'): Promis
 export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | CongressionalRepresentativeTable | ConsolidatedShapes | ConsolidatedArticles | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | ArticleUniverseList | DefaultUniverseTable | ShardIndex | undefined> {
     let perfCheckpoint = performance.now()
 
-    const response = await fetch(filePath)
-    if (response.status < 200 || response.status > 299) {
-        if (!errorOnMissing) {
-            return undefined
-        }
-        throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
+    const arr = await loadGzipped(filePath, errorOnMissing)
+    if (arr === undefined) {
+        return undefined
     }
 
     if (name === 'SearchIndex') {
-        debugPerformance(`Took ${performance.now() - perfCheckpoint}ms to get the search index response`)
-    }
-    perfCheckpoint = performance.now()
-
-    assert(response.body !== null, `Expected a body for ${filePath}`)
-    const arr = await gunzip(response.body)
-
-    if (name === 'SearchIndex') {
-        debugPerformance(`Took ${performance.now() - perfCheckpoint}ms to download and decompress search index`)
+        debugPerformance(`Took ${performance.now() - perfCheckpoint}ms to fetch and decompress search index`)
     }
     perfCheckpoint = performance.now()
 
