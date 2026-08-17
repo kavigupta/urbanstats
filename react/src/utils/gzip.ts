@@ -9,9 +9,11 @@ async function installPolyfill(): Promise<void> {
 }
 
 async function pipe(data: BufferSource, through: GenericTransformStream): Promise<Uint8Array> {
+    // Node's (De)CompressionStream never completes when fed a bare ArrayBuffer, so pass a view.
+    const chunk = ArrayBuffer.isView(data) ? data : new Uint8Array(data)
     const source = new ReadableStream<BufferSource>({
         start(controller) {
-            controller.enqueue(data)
+            controller.enqueue(chunk)
             controller.close()
         },
     })
