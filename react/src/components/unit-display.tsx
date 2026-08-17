@@ -8,37 +8,24 @@ import { convertPrecipitation, convertTemperature, UnitType } from '../utils/uni
 
 type Hue = keyof HueColors
 
-type RenderInequality = (value: number, inequality: 'leq' | 'geq') => string
-
 export interface UnitDisplay {
     renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
         value: ReactNode
         unit: ReactNode
     }
-    renderInequality: RenderInequality
 }
 
-// Default render inequality
-const renderInequality: RenderInequality = (value, inequality) => {
-    switch (inequality) {
-        case 'leq':
-            return '\u2264' /* ≤ */
-        case 'geq':
-            return '\u2265' /* ≥ */
-    }
+/**
+ * Whether a comparison against a quantity of this unit reads as its opposite, which it does below
+ * zero for a lead, since a lead is written as a size rather than as a signed number.
+ */
+function flipsInequality(unitType: UnitType, value: number): boolean {
+    return (unitType === 'democraticMargin' || unitType === 'leftMargin') && value <= 0
 }
 
-const renderMarginInequality: RenderInequality = (value, inequality) => {
-    // Negative values actually display as positive for election results, and default to R for 0, which means that greater than 0 is less than R margin
-    if (value <= 0) {
-        switch (inequality) {
-            case 'geq':
-                return renderInequality(value, 'leq')
-            case 'leq':
-                return renderInequality(value, 'geq')
-        }
-    }
-    return renderInequality(value, inequality)
+export function renderInequality(value: number, unitType: UnitType, inequality: 'leq' | 'geq'): string {
+    const reads = flipsInequality(unitType, value) ? (inequality === 'leq' ? 'geq' : 'leq') : inequality
+    return reads === 'leq' ? '\u2264' /* ≤ */ : '\u2265' /* ≥ */
 }
 
 const missing = 'N/A'
@@ -77,7 +64,7 @@ function unitColumn(name: HumanReadableElement[]): ReactNode {
     return <span>{name.length === 0 ? <>&nbsp;</> : reifyReact(name)}</span>
 }
 
-function display(write: (value: number, settings: ReaderSettings) => Written, inequality = renderInequality): UnitDisplay {
+function display(write: (value: number, settings: ReaderSettings) => Written): UnitDisplay {
     return {
         renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
             if (!isFinite(value)) {
@@ -86,7 +73,6 @@ function display(write: (value: number, settings: ReaderSettings) => Written, in
             const { number, unit } = write(value, { useImperial: useImperial ?? false, temperatureUnit: temperatureUnit ?? 'fahrenheit' })
             return { value: <span>{number}</span>, unit: unitColumn(unit) }
         },
-        renderInequality: inequality,
     }
 }
 
@@ -150,7 +136,6 @@ function partyDisplay(emphasis: PartyNumberStyling): UnitDisplay {
                     value: <PartyPercentage value={value} emphasis={emphasis} />,
                     unit: unitColumn(percentSign),
                 },
-        renderInequality: emphasis.kind === 'lead' ? renderMarginInequality : renderInequality,
     }
 }
 

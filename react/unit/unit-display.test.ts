@@ -3,7 +3,7 @@ import './util/localStorage'
 import assert from 'assert/strict'
 import test from 'node:test'
 
-import { getUnitDisplay } from '../src/components/unit-display'
+import { getUnitDisplay, renderInequality } from '../src/components/unit-display'
 import { UnitType } from '../src/utils/unit'
 
 // Flatten a React element tree into its text content.
@@ -162,11 +162,13 @@ for (const [unitType, value, expected] of [
 // The inequalities on a colorbar point the other way for a lead, which is written as a size
 for (const [unitType, value, inequality, expected] of [
     ['percentage', 0.5, 'leq', '\u2264'],
+    ['percentage', 0.5, 'geq', '\u2265'],
     ['democraticMargin', 0.5, 'leq', '\u2264'],
     ['democraticMargin', -0.5, 'leq', '\u2265'],
+    ['democraticMargin', -0.5, 'geq', '\u2264'],
     ['leftMargin', -0.5, 'geq', '\u2264'],
 ] as const) {
     void test(`${unitType} renders a ${inequality} at ${value} as ${expected}`, () => {
-        assert.equal(getUnitDisplay(unitType).renderInequality(value, inequality), expected)
+        assert.equal(renderInequality(value, unitType, inequality), expected)
     })
 }
