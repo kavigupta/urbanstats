@@ -39,6 +39,13 @@ void describe('formatToSignificantFigures', () => {
         assert.equal(formatToSignificantFigures(-0.0123456), '-0.0123')
     })
 
+    void test('rounds a half by size, not by the side of zero it falls on', () => {
+        assert.equal(formatToSignificantFigures(78.45), '78.5')
+        assert.equal(formatToSignificantFigures(-78.45), '-78.5')
+        assert.equal(formatToSignificantFigures(999500), '1000000')
+        assert.equal(formatToSignificantFigures(-999500), '-1000000')
+    })
+
     void test('handles edge cases', () => {
         assert.equal(formatToSignificantFigures(81.407), '81.4')
         assert.equal(formatToSignificantFigures(1.0), '1.00')

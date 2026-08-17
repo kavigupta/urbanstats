@@ -95,6 +95,19 @@ for (const [unitType, value, expected] of [
     })
 }
 
+// A count is abbreviated by how long the number reads once it is written out, which is the same
+// however large it is and whichever side of zero it falls
+for (const [unitType, value, expected] of [
+    ['population', -999500, '-1.00m'],
+    ['population', 999500000000, '1\u202f000B'],
+    ['population', -999500000000, '-1\u202f000B'],
+    ['usd', 999500000000, '$1\u202f000B'],
+] as const) {
+    void test(`${unitType} renders ${value} as ${expected}`, () => {
+        assert.equal(renderValue(unitType, value), expected)
+    })
+}
+
 // Money and people are counted in thousands at the same point
 for (const [unitType, value, expected] of [
     ['usd', 1234, '$1\u202f234'],

@@ -3,7 +3,7 @@ import React, { CSSProperties, ReactNode } from 'react'
 import { useColors } from '../page_template/colors'
 import { HumanReadableElement, reifyReact } from '../utils/human-readable-name'
 import { Hue, missingValue, StoredUnit, writeQuantity } from '../utils/quantity'
-import { abbreviate, formatToSignificantFigures, roundToDigits, separateNumber } from '../utils/text'
+import { roundToDigits, separateNumber } from '../utils/text'
 import { convertPrecipitation, storedUnits, UnitType } from '../utils/unit'
 
 export interface UnitDisplay {
@@ -124,9 +124,11 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'partyChangeGreen':
         case 'partyChangePurple':
         case 'temperature':
-            return quantity(storedUnits[unitType])
+        case 'number':
+        case 'population':
         case 'fatalities':
-            return display(value => ({ number: separateNumber(value.toFixed(0)), unit: unitlessDisplay }))
+        case 'usd':
+            return quantity(storedUnits[unitType])
         case 'fatalitiesPerCapita':
             return display(value => ({
                 number: separateNumber((perHundredThousand * value).toFixed(2)),
@@ -137,16 +139,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                 number: roundToDigits(useImperial ? value * squareKmPerSquareMile : value, { significantDigits: 2 }),
                 unit: raised(per(useImperial ? 'mi' : 'km'), '2'),
             }))
-        case 'population':
-            return display((value) => {
-                const { number, suffix } = abbreviate(value)
-                return { number, unit: suffix === '' ? unitlessDisplay : atom(suffix) }
-            })
-        case 'usd':
-            return display((value) => {
-                const { number, suffix } = abbreviate(value)
-                return { number: `$${number}`, unit: suffix === '' ? unitlessDisplay : atom(suffix) }
-            })
         case 'area':
             return display((value, { useImperial }) => {
                 if (useImperial) {
@@ -188,8 +180,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                 number: separateNumber(value.toFixed(2)),
                 unit: raised('μg/m', '3'),
             }))
-        case 'number':
-            return display(value => ({ number: separateNumber(formatToSignificantFigures(value, 3)), unit: unitlessDisplay }))
     }
 }
 
