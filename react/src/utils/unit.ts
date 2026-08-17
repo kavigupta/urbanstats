@@ -1,3 +1,5 @@
+import { StoredUnit } from './quantity'
+
 export type UnitType = 'percentage' | 'percentageChange' | 'fatalities' | 'fatalitiesPerCapita' | 'density' | 'population'
     | 'area' | 'distanceInKm' | 'distanceInM' | 'democraticMargin' | 'temperature' | 'time' | 'distancePerYear'
     | 'contaminantLevel' | 'number' | 'usd' | 'minutes'
@@ -43,6 +45,32 @@ export const allUnitTypes = [
 function checkAllIncluded(unitType: UnitType): (typeof allUnitTypes)[number] {
     return unitType
 }
+
+/**
+ * What each unit type is a quantity of. Filled in a kind at a time as the unit types move over to
+ * being written by `writeQuantity` rather than by an arm of their own.
+ */
+/* eslint-disable no-restricted-syntax -- these name the theme's hues, they are not css colors */
+export const storedUnits = {
+    percentage: { unit: { kind: 'raw-percentage' }, toBaseUnits: 1 },
+    percentageChange: { unit: { kind: 'delta-percentage' }, toBaseUnits: 1 },
+    democraticMargin: { unit: { kind: 'lead-percentage', partySystem: 'democratic' }, toBaseUnits: 1 },
+    leftMargin: { unit: { kind: 'lead-percentage', partySystem: 'left' }, toBaseUnits: 1 },
+    partyPctBlue: { unit: { kind: 'raw-percentage', partyColor: 'blue' }, toBaseUnits: 1 },
+    partyPctRed: { unit: { kind: 'raw-percentage', partyColor: 'red' }, toBaseUnits: 1 },
+    partyPctOrange: { unit: { kind: 'raw-percentage', partyColor: 'orange' }, toBaseUnits: 1 },
+    partyPctTeal: { unit: { kind: 'raw-percentage', partyColor: 'cyan' }, toBaseUnits: 1 },
+    partyPctGreen: { unit: { kind: 'raw-percentage', partyColor: 'green' }, toBaseUnits: 1 },
+    partyPctPurple: { unit: { kind: 'raw-percentage', partyColor: 'purple' }, toBaseUnits: 1 },
+    partyChangeBlue: { unit: { kind: 'delta-percentage', partyColor: 'blue' }, toBaseUnits: 1 },
+    partyChangeRed: { unit: { kind: 'delta-percentage', partyColor: 'red' }, toBaseUnits: 1 },
+    partyChangeOrange: { unit: { kind: 'delta-percentage', partyColor: 'orange' }, toBaseUnits: 1 },
+    partyChangeTeal: { unit: { kind: 'delta-percentage', partyColor: 'cyan' }, toBaseUnits: 1 },
+    partyChangeGreen: { unit: { kind: 'delta-percentage', partyColor: 'green' }, toBaseUnits: 1 },
+    partyChangePurple: { unit: { kind: 'delta-percentage', partyColor: 'purple' }, toBaseUnits: 1 },
+    temperature: { unit: { kind: 'temperature-F' }, toBaseUnits: 1 },
+} satisfies Partial<Record<UnitType, StoredUnit>>
+/* eslint-enable no-restricted-syntax */
 
 function fahrenheitToCelsius(value: number): number {
     return (value - 32) * (5 / 9)

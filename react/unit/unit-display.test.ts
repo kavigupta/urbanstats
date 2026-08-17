@@ -4,7 +4,8 @@ import assert from 'assert/strict'
 import test from 'node:test'
 
 import { getUnitDisplay, renderInequality } from '../src/components/unit-display'
-import { UnitType } from '../src/utils/unit'
+import { writeQuantity } from '../src/utils/quantity'
+import { storedUnits, UnitType } from '../src/utils/unit'
 
 // Flatten a React element tree into its text content.
 function textOf(node: unknown): string {
@@ -15,8 +16,8 @@ function textOf(node: unknown): string {
     return textOf((node as { props?: { children?: unknown } }).props?.children)
 }
 
-function renderValue(unitType: UnitType, value: number, useImperial = false): string {
-    const { value: valueEl, unit: unitEl } = getUnitDisplay(unitType).renderValue(value, useImperial)
+function renderValue(unitType: UnitType, value: number, useImperial = false, temperatureUnit = 'fahrenheit'): string {
+    const { value: valueEl, unit: unitEl } = getUnitDisplay(unitType).renderValue(value, useImperial, temperatureUnit)
     return `${textOf(valueEl)}${textOf(unitEl)}`.trim()
 }
 
@@ -172,3 +173,36 @@ for (const [unitType, value, inequality, expected] of [
         assert.equal(renderInequality(value, unitType, inequality), expected)
     })
 }
+
+// A quantity written in a party's color says which party it belongs to, and in which hue
+/* eslint-disable no-restricted-syntax -- these name the theme's hues, they are not css colors */
+for (const [unitType, value, expected, hue] of [
+    ['democraticMargin', 0.123, 'D+12.3', 'blue'],
+    ['democraticMargin', -0.081, 'R+8.10', 'red'],
+    // a lead is given more digits the closer it is
+    ['democraticMargin', 0.0005, 'D+0.0500', 'blue'],
+    ['leftMargin', 0.123, 'L+12.3', 'red'],
+    ['leftMargin', -0.123, 'R+12.3', 'blue'],
+    ['partyPctOrange', 0.125, '12.50', 'orange'],
+    ['partyChangeTeal', 0.125, '+12.50', 'cyan'],
+    ['partyChangeTeal', -0.125, '-12.50', 'cyan'],
+] as const) {
+    void test(`${unitType} writes ${value} as ${expected} in ${hue}`, () => {
+        const written = writeQuantity(value, storedUnits[unitType])
+        assert.equal(written.number, expected)
+        assert.equal(written.hue, hue)
+    })
+}
+/* eslint-enable no-restricted-syntax */
+
+// A quantity we do not have belongs to no party, and is measured in nothing
+for (const unitType of ['democraticMargin', 'partyPctOrange', 'percentage', 'temperature'] as const) {
+    void test(`${unitType} writes a missing value plainly`, () => {
+        assert.deepEqual(writeQuantity(NaN, storedUnits[unitType]), { number: 'N/A', name: [] })
+    })
+}
+
+void test('temperature is written in the reader\'s own unit', () => {
+    assert.equal(renderValue('temperature', 50), '50.0°F')
+    assert.equal(renderValue('temperature', 50, false, 'celsius'), '10.0°C')
+})
