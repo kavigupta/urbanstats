@@ -34,12 +34,11 @@ import { HumanReadableName } from '../utils/human-readable-name'
 import { ICoordinate } from '../utils/protos'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
-import { canonicalWidth } from './canonical-width'
 import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar'
 import { InsetMap } from './components/InsetMap'
 import { AddTextBox, MapTextBoxComponent } from './components/MapTextBox'
 import { loadInsets } from './context'
-import { centroidsByName, markerArea, markerRadius, MapResult, mapVisuals } from './map-rendering'
+import { canonicalWidth, centroidsByName, markerArea, markerRadius, MapResult, mapVisuals } from './map-rendering'
 import { Basemap, computeUSS, MapSettings } from './settings/utils'
 
 const mapUpdateInterval = 500
