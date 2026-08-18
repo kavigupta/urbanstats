@@ -17,12 +17,23 @@ const antimeridian = '/article.html?longname=Northern, Fiji'
 const insetMap = '/mapper.html'
 const workerOrigin = `http://localhost:${ogPort}`
 
+function usaMap(geographyKind: string, uss: string): string {
+    return `/mapper.html?settings=${encodeURIComponent(gzipSync(JSON.stringify({
+        geographyKind,
+        universe: 'USA',
+        script: { uss },
+    })).toString('base64'))}`
+}
+
 /** A script stating its own label, rather than the default map, whose label has to be derived. */
-const labelledMap = `/mapper.html?settings=${encodeURIComponent(gzipSync(JSON.stringify({
-    geographyKind: 'County',
-    universe: 'USA',
-    script: { uss: 'cMap(data=density_pw_1km, label="How dense is it")' },
-})).toString('base64'))}`
+const labelledMap = usaMap('County', 'cMap(data=density_pw_1km, label="How dense is it")')
+// A circle per geography rather than a filled shape, sized by population so the radii differ.
+const pointMap = usaMap('Urban Center', 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, relativeArea=population)')
+/*
+ * Those circles merged by proximity, which the card reruns supercluster to reproduce. Counties,
+ * because a geography sparse enough to leave every marker alone would exercise none of that.
+ */
+const clusterMap = usaMap('County', 'clusterMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)')
 
 // Nothing here goes through the dev panel, which is embed_preview's; the browser is barely used.
 urbanstatsFixture('embed worker', '/index.html', async () => {
@@ -72,6 +83,16 @@ test('embed-worker-antimeridian-card', async (t) => {
 
 test('embed-worker-inset-map-card', async (t) => {
     await snapshotCard(t, insetMap)
+})
+
+test('embed-worker-point-map-card', async (t) => {
+    await snapshotCard(t, pointMap)
+})
+
+// The card's clustering is maplibre's configuration rewritten by hand, so this is what notices it
+// drifting from what the page groups.
+test('embed-worker-cluster-map-card', async (t) => {
+    await snapshotCard(t, clusterMap)
 })
 
 /** The shots above are drawn from a snapshot, so this is what notices openfreemap moving. */
