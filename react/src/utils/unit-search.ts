@@ -7,26 +7,25 @@ export interface Written {
     power: number
 }
 
-/** Rounding a quantity away, where the style asked for figures, is worse than any number of digits. */
-const roundsAway = 100
+const artificialZeroCost = 100
 
 /**
- * What a number costs to read in a given unit: a digit for every one past the three that three
- * significant figures fit in, wherever they fall. A number below one pays for its leading zeros,
- * which are digits like any other, and a unit that leaves a quantity with no figures at all pays
- * everything.
+ * We charge 1 for every digit that is printed.
  *
- * Counted from the number as printed rather than from a logarithm, so that a value that rounds up
- * into another unit, such as 999.5 thousand people, costs what a million costs.
+ * This is almost, but not quite, the same as the number of significant figures, because
+ * e.g., 1000 is counted as 4, not 1.
+ *
+ * Two caveats:
+ * 1. It is counted from the number as printed, so 999.5 is counted as if it were 1000.
+ * 2. If a number is formatted to an "artificial 0" e.g., 0.0001 -> 0.000, we apply a huge penalty
+ *      unless in fixed point.
  */
 function digitCost(value: number, format: NumberFormat): number {
     const digits = formatNumber(value, format).replace(/[^0-9]/g, '')
-    // a nonzero quantity written as 0 costs everything, unless the style fixed the places, which
-    // decided that rounding it away is precise enough
     if (value !== 0 && format.kind !== 'fixed' && !/[1-9]/.test(digits)) {
-        return roundsAway
+        return artificialZeroCost
     }
-    return Math.max(0, digits.length - 3)
+    return digits.length
 }
 
 type Exponents = Partial<Record<BaseUnit, number>>
@@ -46,12 +45,14 @@ function exponentsOf(dimensions: Dimension[]): Exponents {
  * already settled is not offered -- which also keeps the search from going round in circles.
  */
 function coverings(needed: Exponents, pool: NamedUnit[], settled: BaseUnit[] = []): Written[][] {
-    const entries = Object.entries(needed) as [BaseUnit, number][]
-    const next = entries.find(([baseUnit, power]) => power !== 0 && !settled.includes(baseUnit))
-    if (next === undefined) {
+    const entries = Object.entries(needed).filter(
+        ([baseUnit, power]) => (power ?? 0) !== 0 && !settled.includes(baseUnit),
+    ).sort(([baseUnitA], [baseUnitB]) => baseUnitA.localeCompare(baseUnitB))
+    if (entries.length === 0) {
         return [[]]
     }
-    const [baseUnit, power] = next
+    const [baseUnit, power] = entries[0]
+    assert(power !== undefined, 'we filtered out undefined powers')
     return pool.flatMap((unit) => {
         const covers = exponentsOf(unit.dimensions)[baseUnit] ?? 0
         // it has to take this base unit's exponent to exactly zero, and leave the settled ones be
@@ -68,8 +69,7 @@ function coverings(needed: Exponents, pool: NamedUnit[], settled: BaseUnit[] = [
 }
 
 /**
- * The cheapest way of writing a value of these dimensions: of every way of covering them with
- * units from the pool, the one that costs least once the number it leaves behind is counted.
+ * The cheapest way of writing a value of these dimensions
  */
 export function chooseUnits(
     inBaseUnits: number,
@@ -83,7 +83,7 @@ export function chooseUnits(
         const format = styleFor(written)
         const size = written.reduce((product, { power, unit }) => product * Math.pow(unit.size, power), 1)
         const cost = written.reduce((total, { power, unit }) => total + unit.cost * Math.abs(power), 0)
-            + digitCost(inBaseUnits / size, format)
+            + Math.max(0, digitCost(inBaseUnits / size, format) - 3)
         if (cost < bestCost) {
             best = { written, size, format }
             bestCost = cost
