@@ -178,10 +178,7 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
     }
 }
 
-/**
- * The label a script states outright, which running it would otherwise be the only way to read.
- * `deriveMapLabel` is what stands in when a script states none.
- */
+/** The label a script states outright, which running it would otherwise be the only way to read. */
 function statedMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
     const schema = mapUssParser(l.call({
         fn: l.ignore(),
@@ -226,7 +223,6 @@ export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): H
     }
 }
 
-/** How a map reads without running it, which is what a page title or a link embed shows. */
 export function mapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
     return statedMapLabel(uss, typeEnvironment) ?? deriveMapLabel(uss, typeEnvironment)
 }
