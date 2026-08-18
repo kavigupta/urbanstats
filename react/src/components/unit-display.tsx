@@ -3,7 +3,7 @@ import React, { CSSProperties, ReactNode } from 'react'
 import { useColors } from '../page_template/colors'
 import { HumanReadableElement, reifyReact } from '../utils/human-readable-name'
 import { Hue, missingValue, StoredUnit, writeQuantity } from '../utils/quantity'
-import { abbreviate, roundToDigits, separateNumber } from '../utils/text'
+import { roundToDigits, separateNumber } from '../utils/text'
 import { convertPrecipitation, storedUnits, UnitType } from '../utils/unit'
 
 export interface UnitDisplay {
@@ -125,7 +125,9 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'partyChangePurple':
         case 'temperature':
         case 'number':
+        case 'population':
         case 'fatalities':
+        case 'usd':
             return quantity(storedUnits[unitType])
         case 'fatalitiesPerCapita':
             return display(value => ({
@@ -137,16 +139,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                 number: roundToDigits(useImperial ? value * squareKmPerSquareMile : value, { significantDigits: 2 }),
                 unit: raised(per(useImperial ? 'mi' : 'km'), '2'),
             }))
-        case 'population':
-            return display((value) => {
-                const { number, suffix } = abbreviate(value)
-                return { number, unit: suffix === '' ? unitlessDisplay : atom(suffix) }
-            })
-        case 'usd':
-            return display((value) => {
-                const { number, suffix } = abbreviate(value)
-                return { number: `$${number}`, unit: suffix === '' ? unitlessDisplay : atom(suffix) }
-            })
         case 'area':
             return display((value, { useImperial }) => {
                 if (useImperial) {

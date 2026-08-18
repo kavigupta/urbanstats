@@ -1,7 +1,8 @@
 import { HueColors } from '../page_template/color-themes'
 
-import { HumanReadableElement } from './human-readable-name'
-import { formatToSignificantFigures, Rounding, roundToDigits, separateNumber } from './text'
+import { atom, HumanReadableElement } from './human-readable-name'
+import { formatNumber, NumberFormat } from './text'
+import { chooseUnits, Written } from './unit-search'
 
 export type Hue = keyof HueColors
 
@@ -10,7 +11,7 @@ type PartySystem = 'democratic' | 'left'
 /**
  * Base units, combined together via multiplication to form the units that correspond to the inBaseUnits value
  */
-export type BaseUnit = 'fatality'
+export type BaseUnit = 'person' | 'usd' | 'fatality'
 
 export interface Dimension {
     baseUnit: BaseUnit
@@ -39,22 +40,13 @@ export interface ReaderSettings {
 
 export const missingValue = 'N/A'
 
-/** How the number is written: to a fixed number of decimal places, or to a number of digits. */
-type NumberFormat = (
-    { kind: 'fixed', places: number }
-    | ({ kind: 'rounded' } & Rounding)
-    | { kind: 'significantFigures' }
-)
-
-interface Representation {
+/** How a quantity is written: what to scale it by, what to call the result, and to how many places. */
+export interface Representation {
     /** E.g., for cm this is x => x * 100 */
     scale: (inBaseUnits: number) => number
     unitName: HumanReadableElement[]
     format: NumberFormat
-}
-
-function atom(value: string): HumanReadableElement[] {
-    return [{ type: 'atom', value }]
+    prefix?: string
 }
 
 const percent: Representation = { unitName: atom('%'), scale: value => value * 100, format: { kind: 'fixed', places: 2 } }
@@ -74,6 +66,45 @@ const partyHues = {
 } as const
 /* eslint-enable no-restricted-syntax */
 
+/**
+ * One of the units a quantity can be written in. Not a base unit necessarily, e.g.,
+ * an acre is a unit of area, but it is not a base unit.
+ */
+export interface NamedUnit {
+    name: string
+    /** What one of it is, e.g., m^2 for an acre */
+    dimensions: Dimension[]
+    /** E.g., for an acre, 4046.86 */
+    size: number
+    /* How much should we discourage using this, in units of cost (digits) */
+    cost: number
+    /** Whether it shortens the number rather than measuring in something else, as k and m do */
+    abbreviation: boolean
+}
+
+function scaling(baseUnit: BaseUnit, name: string, size: number, cost: number): NamedUnit {
+    return { name, dimensions: [{ baseUnit, power: 1 }], size, cost, abbreviation: false }
+}
+
+/** Thousands, millions and billions, for a quantity that is counted rather than measured. */
+function abbreviationsOf(baseUnit: BaseUnit): NamedUnit[] {
+    return ([['k', 1e3], ['m', 1e6], ['B', 1e9]] as const)
+        .map(([name, size]) => ({ ...scaling(baseUnit, name, size, 1), abbreviation: true })) // relatively low cost, just the abbreviation's length
+}
+
+/**
+ * The units there are to write a quantity in, whatever dimensions it turns out to have. A count is
+ * named by the statistic counting it, so the unit it is counted in has no name to show.
+ */
+const unitPool: NamedUnit[] = [
+    scaling('person', '', 1, 0),
+    ...abbreviationsOf('person'),
+    scaling('usd', '', 1, 0),
+    ...abbreviationsOf('usd'),
+    // fatalities are not abbreviated: there are never enough of them for it to save a digit
+    scaling('fatality', '', 1, 0),
+]
+
 type DimensionKey = string
 
 function renderAsKey(scales: Dimension[]): DimensionKey {
@@ -85,17 +116,66 @@ function renderAsKey(scales: Dimension[]): DimensionKey {
 }
 
 /**
- * Certain dimensionfull units have specific styles.
+
  */
 const styles: Record<DimensionKey, NumberFormat | undefined> = {
     '': { kind: 'significantFigures' },
-    // things that are counted come in whole numbers
+    // things that are counted come in whole numbers, unless they are counted in thousands
+    'person^1': { kind: 'fixed', places: 0 },
+    'usd^1': { kind: 'fixed', places: 0 },
     'fatality^1': { kind: 'fixed', places: 0 },
 }
 
 const defaultStyle: NumberFormat = { kind: 'rounded', significantDigits: 3 }
+/** An abbreviated number is worth three figures, wherever they fall. */
+const abbreviatedStyle: NumberFormat = { kind: 'significantFigures' }
 
-function representationFor(unit: Unit, settings: ReaderSettings): Representation {
+const prefixes: Record<DimensionKey, string | undefined> = { 'usd^1': '$' }
+
+function styleFor(key: DimensionKey, written: Written[]): NumberFormat {
+    if (written.some(({ unit }) => unit.abbreviation)) {
+        return abbreviatedStyle
+    }
+    return styles[key] ?? defaultStyle
+}
+
+/** Adjacent names are one run of text, which the browser shapes as a whole. */
+function merged(name: HumanReadableElement[]): HumanReadableElement[] {
+    return name.reduce<HumanReadableElement[]>((run, element) => {
+        const last = run.length === 0 ? undefined : run[run.length - 1]
+        if (last?.type === 'atom' && element.type === 'atom') {
+            return [...run.slice(0, -1), { type: 'atom', value: last.value + element.value }]
+        }
+        return [...run, element]
+    }, [])
+}
+
+function raisedTo(power: number): HumanReadableElement[] {
+    return Math.abs(power) === 1 ? [] : [{ type: 'superscript', value: atom(Math.abs(power).toString()) }]
+}
+
+/** The units multiplied together, e.g., km^2, or people per km^2 for a quantity with a denominator. */
+function product(written: Written[]): HumanReadableElement[] {
+    return written.flatMap(({ unit, power }, index) => [
+        ...index === 0 ? [] : atom('\u00b7'),
+        ...atom(unit.name),
+        ...raisedTo(power),
+    ])
+}
+
+/** The names of the units chosen. The ones with no name of their own are left out. */
+export function nameOf(written: Written[]): HumanReadableElement[] {
+    const named = written.filter(({ unit }) => unit.name !== '')
+    const over = named.filter(({ power }) => power > 0)
+    const under = named.filter(({ power }) => power < 0)
+    if (under.length === 0) {
+        return merged(product(over))
+    }
+    // a solidus with nothing in front of it is set with a space, as a bare per reads better that way
+    return merged([...product(over), ...atom(over.length === 0 ? '/\u00a0' : '/'), ...product(under)])
+}
+
+function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSettings): Representation {
     switch (unit.kind) {
         case 'raw-percentage':
         case 'delta-percentage':
@@ -106,20 +186,11 @@ function representationFor(unit: Unit, settings: ReaderSettings): Representation
             return settings.temperatureUnit === 'celsius'
                 ? { unitName: atom('°C'), scale: value => (value - 32) * (5 / 9), format: { kind: 'fixed', places: 1 } }
                 : { unitName: atom('°F'), scale: value => value, format: { kind: 'fixed', places: 1 } }
-        case 'dimensionfull':
-            // a count is named by the statistic it counts, so it has no name of its own here
-            return { unitName: [], scale: value => value, format: styles[renderAsKey(unit.scales)] ?? defaultStyle }
-    }
-}
-
-function formatNumber(value: number, format: NumberFormat): string {
-    switch (format.kind) {
-        case 'fixed':
-            return separateNumber(value.toFixed(format.places))
-        case 'rounded':
-            return roundToDigits(value, format)
-        case 'significantFigures':
-            return separateNumber(formatToSignificantFigures(value, 3))
+        case 'dimensionfull': {
+            const key = renderAsKey(unit.scales)
+            const { written, size, format } = chooseUnits(inBaseUnits, unit.scales, unitPool, chosen => styleFor(key, chosen))
+            return { scale: value => value / size, unitName: nameOf(written), format, prefix: prefixes[key] }
+        }
     }
 }
 
@@ -153,7 +224,7 @@ export function writeQuantity(value: number, stored: StoredUnit, settings: Reade
     }
     const { unit } = stored
     let inBaseUnits = value * stored.toBaseUnits
-    const representation = representationFor(unit, settings)
+    const representation = representationFor(inBaseUnits, unit, settings)
     let party = undefined
     if (unit.kind === 'lead-percentage') {
         party = getParty(unit.partySystem, inBaseUnits)
@@ -162,7 +233,7 @@ export function writeQuantity(value: number, stored: StoredUnit, settings: Reade
     const explicitSign = unit.kind === 'delta-percentage' && inBaseUnits >= 0 ? '+' : ''
     const written = formatNumber(representation.scale(inBaseUnits), representation.format)
     return {
-        renderedValue: `${party === undefined ? '' : `${party.label}+`}${explicitSign}${written}`,
+        renderedValue: `${party === undefined ? '' : `${party.label}+`}${explicitSign}${representation.prefix ?? ''}${written}`,
         unitName: representation.unitName,
         hue: party?.hue ?? hueFor(unit),
     }
