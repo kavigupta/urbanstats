@@ -8,7 +8,7 @@ import React, { ReactElement, ReactNode, cloneElement, isValidElement } from 're
 import { percentileSuffix } from '../../src/components/display-stats'
 import { getUnitDisplay } from '../../src/components/unit-display'
 import flagDimensions from '../../src/data/flag_dimensions'
-import { canonicalWidth } from '../../src/mapper/canonical-width'
+import { canonicalWidth } from '../../src/mapper/map-rendering'
 import { pieSlicePath, pieSlices } from '../../src/syau/cluster-geometry'
 import { Inset } from '../../src/urban-stats-script/constants/insets'
 import { computeAspectRatioForInsets } from '../../src/utils/coordinates'
