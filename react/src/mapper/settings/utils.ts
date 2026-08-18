@@ -4,7 +4,9 @@ import valid_geographies from '../../data/mapper/used_geographies'
 import universes_ordered from '../../data/universes_ordered'
 import { Universe } from '../../universe'
 import { toStatement, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
+import { mapLabel } from '../../urban-stats-script/derive-human-readable-name'
 import { parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
+import { reifyString } from '../../utils/human-readable-name'
 import { base64Gunzip } from '../../utils/urlParamShort'
 import { defaultTypeEnvironment } from '../context'
 
@@ -54,6 +56,17 @@ export interface MapSettings {
     geographyKind: typeof valid_geographies[number] | undefined
     universe: Universe | undefined
     script: MapperScriptSettings
+}
+
+/** What a map is titled before it runs. Undefined when the script says nothing a label can be read from. */
+function mapTitle(mapSettings: MapSettings): string | undefined {
+    const label = mapLabel(mapSettings.script.uss, defaultTypeEnvironment(mapSettings.universe))
+    return label === undefined ? undefined : reifyString(label)
+}
+
+/** What the mapper page is titled, which a load and an edit both have to arrive at. */
+export function mapPageTitle(mapSettings: MapSettings): string {
+    return mapTitle(mapSettings) ?? 'Urban Stats Mapper'
 }
 
 export function computeUSS(mapSettings: MapperScriptSettings): UrbanStatsASTStatement {

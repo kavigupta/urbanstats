@@ -24,7 +24,7 @@ export function Router(): ReactNode {
         navigator.effects.forEach((effect) => { effect() })
         navigator.effects = []
 
-        // eslint-disable-next-line no-restricted-syntax -- This is the one place in the app where we set the doc title
+        // eslint-disable-next-line no-restricted-syntax -- Where a page's own title is applied; the mapper panel retitles its edits.
         document.title = pageTitle(pageState.current.data)
     })
 
