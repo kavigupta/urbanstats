@@ -21,8 +21,8 @@ const roundsAway = 100
  */
 function digitCost(value: number, format: NumberFormat): number {
     const digits = formatNumber(value, format).replace(/[^0-9]/g, '')
-    // a fixed number of places is a decision that the places past them do not matter, so a value
-    // that rounds away under one is being written as precisely as it was meant to be
+    // a nonzero quantity written as 0 costs everything, unless the style fixed the places, which
+    // decided that rounding it away is precise enough
     if (value !== 0 && format.kind !== 'fixed' && !/[1-9]/.test(digits)) {
         return roundsAway
     }
