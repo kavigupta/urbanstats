@@ -74,7 +74,9 @@ export const storedUnits = {
     partyChangePurple: { unit: { kind: 'delta-percentage', partyColor: 'purple' }, toBaseUnits: 1 },
     temperature: { unit: { kind: 'temperature-F' }, toBaseUnits: 1 },
     number: dimensionfull({}),
+    population: dimensionfull({ person: 1 }),
     fatalities: dimensionfull({ fatality: 1 }),
+    usd: dimensionfull({ usd: 1 }),
 } satisfies Partial<Record<UnitType, StoredUnit>>
 /* eslint-enable no-restricted-syntax */
 
