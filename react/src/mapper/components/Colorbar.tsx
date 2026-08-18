@@ -5,9 +5,9 @@ import { renderInequality } from '../../components/unit-display'
 import { Colors } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
 import { ScaleInstance } from '../../urban-stats-script/constants/scale'
-import { furthestColor, interpolateColor } from '../../utils/color'
 import { HumanReadableName, reifyReact, reifyString } from '../../utils/human-readable-name'
 import { classifyStatistic, UnitType } from '../../utils/unit'
+import { rampColors } from '../map-rendering'
 import { Keypoints } from '../ramps'
 import { Basemap } from '../settings/utils'
 
@@ -80,7 +80,7 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
         }
     }, [ramp])
 
-    const furthest = useMemo(() => furthestColor(ramp.ramp.map(x => x[1])), [ramp])
+    const swatches = useMemo(() => rampColors(ramp.ramp, ramp.scale, ramp.interpolations), [ramp])
 
     const createValue = (stat: number, index: number): ReactNode => {
         return (
@@ -136,12 +136,12 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
         <div style={{ position: 'relative' }}>
             <div style={{ display: 'flex', width: '100%' }}>
                 {
-                    ramp.interpolations.map((x, i) => (
+                    ramp.interpolations.map((_, i) => (
                         <div
                             key={i}
                             style={{
                                 width, height: '1em',
-                                backgroundColor: interpolateColor(ramp.ramp, ramp.scale.forward(x), furthest),
+                                backgroundColor: swatches[i],
                                 marginLeft: '1px',
                                 marginRight: '1px',
                             }}

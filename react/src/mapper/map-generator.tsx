@@ -5,43 +5,41 @@ import { MapInstance, MapRef } from 'react-map-gl/maplibre'
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
 import { Basemap as BasemapComponent, CommonMaplibreMap, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
 import { screencapElement, ScreenshotContext, ScreenshotContextType, withScreenshotMode } from '../components/screenshot'
-import { shapesInUniverse } from '../consolidated-shapes'
+import { shapesByName } from '../consolidated-shapes'
 import valid_geographies from '../data/mapper/used_geographies'
-import universes_ordered from '../data/universes_ordered'
-import { loadGzipped, loadProtobuf } from '../load_json'
 import { boundingBox } from '../map-partition'
-import { consolidatedShapeLink, indexLink } from '../navigation/links'
 import { RelativeLoader } from '../navigation/loading'
 import { Colors, colorThemes } from '../page_template/color-themes'
 import { OverrideTheme, useColors } from '../page_template/colors'
+import { proportionalRelativeArea } from '../syau/cluster-geometry'
 import { ClusterScaleProvider } from '../syau/cluster-scale-context'
-import { loadCentroids } from '../syau/load'
 import { ClusterMap as SyauClusterMap } from '../syau/syau-cluster-map'
 import { Universe } from '../universe'
 import { getAllParseErrors } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color-utils'
 import { Inset } from '../urban-stats-script/constants/insets'
 import { CommonMap } from '../urban-stats-script/constants/map'
-import { instantiate } from '../urban-stats-script/constants/scale'
+import { ScaleInstance } from '../urban-stats-script/constants/scale'
 import { TextBox } from '../urban-stats-script/constants/text-box'
 import { deriveMapLabel } from '../urban-stats-script/derive-human-readable-name'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
-import { TypeEnvironment, USSOpaqueValue } from '../urban-stats-script/types-values'
+import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
 import { loadImage } from '../utils/Image'
 import { editIndex, EditSeq } from '../utils/array-edits'
-import { furthestColor, interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { makeDebugLogger } from '../utils/debug-logging'
 import { HumanReadableName } from '../utils/human-readable-name'
 import { ICoordinate } from '../utils/protos'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
+import { canonicalWidth } from './canonical-width'
 import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar'
 import { InsetMap } from './components/InsetMap'
 import { AddTextBox, MapTextBoxComponent } from './components/MapTextBox'
 import { loadInsets } from './context'
+import { centroidsByName, markerArea, markerRadius, MapResult, mapVisuals } from './map-rendering'
 import { Basemap, computeUSS, MapSettings } from './settings/utils'
 
 const mapUpdateInterval = 500
@@ -418,45 +416,22 @@ type MapComponentCreator = (
     clickable: boolean,
 ) => ReactNode
 
-async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, geographyKind, cache, label }:
+async function loadMapResult({ mapResultMain, universe, geographyKind, cache, label }:
 {
-    mapResultMain: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' | 'clusterMap' }
+    mapResultMain: MapResult
     universe: Universe
     geographyKind: typeof valid_geographies[number]
     cache: MapCache
     label: HumanReadableName
 }): Promise<{ features: GeoJSON.Feature[], mapComponentCreator: MapComponentCreator, ramp: RampToDisplay }> {
-    let ramp: RampToDisplay
-    let colors: string[]
-    let clusterCategoryColors: string[] = []
-    let clusterRampBins: number[] = []
-    switch (opaqueType) {
-        case 'pMap':
-        case 'cMap':
-            const furthest = furthestColor(value.ramp.map(x => x[1]))
-            const pcMapRamp = computeRampToDisplay(value, label)
-            ramp = pcMapRamp
-            colors = value.data.map(val => interpolateColor(value.ramp, pcMapRamp.value.scale.forward(val), furthest))
-            break
-        case 'clusterMap':
-            const clusterRamp = computeRampToDisplay(value, label)
-            ramp = clusterRamp
-
-            // Discretize by scaled values to match the same bins used in legend interpolations.
-            clusterCategoryColors = clusterRamp.value.interpolations.map(x => interpolateColor(value.ramp, clusterRamp.value.scale.forward(x)))
-            clusterRampBins = value.data.map(val => computeClusterRampBin(val, clusterRamp))
-            colors = clusterRampBins.map(binIdx => clusterCategoryColors[binIdx])
-            break
-        case 'cMapRGB':
-            colors = value.dataR.map((r, i) => doRender({
-                r,
-                g: value.dataG[i],
-                b: value.dataB[i],
-                a: value.dataA[i],
-            }))
-            ramp = { type: 'label', value: value.label }
-            break
-    }
+    const { opaqueType, value } = mapResultMain
+    const visuals = mapVisuals(mapResultMain)
+    const colors = visuals.colors
+    const clusterCategoryColors = visuals.ramp?.colors ?? []
+    const clusterRampBins = visuals.bins ?? []
+    const ramp: RampToDisplay = opaqueType === 'cMapRGB'
+        ? { type: 'label', value: value.label }
+        : computeRampToDisplay(value, label, visuals.ramp!)
 
     let features: GeoJSON.Feature[]
     let mapChildren: (fs: GeoJSON.Feature[], clickable: boolean) => ReactNode
@@ -467,7 +442,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                     name: value.geo[i],
                     fillColor: colors[i],
                     fillOpacity: value.opacity,
-                    radius: Math.sqrt(value.relativeArea[i]) * value.maxRadius,
+                    radius: markerRadius(value.relativeArea[i], value.maxRadius),
                     rampBin: clusterRampBins[i],
                     statistic: dataValue,
                 }
@@ -486,14 +461,14 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                         categories={fs.map(f => f.properties!.rampBin as number)}
                         pieChartSizeFor={fs.map((f) => {
                             const radius = f.properties?.radius as number | undefined
-                            return radius === undefined ? 1 : radius ** 2
+                            return radius === undefined ? 1 : markerArea(radius)
                         })}
                         categoryColors={clusterCategoryColors}
                         clusterMarkerLabel={() => ''}
                         unclusteredMarkerLabel={() => ''}
                         maxClusterRadius={value.maxRadius}
                         markerOpacity={value.opacity}
-                        computeRelativeArea={(area, maxArea) => (maxArea > 0 ? area / maxArea : 1)}
+                        computeRelativeArea={proportionalRelativeArea}
                         clusterRadiusSpacing={value.clusterRadiusSpacing}
                         mapLibreProps={mapLibreProps}
                         mapRef={ref}
@@ -511,7 +486,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                     name: value.geo[i],
                     fillColor: colors[i],
                     fillOpacity: value.opacity,
-                    radius: Math.sqrt(value.relativeArea[i]) * value.maxRadius,
+                    radius: markerRadius(value.relativeArea[i], value.maxRadius),
                     statistic: dataValue,
                 }
             })
@@ -571,22 +546,11 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
     }
 }
 
-function computeClusterRampBin(val: number, clusterRamp: RampToDisplay & { type: 'ramp' }): number {
-    const t = clusterRamp.value.scale.forward(val) * (clusterRamp.value.interpolations.length - 1)
-    const roundedT = Math.round(t)
-    const clamped = Math.max(0, Math.min(clusterRamp.value.interpolations.length - 1, roundedT))
-    return clamped
-}
-
-function computeRampToDisplay(value: CommonMap, label: HumanReadableName): RampToDisplay & { type: 'ramp' } {
-    const scale = instantiate(value.scale)
+function computeRampToDisplay(value: CommonMap, label: HumanReadableName, { scale, ticks }: { scale: ScaleInstance, ticks: number[] }): RampToDisplay & { type: 'ramp' } {
     const hasValuesClampedToStart = value.data.some(val => scale.forward(val) < 0)
     const hasValuesClampedToEnd = value.data.some(val => scale.forward(val) > 1)
-    const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
-    return { type: 'ramp', value: { ramp: value.ramp, interpolations, scale, label, unit: value.unit, hasValuesClampedToStart, hasValuesClampedToEnd } }
+    return { type: 'ramp', value: { ramp: value.ramp, interpolations: ticks, scale, label, unit: value.unit, hasValuesClampedToStart, hasValuesClampedToEnd } }
 }
-
-const canonicalWidth = 1200
 
 export const transformContext = createContext({ selfDetermineHeight: false })
 
@@ -674,16 +638,11 @@ interface Point {
 
 async function pointsGeojson(geographyKind: typeof valid_geographies[number], universe: Universe, points: Point[], cache: MapCache): Promise<GeoJSON.Feature[]> {
     if (cache.geo?.type !== 'points' || cache.geo.universe !== universe || cache.geo.geographyKind !== geographyKind) {
-        const idxLink = indexLink(universe, geographyKind)
-        const articles = await loadProtobuf(idxLink, 'ArticleOrderingList')
-        const centroids = await loadCentroids(universe, geographyKind, articles.longnames)
-
-        const centroidsByName = new Map(articles.longnames.map((r, i) => [r, centroids[i]]))
         cache.geo = {
             type: 'points',
             universe,
             geographyKind,
-            centroidsByName,
+            centroidsByName: await centroidsByName(universe, geographyKind),
         }
     }
 
@@ -709,10 +668,7 @@ async function polygonsGeojson(geographyKind: typeof valid_geographies[number], 
             type: 'polygons',
             universe,
             geographyKind,
-            polygonsByName: shapesInUniverse(
-                await loadGzipped(consolidatedShapeLink(geographyKind)),
-                universes_ordered.indexOf(universe),
-            ),
+            polygonsByName: await shapesByName(universe, geographyKind),
         }
     }
 

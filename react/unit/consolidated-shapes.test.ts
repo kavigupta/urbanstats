@@ -1,19 +1,20 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import { shapesInUniverse } from '../src/consolidated-shapes'
+import { shapesByName } from '../src/consolidated-shapes'
 import universes_ordered from '../src/data/universes_ordered'
-import { loadGzipped, loadProtobuf } from '../src/load_json'
-import { geometry } from '../src/map-partition'
+import { loadProtobuf } from '../src/load_json'
 import { consolidatedShapeLink } from '../src/navigation/links'
+import { Universe } from '../src/universe'
+import { geometry } from '../src/utils/geometry'
 import { Feature } from '../src/utils/protos'
 import { NormalizeProto } from '../src/utils/types'
 
 import './util/fetch'
 
-async function checkAgainstProtobuf(geographyKind: string, universe: string): Promise<void> {
-    const universeIdx = universes_ordered.indexOf(universe as typeof universes_ordered[number])
-    const lean = shapesInUniverse(await loadGzipped(consolidatedShapeLink(geographyKind)), universeIdx)
+async function checkAgainstProtobuf(geographyKind: string, universe: Universe): Promise<void> {
+    const universeIdx = universes_ordered.indexOf(universe)
+    const lean = await shapesByName(universe, geographyKind)
     const whole = await loadProtobuf(consolidatedShapeLink(geographyKind), 'ConsolidatedShapes')
 
     const expected = new Map<string, GeoJSON.Geometry>()

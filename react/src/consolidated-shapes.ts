@@ -1,5 +1,5 @@
 /*
- * Reads a consolidated shape file into the geometries one universe contains.
+ * Reads a consolidated shape file into the geometries one universe contains, keyed by longname.
  *
  * Decoding the file through protobufjs costs ~130 MiB on the largest geography, because the schema
  * makes every coordinate its own message and so its own object. This walks the message instead,
@@ -7,6 +7,11 @@
  * numbers here are the ones in data_files.proto.
  */
 import Pbf from 'pbf'
+
+import universes_ordered from './data/universes_ordered'
+import { loadGzipped } from './load_json'
+import { consolidatedShapeLink } from './navigation/links'
+import { Universe } from './universe'
 
 /** pbf's own readFloat goes through an ieee754 polyfill, which costs about a third of a decode. */
 const float = new Float32Array(1)
@@ -74,9 +79,9 @@ function readUniverses(pbf: Pbf): number[] {
     return idxs
 }
 
-/** Keyed by longname. */
-export function shapesInUniverse(shapeFile: Uint8Array, universeIdx: number): Map<string, GeoJSON.Geometry> {
-    const pbf = new Pbf(shapeFile)
+export async function shapesByName(universe: Universe, geographyKind: string): Promise<Map<string, GeoJSON.Geometry>> {
+    const universeIdx = universes_ordered.indexOf(universe)
+    const pbf = new Pbf(await loadGzipped(consolidatedShapeLink(geographyKind)))
     const longnames: string[] = []
     const universes: number[][] = []
     const shapeStarts: number[] = []
