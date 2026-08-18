@@ -136,7 +136,10 @@ function styleFor(key: DimensionKey, written: Written[]): NumberFormat {
     return styles[key] ?? defaultStyle
 }
 
-/** The name a quantity is written under, which a count has only when it is abbreviated. */
+/**
+ * What goes in the unit column. A count has no name of its own, since the statistic says what is
+ * being counted, so this is empty for one unless an abbreviation was chosen and it reads k, m or B.
+ */
 function nameOf(written: Written[]): HumanReadableElement[] {
     const names = written.map(({ unit }) => unit.name).filter(name => name !== '')
     return names.length === 0 ? [] : atom(names.join('\u00b7'))
