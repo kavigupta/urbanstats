@@ -663,7 +663,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             switch (newDescriptor.mode) {
                 case 'custom': {
                     const { wrapQuestionsModel } = await import('../quiz/quiz')
-                    const custom = JSON.parse(base64Gunzip(newDescriptor.quizContent)) as CustomQuizContent
+                    const custom = JSON.parse(await base64Gunzip(newDescriptor.quizContent)) as CustomQuizContent
                     quizDescriptor = {
                         kind: 'custom',
                         name: custom.name,
@@ -771,7 +771,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 pageData: {
                     kind: 'mapper',
                     view: newDescriptor.view,
-                    settings: (await utils).mapSettingsFromURLParam(newDescriptor.settings),
+                    settings: await (await utils).mapSettingsFromURLParam(newDescriptor.settings),
                     mapperPanel: (await panel).MapperPanel,
                     counts: await counts,
                 },

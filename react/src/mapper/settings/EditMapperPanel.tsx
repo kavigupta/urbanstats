@@ -1,5 +1,3 @@
-import { gzipSync } from 'zlib'
-
 import React, { ComponentProps, MutableRefObject, ReactNode, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { CountsByUT } from '../../components/countsByArticleType'
@@ -22,6 +20,7 @@ import { assert } from '../../utils/defensive'
 import { mapperToTable } from '../../utils/page-conversion'
 import { useMobileLayout } from '../../utils/responsive'
 import { saveAsFile } from '../../utils/saveAsFile'
+import { base64Gzip } from '../../utils/urlParamShort'
 import { useUndoRedo } from '../../utils/useUndoRedo'
 import { zIndex } from '../../utils/zIndex'
 import { Selection as TextBoxesSelection, SelectionContext as TextBoxesSelectionContext } from '../components/MapTextBox'
@@ -109,11 +108,16 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
     const navContext = useContext(Navigator.Context)
 
     useEffect(() => {
+        // Compressing is async, so a superseded run must not overwrite the URL of a later one.
+        let stale = false
         if (props.mapSettings !== mapSettings) {
-            // gzip then base64 encode
-            const encodedSettings = gzipSync(jsonedSettings).toString('base64')
-            navContext.unsafeUpdateCurrentDescriptor({ settings: encodedSettings, kind: 'mapper' }, { history: 'replaceState' })
+            void base64Gzip(jsonedSettings).then((encodedSettings) => {
+                if (!stale) {
+                    navContext.unsafeUpdateCurrentDescriptor({ settings: encodedSettings, kind: 'mapper' }, { history: 'replaceState' })
+                }
+            })
         }
+        return () => { stale = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- props.view won't be set except from the navigator
     }, [jsonedSettings, navContext])
 

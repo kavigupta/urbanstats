@@ -1,5 +1,3 @@
-import { gunzipSync } from 'zlib'
-
 import data_links from './data/data_links'
 import order_links from './data/order_links'
 import statistic_path_list from './data/statistic_path_list'
@@ -8,6 +6,7 @@ import { dataLink, indexLink, orderingDataLink, orderingLink, shapeLink } from '
 import { Universe } from './universe'
 import { makeDebugLogger } from './utils/debug-logging'
 import { assert } from './utils/defensive'
+import { gunzip } from './utils/gzip'
 import {
     Article, ConsolidatedArticles, ConsolidatedShapes, CountsByArticleUniverseAndType, DataLists,
     Feature, IOrderList, OrderList,
@@ -49,7 +48,8 @@ export async function loadGzipped(filePath: string, errorOnMissing: boolean = tr
         }
         throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
     }
-    return gunzipSync(Buffer.from(await response.arrayBuffer()))
+    assert(response.body !== null, `Expected a body for ${filePath}`)
+    return await gunzip(response.body)
 }
 
 // Load a protobuf file from the server
