@@ -59,7 +59,7 @@ export interface MapSettings {
 }
 
 /** What a map is titled before it runs. Undefined when the script says nothing a label can be read from. */
-function mapTitle(mapSettings: MapSettings): string | undefined {
+export function mapTitle(mapSettings: MapSettings): string | undefined {
     const label = mapLabel(mapSettings.script.uss, defaultTypeEnvironment(mapSettings.universe))
     return label === undefined ? undefined : reifyString(label)
 }

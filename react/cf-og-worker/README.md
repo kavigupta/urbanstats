@@ -2,9 +2,18 @@
 
 A Cloudflare Worker that gives Urban Stats pages per-URL link embeds. Every article shares one
 static `article.html` with one fixed `og:image`, so a crawler asking for `?longname=Chicago` gets
-the generic preview. This sits in front of `article.html`, `comparison.html` and `statistic.html`,
-rewrites their `og:` meta tags per query string, and serves `/og/article.html?...` as a PNG card
-drawn at the edge from the site's own static data files.
+the generic preview. This sits in front of `article.html`, `comparison.html`, `statistic.html` and
+`mapper.html`, rewrites their `og:` meta tags per query string, and serves `/og/article.html?...`
+and `/og/mapper.html?...` as PNG cards drawn at the edge from the site's own static data files.
+
+A map's title comes out of its script by static analysis rather than by running it — see
+`describeMap` in [`index.ts`](src/index.ts) — because the tags are rewritten on every request,
+browsers included, while running a map's script means loading a geography's worth of statistics.
+Only the card runs it. A card does not draw a map's text boxes.
+
+A card draws a cluster map's markers through the same supercluster the page's maplibre source runs,
+configured the way maplibre configures it, so the grouping is the one a reader of the page sees. See
+[`clusters.ts`](src/clusters.ts).
 
 It bundles the site's own page-loading code, so it has to be redeployed whenever the site is built.
 

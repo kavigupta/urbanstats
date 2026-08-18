@@ -6,7 +6,7 @@ import { assert } from './defensive'
  * Web Mercator, as the site's maps use, into the unit square the world fills. Shapes crossing the
  * antimeridian carry longitudes past ±180 rather than wrapping, so x runs outside [0, 1] for them.
  */
-function project([lon, lat]: [number, number]): [number, number] {
+export function project([lon, lat]: [number, number]): [number, number] {
     const x = (lon + 180) / 360
     const clamped = Math.max(-85.05, Math.min(85.05, lat)) * Math.PI / 180
     const y = (1 - Math.log(Math.tan(clamped) + 1 / Math.cos(clamped)) / Math.PI) / 2

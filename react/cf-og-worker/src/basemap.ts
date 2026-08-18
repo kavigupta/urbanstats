@@ -8,7 +8,7 @@
 import { VectorTile, VectorTileLayer } from '@mapbox/vector-tile'
 import Pbf from 'pbf'
 
-import { MapLayout } from './map-layout'
+import { MapLayout, polyline } from './map-layout'
 
 /** Where openfreemap's own data stops. Anything closer in draws these tiles larger. */
 const dataMaxZoom = 14
@@ -124,18 +124,28 @@ async function fetchTile(template: string, zoom: number, x: number, y: number): 
     return new VectorTile(new Pbf(await response.arrayBuffer()))
 }
 
-async function coveringTiles(layout: MapLayout, width: number, height: number, tileOrigin: string): Promise<Tile[]> {
-    const zoom = Math.min(layout.zoom, dataMaxZoom)
+function tilesAt(zoom: number, layout: MapLayout, width: number, height: number): { x: number, y: number }[] {
     const px = layout.scale / 2 ** zoom
-    const across = 2 ** zoom
     const range = (origin: number, extent: number): number[] => {
         const first = Math.floor(origin / px)
         const last = Math.floor((origin + extent) / px)
         return Array.from({ length: last - first + 1 }, (_, i) => first + i)
     }
+    return range(layout.originX, width).flatMap(x => range(layout.originY, height).map(y => ({ x, y })))
+}
+
+async function coveringTiles(layout: MapLayout, width: number, height: number, tileOrigin: string, budget: number): Promise<Tile[]> {
+    // A card with several insets would otherwise ask for more tiles than a request may fetch at all.
+    // Each step out costs detail the shapes drawn over the basemap mostly cover anyway.
+    let zoom = Math.min(layout.zoom, dataMaxZoom)
+    while (zoom > 0 && tilesAt(zoom, layout, width, height).length > budget) {
+        zoom--
+    }
+    const px = layout.scale / 2 ** zoom
+    const across = 2 ** zoom
 
     const template = await templateUrl(tileOrigin)
-    const wanted = range(layout.originX, width).flatMap(x => range(layout.originY, height).map(y => ({ x, y })))
+    const wanted = tilesAt(zoom, layout, width, height)
     const loaded = await Promise.all(wanted.map(async ({ x, y }): Promise<Tile | undefined> => {
         if (y < 0 || y >= across) {
             return undefined
@@ -169,18 +179,11 @@ function rulePath(rule: Rule, strokeWidth: number, tiles: Tile[], width: number,
             for (const ring of feature.loadGeometry()) {
                 // Tiles carry a buffer of geometry beyond their own edges, which neighbouring tiles
                 // repeat. Dropping what falls outside the card keeps both out of the SVG.
-                const points: string[] = []
-                let visible = false
-                for (const point of ring) {
-                    const x = left + point.x * unit
-                    const y = top + point.y * unit
-                    visible ||= x >= 0 && x <= width && y >= 0 && y <= height
-                    points.push(`${x.toFixed(1)},${y.toFixed(1)}`)
+                const points = ring.map((point): [number, number] => [left + point.x * unit, top + point.y * unit])
+                const part = polyline(points, width, height, feature.type === 3)
+                if (part !== '') {
+                    parts.push(part)
                 }
-                if (!visible || points.length < 2) {
-                    continue
-                }
-                parts.push(`M${points.join('L')}${feature.type === 3 ? 'Z' : ''}`)
             }
         }
     }
@@ -196,8 +199,8 @@ function rulePath(rule: Rule, strokeWidth: number, tiles: Tile[], width: number,
 }
 
 /** SVG markup sized to the map box. Empty if no tile could be loaded. */
-export async function basemap(layout: MapLayout, width: number, height: number, tileOrigin: string): Promise<string> {
-    const tiles = await coveringTiles(layout, width, height, tileOrigin)
+export async function basemap(layout: MapLayout, width: number, height: number, tileOrigin: string, budget = 16): Promise<string> {
+    const tiles = await coveringTiles(layout, width, height, tileOrigin, budget)
     if (tiles.length === 0) {
         return ''
     }
