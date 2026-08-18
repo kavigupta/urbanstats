@@ -58,13 +58,12 @@ export interface MapSettings {
     script: MapperScriptSettings
 }
 
-/** What a map is titled before it runs. Undefined when the script says nothing a label can be read from. */
+/** What a map is titled before it runs. */
 export function mapTitle(mapSettings: MapSettings): string | undefined {
     const label = mapLabel(mapSettings.script.uss, defaultTypeEnvironment(mapSettings.universe))
     return label === undefined ? undefined : reifyString(label)
 }
 
-/** What the mapper page is titled, which a load and an edit both have to arrive at. */
 export function mapPageTitle(mapSettings: MapSettings): string {
     return mapTitle(mapSettings) ?? 'Urban Stats Mapper'
 }
