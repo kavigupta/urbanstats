@@ -14,8 +14,9 @@ export interface Written {
  * easier than a long one.
  *
  * The places after the point are not counted. At three significant figures they are what a shorter
- * integer part buys, so charging for both would mean the trade never paid: 1.00m would cost more
- * than 1 000k, and nothing would ever be abbreviated.
+ * integer part buys: a million people reads as 1 000k, a digit past the third, or as 1.00m, which
+ * spends two places to save that digit. Charging for both would leave the trade never worth
+ * making, and nothing would ever be abbreviated.
  *
  * Measured from the number as printed rather than from a logarithm, so that a value that rounds up
  * into another unit, such as 999.5 thousand people, costs what a million costs.
