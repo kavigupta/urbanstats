@@ -6,6 +6,11 @@ export type HumanReadableElement = { type: 'atom', value: string } | { type: 'co
 
 export type HumanReadableName = string | HumanReadableElement[]
 
+/** A run of plain text, which most of a unit's name is. */
+export function atom(value: string): HumanReadableElement[] {
+    return [{ type: 'atom', value }]
+}
+
 export function reifyReact(elements: HumanReadableElement[] | string): ReactNode {
     if (typeof elements === 'string') return elements
     return elements.map((element, index) => {
