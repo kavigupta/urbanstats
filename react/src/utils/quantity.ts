@@ -92,7 +92,10 @@ function abbreviationsOf(baseUnit: BaseUnit): NamedUnit[] {
         .map(([name, size]) => ({ ...scaling(baseUnit, name, size, 1), abbreviation: true })) // relatively low cost, just the abbreviation's length
 }
 
-/** The units there are to write a quantity in, whatever dimensions it turns out to have. */
+/**
+ * The units there are to write a quantity in, whatever dimensions it turns out to have. A count is
+ * named by the statistic counting it, so the unit it is counted in has no name to show.
+ */
 const unitPool: NamedUnit[] = [
     scaling('person', '', 1, 0),
     ...abbreviationsOf('person'),
@@ -136,10 +139,7 @@ function styleFor(key: DimensionKey, written: Written[]): NumberFormat {
     return styles[key] ?? defaultStyle
 }
 
-/**
- * What goes in the unit column. A count has no name of its own, since the statistic says what is
- * being counted, so this is empty for one unless an abbreviation was chosen and it reads k, m or B.
- */
+/** The names of the units chosen, in order. The ones with no name of their own are left out. */
 function nameOf(written: Written[]): HumanReadableElement[] {
     const names = written.map(({ unit }) => unit.name).filter(name => name !== '')
     return names.length === 0 ? [] : atom(names.join('\u00b7'))
