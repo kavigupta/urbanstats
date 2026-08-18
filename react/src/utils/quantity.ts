@@ -8,12 +8,10 @@ export type Hue = keyof HueColors
 type PartySystem = 'democratic' | 'left'
 
 /**
- * The units everything else is measured in. A value is put in these before it is written out, so
- * that quantities of the same kind are written the same way however they happen to be stored.
+ * Base units, combined together via multiplication to form the units that correspond to the inBaseUnits value
  */
 export type BaseUnit = 'fatality'
 
-/** A base unit raised to a power, e.g., fatalities, or square meters. */
 export interface Dimension {
     baseUnit: BaseUnit
     power: number
@@ -76,19 +74,20 @@ const partyHues = {
 } as const
 /* eslint-enable no-restricted-syntax */
 
-/** What the dimensions of a quantity are called when they are looked up in a table. */
-function signatureOf(scales: Dimension[]): string {
+type DimensionKey = string
+
+function renderAsKey(scales: Dimension[]): DimensionKey {
     return scales
         .filter(({ power }) => power !== 0)
         .map(({ baseUnit, power }) => `${baseUnit}^${power}`)
+        .sort((a, b) => a.localeCompare(b))
         .join(' ')
 }
 
 /**
- * How the number is written once a unit has been chosen for it. Separate from the units: what a
- * quantity is measured in does not say how precisely it is worth writing.
+ * Certain dimensionfull units have specific styles.
  */
-const styles: Record<string, NumberFormat | undefined> = {
+const styles: Record<DimensionKey, NumberFormat | undefined> = {
     '': { kind: 'significantFigures' },
     // things that are counted come in whole numbers
     'fatality^1': { kind: 'fixed', places: 0 },
@@ -109,7 +108,7 @@ function representationFor(unit: Unit, settings: ReaderSettings): Representation
                 : { unitName: atom('°F'), scale: value => value, format: { kind: 'fixed', places: 1 } }
         case 'dimensionfull':
             // a count is named by the statistic it counts, so it has no name of its own here
-            return { unitName: [], scale: value => value, format: styles[signatureOf(unit.scales)] ?? defaultStyle }
+            return { unitName: [], scale: value => value, format: styles[renderAsKey(unit.scales)] ?? defaultStyle }
     }
 }
 
