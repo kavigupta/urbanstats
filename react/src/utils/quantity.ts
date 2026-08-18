@@ -52,7 +52,6 @@ interface Representation {
     scale: (inBaseUnits: number) => number
     unitName: HumanReadableElement[]
     format: NumberFormat
-    /** Written in front of the number, as a dollar sign is */
     prefix?: string
 }
 
@@ -77,7 +76,7 @@ const partyHues = {
 } as const
 /* eslint-enable no-restricted-syntax */
 
-/** One of the units a base unit can be written in, e.g., a million people. */
+/** One of the units a base unit can be written in, e.g., m, km, cm. */
 interface LadderUnit {
     name: string
     /** How many base units one of it is: a thousand people is a thousand of them */
