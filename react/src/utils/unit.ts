@@ -1,4 +1,4 @@
-import { StoredUnit } from './quantity'
+import { BaseUnit, StoredUnit } from './quantity'
 
 export type UnitType = 'percentage' | 'percentageChange' | 'fatalities' | 'fatalitiesPerCapita' | 'density' | 'population'
     | 'area' | 'distanceInKm' | 'distanceInM' | 'democraticMargin' | 'temperature' | 'time' | 'distancePerYear'
@@ -46,6 +46,14 @@ function checkAllIncluded(unitType: UnitType): (typeof allUnitTypes)[number] {
     return unitType
 }
 
+function dimensionfull(scales: Partial<Record<BaseUnit, number>>, toBaseUnits = 1): StoredUnit {
+    const entries = Object.entries(scales) as [BaseUnit, number][]
+    return {
+        unit: { kind: 'dimensionfull', scales: entries.map(([baseUnit, power]) => ({ baseUnit, power })) },
+        toBaseUnits,
+    }
+}
+
 /* eslint-disable no-restricted-syntax -- these name the theme's hues, they are not css colors */
 export const storedUnits = {
     percentage: { unit: { kind: 'raw-percentage' }, toBaseUnits: 1 },
@@ -65,6 +73,8 @@ export const storedUnits = {
     partyChangeGreen: { unit: { kind: 'delta-percentage', partyColor: 'green' }, toBaseUnits: 1 },
     partyChangePurple: { unit: { kind: 'delta-percentage', partyColor: 'purple' }, toBaseUnits: 1 },
     temperature: { unit: { kind: 'temperature-F' }, toBaseUnits: 1 },
+    number: dimensionfull({}),
+    fatalities: dimensionfull({ fatality: 1 }),
 } satisfies Partial<Record<UnitType, StoredUnit>>
 /* eslint-enable no-restricted-syntax */
 
