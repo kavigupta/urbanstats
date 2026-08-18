@@ -7,34 +7,26 @@ export interface Written {
     power: number
 }
 
+/** Rounding a quantity away, where the style asked for figures, is worse than any number of digits. */
+const roundsAway = 100
+
 /**
- * What a number costs to read in a given unit: how far its magnitude is from the range three
- * significant figures fit in, which is one to a thousand. A factor of ten above that costs a
- * digit, and one below costs nine tenths of a digit, a number just under one reading a little
- * easier than a long one.
+ * What a number costs to read in a given unit: a digit for every one past the three that three
+ * significant figures fit in, wherever they fall. A number below one pays for its leading zeros,
+ * which are digits like any other, and a unit that leaves a quantity with no figures at all pays
+ * everything.
  *
- * The places after the point are not counted. At three significant figures they are what a shorter
- * integer part buys: a million people reads as 1 000k, a digit past the third, or as 1.00m, which
- * spends two places to save that digit. Charging for both would leave the trade never worth
- * making, and nothing would ever be abbreviated.
- *
- * Measured from the number as printed rather than from a logarithm, so that a value that rounds up
+ * Counted from the number as printed rather than from a logarithm, so that a value that rounds up
  * into another unit, such as 999.5 thousand people, costs what a million costs.
  */
 function digitCost(value: number, format: NumberFormat): number {
-    if (value === 0) {
-        // nothing is shorter than zero in any unit
-        return 0
+    const digits = formatNumber(value, format).replace(/[^0-9]/g, '')
+    // a fixed number of places is a decision that the places past them do not matter, so a value
+    // that rounds away under one is being written as precisely as it was meant to be
+    if (value !== 0 && format.kind !== 'fixed' && !/[1-9]/.test(digits)) {
+        return roundsAway
     }
-    // the digits alone: neither the sign nor the separators between them make it harder to read
-    const written = formatNumber(value, format).replaceAll('-', '').replaceAll('\u202f', '')
-    const [integerPart, fraction = ''] = written.split('.')
-    // where the magnitude shows up: in the digits before the point, or in the zeros after it
-    if (integerPart !== '0') {
-        return Math.max(0, integerPart.length - 3)
-    }
-    // a shade less than a digit, since a number below one reads a little better than a long one
-    return 0.9 * (1 + (/^0*/.exec(fraction)?.[0].length ?? 0))
+    return Math.max(0, digits.length - 3)
 }
 
 type Exponents = Partial<Record<BaseUnit, number>>
