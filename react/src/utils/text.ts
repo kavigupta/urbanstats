@@ -60,6 +60,24 @@ export function roundToDigits(value: number, rounding: Rounding): string {
     return separateNumber(value.toFixed(decimalPlaces(value, rounding)))
 }
 
+/** How a number is written: to a fixed number of decimal places, or to a number of digits. */
+export type NumberFormat = (
+    { kind: 'fixed', places: number }
+    | ({ kind: 'rounded' } & Rounding)
+    | { kind: 'significantFigures' }
+)
+
+export function formatNumber(value: number, format: NumberFormat): string {
+    switch (format.kind) {
+        case 'fixed':
+            return separateNumber(value.toFixed(format.places))
+        case 'rounded':
+            return roundToDigits(value, format)
+        case 'significantFigures':
+            return separateNumber(formatToSignificantFigures(value, 3))
+    }
+}
+
 // add in the B/m/k suffixes.
 export function abbreviate(value: number): { number: string, suffix: string } {
     for (const [threshold, divisor, suffix] of [[999.5e6, 1e9, 'B'], [999.5e3, 1e6, 'm'], [1e4, 1e3, 'k']] as const) {
