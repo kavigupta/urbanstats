@@ -71,6 +71,19 @@ for (const [unitType, value, expected] of [
     })
 }
 
+// A distance is written to three figures, wherever the point falls among them
+for (const [unitType, value, expected] of [
+    ['distanceInKm', 12.3, '12.3km'],
+    ['distanceInKm', 0.543, '0.543km'],
+    ['distanceInM', 5.67, '5.67m'],
+    ['distanceInM', 12.3, '12.3m'],
+    ['distanceInM', 543, '543m'],
+] as const) {
+    void test(`${unitType} writes ${value} to three figures`, () => {
+        assert.equal(renderValue(unitType, value), expected)
+    })
+}
+
 // A number below one keeps its digits together, and a sign stays where it is
 for (const [value, expected] of [
     [0.123456, '0.123'],
