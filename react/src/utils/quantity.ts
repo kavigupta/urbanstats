@@ -139,10 +139,40 @@ function styleFor(key: DimensionKey, written: Written[]): NumberFormat {
     return styles[key] ?? defaultStyle
 }
 
-/** The names of the units chosen, in order. The ones with no name of their own are left out. */
-function nameOf(written: Written[]): HumanReadableElement[] {
-    const names = written.map(({ unit }) => unit.name).filter(name => name !== '')
-    return names.length === 0 ? [] : atom(names.join('\u00b7'))
+/** Adjacent names are one run of text, which the browser shapes as a whole. */
+function merged(name: HumanReadableElement[]): HumanReadableElement[] {
+    return name.reduce<HumanReadableElement[]>((run, element) => {
+        const last = run.length === 0 ? undefined : run[run.length - 1]
+        if (last?.type === 'atom' && element.type === 'atom') {
+            return [...run.slice(0, -1), { type: 'atom', value: last.value + element.value }]
+        }
+        return [...run, element]
+    }, [])
+}
+
+function raisedTo(power: number): HumanReadableElement[] {
+    return Math.abs(power) === 1 ? [] : [{ type: 'superscript', value: atom(Math.abs(power).toString()) }]
+}
+
+/** The units multiplied together, e.g., km^2, or people per km^2 for a quantity with a denominator. */
+function product(written: Written[]): HumanReadableElement[] {
+    return written.flatMap(({ unit, power }, index) => [
+        ...index === 0 ? [] : atom('\u00b7'),
+        ...atom(unit.name),
+        ...raisedTo(power),
+    ])
+}
+
+/** The names of the units chosen. The ones with no name of their own are left out. */
+export function nameOf(written: Written[]): HumanReadableElement[] {
+    const named = written.filter(({ unit }) => unit.name !== '')
+    const over = named.filter(({ power }) => power > 0)
+    const under = named.filter(({ power }) => power < 0)
+    if (under.length === 0) {
+        return merged(product(over))
+    }
+    // a solidus with nothing in front of it is set with a space, as a bare per reads better that way
+    return merged([...product(over), ...atom(over.length === 0 ? '/\u00a0' : '/'), ...product(under)])
 }
 
 function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSettings): Representation {
