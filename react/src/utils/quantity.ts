@@ -9,12 +9,10 @@ export type Hue = keyof HueColors
 type PartySystem = 'democratic' | 'left'
 
 /**
- * The units everything else is measured in. A value is put in these before it is written out, so
- * that quantities of the same kind are written the same way however they happen to be stored.
+ * Base units, combined together via multiplication to form the units that correspond to the inBaseUnits value
  */
 export type BaseUnit = 'person' | 'usd' | 'fatality'
 
-/** A base unit raised to a power, e.g., people, or square meters. */
 export interface Dimension {
     baseUnit: BaseUnit
     power: number
@@ -115,19 +113,20 @@ const ladders: Record<BaseUnit, LadderUnit[]> = {
     fatality: [itself],
 }
 
-/** What the dimensions of a quantity are called when they are looked up in a table. */
-function signatureOf(scales: Dimension[]): string {
+type DimensionKey = string
+
+function renderAsKey(scales: Dimension[]): DimensionKey {
     return scales
         .filter(({ power }) => power !== 0)
         .map(({ baseUnit, power }) => `${baseUnit}^${power}`)
+        .sort((a, b) => a.localeCompare(b))
         .join(' ')
 }
 
 /**
- * How the number is written once a unit has been chosen for it. Separate from the units: what a
- * quantity is measured in does not say how precisely it is worth writing.
+ * Certain dimensionfull units have specific styles.
  */
-const styles: Record<string, NumberFormat | undefined> = {
+const styles: Record<DimensionKey, NumberFormat | undefined> = {
     '': { kind: 'significantFigures' },
     // things that are counted come in whole numbers, unless they are counted in thousands
     'person^1': { kind: 'fixed', places: 0 },
@@ -139,18 +138,18 @@ const defaultStyle: NumberFormat = { kind: 'rounded', significantDigits: 3 }
 /** An abbreviated number is worth three figures, wherever they fall. */
 const abbreviatedStyle: NumberFormat = { kind: 'significantFigures' }
 
-const prefixes: Record<string, string | undefined> = { 'usd^1': '$' }
+const prefixes: Record<DimensionKey, string | undefined> = { 'usd^1': '$' }
 
 /** A base unit together with the unit off its ladder that a quantity is written in. */
 interface Written extends Dimension {
     unit: LadderUnit
 }
 
-function styleFor(signature: string, written: Written[]): NumberFormat {
+function styleFor(key: DimensionKey, written: Written[]): NumberFormat {
     if (written.some(({ unit }) => unit.cost === abbreviated)) {
         return abbreviatedStyle
     }
-    return styles[signature] ?? defaultStyle
+    return styles[key] ?? defaultStyle
 }
 
 /**
@@ -194,17 +193,17 @@ function combinations(dimensions: Dimension[]): Written[][] {
  * behind is counted.
  */
 function bestRepresentation(inBaseUnits: number, scales: Dimension[]): Representation {
-    const signature = signatureOf(scales)
+    const key = renderAsKey(scales)
     let best: Representation | undefined
     let bestCost = Infinity
     for (const written of combinations(scales.filter(({ power }) => power !== 0))) {
-        const format = styleFor(signature, written)
+        const format = styleFor(key, written)
         const size = written.reduce((product, { power, unit }) => product * Math.pow(unit.size, power), 1)
         const scale = (value: number): number => value / size
         const cost = written.reduce((total, { power, unit }) => total + unit.cost * Math.abs(power), 0)
             + digitCost(scale(inBaseUnits), format)
         if (cost < bestCost) {
-            best = { scale, unitName: nameOf(written), format, prefix: prefixes[signature] }
+            best = { scale, unitName: nameOf(written), format, prefix: prefixes[key] }
             bestCost = cost
         }
     }
