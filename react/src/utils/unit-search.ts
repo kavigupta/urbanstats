@@ -2,17 +2,23 @@ import { assert } from './defensive'
 import type { BaseUnit, Dimension, NamedUnit } from './quantity'
 import { formatNumber, NumberFormat } from './text'
 
-/** A unit a quantity is written in, and the power it is written to. */
 export interface Written {
     unit: NamedUnit
     power: number
 }
 
 /**
- * What a number costs to read in a given unit: one for every digit past the third before the
- * point, and nine tenths of one for the point itself and each leading zero after it. The number is
- * written out to count it, so that a value that rounds up into another unit, such as 999.5 thousand
- * people, costs what a million costs rather than what nine hundred thousand costs.
+ * What a number costs to read in a given unit: how far its magnitude is from the range three
+ * significant figures fit in, which is one to a thousand. A factor of ten above that costs a
+ * digit, and one below costs nine tenths of a digit, a number just under one reading a little
+ * easier than a long one.
+ *
+ * The places after the point are not counted. At three significant figures they are what a shorter
+ * integer part buys, so charging for both would mean the trade never paid: 1.00m would cost more
+ * than 1 000k, and nothing would ever be abbreviated.
+ *
+ * Measured from the number as printed rather than from a logarithm, so that a value that rounds up
+ * into another unit, such as 999.5 thousand people, costs what a million costs.
  */
 function digitCost(value: number, format: NumberFormat): number {
     if (value === 0) {
@@ -22,6 +28,7 @@ function digitCost(value: number, format: NumberFormat): number {
     // the digits alone: neither the sign nor the separators between them make it harder to read
     const written = formatNumber(value, format).replaceAll('-', '').replaceAll('\u202f', '')
     const [integerPart, fraction = ''] = written.split('.')
+    // where the magnitude shows up: in the digits before the point, or in the zeros after it
     if (integerPart !== '0') {
         return Math.max(0, integerPart.length - 3)
     }
