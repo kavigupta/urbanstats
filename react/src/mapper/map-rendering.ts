@@ -15,6 +15,13 @@ import { ICoordinate } from '../utils/protos'
 
 import { Keypoints } from './ramps'
 
+/**
+ * The width the mapper lays a map out at before scaling the whole thing to fit its container. Pixel
+ * sizes in a map's settings, marker radii above all, are in these pixels, so anything drawing a map
+ * at another width has to scale them against this.
+ */
+export const canonicalWidth = 1200
+
 /** Keyed by longname, which is how a map's result names its geographies. */
 export async function centroidsByName(universe: Universe, geographyKind: string): Promise<Map<string, ICoordinate>> {
     const ordering = await loadProtobuf(indexLink(universe, geographyKind), 'ArticleOrderingList')
