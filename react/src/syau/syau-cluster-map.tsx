@@ -67,7 +67,7 @@ interface MarkerState {
     featureId: string
     lon: number
     lat: number
-    /** Pie chart size per category, which the slices are proportioned by. */
+    /** Pie chart size per category. */
     categorySizes: number[]
     label: string
     /** Computed display radius in pixels. */
