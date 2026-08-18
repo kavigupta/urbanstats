@@ -6,7 +6,6 @@ export type HumanReadableElement = { type: 'atom', value: string } | { type: 'co
 
 export type HumanReadableName = string | HumanReadableElement[]
 
-/** A run of plain text, which most of a unit's name is. */
 export function atom(value: string): HumanReadableElement[] {
     return [{ type: 'atom', value }]
 }

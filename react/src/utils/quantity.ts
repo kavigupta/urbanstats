@@ -67,34 +67,29 @@ const partyHues = {
 /* eslint-enable no-restricted-syntax */
 
 /**
- * One of the units a quantity can be written in: a named scaling of some dimensions. Most are a
- * scaling of a single base unit, but one that is its own thing rather than a power of another,
- * such as an acre, is one of these too.
+ * One of the units a quantity can be written in. Not a base unit necessarily, e.g.,
+ * an acre is a unit of area, but it is not a base unit.
  */
 export interface NamedUnit {
     name: string
     /** What one of it is, e.g., m^2 for an acre */
     dimensions: Dimension[]
-    /** How many base units one of it is: a thousand people is a thousand of them */
+    /** E.g., for an acre, 4046.86 */
     size: number
-    /**
-     * What reaching for it costs, before the digits it saves. Zero for the unit a quantity is
-     * ordinarily counted in, and more for one that only earns its place by shortening the number.
-     */
+    /* How much should we discourage using this, in units of cost (digits) */
     cost: number
+    /** Whether it shortens the number rather than measuring in something else, as k and m do */
+    abbreviation: boolean
 }
 
-/** An abbreviation is a unit of its own only in the sense that it saves digits. */
-const abbreviated = 1
-
 function scaling(baseUnit: BaseUnit, name: string, size: number, cost: number): NamedUnit {
-    return { name, dimensions: [{ baseUnit, power: 1 }], size, cost }
+    return { name, dimensions: [{ baseUnit, power: 1 }], size, cost, abbreviation: false }
 }
 
 /** Thousands, millions and billions, for a quantity that is counted rather than measured. */
 function abbreviationsOf(baseUnit: BaseUnit): NamedUnit[] {
     return ([['k', 1e3], ['m', 1e6], ['B', 1e9]] as const)
-        .map(([name, size]) => scaling(baseUnit, name, size, abbreviated))
+        .map(([name, size]) => ({ ...scaling(baseUnit, name, size, 1), abbreviation: true })) // relatively low cost, just the abbreviation's length
 }
 
 /** The units there are to write a quantity in, whatever dimensions it turns out to have. */
@@ -135,7 +130,7 @@ const abbreviatedStyle: NumberFormat = { kind: 'significantFigures' }
 const prefixes: Record<DimensionKey, string | undefined> = { 'usd^1': '$' }
 
 function styleFor(key: DimensionKey, written: Written[]): NumberFormat {
-    if (written.some(({ unit }) => unit.cost === abbreviated)) {
+    if (written.some(({ unit }) => unit.abbreviation)) {
         return abbreviatedStyle
     }
     return styles[key] ?? defaultStyle
