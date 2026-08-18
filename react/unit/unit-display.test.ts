@@ -57,9 +57,8 @@ for (const [unitType, value, expected] of [
     ['population', 1234, '1\u202f234'],
     ['fatalities', 1234, '1\u202f234'],
     ['density', 1234, '1\u202f234/\u00a0km2'],
-    ['distanceInM', 1234, '1\u202f234m'],
     ['area', 1234, '1\u202f234km2'],
-    ['distanceInKm', 1234, '1\u202f234.00km'],
+    ['distanceInKm', 1234, '1\u202f234km'],
     ['contaminantLevel', 1234, '1\u202f234.00μg/m3'],
     ['percentage', 12.34, '1\u202f234.00%'],
     ['fatalitiesPerCapita', 0.01234, '1\u202f234.00/\u00a0100k'],
@@ -219,3 +218,32 @@ void test('temperature is written in the reader\'s own unit', () => {
     assert.equal(renderValue('temperature', 50), '50.0°F')
     assert.equal(renderValue('temperature', 50, false, 'celsius'), '10.0°C')
 })
+
+// A length is a length: an elevation and a distance are written the same way, in whichever unit
+// leaves the shortest number
+for (const [unitType, value, expected] of [
+    ['distanceInM', 5.67, '5.67m'],
+    ['distanceInM', 543, '543m'],
+    ['distanceInM', 1234, '1.23km'],
+    ['distanceInM', 12345, '12.3km'],
+    ['distanceInKm', 3.42, '3.42km'],
+    ['distanceInKm', 0.543, '543m'],
+    ['distanceInKm', 1234, '1\u202f234km'],
+] as const) {
+    void test(`${unitType} renders ${value} as ${expected}`, () => {
+        assert.equal(renderValue(unitType, value), expected)
+    })
+}
+
+for (const [unitType, value, expected] of [
+    ['distanceInM', 543, '1\u202f781ft'],
+    ['distanceInM', 12345, '7.67mi'],
+    ['distanceInKm', 3.42, '2.13mi'],
+    ['area', 12.5, '4.83mi2'],
+    // an acre is a unit of area in its own right, so an area too small for a square mile has one
+    ['area', 0.005, '1.24acres'],
+] as const) {
+    void test(`${unitType} renders ${value} in imperial as ${expected}`, () => {
+        assert.equal(renderValue(unitType, value, true), expected)
+    })
+}
