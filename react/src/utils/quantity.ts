@@ -92,28 +92,24 @@ function abbreviationsOf(baseUnit: BaseUnit): NamedUnit[] {
         .map(([name, size]) => ({ ...scaling(baseUnit, name, size, 1), abbreviation: true })) // relatively low cost, just the abbreviation's length
 }
 
-/** A unit that is not the one its dimension is ordinarily measured in has to earn its place. */
-const coarser = 0.5
+// no need for a cost for scaled units. It should pick whichever is most convenient.
+const costScaledUnit = 0
 
 const metersPerFoot = 1 / 3.28084
 const metersPerMile = 1609.34
 
-/**
- * The lengths a reader measures in, which are the same lengths whether what is being measured is a
- * distance, an area or a rainfall.
- */
-const lengths: Record<'metric' | 'imperial', NamedUnit[]> = {
+const lengthUnits: Record<'metric' | 'imperial', NamedUnit[]> = {
     metric: [
         scaling('m', 'm', 1, 0),
-        scaling('m', 'cm', 0.01, coarser),
-        scaling('m', 'km', 1e3, coarser),
+        scaling('m', 'cm', 0.01, costScaledUnit),
+        scaling('m', 'km', 1e3, costScaledUnit),
     ],
     imperial: [
         scaling('m', 'ft', metersPerFoot, 0),
-        scaling('m', 'in', metersPerFoot / 12, coarser),
-        scaling('m', 'mi', metersPerMile, coarser),
+        scaling('m', 'in', metersPerFoot / 12, costScaledUnit),
+        scaling('m', 'mi', metersPerMile, costScaledUnit),
         // an acre is a unit of area in its own right, and the square of no length anybody writes
-        { name: 'acres', dimensions: [{ baseUnit: 'm', power: 2 }], size: 4046.8564224, cost: coarser, abbreviation: false },
+        { name: 'acres', dimensions: [{ baseUnit: 'm', power: 2 }], size: 4046.8564224, cost: costScaledUnit, abbreviation: false },
     ],
 }
 
@@ -129,7 +125,7 @@ function poolFor(settings: ReaderSettings): NamedUnit[] {
         ...abbreviationsOf('usd'),
         // fatalities are not abbreviated: there are never enough of them for it to save a digit
         scaling('fatality', '', 1, 0),
-        ...lengths[settings.useImperial === true ? 'imperial' : 'metric'],
+        ...lengthUnits[settings.useImperial === true ? 'imperial' : 'metric'],
     ]
 }
 
