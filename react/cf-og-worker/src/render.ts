@@ -18,7 +18,6 @@ import jostSemiBold from '../assets/Jost-600.ttf'
 import { articleCard, loadPage, loadShape, mapCard } from './data'
 import { embedCard, mapEmbedCard } from './embed'
 
-/** The page kinds the Worker draws a card for. */
 export type DrawableDescriptor = Extract<PageDescriptor, { kind: 'article' | 'mapper' }>
 
 let wasmReady: Promise<unknown> | undefined

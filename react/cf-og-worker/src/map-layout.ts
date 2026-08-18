@@ -1,7 +1,7 @@
 /*
  * Where a shape sits on the map, shared by the basemap and the outline drawn over it. The
  * projection runs past [0, 1] for a shape crossing the antimeridian, so the fits below stay tight;
- * `coveringTiles` wraps the tile x it asks for, which is where the world is round again.
+ * `coveringTiles` wraps the tile x it asks for.
  */
 import { project } from '../../src/utils/coordinates'
 
