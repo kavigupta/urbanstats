@@ -155,12 +155,12 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
             })
         case 'distanceInKm':
             return display((value, { useImperial }) => ({
-                number: separateNumber((useImperial ? value / kmPerMile : value).toFixed(2)),
+                number: roundToDigits(useImperial ? value / kmPerMile : value, { significantDigits: 3 }),
                 unit: atom(useImperial ? 'mi' : 'km'),
             }))
         case 'distanceInM':
             return display((value, { useImperial }) => ({
-                number: separateNumber((useImperial ? value * feetPerMeter : value).toFixed(0)),
+                number: roundToDigits(useImperial ? value * feetPerMeter : value, { significantDigits: 3 }),
                 unit: atom(useImperial ? 'ft' : 'm'),
             }))
         case 'time':

@@ -59,7 +59,7 @@ for (const [unitType, value, expected] of [
     ['density', 1234, '1\u202f234/\u00a0km2'],
     ['distanceInM', 1234, '1\u202f234m'],
     ['area', 1234, '1\u202f234km2'],
-    ['distanceInKm', 1234, '1\u202f234.00km'],
+    ['distanceInKm', 1234, '1\u202f234km'],
     ['contaminantLevel', 1234, '1\u202f234.00μg/m3'],
     ['percentage', 12.34, '1\u202f234.00%'],
     ['fatalitiesPerCapita', 0.01234, '1\u202f234.00/\u00a0100k'],
@@ -68,6 +68,19 @@ for (const [unitType, value, expected] of [
     ['temperature', 1234, '1\u202f234.0°F'],
 ] as const) {
     void test(`${unitType} separates the digits of ${value}`, () => {
+        assert.equal(renderValue(unitType, value), expected)
+    })
+}
+
+// A distance is written to three figures, wherever the point falls among them
+for (const [unitType, value, expected] of [
+    ['distanceInKm', 12.3, '12.3km'],
+    ['distanceInKm', 0.543, '0.543km'],
+    ['distanceInM', 5.67, '5.67m'],
+    ['distanceInM', 12.3, '12.3m'],
+    ['distanceInM', 543, '543m'],
+] as const) {
+    void test(`${unitType} writes ${value} to three figures`, () => {
         assert.equal(renderValue(unitType, value), expected)
     })
 }
