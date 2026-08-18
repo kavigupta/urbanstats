@@ -2,7 +2,7 @@ import { HueColors } from '../page_template/color-themes'
 
 import { atom, HumanReadableElement } from './human-readable-name'
 import { formatNumber, NumberFormat } from './text'
-import { bestRepresentation } from './unit-search'
+import { chooseUnits, Written } from './unit-search'
 
 export type Hue = keyof HueColors
 
@@ -66,6 +66,87 @@ const partyHues = {
 } as const
 /* eslint-enable no-restricted-syntax */
 
+/**
+ * One of the units a quantity can be written in: a named scaling of some dimensions. Most are a
+ * scaling of a single base unit, but one that is its own thing rather than a power of another,
+ * such as an acre, is one of these too.
+ */
+export interface NamedUnit {
+    name: string
+    /** What one of it is, e.g., m^2 for an acre */
+    dimensions: Dimension[]
+    /** How many base units one of it is: a thousand people is a thousand of them */
+    size: number
+    /**
+     * What reaching for it costs, before the digits it saves. Zero for the unit a quantity is
+     * ordinarily counted in, and more for one that only earns its place by shortening the number.
+     */
+    cost: number
+}
+
+/** An abbreviation is a unit of its own only in the sense that it saves digits. */
+const abbreviated = 1
+
+function scaling(baseUnit: BaseUnit, name: string, size: number, cost: number): NamedUnit {
+    return { name, dimensions: [{ baseUnit, power: 1 }], size, cost }
+}
+
+/** Thousands, millions and billions, for a quantity that is counted rather than measured. */
+function abbreviationsOf(baseUnit: BaseUnit): NamedUnit[] {
+    return ([['k', 1e3], ['m', 1e6], ['B', 1e9]] as const)
+        .map(([name, size]) => scaling(baseUnit, name, size, abbreviated))
+}
+
+/** The units there are to write a quantity in, whatever dimensions it turns out to have. */
+const unitPool: NamedUnit[] = [
+    scaling('person', '', 1, 0),
+    ...abbreviationsOf('person'),
+    scaling('usd', '', 1, 0),
+    ...abbreviationsOf('usd'),
+    // fatalities are not abbreviated: there are never enough of them for it to save a digit
+    scaling('fatality', '', 1, 0),
+]
+
+type DimensionKey = string
+
+function renderAsKey(scales: Dimension[]): DimensionKey {
+    return scales
+        .filter(({ power }) => power !== 0)
+        .map(({ baseUnit, power }) => `${baseUnit}^${power}`)
+        .sort((a, b) => a.localeCompare(b))
+        .join(' ')
+}
+
+/**
+
+ */
+const styles: Record<DimensionKey, NumberFormat | undefined> = {
+    '': { kind: 'significantFigures' },
+    // things that are counted come in whole numbers, unless they are counted in thousands
+    'person^1': { kind: 'fixed', places: 0 },
+    'usd^1': { kind: 'fixed', places: 0 },
+    'fatality^1': { kind: 'fixed', places: 0 },
+}
+
+const defaultStyle: NumberFormat = { kind: 'rounded', significantDigits: 3 }
+/** An abbreviated number is worth three figures, wherever they fall. */
+const abbreviatedStyle: NumberFormat = { kind: 'significantFigures' }
+
+const prefixes: Record<DimensionKey, string | undefined> = { 'usd^1': '$' }
+
+function styleFor(key: DimensionKey, written: Written[]): NumberFormat {
+    if (written.some(({ unit }) => unit.cost === abbreviated)) {
+        return abbreviatedStyle
+    }
+    return styles[key] ?? defaultStyle
+}
+
+/** The name a quantity is written under, which a count has only when it is abbreviated. */
+function nameOf(written: Written[]): HumanReadableElement[] {
+    const names = written.map(({ unit }) => unit.name).filter(name => name !== '')
+    return names.length === 0 ? [] : atom(names.join('\u00b7'))
+}
+
 function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSettings): Representation {
     switch (unit.kind) {
         case 'raw-percentage':
@@ -77,8 +158,11 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSett
             return settings.temperatureUnit === 'celsius'
                 ? { unitName: atom('°C'), scale: value => (value - 32) * (5 / 9), format: { kind: 'fixed', places: 1 } }
                 : { unitName: atom('°F'), scale: value => value, format: { kind: 'fixed', places: 1 } }
-        case 'dimensionfull':
-            return bestRepresentation(inBaseUnits, unit.scales)
+        case 'dimensionfull': {
+            const key = renderAsKey(unit.scales)
+            const { written, size, format } = chooseUnits(inBaseUnits, unit.scales, unitPool, chosen => styleFor(key, chosen))
+            return { scale: value => value / size, unitName: nameOf(written), format, prefix: prefixes[key] }
+        }
     }
 }
 
