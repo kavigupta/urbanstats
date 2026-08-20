@@ -11,7 +11,7 @@ type PartySystem = 'democratic' | 'left'
 /**
  * Base units, combined together via multiplication to form the units that correspond to the inBaseUnits value
  */
-export type BaseUnit = 'person' | 'usd' | 'fatality'
+export type BaseUnit = 'person' | 'usd' | 'fatality' | 'm'
 
 export interface Dimension {
     baseUnit: BaseUnit
@@ -92,18 +92,42 @@ function abbreviationsOf(baseUnit: BaseUnit): NamedUnit[] {
         .map(([name, size]) => ({ ...scaling(baseUnit, name, size, 1), abbreviation: true })) // relatively low cost, just the abbreviation's length
 }
 
+// no need for a cost for scaled units. It should pick whichever is most convenient.
+const costScaledUnit = 0
+
+const metersPerFoot = 1 / 3.28084
+const metersPerMile = 1609.34
+
+const lengthUnits: Record<'metric' | 'imperial', NamedUnit[]> = {
+    metric: [
+        scaling('m', 'm', 1, 0),
+        scaling('m', 'cm', 0.01, costScaledUnit),
+        scaling('m', 'km', 1e3, costScaledUnit),
+    ],
+    imperial: [
+        scaling('m', 'ft', metersPerFoot, 0),
+        scaling('m', 'in', metersPerFoot / 12, costScaledUnit),
+        scaling('m', 'mi', metersPerMile, costScaledUnit),
+        // an acre is a unit of area in its own right, and the square of no length anybody writes
+        { name: 'acres', dimensions: [{ baseUnit: 'm', power: 2 }], size: 4046.8564224, cost: costScaledUnit, abbreviation: false },
+    ],
+}
+
 /**
  * The units there are to write a quantity in, whatever dimensions it turns out to have. A count is
  * named by the statistic counting it, so the unit it is counted in has no name to show.
  */
-const unitPool: NamedUnit[] = [
-    scaling('person', '', 1, 0),
-    ...abbreviationsOf('person'),
-    scaling('usd', '', 1, 0),
-    ...abbreviationsOf('usd'),
-    // fatalities are not abbreviated: there are never enough of them for it to save a digit
-    scaling('fatality', '', 1, 0),
-]
+function poolFor(settings: ReaderSettings): NamedUnit[] {
+    return [
+        scaling('person', '', 1, 0),
+        ...abbreviationsOf('person'),
+        scaling('usd', '', 1, 0),
+        ...abbreviationsOf('usd'),
+        // fatalities are not abbreviated: there are never enough of them for it to save a digit
+        scaling('fatality', '', 1, 0),
+        ...lengthUnits[settings.useImperial === true ? 'imperial' : 'metric'],
+    ]
+}
 
 type DimensionKey = string
 
@@ -188,7 +212,7 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSett
                 : { unitName: atom('°F'), scale: value => value, format: { kind: 'fixed', places: 1 } }
         case 'dimensionfull': {
             const key = renderAsKey(unit.scales)
-            const { written, size, format } = chooseUnits(inBaseUnits, unit.scales, unitPool, chosen => styleFor(key, chosen))
+            const { written, size, format } = chooseUnits(inBaseUnits, unit.scales, poolFor(settings), chosen => styleFor(key, chosen))
             return { scale: value => value / size, unitName: nameOf(written), format, prefix: prefixes[key] }
         }
     }

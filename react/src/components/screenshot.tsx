@@ -319,11 +319,20 @@ export async function createScreenshot(config: () => ScreencapElements, universe
             await new Promise<void>((resolve) => {
                 flag.onload = () => { resolve() }
             })
-            // draw on bottom left, same height as banner
+            // flag and its label, as a block on the bottom left, centered in the banner
             const flagHeight = bannerHeight / 2
-            const offset = flagHeight / 2
             const flagWidth = flag.width * flagHeight / flag.height
-            drawImageIfNotTesting(ctx, canvases.length, flag, padAround + offset, start + offset, flagWidth, flagHeight, TestUtils.shared.isTesting)
+            // proportions of the label on the embed card's flag
+            const labelSize = flagHeight * 24 / 76
+            const labelGap = flagHeight * 6 / 76
+            const left = padAround + flagHeight / 2
+            const top = start + (bannerHeight - (flagHeight + labelGap + labelSize)) / 2
+            drawImageIfNotTesting(ctx, canvases.length, flag, left, top, flagWidth, flagHeight, TestUtils.shared.isTesting)
+            ctx.fillStyle = colors.ordinalTextColor
+            ctx.font = `${labelSize}px 'Jost', 'Arial', sans-serif`
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'top'
+            ctx.fillText('UNIVERSE', left + flagWidth / 2, top + flagHeight + labelGap)
         }
 
         canvas.toBlob(function (blob) {

@@ -36,12 +36,16 @@ export function pieSlicePath(cx: number, cy: number, radius: number, from: numbe
     const r = radius.toFixed(1)
     const point = (angle: number): string =>
         `${(cx + radius * Math.cos(angle)).toFixed(1)},${(cy + radius * Math.sin(angle)).toFixed(1)}`
-    // An arc cannot span more than half a turn unambiguously, so a whole pie takes two of them.
-    if (span >= 2 * Math.PI - 1e-6) {
-        return `M${point(0)}A${r},${r} 0 1,1 ${point(Math.PI)}A${r},${r} 0 1,1 ${point(0)}z`
-    }
     // Padding a near-whole slice past a whole turn would leave SVG solving for the wrong circle.
     const pad = Math.min(span * 0.01, Math.max(0, (2 * Math.PI - span) / 2 - 0.02))
+    const start = point(from - pad)
+    const end = point(to + pad)
+    // SVG drops an arc whose endpoints coincide, so a slice that comes back to where it started is
+    // drawn as the whole pie. An arc cannot span more than half a turn unambiguously, so a whole
+    // pie takes two of them.
+    if (start === end && span > Math.PI) {
+        return `M${point(0)}A${r},${r} 0 1,1 ${point(Math.PI)}A${r},${r} 0 1,1 ${point(0)}z`
+    }
     const large = span + 2 * pad > Math.PI ? 1 : 0
-    return `M${cx.toFixed(1)},${cy.toFixed(1)}L${point(from - pad)}A${r},${r} 0 ${large},1 ${point(to + pad)}z`
+    return `M${cx.toFixed(1)},${cy.toFixed(1)}L${start}A${r},${r} 0 ${large},1 ${end}z`
 }
