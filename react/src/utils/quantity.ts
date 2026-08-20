@@ -117,7 +117,7 @@ const lengthUnits: Record<'metric' | 'imperial', NamedUnit[]> = {
  * The units there are to write a quantity in, whatever dimensions it turns out to have. A count is
  * named by the statistic counting it, so the unit it is counted in has no name to show.
  */
-function poolFor(settings: ReaderSettings): NamedUnit[] {
+function allUnits(settings: ReaderSettings): NamedUnit[] {
     return [
         scaling('person', '', 1, 0),
         ...abbreviationsOf('person'),
@@ -126,6 +126,25 @@ function poolFor(settings: ReaderSettings): NamedUnit[] {
         // fatalities are not abbreviated: there are never enough of them for it to save a digit
         scaling('fatality', '', 1, 0),
         ...lengthUnits[settings.useImperial === true ? 'imperial' : 'metric'],
+    ]
+}
+
+/**
+ * What a quantity of these dimensions is written per, where that is settled rather than searched
+ * for. What a rate is per is part of what it says: a death rate is per the same number of people
+ * however many digits per person would save, so the unit below the line is named here instead.
+ */
+const conventions: Record<DimensionKey, Partial<Record<BaseUnit, NamedUnit>>> = {
+    'fatality^1 person^-1': { person: scaling('person', '100k', 1e5, 0) },
+}
+
+/** The units a quantity of these dimensions may be written in, once its conventions are applied. */
+function poolFor(settings: ReaderSettings, key: DimensionKey): NamedUnit[] {
+    const conventional = conventions[key] ?? {}
+    const settled: string[] = Object.keys(conventional)
+    return [
+        ...allUnits(settings).filter(unit => !unit.dimensions.some(({ baseUnit }) => settled.includes(baseUnit))),
+        ...Object.values(conventional),
     ]
 }
 
@@ -148,6 +167,7 @@ const styles: Record<DimensionKey, NumberFormat | undefined> = {
     'person^1': { kind: 'fixed', places: 0 },
     'usd^1': { kind: 'fixed', places: 0 },
     'fatality^1': { kind: 'fixed', places: 0 },
+    'fatality^1 person^-1': { kind: 'fixed', places: 2 },
 }
 
 const defaultStyle: NumberFormat = { kind: 'rounded', significantDigits: 3 }
@@ -212,8 +232,8 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSett
                 : { unitName: atom('°F'), scale: value => value, format: { kind: 'fixed', places: 1 } }
         case 'dimensionfull': {
             const key = renderAsKey(unit.scales)
-            const { written, size, format } = chooseUnits(inBaseUnits, unit.scales, poolFor(settings), chosen => styleFor(key, chosen))
-            return { scale: value => value / size, unitName: nameOf(written), format, prefix: prefixes[key] }
+            const { written, scale, format } = chooseUnits(inBaseUnits, unit.scales, poolFor(settings, key), chosen => styleFor(key, chosen))
+            return { scale, unitName: nameOf(written), format, prefix: prefixes[key] }
         }
     }
 }

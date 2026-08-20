@@ -71,21 +71,33 @@ function coverings(needed: Exponents, pool: NamedUnit[], settled: BaseUnit[] = [
 /**
  * The cheapest way of writing a value of these dimensions
  */
+/**
+ * What a value in base units reads as in these units. A unit below the line multiplies rather than
+ * dividing by its reciprocal, which is not the same number: a rate per 100k people divided by
+ * 1e5^-1 comes out a hundredth short.
+ */
+function scaledBy(written: Written[]): (value: number) => number {
+    return value => written.reduce(
+        (scaled, { unit, power }) => power < 0 ? scaled * Math.pow(unit.size, -power) : scaled / Math.pow(unit.size, power),
+        value,
+    )
+}
+
 export function chooseUnits(
     inBaseUnits: number,
     scales: Dimension[],
     pool: NamedUnit[],
     styleFor: (written: Written[]) => NumberFormat,
-): { written: Written[], size: number, format: NumberFormat } {
-    let best: { written: Written[], size: number, format: NumberFormat } | undefined
+): { written: Written[], scale: (value: number) => number, format: NumberFormat } {
+    let best: { written: Written[], scale: (value: number) => number, format: NumberFormat } | undefined
     let bestCost = Infinity
     for (const written of coverings(exponentsOf(scales), pool)) {
         const format = styleFor(written)
-        const size = written.reduce((product, { power, unit }) => product * Math.pow(unit.size, power), 1)
+        const scale = scaledBy(written)
         const cost = written.reduce((total, { power, unit }) => total + unit.cost * Math.abs(power), 0)
-            + Math.max(0, digitCost(inBaseUnits / size, format) - 3)
+            + Math.max(0, digitCost(scale(inBaseUnits), format) - 3)
         if (cost < bestCost) {
-            best = { written, size, format }
+            best = { written, scale, format }
             bestCost = cost
         }
     }
