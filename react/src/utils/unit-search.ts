@@ -71,16 +71,14 @@ function coverings(needed: Exponents, pool: NamedUnit[], settled: BaseUnit[] = [
 /**
  * The cheapest way of writing a value of these dimensions
  */
-/**
- * What a value in base units reads as in these units. A unit below the line multiplies rather than
- * dividing by its reciprocal, which is not the same number: a rate per 100k people divided by
- * 1e5^-1 comes out a hundredth short.
- */
+/** What a value in base units reads as in these units. */
 function scaledBy(written: Written[]): (value: number) => number {
-    return value => written.reduce(
-        (scaled, { unit, power }) => power < 0 ? scaled * Math.pow(unit.size, -power) : scaled / Math.pow(unit.size, power),
-        value,
-    )
+    return value => written.reduce((scaled, { unit, power }) => {
+        // one factor, applied whichever way the power asks: a hundred-thousandth is not exactly
+        // representable, so dividing by it and multiplying by a hundred thousand differ
+        const factor = Math.pow(unit.size, Math.abs(power))
+        return power < 0 ? scaled * factor : scaled / factor
+    }, value)
 }
 
 export function chooseUnits(
