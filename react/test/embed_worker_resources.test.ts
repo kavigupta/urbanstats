@@ -1,12 +1,11 @@
-import { ogRenderCost, ogWorkerBundleCost, runMeasuredOgWorkerForTest } from './og_worker_test_utils'
+import { measuredPort, ogRenderCost, ogWorkerBundleCost, runOgWorkerForTest } from './og_worker_test_utils'
 import { urbanstatsFixture } from './test_utils'
 
 const article = '/article.html?longname=San Marino city, California, USA'
 
-// Its own file, and its own Worker on a port of its own, because measuring a render deadlocks
-// workerd's inspector and leaves that Worker unusable afterwards.
+// Its own file, and its own Worker, so that nothing else's requests land in the numbers.
 urbanstatsFixture('embed worker resources', '/index.html', async () => {
-    await runMeasuredOgWorkerForTest()
+    await runOgWorkerForTest(measuredPort)
 })
 
 /*
