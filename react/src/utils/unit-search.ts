@@ -73,12 +73,7 @@ function coverings(needed: Exponents, pool: NamedUnit[], settled: BaseUnit[] = [
  */
 /** What a value in base units reads as in these units. */
 function scaledBy(written: Written[]): (value: number) => number {
-    return value => written.reduce((scaled, { unit, power }) => {
-        // one factor, applied whichever way the power asks: a hundred-thousandth is not exactly
-        // representable, so dividing by it and multiplying by a hundred thousand differ
-        const factor = Math.pow(unit.size, Math.abs(power))
-        return power < 0 ? scaled * factor : scaled / factor
-    }, value)
+    return value => written.reduce((scaled, { unit, power }) => scaled / Math.pow(unit.size, power), value)
 }
 
 export function chooseUnits(
