@@ -34,9 +34,8 @@ start it themselves.
 
 - `embed_worker.test.ts` reuses a Worker already listening on 8787 and otherwise starts one, taking
   it down with the runner. Starting your own first with `npm run og-preview` saves the wait.
-- `embed_worker_resources.test.ts` starts a Worker of its own on 8797, because measuring a render
-  deadlocks workerd's inspector and leaves that Worker unusable afterwards. It can run alongside
-  anything using the shared one, but only once per runner.
+- `embed_worker_resources.test.ts` starts a Worker of its own on 8797, so that nothing else's
+  requests land in what it measures. It can run alongside anything using the shared one.
 - The card screenshots are the Worker's PNG itself, drawn from the vector tiles snapshotted in
   `test/assets/og-tiles` rather than from openfreemap, so openfreemap's next planet build cannot
   move them. A test that needs tiles the snapshot does not have records them with
