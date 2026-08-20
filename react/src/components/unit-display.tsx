@@ -28,9 +28,6 @@ export function renderInequality(value: number, unitType: UnitType, inequality: 
 
 const kmPerMile = 1.60934
 const squareKmPerSquareMile = kmPerMile * kmPerMile
-const acresPerSquareMile = 640
-const feetPerMeter = 3.28084
-const squareMetersPerSquareKm = 1000 * 1000
 const perHundredThousand = 100_000
 
 interface ReaderSettings {
@@ -128,6 +125,9 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'population':
         case 'fatalities':
         case 'usd':
+        case 'distanceInM':
+        case 'distanceInKm':
+        case 'area':
             return quantity(storedUnits[unitType])
         case 'fatalitiesPerCapita':
             return display(value => ({
@@ -138,30 +138,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
             return display((value, { useImperial }) => ({
                 number: roundToDigits(useImperial ? value * squareKmPerSquareMile : value, { significantDigits: 2 }),
                 unit: raised(per(useImperial ? 'mi' : 'km'), '2'),
-            }))
-        case 'area':
-            return display((value, { useImperial }) => {
-                if (useImperial) {
-                    const squareMiles = value / squareKmPerSquareMile
-                    if (Math.abs(squareMiles) < 1) {
-                        return { number: roundToDigits(squareMiles * acresPerSquareMile, { significantDigits: 3 }), unit: atom('acres') }
-                    }
-                    return { number: roundToDigits(squareMiles, { significantDigits: 3 }), unit: raised('mi', '2') }
-                }
-                if (Math.abs(value) < 0.01) {
-                    return { number: roundToDigits(value * squareMetersPerSquareKm, { significantDigits: 3 }), unit: raised('m', '2') }
-                }
-                return { number: roundToDigits(value, { significantDigits: 3 }), unit: raised('km', '2') }
-            })
-        case 'distanceInKm':
-            return display((value, { useImperial }) => ({
-                number: roundToDigits(useImperial ? value / kmPerMile : value, { significantDigits: 3 }),
-                unit: atom(useImperial ? 'mi' : 'km'),
-            }))
-        case 'distanceInM':
-            return display((value, { useImperial }) => ({
-                number: roundToDigits(useImperial ? value * feetPerMeter : value, { significantDigits: 3 }),
-                unit: atom(useImperial ? 'ft' : 'm'),
             }))
         case 'time':
             return display(value => hoursAndMinutes(value))
