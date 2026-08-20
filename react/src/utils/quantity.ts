@@ -129,14 +129,10 @@ function allUnits(settings: ReaderSettings): NamedUnit[] {
     ]
 }
 
-/** The units a quantity of these dimensions may be written in, once its conventions are applied. */
+/** The units a quantity of these dimensions may be written in. */
 function poolFor(settings: ReaderSettings, key: DimensionKey): NamedUnit[] {
-    const conventional = conventions[key]?.writeIn ?? {}
-    const settled: string[] = Object.keys(conventional)
-    return [
-        ...allUnits(settings).filter(unit => !unit.dimensions.some(({ baseUnit }) => settled.includes(baseUnit))),
-        ...Object.values(conventional),
-    ]
+    const conventional = conventions[key]?.writeIn
+    return conventional === undefined ? allUnits(settings) : Object.values(conventional)
 }
 
 type DimensionKey = string
@@ -157,8 +153,10 @@ interface Convention {
     /** How the number is written, where three digits is not what it should be written to */
     style?: NumberFormat
     /**
-     * The unit to write a base unit in. What a rate is per is part of what it says: a death rate
-     * is per a hundred thousand people however many digits per person would save.
+     * What every base unit of the quantity is written in, leaving nothing to search for. What a
+     * rate is per is part of what it says: a death rate is per a hundred thousand people however
+     * many digits per person would save. A base unit the quantity has and this omits is an error,
+     * and shows up as a quantity with no way of being written.
      */
     writeIn?: Partial<Record<BaseUnit, NamedUnit>>
     /** Written in front of the number, as a dollar sign is */
@@ -173,7 +171,7 @@ const conventions: Record<DimensionKey, Convention | undefined> = {
     'fatality^1': { style: { kind: 'fixed', places: 0 } },
     'fatality^1 person^-1': {
         style: { kind: 'fixed', places: 2 },
-        writeIn: { person: scaling('person', '100k', 1e5, 0) },
+        writeIn: { fatality: scaling('fatality', '', 1, 0), person: scaling('person', '100k', 1e5, 0) },
     },
 }
 
