@@ -266,13 +266,19 @@ async function render(pageUrl: string, cacheBuster: string): Promise<void> {
     // mid-run should say so rather than hold the runner.
     const giveUp = new AbortController()
     const timer = setTimeout(() => { giveUp.abort() }, 60_000)
-    const response = await fetch(image, { signal: giveUp.signal }).finally(() => { clearTimeout(timer) }).catch((error: unknown) => {
-        throw new Error(`Could not reach the embed Worker at ${image}: ${String(error)}`)
-    })
-    if (!response.ok) {
-        throw new Error(`Embed Worker returned ${response.status} for ${image}`)
+    try {
+        const response = await fetch(image, { signal: giveUp.signal }).catch((error: unknown) => {
+            throw new Error(`Could not reach the embed Worker at ${image}: ${String(error)}`)
+        })
+        if (!response.ok) {
+            throw new Error(`Embed Worker returned ${response.status} for ${image}`)
+        }
+        // The signal covers the body too, so a Worker that stalls after its headers also aborts.
+        await response.arrayBuffer()
     }
-    await response.arrayBuffer()
+    finally {
+        clearTimeout(timer)
+    }
 }
 
 interface CpuProfile {
