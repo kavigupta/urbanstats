@@ -7,7 +7,7 @@ import { useColors } from '../../page_template/colors'
 import { ScaleInstance } from '../../urban-stats-script/constants/scale'
 import { HumanReadableName, reifyReact, reifyString } from '../../utils/human-readable-name'
 import { classifyStatistic, UnitType } from '../../utils/unit'
-import { rampColors } from '../map-rendering'
+import { rampColorer } from '../map-rendering'
 import { Keypoints } from '../ramps'
 import { Basemap } from '../settings/utils'
 
@@ -80,7 +80,7 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
         }
     }, [ramp])
 
-    const swatches = useMemo(() => rampColors(ramp.ramp, ramp.scale, ramp.interpolations), [ramp])
+    const swatches = useMemo(() => ramp.interpolations.map(rampColorer(ramp.ramp, ramp.scale)), [ramp])
 
     const createValue = (stat: number, index: number): ReactNode => {
         return (
