@@ -24,10 +24,10 @@ test('embed-worker-startup-cost', async (t) => {
     // Currently ~1760. Dropping the panel stubs from wrangler.toml would add roughly 900, which is
     // what this is watching for; the plan's own ceiling is 3 MiB gzip on free, 10 on paid.
     await t.expect(gzipKiB).lt(2_000)
-    // 400 ms is Cloudflare's own startup limit rather than headroom over today's value: a Worker
-    // past it does not run at all. Currently ~30, because index.ts defers everything that only a
-    // render or a map's script needs.
-    await t.expect(startupCpuMs).lt(400)
+    // Cloudflare's own limit is 1000 and this is nowhere near it, so the bound is set just above
+    // what CI measures (25-42) to catch an increase; startup is paid on every cold start. index.ts
+    // defers everything only a render or a map's script needs, which is what keeps it there.
+    await t.expect(startupCpuMs).lt(100)
 })
 
 test('embed-worker-article-render-cost', async (t) => {
