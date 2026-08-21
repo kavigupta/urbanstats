@@ -68,13 +68,13 @@ function coverings(needed: Exponents, pool: NamedUnit[], settled: BaseUnit[] = [
     })
 }
 
-/**
- * The cheapest way of writing a value of these dimensions
- */
 function scaledBy(written: Written[]): (value: number) => number {
     return value => written.reduce((scaled, { unit, power }) => scaled / Math.pow(unit.size, power), value)
 }
 
+/**
+ * The cheapest way of writing a value of these dimensions
+ */
 export function chooseUnits(
     inBaseUnits: number,
     scales: Dimension[],
