@@ -14,7 +14,7 @@ import { Inset } from '../../src/urban-stats-script/constants/insets'
 import { computeAspectRatioForInsets } from '../../src/utils/coordinates'
 import { UnitType, classifyStatistic } from '../../src/utils/unit'
 
-import { basemap } from './basemap'
+import { PaintedBasemap, basemap } from './basemap'
 import { Marker, clusterMarkers } from './clusters'
 import { ArticleCard, MapCard, MapContents, Units } from './data'
 import { MapLayout, Ring, fitBounds, fitRings, place, polyline, withinBox } from './map-layout'
@@ -69,8 +69,8 @@ const colors = {
 const tileAttribution = 'OpenFreeMap © OpenMapTiles · Data from OpenStreetMap'
 
 /** The basemap and whatever is drawn over it: satori renders images but not arbitrary SVG children. */
-function mapImage(paint: string, drawn: string, width: number, height: number): string {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${paint}${drawn}</svg>`
+function mapImage(paint: PaintedBasemap, drawn: string, width: number, height: number): string {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${paint.under}${drawn}${paint.over}</svg>`
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
 }
 
@@ -241,8 +241,8 @@ async function insetImage(map: MapCard, inset: Inset, box: { width: number, heig
     }
 
     const paint = map.basemap.type === 'none'
-        ? `<rect width="${width}" height="${height}" fill="${map.basemap.backgroundColor}"/>`
-        : await basemap(layout, width, height, tileOrigin, inset.mainMap ? 12 : 4)
+        ? { under: `<rect width="${width}" height="${height}" fill="${map.basemap.backgroundColor}"/>`, over: '' }
+        : await basemap(layout, width, height, tileOrigin, inset.mainMap ? 12 : 4, map.basemap.subnationalOutlines)
 
     return (
         <img
