@@ -11,7 +11,7 @@ type PartySystem = 'democratic' | 'left'
 /**
  * Base units, combined together via multiplication to form the units that correspond to the inBaseUnits value
  */
-export type BaseUnit = 'person' | 'usd' | 'fatality' | 'm'
+export type BaseUnit = 'person' | 'usd' | 'fatality' | 'm' | 'g'
 
 export interface Dimension {
     baseUnit: BaseUnit
@@ -105,6 +105,8 @@ function systemOf(settings: ReaderSettings): 'metric' | 'imperial' {
 const kilometer = scaling('m', 'km', 1e3, costScaledUnit)
 const mile = scaling('m', 'mi', metersPerMile, costScaledUnit)
 const people = scaling('person', '', 1, 0)
+const meter = scaling('m', 'm', 1, 0)
+const microgram = scaling('g', 'μg', 1e-6, 0)
 
 const lengthUnits: Record<'metric' | 'imperial', NamedUnit[]> = {
     metric: [
@@ -170,6 +172,8 @@ function conventionsUsing(kmLike: NamedUnit): Record<DimensionKey, Convention | 
         },
         // a density is not worth a third digit, and every one of them is read against the others
         'm^-2 person^1': { style: { kind: 'rounded', significantDigits: 2 }, writeIn: { person: people, m: kmLike } },
+        // a concentration is scientific, and stays in the units science is written in
+        'g^1 m^-3': { style: { kind: 'fixed', places: 2 }, writeIn: { g: microgram, m: meter } },
     }
 }
 

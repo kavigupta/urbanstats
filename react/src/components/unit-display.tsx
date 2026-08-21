@@ -42,10 +42,6 @@ function atom(value: string): HumanReadableElement[] {
     return [{ type: 'atom', value }]
 }
 
-function raised(name: string, power: string): HumanReadableElement[] {
-    return [{ type: 'atom', value: name }, { type: 'superscript', value: atom(power) }]
-}
-
 function unitColumn(name: HumanReadableElement[]): ReactNode {
     return <span>{name.length === 0 ? <>&nbsp;</> : reifyReact(name)}</span>
 }
@@ -121,6 +117,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'area':
         case 'fatalitiesPerCapita':
         case 'density':
+        case 'contaminantLevel':
             return quantity(storedUnits[unitType])
         case 'time':
             return display(value => hoursAndMinutes(value))
@@ -134,11 +131,6 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                     unit: atom(`${converted.unit}/yr`),
                 }
             })
-        case 'contaminantLevel':
-            return display(value => ({
-                number: separateNumber(value.toFixed(2)),
-                unit: raised('μg/m', '3'),
-            }))
     }
 }
 
