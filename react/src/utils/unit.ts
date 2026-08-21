@@ -81,6 +81,7 @@ export const storedUnits = {
     distanceInKm: dimensionfull({ m: 1 }, 1e3),
     area: dimensionfull({ m: 2 }, 1e6),
     fatalitiesPerCapita: dimensionfull({ fatality: 1, person: -1 }),
+    density: dimensionfull({ person: 1, m: -2 }, 1e-6),
 } satisfies Partial<Record<UnitType, StoredUnit>>
 /* eslint-enable no-restricted-syntax */
 

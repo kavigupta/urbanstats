@@ -3,7 +3,7 @@ import React, { CSSProperties, ReactNode } from 'react'
 import { useColors } from '../page_template/colors'
 import { HumanReadableElement, reifyReact } from '../utils/human-readable-name'
 import { Hue, missingValue, StoredUnit, writeQuantity } from '../utils/quantity'
-import { roundToDigits, separateNumber } from '../utils/text'
+import { separateNumber } from '../utils/text'
 import { convertPrecipitation, storedUnits, UnitType } from '../utils/unit'
 
 export interface UnitDisplay {
@@ -25,9 +25,6 @@ export function renderInequality(value: number, unitType: UnitType, inequality: 
     const reads = flipsInequality(unitType, value) ? (inequality === 'leq' ? 'geq' : 'leq') : inequality
     return reads === 'leq' ? '\u2264' /* ≤ */ : '\u2265' /* ≥ */
 }
-
-const kmPerMile = 1.60934
-const squareKmPerSquareMile = kmPerMile * kmPerMile
 
 interface ReaderSettings {
     useImperial: boolean
@@ -63,11 +60,6 @@ function display(write: (value: number, settings: ReaderSettings) => Written): U
             return { value: <span>{number}</span>, unit: unitColumn(unit) }
         },
     }
-}
-
-/** A solidus with a numerator in front of it is set tight; one without gets a space. */
-function per(name: string): string {
-    return `/\u00a0${name}`
 }
 
 /** Durations read as hours and minutes, or as minutes alone where there are no hours. */
@@ -128,12 +120,8 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'distanceInKm':
         case 'area':
         case 'fatalitiesPerCapita':
-            return quantity(storedUnits[unitType])
         case 'density':
-            return display((value, { useImperial }) => ({
-                number: roundToDigits(useImperial ? value * squareKmPerSquareMile : value, { significantDigits: 2 }),
-                unit: raised(per(useImperial ? 'mi' : 'km'), '2'),
-            }))
+            return quantity(storedUnits[unitType])
         case 'time':
             return display(value => hoursAndMinutes(value))
         case 'minutes':
