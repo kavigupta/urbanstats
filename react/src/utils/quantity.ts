@@ -110,14 +110,7 @@ const people = scaling('person', '', 1, 0)
 const meter = scaling('m', 'm', 1, 0)
 const centimeter = scaling('m', 'cm', 0.01, costScaledUnit)
 const inch = scaling('m', 'in', metersPerInch, costScaledUnit)
-const year = scaling('s', 'yr', 365.25 * 24 * 60 * 60, costScaledUnit)
-const timeUnits: NamedUnit[] = [
-    scaling('s', 's', 1, 0),
-    scaling('s', 'min', 60, costScaledUnit),
-    scaling('s', 'hr', 60 * 60, costScaledUnit),
-    scaling('s', 'days', 24 * 60 * 60, costScaledUnit),
-    year,
-]
+const year = scaling('s', 'yr', 365.25 * 24 * 60 * 60, 0)
 const microgram = scaling('g', 'μg', 1e-6, 0)
 
 const lengthUnits: Record<'metric' | 'imperial', NamedUnit[]> = {
@@ -148,7 +141,6 @@ function allUnits(settings: ReaderSettings): NamedUnit[] {
         // fatalities are not abbreviated: there are never enough of them for it to save a digit
         scaling('fatality', '', 1, 0),
         ...lengthUnits[systemOf(settings)],
-        ...timeUnits,
     ]
 }
 
@@ -187,6 +179,8 @@ function conventionsUsing(kmLike: NamedUnit, cmLike: NamedUnit): Record<Dimensio
         'm^-2 person^1': { style: { kind: 'rounded', significantDigits: 2 }, writeIn: { person: people, m: kmLike } },
         // a concentration is scientific, and stays in the units science is written in
         'g^1 m^-3': { style: { kind: 'fixed', places: 2 }, writeIn: { g: microgram, m: meter } },
+        // rainfall is per year, however many digits per hour would save
+        'm^1 s^-1': { style: { kind: 'fixed', places: 1 }, writeIn: { m: cmLike, s: year } },
     }
 }
 
