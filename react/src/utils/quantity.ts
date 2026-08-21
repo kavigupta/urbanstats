@@ -157,7 +157,7 @@ interface Convention {
     prefix?: string
 }
 
-function conventionsMeasuringIn(area: NamedUnit): Record<DimensionKey, Convention | undefined> {
+function conventionsUsing(largeLength: NamedUnit): Record<DimensionKey, Convention | undefined> {
     return {
         '': { style: { kind: 'significantFigures' } },
         // things that are counted come in whole numbers, unless they are counted in thousands
@@ -169,13 +169,13 @@ function conventionsMeasuringIn(area: NamedUnit): Record<DimensionKey, Conventio
             writeIn: { fatality: scaling('fatality', '', 1, 0), person: scaling('person', '100k', 1e5, 0) },
         },
         // a density is not worth a third digit, and every one of them is read against the others
-        'm^-2 person^1': { style: { kind: 'rounded', significantDigits: 2 }, writeIn: { person: people, m: area } },
+        'm^-2 person^1': { style: { kind: 'rounded', significantDigits: 2 }, writeIn: { person: people, m: largeLength } },
     }
 }
 
 const conventions: Record<'metric' | 'imperial', Record<DimensionKey, Convention | undefined>> = {
-    metric: conventionsMeasuringIn(kilometer),
-    imperial: conventionsMeasuringIn(mile),
+    metric: conventionsUsing(kilometer),
+    imperial: conventionsUsing(mile),
 }
 
 const defaultStyle: NumberFormat = { kind: 'rounded', significantDigits: 3 }
