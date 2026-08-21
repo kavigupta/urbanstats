@@ -20,8 +20,9 @@ test('embed-worker-resources', async (t) => {
     // Currently ~1320. Dropping the panel stubs from wrangler.toml would take it to ~2200, which is
     // what this is watching for; the plan's own ceiling is 3 MiB gzip on free, 10 on paid.
     await t.expect(gzipKiB).lt(2_000)
-    // Currently ~45, against a hard 400 ms limit, paid on every cold start.
-    await t.expect(startupCpuMs).lt(300)
+    // Cloudflare's own limit is 1000 and this is nowhere near it, so the bound is set just above
+    // what CI measures (25-42) to catch an increase; startup is paid on every cold start.
+    await t.expect(startupCpuMs).lt(100)
 
     const { cpuMs, subrequests, originBytes } = await ogRenderCost(article)
     console.warn(`Embed Worker render: ${cpuMs} ms CPU, ${subrequests} subrequests, ${originBytes} bytes from the site`)
