@@ -148,18 +148,10 @@ function renderAsKey(scales: Dimension[]): DimensionKey {
 /**
 
  */
-/** What the site has settled about a quantity of some dimensions, rather than left to the search. */
 interface Convention {
-    /** How the number is written, where three digits is not what it should be written to */
     style?: NumberFormat
-    /**
-     * What every base unit of the quantity is written in, leaving nothing to search for. What a
-     * rate is per is part of what it says: a death rate is per a hundred thousand people however
-     * many digits per person would save. A base unit the quantity has and this omits is an error,
-     * and shows up as a quantity with no way of being written.
-     */
+    /** Every base unit the quantity has, or there is no way left to write it in. */
     writeIn?: Partial<Record<BaseUnit, NamedUnit>>
-    /** Written in front of the number, as a dollar sign is */
     prefix?: string
 }
 
