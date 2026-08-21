@@ -179,7 +179,6 @@ function conventionsUsing(kmLike: NamedUnit, cmLike: NamedUnit): Record<Dimensio
         'm^-2 person^1': { style: { kind: 'rounded', significantDigits: 2 }, writeIn: { person: people, m: kmLike } },
         // a concentration is scientific, and stays in the units science is written in
         'g^1 m^-3': { style: { kind: 'fixed', places: 2 }, writeIn: { g: microgram, m: meter } },
-        // rainfall is per year, however many digits per hour would save
         'm^1 s^-1': { style: { kind: 'fixed', places: 1 }, writeIn: { m: cmLike, s: year } },
     }
 }
