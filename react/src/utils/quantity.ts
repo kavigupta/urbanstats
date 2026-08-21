@@ -18,7 +18,6 @@ export interface Dimension {
     power: number
 }
 
-// Abstract interpretation of a quantity as a unit.
 export type Party = { kind: 'color', hue: Hue } | { kind: 'lead', system: PartySystem }
 
 export type Decoration = { kind: 'none' } | { kind: 'percent', party?: Party }
