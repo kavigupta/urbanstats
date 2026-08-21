@@ -56,6 +56,50 @@ test('histogram-pinned-tooltip', async (t) => {
     await t.expect(pinnedTip.exists).notOk('the dismiss button unpins the tooltip')
 })
 
+// TestCafe drives a mouse, so a finger has to be dispatched by hand. Both ends of the gesture are
+// sent from the same client-side call, so that a tap here is as quick as a real one.
+const touchPlot = ClientFunction((offsetX: number, offsetY: number, dx: number, dy: number, hold: number) => {
+    const panel = document.getElementsByClassName('histogram-svg-panel')[0]
+    const rect = panel.getBoundingClientRect()
+    const send = (type: string, x: number, y: number): void => {
+        panel.dispatchEvent(new PointerEvent(type, {
+            pointerType: 'touch',
+            pointerId: 2,
+            isPrimary: true,
+            bubbles: true,
+            clientX: rect.left + x,
+            clientY: rect.top + y,
+        }))
+    }
+    send('pointerdown', offsetX, offsetY)
+    return new Promise<void>((resolve) => {
+        setTimeout(() => {
+            send('pointerup', offsetX + dx, offsetY + dy)
+            resolve()
+        }, hold)
+    })
+})
+
+// A touch that lands on the chart is usually the start of a scroll down the page, so a touch pins
+// only once it lifts, and only if it was a tap.
+test('histogram-pinned-tooltip-touch', async (t) => {
+    await t.resizeWindow(1400, 800)
+    await t.click(Selector('.expand-toggle'))
+    // stands in for the pointerenter that precedes a real touch, which is what tells the plot which
+    // point is being touched
+    await t.hover(Selector('.histogram-svg-panel'), { offsetX: 500, offsetY: 200 })
+
+    await touchPlot(500, 200, 0, -40, 0)
+    await t.expect(pinnedTip.exists).notOk('a touch that drags off, as a scroll does, pins nothing')
+    await touchPlot(500, 200, 0, 0, 700)
+    await t.expect(pinnedTip.exists).notOk('a touch held down pins nothing')
+    await touchPlot(500, 200, 0, 0, 0)
+    await t.expect(pinnedTip.exists).ok('a tap pins the touched tooltip')
+
+    await t.expect(Selector('.histogram-svg-panel').getStyleProperty('touch-action')).eql(
+        'pan-y', 'a drag across the plot moves the tooltip rather than scrolling the page')
+})
+
 // pins are per-plot component state, so several graphs on a page each keep their own set, and each
 // graph carries only its own into the image it exports
 test('histogram-pinned-tooltip-multiple-graphs', async (t) => {
