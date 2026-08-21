@@ -33,6 +33,20 @@ function headersJSON(headers: Headers): string {
     return JSON.stringify(entries)
 }
 
+// eslint-disable-next-line no-restricted-syntax -- Reporting on Google's pages, which have no page descriptor
+const pageURL = ClientFunction(() => window.location.href)
+
+// Google's interstitials look much alike in the error screenshot; the URL is what tells them apart.
+async function expectOrWarn(t: TestController, selector: Selector, what: string): Promise<void> {
+    try {
+        await t.expect(selector.exists).ok()
+    }
+    catch (error) {
+        console.warn(`${what}, at ${await pageURL()}`)
+        throw error
+    }
+}
+
 async function popTOTP(t: TestController): Promise<string> {
     // https://script.google.com/u/2/home/projects/1CWDP4eezFo8fMhQb327VfSm3DnThl-8xg1fmg4cl9gHnK0NGB8XSz094/edit
     // Apps Script runs the script at /exec, then 302s to a script.googleusercontent.com URL that
@@ -115,7 +129,7 @@ async function googleSignIn(t: TestController): Promise<void> {
                 await fillTOTP(t)
             }
             else {
-                await t.expect(Selector('h1').withExactText('Urban Stats').exists).ok()
+                await expectOrWarn(t, Selector('h1').withExactText('Urban Stats'), 'Google sign in reached an unhandled page')
                 break
             }
         }
@@ -181,7 +195,7 @@ async function signInPopup(t: TestController, enableDrive: boolean): Promise<voi
         await t.click(continueButton)
     }
     // Waiting on the outcome first, since waitForLoading needs the callback page to have replaced Google's
-    await t.expect(Selector('h1').withText(/Signed In!|Sign In Failed/).exists).ok()
+    await expectOrWarn(t, Selector('h1').withText(/Signed In!|Sign In Failed/), 'Sign in popup ended on neither Signed In! nor Sign In Failed')
     await waitForLoading()
 }
 

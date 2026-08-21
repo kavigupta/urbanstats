@@ -210,6 +210,14 @@ jobs:
         with:
           name: changed_screenshots-${{ steps.artifact-name.outputs.name }}
           path: react/changed_screenshots
+      # Both TestCafe's take-on-fail shots and the ones `flaky` takes per attempt land here, and
+      # a run that passes deletes them, so this only ever carries pictures of something going wrong.
+      - uses: actions/upload-artifact@v4
+        if: "!cancelled()"
+        with:
+          name: error_screenshots-${{ steps.artifact-name.outputs.name }}
+          path: react/screenshots/**/*.error.png
+          if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:

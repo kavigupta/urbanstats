@@ -10,7 +10,9 @@ import { target, safeReload, screencap, safeClearLocalStorage, waitForDownload, 
 
 export async function runQuery(t: TestController, query: string): Promise<string> {
     // dump given query to a string
-    const commandLine = `sqlite3 ../urbanstats-persistent-data/db.sqlite3 "${query}"`
+    // The CLI's default busy timeout is zero, so without this it gives up the instant the quiz
+    // server happens to be holding the write lock.
+    const commandLine = `sqlite3 -cmd ".timeout 10000" ../urbanstats-persistent-data/db.sqlite3 "${query}"`
     await t.wait(500)
     const result = await promisify(exec)(commandLine)
     return result.stdout
