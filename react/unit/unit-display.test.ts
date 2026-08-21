@@ -94,6 +94,16 @@ for (const [value, expected] of [
     })
 }
 
+// The imperial units are their exact definitions, so a mile of kilometers reads as a round mile
+for (const [unitType, value, expected] of [
+    ['distanceInKm', 1.609344, '1.00mi'],
+    ['area', 258.9988110336, '100.0mi2'],
+] as const) {
+    void test(`${unitType} renders ${value} in imperial as ${expected}`, () => {
+        assert.equal(renderValue(unitType, value, true), expected)
+    })
+}
+
 // A density is written per the area a reader measures in, and its people are never counted in
 // thousands however many of them there are
 for (const [value, imperial, expected] of [
