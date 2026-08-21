@@ -14,7 +14,7 @@ import { Inset } from '../../src/urban-stats-script/constants/insets'
 import { computeAspectRatioForInsets } from '../../src/utils/coordinates'
 import { UnitType, classifyStatistic } from '../../src/utils/unit'
 
-import { PaintedBasemap, basemap } from './basemap'
+import { basemap } from './basemap'
 import { Marker, clusterMarkers } from './clusters'
 import { ArticleCard, MapCard, MapContents, Units } from './data'
 import { MapLayout, Ring, fitBounds, fitRings, place, polyline, withinBox } from './map-layout'
@@ -68,9 +68,9 @@ const colors = {
 // openfreemap's credit line, as its TileJSON states it.
 const tileAttribution = 'OpenFreeMap © OpenMapTiles · Data from OpenStreetMap'
 
-/** The basemap and whatever is drawn over it: satori renders images but not arbitrary SVG children. */
-function mapImage(paint: PaintedBasemap, drawn: string, width: number, height: number): string {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${paint.under}${drawn}${paint.over}</svg>`
+/** The whole map as one image: satori renders images but not arbitrary SVG children. */
+function mapImage(content: string, width: number, height: number): string {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${content}</svg>`
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
 }
 
@@ -81,7 +81,7 @@ async function mapPanel(rings: Ring[], { width, height }: { width: number, heigh
     const shape = `<path d="${d}" fill="${colors.shape}" fill-opacity="0.2" stroke="${colors.shape}" stroke-width="2.5" stroke-linejoin="round" fill-rule="evenodd"/>`
     return (
         <div style={{ display: 'flex', overflow: 'hidden', width, height, flexShrink: 0, borderRadius: 5 }}>
-            <img src={mapImage(paint, shape, width, height)} width={width} height={height} />
+            <img src={mapImage(`${paint.under}${shape}`, width, height)} width={width} height={height} />
         </div>
     )
 }
@@ -244,9 +244,14 @@ async function insetImage(map: MapCard, inset: Inset, box: { width: number, heig
         ? { under: `<rect width="${width}" height="${height}" fill="${map.basemap.backgroundColor}"/>`, over: '' }
         : await basemap(layout, width, height, tileOrigin, inset.mainMap ? 12 : 4, map.basemap.subnationalOutlines)
 
+    // A cluster's markers are DOM elements over the page's canvas, so no basemap line crosses them.
+    const content = map.contents.kind === 'clusters'
+        ? `${paint.under}${paint.over}${drawn}`
+        : `${paint.under}${drawn}${paint.over}`
+
     return (
         <img
-            src={mapImage(paint, drawn, width, height)}
+            src={mapImage(content, width, height)}
             width={width}
             height={height}
             style={inset.mainMap ? {} : { border: `1px solid ${colors.rule}` }}
