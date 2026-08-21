@@ -94,6 +94,17 @@ for (const [value, expected] of [
     })
 }
 
+// A rate is written per the number of people it is conventionally counted per, whatever its size
+for (const [value, expected] of [
+    [1.2e-5, '1.20/\u00a0100k'],
+    [0.5, '50\u202f000.00/\u00a0100k'],
+    [1e-9, '0.00/\u00a0100k'],
+] as const) {
+    void test(`fatalitiesPerCapita renders ${value} as ${expected}`, () => {
+        assert.equal(renderValue('fatalitiesPerCapita', value), expected)
+    })
+}
+
 // A solidus with nothing in front of it is set with a space, as a bare per reads better that way
 for (const [unitType, value, expected] of [
     ['density', 5.67, '5.7/\u00a0km2'],
