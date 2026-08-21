@@ -19,16 +19,11 @@ export interface Dimension {
 }
 
 // Abstract interpretation of a quantity as a unit.
-/** Whose color a quantity is drawn in, either fixed or read off which way the quantity leans. */
 export type Party = { kind: 'color', hue: Hue } | { kind: 'lead', system: PartySystem }
 
-/** What a quantity is dressed in, over and above the dimensions it has. */
 export type Decoration = { kind: 'none' } | { kind: 'percent', party?: Party }
 
-/**
- * A temperature is the one quantity that is not a scaling of anything: Fahrenheit to Celsius has
- * an offset, so no unit off a ladder can express it.
- */
+/** Temperature is not expressed in units that scale each other: 0°C is not 0°F. */
 export type Unit = (
     { kind: 'temperature' }
     | { kind: 'scalar', dimensions: Dimension[], decoration: Decoration, difference: boolean }
