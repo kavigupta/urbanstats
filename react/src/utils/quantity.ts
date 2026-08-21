@@ -18,13 +18,14 @@ export interface Dimension {
     power: number
 }
 
-// Abstract interpretation of a quantity as a unit.
+export type Party = { kind: 'color', hue: Hue } | { kind: 'lead', system: PartySystem }
+
+export type Decoration = { kind: 'none' } | { kind: 'percent', party?: Party }
+
+/** Temperature is not expressed in units that scale each other: 0°C is not 0°F. */
 export type Unit = (
-    { kind: 'raw-percentage', partyColor?: Hue }
-    | { kind: 'delta-percentage', partyColor?: Hue }
-    | { kind: 'lead-percentage', partySystem: PartySystem }
-    | { kind: 'temperature-F' }
-    | { kind: 'dimensionfull', scales: Dimension[] }
+    { kind: 'temperature' }
+    | { kind: 'scalar', dimensions: Dimension[], decoration: Decoration, difference: boolean }
 )
 
 export interface StoredUnit {
@@ -232,23 +233,19 @@ export function nameOf(written: Written[]): HumanReadableElement[] {
 }
 
 function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSettings): Representation {
-    switch (unit.kind) {
-        case 'raw-percentage':
-        case 'delta-percentage':
-            return percent
-        case 'lead-percentage':
-            return margin
-        case 'temperature-F':
-            return settings.temperatureUnit === 'celsius'
-                ? { unitName: atom('°C'), scale: value => (value - 32) * (5 / 9), format: { kind: 'fixed', places: 1 } }
-                : { unitName: atom('°F'), scale: value => value, format: { kind: 'fixed', places: 1 } }
-        case 'dimensionfull': {
-            const convention = conventions[systemOf(settings)][renderAsKey(unit.scales)]
-            const pool = convention?.writeIn === undefined ? allUnits(settings) : Object.values(convention.writeIn)
-            const { written, scale, format } = chooseUnits(inBaseUnits, unit.scales, pool, chosen => styleFor(convention, chosen))
-            return { scale, unitName: nameOf(written), format, prefix: convention?.prefix }
-        }
+    if (unit.kind === 'temperature') {
+        return settings.temperatureUnit === 'celsius'
+            ? { unitName: atom('°C'), scale: value => (value - 32) * (5 / 9), format: { kind: 'fixed', places: 1 } }
+            : { unitName: atom('°F'), scale: value => value, format: { kind: 'fixed', places: 1 } }
     }
+    if (unit.decoration.kind === 'percent') {
+        // a lead is given more digits the closer it is, since that is what is being read off it
+        return unit.decoration.party?.kind === 'lead' ? margin : percent
+    }
+    const convention = conventions[systemOf(settings)][renderAsKey(unit.dimensions)]
+    const pool = convention?.writeIn === undefined ? allUnits(settings) : Object.values(convention.writeIn)
+    const { written, scale, format } = chooseUnits(inBaseUnits, unit.dimensions, pool, chosen => styleFor(convention, chosen))
+    return { scale, unitName: nameOf(written), format, prefix: convention?.prefix }
 }
 
 function getParty(partySystem: PartySystem, value: number): { label: string, hue: Hue } {
@@ -257,15 +254,10 @@ function getParty(partySystem: PartySystem, value: number): { label: string, hue
 }
 
 function hueFor(unit: Unit): Hue | undefined {
-    switch (unit.kind) {
-        case 'raw-percentage':
-        case 'delta-percentage':
-            return unit.partyColor
-        case 'lead-percentage':
-        case 'temperature-F':
-        case 'dimensionfull':
-            return undefined
+    if (unit.kind === 'temperature' || unit.decoration.kind !== 'percent') {
+        return undefined
     }
+    return unit.decoration.party?.kind === 'color' ? unit.decoration.party.hue : undefined
 }
 
 export interface WrittenQuantity {
@@ -282,12 +274,15 @@ export function writeQuantity(value: number, stored: StoredUnit, settings: Reade
     const { unit } = stored
     let inBaseUnits = value * stored.toBaseUnits
     const representation = representationFor(inBaseUnits, unit, settings)
+    const leads = unit.kind === 'scalar' && unit.decoration.kind === 'percent' && unit.decoration.party?.kind === 'lead'
+        ? unit.decoration.party.system
+        : undefined
     let party = undefined
-    if (unit.kind === 'lead-percentage') {
-        party = getParty(unit.partySystem, inBaseUnits)
+    if (leads !== undefined) {
+        party = getParty(leads, inBaseUnits)
         inBaseUnits = Math.abs(inBaseUnits)
     }
-    const explicitSign = unit.kind === 'delta-percentage' && inBaseUnits >= 0 ? '+' : ''
+    const explicitSign = unit.kind === 'scalar' && unit.difference && inBaseUnits >= 0 ? '+' : ''
     const written = formatNumber(representation.scale(inBaseUnits), representation.format)
     return {
         renderedValue: `${party === undefined ? '' : `${party.label}+`}${explicitSign}${representation.prefix ?? ''}${written}`,
