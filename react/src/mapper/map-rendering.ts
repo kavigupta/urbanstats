@@ -34,9 +34,10 @@ function rampTicks(scale: ScaleInstance): number[] {
     return [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
 }
 
-export function rampColors(ramp: Keypoints, scale: ScaleInstance, values: number[]): string[] {
+/** Returns a function rather than colouring a list, so the ramp's expensive contrast colour is computed once per map. */
+export function rampColorer(ramp: Keypoints, scale: ScaleInstance): (value: number) => string {
     const furthest = furthestColor(ramp.map(([, color]) => color))
-    return values.map(value => interpolateColor(ramp, scale.forward(value), furthest))
+    return value => interpolateColor(ramp, scale.forward(value), furthest)
 }
 
 function rampBin(value: number, scale: ScaleInstance, bins: number): number {
@@ -77,11 +78,12 @@ export function mapVisuals(result: MapResult): MapVisuals {
     const map = result.value
     const scale = instantiate(map.scale)
     const ticks = rampTicks(scale)
-    const ramp = { scale, ticks, colors: rampColors(map.ramp, scale, ticks) }
+    const colorer = rampColorer(map.ramp, scale)
+    const ramp = { scale, ticks, colors: ticks.map(colorer) }
     if (result.opaqueType === 'clusterMap') {
         // Discretized so a cluster's slices are counted in the same bins the colourbar shows.
         const bins = map.data.map(value => rampBin(value, scale, ticks.length))
         return { colors: bins.map(bin => ramp.colors[bin]), ramp, bins }
     }
-    return { colors: rampColors(map.ramp, scale, map.data), ramp }
+    return { colors: map.data.map(colorer), ramp }
 }
