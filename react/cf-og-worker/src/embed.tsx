@@ -9,6 +9,7 @@ import { percentileSuffix } from '../../src/components/display-stats'
 import { getUnitDisplay } from '../../src/components/unit-display'
 import flagDimensions from '../../src/data/flag_dimensions'
 import { canonicalWidth } from '../../src/mapper/map-rendering'
+import { colorThemes } from '../../src/page_template/color-themes'
 import { pieSlicePath, pieSlices } from '../../src/syau/cluster-geometry'
 import { Inset } from '../../src/urban-stats-script/constants/insets'
 import { computeAspectRatioForInsets } from '../../src/utils/coordinates'
@@ -55,15 +56,24 @@ function installHooks(): void {
     }
 }
 
-/* eslint-disable no-restricted-syntax -- The card is a fixed light image wherever it is unfurled, so it has no theme. */
+// The card is a fixed image wherever it is unfurled, so it takes the light theme rather than a
+// viewer's. The rest of its palette is its own: the card has no counterpart on the site to take
+// them from.
+const theme = colorThemes['Light Mode']
+
+/* eslint-disable no-restricted-syntax -- Only the ones the site has no colour for. */
 const colors = {
-    background: '#fff8f0',
+    background: theme.background,
     text: '#1e1e1e',
     muted: '#7a7268',
     rule: '#d8cfc4',
     shape: '#5a6ebd',
+    insetBorder: theme.mapInsetBorderColor,
 }
 /* eslint-enable no-restricted-syntax */
+
+// insetBorderWidth in map-common, which the Worker cannot import: it would pull maplibre in.
+const insetBorderWidth = 2
 
 // openfreemap's credit line, as its TileJSON states it.
 const tileAttribution = 'OpenFreeMap © OpenMapTiles · Data from OpenStreetMap'
@@ -254,7 +264,7 @@ async function insetImage(map: MapCard, inset: Inset, box: { width: number, heig
             src={mapImage(content, width, height)}
             width={width}
             height={height}
-            style={inset.mainMap ? {} : { border: `1px solid ${colors.rule}` }}
+            style={inset.mainMap ? {} : { border: `${insetBorderWidth}px solid ${colors.insetBorder}` }}
         />
     )
 }
