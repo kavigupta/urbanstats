@@ -9,7 +9,6 @@
 // eslint-disable-next-line import/no-unassigned-import -- Installing those globals is the point.
 import './browser-shim'
 
-import { mapSettingsFromURLParam, mapTitle } from '../../src/mapper/settings/utils'
 import { PageDescriptor, pageDescriptorFromURL } from '../../src/navigation/PageDescriptor'
 import { displayType } from '../../src/utils/text'
 
@@ -33,21 +32,24 @@ function shortenLongname(longname: string): string {
  * crawler reads.
  */
 async function describeMap(settings: string | undefined): Promise<{ title: string, description: string } | undefined> {
-    let mapSettings
     try {
-        mapSettings = await mapSettingsFromURLParam(settings)
+        // Deferred for the same reason as render.ts: reading a script pulls in every USS constant,
+        // which is most of what is left of startup once the drawing half is out of it.
+        const { mapSettingsFromURLParam, mapTitle } = await import('../../src/mapper/settings/utils')
+        const mapSettings = await mapSettingsFromURLParam(settings)
+        const title = mapTitle(mapSettings)
+        const { universe, geographyKind } = mapSettings
+        if (title === undefined || universe === undefined || geographyKind === undefined) {
+            return undefined
+        }
+        return {
+            title,
+            description: `${title} mapped over ${displayType(universe, geographyKind)} in ${universe}, on Urban Stats.`,
+        }
     }
     catch {
+        // Any script we can't read this much out of falls back to the generic tags.
         return undefined
-    }
-    const { universe, geographyKind } = mapSettings
-    const title = mapTitle(mapSettings)
-    if (title === undefined || universe === undefined || geographyKind === undefined) {
-        return undefined
-    }
-    return {
-        title,
-        description: `${title} mapped over ${displayType(universe, geographyKind)} in ${universe}, on Urban Stats.`,
     }
 }
 
