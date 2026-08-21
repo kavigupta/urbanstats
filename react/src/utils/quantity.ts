@@ -98,16 +98,24 @@ const costScaledUnit = 0
 const metersPerFoot = 1 / 3.28084
 const metersPerMile = 1609.34
 
+function systemOf(settings: ReaderSettings): 'metric' | 'imperial' {
+    return settings.useImperial === true ? 'imperial' : 'metric'
+}
+
+const kilometer = scaling('m', 'km', 1e3, costScaledUnit)
+const mile = scaling('m', 'mi', metersPerMile, costScaledUnit)
+const people = scaling('person', '', 1, 0)
+
 const lengthUnits: Record<'metric' | 'imperial', NamedUnit[]> = {
     metric: [
         scaling('m', 'm', 1, 0),
         scaling('m', 'cm', 0.01, costScaledUnit),
-        scaling('m', 'km', 1e3, costScaledUnit),
+        kilometer,
     ],
     imperial: [
         scaling('m', 'ft', metersPerFoot, 0),
         scaling('m', 'in', metersPerFoot / 12, costScaledUnit),
-        scaling('m', 'mi', metersPerMile, costScaledUnit),
+        mile,
         // an acre is a unit of area in its own right, and the square of no length anybody writes
         { name: 'acres', dimensions: [{ baseUnit: 'm', power: 2 }], size: 4046.8564224, cost: costScaledUnit, abbreviation: false },
     ],
@@ -125,14 +133,8 @@ function allUnits(settings: ReaderSettings): NamedUnit[] {
         ...abbreviationsOf('usd'),
         // fatalities are not abbreviated: there are never enough of them for it to save a digit
         scaling('fatality', '', 1, 0),
-        ...lengthUnits[settings.useImperial === true ? 'imperial' : 'metric'],
+        ...lengthUnits[systemOf(settings)],
     ]
-}
-
-/** The units a quantity of these dimensions may be written in. */
-function poolFor(settings: ReaderSettings, key: DimensionKey): NamedUnit[] {
-    const conventional = conventions[key]?.writeIn
-    return conventional === undefined ? allUnits(settings) : Object.values(conventional)
 }
 
 type DimensionKey = string
@@ -155,27 +157,36 @@ interface Convention {
     prefix?: string
 }
 
-const conventions: Record<DimensionKey, Convention | undefined> = {
-    '': { style: { kind: 'significantFigures' } },
-    // things that are counted come in whole numbers, unless they are counted in thousands
-    'person^1': { style: { kind: 'fixed', places: 0 } },
-    'usd^1': { style: { kind: 'fixed', places: 0 }, prefix: '$' },
-    'fatality^1': { style: { kind: 'fixed', places: 0 } },
-    'fatality^1 person^-1': {
-        style: { kind: 'fixed', places: 2 },
-        writeIn: { fatality: scaling('fatality', '', 1, 0), person: scaling('person', '100k', 1e5, 0) },
-    },
+function conventionsMeasuringIn(area: NamedUnit): Record<DimensionKey, Convention | undefined> {
+    return {
+        '': { style: { kind: 'significantFigures' } },
+        // things that are counted come in whole numbers, unless they are counted in thousands
+        'person^1': { style: { kind: 'fixed', places: 0 } },
+        'usd^1': { style: { kind: 'fixed', places: 0 }, prefix: '$' },
+        'fatality^1': { style: { kind: 'fixed', places: 0 } },
+        'fatality^1 person^-1': {
+            style: { kind: 'fixed', places: 2 },
+            writeIn: { fatality: scaling('fatality', '', 1, 0), person: scaling('person', '100k', 1e5, 0) },
+        },
+        // a density is not worth a third digit, and every one of them is read against the others
+        'm^-2 person^1': { style: { kind: 'rounded', significantDigits: 2 }, writeIn: { person: people, m: area } },
+    }
+}
+
+const conventions: Record<'metric' | 'imperial', Record<DimensionKey, Convention | undefined>> = {
+    metric: conventionsMeasuringIn(kilometer),
+    imperial: conventionsMeasuringIn(mile),
 }
 
 const defaultStyle: NumberFormat = { kind: 'rounded', significantDigits: 3 }
 /** An abbreviated number is worth three figures, wherever they fall. */
 const abbreviatedStyle: NumberFormat = { kind: 'significantFigures' }
 
-function styleFor(key: DimensionKey, written: Written[]): NumberFormat {
+function styleFor(convention: Convention | undefined, written: Written[]): NumberFormat {
     if (written.some(({ unit }) => unit.abbreviation)) {
         return abbreviatedStyle
     }
-    return conventions[key]?.style ?? defaultStyle
+    return convention?.style ?? defaultStyle
 }
 
 /** Adjacent names are one run of text, which the browser shapes as a whole. */
@@ -226,9 +237,10 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSett
                 ? { unitName: atom('°C'), scale: value => (value - 32) * (5 / 9), format: { kind: 'fixed', places: 1 } }
                 : { unitName: atom('°F'), scale: value => value, format: { kind: 'fixed', places: 1 } }
         case 'dimensionfull': {
-            const key = renderAsKey(unit.scales)
-            const { written, scale, format } = chooseUnits(inBaseUnits, unit.scales, poolFor(settings, key), chosen => styleFor(key, chosen))
-            return { scale, unitName: nameOf(written), format, prefix: conventions[key]?.prefix }
+            const convention = conventions[systemOf(settings)][renderAsKey(unit.scales)]
+            const pool = convention?.writeIn === undefined ? allUnits(settings) : Object.values(convention.writeIn)
+            const { written, scale, format } = chooseUnits(inBaseUnits, unit.scales, pool, chosen => styleFor(convention, chosen))
+            return { scale, unitName: nameOf(written), format, prefix: convention?.prefix }
         }
     }
 }

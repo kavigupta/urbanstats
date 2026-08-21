@@ -56,7 +56,7 @@ function decimalPlaces(value: number, { significantDigits, minDecimals, maxDecim
     return Math.min(Math.max(significantDigits - Math.ceil(Math.log10(Math.abs(value))), minDecimals ?? 0), most)
 }
 
-export function roundToDigits(value: number, rounding: Rounding): string {
+function roundToDigits(value: number, rounding: Rounding): string {
     return separateNumber(value.toFixed(decimalPlaces(value, rounding)))
 }
 

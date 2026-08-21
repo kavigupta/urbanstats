@@ -94,6 +94,19 @@ for (const [value, expected] of [
     })
 }
 
+// A density is written per the area a reader measures in, and its people are never counted in
+// thousands however many of them there are
+for (const [value, imperial, expected] of [
+    [1234, false, '1\u202f234/\u00a0km2'],
+    [12345, false, '12\u202f345/\u00a0km2'],
+    [1234, true, '3\u202f196/\u00a0mi2'],
+    [12345, true, '31\u202f973/\u00a0mi2'],
+] as const) {
+    void test(`density renders ${value} in ${imperial ? 'imperial' : 'metric'} as ${expected}`, () => {
+        assert.equal(renderValue('density', value, imperial), expected)
+    })
+}
+
 // A rate is written per the number of people it is conventionally counted per, whatever its size
 for (const [value, expected] of [
     [1.2e-5, '1.20/\u00a0100k'],
