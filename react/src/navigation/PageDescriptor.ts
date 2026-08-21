@@ -245,7 +245,7 @@ export type PageData =
     | { kind: 'ussDocumentation', ussDocumentationPanel: typeof USSDocumentationPanel, doc?: ConstantCategory, hash?: string }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
     | { kind: 'syau', typ: string | undefined, universe: Universe | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
-    | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel, counts: CountsByUT }
+    | { kind: 'mapper', settings: MapSettings, title: string, view: boolean, mapperPanel: typeof MapperPanel, counts: CountsByUT }
     | { kind: 'editor', editorPanel: typeof DebugEditorPanel | typeof DebugMapTextBoxPanel, undoChunking?: number }
     | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true }, oauthCallbackPanel: typeof OauthCallbackPanel }
     | {
@@ -765,13 +765,15 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
         }
         case 'mapper': {
             const panel = import('../mapper/components/MapperPanel')
-            const utils = import('../mapper/settings/utils')
+            const utils = await import('../mapper/settings/utils')
             const counts = getCountsByArticleType()
+            const mapSettings = await utils.mapSettingsFromURLParam(newDescriptor.settings)
             return {
                 pageData: {
                     kind: 'mapper',
                     view: newDescriptor.view,
-                    settings: await (await utils).mapSettingsFromURLParam(newDescriptor.settings),
+                    settings: mapSettings,
+                    title: utils.mapPageTitle(mapSettings),
                     mapperPanel: (await panel).MapperPanel,
                     counts: await counts,
                 },
@@ -840,7 +842,8 @@ export function pageTitle(pageData: PageData): string {
         case 'ussDocumentation':
             return 'USS Documentation'
         case 'mapper':
-            return 'Urban Stats Mapper'
+            // Only the title this page loaded with; the mapper panel retitles its own edits.
+            return pageData.title
         case 'quiz':
             switch (pageData.quizDescriptor.kind) {
                 case 'juxtastat':

@@ -34,7 +34,7 @@ import { Selection, SelectionContext } from './SelectionContext'
 import { doEditInsets, getInsets, InsetEdits, replaceInsets, swapInsets } from './edit-insets'
 import { getTextBoxes, scriptWithNewTextBoxes } from './edit-text-boxes'
 import { validMapperOutputs } from './map-uss'
-import { MapEditorMode, MapSettings } from './utils'
+import { mapPageTitle, MapEditorMode, MapSettings } from './utils'
 
 const debugLog = makeDebugLogger('mapExport')
 
@@ -120,6 +120,13 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
         return () => { stale = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- props.view won't be set except from the navigator
     }, [jsonedSettings, navContext])
+
+    useEffect(() => {
+        // Written straight to the document rather than through the page state, which would rerender
+        // the whole page for every edit.
+        // eslint-disable-next-line no-restricted-syntax -- The exception the rule describes.
+        document.title = mapPageTitle(mapSettings)
+    }, [mapSettings])
 
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(mapSettings.universe), [mapSettings.universe])
 

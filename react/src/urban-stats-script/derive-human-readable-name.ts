@@ -1,6 +1,7 @@
 import { MapUSS, mapUssParser } from '../mapper/settings/map-uss'
 import { assert } from '../utils/defensive'
 import { HumanReadableElement, HumanReadableName, joinHumanReadableNames } from '../utils/human-readable-name'
+import { parseHumanReadableTemplate } from '../utils/human-readable-template'
 import { abbreviate, formatToSignificantFigures, separateNumber } from '../utils/text'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
@@ -177,6 +178,25 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
     }
 }
 
+/** The label a script states outright, which running it would otherwise be the only way to read. */
+function statedMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
+    const schema = mapUssParser(l.call({
+        fn: l.ignore(),
+        namedArgs: { label: l.optional(l.string()) },
+        unnamedArgs: [],
+    }), 'dont-reparse')
+    try {
+        const label = schema(uss, typeEnvironment).namedArgs.label
+        return label === undefined ? undefined : parseHumanReadableTemplate(label)
+    }
+    catch (error) {
+        if (error instanceof l.LiteralParseError) {
+            return undefined
+        }
+        throw error
+    }
+}
+
 export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
     const schema = mapUssParser(l.edit(l.call({
         fn: l.ignore(),
@@ -201,6 +221,10 @@ export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): H
         }
         throw error
     }
+}
+
+export function mapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
+    return statedMapLabel(uss, typeEnvironment) ?? deriveMapLabel(uss, typeEnvironment)
 }
 
 export function deriveTableColumnLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): HumanReadableName | undefined {

@@ -1,8 +1,21 @@
-import { Selector } from 'testcafe'
+import { ClientFunction, Selector } from 'testcafe'
 
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor } from './editor_test_utils'
 import { checkBox, getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript } from './mapper-utils'
 import { mapper, screencap } from './test_utils'
+
+// eslint-disable-next-line no-restricted-syntax -- Reading the title the router set, not setting one.
+const documentTitle = ClientFunction(() => document.title)
+
+mapper(() => test)('title follows the map', { code: 'cMap(data=density_pw_1km, label="First")' }, async (t) => {
+    await t.expect(documentTitle()).eql('First')
+    await toggleCustomScript(t)
+    // The title is read out of the script, so an edit that never navigates still has to move it.
+    await typeInEditor(t, 0, 'cMap(data=density_pw_1km, label="Second")', true)
+    await t.expect(documentTitle()).eql('Second')
+    await typeInEditor(t, 0, 'cMap(data=density_pw_1km)', true)
+    await t.expect(documentTitle()).eql('PW Density (r=1km)')
+})
 
 mapper(() => test)('manipulate point map', { code: 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
     await toggleCustomScript(t)
