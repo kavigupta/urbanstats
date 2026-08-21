@@ -116,7 +116,7 @@ const microgram = scaling('g', 'μg', 1e-6, 0)
 
 const lengthUnits: Record<'metric' | 'imperial', NamedUnit[]> = {
     metric: [
-        scaling('m', 'm', 1, 0),
+        meter,
         centimeter,
         kilometer,
     ],
