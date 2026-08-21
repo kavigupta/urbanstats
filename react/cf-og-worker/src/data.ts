@@ -3,13 +3,28 @@
  * cannot drift from the page it describes. Only the origin handling is ours: those modules fetch
  * root-relative paths, which a Worker has no base URL for.
  */
-import { loadFeatureFromConsolidatedShard } from '../../src/load_json'
+import { shapesByName } from '../../src/consolidated-shapes'
+import { defaultTypeEnvironment } from '../../src/mapper/context'
+import { centroidsByName, markerArea, markerRadius, MapResult, mapVisuals } from '../../src/mapper/map-rendering'
+import { Basemap, computeUSS } from '../../src/mapper/settings/utils'
 import { loadPageDescriptor, PageData, PageDescriptor } from '../../src/navigation/PageDescriptor'
-import { shapeLink, universePath } from '../../src/navigation/links'
+import { universePath } from '../../src/navigation/links'
 import { Settings, SettingsDictionary } from '../../src/page_template/settings'
 import { groupYearKeys } from '../../src/page_template/statistic-settings'
 import { StatName } from '../../src/page_template/statistic-tree'
-import { sanitize } from '../../src/utils/paths'
+import { clusterRadius } from '../../src/syau/cluster-geometry'
+import { Universe } from '../../src/universe'
+import { doRender } from '../../src/urban-stats-script/constants/color-utils'
+import { Inset } from '../../src/urban-stats-script/constants/insets'
+import { ClusterMap, CMap, CMapRGB, PMap } from '../../src/urban-stats-script/constants/map'
+import { deriveMapLabel } from '../../src/urban-stats-script/derive-human-readable-name'
+import { executeRequest } from '../../src/urban-stats-script/execute-request'
+import { geometry } from '../../src/utils/geometry'
+import { reifyString } from '../../src/utils/human-readable-name'
+import { Feature } from '../../src/utils/protos'
+import { loadFeatureFromPossibleSymlink } from '../../src/utils/symlinks'
+import { NormalizeProto } from '../../src/utils/types'
+import { UnitType } from '../../src/utils/unit'
 
 import { Ring } from './map-layout'
 
@@ -93,15 +108,130 @@ export async function articleCard(pageData: Extract<PageData, { kind: 'article' 
     return { shortname, longname, articleType, universe, flag: await flagImage(universe), stats, units }
 }
 
+/**
+ * What the map puts on the basemap: shapes filled per geography, or a circle at each geography's
+ * centroid. Cluster maps keep their points apart because the card has to merge them by proximity,
+ * which needs the category and size of each rather than a colour and a radius.
+ */
+export type MapContents =
+    | { kind: 'shapes', shapes: { rings: Ring[], fill: string }[], outline: { color: string, weight: number } }
+    | { kind: 'points', points: { lon: number, lat: number, fill: string, radius: number }[] }
+    | {
+        kind: 'clusters'
+        points: { lon: number, lat: number, category: number, size: number }[]
+        categoryColors: string[]
+        maxRadius: number
+        clusterRadius: number
+    }
+
+export interface MapCard {
+    label: string
+    contents: MapContents
+    opacity: number
+    insets: Inset[]
+    basemap: Basemap
+    /** The colourbar, absent on an RGB map, which has no single scale to show. */
+    ramp?: { colors: string[], ticks: number[], unit: UnitType | undefined }
+    units: Units
+}
+
+/** A multipolygon's islands and holes flatten together: the card fills them under one even-odd rule. */
+function rings(shape: GeoJSON.Geometry): Ring[] {
+    const polygons = shape.type === 'MultiPolygon'
+        ? shape.coordinates
+        : shape.type === 'Polygon' ? [shape.coordinates] : []
+    return polygons.flatMap(polygon => polygon.map(ring => ring.map(([lon, lat]): [number, number] => [lon, lat])))
+}
+
+async function shapeContents(geographyKind: string, universe: Universe, map: CMap | CMapRGB, fills: string[]): Promise<MapContents> {
+    const shapes = await shapesByName(universe, geographyKind)
+    return {
+        kind: 'shapes',
+        shapes: map.geo.flatMap((name, i) => {
+            const shape = shapes.get(name)
+            return shape === undefined ? [] : [{ rings: rings(shape), fill: fills[i] }]
+        }),
+        outline: { color: doRender(map.outline.color), weight: map.outline.weight },
+    }
+}
+
+async function pointContents(geographyKind: string, universe: Universe, map: PMap, fills: string[]): Promise<MapContents> {
+    const at = await centroidsByName(universe, geographyKind)
+    return {
+        kind: 'points',
+        points: map.geo.flatMap((name, i) => {
+            const centroid = at.get(name)
+            return centroid === undefined
+                ? []
+                : [{ lon: centroid.lon!, lat: centroid.lat!, fill: fills[i], radius: markerRadius(map.relativeArea[i], map.maxRadius) }]
+        }),
+    }
+}
+
+/** Sizes are areas rather than radii, so that merging two points adds their areas the way the site's do. */
+async function clusterContents(geographyKind: string, universe: Universe, map: ClusterMap, bins: number[], categoryColors: string[]): Promise<MapContents> {
+    const at = await centroidsByName(universe, geographyKind)
+    return {
+        kind: 'clusters',
+        points: map.geo.flatMap((name, i) => {
+            const centroid = at.get(name)
+            return centroid === undefined
+                ? []
+                : [{
+                        lon: centroid.lon!,
+                        lat: centroid.lat!,
+                        category: bins[i],
+                        size: markerArea(markerRadius(map.relativeArea[i], map.maxRadius)),
+                    }]
+        }),
+        categoryColors,
+        maxRadius: map.maxRadius,
+        clusterRadius: clusterRadius(map.maxRadius, map.clusterRadiusSpacing),
+    }
+}
+
+export async function mapCard(origin: string, pageData: Extract<PageData, { kind: 'mapper' }>, settings: Settings): Promise<MapCard | undefined> {
+    setOrigin(origin)
+    const { geographyKind, universe, script } = pageData.settings
+    if (geographyKind === undefined || universe === undefined) {
+        return undefined
+    }
+
+    const executed = await executeRequest({ descriptor: { kind: 'mapper', geographyKind, universe }, stmts: computeUSS(script) })
+    const result = executed.resultingValue?.value as MapResult | undefined
+    if (result === undefined) {
+        return undefined
+    }
+    const { opaqueType, value: map } = result
+    const visuals = mapVisuals(result)
+
+    let contents: MapContents
+    switch (opaqueType) {
+        case 'cMap':
+        case 'cMapRGB':
+            contents = await shapeContents(geographyKind, universe, map, visuals.colors)
+            break
+        case 'pMap':
+            contents = await pointContents(geographyKind, universe, map, visuals.colors)
+            break
+        case 'clusterMap':
+            contents = await clusterContents(geographyKind, universe, map, visuals.bins!, visuals.ramp!.colors)
+            break
+    }
+
+    const label = map.label ?? deriveMapLabel(script.uss, defaultTypeEnvironment(universe))
+    return {
+        label: label === undefined ? '' : reifyString(label),
+        contents,
+        opacity: map.opacity,
+        insets: map.insets,
+        basemap: map.basemap,
+        ramp: visuals.ramp === undefined ? undefined : { ticks: visuals.ramp.ticks, colors: visuals.ramp.colors, unit: map.unit },
+        units: settings.getMultiple(['use_imperial', 'temperature_unit']),
+    }
+}
+
 export async function loadShape(origin: string, longname: string): Promise<Ring[]> {
     setOrigin(origin)
-    const sanitized = sanitize(longname)
-    const feature = await loadFeatureFromConsolidatedShard(await shapeLink(sanitized), sanitized)
-    if (feature === undefined) {
-        return []
-    }
-    const polygons = feature.polygon ? [feature.polygon] : (feature.multipolygon?.polygons ?? [])
-    return polygons.flatMap(polygon => polygon.rings!.map(
-        ring => ring.coords!.map((coord): [number, number] => [coord.lon!, coord.lat!]),
-    ))
+    return rings(geometry(await loadFeatureFromPossibleSymlink(longname) as NormalizeProto<Feature>))
 }

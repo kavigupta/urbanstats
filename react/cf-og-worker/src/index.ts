@@ -10,6 +10,7 @@
 import './browser-shim'
 
 import { PageDescriptor, pageDescriptorFromURL } from '../../src/navigation/PageDescriptor'
+import { displayType } from '../../src/utils/text'
 
 interface Embed {
     title: string
@@ -25,7 +26,34 @@ function shortenLongname(longname: string): string {
     return longname.split(',')[0]
 }
 
-function describe(url: URL): Embed | undefined {
+/**
+ * A map read out of its script rather than out of a run of it. Running it would mean loading a
+ * geography's worth of statistics on every HTML request, browsers included, for something only a
+ * crawler reads.
+ */
+async function describeMap(settings: string | undefined): Promise<{ title: string, description: string } | undefined> {
+    try {
+        // Deferred for the same reason as render.ts: reading a script pulls in every USS constant,
+        // which is most of what is left of startup once the drawing half is out of it.
+        const { mapSettingsFromURLParam, mapTitle } = await import('../../src/mapper/settings/utils')
+        const mapSettings = await mapSettingsFromURLParam(settings)
+        const title = mapTitle(mapSettings)
+        const { universe, geographyKind } = mapSettings
+        if (title === undefined || universe === undefined || geographyKind === undefined) {
+            return undefined
+        }
+        return {
+            title,
+            description: `${title} mapped over ${displayType(universe, geographyKind)} in ${universe}, on Urban Stats.`,
+        }
+    }
+    catch {
+        // Any script we can't read this much out of falls back to the generic tags.
+        return undefined
+    }
+}
+
+async function describe(url: URL): Promise<Embed | undefined> {
     let descriptor
     try {
         descriptor = pageDescriptorFromURL(url)
@@ -49,6 +77,14 @@ function describe(url: URL): Embed | undefined {
         case 'statistic': {
             const title = 'statname' in descriptor ? descriptor.statname : 'Urban Stats: Custom Table'
             return { title, description: `${title} rankings on Urban Stats.` }
+        }
+        case 'mapper': {
+            const map = await describeMap(descriptor.settings)
+            return {
+                title: map?.title ?? 'Urban Stats: Map',
+                description: map?.description ?? 'A map made with Urban Stats.',
+                image: new URL(`/og${url.pathname}${url.search}`, url.origin).toString(),
+            }
         }
         default:
             return undefined
@@ -152,7 +188,7 @@ async function renderImage(env: WorkerEnv, target: URL, ctx: WorkerContext): Pro
     catch {
         return new Response('unrecognized url', { status: 400 })
     }
-    if (descriptor.kind !== 'article') {
+    if (descriptor.kind !== 'article' && descriptor.kind !== 'mapper') {
         return new Response('nothing to draw', { status: 404 })
     }
 
@@ -227,7 +263,7 @@ export default {
             return devCors(await renderImage(env, target, ctx), request)
         }
 
-        const embed = describe(url)
+        const embed = await describe(url)
 
         /*
          * SITE_ORIGIN is the host this Worker is installed on, and asking it for the very page we

@@ -15,6 +15,7 @@ routes = [
   { pattern = "urbanstats.org/article.html*", zone_name = "urbanstats.org" },
   { pattern = "urbanstats.org/comparison.html*", zone_name = "urbanstats.org" },
   { pattern = "urbanstats.org/statistic.html*", zone_name = "urbanstats.org" },
+  { pattern = "urbanstats.org/mapper.html*", zone_name = "urbanstats.org" },
   { pattern = "urbanstats.org/og/*", zone_name = "urbanstats.org" },
 ]
 
@@ -56,7 +57,6 @@ SITE_ORIGIN = "https://urbanstats.org"
 "../quiz/friends" = "./src/panel-stub.ts"
 "../syau/syau-panel" = "./src/panel-stub.ts"
 "../mapper/components/MapperPanel" = "./src/panel-stub.ts"
-"../mapper/settings/utils" = "./src/panel-stub.ts"
 "../quiz/OauthCallbackPanel" = "./src/panel-stub.ts"
 "../quiz/AuthenticationStateMachine" = "./src/panel-stub.ts"
 "../dev/ScreenshotDiffViewerPanel" = "./src/panel-stub.ts"

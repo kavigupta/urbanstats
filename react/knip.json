@@ -3,12 +3,14 @@
   "entry": [
     "test/scripts/save-durations.ts",
     "test/**/*.test.ts",
-    "unit/**/*.test.ts"
+    "unit/**/*.test.ts",
+    "cf-og-worker/src/index.ts"
   ],
   "project": [
     "src/**/*.{ts,tsx}",
     "test/**/*.{ts,tsx}",
-    "unit/**/*.{ts,tsx}"
+    "unit/**/*.{ts,tsx}",
+    "cf-og-worker/src/**/*.{ts,tsx}"
   ],
   "ignore": [
     "src/data/**",

@@ -1,3 +1,5 @@
+import { gzipSync } from 'zlib'
+
 import { Selector } from 'testcafe'
 
 import { noTiles, ogPort, runOgWorkerForTest, runTileServerForTest, snapshotTiles } from './og_worker_test_utils'
@@ -10,7 +12,28 @@ const statistic = '/statistic.html?statname=Population&article_type=City&start=1
 const manyStats = `${article}&s=29ZqGgHgeNSXMA9`
 // A shape crossing the antimeridian, stored as 178.3E to 180.4E rather than wrapping to -179.7.
 const antimeridian = '/article.html?longname=Northern, Fiji'
+// The default map, which is over the USA's five insets. Guam's is narrower than one tile of the
+// zoom it draws at, so the ocean under it arrives as a polygon with no corner inside the inset.
+const insetMap = '/mapper.html'
 const workerOrigin = `http://localhost:${ogPort}`
+
+function usaMap(geographyKind: string, uss: string): string {
+    return `/mapper.html?settings=${encodeURIComponent(gzipSync(JSON.stringify({
+        geographyKind,
+        universe: 'USA',
+        script: { uss },
+    })).toString('base64'))}`
+}
+
+/** A script stating its own label, rather than the default map, whose label has to be derived. */
+const labelledMap = usaMap('County', 'cMap(data=density_pw_1km, label="How dense is it")')
+// A circle per geography rather than a filled shape, sized by population so the radii differ.
+const pointMap = usaMap('Urban Center', 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, relativeArea=population)')
+/*
+ * Those circles merged by proximity, which the card reruns supercluster to reproduce. Counties,
+ * because a geography sparse enough to leave every marker alone would exercise none of that.
+ */
+const clusterMap = usaMap('County', 'clusterMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)')
 
 // Nothing here goes through the dev panel, which is embed_preview's; the browser is barely used.
 urbanstatsFixture('embed worker', '/index.html', async () => {
@@ -56,6 +79,20 @@ test('embed-worker-card-cut-off', async (t) => {
 // spread the ring across the whole world and collapse the shape to nothing.
 test('embed-worker-antimeridian-card', async (t) => {
     await snapshotCard(t, antimeridian)
+})
+
+test('embed-worker-inset-map-card', async (t) => {
+    await snapshotCard(t, insetMap)
+})
+
+test('embed-worker-point-map-card', async (t) => {
+    await snapshotCard(t, pointMap)
+})
+
+// The card's clustering is maplibre's configuration rewritten by hand, so this is what notices it
+// drifting from what the page groups.
+test('embed-worker-cluster-map-card', async (t) => {
+    await snapshotCard(t, clusterMap)
 })
 
 /** The shots above are drawn from a snapshot, so this is what notices openfreemap moving. */
@@ -107,6 +144,23 @@ test('embed-worker-crawler-tags', async (t) => {
         ogTitle: 'Population',
         ogDescription: 'Population rankings on Urban Stats.',
         ogImage: '/link-preview.png',
+    })
+    /*
+     * Both halves of a map's label, read off the script rather than out of a run of it: the default
+     * map states none, so its label is derived from the statistic it maps.
+     */
+    await t.expect(await crawlerTags('/mapper.html')).eql({
+        title: 'PW Density (r=1km)',
+        ogTitle: 'PW Density (r=1km)',
+        // 'States', not 'Subnational Regions': the geography's name is the universe's own.
+        ogDescription: 'PW Density (r=1km) mapped over States in USA, on Urban Stats.',
+        ogImage: `${workerOrigin}/og/mapper.html`,
+    })
+    await t.expect(await crawlerTags(labelledMap)).eql({
+        title: 'How dense is it',
+        ogTitle: 'How dense is it',
+        ogDescription: 'How dense is it mapped over Counties in USA, on Urban Stats.',
+        ogImage: `${workerOrigin}/og${labelledMap}`,
     })
     // The quiz has embed tags of its own, which the Worker has nothing to add to.
     await t.expect(await crawlerTags('/quiz.html')).eql({
