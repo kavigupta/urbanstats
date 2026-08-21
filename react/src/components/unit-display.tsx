@@ -28,7 +28,6 @@ export function renderInequality(value: number, unitType: UnitType, inequality: 
 
 const kmPerMile = 1.60934
 const squareKmPerSquareMile = kmPerMile * kmPerMile
-const perHundredThousand = 100_000
 
 interface ReaderSettings {
     useImperial: boolean
@@ -128,12 +127,8 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'distanceInM':
         case 'distanceInKm':
         case 'area':
-            return quantity(storedUnits[unitType])
         case 'fatalitiesPerCapita':
-            return display(value => ({
-                number: separateNumber((perHundredThousand * value).toFixed(2)),
-                unit: atom(per('100k')),
-            }))
+            return quantity(storedUnits[unitType])
         case 'density':
             return display((value, { useImperial }) => ({
                 number: roundToDigits(useImperial ? value * squareKmPerSquareMile : value, { significantDigits: 2 }),

@@ -117,7 +117,7 @@ const lengthUnits: Record<'metric' | 'imperial', NamedUnit[]> = {
  * The units there are to write a quantity in, whatever dimensions it turns out to have. A count is
  * named by the statistic counting it, so the unit it is counted in has no name to show.
  */
-function poolFor(settings: ReaderSettings): NamedUnit[] {
+function allUnits(settings: ReaderSettings): NamedUnit[] {
     return [
         scaling('person', '', 1, 0),
         ...abbreviationsOf('person'),
@@ -127,6 +127,12 @@ function poolFor(settings: ReaderSettings): NamedUnit[] {
         scaling('fatality', '', 1, 0),
         ...lengthUnits[settings.useImperial === true ? 'imperial' : 'metric'],
     ]
+}
+
+/** The units a quantity of these dimensions may be written in. */
+function poolFor(settings: ReaderSettings, key: DimensionKey): NamedUnit[] {
+    const conventional = conventions[key]?.writeIn
+    return conventional === undefined ? allUnits(settings) : Object.values(conventional)
 }
 
 type DimensionKey = string
@@ -142,25 +148,34 @@ function renderAsKey(scales: Dimension[]): DimensionKey {
 /**
 
  */
-const styles: Record<DimensionKey, NumberFormat | undefined> = {
-    '': { kind: 'significantFigures' },
+interface Convention {
+    style?: NumberFormat
+    /** Every base unit the quantity has, or there is no way left to write it in. */
+    writeIn?: Partial<Record<BaseUnit, NamedUnit>>
+    prefix?: string
+}
+
+const conventions: Record<DimensionKey, Convention | undefined> = {
+    '': { style: { kind: 'significantFigures' } },
     // things that are counted come in whole numbers, unless they are counted in thousands
-    'person^1': { kind: 'fixed', places: 0 },
-    'usd^1': { kind: 'fixed', places: 0 },
-    'fatality^1': { kind: 'fixed', places: 0 },
+    'person^1': { style: { kind: 'fixed', places: 0 } },
+    'usd^1': { style: { kind: 'fixed', places: 0 }, prefix: '$' },
+    'fatality^1': { style: { kind: 'fixed', places: 0 } },
+    'fatality^1 person^-1': {
+        style: { kind: 'fixed', places: 2 },
+        writeIn: { fatality: scaling('fatality', '', 1, 0), person: scaling('person', '100k', 1e5, 0) },
+    },
 }
 
 const defaultStyle: NumberFormat = { kind: 'rounded', significantDigits: 3 }
 /** An abbreviated number is worth three figures, wherever they fall. */
 const abbreviatedStyle: NumberFormat = { kind: 'significantFigures' }
 
-const prefixes: Record<DimensionKey, string | undefined> = { 'usd^1': '$' }
-
 function styleFor(key: DimensionKey, written: Written[]): NumberFormat {
     if (written.some(({ unit }) => unit.abbreviation)) {
         return abbreviatedStyle
     }
-    return styles[key] ?? defaultStyle
+    return conventions[key]?.style ?? defaultStyle
 }
 
 /** Adjacent names are one run of text, which the browser shapes as a whole. */
@@ -212,8 +227,8 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSett
                 : { unitName: atom('°F'), scale: value => value, format: { kind: 'fixed', places: 1 } }
         case 'dimensionfull': {
             const key = renderAsKey(unit.scales)
-            const { written, size, format } = chooseUnits(inBaseUnits, unit.scales, poolFor(settings), chosen => styleFor(key, chosen))
-            return { scale: value => value / size, unitName: nameOf(written), format, prefix: prefixes[key] }
+            const { written, scale, format } = chooseUnits(inBaseUnits, unit.scales, poolFor(settings, key), chosen => styleFor(key, chosen))
+            return { scale, unitName: nameOf(written), format, prefix: conventions[key]?.prefix }
         }
     }
 }
