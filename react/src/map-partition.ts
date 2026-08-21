@@ -2,38 +2,11 @@ import geojsonExtent from '@mapbox/geojson-extent'
 import maplibregl from 'maplibre-gl'
 import { min } from 'mathjs'
 
+import { geometry } from './utils/geometry'
 import { bestPartition } from './utils/partition'
 import { Feature } from './utils/protos'
 import { loadFeatureFromPossibleSymlink } from './utils/symlinks'
 import { NormalizeProto } from './utils/types'
-
-export function geometry(poly: NormalizeProto<Feature>): GeoJSON.Geometry {
-    if (poly.geometry === 'multipolygon') {
-        const polys = poly.multipolygon.polygons
-        const coords = polys.map(
-            multiPoly => multiPoly.rings.map(
-                ring => ring.coords.map(
-                    coordinate => [coordinate.lon, coordinate.lat],
-                ),
-            ),
-        )
-        return {
-            type: 'MultiPolygon',
-            coordinates: coords,
-        }
-    }
-    else {
-        const coords = poly.polygon.rings.map(
-            ring => ring.coords.map(
-                coordinate => [coordinate.lon, coordinate.lat],
-            ),
-        )
-        return {
-            type: 'Polygon',
-            coordinates: coords,
-        }
-    }
-}
 
 const boundingBoxCache = new WeakMap<GeoJSON.Geometry, maplibregl.LngLatBounds>()
 

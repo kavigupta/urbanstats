@@ -173,7 +173,7 @@ export async function ogWorkerBundleCost(): Promise<{ gzipKiB: number, startupCp
         env: { WRANGLER_SEND_METRICS: 'false' },
     })
     const gzipKiB = /gzip: ([\d.]+) KiB/.exec(all!)
-    // Excludes idle time, so this is what the 400ms startup limit is measured against.
+    // Excludes idle time, so this is what the 1000 ms startup limit is measured against.
     const startupCpuMs = /Active: ([\d.]+) ms/.exec(all!)
     if (gzipKiB === null || startupCpuMs === null) {
         throw new Error(`Could not read bundle cost from wrangler:\n${all}`)

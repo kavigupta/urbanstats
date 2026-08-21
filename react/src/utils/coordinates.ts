@@ -2,36 +2,32 @@ import { Inset } from '../urban-stats-script/constants/insets'
 
 import { assert } from './defensive'
 
-// Web Mercator projection functions
-function lngToWebMercatorX(lng: number): number {
-    return lng * Math.PI / 180 * 6378137
+/*
+ * Web Mercator, as the site's maps use, into the unit square the world fills. Shapes crossing the
+ * antimeridian carry longitudes past ±180 rather than wrapping, so x runs outside [0, 1] for them.
+ */
+function project([lon, lat]: [number, number]): [number, number] {
+    const x = (lon + 180) / 360
+    const clamped = Math.max(-85.05, Math.min(85.05, lat)) * Math.PI / 180
+    const y = (1 - Math.log(Math.tan(clamped) + 1 / Math.cos(clamped)) / Math.PI) / 2
+    return [x, y]
 }
 
-function latToWebMercatorY(lat: number): number {
-    return 6378137 * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360))
+/** The projected extent of a [west, south, east, north] box. */
+function extent(coordBox: [number, number, number, number]): { width: number, height: number } {
+    const [x1, y1] = project([coordBox[0], coordBox[1]])
+    const [x2, y2] = project([coordBox[2], coordBox[3]])
+    return { width: Math.abs(x2 - x1), height: Math.abs(y2 - y1) }
 }
 
 function computeAspectRatio(coordBox: [number, number, number, number]): number {
-    // coordBox is [west, south, east, north]
-    const x1 = lngToWebMercatorX(coordBox[0])
-    const x2 = lngToWebMercatorX(coordBox[2])
-    const y1 = latToWebMercatorY(coordBox[1])
-    const y2 = latToWebMercatorY(coordBox[3])
-
-    const width = Math.abs(x2 - x1)
-    const height = Math.abs(y2 - y1)
-
+    const { width, height } = extent(coordBox)
     return width / height
 }
 
 function area(coordBox: [number, number, number, number]): number {
-    // coordBox is [west, south, east, north]
-    const x1 = lngToWebMercatorX(coordBox[0])
-    const x2 = lngToWebMercatorX(coordBox[2])
-    const y1 = latToWebMercatorY(coordBox[1])
-    const y2 = latToWebMercatorY(coordBox[3])
-
-    return Math.abs((x2 - x1) * (y2 - y1))
+    const { width, height } = extent(coordBox)
+    return width * height
 }
 
 export function computeAspectRatioForInsets(mapsWithCoordBox: Inset[]): number {
