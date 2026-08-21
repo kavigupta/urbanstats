@@ -59,7 +59,6 @@ function dimensionfull(scales: Partial<Record<BaseUnit, number>>, toBaseUnits = 
     }
 }
 
-/** A share of a vote, or a change in one, which is a fraction written as a percentage. */
 function percentage(party: Party | undefined, difference = false): StoredUnit {
     return { unit: { kind: 'scalar', dimensions: [], decoration: { kind: 'percent', party }, difference }, toBaseUnits: 1 }
 }
