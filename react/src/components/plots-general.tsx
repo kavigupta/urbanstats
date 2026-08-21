@@ -212,6 +212,10 @@ export function seriesTip(
     )
 }
 
+// what separates a tap on a point from a scroll or a long press that happens to start on the plot
+const tapDuration = 500
+const tapMovement = 10
+
 // The tooltips the user has clicked on, identified by their position in the tip mark's data.
 // Indices rather than the data themselves because the data is rebuilt from scratch whenever the
 // plot re-renders, and it means the same points stay pinned across a transpose or a settings change.
@@ -696,12 +700,8 @@ export function PlotComponent(props: {
         const recordPointedTip = (): void => {
             pointedTip.current = pointedTipIndex(plot)
         }
-        const handlePointerDown = (event: PointerEvent): void => {
-            // Plot has a click-to-stick tooltip of its own (mouse only), which would double up with
-            // the pinned ones we draw; suppressing it here (before the event reaches the plot)
-            // leaves us in sole charge of what a click does
-            event.stopPropagation()
-            const dismissed = dismissButtonTipIndex(event.target)
+        const act = (target: EventTarget | null): void => {
+            const dismissed = dismissButtonTipIndex(target)
             if (dismissed !== null) {
                 dismiss(dismissed)
                 return
@@ -711,8 +711,39 @@ export function PlotComponent(props: {
                 setPinnedTips(current => withTipToggled(current, pointed))
             }
         }
+        // where and when a touch began, so that the lift can tell a tap from a scroll
+        let touchStart: { time: number, x: number, y: number } | null = null
+        const handlePointerDown = (event: PointerEvent): void => {
+            // Plot has a click-to-stick tooltip of its own (mouse only), which would double up with
+            // the pinned ones we draw; suppressing it here (before the event reaches the plot)
+            // leaves us in sole charge of what a click does
+            event.stopPropagation()
+            if (event.pointerType === 'touch') {
+                touchStart = { time: event.timeStamp, x: event.clientX, y: event.clientY }
+                return
+            }
+            act(event.target)
+        }
+        // A touch that starts on the plot is most often the start of a scroll down the page, which
+        // would otherwise pin a tooltip on the way past (kavigupta/urbanstats#2239). So a touch acts
+        // when it lifts, and only if it stayed still and lifted soon enough to have been a tap.
+        const handlePointerUp = (event: PointerEvent): void => {
+            const start = touchStart
+            touchStart = null
+            if (start === null || event.pointerType !== 'touch') {
+                return
+            }
+            if (event.timeStamp - start.time > tapDuration) {
+                return
+            }
+            if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > tapMovement) {
+                return
+            }
+            act(event.target)
+        }
         plot.addEventListener('input', recordPointedTip)
         container.addEventListener('pointerdown', handlePointerDown, true)
+        container.addEventListener('pointerup', handlePointerUp, true)
         const frame = requestAnimationFrame(() => {
             attachDismissButtons(plot, transpose, dismiss)
         })
@@ -721,6 +752,7 @@ export function PlotComponent(props: {
             cancelAnimationFrame(frame)
             plot.removeEventListener('input', recordPointedTip)
             container.removeEventListener('pointerdown', handlePointerDown, true)
+            container.removeEventListener('pointerup', handlePointerUp, true)
         }
     }, [transpose, plotConfig])
 
@@ -742,6 +774,11 @@ export function PlotComponent(props: {
                         height: transpose ? `calc(100% - ${transposeTopMargin})` : undefined,
                         position: transpose ? 'relative' : undefined,
                         top: transpose ? transposeTopMargin : undefined,
+                        // a drag scrubs the tooltip along the x-axis, so the page is left only the
+                        // other axis to scroll with -- given both, it takes the touch away at the
+                        // first vertical drift. A transposed plot scrubs the way the page scrolls,
+                        // so it has no axis to spare.
+                        touchAction: transpose ? undefined : 'pan-y',
                     }
                 }
             >
