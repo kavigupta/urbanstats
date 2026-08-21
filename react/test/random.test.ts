@@ -18,6 +18,8 @@ async function assertNoSpecials(t: TestController): Promise<void> {
 }
 
 async function assertCorrect(t: TestController): Promise<void> {
+    // The redirect isn't done until the article it picked has loaded, which can outlast the assertion timeout
+    await waitForLoading()
     await assertIsArticle(t)
     await assertNoSetUniverse(t)
     await assertNoSpecials(t)
