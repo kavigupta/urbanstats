@@ -95,8 +95,10 @@ function abbreviationsOf(baseUnit: BaseUnit): NamedUnit[] {
 // no need for a cost for scaled units. It should pick whichever is most convenient.
 const costScaledUnit = 0
 
-const metersPerFoot = 1 / 3.28084
-const metersPerMile = 1609.34
+// the exact definitions: an inch is 2.54cm, a foot twelve of them, a mile 5280 feet
+const metersPerInch = 0.0254
+const metersPerFoot = 12 * metersPerInch
+const metersPerMile = 5280 * metersPerFoot
 
 function systemOf(settings: ReaderSettings): 'metric' | 'imperial' {
     return settings.useImperial === true ? 'imperial' : 'metric'
@@ -116,7 +118,7 @@ const lengthUnits: Record<'metric' | 'imperial', NamedUnit[]> = {
     ],
     imperial: [
         scaling('m', 'ft', metersPerFoot, 0),
-        scaling('m', 'in', metersPerFoot / 12, costScaledUnit),
+        scaling('m', 'in', metersPerInch, costScaledUnit),
         mile,
         // an acre is a unit of area in its own right, and the square of no length anybody writes
         { name: 'acres', dimensions: [{ baseUnit: 'm', power: 2 }], size: 4046.8564224, cost: costScaledUnit, abbreviation: false },
