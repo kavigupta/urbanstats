@@ -83,6 +83,7 @@ export const storedUnits = {
     fatalitiesPerCapita: dimensionfull({ fatality: 1, person: -1 }),
     density: dimensionfull({ person: 1, m: -2 }, 1e-6),
     contaminantLevel: dimensionfull({ g: 1, m: -3 }, 1e-6),
+    distancePerYear: dimensionfull({ m: 1, s: -1 }, 1 / (365.25 * 24 * 60 * 60)),
 } satisfies Partial<Record<UnitType, StoredUnit>>
 /* eslint-enable no-restricted-syntax */
 
