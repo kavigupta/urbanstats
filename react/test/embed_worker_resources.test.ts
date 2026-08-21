@@ -21,10 +21,12 @@ urbanstatsFixture('embed worker resources', '/index.html', async () => {
 test('embed-worker-startup-cost', async (t) => {
     const { gzipKiB, startupCpuMs } = await ogWorkerBundleCost()
     console.warn(`Embed Worker bundle: ${gzipKiB} KiB gzip, ${startupCpuMs} ms startup CPU`)
-    // Currently ~1320. Dropping the panel stubs from wrangler.toml would take it to ~2200, which is
+    // Currently ~1760. Dropping the panel stubs from wrangler.toml would add roughly 900, which is
     // what this is watching for; the plan's own ceiling is 3 MiB gzip on free, 10 on paid.
     await t.expect(gzipKiB).lt(2_000)
-    // Currently ~325 against a hard 1000 ms limit, paid on every cold start.
+    // 400 ms is Cloudflare's own startup limit rather than headroom over today's value: a Worker
+    // past it does not run at all. Currently ~30, because index.ts defers everything that only a
+    // render or a map's script needs.
     await t.expect(startupCpuMs).lt(400)
 })
 
