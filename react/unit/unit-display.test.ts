@@ -3,10 +3,10 @@ import './util/localStorage'
 import assert from 'assert/strict'
 import test from 'node:test'
 
-import { getUnitDisplay, renderInequality } from '../src/components/unit-display'
+import { renderInequality, renderQuantity } from '../src/components/unit-display'
 import { reifyString } from '../src/utils/human-readable-name'
 import { Dimension, StoredUnit, writeQuantity } from '../src/utils/quantity'
-import { storedUnits, UnitType } from '../src/utils/unit'
+import { storedUnits, unitTypeToStoredUnit, UnitType } from '../src/utils/unit'
 
 // Flatten a React element tree into its text content.
 function textOf(node: unknown): string {
@@ -18,7 +18,7 @@ function textOf(node: unknown): string {
 }
 
 function renderValue(unitType: UnitType, value: number, useImperial = false, temperatureUnit = 'fahrenheit'): string {
-    const { value: valueEl, unit: unitEl } = getUnitDisplay(unitType).renderValue(value, useImperial, temperatureUnit)
+    const { value: valueEl, unit: unitEl } = renderQuantity(value, unitTypeToStoredUnit(unitType), { useImperial, temperatureUnit })
     return `${textOf(valueEl)}${textOf(unitEl)}`.trim()
 }
 
@@ -241,7 +241,7 @@ for (const [unitType, value, inequality, expected] of [
     ['leftMargin', -0.5, 'geq', '\u2264'],
 ] as const) {
     void test(`${unitType} renders a ${inequality} at ${value} as ${expected}`, () => {
-        assert.equal(renderInequality(value, unitType, inequality), expected)
+        assert.equal(renderInequality(value, unitTypeToStoredUnit(unitType), inequality), expected)
     })
 }
 

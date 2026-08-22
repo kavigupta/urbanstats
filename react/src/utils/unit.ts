@@ -113,7 +113,11 @@ export const storedUnits = {
         units: system => ({ m: system === 'metric' ? centimeter : inch, s: year }),
         style: { kind: 'fixed', places: 1 },
     }),
-} satisfies Partial<Record<UnitType, StoredUnit>>
+} satisfies Record<UnitType, StoredUnit>
+
+export function unitTypeToStoredUnit(unitType: UnitType): StoredUnit {
+    return storedUnits[unitType]
+}
 /* eslint-enable no-restricted-syntax */
 
 function fahrenheitToCelsius(value: number): number {

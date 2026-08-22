@@ -6,7 +6,7 @@
 import React, { ReactElement, ReactNode, cloneElement, isValidElement } from 'react'
 
 import { percentileSuffix } from '../../src/components/display-stats'
-import { getUnitDisplay } from '../../src/components/unit-display'
+import { renderQuantity } from '../../src/components/unit-display'
 import flagDimensions from '../../src/data/flag_dimensions'
 import { canonicalWidth } from '../../src/mapper/map-rendering'
 import { colorThemes } from '../../src/page_template/color-themes'
@@ -16,7 +16,7 @@ import { Inset } from '../../src/urban-stats-script/constants/insets'
 import { mixWithBackground } from '../../src/utils/color'
 import { computeAspectRatioForInsets } from '../../src/utils/coordinates'
 import { HumanReadableName, reifyString } from '../../src/utils/human-readable-name'
-import { UnitType, classifyStatistic } from '../../src/utils/unit'
+import { UnitType, classifyStatistic, unitTypeToStoredUnit } from '../../src/utils/unit'
 import logoSvg from '../assets/logo.svg'
 
 import { basemap } from './basemap'
@@ -198,7 +198,7 @@ function humanReadable(name: HumanReadableName, fontSize: number): ReactNode[] {
 }
 
 function formatValue(value: number, unit: UnitType, units: Units, fontSize: number): ReactNode[] {
-    const rendered = getUnitDisplay(unit).renderValue(value, units.use_imperial, units.temperature_unit)
+    const rendered = renderQuantity(value, unitTypeToStoredUnit(unit), { useImperial: units.use_imperial, temperatureUnit: units.temperature_unit })
     // An array rather than a fragment, which satori does not have.
     return [
         keyed(styleBareTags(rendered.value, fontSize), 'value'),
