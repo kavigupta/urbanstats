@@ -40,6 +40,11 @@ declare module '*.ttf' {
     export default value
 }
 
+declare module '*.svg' {
+    const value: string
+    export default value
+}
+
 declare module '*.wasm' {
     const value: WebAssembly.Module
     export default value

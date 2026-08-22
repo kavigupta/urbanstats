@@ -32,6 +32,12 @@ type = "Data"
 globs = ["**/*.ttf"]
 fallthrough = true
 
+# The logo, as the source satori inlines into the card rather than a URL it would have to fetch.
+[[rules]]
+type = "Text"
+globs = ["**/*.svg"]
+fallthrough = true
+
 [vars]
 # The same host the routes above are on. Fetching it does not re-enter the Worker; see index.ts.
 SITE_ORIGIN = "https://urbanstats.org"

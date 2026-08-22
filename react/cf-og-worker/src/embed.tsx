@@ -14,6 +14,7 @@ import { pieSlicePath, pieSlices } from '../../src/syau/cluster-geometry'
 import { Inset } from '../../src/urban-stats-script/constants/insets'
 import { computeAspectRatioForInsets } from '../../src/utils/coordinates'
 import { UnitType, classifyStatistic } from '../../src/utils/unit'
+import logoSvg from '../assets/logo.svg'
 
 import { basemap } from './basemap'
 import { Marker, clusterMarkers } from './clusters'
@@ -77,6 +78,23 @@ const insetBorderWidth = 2
 
 // openfreemap's credit line, as its TileJSON states it.
 const tileAttribution = 'OpenFreeMap © OpenMapTiles · Data from OpenStreetMap'
+
+const logoImage = `data:image/svg+xml;utf8,${encodeURIComponent(logoSvg)}`
+
+// Proportions measured off the screenshot footer, so the two lockups match. The mark stands taller
+// than the text beside it, which is what sets the height of a footer it sits in.
+const logoHeight = 1.5
+const logoGap = 0.5
+
+/** The site's name in the corner of a card, as the mark and the wordmark a PNG export carries. */
+function wordmark(fontSize: number): ReactElement {
+    return (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+            <img src={logoImage} height={fontSize * logoHeight} />
+            <div style={{ display: 'flex', marginLeft: fontSize * logoGap }}>urbanstats.org</div>
+        </div>
+    )
+}
 
 /** The whole map as one image: satori renders images but not arbitrary SVG children. */
 function mapImage(content: string, width: number, height: number): string {
@@ -290,9 +308,11 @@ function colorbar(ramp: NonNullable<MapCard['ramp']>, label: string, units: Unit
 export async function mapEmbedCard(map: MapCard, { width, height }: { width: number, height: number }, tileOrigin: string): Promise<ReactElement> {
     installHooks()
     const padding = 16
+    const footerFontSize = 20
+    const footerGap = 6
     const boxWidth = width - padding * 2
     // Whatever the colourbar and footer leave. The label is the embed's title, not part of the card.
-    const boxHeight = height - padding * 2 - (map.ramp === undefined ? 0 : 55) - 28
+    const boxHeight = height - padding * 2 - (map.ramp === undefined ? 0 : 55) - (footerFontSize * logoHeight + footerGap)
     const aspectRatio = computeAspectRatioForInsets(map.insets)
     const container = boxWidth / boxHeight > aspectRatio
         ? { width: boxHeight * aspectRatio, height: boxHeight }
@@ -334,8 +354,8 @@ export async function mapEmbedCard(map: MapCard, { width, height }: { width: num
                 </div>
             </div>
             {map.ramp === undefined ? <div style={{ display: 'flex' }}></div> : colorbar(map.ramp, map.label, map.units)}
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 20, color: colors.muted, alignItems: 'baseline', marginTop: 6 }}>
-                <div style={{ display: 'flex' }}>urbanstats.org</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: footerFontSize, color: colors.muted, alignItems: 'center', marginTop: footerGap }}>
+                {wordmark(footerFontSize)}
                 <div style={{ display: 'flex', fontSize: 16 }}>{map.basemap.type === 'none' ? '' : tileAttribution}</div>
             </div>
         </div>
@@ -371,8 +391,8 @@ export async function embedCard(article: ArticleCard, rings: Ring[], { width, he
                 </div>
                 {rings.length === 0 ? <div style={{ display: 'flex' }}></div> : await mapPanel(rings, mapSize, tileOrigin)}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 24, color: colors.muted, alignItems: 'baseline' }}>
-                <div style={{ display: 'flex' }}>urbanstats.org</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 24, color: colors.muted, alignItems: 'center' }}>
+                {wordmark(24)}
                 <div style={{ display: 'flex', fontSize: 18 }}>{rings.length === 0 ? '' : tileAttribution}</div>
             </div>
         </div>
