@@ -12,7 +12,7 @@ import { useUndoRedo } from '../utils/useUndoRedo'
 import { StatisticPanelPage } from './StatisticPanelPage'
 import { StatSettings, ActionOptions } from './types'
 import { useStatGenerator } from './useStatGenerator'
-import { pageDescriptor } from './utils'
+import { pageDescriptor, statPageTitle } from './utils'
 
 /**
  * Undo Model:
@@ -100,6 +100,13 @@ export function StatisticPanel({ settings, counts }: { settings: StatSettings, c
     }, [selectionContext, updateCurrentSelection])
 
     const { stat, view } = settingsState
+
+    useEffect(() => {
+        // Written straight to the document rather than through the page state, which would rerender
+        // the whole page for every edit.
+        // eslint-disable-next-line no-restricted-syntax -- The exception the rule describes.
+        document.title = statPageTitle(stat)
+    }, [stat])
 
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(stat.universe), [stat.universe])
 

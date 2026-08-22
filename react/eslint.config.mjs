@@ -201,7 +201,7 @@ export default tseslint.config(
                 },
                 {
                     selector: 'MemberExpression[object.name=document][property.name=title]',
-                    message: 'The document title comes from the page state, which the router applies. The mapper panel is the one exception, since its title changes without navigating.',
+                    message: 'The document title comes from the page state, which the router applies. The mapper and statistic panels are the exceptions, since their titles change without navigating.',
                 },
                 {
                     selector: 'CallExpression[callee.object.name=localStorage][callee.property.name=clear]',

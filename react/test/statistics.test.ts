@@ -1,9 +1,22 @@
 import { parse } from 'csv-parse/sync'
-import { Selector } from 'testcafe'
+import { ClientFunction, Selector } from 'testcafe'
 
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor, typeTextWithKeys } from './editor_test_utils'
 import { getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript } from './mapper-utils'
 import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForLoading, dataValues, checkSidebarTextboxes, checkTextboxesDirect, downloadCSV, downloadImage, searchField, waitForSelectedSearchResult, goBack, goForward } from './test_utils'
+
+// eslint-disable-next-line no-restricted-syntax -- Reading the title the router set, not setting one.
+const documentTitle = ClientFunction(() => document.title)
+
+urbanstatsFixture('statistic page title', `${target}/statistic.html?uss=${encodeURIComponent('customNode(""); condition (true); table(columns=[column(values=density_pw_1km)])')}&article_type=County&start=1&amount=5&universe=California%2C+USA&edit=true`)
+
+test('title follows the table', async (t) => {
+    await t.expect(documentTitle()).eql('PW Density (r=1km)')
+    // The title is read out of the script, so an edit that never navigates still has to move it.
+    await replaceInput(t, 'PW Density (r=1km)', 'Population [US Census]')
+    await waitForLoading()
+    await t.expect(documentTitle()).eql('Population [US Census]')
+})
 
 urbanstatsFixture('statistic.html default page', `${target}/statistic.html`)
 

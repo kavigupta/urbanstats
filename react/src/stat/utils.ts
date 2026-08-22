@@ -42,6 +42,14 @@ export function tableTitle(uss: MapUSS, universe: Universe): string | undefined 
     return label === undefined ? undefined : reifyString(label)
 }
 
+/** What a table is titled before it runs, the way `mapPageTitle` titles a map. */
+export function statPageTitle(stat: Statistic): string {
+    if (stat.type === 'simple') {
+        return stat.statName
+    }
+    return tableTitle(stat.uss, stat.universe) ?? 'Urban Stats: Custom Table'
+}
+
 export function mapUSSFromStat(stat: Statistic): MapUSS {
     return stat.type === 'uss'
         ? stat.uss
