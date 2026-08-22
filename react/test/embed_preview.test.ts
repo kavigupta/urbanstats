@@ -42,8 +42,7 @@ test('embed-preview-follows-frame', async (t) => {
     // The frame navigates with pushState, which fires no load event: the panel polls for this.
     await t.expect(pathInput.value).contains('/statistic.html', { timeout: 30_000 })
     await t.expect(card.innerText).contains('Population', { timeout: 30_000 })
-    // The Worker draws no card for this page kind, so the site's static preview stands.
-    await t.expect(card.find('img').getAttribute('src')).contains('/link-preview.png')
+    await t.expect(card.find('img').getAttribute('src')).contains(`${workerOrigin}/og/statistic.html`)
     // The panel puts what it is showing in its own URL, so a reload does not go back to the start.
     await safeReload(t)
     await t.expect(pathInput.value).contains('/statistic.html', { timeout: 30_000 })
