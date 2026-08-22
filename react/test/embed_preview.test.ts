@@ -44,6 +44,9 @@ test('embed-preview-follows-frame', async (t) => {
     await t.expect(card.innerText).contains('Population', { timeout: 30_000 })
     // The Worker draws no card for this page kind, so the site's static preview stands.
     await t.expect(card.find('img').getAttribute('src')).contains('/link-preview.png')
+    // The panel puts what it is showing in its own URL, so a reload does not go back to the start.
+    await safeReload(t)
+    await t.expect(pathInput.value).contains('/statistic.html', { timeout: 30_000 })
 })
 
 test('embed-preview-juxtastat', async (t) => {
