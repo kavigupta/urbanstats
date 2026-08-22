@@ -560,7 +560,8 @@ export async function comparisonEmbedCard(comparison: ComparisonCard, shapes: Ri
     installHooks()
     const padding = { x: 48, y: 36 }
     const content = width - padding.x * 2
-    const body = height - padding.y * 2 - (footerSize * lineHeight + 20)
+    // The mark stands taller than the text beside it, so it is what the footer's height comes from.
+    const body = height - padding.y * 2 - (footerSize * logoHeight + 20)
     const mapWidth = 420
     const mapGap = 32
 
@@ -627,8 +628,8 @@ export async function comparisonEmbedCard(comparison: ComparisonCard, shapes: Ri
                 </div>
                 {withMap ? await mapPanel(drawn, mapSize, tileOrigin) : <div style={{ display: 'flex' }}></div>}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: footerSize, color: colors.muted, alignItems: 'baseline' }}>
-                <div style={{ display: 'flex' }}>urbanstats.org</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: footerSize, color: colors.muted, alignItems: 'center' }}>
+                {wordmark(footerSize)}
                 <div style={{ display: 'flex', fontSize: 18 }}>{withMap ? tileAttribution : ''}</div>
             </div>
         </div>
