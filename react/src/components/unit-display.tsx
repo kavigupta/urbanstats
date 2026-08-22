@@ -2,7 +2,7 @@ import React, { CSSProperties, ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { HumanReadableElement, reifyReact } from '../utils/human-readable-name'
-import { Hue, missingValue, StoredUnit, writeQuantity } from '../utils/quantity'
+import { Hue, StoredUnit, writeQuantity } from '../utils/quantity'
 import { storedUnits, UnitType } from '../utils/unit'
 
 export interface UnitDisplay {
@@ -25,48 +25,8 @@ export function renderInequality(value: number, unitType: UnitType, inequality: 
     return reads === 'leq' ? '\u2264' /* ≤ */ : '\u2265' /* ≥ */
 }
 
-interface ReaderSettings {
-    useImperial: boolean
-    temperatureUnit: string
-}
-
-interface Written {
-    number: string
-    unit: HumanReadableElement[]
-}
-
-const unitlessDisplay: HumanReadableElement[] = []
-
-function atom(value: string): HumanReadableElement[] {
-    return [{ type: 'atom', value }]
-}
-
 function unitColumn(name: HumanReadableElement[]): ReactNode {
     return <span>{name.length === 0 ? <>&nbsp;</> : reifyReact(name)}</span>
-}
-
-function display(write: (value: number, settings: ReaderSettings) => Written): UnitDisplay {
-    return {
-        renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
-            if (!isFinite(value)) {
-                return { value: <span>{missingValue}</span>, unit: unitColumn(unitlessDisplay) }
-            }
-            const { number, unit } = write(value, { useImperial: useImperial ?? false, temperatureUnit: temperatureUnit ?? 'fahrenheit' })
-            return { value: <span>{number}</span>, unit: unitColumn(unit) }
-        },
-    }
-}
-
-/** Durations read as hours and minutes, or as minutes alone where there are no hours. */
-function hoursAndMinutes(hours: number): Written {
-    const totalMinutes = Math.round(Math.abs(hours) * 60)
-    const sign = hours < 0 && totalMinutes > 0 ? '-' : ''
-    const wholeHours = Math.floor(totalMinutes / 60)
-    const minutes = totalMinutes % 60
-    if (wholeHours === 0) {
-        return { number: `${sign}${minutes}`, unit: atom('min') }
-    }
-    return { number: `${sign}${wholeHours}:${minutes.toString().padStart(2, '0')}`, unit: atom('h') }
 }
 
 /** A quantity written in a party's color, set flush right so that a fourth digit overflows left. */
@@ -118,11 +78,9 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'density':
         case 'contaminantLevel':
         case 'distancePerYear':
-            return quantity(storedUnits[unitType])
         case 'time':
-            return display(value => hoursAndMinutes(value))
         case 'minutes':
-            return display(value => hoursAndMinutes(value / 60))
+            return quantity(storedUnits[unitType])
     }
 }
 

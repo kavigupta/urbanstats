@@ -33,9 +33,13 @@ export interface WrittenIn {
 
 export type Decoration = { kind: 'none' } | { kind: 'percent', party?: Party } | { kind: 'writtenIn', in: WrittenIn }
 
-/** Temperature is not expressed in units that scale each other: 0°C is not 0°F. */
+/**
+ * Temperature is not expressed in units that scale each other: 0°C is not 0°F. A duration is not
+ * expressed in one unit at all: 1:30 is an hour and a half of it.
+ */
 export type Unit = (
     { kind: 'temperature' }
+    | { kind: 'duration' }
     | { kind: 'scalar', dimensions: Dimension[], decoration: Decoration, difference: boolean }
 )
 
@@ -50,7 +54,7 @@ export interface ReaderSettings {
     temperatureUnit?: string
 }
 
-export const missingValue = 'N/A'
+const missingValue = 'N/A'
 
 /** How a quantity is written: what to scale it by, what to call the result, and to how many places. */
 export interface Representation {
@@ -250,6 +254,11 @@ export function nameOf(written: Written[]): HumanReadableElement[] {
 }
 
 function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSettings): Representation {
+    if (unit.kind === 'duration') {
+        // it is named for the largest part of it that there is any of, as h:mm reads in hours
+        const anHourOrMore = Math.round(Math.abs(inBaseUnits) / 60) >= 60
+        return { unitName: atom(anHourOrMore ? 'h' : 'min'), scale: value => value / 60, format: { kind: 'hoursMinutes' } }
+    }
     if (unit.kind === 'temperature') {
         return settings.temperatureUnit === 'celsius'
             ? { unitName: atom('°C'), scale: value => (value - 32) * (5 / 9), format: { kind: 'fixed', places: 1 } }
@@ -274,7 +283,7 @@ function getParty(partySystem: PartySystem, value: number): { label: string, hue
 }
 
 function hueFor(unit: Unit): Hue | undefined {
-    if (unit.kind === 'temperature' || unit.decoration.kind !== 'percent') {
+    if (unit.kind !== 'scalar' || unit.decoration.kind !== 'percent') {
         return undefined
     }
     return unit.decoration.party?.kind === 'color' ? unit.decoration.party.hue : undefined

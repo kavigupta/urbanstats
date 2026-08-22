@@ -65,6 +65,7 @@ export type NumberFormat = (
     { kind: 'fixed', places: number }
     | ({ kind: 'rounded' } & Rounding)
     | { kind: 'significantFigures' }
+    | { kind: 'hoursMinutes' }
 )
 
 export function formatNumber(value: number, format: NumberFormat): string {
@@ -75,6 +76,13 @@ export function formatNumber(value: number, format: NumberFormat): string {
             return roundToDigits(value, format)
         case 'significantFigures':
             return separateNumber(formatToSignificantFigures(value, 3))
+        case 'hoursMinutes': {
+            const totalMinutes = Math.round(Math.abs(value))
+            const sign = value < 0 && totalMinutes > 0 ? '-' : ''
+            const hours = Math.floor(totalMinutes / 60)
+            const minutes = totalMinutes % 60
+            return hours === 0 ? `${sign}${minutes}` : `${sign}${hours}:${minutes.toString().padStart(2, '0')}`
+        }
     }
 }
 

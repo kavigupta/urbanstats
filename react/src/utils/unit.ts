@@ -88,6 +88,8 @@ export const storedUnits = {
     partyChangeGreen: percentage(inParty('green'), true),
     partyChangePurple: percentage(inParty('purple'), true),
     temperature: { unit: { kind: 'temperature' }, toBaseUnits: 1 },
+    time: { unit: { kind: 'duration' }, toBaseUnits: 60 * 60 },
+    minutes: { unit: { kind: 'duration' }, toBaseUnits: 60 },
     number: dimensionfull({}),
     population: dimensionfull({ person: 1 }),
     fatalities: dimensionfull({ fatality: 1 }),
