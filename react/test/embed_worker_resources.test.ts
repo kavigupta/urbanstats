@@ -2,6 +2,10 @@ import { measuredPort, ogRenderCost, ogWorkerBundleCost, runOgWorkerForTest } fr
 import { urbanstatsFixture } from './test_utils'
 
 const article = '/article.html?longname=San Marino city, California, USA'
+// Two regions close enough to share a map, which is what makes this the expensive comparison.
+const comparison = '/comparison.html?longnames=["San Marino city, California, USA","Pasadena city, California, USA"]'
+const table = 'customNode(""); condition (population > 100000); table(columns=[column(values=density_pw_1km), column(values=population), column(values=area, name="Area")])'
+const statistic = `/statistic.html?uss=${encodeURIComponent(table)}&article_type=City&start=1&amount=20&order=descending&universe=USA`
 // The map the mapper opens on: the USA's states, over its five insets.
 const map = '/mapper.html'
 
@@ -46,8 +50,31 @@ test('embed-worker-map-render-cost', async (t) => {
     console.warn(`Embed Worker map render: ${cpuMs} ms CPU, ${subrequests} subrequests, ${originBytes} bytes from the site`)
     // Currently ~620, closer to three times an article's.
     await t.expect(cpuMs).lt(2_000)
-    // Currently 19, out of the 50 a free-plan request is allowed.
+    // Currently 25, out of the 50 a free-plan request is allowed.
     await t.expect(subrequests).lt(35)
-    // Currently ~12 MB, against an article's 0.7: shapes and tiles for the whole country.
+    // Currently ~13 MB, against an article's 0.7: shapes and tiles for the whole country.
     await t.expect(originBytes).lt(20_000_000)
+})
+
+// Both regions' shapes on one map, which is the comparison layout that draws a map at all.
+test('embed-worker-comparison-render-cost', async (t) => {
+    const { cpuMs, subrequests, originBytes } = await ogRenderCost(comparison)
+    console.warn(`Embed Worker comparison render: ${cpuMs} ms CPU, ${subrequests} subrequests, ${originBytes} bytes from the site`)
+    // Currently ~380: an article's, plus a second shape and the tiles the two of them span.
+    await t.expect(cpuMs).lt(1_500)
+    // Currently 14, out of the 50 a free-plan request is allowed.
+    await t.expect(subrequests).lt(25)
+    // Currently ~0.8 MB, which two regions' shapes and their tiles come to.
+    await t.expect(originBytes).lt(2_000_000)
+})
+
+test('embed-worker-statistic-render-cost', async (t) => {
+    const { cpuMs, subrequests, originBytes } = await ogRenderCost(statistic)
+    console.warn(`Embed Worker statistic render: ${cpuMs} ms CPU, ${subrequests} subrequests, ${originBytes} bytes from the site`)
+    // Currently ~400, most of it the interpreter's rather than the card's.
+    await t.expect(cpuMs).lt(2_000)
+    // Currently 16, out of the 50 a free-plan request is allowed.
+    await t.expect(subrequests).lt(30)
+    // Currently ~2 MB: every city's value for each of the columns, to rank 20 of them.
+    await t.expect(originBytes).lt(5_000_000)
 })

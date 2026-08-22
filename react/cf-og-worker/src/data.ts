@@ -23,7 +23,7 @@ import { Inset } from '../../src/urban-stats-script/constants/insets'
 import { ClusterMap, CMap, CMapRGB, PMap } from '../../src/urban-stats-script/constants/map'
 import { Table } from '../../src/urban-stats-script/constants/table'
 import { deriveConditionLabel, deriveMapLabel } from '../../src/urban-stats-script/derive-human-readable-name'
-import { executeRequest } from '../../src/urban-stats-script/execute-request'
+import { createRequestExecutor } from '../../src/urban-stats-script/execute-request'
 import { geometry } from '../../src/utils/geometry'
 import { HumanReadableName, reifyString } from '../../src/utils/human-readable-name'
 import { Feature } from '../../src/utils/protos'
@@ -178,7 +178,9 @@ export async function statisticCard(origin: string, pageData: Extract<PageData, 
     const { stat, view } = pageData.settings
     const typeEnvironment = defaultTypeEnvironment(stat.universe)
     const mapUSS = mapUSSFromStat(stat)
-    const executed = await executeRequest({
+    // Its own executor: each card is a page of its own, so one kept across them would only hold
+    // the previous page's columns in the isolate.
+    const executed = await createRequestExecutor()({
         descriptor: {
             kind: 'statistics',
             geographyKind: stat.articleType as typeof validGeographies[number],
@@ -310,7 +312,7 @@ export async function mapCard(origin: string, pageData: Extract<PageData, { kind
         return undefined
     }
 
-    const executed = await executeRequest({ descriptor: { kind: 'mapper', geographyKind, universe }, stmts: computeUSS(script) })
+    const executed = await createRequestExecutor()({ descriptor: { kind: 'mapper', geographyKind, universe }, stmts: computeUSS(script) })
     const result = executed.resultingValue?.value as MapResult | undefined
     if (result === undefined) {
         return undefined

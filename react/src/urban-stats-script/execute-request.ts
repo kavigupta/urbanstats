@@ -16,17 +16,29 @@ import { noLocation } from './location'
 import { renderType, USSRawValue, USSValue } from './types-values'
 import { AssignmentsResult, USSExecutionRequest, USSExecutionResult } from './workerManager'
 
-let mapperCache: {
+interface LoadedGeography {
     universe: Universe
     geographyKind: typeof validGeographies[number]
     longnames: string[]
     dataCache: Map<string, number[]>
-} | undefined
+}
 
-export async function executeRequest(request: USSExecutionRequest): Promise<USSExecutionResult> {
+/** Replaced whenever a request asks for a geography other than the one already loaded. */
+interface ExecutorCache { loaded: LoadedGeography | undefined }
+
+/**
+ * The executor holds the names and columns of the geography it last ran over, so a request over
+ * that same geography loads nothing. Its lifetime is that cache's lifetime.
+ */
+export function createRequestExecutor(): (request: USSExecutionRequest) => Promise<USSExecutionResult> {
+    const cache: ExecutorCache = { loaded: undefined }
+    return request => executeRequest(request, cache)
+}
+
+async function executeRequest(request: USSExecutionRequest, cache: ExecutorCache): Promise<USSExecutionResult> {
     let context, getWarnings
     try {
-        ([context, getWarnings] = await contextForRequest(request))
+        ([context, getWarnings] = await contextForRequest(request, cache))
         const result = execute(request.stmts, context)
 
         switch (request.descriptor.kind) {
@@ -75,7 +87,7 @@ function assignments(context: Context | undefined): AssignmentsResult {
     return new Map(Array.from(context.constantEntries()).concat(Array.from(context.variableEntries())).map(([k, v]) => [k, { ...v, value: removeFunctions(v.value) }]))
 }
 
-async function contextForRequest(request: USSExecutionRequest): Promise<[Context, () => EditorError[]]> {
+async function contextForRequest(request: USSExecutionRequest, cache: ExecutorCache): Promise<[Context, () => EditorError[]]> {
     const effects: Effect[] = []
     const getWarnings = (): EditorError[] => {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- just so if there's additonal types, we're safe
@@ -91,11 +103,11 @@ async function contextForRequest(request: USSExecutionRequest): Promise<[Context
             return [emptyContext(effects), getWarnings]
         case 'mapper':
         case 'statistics':
-            return [await mapperContextForRequest(request as USSExecutionRequest & { descriptor: { kind: 'mapper' } }, effects), getWarnings]
+            return [await mapperContextForRequest(request as USSExecutionRequest & { descriptor: { kind: 'mapper' } }, effects, cache), getWarnings]
     }
 }
 
-async function mapperContextForRequest(request: USSExecutionRequest & { descriptor: { kind: 'mapper' } }, effects: Effect[]): Promise<Context> {
+async function mapperContextForRequest(request: USSExecutionRequest & { descriptor: { kind: 'mapper' } }, effects: Effect[], cache: ExecutorCache): Promise<Context> {
     const geographyKind = request.descriptor.geographyKind
     const universe = request.descriptor.universe
     const dte = defaultTypeEnvironment(universe)
@@ -105,20 +117,17 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
 
     // Load geography names and set up cache
     let longnames: string[]
+    let dataCache: Map<string, number[]>
 
-    if (mapperCache?.geographyKind === geographyKind && mapperCache.universe === universe) {
-        longnames = mapperCache.longnames
+    if (cache.loaded?.geographyKind === geographyKind && cache.loaded.universe === universe) {
+        ({ longnames, dataCache } = cache.loaded)
     }
     else {
         // Load geography names from index
         const indexData = await loadProtobuf(indexLink(universe, geographyKind), 'ArticleOrderingList')
         longnames = indexData.longnames
-        mapperCache = {
-            universe,
-            geographyKind,
-            longnames,
-            dataCache: new Map(),
-        }
+        dataCache = new Map()
+        cache.loaded = { universe, geographyKind, longnames, dataCache }
     }
 
     const annotateType = (name: string, val: USSRawValue): USSValue => {
@@ -132,7 +141,6 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
     }
 
     const getVariable = async (name: string): Promise<USSValue | undefined> => {
-        assert(mapperCache !== undefined, 'mapperCache was initialized above and is never undefined after that')
         if (name === 'geoName') {
             return annotateType('geoName', longnames)
         }
@@ -152,7 +160,7 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
         const index = variableInfo.index
 
         // Check cache first
-        const existing = mapperCache.dataCache.get(name)
+        const existing = dataCache.get(name)
         if (existing !== undefined) {
             return annotateType(name, existing)
         }
@@ -161,7 +169,7 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
 
         const variableData = await loadOrderingDataProtobuf(universe, statpath, geographyKind)
         assert(Array.isArray(variableData.value), `Expected variable data for ${name} to be an array`)
-        mapperCache.dataCache.set(name, variableData.value)
+        dataCache.set(name, variableData.value)
         return annotateType(name, variableData.value)
     }
 
