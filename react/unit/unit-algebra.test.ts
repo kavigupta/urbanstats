@@ -158,3 +158,32 @@ void test('a unary operator undoes itself, so the operand is found the same way'
         }
     }
 })
+
+// Whose a quantity is survives a sum only where both sides are the same party's: an orange share
+// less a red one belongs to neither, and a lead less a share is no lead at all
+/* eslint-disable no-restricted-syntax -- these name the theme's hues, they are not css colors */
+function partyOf(value: AbstractInterpValue): string {
+    if (value.kind !== 'in') return value.kind
+    const { decoration } = value.unit.unit
+    if (decoration.kind !== 'percent') return decoration.kind
+    if (decoration.party === undefined) return 'percent'
+    return decoration.party.kind === 'color' ? decoration.party.hue : `lead ${decoration.party.system}`
+}
+
+for (const [label, left, right, expected] of [
+    ['a share less the same party\'s', storedUnits.partyPctOrange, storedUnits.partyPctOrange, 'orange'],
+    ['a share less another party\'s', storedUnits.partyPctOrange, storedUnits.partyPctRed, 'percent'],
+    ['a share less a plain percentage', storedUnits.partyPctOrange, storedUnits.percentage, 'percent'],
+    ['a lead less a percentage', storedUnits.democraticMargin, storedUnits.percentage, 'percent'],
+    ['a density less a density', storedUnits.density, storedUnits.density, 'writtenIn'],
+] as const) {
+    void test(`${label} is written as ${expected}`, () => {
+        assert.equal(partyOf(forward('-', inUnit(left), inUnit(right))), expected)
+    })
+}
+
+void test('scaling a share leaves it the party\'s that it was', () => {
+    assert.equal(partyOf(forward('*', inUnit(storedUnits.partyPctOrange), constant(2))), 'orange')
+    assert.equal(partyOf(forward('-', inUnit(storedUnits.partyPctOrange), constant(0.05))), 'orange')
+})
+/* eslint-enable no-restricted-syntax */

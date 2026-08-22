@@ -1,5 +1,5 @@
 import { assert } from '../utils/defensive'
-import { dimensionless, sameDimensions, StoredUnit, unitPower, unitProduct } from '../utils/quantity'
+import { Decoration, dimensionless, Party, sameDimensions, StoredUnit, unitPower, unitProduct } from '../utils/quantity'
 
 import { BinaryOperatorSymbol, UnaryOperatorSymbol } from './operators'
 
@@ -35,6 +35,30 @@ export function unitToWriteIn(known: AbstractInterpValue): StoredUnit | undefine
 
 /** What an operand can be, once forward and backward have refused what came from nothing. */
 type KnownAIV = Exclude<AbstractInterpValue, { kind: 'none' }>
+
+function sameParty(left: Party | undefined, right: Party | undefined): boolean {
+    if (left === undefined || right === undefined) {
+        return left === right
+    }
+    if (left.kind === 'color' && right.kind === 'color') {
+        return left.hue === right.hue
+    }
+    return left.kind === 'lead' && right.kind === 'lead' && left.system === right.system
+}
+
+/**
+ * What both sides were dressed in, where that is the same thing. An orange share less a red one is
+ * a share of no party, and a lead less a share is not a lead: whose it is does not survive.
+ */
+function sharedDecoration(left: Decoration, right: Decoration): Decoration {
+    if (left.kind === 'percent' && right.kind === 'percent') {
+        return sameParty(left.party, right.party) ? left : { kind: 'percent' }
+    }
+    if (left.kind === 'writtenIn' && right.kind === 'writtenIn' && left.in === right.in) {
+        return left
+    }
+    return { kind: 'none' }
+}
 
 function withTimes(unit: StoredUnit, times: number): AbstractInterpValue {
     return { kind: 'in', unit: { ...unit, unit: { ...unit.unit, times } } }
@@ -83,7 +107,15 @@ function addedForward(form: { combine: (left: number, right: number) => number }
     if (!sameDimensions(left.unit, right.unit)) {
         return { kind: 'none' }
     }
-    return withTimes(left.unit, form.combine(left.unit.unit.times, right.unit.unit.times))
+    const unit = {
+        ...left.unit,
+        unit: {
+            ...left.unit.unit,
+            decoration: sharedDecoration(left.unit.unit.decoration, right.unit.unit.decoration),
+            times: form.combine(left.unit.unit.times, right.unit.unit.times),
+        },
+    }
+    return { kind: 'in', unit }
 }
 
 function productForward(rightPower: 1 | -1, left: KnownAIV, right: KnownAIV): AbstractInterpValue {
