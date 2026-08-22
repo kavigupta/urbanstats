@@ -1,3 +1,4 @@
+import { assert } from '../utils/defensive'
 import { dimensionless, sameDimensions, StoredUnit, unitPower, unitProduct } from '../utils/quantity'
 
 import { BinaryOperatorSymbol, UnaryOperatorSymbol } from './operators'
@@ -156,10 +157,15 @@ export function backward(operator: BinaryOperatorSymbol, result: AbstractInterpV
         case 'power':
             return { kind: 'any' }
         case 'sameUnit':
-            // a comparison says nothing of its own kind, but its operands are of each other's
-            return form.keepsUnit ? undo(operator as '+' | '-', result, known, side) : known
+            if (!form.keepsUnit) {
+                // a comparison says nothing of its own kind, but its operands are of each other's
+                return known
+            }
+            assert(operator === '+' || operator === '-', `${operator} keeps the unit of what it adds`)
+            return undo(operator, result, known, side)
         case 'product':
-            return undo(operator as '*' | '/', result, known, side)
+            assert(operator === '*' || operator === '/', `${operator} is a product`)
+            return undo(operator, result, known, side)
     }
 }
 
