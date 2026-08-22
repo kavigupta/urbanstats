@@ -1,6 +1,6 @@
 import {
     BaseUnit, centimeter, Decoration, fatalities, Hue, hundredThousandPeople, inch, kilometer, meter, microgram, mile,
-    inEitherSystem, minute, Party, people, StoredUnit, WrittenIn, year,
+    inEitherSystem, minute, Party, people, StoredUnit, Unit, WrittenIn, year,
 } from './quantity'
 
 export type UnitType = 'percentage' | 'percentageChange' | 'fatalities' | 'fatalitiesPerCapita' | 'density' | 'population'
@@ -54,17 +54,18 @@ function dimensionfull(scales: Partial<Record<BaseUnit, number>>, toBaseUnits = 
     const decoration: Decoration = writtenIn === undefined ? { kind: 'none' } : { kind: 'writtenIn', in: writtenIn }
     return {
         unit: {
-            kind: 'scalar',
             dimensions: entries.map(([baseUnit, power]) => ({ baseUnit, power })),
             decoration,
-            difference: false,
+            times: 1,
+            baseIsScalar: true,
         },
         toBaseUnits,
     }
 }
 
 function percentage(party: Party | undefined, difference = false): StoredUnit {
-    return { unit: { kind: 'scalar', dimensions: [], decoration: { kind: 'percent', party }, difference }, toBaseUnits: 1 }
+    const unit: Unit = { dimensions: [], decoration: { kind: 'percent', party }, times: difference ? 0 : 1, baseIsScalar: true }
+    return { unit, toBaseUnits: 1 }
 }
 
 const inParty = (hue: Hue): Party => ({ kind: 'color', hue })
@@ -87,7 +88,11 @@ export const storedUnits = {
     partyChangeTeal: percentage(inParty('cyan'), true),
     partyChangeGreen: percentage(inParty('green'), true),
     partyChangePurple: percentage(inParty('purple'), true),
-    temperature: { unit: { kind: 'temperature' }, toBaseUnits: 1 },
+    // a temperature is measured from a zero that is not nothing, so it is not a scaling of anything
+    temperature: {
+        unit: { dimensions: [{ baseUnit: 'F', power: 1 }], decoration: { kind: 'none' }, times: 1, baseIsScalar: false },
+        toBaseUnits: 1,
+    },
     time: dimensionfull({ s: 1 }, 60 * 60, { units: inEitherSystem({ s: minute }), style: { kind: 'hoursMinutes' } }),
     minutes: dimensionfull({ s: 1 }, 60, { units: inEitherSystem({ s: minute }), style: { kind: 'hoursMinutes' } }),
     number: dimensionfull({}),
