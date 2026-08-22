@@ -676,6 +676,8 @@ export async function comparisonEmbedCard(comparison: ComparisonCard, shapes: Ri
 
 /** The rank column, wide enough for four digits at the size the names are set. */
 const rankColumn = 64
+// What a row of the statistic table takes at most.
+const maxRowHeight = 56
 
 /** The arrow the page marks its sorted column with, drawn rather than fetched: it is one triangle. */
 function sortArrow(order: 'ascending' | 'descending', size: number): ReactElement {
@@ -707,28 +709,33 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
 
     const valueColumn = Math.min(260, (content - rankColumn) * 0.62 / statistic.columns.length)
     const nameColumn = content - rankColumn - valueColumn * statistic.columns.length
-    const nameSize = sizeToFit(statistic.rows.map(entry => entry.longname), nameColumn - cellPadding, 1, 26, 14)
+    const names = statistic.rows.map(entry => entry.longname)
+    // A name that fits on one line only at a size the rest of the table dwarfs takes two instead,
+    // at whatever size two lines fit a row at.
+    const nameSize = Math.max(
+        sizeToFit(names, nameColumn - cellPadding, 1, 26, 14),
+        sizeToFit(names, nameColumn - cellPadding, 2, Math.floor(maxRowHeight / (2 * lineHeight)), 14),
+    )
     const valueSize = Math.min(28, Math.round(valueColumn / 6.5))
     /*
      * A table of several columns is titled by its own headers, so it drops the title and the flag
-     * over it and names the geographies in the footer instead. A single column's header would only
-     * repeat the title, so that one keeps the title and leaves the header out.
+     * over it. A single column's header would only repeat the title, so that one keeps the title
+     * and leaves the header out.
      */
     const columnHeaders = statistic.columns.length > 1
         ? sizeToFit(statistic.columns.map(column => reifyString(column.name)), valueColumn - cellPadding * 2, 2, 30, 14, boldCharacterWidth)
         : undefined
-    // What the title says in the other layout: which geographies these are, and which of them.
-    const note = columnHeaders === undefined
-        ? undefined
-        : `${statistic.heading} in ${statistic.universe}${statistic.filter === undefined ? '' : ` where ${reifyString(statistic.filter)}`}`
-    // Shrunk rather than wrapped, in whatever the wordmark beside it leaves of the footer.
-    const noteSize = note === undefined ? 0 : sizeToFit([note], content - 260, 1, 22, 12)
-    const footerNote = note === undefined
-        ? []
-        : [
-                `${statistic.heading} in ${statistic.universe}`,
-                ...(statistic.filter === undefined ? [] : ['\u00a0where\u00a0', ...humanReadable(statistic.filter, noteSize)]),
-            ]
+    // Which geographies these are, and which of them: what neither the title nor the headers say.
+    const note = `${statistic.heading} in ${statistic.universe}${statistic.filter === undefined ? '' : ` where ${reifyString(statistic.filter)}`}`
+    const noteSize = columnHeaders === undefined
+        // Under the title, in whatever the flag beside it leaves.
+        ? sizeToFit([note], content - 140, 1, 26, 14)
+        // Over the names, which are what it qualifies.
+        : sizeToFit([note], rankColumn + nameColumn - cellPadding, 2, 30, 14, boldCharacterWidth)
+    const noteElements = [
+        `${statistic.heading} in ${statistic.universe}`,
+        ...(statistic.filter === undefined ? [] : ['\u00a0where\u00a0', ...humanReadable(statistic.filter, noteSize)]),
+    ]
 
     return (
         <div
@@ -749,7 +756,7 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
                         <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 16 }}>
                             <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingRight: 24, overflow: 'hidden' }}>
                                 <div style={{ display: 'flex', fontSize: titleSize, fontWeight: 600, alignItems: 'flex-start' }}>{humanReadable(statistic.title, titleSize)}</div>
-                                <div style={{ fontSize: 26, color: colors.muted }}>{statistic.heading}</div>
+                                <div style={{ display: 'flex', fontSize: noteSize, color: colors.muted }}>{noteElements}</div>
                             </div>
                             {flag(statistic.universe, statistic.flag)}
                         </div>
@@ -759,7 +766,9 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
                     ? <div style={{ display: 'flex' }}></div>
                     : (
                             <div style={{ display: 'flex', alignItems: 'flex-end', lineHeight, paddingBottom: 6 }}>
-                                <div style={{ display: 'flex', flex: 1 }}></div>
+                                <div style={{ display: 'flex', flex: 1, fontSize: noteSize, fontWeight: 600, paddingRight: cellPadding, overflow: 'hidden' }}>
+                                    {noteElements}
+                                </div>
                                 {statistic.columns.map((column, index) => (
                                     <div
                                         key={index}
@@ -789,7 +798,7 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
                             // a full page of rows would take: a short table sits at the top rather
                             // than stretching down the card.
                             flex: 1,
-                            maxHeight: 56,
+                            maxHeight: maxRowHeight,
                             alignItems: 'center',
                             lineHeight,
                             borderTop: index === 0 ? `2px solid ${colors.text}` : `1px solid ${colors.rule}`,
@@ -817,9 +826,8 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
                     </div>
                 ))}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: footerSize, color: colors.muted, alignItems: 'center', marginTop: 20 }}>
+            <div style={{ display: 'flex', fontSize: footerSize, color: colors.muted, alignItems: 'center', marginTop: 20 }}>
                 {wordmark(footerSize)}
-                <div style={{ display: 'flex', fontSize: noteSize, overflow: 'hidden' }}>{footerNote}</div>
             </div>
         </div>
     )

@@ -1,4 +1,7 @@
-import { BaseUnit, Hue, Party, StoredUnit } from './quantity'
+import {
+    BaseUnit, centimeter, Decoration, fatalities, Hue, hundredThousandPeople, inch, kilometer, meter, microgram, mile,
+    Party, people, StoredUnit, WrittenIn, year,
+} from './quantity'
 
 export type UnitType = 'percentage' | 'percentageChange' | 'fatalities' | 'fatalitiesPerCapita' | 'density' | 'population'
     | 'area' | 'distanceInKm' | 'distanceInM' | 'democraticMargin' | 'temperature' | 'time' | 'distancePerYear'
@@ -46,13 +49,14 @@ function checkAllIncluded(unitType: UnitType): (typeof allUnitTypes)[number] {
     return unitType
 }
 
-function dimensionfull(scales: Partial<Record<BaseUnit, number>>, toBaseUnits = 1): StoredUnit {
+function dimensionfull(scales: Partial<Record<BaseUnit, number>>, toBaseUnits = 1, writtenIn?: WrittenIn): StoredUnit {
     const entries = Object.entries(scales) as [BaseUnit, number][]
+    const decoration: Decoration = writtenIn === undefined ? { kind: 'none' } : { kind: 'writtenIn', in: writtenIn }
     return {
         unit: {
             kind: 'scalar',
             dimensions: entries.map(([baseUnit, power]) => ({ baseUnit, power })),
-            decoration: { kind: 'none' },
+            decoration,
             difference: false,
         },
         toBaseUnits,
@@ -91,10 +95,22 @@ export const storedUnits = {
     distanceInM: dimensionfull({ m: 1 }),
     distanceInKm: dimensionfull({ m: 1 }, 1e3),
     area: dimensionfull({ m: 2 }, 1e6),
-    fatalitiesPerCapita: dimensionfull({ fatality: 1, person: -1 }),
-    density: dimensionfull({ person: 1, m: -2 }, 1e-6),
-    contaminantLevel: dimensionfull({ g: 1, m: -3 }, 1e-6),
-    distancePerYear: dimensionfull({ m: 1, s: -1 }, 1 / (365.25 * 24 * 60 * 60)),
+    fatalitiesPerCapita: dimensionfull({ fatality: 1, person: -1 }, 1, {
+        units: () => ({ fatality: fatalities, person: hundredThousandPeople }),
+        style: { kind: 'fixed', places: 2 },
+    }),
+    density: dimensionfull({ person: 1, m: -2 }, 1e-6, {
+        units: system => ({ person: people, m: system === 'metric' ? kilometer : mile }),
+        style: { kind: 'rounded', significantDigits: 2 },
+    }),
+    contaminantLevel: dimensionfull({ g: 1, m: -3 }, 1e-6, {
+        units: () => ({ g: microgram, m: meter }),
+        style: { kind: 'fixed', places: 2 },
+    }),
+    distancePerYear: dimensionfull({ m: 1, s: -1 }, 1 / (365.25 * 24 * 60 * 60), {
+        units: system => ({ m: system === 'metric' ? centimeter : inch, s: year }),
+        style: { kind: 'fixed', places: 1 },
+    }),
 } satisfies Partial<Record<UnitType, StoredUnit>>
 /* eslint-enable no-restricted-syntax */
 
