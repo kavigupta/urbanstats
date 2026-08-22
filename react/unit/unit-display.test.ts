@@ -4,7 +4,8 @@ import assert from 'assert/strict'
 import test from 'node:test'
 
 import { getUnitDisplay, renderInequality } from '../src/components/unit-display'
-import { writeQuantity } from '../src/utils/quantity'
+import { reifyString } from '../src/utils/human-readable-name'
+import { Dimension, StoredUnit, writeQuantity } from '../src/utils/quantity'
 import { storedUnits, UnitType } from '../src/utils/unit'
 
 // Flatten a React element tree into its text content.
@@ -303,5 +304,25 @@ for (const [unitType, value, expected] of [
 ] as const) {
     void test(`${unitType} renders ${value} in imperial as ${expected}`, () => {
         assert.equal(renderValue(unitType, value, true), expected)
+    })
+}
+
+// A statistic is written in the units it is declared in; a quantity that merely has the same
+// dimensions, as one derived from it would, is written in whichever units read shortest
+for (const [unitType, dimensions, toBaseUnits, value, asStatistic, asDerived] of [
+    ['contaminantLevel', [{ baseUnit: 'g', power: 1 }, { baseUnit: 'm', power: -3 }], 1e-6, 8.2, '8.20μg/m^{3}', '8.20μg/m^{3}'],
+    ['distancePerYear', [{ baseUnit: 'm', power: 1 }, { baseUnit: 's', power: -1 }], 1 / (365.25 * 24 * 60 * 60), 1.2, '120.0cm/yr', '1.20m/yr'],
+    ['density', [{ baseUnit: 'person', power: 1 }, { baseUnit: 'm', power: -2 }], 1e-6, 1234, '1\u202f234/\u00a0km^{2}', '0.001/\u00a0m^{2}'],
+] as ['contaminantLevel' | 'distancePerYear' | 'density', Dimension[], number, number, string, string][]) {
+    const write = (stored: StoredUnit): string => {
+        const written = writeQuantity(value, stored)
+        return `${written.renderedValue}${reifyString(written.unitName)}`
+    }
+    void test(`${unitType} keeps its units, where the same dimensions on their own do not`, () => {
+        assert.equal(write(storedUnits[unitType]), asStatistic)
+        assert.equal(write({
+            unit: { kind: 'scalar', dimensions, decoration: { kind: 'none' }, difference: false },
+            toBaseUnits,
+        }), asDerived)
     })
 }
