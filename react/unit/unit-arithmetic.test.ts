@@ -56,3 +56,12 @@ void test('what a statistic is written in does not survive being computed with',
     assert.equal(unitProduct(storedUnits.population, storedUnits.area, -1)?.unit.decoration.kind, 'none')
     assert.equal(storedUnits.density.unit.decoration.kind, 'writtenIn')
 })
+
+void test('a power that comes back a hair off a whole one is the whole one', () => {
+    // a cube raised to a tenth and then to ten is 3.0000000000000004 of a meter, which is no unit
+    const cube = storedUnits.contaminantLevel
+    const roundTrip = unitPower(unitPower(cube, 0.1)!, 10)!
+    assert.ok(sameDimensions(roundTrip, cube))
+    // the scale it is stored in comes back a hair off too, which is below anything a rendering shows
+    assert.ok(Math.abs(roundTrip.toBaseUnits / cube.toBaseUnits - 1) < 1e-12)
+})

@@ -264,12 +264,22 @@ function computedUnit(dimensions: Dimension[], toBaseUnits: number): StoredUnit 
 
 export const dimensionless = computedUnit([], 1)
 
+/**
+ * A power that arithmetic has left a hair off a whole one: a cube raised to a tenth and then to
+ * ten comes back as 3.0000000000000004, which is no dimension anything is written in.
+ */
+function snapToWhole(value: number): number {
+    return Math.abs(value - Math.round(value)) < 1e-9 ? Math.round(value) : value
+}
+
 function gathered(dimensions: Dimension[]): Dimension[] {
     const totals = new Map<BaseUnit, number>()
     for (const { baseUnit, power } of dimensions) {
         totals.set(baseUnit, (totals.get(baseUnit) ?? 0) + power)
     }
-    return [...totals].filter(([, power]) => power !== 0).map(([baseUnit, power]) => ({ baseUnit, power }))
+    return [...totals]
+        .map(([baseUnit, power]): Dimension => ({ baseUnit, power: snapToWhole(power) }))
+        .filter(({ power }) => power !== 0)
 }
 
 export function sameDimensions(left: StoredUnit, right: StoredUnit): boolean {
