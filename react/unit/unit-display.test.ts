@@ -94,6 +94,18 @@ for (const [value, expected] of [
     })
 }
 
+// Rainfall is per year, and in the small length its reader measures in
+for (const [value, imperial, expected] of [
+    [1.2, false, '120.0cm/yr'],
+    [5.67, false, '567.0cm/yr'],
+    [5.67, true, '223.2in/yr'],
+    [12.3, true, '484.3in/yr'],
+] as const) {
+    void test(`distancePerYear renders ${value} in ${imperial ? 'imperial' : 'metric'} as ${expected}`, () => {
+        assert.equal(renderValue('distancePerYear', value, imperial), expected)
+    })
+}
+
 // The imperial units are their exact definitions, so a mile of kilometers reads as a round mile
 for (const [unitType, value, expected] of [
     ['distanceInKm', 1.609344, '1.00mi'],

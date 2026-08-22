@@ -11,7 +11,7 @@ type PartySystem = 'democratic' | 'left'
 /**
  * Base units, combined together via multiplication to form the units that correspond to the inBaseUnits value
  */
-export type BaseUnit = 'person' | 'usd' | 'fatality' | 'm' | 'g'
+export type BaseUnit = 'person' | 'usd' | 'fatality' | 'm' | 'g' | 's'
 
 export interface Dimension {
     baseUnit: BaseUnit
@@ -109,17 +109,20 @@ const kilometer = scaling('m', 'km', 1e3, costScaledUnit)
 const mile = scaling('m', 'mi', metersPerMile, costScaledUnit)
 const people = scaling('person', '', 1, 0)
 const meter = scaling('m', 'm', 1, 0)
+const centimeter = scaling('m', 'cm', 0.01, costScaledUnit)
+const inch = scaling('m', 'in', metersPerInch, costScaledUnit)
+const year = scaling('s', 'yr', 365.25 * 24 * 60 * 60, 0)
 const microgram = scaling('g', 'μg', 1e-6, 0)
 
 const lengthUnits: Record<'metric' | 'imperial', NamedUnit[]> = {
     metric: [
-        scaling('m', 'm', 1, 0),
-        scaling('m', 'cm', 0.01, costScaledUnit),
+        meter,
+        centimeter,
         kilometer,
     ],
     imperial: [
         scaling('m', 'ft', metersPerFoot, 0),
-        scaling('m', 'in', metersPerInch, costScaledUnit),
+        inch,
         mile,
         // an acre is a unit of area in its own right, and the square of no length anybody writes
         { name: 'acres', dimensions: [{ baseUnit: 'm', power: 2 }], size: 4046.8564224, cost: costScaledUnit, abbreviation: false },
@@ -162,7 +165,7 @@ interface Convention {
     prefix?: string
 }
 
-function conventionsUsing(kmLike: NamedUnit): Record<DimensionKey, Convention | undefined> {
+function conventionsUsing(kmLike: NamedUnit, cmLike: NamedUnit): Record<DimensionKey, Convention | undefined> {
     return {
         '': { style: { kind: 'significantFigures' } },
         // things that are counted come in whole numbers, unless they are counted in thousands
@@ -177,12 +180,13 @@ function conventionsUsing(kmLike: NamedUnit): Record<DimensionKey, Convention | 
         'm^-2 person^1': { style: { kind: 'rounded', significantDigits: 2 }, writeIn: { person: people, m: kmLike } },
         // a concentration is scientific, and stays in the units science is written in
         'g^1 m^-3': { style: { kind: 'fixed', places: 2 }, writeIn: { g: microgram, m: meter } },
+        'm^1 s^-1': { style: { kind: 'fixed', places: 1 }, writeIn: { m: cmLike, s: year } },
     }
 }
 
 const conventions: Record<'metric' | 'imperial', Record<DimensionKey, Convention | undefined>> = {
-    metric: conventionsUsing(kilometer),
-    imperial: conventionsUsing(mile),
+    metric: conventionsUsing(kilometer, centimeter),
+    imperial: conventionsUsing(mile, inch),
 }
 
 const defaultStyle: NumberFormat = { kind: 'rounded', significantDigits: 3 }

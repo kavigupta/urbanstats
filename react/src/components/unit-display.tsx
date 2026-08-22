@@ -3,8 +3,7 @@ import React, { CSSProperties, ReactNode } from 'react'
 import { useColors } from '../page_template/colors'
 import { HumanReadableElement, reifyReact } from '../utils/human-readable-name'
 import { Hue, missingValue, StoredUnit, writeQuantity } from '../utils/quantity'
-import { separateNumber } from '../utils/text'
-import { convertPrecipitation, storedUnits, UnitType } from '../utils/unit'
+import { storedUnits, UnitType } from '../utils/unit'
 
 export interface UnitDisplay {
     renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
@@ -118,19 +117,12 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'fatalitiesPerCapita':
         case 'density':
         case 'contaminantLevel':
+        case 'distancePerYear':
             return quantity(storedUnits[unitType])
         case 'time':
             return display(value => hoursAndMinutes(value))
         case 'minutes':
             return display(value => hoursAndMinutes(value / 60))
-        case 'distancePerYear':
-            return display((value, { useImperial }) => {
-                const converted = convertPrecipitation(value, useImperial)
-                return {
-                    number: separateNumber(converted.value.toFixed(1)),
-                    unit: atom(`${converted.unit}/yr`),
-                }
-            })
     }
 }
 
