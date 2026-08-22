@@ -1,4 +1,7 @@
-import { BaseUnit, Decoration, Hue, Party, perArea, perCubicMeter, perHundredThousand, perYear, StoredUnit, WrittenIn } from './quantity'
+import {
+    BaseUnit, centimeter, Decoration, fatalities, Hue, hundredThousandPeople, inch, kilometer, meter, microgram, mile,
+    Party, people, StoredUnit, WrittenIn, year,
+} from './quantity'
 
 export type UnitType = 'percentage' | 'percentageChange' | 'fatalities' | 'fatalitiesPerCapita' | 'density' | 'population'
     | 'area' | 'distanceInKm' | 'distanceInM' | 'democraticMargin' | 'temperature' | 'time' | 'distancePerYear'
@@ -92,10 +95,22 @@ export const storedUnits = {
     distanceInM: dimensionfull({ m: 1 }),
     distanceInKm: dimensionfull({ m: 1 }, 1e3),
     area: dimensionfull({ m: 2 }, 1e6),
-    fatalitiesPerCapita: dimensionfull({ fatality: 1, person: -1 }, 1, perHundredThousand),
-    density: dimensionfull({ person: 1, m: -2 }, 1e-6, perArea),
-    contaminantLevel: dimensionfull({ g: 1, m: -3 }, 1e-6, perCubicMeter),
-    distancePerYear: dimensionfull({ m: 1, s: -1 }, 1 / (365.25 * 24 * 60 * 60), perYear),
+    fatalitiesPerCapita: dimensionfull({ fatality: 1, person: -1 }, 1, {
+        units: () => ({ fatality: fatalities, person: hundredThousandPeople }),
+        style: { kind: 'fixed', places: 2 },
+    }),
+    density: dimensionfull({ person: 1, m: -2 }, 1e-6, {
+        units: system => ({ person: people, m: system === 'metric' ? kilometer : mile }),
+        style: { kind: 'rounded', significantDigits: 2 },
+    }),
+    contaminantLevel: dimensionfull({ g: 1, m: -3 }, 1e-6, {
+        units: () => ({ g: microgram, m: meter }),
+        style: { kind: 'fixed', places: 2 },
+    }),
+    distancePerYear: dimensionfull({ m: 1, s: -1 }, 1 / (365.25 * 24 * 60 * 60), {
+        units: system => ({ m: system === 'metric' ? centimeter : inch, s: year }),
+        style: { kind: 'fixed', places: 1 },
+    }),
 } satisfies Partial<Record<UnitType, StoredUnit>>
 /* eslint-enable no-restricted-syntax */
 

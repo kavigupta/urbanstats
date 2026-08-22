@@ -23,8 +23,8 @@ export type Party = { kind: 'color', hue: Hue } | { kind: 'lead', system: PartyS
 export type System = 'metric' | 'imperial'
 
 /**
- * What a statistic is written in, whatever the search would otherwise choose, and to how many
- * places. The places come with the units: fixing them is a decision about a unit already chosen.
+ * A fixed number of places only means something once the unit is known: two decimals of
+ * micrograms, not of grams. So a statistic declares the two together.
  */
 export interface WrittenIn {
     units: (system: System) => Partial<Record<BaseUnit, NamedUnit>>
@@ -116,14 +116,16 @@ function systemOf(settings: ReaderSettings): 'metric' | 'imperial' {
     return settings.useImperial === true ? 'imperial' : 'metric'
 }
 
-const kilometer = scaling('m', 'km', 1e3, costScaledUnit)
-const mile = scaling('m', 'mi', metersPerMile, costScaledUnit)
-const people = scaling('person', '', 1, 0)
-const meter = scaling('m', 'm', 1, 0)
-const centimeter = scaling('m', 'cm', 0.01, costScaledUnit)
-const inch = scaling('m', 'in', metersPerInch, costScaledUnit)
-const year = scaling('s', 'yr', 365.25 * 24 * 60 * 60, 0)
-const microgram = scaling('g', 'μg', 1e-6, costScaledUnit)
+export const kilometer = scaling('m', 'km', 1e3, costScaledUnit)
+export const mile = scaling('m', 'mi', metersPerMile, costScaledUnit)
+export const people = scaling('person', '', 1, 0)
+export const hundredThousandPeople = scaling('person', '100k', 1e5, 0)
+export const fatalities = scaling('fatality', '', 1, 0)
+export const meter = scaling('m', 'm', 1, 0)
+export const centimeter = scaling('m', 'cm', 0.01, costScaledUnit)
+export const inch = scaling('m', 'in', metersPerInch, costScaledUnit)
+export const year = scaling('s', 'yr', 365.25 * 24 * 60 * 60, 0)
+export const microgram = scaling('g', 'μg', 1e-6, costScaledUnit)
 
 const massUnits: NamedUnit[] = [
     scaling('g', 'g', 1, 0),
@@ -198,29 +200,6 @@ const conventions: Record<DimensionKey, Convention | undefined> = {
     'person^1': { style: { kind: 'fixed', places: 0 } },
     'usd^1': { style: { kind: 'fixed', places: 0 }, prefix: '$' },
     'fatality^1': { style: { kind: 'fixed', places: 0 } },
-}
-
-/** A death rate is per a hundred thousand people however many digits per person would save. */
-export const perHundredThousand: WrittenIn = {
-    units: () => ({ fatality: scaling('fatality', '', 1, 0), person: scaling('person', '100k', 1e5, 0) }),
-    style: { kind: 'fixed', places: 2 },
-}
-
-/** A density is not worth a third digit, and every one of them is read against the others. */
-export const perArea: WrittenIn = {
-    units: system => ({ person: people, m: system === 'metric' ? kilometer : mile }),
-    style: { kind: 'rounded', significantDigits: 2 },
-}
-
-/** A concentration is scientific, and stays in the units science is written in. */
-export const perCubicMeter: WrittenIn = {
-    units: () => ({ g: microgram, m: meter }),
-    style: { kind: 'fixed', places: 2 },
-}
-
-export const perYear: WrittenIn = {
-    units: system => ({ m: system === 'metric' ? centimeter : inch, s: year }),
-    style: { kind: 'fixed', places: 1 },
 }
 
 const defaultStyle: NumberFormat = { kind: 'rounded', significantDigits: 3 }
