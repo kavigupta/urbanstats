@@ -17,32 +17,23 @@ export function inUnit(unit: StoredUnit): Known {
     return { kind: 'in', unit }
 }
 
-function unitOf(known: Known): StoredUnit | undefined {
-    return known.kind === 'in' ? known.unit : undefined
-}
-
-function quantity(unit: StoredUnit | undefined): Known {
-    return unit === undefined ? { kind: 'none' } : { kind: 'in', unit }
-}
-
 /**
  * Asked at the end rather than at every step: two temperatures added are neither one temperature
  * nor none, but their mean is one again, and refusing the sum on the way past would lose that.
  */
 export function unitToWriteIn(known: Known): StoredUnit | undefined {
-    const unit = unitOf(known)
-    if (unit === undefined || (!unit.unit.baseIsScalar && unit.unit.times !== 0 && unit.unit.times !== 1)) {
+    if (known.kind !== 'in') {
+        return undefined
+    }
+    const { unit } = known
+    if (!unit.unit.baseIsScalar && unit.unit.times !== 0 && unit.unit.times !== 1) {
         return undefined
     }
     return unit
 }
 
 function withTimes(unit: StoredUnit, times: number): Known {
-    return quantity({ ...unit, unit: { ...unit.unit, times } })
-}
-
-function asFactor(known: Known): number | undefined {
-    return known.kind === 'any' ? known.constant : undefined
+    return { kind: 'in', unit: { ...unit, unit: { ...unit.unit, times } } }
 }
 
 /** How an operator's slots are related, which is what both directions are read off. */
@@ -76,37 +67,42 @@ const forms: Record<BinaryOperatorSymbol, Form> = {
 }
 
 function addedForward(form: { combine: (left: number, right: number) => number }, left: Known, right: Known): Known {
-    const [over, under] = [unitOf(left), unitOf(right)]
-    // one side saying nothing is taken to be of the other's kind, since only alike things add
-    const unit = over ?? under
-    if (unit === undefined) {
-        return { kind: 'any' }
+    if (left.kind === 'in' && right.kind === 'in') {
+        // nothing is both people and an area, so nothing is their sum
+        if (!sameDimensions(left.unit, right.unit)) {
+            return { kind: 'none' }
+        }
+        return withTimes(left.unit, form.combine(left.unit.unit.times, right.unit.unit.times))
     }
-    if (over !== undefined && under !== undefined && !sameDimensions(over, under)) {
-        // nothing is both, so nothing is their sum
-        return { kind: 'none' }
-    }
+    // one side saying nothing is taken to be of the other's kind, since only alike things add, and
     // a bare number added to a temperature is a number of degrees rather than a temperature
-    return withTimes(unit, form.combine(over?.unit.times ?? 0, under?.unit.times ?? 0))
+    if (left.kind === 'in') {
+        return withTimes(left.unit, form.combine(left.unit.unit.times, 0))
+    }
+    if (right.kind === 'in') {
+        return withTimes(right.unit, form.combine(0, right.unit.unit.times))
+    }
+    return { kind: 'any' }
 }
 
 function productForward(rightPower: 1 | -1, left: Known, right: Known): Known {
-    const [over, under] = [unitOf(left), unitOf(right)]
-    const [byLeft, byRight] = [asFactor(left), asFactor(right)]
-    if (byRight !== undefined && over !== undefined) {
+    if (left.kind === 'in' && right.kind === 'any' && right.constant !== undefined) {
         // scaling a quantity scales how many of itself it is: half of two temperatures is one
-        return withTimes(over, over.unit.times * (rightPower === 1 ? byRight : 1 / byRight))
+        return withTimes(left.unit, left.unit.unit.times * (rightPower === 1 ? right.constant : 1 / right.constant))
     }
-    if (byLeft !== undefined && under !== undefined) {
-        return rightPower === 1
-            ? withTimes(under, under.unit.times * byLeft)
-            // a number over a quantity is not that many of it, but one over it
-            : quantity(unitProduct(dimensionless, under, -1))
+    if (right.kind === 'in' && left.kind === 'any' && left.constant !== undefined) {
+        if (rightPower === 1) {
+            return withTimes(right.unit, right.unit.unit.times * left.constant)
+        }
+        // a number over a quantity is not that many of it, but one over it
+        const inverted = unitProduct(dimensionless, right.unit, -1)
+        return inverted === undefined ? { kind: 'none' } : { kind: 'in', unit: inverted }
     }
-    if (over === undefined || under === undefined) {
+    if (left.kind !== 'in' || right.kind !== 'in') {
         return { kind: 'any' }
     }
-    return quantity(unitProduct(over, under, rightPower))
+    const product = unitProduct(left.unit, right.unit, rightPower)
+    return product === undefined ? { kind: 'none' } : { kind: 'in', unit: product }
 }
 
 export function forward(operator: BinaryOperatorSymbol, left: Known, right: Known): Known {
@@ -123,8 +119,11 @@ export function forward(operator: BinaryOperatorSymbol, left: Known, right: Know
         case 'product':
             return productForward(form.rightPower, left, right)
         case 'power': {
-            const [base, exponent] = [unitOf(left), asFactor(right)]
-            return exponent === undefined || base === undefined ? { kind: 'any' } : quantity(unitPower(base, exponent))
+            if (left.kind !== 'in' || right.kind !== 'any' || right.constant === undefined) {
+                return { kind: 'any' }
+            }
+            const raised = unitPower(left.unit, right.constant)
+            return raised === undefined ? { kind: 'none' } : { kind: 'in', unit: raised }
         }
     }
 }
