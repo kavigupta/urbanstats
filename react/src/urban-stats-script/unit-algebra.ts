@@ -3,28 +3,36 @@ import { dimensionless, sameDimensions, StoredUnit, unitPower, unitProduct } fro
 import { BinaryOperatorSymbol, UnaryOperatorSymbol } from './operators'
 
 /**
- * What is known about a value: the unit it is in, where that can be told, and the value itself,
- * where it is a constant. Knowing nothing is an ordinary member of this rather than a failure to
- * be one, so every expression has one and no operation on them can fail.
+ * What is known about a value. Every expression has one of these and no operation on them can
+ * fail, so the two ways of knowing no unit are told apart: one is that it could be in any of them,
+ * the other that no quantity is of it at all, which is what adding people to an area asks for.
  */
-export interface Known {
-    unit?: StoredUnit
-    constant?: number
-}
+export type Known = (
+    { kind: 'any' | 'none', constant?: number }
+    | { kind: 'in', unit: StoredUnit, constant?: number }
+)
 
-export const unknown: Known = {}
+/** It could be in any unit; nothing here says which. */
+export const unknown: Known = { kind: 'any' }
+
+/** No quantity is of it, because what it was computed from did not agree. */
+export const inconsistent: Known = { kind: 'none' }
 
 /** A number written in the script, which is in whatever unit the operator on it says it is. */
 export function constant(value: number): Known {
-    return { constant: value }
+    return { kind: 'any', constant: value }
 }
 
 export function inUnit(unit: StoredUnit): Known {
-    return { unit }
+    return { kind: 'in', unit }
+}
+
+function unitOf(known: Known): StoredUnit | undefined {
+    return known.kind === 'in' ? known.unit : undefined
 }
 
 function quantity(unit: StoredUnit | undefined): Known {
-    return unit === undefined ? unknown : { unit }
+    return unit === undefined ? inconsistent : { kind: 'in', unit }
 }
 
 /**
@@ -33,7 +41,7 @@ function quantity(unit: StoredUnit | undefined): Known {
  * one again, so this is asked at the end rather than of every step along the way.
  */
 export function unitToWriteIn(known: Known): StoredUnit | undefined {
-    const { unit } = known
+    const unit = unitOf(known)
     if (unit === undefined || (!unit.unit.baseIsScalar && unit.unit.times !== 0 && unit.unit.times !== 1)) {
         return undefined
     }
@@ -46,7 +54,7 @@ function withTimes(unit: StoredUnit, times: number): Known {
 
 /** A constant with no unit of its own, which is what a bare number is when it scales something. */
 function asFactor(known: Known): number | undefined {
-    return known.unit === undefined ? known.constant : undefined
+    return known.kind === 'any' ? known.constant : undefined
 }
 
 /**
@@ -83,38 +91,45 @@ const forms: Record<BinaryOperatorSymbol, Form> = {
 }
 
 function addedForward(form: { combine: (left: number, right: number) => number }, left: Known, right: Known): Known {
+    const [over, under] = [unitOf(left), unitOf(right)]
     // one side saying nothing is taken to be of the other's kind, since only alike things add
-    const unit = left.unit ?? right.unit
+    const unit = over ?? under
     if (unit === undefined) {
         return unknown
     }
-    if (left.unit !== undefined && right.unit !== undefined && !sameDimensions(left.unit, right.unit)) {
-        return unknown
+    if (over !== undefined && under !== undefined && !sameDimensions(over, under)) {
+        // nothing is both, so nothing is their sum
+        return inconsistent
     }
     // a bare number added to a temperature is a number of degrees rather than a temperature
-    return withTimes(unit, form.combine(left.unit?.unit.times ?? 0, right.unit?.unit.times ?? 0))
+    return withTimes(unit, form.combine(over?.unit.times ?? 0, under?.unit.times ?? 0))
 }
 
 function productForward(rightPower: 1 | -1, left: Known, right: Known): Known {
+    const [over, under] = [unitOf(left), unitOf(right)]
     const [byLeft, byRight] = [asFactor(left), asFactor(right)]
-    if (byRight !== undefined && left.unit !== undefined) {
+    if (byRight !== undefined && over !== undefined) {
         // scaling a quantity scales how many of itself it is: half of two temperatures is one
-        return withTimes(left.unit, left.unit.unit.times * (rightPower === 1 ? byRight : 1 / byRight))
+        return withTimes(over, over.unit.times * (rightPower === 1 ? byRight : 1 / byRight))
     }
-    if (byLeft !== undefined && right.unit !== undefined) {
+    if (byLeft !== undefined && under !== undefined) {
         return rightPower === 1
-            ? withTimes(right.unit, right.unit.unit.times * byLeft)
+            ? withTimes(under, under.unit.times * byLeft)
             // a number over a quantity is not that many of it, but one over it
-            : quantity(unitProduct(dimensionless, right.unit, -1))
+            : quantity(unitProduct(dimensionless, under, -1))
     }
-    if (left.unit === undefined || right.unit === undefined) {
+    if (over === undefined || under === undefined) {
         return unknown
     }
-    return quantity(unitProduct(left.unit, right.unit, rightPower))
+    return quantity(unitProduct(over, under, rightPower))
 }
 
 /** What is known about `left operator right`, from what is known about each of them. */
 export function forward(operator: BinaryOperatorSymbol, left: Known, right: Known): Known {
+    // nothing computed from something no quantity is of is a quantity either
+    if (left.kind === 'none' || right.kind === 'none') {
+        return inconsistent
+    }
     const form = forms[operator]
     switch (form.kind) {
         case 'opaque':
@@ -124,10 +139,8 @@ export function forward(operator: BinaryOperatorSymbol, left: Known, right: Know
         case 'product':
             return productForward(form.rightPower, left, right)
         case 'power': {
-            const exponent = asFactor(right)
-            return exponent === undefined || left.unit === undefined
-                ? unknown
-                : quantity(unitPower(left.unit, exponent))
+            const [base, exponent] = [unitOf(left), asFactor(right)]
+            return exponent === undefined || base === undefined ? unknown : quantity(unitPower(base, exponent))
         }
     }
 }
@@ -151,6 +164,9 @@ function undo(operator: keyof typeof inverses, result: Known, known: Known, side
  * This is how a bare number written against a quantity is read in that quantity's unit.
  */
 export function backward(operator: BinaryOperatorSymbol, result: Known, known: Known, side: 'left' | 'right'): Known {
+    if (result.kind === 'none' || known.kind === 'none') {
+        return inconsistent
+    }
     const form = forms[operator]
     switch (form.kind) {
         case 'opaque':
@@ -159,7 +175,7 @@ export function backward(operator: BinaryOperatorSymbol, result: Known, known: K
             return unknown
         case 'sameUnit':
             // a comparison says nothing of its own kind, but its operands are of each other's
-            return form.keepsUnit ? undo(operator as '+' | '-', result, known, side) : quantity(known.unit)
+            return form.keepsUnit ? undo(operator as '+' | '-', result, known, side) : known
         case 'product':
             return undo(operator as '*' | '/', result, known, side)
     }

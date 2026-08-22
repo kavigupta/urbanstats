@@ -2,13 +2,13 @@ import assert from 'assert/strict'
 import test from 'node:test'
 
 import { BinaryOperatorSymbol, infixOperators } from '../src/urban-stats-script/operators'
-import { backward, constant, forward, forwardUnary, inUnit, Known, unitToWriteIn, unknown } from '../src/urban-stats-script/unit-algebra'
+import { backward, constant, forward, forwardUnary, inconsistent, inUnit, Known, unitToWriteIn, unknown } from '../src/urban-stats-script/unit-algebra'
 import { StoredUnit } from '../src/utils/quantity'
 import { storedUnits } from '../src/utils/unit'
 
 /** What is known, as a string: the dimensions, how many of itself it is, and its scale. */
 function shape(known: Known): string {
-    if (known.unit === undefined) return 'unknown'
+    if (known.kind !== 'in') return known.kind === 'any' ? 'unknown' : 'inconsistent'
     const written = [...known.unit.unit.dimensions]
         .sort((a, b) => a.baseUnit.localeCompare(b.baseUnit))
         .map(({ baseUnit, power }) => `${baseUnit}^${power}`)
@@ -37,7 +37,8 @@ void test('a bare number scales a quantity rather than being a quantity', () => 
 void test('only alike things add, and the sum is of their kind', () => {
     assert.equal(shape(forward('+', people, people)), 'person^1 times=2 x1')
     assert.equal(shape(forward('-', people, people)), 'person^1 times=0 x1')
-    assert.equal(shape(forward('+', people, area)), 'unknown')
+    // nothing is both people and an area, so nothing is their sum
+    assert.equal(shape(forward('+', people, area)), 'inconsistent')
 })
 
 void test('a side that says nothing is taken to be of the other side\'s kind', () => {
@@ -68,8 +69,11 @@ void test('two temperatures are not a temperature, and nothing writes them as on
 })
 
 void test('a temperature cannot be multiplied by another quantity', () => {
-    assert.equal(shape(forward('*', temperature, people)), 'unknown')
-    assert.equal(shape(forward('**', temperature, constant(2))), 'unknown')
+    // twice a temperature is two of them, which is carried, though it is not a temperature
+    assert.equal(shape(forward('*', temperature, constant(2))), 'F^1 times=2 x1')
+    // where there is no such quantity at all as a temperature times a population
+    assert.equal(shape(forward('*', temperature, people)), 'inconsistent')
+    assert.equal(shape(forward('**', temperature, constant(2))), 'inconsistent')
     // a difference of two of them may be, since it is measured from nothing
     assert.equal(shape(forward('*', difference(storedUnits.temperature), constant(2))), 'F^1 times=0 x1')
 })
@@ -116,4 +120,19 @@ void test('every operator answers in both directions, whatever it is given', () 
 void test('negating a quantity leaves it what it was, and not-ing it says nothing', () => {
     assert.equal(shape(forwardUnary('-', people)), 'person^1 times=1 x1')
     assert.equal(shape(forwardUnary('!', people)), 'unknown')
+})
+
+// Not knowing which unit something is in is a different thing from nothing being of any unit, and
+// the second is worth telling a script's author about where the first is not
+void test('what cannot be told apart from what cannot be', () => {
+    assert.equal(shape(unknown), 'unknown')
+    assert.equal(shape(inconsistent), 'inconsistent')
+    assert.equal(shape(forward('+', people, area)), 'inconsistent')
+    assert.equal(shape(forward('+', unknown, unknown)), 'unknown')
+    // and nothing computed from what cannot be is either
+    assert.equal(shape(forward('*', forward('+', people, area), constant(2))), 'inconsistent')
+    assert.equal(shape(backward('*', forward('+', people, area), people, 'left')), 'inconsistent')
+    // neither is written in anything, which is all the display asks
+    assert.equal(unitToWriteIn(unknown), undefined)
+    assert.equal(unitToWriteIn(inconsistent), undefined)
 })
