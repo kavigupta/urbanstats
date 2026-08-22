@@ -162,7 +162,12 @@ function styleBareTags(node: ReactNode, fontSize: number): ReactNode {
 function formatValue(value: number, unit: UnitType, units: Units, fontSize: number): ReactNode[] {
     const rendered = getUnitDisplay(unit).renderValue(value, units.use_imperial, units.temperature_unit)
     // An array rather than a fragment, which satori does not have.
-    return [keyed(styleBareTags(rendered.value, fontSize), 'value'), keyed(styleBareTags(rendered.unit, fontSize), 'unit')]
+    return [
+        keyed(styleBareTags(rendered.value, fontSize), 'value'),
+        // The site sets these in separate table columns; here they would abut.
+        <div key="gap" style={{ width: fontSize * 0.2 }} />,
+        keyed(styleBareTags(rendered.unit, fontSize), 'unit'),
+    ]
 }
 
 function row(stat: ArticleCard['stats'][number], index: number, units: Units): ReactElement {
