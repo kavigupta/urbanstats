@@ -3,14 +3,21 @@
 A Cloudflare Worker that gives Urban Stats pages per-URL link embeds. Every article shares one
 static `article.html` with one fixed `og:image`, so a crawler asking for `?longname=Chicago` gets
 the generic preview. This sits in front of `article.html`, `comparison.html`, `statistic.html` and
-`mapper.html`, rewrites their `og:` meta tags per query string, and serves `/og/article.html?...`,
-`/og/comparison.html?...` and `/og/mapper.html?...` as PNG cards drawn at the edge from the site's
-own static data files.
+`mapper.html`, rewrites their `og:` meta tags per query string, and serves each of them under
+`/og/` as a PNG card drawn at the edge from the site's own static data files.
 
 A map's title comes out of its script by static analysis rather than by running it — see
 `describeMap` in [`index.ts`](src/index.ts) — because the tags are rewritten on every request,
 browsers included, while running a map's script means loading a geography's worth of statistics.
-Only the card runs it. A card does not draw a map's text boxes.
+Only the card runs it. A card does not draw a map's text boxes. A custom table's title comes out of
+its own script the same way, through `tableLabel`.
+
+A statistic's card runs the page's own table script through the interpreter directly, since the
+page runs it in a web worker, which a Worker has no equivalent of. It draws the rows of the page
+the link asks for, in the order that page sorts them, numbered by the ordinal its cells carry. A
+table of one column is titled the way the page titles it, with the geographies it ranks and the
+condition it filters them by below the title; a table of several is titled by its own column
+headers instead, and heads its names with those geographies and that condition.
 
 A comparison's card keeps its map only while the regions are close enough together for one to show
 them, by the fill `partitionLongnames` decides that on; otherwise the table takes the whole card.

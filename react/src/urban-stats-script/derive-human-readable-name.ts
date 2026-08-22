@@ -227,6 +227,80 @@ export function mapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanRe
     return statedMapLabel(uss, typeEnvironment) ?? deriveMapLabel(uss, typeEnvironment)
 }
 
+/** The title a table states outright, which running it would otherwise be the only way to read. */
+function statedTableTitle(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
+    const schema = mapUssParser(l.call({
+        fn: l.ignore(),
+        namedArgs: { title: l.optional(l.string()) },
+        unnamedArgs: [],
+    }), 'dont-reparse')
+    try {
+        const title = schema(uss, typeEnvironment).namedArgs.title
+        return title === undefined ? undefined : parseHumanReadableTemplate(title)
+    }
+    catch (error) {
+        if (error instanceof l.LiteralParseError) {
+            return undefined
+        }
+        throw error
+    }
+}
+
+/** Every column's name, stated or derived. Undefined if any one of them cannot be read. */
+function tableColumnLabels(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName[] | undefined {
+    const schema = mapUssParser(l.call({
+        fn: l.ignore(),
+        namedArgs: {
+            columns: l.vector(l.call({
+                fn: l.ignore(),
+                namedArgs: {
+                    values: l.passthrough(),
+                    name: l.optional(l.string()),
+                },
+                unnamedArgs: [],
+            })),
+        },
+        unnamedArgs: [],
+    }), 'dont-reparse')
+    try {
+        const labels = schema(uss, typeEnvironment).namedArgs.columns.map((column): HumanReadableName | undefined => {
+            if (column.namedArgs.name !== undefined) {
+                return parseHumanReadableTemplate(column.namedArgs.name)
+            }
+            return column.namedArgs.values === undefined ? undefined : humanReadableElements(column.namedArgs.values, typeEnvironment)
+        })
+        return labels.every(label => label !== undefined) ? labels : undefined
+    }
+    catch (error) {
+        if (error instanceof l.LiteralParseError) {
+            return undefined
+        }
+        throw error
+    }
+}
+
+/** The filter a script applies, or undefined for the `condition (true)` that filters nothing. */
+export function deriveConditionLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
+    if (uss.type !== 'statements') {
+        return undefined
+    }
+    const condition = humanReadableElements(uss.result[1].condition, typeEnvironment)
+    if (condition?.length === 1 && condition[0].type === 'atom' && condition[0].value === 'true') {
+        return undefined
+    }
+    return condition
+}
+
+/** A table's title the way `mapLabel` is a map's: stated if it says one, derived from it if not. */
+export function tableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
+    const stated = statedTableTitle(uss, typeEnvironment)
+    if (stated !== undefined) {
+        return stated
+    }
+    const columns = tableColumnLabels(uss, typeEnvironment)
+    return columns === undefined ? undefined : deriveTableLabel(uss, typeEnvironment, columns)
+}
+
 export function deriveTableColumnLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): HumanReadableName | undefined {
     const schema = mapUssParser(l.call({
         fn: l.ignore(),

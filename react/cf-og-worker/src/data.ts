@@ -5,6 +5,7 @@
  */
 import { ArticleStatisticRow, getHighlightIndex } from '../../src/components/load-article'
 import { shapesByName } from '../../src/consolidated-shapes'
+import validGeographies from '../../src/data/mapper/used_geographies'
 import { defaultTypeEnvironment } from '../../src/mapper/context'
 import { centroidsByName, markerArea, markerRadius, MapResult, mapVisuals } from '../../src/mapper/map-rendering'
 import { Basemap, computeUSS } from '../../src/mapper/settings/utils'
@@ -13,17 +14,21 @@ import { universePath } from '../../src/navigation/links'
 import { Settings, SettingsDictionary } from '../../src/page_template/settings'
 import { groupYearKeys } from '../../src/page_template/statistic-settings'
 import { StatName } from '../../src/page_template/statistic-tree'
+import { mapUSSFromStat, pageRowIndices, sortedRowIndices, statDataFromTable } from '../../src/stat/utils'
 import { clusterRadius } from '../../src/syau/cluster-geometry'
 import { Universe } from '../../src/universe'
+import { toStatement } from '../../src/urban-stats-script/ast'
 import { doRender } from '../../src/urban-stats-script/constants/color-utils'
 import { Inset } from '../../src/urban-stats-script/constants/insets'
 import { ClusterMap, CMap, CMapRGB, PMap } from '../../src/urban-stats-script/constants/map'
-import { deriveMapLabel } from '../../src/urban-stats-script/derive-human-readable-name'
+import { Table } from '../../src/urban-stats-script/constants/table'
+import { deriveConditionLabel, deriveMapLabel } from '../../src/urban-stats-script/derive-human-readable-name'
 import { executeRequest } from '../../src/urban-stats-script/execute-request'
 import { geometry } from '../../src/utils/geometry'
-import { reifyString } from '../../src/utils/human-readable-name'
+import { HumanReadableName, reifyString } from '../../src/utils/human-readable-name'
 import { Feature } from '../../src/utils/protos'
 import { loadFeatureFromPossibleSymlink } from '../../src/utils/symlinks'
+import { displayType } from '../../src/utils/text'
 import { NormalizeProto } from '../../src/utils/types'
 import { UnitType } from '../../src/utils/unit'
 
@@ -48,6 +53,12 @@ const maxRows = 6
 
 /** The same, for a comparison, whose widest layout has no map to leave room for. */
 const maxComparisonRows = 8
+
+/** The same, for a statistic table, whose rows are one line each. */
+const maxStatisticRows = 8
+
+/** Past this a column is too narrow to read a value in. */
+const maxStatisticColumns = 3
 
 export interface Page {
     pageData: PageData
@@ -135,6 +146,77 @@ export function comparisonCard(pageData: Extract<PageData, { kind: 'comparison' 
     return {
         regions: pageData.articles.map(({ shortname, longname }) => ({ shortname, longname })),
         stats,
+        units: settings.getMultiple(['use_imperial', 'temperature_unit']),
+    }
+}
+
+export interface StatisticCard {
+    /** The geographies ranked, as the page heads itself: "Cities", "Counties". */
+    heading: string
+    /** What is ranked, without the condition, which the card states beside the geographies. */
+    title: HumanReadableName
+    columns: { name: HumanReadableName, unit: UnitType | undefined }[]
+    /** Which column the rows are in the order of, and which way, as the page's header marks it. */
+    sortColumn: number
+    order: 'ascending' | 'descending'
+    /** The condition the script filters the geographies by, absent when it filters none. */
+    filter: HumanReadableName | undefined
+    /** One per row of the page, in the order the page sorts them. */
+    rows: { longname: string, ordinal: number, values: number[] }[]
+    universe: string
+    /** The flag as a data URI, or undefined if it could not be read. */
+    flag: string | undefined
+    units: Units
+}
+
+/**
+ * Runs the table the page would run, through the interpreter directly: the page's generator runs it
+ * in a web worker, which a Worker has no equivalent of. Everything after that is the panel's own.
+ */
+export async function statisticCard(origin: string, pageData: Extract<PageData, { kind: 'statistic' }>, settings: Settings): Promise<StatisticCard | undefined> {
+    setOrigin(origin)
+    const { stat, view } = pageData.settings
+    const typeEnvironment = defaultTypeEnvironment(stat.universe)
+    const mapUSS = mapUSSFromStat(stat)
+    const executed = await executeRequest({
+        descriptor: {
+            kind: 'statistics',
+            geographyKind: stat.articleType as typeof validGeographies[number],
+            universe: stat.universe,
+        },
+        stmts: toStatement(mapUSS),
+    })
+    const table = (executed.resultingValue?.value as { value: Table } | undefined)?.value
+    if (table === undefined || table.columns.length === 0) {
+        return undefined
+    }
+
+    const data = statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn: () => undefined })
+    const sortColumn = Math.max(0, Math.min(view.sortColumn, data.table.length - 1))
+    // The rows carry the sorted column's rank, so that column takes the last of the few slots the
+    // card has when the page sorts by one that would otherwise be cut off.
+    const columns = sortColumn < maxStatisticColumns
+        ? data.table.slice(0, maxStatisticColumns)
+        : [...data.table.slice(0, maxStatisticColumns - 1), data.table[sortColumn]]
+    const page = pageRowIndices(sortedRowIndices(data, sortColumn, view.order), view.start, view.amount)
+
+    return {
+        heading: displayType(stat.universe, stat.articleType),
+        title: typeof data.renderedStatname === 'string'
+            ? data.renderedStatname
+            : data.renderedStatname.filter(element => element.type !== 'where'),
+        columns: columns.map(column => ({ name: column.name, unit: column.unit })),
+        sortColumn: Math.min(sortColumn, maxStatisticColumns - 1),
+        order: view.order,
+        filter: deriveConditionLabel(mapUSS, typeEnvironment),
+        rows: page.slice(0, maxStatisticRows).map(index => ({
+            longname: data.articleNames[index],
+            // Only the sorted column's, the card having one number per row rather than one per cell.
+            ordinal: data.table[sortColumn].ordinal[index],
+            values: columns.map(column => column.value[index]),
+        })),
+        universe: stat.universe,
+        flag: await flagImage(stat.universe),
         units: settings.getMultiple(['use_imperial', 'temperature_unit']),
     }
 }

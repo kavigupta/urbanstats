@@ -12,6 +12,20 @@ const nearbyComparison = '/comparison.html?longnames=["San Marino city, Californ
 // More regions than the table gives a column to, and more than it keeps the map for.
 const manyRegions = '/comparison.html?longnames=["San Marino city, California, USA","Pasadena city, California, USA","Alhambra city, California, USA","Burbank city, California, USA","Glendale city, California, USA","Monterey Park city, California, USA"]'
 const statistic = '/statistic.html?statname=Population&article_type=City&start=1&amount=20&order=descending&universe=USA'
+// A table of several columns, whose own header row the single-column one above has no need of.
+const multiColumnStatistic = `/statistic.html?uss=${encodeURIComponent('customNode(""); condition (true); table(columns=[column(values=density_pw_1km), column(values=population), column(values=area, name="Area")])')}&article_type=City&start=1&amount=20&order=descending&universe=USA`
+// A table filtered by a condition, which the card states after the geographies it ranks.
+const filteredStatistic = `/statistic.html?uss=${encodeURIComponent('customNode(""); condition (population > 100000); table(columns=[column(values=density_pw_1km), column(values=population), column(values=area, name="Area")])')}&article_type=City&start=1&amount=20&order=descending&universe=USA`
+// The same as one column, whose title drops the condition its subtitle then states.
+const filteredSingleColumnStatistic = `/statistic.html?uss=${encodeURIComponent('customNode(""); condition (population > 100000); table(columns=[column(values=density_pw_1km)])')}&article_type=City&start=1&amount=20&order=descending&universe=USA`
+// A name too long for one line of the names column, which takes two rather than shrinking the
+// whole column's text to fit it.
+const longNamedStatistic = filteredStatistic.replaceAll('order=descending', 'order=ascending')
+/*
+ * A table sorted by a column past the few the card fits: the rows carry that column's rank, so it
+ * takes the last of the card's slots rather than being cut off along with the columns after it.
+ */
+const lateSortedStatistic = `/statistic.html?uss=${encodeURIComponent('customNode(""); condition (true); table(columns=[column(values=density_pw_1km), column(values=population), column(values=area, name="Area"), column(values=elevation)])')}&article_type=City&start=1&amount=20&order=descending&universe=USA&sort_column=3`
 // A link that carries several statistic categories, which the article shows more of than fit.
 const manyStats = `${article}&s=29ZqGgHgeNSXMA9`
 // A shape crossing the antimeridian, stored as 178.3E to 180.4E rather than wrapping to -179.7.
@@ -103,6 +117,31 @@ test('embed-worker-many-region-comparison-card', async (t) => {
     await snapshotCard(t, manyRegions)
 })
 
+// The rows the page's first screenful holds, run through the interpreter the way the page runs it.
+test('embed-worker-statistic-card', async (t) => {
+    await snapshotCard(t, statistic)
+})
+
+test('embed-worker-multi-column-statistic-card', async (t) => {
+    await snapshotCard(t, multiColumnStatistic)
+})
+
+test('embed-worker-filtered-statistic-card', async (t) => {
+    await snapshotCard(t, filteredStatistic)
+})
+
+test('embed-worker-filtered-single-column-statistic-card', async (t) => {
+    await snapshotCard(t, filteredSingleColumnStatistic)
+})
+
+test('embed-worker-long-named-statistic-card', async (t) => {
+    await snapshotCard(t, longNamedStatistic)
+})
+
+test('embed-worker-late-sorted-statistic-card', async (t) => {
+    await snapshotCard(t, lateSortedStatistic)
+})
+
 test('embed-worker-inset-map-card', async (t) => {
     await snapshotCard(t, insetMap)
 })
@@ -164,7 +203,14 @@ test('embed-worker-crawler-tags', async (t) => {
         title: 'Population',
         ogTitle: 'Population',
         ogDescription: 'Population rankings on Urban Stats.',
-        ogImage: '/link-preview.png',
+        ogImage: `${workerOrigin}/og${statistic}`,
+    })
+    // A table naming no statistic, titled from its script rather than 'Urban Stats: Custom Table'.
+    await t.expect(await crawlerTags(multiColumnStatistic)).eql({
+        title: 'PW Density (r=1km), Population, Area',
+        ogTitle: 'PW Density (r=1km), Population, Area',
+        ogDescription: 'PW Density (r=1km), Population, Area rankings on Urban Stats.',
+        ogImage: `${workerOrigin}/og${multiColumnStatistic}`,
     })
     /*
      * Both halves of a map's label, read off the script rather than out of a run of it: the default
@@ -205,7 +251,8 @@ test('embed-worker-image-endpoint', async (t) => {
     await t.expect(png.headers.get('content-type')).eql('image/png')
     await t.expect(png.headers.get('cache-control')).eql('public, max-age=86400')
 
-    const notDrawn = await fetch(new URL(`/og${statistic}`, workerOrigin))
+    // A page kind with tags of its own and nothing for the Worker to draw.
+    const notDrawn = await fetch(new URL('/og/quiz.html', workerOrigin))
     await t.expect(notDrawn.status).eql(404)
 
     const notAPage = await fetch(new URL('/og/nonsense.html', workerOrigin))

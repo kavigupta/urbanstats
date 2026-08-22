@@ -15,10 +15,10 @@ import { PageDescriptor } from '../../src/navigation/PageDescriptor'
 import jostRegular from '../assets/Jost-400.ttf'
 import jostSemiBold from '../assets/Jost-600.ttf'
 
-import { articleCard, comparisonCard, loadPage, loadShape, mapCard } from './data'
-import { comparisonEmbedCard, embedCard, mapEmbedCard, mappedRegions } from './embed'
+import { articleCard, comparisonCard, loadPage, loadShape, mapCard, statisticCard } from './data'
+import { comparisonEmbedCard, embedCard, mapEmbedCard, mappedRegions, statisticEmbedCard } from './embed'
 
-export type DrawableDescriptor = Extract<PageDescriptor, { kind: 'article' | 'comparison' | 'mapper' }>
+export type DrawableDescriptor = Extract<PageDescriptor, { kind: 'article' | 'comparison' | 'mapper' | 'statistic' }>
 
 let wasmReady: Promise<unknown> | undefined
 
@@ -32,6 +32,14 @@ async function cardFor(origin: string, descriptor: DrawableDescriptor, tileOrigi
         }
         const card = await mapCard(origin, page.pageData, page.settings)
         return card === undefined ? undefined : mapEmbedCard(card, size, tileOrigin)
+    }
+    if (descriptor.kind === 'statistic') {
+        const page = await loadPage(origin, descriptor)
+        if (page.pageData.kind !== 'statistic') {
+            return undefined
+        }
+        const card = await statisticCard(origin, page.pageData, page.settings)
+        return card === undefined ? undefined : statisticEmbedCard(card, size)
     }
     if (descriptor.kind === 'comparison') {
         // A comparison of more regions than the card maps never reads their shapes.
