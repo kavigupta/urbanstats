@@ -321,8 +321,26 @@ for (const [unitType, dimensions, toBaseUnits, value, asStatistic, asDerived] of
     void test(`${unitType} keeps its units, where the same dimensions on their own do not`, () => {
         assert.equal(write(storedUnits[unitType]), asStatistic)
         assert.equal(write({
-            unit: { kind: 'scalar', dimensions, decoration: { kind: 'none' }, difference: false },
+            unit: { dimensions, decoration: { kind: 'none' }, times: 1, baseIsScalar: true },
             toBaseUnits,
         }), asDerived)
+    })
+}
+
+// A temperature is measured from a zero that is not nothing, so a difference of two is not
+// measured from it: nine Fahrenheit degrees between two readings is five Celsius degrees
+for (const [times, value, temperatureUnit, expected] of [
+    [1, 50, 'fahrenheit', '50.0°F'],
+    [1, 50, 'celsius', '10.0°C'],
+    [0, 50, 'fahrenheit', '+50.0°F'],
+    [0, 50, 'celsius', '+27.8°C'],
+    [0, 9, 'celsius', '+5.0°C'],
+    [0, -9, 'celsius', '-5.0°C'],
+] as const) {
+    void test(`${times === 1 ? 'a temperature' : 'a difference'} of ${value}F reads as ${expected}`, () => {
+        const temperature = unitTypeToStoredUnit('temperature')
+        const stored: StoredUnit = { ...temperature, unit: { ...temperature.unit, times } }
+        const written = writeQuantity(value, stored, { temperatureUnit })
+        assert.equal(`${written.renderedValue}${reifyString(written.unitName)}`, expected)
     })
 }

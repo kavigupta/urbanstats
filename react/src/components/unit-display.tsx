@@ -16,8 +16,7 @@ export interface DisplayedQuantity {
  * zero for a lead, since a lead is written as a size rather than as a signed number.
  */
 function flipsInequality(unit: Unit, value: number): boolean {
-    return unit.kind === 'scalar' && unit.decoration.kind === 'percent'
-        && unit.decoration.party?.kind === 'lead' && value <= 0
+    return unit.decoration.kind === 'percent' && unit.decoration.party?.kind === 'lead' && value <= 0
 }
 
 export function renderInequality(value: number, stored: StoredUnit, inequality: 'leq' | 'geq'): string {

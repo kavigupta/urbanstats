@@ -11,7 +11,7 @@ type PartySystem = 'democratic' | 'left'
 /**
  * Base units, combined together via multiplication to form the units that correspond to the inBaseUnits value
  */
-export type BaseUnit = 'person' | 'usd' | 'fatality' | 'm' | 'g' | 's'
+export type BaseUnit = 'person' | 'usd' | 'fatality' | 'm' | 'g' | 's' | 'F'
 
 export interface Dimension {
     baseUnit: BaseUnit
@@ -38,11 +38,19 @@ export function inEitherSystem(units: Partial<Record<BaseUnit, NamedUnit>>): Rec
 
 export type Decoration = { kind: 'none' } | { kind: 'percent', party?: Party } | { kind: 'writtenIn', in: WrittenIn }
 
-/** Temperature is not expressed in units that scale each other: 0°C is not 0°F. */
-export type Unit = (
-    { kind: 'temperature' }
-    | { kind: 'scalar', dimensions: Dimension[], decoration: Decoration, difference: boolean }
-)
+export interface Unit {
+    dimensions: Dimension[]
+    decoration: Decoration
+    /**
+     * The coefficients of the quantities that were added to make this one: a level is 1, a
+     * difference of two is 0, and the mean of two is 1 again. Where the base has no zero of its
+     * own only those two are quantities at all; where it has one, all that is read off this is
+     * whether it is zero, which is what a leading + is written for.
+     */
+    times: number
+    /** Whether zero of it is nothing, which is false of a temperature: 0°C is not 0°F. */
+    baseIsScalar: boolean
+}
 
 export interface StoredUnit {
     unit: Unit
@@ -93,6 +101,8 @@ export interface NamedUnit {
     dimensions: Dimension[]
     /** E.g., for an acre, 4046.86 */
     size: number
+    /** Where its zero sits, in base units, for a base that has no zero of its own */
+    offset?: number
     /* How much should we discourage using this, in units of cost (digits) */
     cost: number
     /** Whether it shortens the number rather than measuring in something else, as k and m do */
@@ -132,6 +142,8 @@ export const inch = scaling('m', 'in', metersPerInch, costScaledUnit)
 export const minute = scaling('s', 'min', 60, costScaledUnit)
 export const year = scaling('s', 'yr', 365.25 * 24 * 60 * 60, 0)
 export const microgram = scaling('g', 'μg', 1e-6, costScaledUnit)
+const fahrenheit: NamedUnit = { name: '°F', dimensions: [{ baseUnit: 'F', power: 1 }], size: 1, cost: 0, abbreviation: false }
+const celsius: NamedUnit = { name: '°C', dimensions: [{ baseUnit: 'F', power: 1 }], size: 9 / 5, offset: 32, cost: 0, abbreviation: false }
 
 const massUnits: NamedUnit[] = [
     scaling('g', 'g', 1, 0),
@@ -178,6 +190,8 @@ function allUnits(settings: ReaderSettings): NamedUnit[] {
         ...lengthUnits[systemOf(settings)],
         ...massUnits,
         ...timeUnits,
+        // the one a reader reads temperatures in, so there is nothing for the search to weigh
+        settings.temperatureUnit === 'celsius' ? celsius : fahrenheit,
     ]
 }
 
@@ -206,6 +220,7 @@ const conventions: Record<DimensionKey, Convention | undefined> = {
     'person^1': { style: { kind: 'fixed', places: 0 } },
     'usd^1': { style: { kind: 'fixed', places: 0 }, prefix: '$' },
     'fatality^1': { style: { kind: 'fixed', places: 0 } },
+    'F^1': { style: { kind: 'fixed', places: 1 } },
 }
 
 const defaultStyle: NumberFormat = { kind: 'rounded', significantDigits: 3 }
@@ -255,12 +270,15 @@ export function nameOf(written: Written[]): HumanReadableElement[] {
     return merged([...product(over), ...atom(over.length === 0 ? '/\u00a0' : '/'), ...product(under)])
 }
 
+/**
+ * Where the zero of the units a quantity is written in sits. A quantity measured from that zero is
+ * written from it; a difference of two is not, since the zero cancels between them.
+ */
+function offsetOf(written: Written[], times: number): number {
+    return times === 1 ? written.reduce((total, { unit, power }) => total + (unit.offset ?? 0) * power, 0) : 0
+}
+
 function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSettings): Representation {
-    if (unit.kind === 'temperature') {
-        return settings.temperatureUnit === 'celsius'
-            ? { unitName: atom('°C'), scale: value => (value - 32) * (5 / 9), format: { kind: 'fixed', places: 1 } }
-            : { unitName: atom('°F'), scale: value => value, format: { kind: 'fixed', places: 1 } }
-    }
     if (unit.decoration.kind === 'percent') {
         // a lead is given more digits the closer it is, since that is what is being read off it
         return unit.decoration.party?.kind === 'lead' ? margin : percent
@@ -271,11 +289,12 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSett
     const pool = writtenIn === undefined ? allUnits(settings) : Object.values(writtenIn.units[systemOf(settings)])
     const { written, scale, format } = chooseUnits(inBaseUnits, unit.dimensions, pool,
         chosen => writtenIn?.style ?? styleFor(convention, chosen))
+    const zero = offsetOf(written, unit.times)
     // h:mm spends two units and names one, so which one it names is the format's to say
     const unitName = format.kind === 'hoursMinutes'
         ? atom(hoursAndMinutes(scale(inBaseUnits)).unit)
         : nameOf(written)
-    return { scale, unitName, format, prefix: convention?.prefix }
+    return { scale: value => scale(value - zero), unitName, format, prefix: convention?.prefix }
 }
 
 function getParty(partySystem: PartySystem, value: number): { label: string, hue: Hue } {
@@ -284,7 +303,7 @@ function getParty(partySystem: PartySystem, value: number): { label: string, hue
 }
 
 function hueFor(unit: Unit): Hue | undefined {
-    if (unit.kind !== 'scalar' || unit.decoration.kind !== 'percent') {
+    if (unit.decoration.kind !== 'percent') {
         return undefined
     }
     return unit.decoration.party?.kind === 'color' ? unit.decoration.party.hue : undefined
@@ -304,7 +323,7 @@ export function writeQuantity(value: number, stored: StoredUnit, settings: Reade
     const { unit } = stored
     let inBaseUnits = value * stored.toBaseUnits
     const representation = representationFor(inBaseUnits, unit, settings)
-    const leads = unit.kind === 'scalar' && unit.decoration.kind === 'percent' && unit.decoration.party?.kind === 'lead'
+    const leads = unit.decoration.kind === 'percent' && unit.decoration.party?.kind === 'lead'
         ? unit.decoration.party.system
         : undefined
     let party = undefined
@@ -312,7 +331,7 @@ export function writeQuantity(value: number, stored: StoredUnit, settings: Reade
         party = getParty(leads, inBaseUnits)
         inBaseUnits = Math.abs(inBaseUnits)
     }
-    const explicitSign = unit.kind === 'scalar' && unit.difference && inBaseUnits >= 0 ? '+' : ''
+    const explicitSign = unit.times === 0 && inBaseUnits >= 0 ? '+' : ''
     const written = formatNumber(representation.scale(inBaseUnits), representation.format)
     return {
         renderedValue: `${party === undefined ? '' : `${party.label}+`}${explicitSign}${representation.prefix ?? ''}${written}`,
