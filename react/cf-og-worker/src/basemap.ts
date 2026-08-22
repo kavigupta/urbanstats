@@ -8,6 +8,8 @@
 import { VectorTile, VectorTileLayer } from '@mapbox/vector-tile'
 import Pbf from 'pbf'
 
+import { LineStyle } from '../../src/mapper/settings/utils'
+
 import { MapLayout, polyline } from './map-layout'
 
 /** Where openfreemap's own data stops. Anything closer in draws these tiles larger. */
@@ -85,6 +87,12 @@ const rules: Rule[] = [
     { layer: 'boundary', where: p => Number(p.admin_level) === 2 && p.maritime !== 1, stroke: '#a8a6b0', width: [[3, 1], [12, 3]] },
 ]
 /* eslint-enable no-restricted-syntax */
+
+/** The site draws a map's subnational outlines above its shapes, so the two halves are separate. */
+export interface PaintedBasemap {
+    under: string
+    over: string
+}
 
 interface Tile {
     tile: VectorTile
@@ -198,15 +206,24 @@ function rulePath(rule: Rule, strokeWidth: number, tiles: Tile[], width: number,
     return `<path d="${parts.join('')}" ${paint}${opacity}/>`
 }
 
-/** SVG markup sized to the map box. Empty if no tile could be loaded. */
-export async function basemap(layout: MapLayout, width: number, height: number, tileOrigin: string, budget = 16): Promise<string> {
+/** The map's own subnational outlines, filtered the way the site's overlay layer filters them. */
+const subnationals: Rule = {
+    layer: 'boundary',
+    where: p => Number(p.admin_level) <= 4 && p.maritime !== 1 && p.disputed !== 1 && !Object.hasOwn(p, 'claimed_by'),
+}
+
+/** SVG markup sized to the map box. Both halves empty if no tile could be loaded. */
+export async function basemap(layout: MapLayout, width: number, height: number, tileOrigin: string, budget = 16, outlines?: LineStyle): Promise<PaintedBasemap> {
     const tiles = await coveringTiles(layout, width, height, tileOrigin, budget)
     if (tiles.length === 0) {
-        return ''
+        return { under: '', over: '' }
     }
     const painted = rules
         .filter(rule => rule.minZoom === undefined || layout.zoom >= rule.minZoom)
         .map(rule => rulePath(rule, rule.width === undefined ? 1 : widthAt(rule.width, layout.zoom), tiles, width, height))
         .join('')
-    return `<rect width="${width}" height="${height}" fill="${background}"/>${painted}`
+    return {
+        under: `<rect width="${width}" height="${height}" fill="${background}"/>${painted}`,
+        over: outlines === undefined ? '' : rulePath({ ...subnationals, stroke: outlines.color }, outlines.weight, tiles, width, height),
+    }
 }
