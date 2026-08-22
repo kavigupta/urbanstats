@@ -8,10 +8,11 @@ import { PageDescriptor } from '../navigation/PageDescriptor'
 import { StatName } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 import { orderNonNan, Table, tableType } from '../urban-stats-script/constants/table'
-import { deriveTableColumnLabel, deriveTableLabel } from '../urban-stats-script/derive-human-readable-name'
+import { deriveTableColumnLabel, deriveTableLabel, tableLabel } from '../urban-stats-script/derive-human-readable-name'
 import { unparse } from '../urban-stats-script/parser'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
+import { reifyString } from '../utils/human-readable-name'
 
 import { StatData, Statistic, StatSettings, View } from './types'
 
@@ -34,6 +35,12 @@ export function pageDescriptor({ stat, view }: StatSettings): PageDescriptor & {
 /** @public this is included dynamically */
 export function parseStatUSS(uss: string, universe: Universe): MapUSS {
     return attemptParseAsTopLevel(mapUSSFromString(uss), defaultTypeEnvironment(universe), true, [tableType])
+}
+
+/** @public this is included dynamically */
+export function tableTitle(uss: MapUSS, universe: Universe): string | undefined {
+    const label = tableLabel(uss, defaultTypeEnvironment(universe))
+    return label === undefined ? undefined : reifyString(label)
 }
 
 export function mapUSSFromStat(stat: Statistic): MapUSS {

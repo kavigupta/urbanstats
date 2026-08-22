@@ -15,12 +15,13 @@ import { pieSlicePath, pieSlices } from '../../src/syau/cluster-geometry'
 import { Inset } from '../../src/urban-stats-script/constants/insets'
 import { mixWithBackground } from '../../src/utils/color'
 import { computeAspectRatioForInsets } from '../../src/utils/coordinates'
+import { HumanReadableName, reifyString } from '../../src/utils/human-readable-name'
 import { UnitType, classifyStatistic } from '../../src/utils/unit'
 import logoSvg from '../assets/logo.svg'
 
 import { basemap } from './basemap'
 import { Marker, clusterMarkers } from './clusters'
-import { ArticleCard, ComparisonCard, MapCard, MapContents, Units } from './data'
+import { ArticleCard, ComparisonCard, MapCard, MapContents, StatisticCard, Units } from './data'
 import { Bounds, MapLayout, Ring, fitBounds, fitRings, place, polyline, projectedBounds, withinBox } from './map-layout'
 
 /*
@@ -157,6 +158,43 @@ function styleBareTags(node: ReactNode, fontSize: number): ReactNode {
         return <span style={{ fontSize: fontSize * 0.65 }}>{children}</span>
     }
     return cloneElement(node, undefined, children)
+}
+
+/**
+ * A name the site renders through `reifyReact`, whose fragments satori has no equivalent of.
+ * Satori lays smaller text out from the top of the line, so a subscript is dropped by hand.
+ */
+function humanReadable(name: HumanReadableName, fontSize: number): ReactNode[] {
+    if (typeof name === 'string') {
+        return [narrowSpaces(name)]
+    }
+    return name.flatMap((element, index): ReactNode[] => {
+        switch (element.type) {
+            case 'atom':
+            case 'code':
+                // Satori trims the whitespace where a text node meets an element, which a script
+                // beside it makes of the name.
+                return [narrowSpaces(element.value.replace(/^ | $/g, '\u00a0'))]
+            case 'subscript':
+            case 'superscript':
+                return [(
+                    <div
+                        key={index}
+                        style={{
+                            display: 'flex',
+                            fontSize: fontSize * 0.65,
+                            marginTop: element.type === 'subscript' ? fontSize * 0.45 : 0,
+                        }}
+                    >
+                        {humanReadable(element.value, fontSize * 0.65)}
+                    </div>
+                )]
+            case 'where':
+                return ['\u00a0where\u00a0', ...humanReadable(element.value, fontSize)]
+            case 'parens':
+                return ['(', ...humanReadable(element.value, fontSize), ')']
+        }
+    })
 }
 
 function formatValue(value: number, unit: UnitType, units: Units, fontSize: number): ReactNode[] {
@@ -484,8 +522,8 @@ function rowHeight(stat: ComparisonCard['stats'][number], layout: TableLayout): 
     return rowPadding * 2 + Math.max(name, layout.valueSize) * lineHeight + 2
 }
 
-function comparisonValue(value: number, unit: UnitType, units: Units, fontSize: number): ReactNode[] {
-    // A region the statistic has no value for, which the comparison table leaves blank.
+function cellValue(value: number, unit: UnitType, units: Units, fontSize: number): ReactNode[] {
+    // A geography the statistic has no value for, which the site's tables leave blank.
     return Number.isNaN(value) ? ['—'] : formatValue(value, unit, units, fontSize)
 }
 
@@ -519,7 +557,7 @@ function comparisonRow(stat: ComparisonCard['stats'][number], index: number, lay
                         backgroundColor: stat.highlight === region ? mixWithBackground(color, theme.mixPct / 100, colors.background) : 'transparent',
                     }}
                 >
-                    {comparisonValue(stat.values[region], unit, units, layout.valueSize)}
+                    {cellValue(stat.values[region], unit, units, layout.valueSize)}
                 </div>
             ))}
         </div>
@@ -631,6 +669,157 @@ export async function comparisonEmbedCard(comparison: ComparisonCard, shapes: Ri
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: footerSize, color: colors.muted, alignItems: 'center' }}>
                 {wordmark(footerSize)}
                 <div style={{ display: 'flex', fontSize: 18 }}>{withMap ? tileAttribution : ''}</div>
+            </div>
+        </div>
+    )
+}
+
+/** The rank column, wide enough for four digits at the size the names are set. */
+const rankColumn = 64
+
+/** The arrow the page marks its sorted column with, drawn rather than fetched: it is one triangle. */
+function sortArrow(order: 'ascending' | 'descending', size: number): ReactElement {
+    const points = order === 'ascending'
+        ? `0,${size} ${size},${size} ${size / 2},0`
+        : `0,0 ${size},0 ${size / 2},${size}`
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><polygon points="${points}" fill="${theme.brandingColor}"/></svg>`
+    return (
+        <img
+            src={`data:image/svg+xml;utf8,${encodeURIComponent(svg)}`}
+            width={size}
+            height={size}
+            // Off the baseline, so it sits against the name rather than under it.
+            style={{ marginLeft: size * 0.3, marginBottom: size * 0.35 }}
+        />
+    )
+}
+
+/**
+ * The statistic table's top rows. Sized by hand for the same reason the comparison's is: satori
+ * measures no text before it lays out.
+ */
+export function statisticEmbedCard(statistic: StatisticCard, { width, height }: { width: number, height: number }): ReactElement {
+    installHooks()
+    const padding = { x: 48, y: 36 }
+    const content = width - padding.x * 2
+    // Room for the flag beside it, as the article card's title leaves.
+    const titleSize = sizeToFit([reifyString(statistic.title)], content - 140, 1, 54, 26, boldCharacterWidth)
+
+    const valueColumn = Math.min(260, (content - rankColumn) * 0.62 / statistic.columns.length)
+    const nameColumn = content - rankColumn - valueColumn * statistic.columns.length
+    const nameSize = sizeToFit(statistic.rows.map(entry => entry.longname), nameColumn - cellPadding, 1, 26, 14)
+    const valueSize = Math.min(28, Math.round(valueColumn / 6.5))
+    /*
+     * A table of several columns is titled by its own headers, so it drops the title and the flag
+     * over it and names the geographies in the footer instead. A single column's header would only
+     * repeat the title, so that one keeps the title and leaves the header out.
+     */
+    const columnHeaders = statistic.columns.length > 1
+        ? sizeToFit(statistic.columns.map(column => reifyString(column.name)), valueColumn - cellPadding * 2, 2, 30, 14, boldCharacterWidth)
+        : undefined
+    // What the title says in the other layout: which geographies these are, and which of them.
+    const note = columnHeaders === undefined
+        ? undefined
+        : `${statistic.heading} in ${statistic.universe}${statistic.filter === undefined ? '' : ` where ${reifyString(statistic.filter)}`}`
+    // Shrunk rather than wrapped, in whatever the wordmark beside it leaves of the footer.
+    const noteSize = note === undefined ? 0 : sizeToFit([note], content - 260, 1, 22, 12)
+    const footerNote = note === undefined
+        ? []
+        : [
+                `${statistic.heading} in ${statistic.universe}`,
+                ...(statistic.filter === undefined ? [] : ['\u00a0where\u00a0', ...humanReadable(statistic.filter, noteSize)]),
+            ]
+
+    return (
+        <div
+            style={{
+                width,
+                height,
+                display: 'flex',
+                flexDirection: 'column',
+                backgroundColor: colors.background,
+                color: colors.text,
+                fontFamily: 'Jost',
+                padding: `${padding.y}px ${padding.x}px`,
+            }}
+        >
+            {columnHeaders !== undefined
+                ? <div style={{ display: 'flex' }}></div>
+                : (
+                        <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 16 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingRight: 24, overflow: 'hidden' }}>
+                                <div style={{ display: 'flex', fontSize: titleSize, fontWeight: 600, alignItems: 'flex-start' }}>{humanReadable(statistic.title, titleSize)}</div>
+                                <div style={{ fontSize: 26, color: colors.muted }}>{statistic.heading}</div>
+                            </div>
+                            {flag(statistic.universe, statistic.flag)}
+                        </div>
+                    )}
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                {columnHeaders === undefined
+                    ? <div style={{ display: 'flex' }}></div>
+                    : (
+                            <div style={{ display: 'flex', alignItems: 'flex-end', lineHeight, paddingBottom: 6 }}>
+                                <div style={{ display: 'flex', flex: 1 }}></div>
+                                {statistic.columns.map((column, index) => (
+                                    <div
+                                        key={index}
+                                        style={{
+                                            display: 'flex',
+                                            width: valueColumn,
+                                            fontSize: columnHeaders,
+                                            fontWeight: 600,
+                                            padding: `0 ${cellPadding}px`,
+                                            justifyContent: 'flex-end',
+                                            textAlign: 'right',
+                                            alignItems: 'flex-end',
+                                        }}
+                                    >
+                                        {humanReadable(column.name, columnHeaders)}
+                                        {index === statistic.sortColumn ? sortArrow(statistic.order, columnHeaders * 0.6) : ''}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                {statistic.rows.map((entry, index) => (
+                    <div
+                        key={entry.longname}
+                        style={{
+                            display: 'flex',
+                            // Shared out over whatever the table's height leaves, up to the height
+                            // a full page of rows would take: a short table sits at the top rather
+                            // than stretching down the card.
+                            flex: 1,
+                            maxHeight: 56,
+                            alignItems: 'center',
+                            lineHeight,
+                            borderTop: index === 0 ? `2px solid ${colors.text}` : `1px solid ${colors.rule}`,
+                        }}
+                    >
+                        <div style={{ display: 'flex', width: rankColumn, fontSize: nameSize, color: colors.muted, justifyContent: 'flex-end', paddingRight: cellPadding * 2 }}>
+                            {entry.ordinal}
+                        </div>
+                        <div style={{ display: 'flex', flex: 1, fontSize: nameSize, overflow: 'hidden' }}>{narrowSpaces(entry.longname)}</div>
+                        {statistic.columns.map((column, index2) => (
+                            <div
+                                key={index2}
+                                style={{
+                                    display: 'flex',
+                                    width: valueColumn,
+                                    fontSize: valueSize,
+                                    padding: `0 ${cellPadding}px`,
+                                    alignItems: 'center',
+                                    justifyContent: 'flex-end',
+                                }}
+                            >
+                                {cellValue(entry.values[index2], column.unit ?? classifyStatistic(reifyString(column.name)), statistic.units, valueSize)}
+                            </div>
+                        ))}
+                    </div>
+                ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: footerSize, color: colors.muted, alignItems: 'center', marginTop: 20 }}>
+                {wordmark(footerSize)}
+                <div style={{ display: 'flex', fontSize: noteSize, overflow: 'hidden' }}>{footerNote}</div>
             </div>
         </div>
     )

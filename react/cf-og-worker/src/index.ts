@@ -10,6 +10,7 @@
 import './browser-shim'
 
 import { PageDescriptor, pageDescriptorFromURL } from '../../src/navigation/PageDescriptor'
+import { Universe } from '../../src/universe'
 import { displayType } from '../../src/utils/text'
 
 interface Embed {
@@ -53,6 +54,23 @@ async function describeMap(settings: string | undefined): Promise<{ title: strin
     }
 }
 
+/**
+ * A custom table's title, read out of its script the way a map's is and for the same reason: the
+ * tags are rewritten on every HTML request, browsers included, and running the table means loading
+ * a geography's worth of statistics.
+ */
+async function describeTable(uss: string, universe: Universe): Promise<string | undefined> {
+    try {
+        // Deferred for the same reason as describeMap's imports.
+        const { parseStatUSS, tableTitle } = await import('../../src/stat/utils')
+        return tableTitle(parseStatUSS(uss, universe), universe)
+    }
+    catch {
+        // Any script we cannot read a title out of falls back to the generic one.
+        return undefined
+    }
+}
+
 async function describe(url: URL): Promise<Embed | undefined> {
     let descriptor
     try {
@@ -75,8 +93,16 @@ async function describe(url: URL): Promise<Embed | undefined> {
                 image: new URL(`/og${url.pathname}${url.search}`, url.origin).toString(),
             }
         case 'statistic': {
-            const title = 'statname' in descriptor ? descriptor.statname : 'Urban Stats: Custom Table'
-            return { title, description: `${title} rankings on Urban Stats.` }
+            // The universe the page defaults to when the link names none.
+            const universe = descriptor.universe ?? 'world'
+            const title = 'statname' in descriptor
+                ? descriptor.statname
+                : await describeTable(descriptor.uss, universe) ?? 'Urban Stats: Custom Table'
+            return {
+                title,
+                description: `${title} rankings on Urban Stats.`,
+                image: new URL(`/og${url.pathname}${url.search}`, url.origin).toString(),
+            }
         }
         case 'mapper': {
             const map = await describeMap(descriptor.settings)
@@ -189,7 +215,7 @@ async function renderImage(env: WorkerEnv, target: URL, ctx: WorkerContext): Pro
         return new Response('unrecognized url', { status: 400 })
     }
     // The kinds with a renderer; the rest keep the site's static preview image.
-    if (descriptor.kind !== 'article' && descriptor.kind !== 'comparison' && descriptor.kind !== 'mapper') {
+    if (descriptor.kind !== 'article' && descriptor.kind !== 'comparison' && descriptor.kind !== 'mapper' && descriptor.kind !== 'statistic') {
         return new Response('nothing to draw', { status: 404 })
     }
 
