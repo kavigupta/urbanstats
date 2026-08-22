@@ -34,8 +34,8 @@ export interface WrittenIn {
 export type Decoration = { kind: 'none' } | { kind: 'percent', party?: Party } | { kind: 'writtenIn', in: WrittenIn }
 
 /**
- * Temperature is not expressed in units that scale each other: 0°C is not 0°F. A duration is not
- * expressed in one unit at all: 1:30 is an hour and a half of it.
+ * Temperature is not expressed in units that scale each other: 0°C is not 0°F. A duration is
+ * expressed in two at once: the 1 of 1:30 is hours and the 30 is minutes.
  */
 export type Unit = (
     { kind: 'temperature' }
