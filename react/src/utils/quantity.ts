@@ -268,7 +268,7 @@ export const dimensionless = computedUnit([], 1)
  * A power that arithmetic has left a hair off a whole one: a cube raised to a tenth and then to
  * ten comes back as 3.0000000000000004, which is no dimension anything is written in.
  */
-function snapToWhole(value: number): number {
+export function snapToWhole(value: number): number {
     return Math.abs(value - Math.round(value)) < 1e-9 ? Math.round(value) : value
 }
 
