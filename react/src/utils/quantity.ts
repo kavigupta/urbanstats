@@ -264,7 +264,6 @@ function computedUnit(dimensions: Dimension[], toBaseUnits: number): StoredUnit 
 
 export const dimensionless = computedUnit([], 1)
 
-/** Each base unit counted once, and the ones that cancelled left out. */
 function gathered(dimensions: Dimension[]): Dimension[] {
     const totals = new Map<BaseUnit, number>()
     for (const { baseUnit, power } of dimensions) {
@@ -277,10 +276,6 @@ export function sameDimensions(left: StoredUnit, right: StoredUnit): boolean {
     return renderAsKey(gathered(left.unit.dimensions)) === renderAsKey(gathered(right.unit.dimensions))
 }
 
-/**
- * A quotient is the right taken to the power -1. Neither side may be measured from a zero of its
- * own: how many temperatures twice one is depends on the two of them, not on their units.
- */
 export function unitProduct(left: StoredUnit, right: StoredUnit, rightPower: 1 | -1): StoredUnit | undefined {
     if (!left.unit.baseIsScalar || !right.unit.baseIsScalar) {
         return undefined
@@ -293,7 +288,6 @@ export function unitProduct(left: StoredUnit, right: StoredUnit, rightPower: 1 |
     return computedUnit(gathered(dimensions), toBaseUnits)
 }
 
-/** A length squared is an area. */
 export function unitPower(stored: StoredUnit, exponent: number): StoredUnit | undefined {
     if (!stored.unit.baseIsScalar) {
         return undefined
