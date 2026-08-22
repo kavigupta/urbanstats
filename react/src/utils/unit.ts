@@ -1,6 +1,6 @@
 import {
     BaseUnit, centimeter, Decoration, fatalities, Hue, hundredThousandPeople, inch, kilometer, meter, microgram, mile,
-    Party, people, StoredUnit, WrittenIn, year,
+    minute, Party, people, StoredUnit, WrittenIn, year,
 } from './quantity'
 
 export type UnitType = 'percentage' | 'percentageChange' | 'fatalities' | 'fatalitiesPerCapita' | 'density' | 'population'
@@ -88,6 +88,8 @@ export const storedUnits = {
     partyChangeGreen: percentage(inParty('green'), true),
     partyChangePurple: percentage(inParty('purple'), true),
     temperature: { unit: { kind: 'temperature' }, toBaseUnits: 1 },
+    time: dimensionfull({ s: 1 }, 60 * 60, { units: () => ({ s: minute }), style: { kind: 'hoursMinutes' } }),
+    minutes: dimensionfull({ s: 1 }, 60, { units: () => ({ s: minute }), style: { kind: 'hoursMinutes' } }),
     number: dimensionfull({}),
     population: dimensionfull({ person: 1 }),
     fatalities: dimensionfull({ fatality: 1 }),

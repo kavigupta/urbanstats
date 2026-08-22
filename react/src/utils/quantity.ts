@@ -1,7 +1,7 @@
 import { HueColors } from '../page_template/color-themes'
 
 import { atom, HumanReadableElement } from './human-readable-name'
-import { formatNumber, NumberFormat } from './text'
+import { formatNumber, hoursAndMinutes, NumberFormat } from './text'
 import { chooseUnits, Written } from './unit-search'
 
 export type Hue = keyof HueColors
@@ -50,7 +50,7 @@ export interface ReaderSettings {
     temperatureUnit?: string
 }
 
-export const missingValue = 'N/A'
+const missingValue = 'N/A'
 
 /** How a quantity is written: what to scale it by, what to call the result, and to how many places. */
 export interface Representation {
@@ -124,6 +124,7 @@ export const fatalities = scaling('fatality', '', 1, 0)
 export const meter = scaling('m', 'm', 1, 0)
 export const centimeter = scaling('m', 'cm', 0.01, costScaledUnit)
 export const inch = scaling('m', 'in', metersPerInch, costScaledUnit)
+export const minute = scaling('s', 'min', 60, costScaledUnit)
 export const year = scaling('s', 'yr', 365.25 * 24 * 60 * 60, 0)
 export const microgram = scaling('g', 'μg', 1e-6, costScaledUnit)
 
@@ -136,7 +137,7 @@ const massUnits: NamedUnit[] = [
 
 const timeUnits: NamedUnit[] = [
     scaling('s', 's', 1, 0),
-    scaling('s', 'min', 60, costScaledUnit),
+    minute,
     scaling('s', 'hr', 60 * 60, costScaledUnit),
     scaling('s', 'days', 24 * 60 * 60, costScaledUnit),
     year,
@@ -265,7 +266,11 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSett
     const pool = writtenIn === undefined ? allUnits(settings) : Object.values(writtenIn.units(systemOf(settings)))
     const { written, scale, format } = chooseUnits(inBaseUnits, unit.dimensions, pool,
         chosen => writtenIn?.style ?? styleFor(convention, chosen))
-    return { scale, unitName: nameOf(written), format, prefix: convention?.prefix }
+    // h:mm spends two units and names one, so which one it names is the format's to say
+    const unitName = format.kind === 'hoursMinutes'
+        ? atom(hoursAndMinutes(scale(inBaseUnits)).unit)
+        : nameOf(written)
+    return { scale, unitName, format, prefix: convention?.prefix }
 }
 
 function getParty(partySystem: PartySystem, value: number): { label: string, hue: Hue } {
@@ -274,7 +279,7 @@ function getParty(partySystem: PartySystem, value: number): { label: string, hue
 }
 
 function hueFor(unit: Unit): Hue | undefined {
-    if (unit.kind === 'temperature' || unit.decoration.kind !== 'percent') {
+    if (unit.kind !== 'scalar' || unit.decoration.kind !== 'percent') {
         return undefined
     }
     return unit.decoration.party?.kind === 'color' ? unit.decoration.party.hue : undefined
