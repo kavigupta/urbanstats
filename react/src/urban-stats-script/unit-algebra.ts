@@ -169,6 +169,11 @@ export function backward(operator: BinaryOperatorSymbol, result: AbstractInterpV
     }
 }
 
+/** Each of these undoes itself: negating twice, or leaving alone twice, is what was there. */
+export function backwardUnary(operator: UnaryOperatorSymbol, result: AbstractInterpValue): AbstractInterpValue {
+    return forwardUnary(operator, result)
+}
+
 export function forwardUnary(operator: UnaryOperatorSymbol, operand: AbstractInterpValue): AbstractInterpValue {
     if (operator === '!') {
         return { kind: 'any' }

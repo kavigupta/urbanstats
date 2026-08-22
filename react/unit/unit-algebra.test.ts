@@ -1,8 +1,8 @@
 import assert from 'assert/strict'
 import test from 'node:test'
 
-import { BinaryOperatorSymbol, infixOperators } from '../src/urban-stats-script/operators'
-import { backward, constant, forward, forwardUnary, inUnit, AbstractInterpValue, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
+import { BinaryOperatorSymbol, infixOperators, unaryOperators } from '../src/urban-stats-script/operators'
+import { backward, backwardUnary, constant, forward, forwardUnary, inUnit, AbstractInterpValue, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
 import { StoredUnit } from '../src/utils/quantity'
 import { storedUnits } from '../src/utils/unit'
 
@@ -148,4 +148,13 @@ void test('what cannot be told apart from what cannot be', () => {
     // neither is written in anything, which is all the display asks
     assert.equal(unitToWriteIn(unknown), undefined)
     assert.equal(unitToWriteIn(inconsistent), undefined)
+})
+
+void test('a unary operator undoes itself, so the operand is found the same way', () => {
+    for (const operand of [unknown, people, temperature, constant(2), inconsistent]) {
+        for (const operator of unaryOperators) {
+            assert.equal(shape(backwardUnary(operator, forwardUnary(operator, operand))),
+                operator === '!' ? 'unknown' : shape(operand))
+        }
+    }
 })
