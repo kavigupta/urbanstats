@@ -36,8 +36,9 @@ That serves the Worker on port 8787 (`OG_PORT`) against `http://localhost:$PORT`
 own port serves the whole site.
 
 `/embed-preview.html?target=<page url>` is a dev page showing the site on one side and the card a
-crawler would get on the other. It follows the frame's navigation, and it redraws when you edit the
-Worker, which restarts it — the site's own hot reload knows nothing about that.
+crawler would get on the other. It follows the frame's navigation, writing it back into `target` so
+a reload stays where you were, and it redraws when you edit the Worker, which restarts it — the
+site's own hot reload knows nothing about that.
 
 A card URL served against a local site takes `__tiles=<origin>`, which draws the basemap from that
 origin rather than openfreemap. The card screenshot tests point it at a snapshot of the tiles.
