@@ -25,7 +25,7 @@ import type {
     QuizDescriptor, RetroQuestionJSON, QuizHistory,
 } from '../quiz/quiz'
 import type { StatisticPanel } from '../stat/StatisticPanel'
-import type { StatSettings } from '../stat/types'
+import type { Statistic, StatSettings } from '../stat/types'
 import { loadSYAUData, SYAUData } from '../syau/load'
 import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse, Universe, universeSchema } from '../universe'
@@ -238,7 +238,7 @@ export type PageData =
         mapPartitions: number[][]
         comparisonPanel: typeof ComparisonPanel
     }
-    | { kind: 'statistic', settings: StatSettings, statisticPanel: typeof StatisticPanel, counts: CountsByUT }
+    | { kind: 'statistic', settings: StatSettings, title: string, statisticPanel: typeof StatisticPanel, counts: CountsByUT }
     | { kind: 'index' }
     | { kind: 'about' }
     | { kind: 'dataCredit', dataCreditPanel: typeof DataCreditPanel }
@@ -549,7 +549,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
         case 'statistic': {
             const counts = getCountsByArticleType()
             const panel = import('../stat/StatisticPanel')
-            const utils = import('../stat/utils')
+            const utils = await import('../stat/utils')
 
             const statUniverse = newDescriptor.universe ?? 'world'
             const displayStatUniverse = statUniverse !== 'world' ? statUniverse : undefined
@@ -562,24 +562,26 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 start = start + 1
             }
 
+            const stat: Statistic = {
+                universe: statUniverse,
+                articleType: newDescriptor.article_type,
+                ...('uss' in newDescriptor
+                    ? {
+                            type: 'uss',
+                            uss: utils.parseStatUSS(newDescriptor.uss, statUniverse),
+                        }
+                    : {
+                            type: 'simple',
+                            statName: newDescriptor.statname,
+                        }),
+            }
+
             return {
                 pageData: {
                     kind: 'statistic',
                     statisticPanel: (await panel).StatisticPanel,
                     settings: {
-                        stat: {
-                            universe: statUniverse,
-                            articleType: newDescriptor.article_type,
-                            ...('uss' in newDescriptor
-                                ? {
-                                        type: 'uss',
-                                        uss: (await utils).parseStatUSS(newDescriptor.uss, statUniverse),
-                                    }
-                                : {
-                                        type: 'simple',
-                                        statName: newDescriptor.statname,
-                                    }),
-                        },
+                        stat,
                         view: {
                             start,
                             amount: newDescriptor.amount,
@@ -589,6 +591,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                             sortColumn: newDescriptor.sort_column ?? 0,
                         },
                     },
+                    title: utils.statPageTitle(stat),
                     counts: await counts,
                 },
                 newPageDescriptor: {
@@ -860,7 +863,8 @@ export function pageTitle(pageData: PageData): string {
         case 'article':
             return pageData.article.shortname
         case 'statistic':
-            return pageData.settings.stat.type === 'simple' ? pageData.settings.stat.statName : 'Urban Stats: Custom Table'
+            // Only the title this page loaded with; the statistic panel retitles its own edits.
+            return pageData.title
         case 'comparison':
             return pageData.articles.map(x => x.shortname).join(' vs ')
         case 'editor':
