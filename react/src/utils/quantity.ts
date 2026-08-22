@@ -1,7 +1,7 @@
 import { HueColors } from '../page_template/color-themes'
 
 import { atom, HumanReadableElement } from './human-readable-name'
-import { formatNumber, NumberFormat } from './text'
+import { formatNumber, hoursAndMinutes, NumberFormat } from './text'
 import { chooseUnits, Written } from './unit-search'
 
 export type Hue = keyof HueColors
@@ -268,7 +268,7 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSett
         chosen => writtenIn?.style ?? styleFor(convention, chosen))
     // h:mm spends two units and names one, so which one it names is the format's to say
     const unitName = format.kind === 'hoursMinutes'
-        ? atom(Math.round(Math.abs(scale(inBaseUnits))) >= 60 ? 'h' : 'min')
+        ? atom(hoursAndMinutes(scale(inBaseUnits)).unit)
         : nameOf(written)
     return { scale, unitName, format, prefix: convention?.prefix }
 }
