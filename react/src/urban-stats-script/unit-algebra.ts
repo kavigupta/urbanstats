@@ -2,24 +2,13 @@ import { dimensionless, sameDimensions, StoredUnit, unitPower, unitProduct } fro
 
 import { BinaryOperatorSymbol, UnaryOperatorSymbol } from './operators'
 
-/**
- * What is known about a value. Every expression has one of these and no operation on them can
- * fail, so the two ways of knowing no unit are told apart: one is that it could be in any of them,
- * the other that no quantity is of it at all, which is what adding people to an area asks for.
- */
+/** `any` is that it could be in any unit; `none` is that no quantity is of it, as people plus an area. */
 export type Known = (
     { kind: 'any', constant?: number }
     | { kind: 'none' }
     | { kind: 'in', unit: StoredUnit, constant?: number }
 )
 
-/** It could be in any unit; nothing here says which. */
-export const unknown: Known = { kind: 'any' }
-
-/** No quantity is of it, because what it was computed from did not agree. */
-export const inconsistent: Known = { kind: 'none' }
-
-/** A number written in the script, which is in whatever unit the operator on it says it is. */
 export function constant(value: number): Known {
     return { kind: 'any', constant: value }
 }
@@ -33,13 +22,12 @@ function unitOf(known: Known): StoredUnit | undefined {
 }
 
 function quantity(unit: StoredUnit | undefined): Known {
-    return unit === undefined ? inconsistent : { kind: 'in', unit }
+    return unit === undefined ? { kind: 'none' } : { kind: 'in', unit }
 }
 
 /**
- * The unit to write a value in, which a quantity measured from a zero of its own has only while it
- * is one of itself or none of it. Two temperatures added together are neither -- but their mean is
- * one again, so this is asked at the end rather than of every step along the way.
+ * Asked at the end rather than at every step: two temperatures added are neither one temperature
+ * nor none, but their mean is one again, and refusing the sum on the way past would lose that.
  */
 export function unitToWriteIn(known: Known): StoredUnit | undefined {
     const unit = unitOf(known)
@@ -53,15 +41,11 @@ function withTimes(unit: StoredUnit, times: number): Known {
     return quantity({ ...unit, unit: { ...unit.unit, times } })
 }
 
-/** A constant with no unit of its own, which is what a bare number is when it scales something. */
 function asFactor(known: Known): number | undefined {
     return known.kind === 'any' ? known.constant : undefined
 }
 
-/**
- * The shapes an operator takes. Each says how its slots are related; the directions are read off
- * that relation rather than written out one at a time.
- */
+/** How an operator's slots are related, which is what both directions are read off. */
 type Form =
     /** Every slot is the same unit, and the operands' coefficients combine into the result's. */
     | { kind: 'sameUnit', combine: (left: number, right: number) => number, keepsUnit: boolean }
@@ -96,11 +80,11 @@ function addedForward(form: { combine: (left: number, right: number) => number }
     // one side saying nothing is taken to be of the other's kind, since only alike things add
     const unit = over ?? under
     if (unit === undefined) {
-        return unknown
+        return { kind: 'any' }
     }
     if (over !== undefined && under !== undefined && !sameDimensions(over, under)) {
         // nothing is both, so nothing is their sum
-        return inconsistent
+        return { kind: 'none' }
     }
     // a bare number added to a temperature is a number of degrees rather than a temperature
     return withTimes(unit, form.combine(over?.unit.times ?? 0, under?.unit.times ?? 0))
@@ -120,28 +104,27 @@ function productForward(rightPower: 1 | -1, left: Known, right: Known): Known {
             : quantity(unitProduct(dimensionless, under, -1))
     }
     if (over === undefined || under === undefined) {
-        return unknown
+        return { kind: 'any' }
     }
     return quantity(unitProduct(over, under, rightPower))
 }
 
-/** What is known about `left operator right`, from what is known about each of them. */
 export function forward(operator: BinaryOperatorSymbol, left: Known, right: Known): Known {
     // nothing computed from something no quantity is of is a quantity either
     if (left.kind === 'none' || right.kind === 'none') {
-        return inconsistent
+        return { kind: 'none' }
     }
     const form = forms[operator]
     switch (form.kind) {
         case 'opaque':
-            return unknown
+            return { kind: 'any' }
         case 'sameUnit':
-            return form.keepsUnit ? addedForward(form, left, right) : unknown
+            return form.keepsUnit ? addedForward(form, left, right) : { kind: 'any' }
         case 'product':
             return productForward(form.rightPower, left, right)
         case 'power': {
             const [base, exponent] = [unitOf(left), asFactor(right)]
-            return exponent === undefined || base === undefined ? unknown : quantity(unitPower(base, exponent))
+            return exponent === undefined || base === undefined ? { kind: 'any' } : quantity(unitPower(base, exponent))
         }
     }
 }
@@ -160,20 +143,17 @@ function undo(operator: keyof typeof inverses, result: Known, known: Known, side
         : forward(operator, known, result)
 }
 
-/**
- * What is known about the other operand of `left operator right`, from the result and one of them.
- * This is how a bare number written against a quantity is read in that quantity's unit.
- */
+/** How the 0.1 of `commute_bike < 0.1` is read as ten percent. */
 export function backward(operator: BinaryOperatorSymbol, result: Known, known: Known, side: 'left' | 'right'): Known {
     if (result.kind === 'none' || known.kind === 'none') {
-        return inconsistent
+        return { kind: 'none' }
     }
     const form = forms[operator]
     switch (form.kind) {
         case 'opaque':
         // a power is undone by a root, which is not one of these operators
         case 'power':
-            return unknown
+            return { kind: 'any' }
         case 'sameUnit':
             // a comparison says nothing of its own kind, but its operands are of each other's
             return form.keepsUnit ? undo(operator as '+' | '-', result, known, side) : known
@@ -182,7 +162,6 @@ export function backward(operator: BinaryOperatorSymbol, result: Known, known: K
     }
 }
 
-/** What is known about `operator operand`. Negating a quantity leaves it the quantity it was. */
 export function forwardUnary(operator: UnaryOperatorSymbol, operand: Known): Known {
-    return operator === '!' ? unknown : operand
+    return operator === '!' ? { kind: 'any' } : operand
 }

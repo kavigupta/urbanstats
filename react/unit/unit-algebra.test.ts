@@ -2,7 +2,7 @@ import assert from 'assert/strict'
 import test from 'node:test'
 
 import { BinaryOperatorSymbol, infixOperators } from '../src/urban-stats-script/operators'
-import { backward, constant, forward, forwardUnary, inconsistent, inUnit, Known, unitToWriteIn, unknown } from '../src/urban-stats-script/unit-algebra'
+import { backward, constant, forward, forwardUnary, inUnit, Known, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
 import { StoredUnit } from '../src/utils/quantity'
 import { storedUnits } from '../src/utils/unit'
 
@@ -16,6 +16,8 @@ function shape(known: Known): string {
     return `${written === '' ? 'dimensionless' : written} times=${known.unit.unit.times} x${known.unit.toBaseUnits}`
 }
 
+const unknown: Known = { kind: 'any' }
+const inconsistent: Known = { kind: 'none' }
 const people = inUnit(storedUnits.population)
 const area = inUnit(storedUnits.area)
 const temperature = inUnit(storedUnits.temperature)
