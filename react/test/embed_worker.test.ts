@@ -20,7 +20,7 @@ const filteredStatistic = `/statistic.html?uss=${encodeURIComponent('customNode(
 const filteredSingleColumnStatistic = `/statistic.html?uss=${encodeURIComponent('customNode(""); condition (population > 100000); table(columns=[column(values=density_pw_1km)])')}&article_type=City&start=1&amount=20&order=descending&universe=USA`
 // A name too long for one line of the names column, which takes two rather than shrinking the
 // whole column's text to fit it.
-const longNamedStatistic = filteredStatistic.replace('order=descending', 'order=ascending')
+const longNamedStatistic = filteredStatistic.replaceAll('order=descending', 'order=ascending')
 /*
  * A table sorted by a column past the few the card fits: the rows carry that column's rank, so it
  * takes the last of the card's slots rather than being cut off along with the columns after it.
