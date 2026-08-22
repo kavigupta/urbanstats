@@ -8,7 +8,8 @@ import { BinaryOperatorSymbol, UnaryOperatorSymbol } from './operators'
  * the other that no quantity is of it at all, which is what adding people to an area asks for.
  */
 export type Known = (
-    { kind: 'any' | 'none', constant?: number }
+    { kind: 'any', constant?: number }
+    | { kind: 'none' }
     | { kind: 'in', unit: StoredUnit, constant?: number }
 )
 
