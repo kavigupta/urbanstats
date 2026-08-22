@@ -1,5 +1,5 @@
 import { assert } from '../utils/defensive'
-import { Decoration, dimensionless, Party, sameDimensions, StoredUnit, unitPower, unitProduct } from '../utils/quantity'
+import { Decoration, dimensionless, Party, sameDimensions, snapToWhole, StoredUnit, unitPower, unitProduct } from '../utils/quantity'
 
 import { BinaryOperatorSymbol, UnaryOperatorSymbol } from './operators'
 
@@ -60,8 +60,8 @@ function sharedDecoration(left: Decoration, right: Decoration): Decoration {
     return { kind: 'none' }
 }
 
-function withTimes(unit: StoredUnit, times: number): AbstractInterpValue {
-    return { kind: 'in', unit: { ...unit, unit: { ...unit.unit, times } } }
+function written(unit: StoredUnit, times: number, decoration = unit.unit.decoration): AbstractInterpValue {
+    return { kind: 'in', unit: { ...unit, unit: { ...unit.unit, decoration, times: snapToWhole(times) } } }
 }
 
 /** How an operator's slots relate, which is what both directions are read off. */
@@ -98,24 +98,20 @@ function addedForward(form: { combine: (left: number, right: number) => number }
     // a side saying nothing is taken to be of the other's kind, since only alike things add; a
     // bare number added to a temperature is a number of degrees
     if (left.kind === 'any') {
-        return right.kind === 'any' ? { kind: 'any' } : withTimes(right.unit, form.combine(0, right.unit.unit.times))
+        return right.kind === 'any' ? { kind: 'any' } : written(right.unit, form.combine(0, right.unit.unit.times))
     }
     if (right.kind === 'any') {
-        return withTimes(left.unit, form.combine(left.unit.unit.times, 0))
+        return written(left.unit, form.combine(left.unit.unit.times, 0))
     }
     // nothing is both people and an area, so nothing is their sum
     if (!sameDimensions(left.unit, right.unit)) {
         return { kind: 'none' }
     }
-    const unit = {
-        ...left.unit,
-        unit: {
-            ...left.unit.unit,
-            decoration: sharedDecoration(left.unit.unit.decoration, right.unit.unit.decoration),
-            times: form.combine(left.unit.unit.times, right.unit.unit.times),
-        },
-    }
-    return { kind: 'in', unit }
+    return written(
+        left.unit,
+        form.combine(left.unit.unit.times, right.unit.unit.times),
+        sharedDecoration(left.unit.unit.decoration, right.unit.unit.decoration),
+    )
 }
 
 function productForward(rightPower: 1 | -1, left: KnownAIV, right: KnownAIV): AbstractInterpValue {
@@ -125,7 +121,7 @@ function productForward(rightPower: 1 | -1, left: KnownAIV, right: KnownAIV): Ab
         }
         // scaling a quantity scales how many of itself it is: half of two temperatures is one
         if (rightPower === 1) {
-            return withTimes(right.unit, right.unit.unit.times * left.constant)
+            return written(right.unit, right.unit.unit.times * left.constant)
         }
         // where a number over a quantity is not that many of it, but one over it
         const inverted = unitProduct(dimensionless, right.unit, -1)
@@ -134,7 +130,7 @@ function productForward(rightPower: 1 | -1, left: KnownAIV, right: KnownAIV): Ab
     if (right.kind === 'any') {
         return right.constant === undefined
             ? { kind: 'any' }
-            : withTimes(left.unit, left.unit.unit.times * (rightPower === 1 ? right.constant : 1 / right.constant))
+            : written(left.unit, left.unit.unit.times * (rightPower === 1 ? right.constant : 1 / right.constant))
     }
     const product = unitProduct(left.unit, right.unit, rightPower)
     return product === undefined ? { kind: 'none' } : { kind: 'in', unit: product }
@@ -219,6 +215,6 @@ export function forwardUnary(operator: UnaryOperatorSymbol, operand: AbstractInt
     if (operand.kind === 'any') {
         return { kind: 'any', constant: negated }
     }
-    const { unit } = operand
-    return { kind: 'in', unit: { ...unit, unit: { ...unit.unit, times: -unit.unit.times } }, constant: negated }
+    const negatedTimes = written(operand.unit, -operand.unit.unit.times)
+    return negatedTimes.kind === 'in' ? { ...negatedTimes, constant: negated } : negatedTimes
 }

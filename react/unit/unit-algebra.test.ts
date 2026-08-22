@@ -206,3 +206,14 @@ for (const [level, declared] of [
         assert.equal(write(inferred!), write(storedUnits[declared]))
     })
 }
+
+void test('a coefficient that comes back a hair off a whole one is the whole one', () => {
+    // 49 * (1/49) is 0.9999999999999999, so the mean of 49 temperatures would be no temperature
+    let sum = temperature
+    for (let count = 1; count < 49; count++) {
+        sum = forward('+', sum, temperature)
+    }
+    const mean = forward('*', sum, constant(1 / 49))
+    assert.equal(shape(mean), 'F^1 times=1 x1')
+    assert.notEqual(unitToWriteIn(mean), undefined)
+})
