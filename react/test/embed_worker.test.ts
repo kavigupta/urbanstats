@@ -16,6 +16,8 @@ const statistic = '/statistic.html?statname=Population&article_type=City&start=1
 const multiColumnStatistic = `/statistic.html?uss=${encodeURIComponent('customNode(""); condition (true); table(columns=[column(values=density_pw_1km), column(values=population), column(values=area, name="Area")])')}&article_type=City&start=1&amount=20&order=descending&universe=USA`
 // A table filtered by a condition, which the card states after the geographies it ranks.
 const filteredStatistic = `/statistic.html?uss=${encodeURIComponent('customNode(""); condition (population > 100000); table(columns=[column(values=density_pw_1km), column(values=population), column(values=area, name="Area")])')}&article_type=City&start=1&amount=20&order=descending&universe=USA`
+// The same as one column, whose title drops the condition its subtitle then states.
+const filteredSingleColumnStatistic = `/statistic.html?uss=${encodeURIComponent('customNode(""); condition (population > 100000); table(columns=[column(values=density_pw_1km)])')}&article_type=City&start=1&amount=20&order=descending&universe=USA`
 /*
  * A table sorted by a column past the few the card fits: the rows carry that column's rank, so it
  * takes the last of the card's slots rather than being cut off along with the columns after it.
@@ -123,6 +125,10 @@ test('embed-worker-multi-column-statistic-card', async (t) => {
 
 test('embed-worker-filtered-statistic-card', async (t) => {
     await snapshotCard(t, filteredStatistic)
+})
+
+test('embed-worker-filtered-single-column-statistic-card', async (t) => {
+    await snapshotCard(t, filteredSingleColumnStatistic)
 })
 
 test('embed-worker-late-sorted-statistic-card', async (t) => {
