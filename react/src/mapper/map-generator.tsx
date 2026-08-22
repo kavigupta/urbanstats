@@ -32,6 +32,7 @@ import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { makeDebugLogger } from '../utils/debug-logging'
 import { HumanReadableName } from '../utils/human-readable-name'
 import { ICoordinate } from '../utils/protos'
+import { unitTypeToStoredUnit } from '../utils/unit'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
 import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar'
@@ -548,7 +549,8 @@ async function loadMapResult({ mapResultMain, universe, geographyKind, cache, la
 function computeRampToDisplay(value: CommonMap, label: HumanReadableName, { scale, ticks }: { scale: ScaleInstance, ticks: number[] }): RampToDisplay & { type: 'ramp' } {
     const hasValuesClampedToStart = value.data.some(val => scale.forward(val) < 0)
     const hasValuesClampedToEnd = value.data.some(val => scale.forward(val) > 1)
-    return { type: 'ramp', value: { ramp: value.ramp, interpolations: ticks, scale, label, unit: value.unit, hasValuesClampedToStart, hasValuesClampedToEnd } }
+    const unit = value.unit === undefined ? undefined : unitTypeToStoredUnit(value.unit)
+    return { type: 'ramp', value: { ramp: value.ramp, interpolations: ticks, scale, label, unit, hasValuesClampedToStart, hasValuesClampedToEnd } }
 }
 
 export const transformContext = createContext({ selfDetermineHeight: false })

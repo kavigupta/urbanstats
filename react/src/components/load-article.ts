@@ -10,7 +10,7 @@ import { findAmbiguousSourcesAll, statParents, StatName, StatPath, statPathToOrd
 import { assert } from '../utils/defensive'
 import { HumanReadableName } from '../utils/human-readable-name'
 import { Article, CongressionalRepresentativeTable, ICongressionalRepresentative, ICongressionalRepresentativePointer, IFirstOrLast, IMetadata } from '../utils/protos'
-import { UnitType } from '../utils/unit'
+import { StoredUnit } from '../utils/quantity'
 
 import { CountsByUT, forType } from './countsByArticleType'
 import { electionDisclaimerForRow, type Disclaimer } from './disclaimer-text'
@@ -111,7 +111,7 @@ const dataCreditExplanationPageByMetadataIndex = new Map<number, string>(
 interface StatisticCellRenderingInfoCommon {
     articleType: string
     statname: HumanReadableName
-    unit?: UnitType
+    unit?: StoredUnit
     statpath?: StatPath
 }
 

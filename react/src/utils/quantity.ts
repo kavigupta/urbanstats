@@ -27,8 +27,13 @@ export type System = 'metric' | 'imperial'
  * micrograms, not of grams. So a statistic declares the two together.
  */
 export interface WrittenIn {
-    units: (system: System) => Partial<Record<BaseUnit, NamedUnit>>
+    units: Record<System, Partial<Record<BaseUnit, NamedUnit>>>
     style: NumberFormat
+}
+
+/** For a quantity written the same way whichever units its reader measures in. */
+export function inEitherSystem(units: Partial<Record<BaseUnit, NamedUnit>>): Record<System, Partial<Record<BaseUnit, NamedUnit>>> {
+    return { metric: units, imperial: units }
 }
 
 export type Decoration = { kind: 'none' } | { kind: 'percent', party?: Party } | { kind: 'writtenIn', in: WrittenIn }
@@ -263,7 +268,7 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSett
     const convention = conventions[renderAsKey(unit.dimensions)]
     // a statistic written in units of its own leaves the search nothing to choose between
     const writtenIn = unit.decoration.kind === 'writtenIn' ? unit.decoration.in : undefined
-    const pool = writtenIn === undefined ? allUnits(settings) : Object.values(writtenIn.units(systemOf(settings)))
+    const pool = writtenIn === undefined ? allUnits(settings) : Object.values(writtenIn.units[systemOf(settings)])
     const { written, scale, format } = chooseUnits(inBaseUnits, unit.dimensions, pool,
         chosen => writtenIn?.style ?? styleFor(convention, chosen))
     // h:mm spends two units and names one, so which one it names is the format's to say

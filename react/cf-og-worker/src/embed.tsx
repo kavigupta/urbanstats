@@ -16,7 +16,8 @@ import { Inset } from '../../src/urban-stats-script/constants/insets'
 import { mixWithBackground } from '../../src/utils/color'
 import { computeAspectRatioForInsets } from '../../src/utils/coordinates'
 import { HumanReadableName, reifyString } from '../../src/utils/human-readable-name'
-import { UnitType, classifyStatistic, unitTypeToStoredUnit } from '../../src/utils/unit'
+import { StoredUnit } from '../../src/utils/quantity'
+import { classifyStatistic, unitTypeToStoredUnit } from '../../src/utils/unit'
 import logoSvg from '../assets/logo.svg'
 
 import { basemap } from './basemap'
@@ -197,8 +198,8 @@ function humanReadable(name: HumanReadableName, fontSize: number): ReactNode[] {
     })
 }
 
-function formatValue(value: number, unit: UnitType, units: Units, fontSize: number): ReactNode[] {
-    const rendered = renderQuantity(value, unitTypeToStoredUnit(unit), { useImperial: units.use_imperial, temperatureUnit: units.temperature_unit })
+function formatValue(value: number, unit: StoredUnit, units: Units, fontSize: number): ReactNode[] {
+    const rendered = renderQuantity(value, unit, { useImperial: units.use_imperial, temperatureUnit: units.temperature_unit })
     // An array rather than a fragment, which satori does not have.
     return [
         keyed(styleBareTags(rendered.value, fontSize), 'value'),
@@ -220,7 +221,7 @@ function row(stat: ArticleCard['stats'][number], index: number, units: Units): R
             }}
         >
             <div style={{ flex: 1, fontSize: 24 }}>{stat.name}</div>
-            <div style={{ width: 170, fontSize: 26, justifyContent: 'flex-end', display: 'flex' }}>{formatValue(stat.value, classifyStatistic(stat.name), units, 26)}</div>
+            <div style={{ width: 170, fontSize: 26, justifyContent: 'flex-end', display: 'flex' }}>{formatValue(stat.value, unitTypeToStoredUnit(classifyStatistic(stat.name)), units, 26)}</div>
             <div style={{ width: 60, fontSize: 20, color: colors.muted, justifyContent: 'flex-end', display: 'flex' }}>
                 {`${stat.percentile}${percentileSuffix(stat.percentile)}`}
             </div>
@@ -337,7 +338,7 @@ async function insetImage(map: MapCard, inset: Inset, box: { width: number, heig
 }
 
 function colorbar(ramp: NonNullable<MapCard['ramp']>, label: string, units: Units): ReactElement {
-    const unit = ramp.unit ?? classifyStatistic(label)
+    const unit = ramp.unit ?? unitTypeToStoredUnit(classifyStatistic(label))
     return (
         <div style={{ display: 'flex', flexDirection: 'column', marginTop: 8 }}>
             <div style={{ display: 'flex' }}>
@@ -522,13 +523,13 @@ function rowHeight(stat: ComparisonCard['stats'][number], layout: TableLayout): 
     return rowPadding * 2 + Math.max(name, layout.valueSize) * lineHeight + 2
 }
 
-function cellValue(value: number, unit: UnitType, units: Units, fontSize: number): ReactNode[] {
+function cellValue(value: number, unit: StoredUnit, units: Units, fontSize: number): ReactNode[] {
     // A geography the statistic has no value for, which the site's tables leave blank.
     return Number.isNaN(value) ? ['—'] : formatValue(value, unit, units, fontSize)
 }
 
 function comparisonRow(stat: ComparisonCard['stats'][number], index: number, layout: TableLayout, units: Units): ReactElement {
-    const unit = classifyStatistic(stat.name)
+    const unit = unitTypeToStoredUnit(classifyStatistic(stat.name))
     return (
         <div
             key={stat.name}
@@ -820,7 +821,7 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
                                     justifyContent: 'flex-end',
                                 }}
                             >
-                                {cellValue(entry.values[index2], column.unit ?? classifyStatistic(reifyString(column.name)), statistic.units, valueSize)}
+                                {cellValue(entry.values[index2], column.unit ?? unitTypeToStoredUnit(classifyStatistic(reifyString(column.name))), statistic.units, valueSize)}
                             </div>
                         ))}
                     </div>

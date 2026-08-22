@@ -27,10 +27,11 @@ import { createRequestExecutor } from '../../src/urban-stats-script/execute-requ
 import { geometry } from '../../src/utils/geometry'
 import { HumanReadableName, reifyString } from '../../src/utils/human-readable-name'
 import { Feature } from '../../src/utils/protos'
+import { StoredUnit } from '../../src/utils/quantity'
 import { loadFeatureFromPossibleSymlink } from '../../src/utils/symlinks'
 import { displayType } from '../../src/utils/text'
 import { NormalizeProto } from '../../src/utils/types'
-import { UnitType } from '../../src/utils/unit'
+import { unitTypeToStoredUnit } from '../../src/utils/unit'
 
 import { Ring } from './map-layout'
 
@@ -155,7 +156,7 @@ export interface StatisticCard {
     heading: string
     /** What is ranked, without the condition, which the card states beside the geographies. */
     title: HumanReadableName
-    columns: { name: HumanReadableName, unit: UnitType | undefined }[]
+    columns: { name: HumanReadableName, unit: StoredUnit | undefined }[]
     /** Which column the rows are in the order of, and which way, as the page's header marks it. */
     sortColumn: number
     order: 'ascending' | 'descending'
@@ -246,7 +247,7 @@ export interface MapCard {
     insets: Inset[]
     basemap: Basemap
     /** The colourbar, absent on an RGB map, which has no single scale to show. */
-    ramp?: { colors: string[], ticks: number[], unit: UnitType | undefined }
+    ramp?: { colors: string[], ticks: number[], unit: StoredUnit | undefined }
     units: Units
 }
 
@@ -341,7 +342,13 @@ export async function mapCard(origin: string, pageData: Extract<PageData, { kind
         opacity: map.opacity,
         insets: map.insets,
         basemap: map.basemap,
-        ramp: visuals.ramp === undefined ? undefined : { ticks: visuals.ramp.ticks, colors: visuals.ramp.colors, unit: map.unit },
+        ramp: visuals.ramp === undefined
+            ? undefined
+            : {
+                    ticks: visuals.ramp.ticks,
+                    colors: visuals.ramp.colors,
+                    unit: map.unit === undefined ? undefined : unitTypeToStoredUnit(map.unit),
+                },
         units: settings.getMultiple(['use_imperial', 'temperature_unit']),
     }
 }
