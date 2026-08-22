@@ -3,7 +3,8 @@ import test from 'node:test'
 
 import { BinaryOperatorSymbol, infixOperators, unaryOperators } from '../src/urban-stats-script/operators'
 import { backward, backwardUnary, constant, forward, forwardUnary, inUnit, AbstractInterpValue, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
-import { StoredUnit } from '../src/utils/quantity'
+import { reifyString } from '../src/utils/human-readable-name'
+import { StoredUnit, writeQuantity } from '../src/utils/quantity'
 import { storedUnits } from '../src/utils/unit'
 
 /** What is known, as a string: the dimensions, how many of itself it is, and its scale. */
@@ -187,3 +188,21 @@ void test('scaling a share leaves it the party\'s that it was', () => {
     assert.equal(partyOf(forward('-', inUnit(storedUnits.partyPctOrange), constant(0.05))), 'orange')
 })
 /* eslint-enable no-restricted-syntax */
+
+// Taking a level from a level leaves a difference, and the site declares some of those already:
+// what is inferred for one of them is what was declared for it
+for (const [level, declared] of [
+    ['partyPctOrange', 'partyChangeOrange'],
+    ['partyPctBlue', 'partyChangeBlue'],
+    ['percentage', 'percentageChange'],
+] as const) {
+    void test(`${level} less itself is written as ${declared} is`, () => {
+        const inferred = unitToWriteIn(forward('-', inUnit(storedUnits[level]), inUnit(storedUnits[level])))
+        assert.notEqual(inferred, undefined)
+        const write = (stored: StoredUnit): string => {
+            const written = writeQuantity(0.05, stored)
+            return `${written.renderedValue}${reifyString(written.unitName)} ${written.hue ?? ''}`
+        }
+        assert.equal(write(inferred!), write(storedUnits[declared]))
+    })
+}
