@@ -1,10 +1,9 @@
-import { isNoValue } from '../components/load-article'
 import explanation_page from '../data/explanation_page'
 import statistic_name_list from '../data/statistic_name_list'
 import statistic_variables_info from '../data/statistic_variables_info'
 import { defaultTypeEnvironment } from '../mapper/context'
 import { attemptParseAsTopLevel, MapUSS, mapUSSFromString } from '../mapper/settings/map-uss'
-import { PageDescriptor } from '../navigation/PageDescriptor'
+import type { PageDescriptor } from '../navigation/PageDescriptor'
 import { StatName } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 import { orderNonNan, Table, tableType } from '../urban-stats-script/constants/table'
@@ -111,7 +110,7 @@ export function sortedRowIndices(data: StatData, sortColumn: View['sortColumn'],
         return []
     }
     const sortBy = data.table[Math.max(0, Math.min(sortColumn, data.table.length - 1))]
-    const indices = sortBy.value.map((_, i) => i).filter(i => !isNoValue(sortBy.value[i]))
+    const indices = sortBy.value.map((_, i) => i).filter(i => !Number.isNaN(sortBy.value[i]))
     indices.sort((a, b) => order === 'ascending'
         ? orderNonNan(sortBy.value[a], sortBy.value[b])
         : orderNonNan(sortBy.value[b], sortBy.value[a]))
