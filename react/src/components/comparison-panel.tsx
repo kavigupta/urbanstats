@@ -27,7 +27,7 @@ import { StagingControls } from './StagingControls'
 import { useCSVExport } from './csv-export'
 import { TableEditButton } from './edit-mode-header'
 import { EditModeState, EditTable, editRowsByGroup, useEditModeState, useEditTableLayout } from './edit-table'
-import { ArticleRow, isCongressionalRepresentativesMetadataRow, isNoValue } from './load-article'
+import { ArticleRow, getHighlightIndex, isCongressionalRepresentativesMetadataRow } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps, pullRelevantPlotProps, useExpandedByStat } from './plots'
 import { createScreenshot, ScreencapElements, ScreenshotContext, ScreenshotContextType, useScreenshotMode } from './screenshot'
@@ -596,21 +596,6 @@ function ComparisonEditTable(props: {
             topLeftSpec={props.topLeftSpec}
         />
     )
-}
-
-function getHighlightIndex(rows: readonly ArticleRow[]): number | undefined {
-    if (!rows.every(r => r.kind === 'statistic')) {
-        return undefined
-    }
-    return rows.map(x => x.statval).reduce<number | undefined>((iMax, x, i, arr) => {
-        if (isNoValue(x)) {
-            return iMax
-        }
-        if (iMax === undefined) {
-            return i
-        }
-        return x > arr[iMax] ? i : iMax
-    }, undefined)
 }
 
 function ComparisonMultiMap(props: { longnames: string[], colors: string[], mapPartitions: number[][] }): ReactNode {

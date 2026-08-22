@@ -8,6 +8,8 @@ import { project } from '../../src/utils/coordinates'
 /** A closed ring of [lon, lat] pairs. */
 export type Ring = [number, number][]
 
+export interface Bounds { minX: number, maxX: number, minY: number, maxY: number }
+
 const tileSize = 256
 
 /** Past this the tiles stop adding detail, so a shape smaller than the box just stays smaller. */
@@ -32,7 +34,8 @@ function layoutAround(centerX: number, centerY: number, scale: number, width: nu
     }
 }
 
-export function fitRings(rings: Ring[], width: number, height: number): MapLayout {
+/** The rings' extent in projected space, undefined if there are no points in them. */
+export function projectedBounds(rings: Ring[]): Bounds | undefined {
     // A loop rather than Math.min(...xs): a country's outline carries more points than an argument
     // list takes, and the RangeError would land as a card that silently fell back.
     let [minX, maxX, minY, maxY] = [Infinity, -Infinity, Infinity, -Infinity]
@@ -45,6 +48,11 @@ export function fitRings(rings: Ring[], width: number, height: number): MapLayou
             maxY = Math.max(maxY, y)
         }
     }
+    return minX === Infinity ? undefined : { minX, maxX, minY, maxY }
+}
+
+export function fitRings(rings: Ring[], width: number, height: number): MapLayout {
+    const { minX, maxX, minY, maxY } = projectedBounds(rings) ?? { minX: 0, maxX: 1, minY: 0, maxY: 1 }
 
     const pad = 8
     const fit = Math.min((width - pad * 2) / (maxX - minX || 1), (height - pad * 2) / (maxY - minY || 1))

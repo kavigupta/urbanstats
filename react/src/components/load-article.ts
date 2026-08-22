@@ -495,6 +495,22 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
     return rowsCollapsed[0].map((_, i) => rowsCollapsed.map(row => row[i]))
 }
 
+/** Which of one statistic's rows across compared regions holds the largest value. */
+export function getHighlightIndex(rows: readonly ArticleRow[]): number | undefined {
+    if (!rows.every(r => r.kind === 'statistic')) {
+        return undefined
+    }
+    return rows.map(x => x.statval).reduce<number | undefined>((iMax, x, i, arr) => {
+        if (isNoValue(x)) {
+            return iMax
+        }
+        if (iMax === undefined) {
+            return i
+        }
+        return x > arr[iMax] ? i : iMax
+    }, undefined)
+}
+
 export function isNoValue(statval: number | MetadataStatValue): boolean {
     switch (typeof statval) {
         case 'number':

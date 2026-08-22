@@ -66,13 +66,13 @@ async function describe(url: URL): Promise<Embed | undefined> {
             return {
                 title: shortenLongname(descriptor.longname),
                 description: `Statistics for ${descriptor.longname} on Urban Stats.`,
-                // Only articles have a renderer; the rest keep the static preview image.
                 image: new URL(`/og${url.pathname}${url.search}`, url.origin).toString(),
             }
         case 'comparison':
             return {
                 title: descriptor.longnames.map(shortenLongname).join(' vs '),
                 description: `Comparing ${descriptor.longnames.join(', ')} on Urban Stats.`,
+                image: new URL(`/og${url.pathname}${url.search}`, url.origin).toString(),
             }
         case 'statistic': {
             const title = 'statname' in descriptor ? descriptor.statname : 'Urban Stats: Custom Table'
@@ -188,7 +188,8 @@ async function renderImage(env: WorkerEnv, target: URL, ctx: WorkerContext): Pro
     catch {
         return new Response('unrecognized url', { status: 400 })
     }
-    if (descriptor.kind !== 'article' && descriptor.kind !== 'mapper') {
+    // The kinds with a renderer; the rest keep the site's static preview image.
+    if (descriptor.kind !== 'article' && descriptor.kind !== 'comparison' && descriptor.kind !== 'mapper') {
         return new Response('nothing to draw', { status: 404 })
     }
 

@@ -15,10 +15,10 @@ import { PageDescriptor } from '../../src/navigation/PageDescriptor'
 import jostRegular from '../assets/Jost-400.ttf'
 import jostSemiBold from '../assets/Jost-600.ttf'
 
-import { articleCard, loadPage, loadShape, mapCard } from './data'
-import { embedCard, mapEmbedCard } from './embed'
+import { articleCard, comparisonCard, loadPage, loadShape, mapCard } from './data'
+import { comparisonEmbedCard, embedCard, mapEmbedCard, mappedRegions } from './embed'
 
-export type DrawableDescriptor = Extract<PageDescriptor, { kind: 'article' | 'mapper' }>
+export type DrawableDescriptor = Extract<PageDescriptor, { kind: 'article' | 'comparison' | 'mapper' }>
 
 let wasmReady: Promise<unknown> | undefined
 
@@ -32,6 +32,19 @@ async function cardFor(origin: string, descriptor: DrawableDescriptor, tileOrigi
         }
         const card = await mapCard(origin, page.pageData, page.settings)
         return card === undefined ? undefined : mapEmbedCard(card, size, tileOrigin)
+    }
+    if (descriptor.kind === 'comparison') {
+        // A comparison of more regions than the card maps never reads their shapes.
+        const [page, shapes] = await Promise.all([
+            loadPage(origin, descriptor).catch(() => undefined),
+            descriptor.longnames.length > mappedRegions
+                ? []
+                : Promise.all(descriptor.longnames.map(longname => loadShape(origin, longname).catch(() => []))),
+        ])
+        if (page?.pageData.kind !== 'comparison') {
+            return undefined
+        }
+        return comparisonEmbedCard(comparisonCard(page.pageData, page.settings), shapes, size, tileOrigin)
     }
     const [page, rings] = await Promise.all([
         loadPage(origin, descriptor).catch(() => undefined),
