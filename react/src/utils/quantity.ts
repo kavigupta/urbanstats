@@ -258,7 +258,54 @@ function product(written: Written[]): HumanReadableElement[] {
     ])
 }
 
-/** The names of the units chosen. The ones with no name of their own are left out. */
+function computedUnit(dimensions: Dimension[], toBaseUnits: number): StoredUnit {
+    return { unit: { dimensions, decoration: { kind: 'none' }, times: 1, baseIsScalar: true }, toBaseUnits }
+}
+
+export const dimensionless = computedUnit([], 1)
+
+/**
+ * A power that arithmetic has left a hair off a whole one: a cube raised to a tenth and then to
+ * ten comes back as 3.0000000000000004, which is no dimension anything is written in.
+ */
+function snapToWhole(value: number): number {
+    return Math.abs(value - Math.round(value)) < 1e-9 ? Math.round(value) : value
+}
+
+function gathered(dimensions: Dimension[]): Dimension[] {
+    const totals = new Map<BaseUnit, number>()
+    for (const { baseUnit, power } of dimensions) {
+        totals.set(baseUnit, (totals.get(baseUnit) ?? 0) + power)
+    }
+    return [...totals]
+        .map(([baseUnit, power]): Dimension => ({ baseUnit, power: snapToWhole(power) }))
+        .filter(({ power }) => power !== 0)
+}
+
+export function sameDimensions(left: StoredUnit, right: StoredUnit): boolean {
+    return renderAsKey(gathered(left.unit.dimensions)) === renderAsKey(gathered(right.unit.dimensions))
+}
+
+export function unitProduct(left: StoredUnit, right: StoredUnit, rightPower: 1 | -1): StoredUnit | undefined {
+    if (!left.unit.baseIsScalar || !right.unit.baseIsScalar) {
+        return undefined
+    }
+    const [over, under] = [left.unit.dimensions, right.unit.dimensions]
+    const dimensions = [...over, ...under.map(({ baseUnit, power }) => ({ baseUnit, power: power * rightPower }))]
+    const toBaseUnits = rightPower === 1
+        ? left.toBaseUnits * right.toBaseUnits
+        : left.toBaseUnits / right.toBaseUnits
+    return computedUnit(gathered(dimensions), toBaseUnits)
+}
+
+export function unitPower(stored: StoredUnit, exponent: number): StoredUnit | undefined {
+    if (!stored.unit.baseIsScalar) {
+        return undefined
+    }
+    const raised = stored.unit.dimensions.map(({ baseUnit, power }) => ({ baseUnit, power: power * exponent }))
+    return computedUnit(gathered(raised), Math.pow(stored.toBaseUnits, exponent))
+}
+
 export function nameOf(written: Written[]): HumanReadableElement[] {
     const named = written.filter(({ unit }) => unit.name !== '')
     const over = named.filter(({ power }) => power > 0)
