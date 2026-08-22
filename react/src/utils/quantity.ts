@@ -258,7 +258,53 @@ function product(written: Written[]): HumanReadableElement[] {
     ])
 }
 
-/** The names of the units chosen. The ones with no name of their own are left out. */
+function computedUnit(dimensions: Dimension[], toBaseUnits: number): StoredUnit {
+    return { unit: { dimensions, decoration: { kind: 'none' }, times: 1, baseIsScalar: true }, toBaseUnits }
+}
+
+/** A quantity of no dimensions, such as one divided by another of its own kind. */
+export const dimensionless = computedUnit([], 1)
+
+/** The same dimensions with each base unit counted once, and the ones that cancelled dropped. */
+function gathered(dimensions: Dimension[]): Dimension[] {
+    const totals = new Map<BaseUnit, number>()
+    for (const { baseUnit, power } of dimensions) {
+        totals.set(baseUnit, (totals.get(baseUnit) ?? 0) + power)
+    }
+    return [...totals].filter(([, power]) => power !== 0).map(([baseUnit, power]) => ({ baseUnit, power }))
+}
+
+/** Whether two quantities measure the same kind of thing, so that one can be added to the other. */
+export function sameDimensions(left: StoredUnit, right: StoredUnit): boolean {
+    return renderAsKey(gathered(left.unit.dimensions)) === renderAsKey(gathered(right.unit.dimensions))
+}
+
+/**
+ * The unit of a product, or of a quotient where the right one is taken to the power -1. Neither
+ * can be measured from a zero of its own: how many temperatures a product of one is depends on
+ * what it was multiplied by, which is a coefficient rather than a unit.
+ */
+export function unitProduct(left: StoredUnit, right: StoredUnit, rightPower: 1 | -1): StoredUnit | undefined {
+    if (!left.unit.baseIsScalar || !right.unit.baseIsScalar) {
+        return undefined
+    }
+    const [over, under] = [left.unit.dimensions, right.unit.dimensions]
+    const dimensions = [...over, ...under.map(({ baseUnit, power }) => ({ baseUnit, power: power * rightPower }))]
+    const toBaseUnits = rightPower === 1
+        ? left.toBaseUnits * right.toBaseUnits
+        : left.toBaseUnits / right.toBaseUnits
+    return computedUnit(gathered(dimensions), toBaseUnits)
+}
+
+/** The unit of a quantity raised to a power: a length squared is an area. */
+export function unitPower(stored: StoredUnit, exponent: number): StoredUnit | undefined {
+    if (!stored.unit.baseIsScalar) {
+        return undefined
+    }
+    const raised = stored.unit.dimensions.map(({ baseUnit, power }) => ({ baseUnit, power: power * exponent }))
+    return computedUnit(gathered(raised), Math.pow(stored.toBaseUnits, exponent))
+}
+
 export function nameOf(written: Written[]): HumanReadableElement[] {
     const named = written.filter(({ unit }) => unit.name !== '')
     const over = named.filter(({ power }) => power > 0)
