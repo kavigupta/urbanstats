@@ -1,6 +1,6 @@
 import React, { ChangeEvent, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
-import { isNoValue, StatisticCellRenderingInfo } from '../components/load-article'
+import { StatisticCellRenderingInfo } from '../components/load-article'
 import { PointerArrow } from '../components/pointer-cell'
 import { computeComparisonWidthColumns, MaybeScroll } from '../components/scrollable'
 import { CellSpec, SuperHeaderSpec, TableContents, TopLeftCellSpec } from '../components/supertable'
@@ -8,7 +8,6 @@ import { ColumnIdentifier, valueOnlyColumns } from '../components/table'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { useDefinedUniverse } from '../universe'
-import { orderNonNan } from '../urban-stats-script/constants/table'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { reifyString } from '../utils/human-readable-name'
 import { sanitize } from '../utils/paths'
@@ -16,6 +15,7 @@ import { sanitize } from '../utils/paths'
 import { makeColumnDeleteHandler } from './makeColumnDeleteHandler'
 import { makeColumnReorderHandler } from './makeColumnReorderHandler'
 import { Statistic, StatData, StatSetter, View } from './types'
+import { pageRowIndices, sortedRowIndices } from './utils'
 
 export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, typeEnvironment }: {
     view: View
@@ -30,41 +30,11 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
 
     const isAscending = view.order === 'ascending'
 
-    // Compute sorted row indices based on the selected sort column and order
-    const { sortedIndices, count } = useMemo(() => {
-        if (data.table.length === 0) {
-            return { sortedIndices: [] as number[], count: 0 }
-        }
-        const sortColumnIndex = Math.max(0, Math.min(view.sortColumn, data.table.length - 1))
-        const sortByColumn = data.table[sortColumnIndex]
-        const indices = sortByColumn.value.map((_, i) => i).filter(i => !isNoValue(sortByColumn.value[i]))
-        indices.sort((a, b) => {
-            const va = sortByColumn.value[a]
-            const vb = sortByColumn.value[b]
-            if (isAscending) {
-                return orderNonNan(va, vb)
-            }
-            return orderNonNan(vb, va)
-        })
-        return { sortedIndices: indices, count: indices.length }
-    }, [data.table, view.sortColumn, isAscending])
+    const sortedIndices = useMemo(() => sortedRowIndices(data, view.sortColumn, view.order), [data, view.sortColumn, view.order])
+    const count = sortedIndices.length
 
-    const amount = view.amount === 'All' ? count : view.amount
-
-    const indexRange = useMemo(() => {
-        if (count === 0) {
-            return []
-        }
-        const start = view.start - 1
-        let end = start + amount
-        if (end + amount > count) {
-            end = count
-        }
-        const result = Array.from({ length: end - start }, (_, i) => {
-            return start + i
-        })
-        return result
-    }, [view.start, amount, count])
+    // The rows of the page the view is on, as indices into the data.
+    const pageIndices = useMemo(() => pageRowIndices(sortedIndices, view.start, view.amount), [sortedIndices, view.start, view.amount])
 
     const widthLeftHeader = data.table.length > 1 ? 25 : 50
 
@@ -75,8 +45,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
     const onlyColumns: ColumnIdentifier[] = data.hideOrdinalsPercentiles ? valueOnlyColumns : ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
 
     const allColumnRows: StatisticCellRenderingInfo[][] = data.table.map((col) => {
-        return indexRange.map((rangeIdx) => {
-            const actualRowIdx = sortedIndices[rangeIdx]
+        return pageIndices.map((actualRowIdx) => {
             return {
                 kind: 'statistic',
                 statval: col.value[actualRowIdx],
@@ -92,8 +61,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
         })
     })
 
-    const leftHeaderSpecs: CellSpec[] = indexRange.map((rangeIdx) => {
-        const actualRowIdx = sortedIndices[rangeIdx]
+    const leftHeaderSpecs: CellSpec[] = pageIndices.map((actualRowIdx) => {
         const articleName = data.articleNames[actualRowIdx]
         return {
             type: 'statistic-panel-longname',
@@ -102,8 +70,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
         } satisfies CellSpec
     })
 
-    const rowSpecs: CellSpec[][] = indexRange.map((rangeIdx, rowIdx) => {
-        const actualRowIdx = sortedIndices[rangeIdx]
+    const rowSpecs: CellSpec[][] = pageIndices.map((actualRowIdx, rowIdx) => {
         const articleName = data.articleNames[actualRowIdx]
         return allColumnRows.map(columnRows => ({
             type: 'statistic-row',
@@ -145,9 +112,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
     }
 
     const highlightOriginalIdx = data.articleNames.indexOf(view.highlight ?? '')
-    const highlightRowIndex = highlightOriginalIdx >= 0
-        ? indexRange.findIndex(rangeIdx => sortedIndices[rangeIdx] === highlightOriginalIdx)
-        : -1
+    const highlightRowIndex = highlightOriginalIdx >= 0 ? pageIndices.indexOf(highlightOriginalIdx) : -1
     const footer = stat.type === 'uss'
         ? (
                 <div style={{ fontSize: '0.8em', color: colors.textMain, marginTop: '1em', textAlign: 'right' }}>
