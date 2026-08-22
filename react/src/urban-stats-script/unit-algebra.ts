@@ -178,10 +178,10 @@ export function forwardUnary(operator: UnaryOperatorSymbol, operand: AbstractInt
     }
     // negating is taking it from nothing, so a level becomes minus one of itself, which a
     // temperature has no reading for, while a difference of two is still a difference
-    const constant = operand.constant === undefined ? undefined : -operand.constant
+    const negated = operand.constant === undefined ? undefined : -operand.constant
     if (operand.kind === 'any') {
-        return { kind: 'any', constant }
+        return { kind: 'any', constant: negated }
     }
     const { unit } = operand
-    return { kind: 'in', unit: { ...unit, unit: { ...unit.unit, times: -unit.unit.times } }, constant }
+    return { kind: 'in', unit: { ...unit, unit: { ...unit.unit, times: -unit.unit.times } }, constant: negated }
 }
