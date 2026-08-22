@@ -467,15 +467,16 @@ interface TableLayout {
     valueColumn: number
     valueSize: number
     headerSize: number
-    rowPadding: number
 }
 
 const cellPadding = 8
+const rowPadding = 10
 
+/** What a row needs at least. The rows share out whatever the table's fixed height leaves over. */
 function rowHeight(stat: ComparisonCard['stats'][number], layout: TableLayout): number {
     const name = linesTaken(stat.name, layout.nameColumn - cellPadding, layout.nameSize) * layout.nameSize
     // Plus the rule above the row.
-    return layout.rowPadding * 2 + Math.max(name, layout.valueSize) * lineHeight + 2
+    return rowPadding * 2 + Math.max(name, layout.valueSize) * lineHeight + 2
 }
 
 function comparisonValue(value: number, unit: UnitType, units: Units, fontSize: number): ReactNode[] {
@@ -490,12 +491,15 @@ function comparisonRow(stat: ComparisonCard['stats'][number], index: number, lay
             key={stat.name}
             style={{
                 display: 'flex',
-                alignItems: 'center',
+                // Grown to share out what the rows do not fill, so the table ends where the map does.
+                flex: 1,
+                // Stretched, so a shaded winner fills its row rather than only the text in it.
+                alignItems: 'stretch',
                 lineHeight,
                 borderTop: index === 0 ? `2px solid ${colors.text}` : `1px solid ${colors.rule}`,
             }}
         >
-            <div style={{ flex: 1, fontSize: layout.nameSize, padding: `${layout.rowPadding}px ${cellPadding}px ${layout.rowPadding}px 0` }}>{stat.name}</div>
+            <div style={{ display: 'flex', flex: 1, alignItems: 'center', fontSize: layout.nameSize, padding: `${rowPadding}px ${cellPadding}px ${rowPadding}px 0` }}>{stat.name}</div>
             {layout.colors.map((color, region) => (
                 <div
                     key={region}
@@ -503,7 +507,8 @@ function comparisonRow(stat: ComparisonCard['stats'][number], index: number, lay
                         display: 'flex',
                         width: layout.valueColumn,
                         fontSize: layout.valueSize,
-                        padding: `${layout.rowPadding}px ${cellPadding}px`,
+                        padding: `${rowPadding}px ${cellPadding}px`,
+                        alignItems: 'center',
                         justifyContent: 'flex-end',
                         // The largest value, shaded the way the comparison table shades it.
                         backgroundColor: stat.highlight === region ? mixWithBackground(color, theme.mixPct / 100, colors.background) : 'transparent',
@@ -582,7 +587,6 @@ export async function comparisonEmbedCard(comparison: ComparisonCard, shapes: Ri
         valueColumn,
         valueSize: Math.min(26, Math.round(valueColumn / 6.5)),
         headerSize: sizeToFit(regions.map(region => region.shortname), valueColumn - cellPadding * 2, 2, maxHeaderSize, 13, boldCharacterWidth),
-        rowPadding: 10,
     }
 
     const headerLines = Math.max(...regions.map(region => linesTaken(region.shortname, valueColumn - cellPadding * 2, layout.headerSize, boldCharacterWidth)))
@@ -597,15 +601,6 @@ export async function comparisonEmbedCard(comparison: ComparisonCard, shapes: Ri
         }
         budget -= takes
         stats.push(stat)
-    }
-    // What no further row fits into is spread over the rows, rather than left under the table.
-    layout.rowPadding += Math.min(14, budget / (2 * Math.max(1, stats.length)))
-
-    // Measured rather than given the whole body: the spread above is capped, so the table does not
-    // always reach the footer, and a map that did would hang below it.
-    const mapSize = {
-        width: mapWidth,
-        height: columnHeaderHeight + stats.reduce((total, stat) => total + rowHeight(stat, layout), 0),
     }
 
     return (
@@ -622,11 +617,11 @@ export async function comparisonEmbedCard(comparison: ComparisonCard, shapes: Ri
             }}
         >
             <div style={{ display: 'flex', flex: 1, alignItems: 'flex-start', justifyContent: 'center' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', width: layout.nameColumn + layout.valueColumn * regions.length, marginRight: withMap ? mapGap : 0 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', width: layout.nameColumn + layout.valueColumn * regions.length, height: body, marginRight: withMap ? mapGap : 0 }}>
                     {comparisonHeader(regions, layout)}
                     {stats.map((stat, index) => comparisonRow(stat, index, layout, comparison.units))}
                 </div>
-                {withMap ? await mapPanel(drawn, mapSize, tileOrigin) : <div style={{ display: 'flex' }}></div>}
+                {withMap ? await mapPanel(drawn, { width: mapWidth, height: body }, tileOrigin) : <div style={{ display: 'flex' }}></div>}
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: footerSize, color: colors.muted, alignItems: 'center' }}>
                 {wordmark(footerSize)}
