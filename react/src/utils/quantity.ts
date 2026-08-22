@@ -33,13 +33,9 @@ export interface WrittenIn {
 
 export type Decoration = { kind: 'none' } | { kind: 'percent', party?: Party } | { kind: 'writtenIn', in: WrittenIn }
 
-/**
- * Temperature is not expressed in units that scale each other: 0°C is not 0°F. A duration is
- * expressed in two at once: the 1 of 1:30 is hours and the 30 is minutes.
- */
+/** Temperature is not expressed in units that scale each other: 0°C is not 0°F. */
 export type Unit = (
     { kind: 'temperature' }
-    | { kind: 'duration' }
     | { kind: 'scalar', dimensions: Dimension[], decoration: Decoration, difference: boolean }
 )
 
@@ -128,6 +124,7 @@ export const fatalities = scaling('fatality', '', 1, 0)
 export const meter = scaling('m', 'm', 1, 0)
 export const centimeter = scaling('m', 'cm', 0.01, costScaledUnit)
 export const inch = scaling('m', 'in', metersPerInch, costScaledUnit)
+export const minute = scaling('s', 'min', 60, costScaledUnit)
 export const year = scaling('s', 'yr', 365.25 * 24 * 60 * 60, 0)
 export const microgram = scaling('g', 'μg', 1e-6, costScaledUnit)
 
@@ -140,7 +137,7 @@ const massUnits: NamedUnit[] = [
 
 const timeUnits: NamedUnit[] = [
     scaling('s', 's', 1, 0),
-    scaling('s', 'min', 60, costScaledUnit),
+    minute,
     scaling('s', 'hr', 60 * 60, costScaledUnit),
     scaling('s', 'days', 24 * 60 * 60, costScaledUnit),
     year,
@@ -254,11 +251,6 @@ export function nameOf(written: Written[]): HumanReadableElement[] {
 }
 
 function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSettings): Representation {
-    if (unit.kind === 'duration') {
-        // it is named for the largest part of it that there is any of, as h:mm reads in hours
-        const anHourOrMore = Math.round(Math.abs(inBaseUnits) / 60) >= 60
-        return { unitName: atom(anHourOrMore ? 'h' : 'min'), scale: value => value / 60, format: { kind: 'hoursMinutes' } }
-    }
     if (unit.kind === 'temperature') {
         return settings.temperatureUnit === 'celsius'
             ? { unitName: atom('°C'), scale: value => (value - 32) * (5 / 9), format: { kind: 'fixed', places: 1 } }
@@ -274,7 +266,11 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSett
     const pool = writtenIn === undefined ? allUnits(settings) : Object.values(writtenIn.units(systemOf(settings)))
     const { written, scale, format } = chooseUnits(inBaseUnits, unit.dimensions, pool,
         chosen => writtenIn?.style ?? styleFor(convention, chosen))
-    return { scale, unitName: nameOf(written), format, prefix: convention?.prefix }
+    // h:mm spends two units and names one, so which one it names is the format's to say
+    const unitName = format.kind === 'hoursMinutes'
+        ? atom(Math.round(Math.abs(scale(inBaseUnits))) >= 60 ? 'h' : 'min')
+        : nameOf(written)
+    return { scale, unitName, format, prefix: convention?.prefix }
 }
 
 function getParty(partySystem: PartySystem, value: number): { label: string, hue: Hue } {
