@@ -12,6 +12,7 @@ import { unparse } from '../urban-stats-script/parser'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { reifyString } from '../utils/human-readable-name'
+import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { StatData, Statistic, StatSettings, View } from './types'
 
@@ -96,7 +97,7 @@ export function statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn }
             populationPercentile: column.populationPercentiles,
             ordinal: computeOrdinals(column.values),
             name,
-            unit: column.unit,
+            unit: column.unit === undefined ? undefined : unitTypeToStoredUnit(column.unit),
         }
     })
 

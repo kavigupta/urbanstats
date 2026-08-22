@@ -1,6 +1,6 @@
 import {
     BaseUnit, centimeter, Decoration, fatalities, Hue, hundredThousandPeople, inch, kilometer, meter, microgram, mile,
-    minute, Party, people, StoredUnit, WrittenIn, year,
+    inEitherSystem, minute, Party, people, StoredUnit, WrittenIn, year,
 } from './quantity'
 
 export type UnitType = 'percentage' | 'percentageChange' | 'fatalities' | 'fatalitiesPerCapita' | 'density' | 'population'
@@ -88,8 +88,8 @@ export const storedUnits = {
     partyChangeGreen: percentage(inParty('green'), true),
     partyChangePurple: percentage(inParty('purple'), true),
     temperature: { unit: { kind: 'temperature' }, toBaseUnits: 1 },
-    time: dimensionfull({ s: 1 }, 60 * 60, { units: () => ({ s: minute }), style: { kind: 'hoursMinutes' } }),
-    minutes: dimensionfull({ s: 1 }, 60, { units: () => ({ s: minute }), style: { kind: 'hoursMinutes' } }),
+    time: dimensionfull({ s: 1 }, 60 * 60, { units: inEitherSystem({ s: minute }), style: { kind: 'hoursMinutes' } }),
+    minutes: dimensionfull({ s: 1 }, 60, { units: inEitherSystem({ s: minute }), style: { kind: 'hoursMinutes' } }),
     number: dimensionfull({}),
     population: dimensionfull({ person: 1 }),
     fatalities: dimensionfull({ fatality: 1 }),
@@ -98,19 +98,19 @@ export const storedUnits = {
     distanceInKm: dimensionfull({ m: 1 }, 1e3),
     area: dimensionfull({ m: 2 }, 1e6),
     fatalitiesPerCapita: dimensionfull({ fatality: 1, person: -1 }, 1, {
-        units: () => ({ fatality: fatalities, person: hundredThousandPeople }),
+        units: inEitherSystem({ fatality: fatalities, person: hundredThousandPeople }),
         style: { kind: 'fixed', places: 2 },
     }),
     density: dimensionfull({ person: 1, m: -2 }, 1e-6, {
-        units: system => ({ person: people, m: system === 'metric' ? kilometer : mile }),
+        units: { metric: { person: people, m: kilometer }, imperial: { person: people, m: mile } },
         style: { kind: 'rounded', significantDigits: 2 },
     }),
     contaminantLevel: dimensionfull({ g: 1, m: -3 }, 1e-6, {
-        units: () => ({ g: microgram, m: meter }),
+        units: inEitherSystem({ g: microgram, m: meter }),
         style: { kind: 'fixed', places: 2 },
     }),
     distancePerYear: dimensionfull({ m: 1, s: -1 }, 1 / (365.25 * 24 * 60 * 60), {
-        units: system => ({ m: system === 'metric' ? centimeter : inch, s: year }),
+        units: { metric: { m: centimeter, s: year }, imperial: { m: inch, s: year } },
         style: { kind: 'fixed', places: 1 },
     }),
 } satisfies Record<UnitType, StoredUnit>
