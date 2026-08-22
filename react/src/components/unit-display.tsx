@@ -2,26 +2,26 @@ import React, { CSSProperties, ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { HumanReadableElement, reifyReact } from '../utils/human-readable-name'
-import { Hue, StoredUnit, writeQuantity } from '../utils/quantity'
-import { storedUnits, UnitType } from '../utils/unit'
+import { Hue, ReaderSettings, StoredUnit, Unit, writeQuantity } from '../utils/quantity'
+import { UnitType } from '../utils/unit'
 
-export interface UnitDisplay {
-    renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
-        value: ReactNode
-        unit: ReactNode
-    }
+/** A quantity as it is displayed: the number and its unit, which sit in separate columns. */
+export interface DisplayedQuantity {
+    value: ReactNode
+    unit: ReactNode
 }
 
 /**
  * Whether a comparison against a quantity of this unit reads as its opposite, which it does below
  * zero for a lead, since a lead is written as a size rather than as a signed number.
  */
-function flipsInequality(unitType: UnitType, value: number): boolean {
-    return (unitType === 'democraticMargin' || unitType === 'leftMargin') && value <= 0
+function flipsInequality(unit: Unit, value: number): boolean {
+    return unit.kind === 'scalar' && unit.decoration.kind === 'percent'
+        && unit.decoration.party?.kind === 'lead' && value <= 0
 }
 
-export function renderInequality(value: number, unitType: UnitType, inequality: 'leq' | 'geq'): string {
-    const reads = flipsInequality(unitType, value) ? (inequality === 'leq' ? 'geq' : 'leq') : inequality
+export function renderInequality(value: number, stored: StoredUnit, inequality: 'leq' | 'geq'): string {
+    const reads = flipsInequality(stored.unit, value) ? (inequality === 'leq' ? 'geq' : 'leq') : inequality
     return reads === 'leq' ? '\u2264' /* ≤ */ : '\u2265' /* ≥ */
 }
 
@@ -36,51 +36,11 @@ function InParty({ value, hue }: { value: string, hue: Hue }): ReactNode {
     return <span style={spanStyle}>{value}</span>
 }
 
-function quantity(stored: StoredUnit): UnitDisplay {
+export function renderQuantity(value: number, stored: StoredUnit, settings: ReaderSettings = {}): DisplayedQuantity {
+    const { renderedValue, unitName, hue } = writeQuantity(value, stored, settings)
     return {
-        renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
-            const { renderedValue, unitName, hue } = writeQuantity(value, stored, { useImperial, temperatureUnit })
-            return {
-                value: hue === undefined ? <span>{renderedValue}</span> : <InParty value={renderedValue} hue={hue} />,
-                unit: unitColumn(unitName),
-            }
-        },
-    }
-}
-
-export function getUnitDisplay(unitType: UnitType): UnitDisplay {
-    switch (unitType) {
-        case 'percentage':
-        case 'percentageChange':
-        case 'democraticMargin':
-        case 'leftMargin':
-        case 'partyPctBlue':
-        case 'partyPctRed':
-        case 'partyPctOrange':
-        case 'partyPctTeal':
-        case 'partyPctGreen':
-        case 'partyPctPurple':
-        case 'partyChangeBlue':
-        case 'partyChangeRed':
-        case 'partyChangeOrange':
-        case 'partyChangeTeal':
-        case 'partyChangeGreen':
-        case 'partyChangePurple':
-        case 'temperature':
-        case 'number':
-        case 'population':
-        case 'fatalities':
-        case 'usd':
-        case 'distanceInM':
-        case 'distanceInKm':
-        case 'area':
-        case 'fatalitiesPerCapita':
-        case 'density':
-        case 'contaminantLevel':
-        case 'distancePerYear':
-        case 'time':
-        case 'minutes':
-            return quantity(storedUnits[unitType])
+        value: hue === undefined ? <span>{renderedValue}</span> : <InParty value={renderedValue} hue={hue} />,
+        unit: unitColumn(unitName),
     }
 }
 
