@@ -191,15 +191,19 @@ export async function statisticCard(origin: string, pageData: Extract<PageData, 
     }
 
     const data = statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn: () => undefined })
-    const columns = data.table.slice(0, maxStatisticColumns)
     const sortColumn = Math.max(0, Math.min(view.sortColumn, data.table.length - 1))
+    // The rows carry the sorted column's rank, so that column takes the last of the few slots the
+    // card has when the page sorts by one that would otherwise be cut off.
+    const columns = sortColumn < maxStatisticColumns
+        ? data.table.slice(0, maxStatisticColumns)
+        : [...data.table.slice(0, maxStatisticColumns - 1), data.table[sortColumn]]
     const page = pageRowIndices(sortedRowIndices(data, sortColumn, view.order), view.start, view.amount)
 
     return {
         heading: displayType(stat.universe, stat.articleType),
         title: data.renderedStatname,
         columns: columns.map(column => ({ name: column.name, unit: column.unit })),
-        sortColumn,
+        sortColumn: Math.min(sortColumn, maxStatisticColumns - 1),
         order: view.order,
         filter: deriveConditionLabel(mapUSS, typeEnvironment),
         rows: page.slice(0, maxStatisticRows).map(index => ({
