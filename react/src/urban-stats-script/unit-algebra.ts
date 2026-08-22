@@ -32,6 +32,9 @@ export function unitToWriteIn(known: Known): StoredUnit | undefined {
     return unit
 }
 
+/** What an operand can be, once forward and backward have refused what came from nothing. */
+type Possible = Exclude<Known, { kind: 'none' }>
+
 function withTimes(unit: StoredUnit, times: number): Known {
     return { kind: 'in', unit: { ...unit, unit: { ...unit.unit, times } } }
 }
@@ -66,40 +69,39 @@ const forms: Record<BinaryOperatorSymbol, Form> = {
     '|': { kind: 'opaque' },
 }
 
-function addedForward(form: { combine: (left: number, right: number) => number }, left: Known, right: Known): Known {
-    if (left.kind === 'in' && right.kind === 'in') {
-        // nothing is both people and an area, so nothing is their sum
-        if (!sameDimensions(left.unit, right.unit)) {
-            return { kind: 'none' }
-        }
-        return withTimes(left.unit, form.combine(left.unit.unit.times, right.unit.unit.times))
+function addedForward(form: { combine: (left: number, right: number) => number }, left: Possible, right: Possible): Known {
+    // a side saying nothing is taken to be of the other's kind, since only alike things add, and a
+    // bare number added to a temperature is a number of degrees rather than a temperature
+    if (left.kind === 'any') {
+        return right.kind === 'any' ? { kind: 'any' } : withTimes(right.unit, form.combine(0, right.unit.unit.times))
     }
-    // one side saying nothing is taken to be of the other's kind, since only alike things add, and
-    // a bare number added to a temperature is a number of degrees rather than a temperature
-    if (left.kind === 'in') {
+    if (right.kind === 'any') {
         return withTimes(left.unit, form.combine(left.unit.unit.times, 0))
     }
-    if (right.kind === 'in') {
-        return withTimes(right.unit, form.combine(0, right.unit.unit.times))
+    // nothing is both people and an area, so nothing is their sum
+    if (!sameDimensions(left.unit, right.unit)) {
+        return { kind: 'none' }
     }
-    return { kind: 'any' }
+    return withTimes(left.unit, form.combine(left.unit.unit.times, right.unit.unit.times))
 }
 
-function productForward(rightPower: 1 | -1, left: Known, right: Known): Known {
-    if (left.kind === 'in' && right.kind === 'any' && right.constant !== undefined) {
+function productForward(rightPower: 1 | -1, left: Possible, right: Possible): Known {
+    if (left.kind === 'any') {
+        if (right.kind === 'any' || left.constant === undefined) {
+            return { kind: 'any' }
+        }
         // scaling a quantity scales how many of itself it is: half of two temperatures is one
-        return withTimes(left.unit, left.unit.unit.times * (rightPower === 1 ? right.constant : 1 / right.constant))
-    }
-    if (right.kind === 'in' && left.kind === 'any' && left.constant !== undefined) {
         if (rightPower === 1) {
             return withTimes(right.unit, right.unit.unit.times * left.constant)
         }
-        // a number over a quantity is not that many of it, but one over it
+        // where a number over a quantity is not that many of it, but one over it
         const inverted = unitProduct(dimensionless, right.unit, -1)
         return inverted === undefined ? { kind: 'none' } : { kind: 'in', unit: inverted }
     }
-    if (left.kind !== 'in' || right.kind !== 'in') {
-        return { kind: 'any' }
+    if (right.kind === 'any') {
+        return right.constant === undefined
+            ? { kind: 'any' }
+            : withTimes(left.unit, left.unit.unit.times * (rightPower === 1 ? right.constant : 1 / right.constant))
     }
     const product = unitProduct(left.unit, right.unit, rightPower)
     return product === undefined ? { kind: 'none' } : { kind: 'in', unit: product }
