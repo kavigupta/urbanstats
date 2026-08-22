@@ -114,15 +114,12 @@ export async function articleCard(pageData: Extract<PageData, { kind: 'article' 
 
 export interface ComparisonCard {
     regions: { shortname: string, longname: string }[]
-    universe: string
-    /** The flag as a data URI, or undefined if it could not be read. */
-    flag: string | undefined
     /** One per statistic, with a value per region and the index of the largest of them. */
     stats: { name: StatName, values: number[], highlight: number | undefined }[]
     units: Units
 }
 
-export async function comparisonCard(pageData: Extract<PageData, { kind: 'comparison' }>, settings: Settings): Promise<ComparisonCard> {
+export function comparisonCard(pageData: Extract<PageData, { kind: 'comparison' }>, settings: Settings): ComparisonCard {
     const byRegion = pageData.rows(settings.getMultiple(groupYearKeys()))
     const stats = byRegion[0]
         .map((_, statIndex) => byRegion.map(rows => rows[statIndex]))
@@ -135,11 +132,8 @@ export async function comparisonCard(pageData: Extract<PageData, { kind: 'compar
             values: rows.map(row => row.statval),
             highlight: getHighlightIndex(rows),
         }))
-    const universe = pageData.universe
     return {
         regions: pageData.articles.map(({ shortname, longname }) => ({ shortname, longname })),
-        universe,
-        flag: await flagImage(universe),
         stats,
         units: settings.getMultiple(['use_imperial', 'temperature_unit']),
     }

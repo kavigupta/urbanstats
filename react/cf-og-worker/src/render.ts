@@ -44,7 +44,7 @@ async function cardFor(origin: string, descriptor: DrawableDescriptor, tileOrigi
         if (page?.pageData.kind !== 'comparison') {
             return undefined
         }
-        return comparisonEmbedCard(await comparisonCard(page.pageData, page.settings), shapes, size, tileOrigin)
+        return comparisonEmbedCard(comparisonCard(page.pageData, page.settings), shapes, size, tileOrigin)
     }
     const [page, rings] = await Promise.all([
         loadPage(origin, descriptor).catch(() => undefined),

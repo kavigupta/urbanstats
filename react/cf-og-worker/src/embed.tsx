@@ -385,6 +385,15 @@ export async function embedCard(article: ArticleCard, rings: Ring[], { width, he
     )
 }
 
+/** The regions' names carry the card, there being no title over them. */
+const maxHeaderSize = 38
+
+const footerSize = 24
+
+function qualifierSize(headerSize: number): number {
+    return Math.min(18, headerSize * 0.6)
+}
+
 /** What the longname adds to the shortname -- the state and country a "Chicago city" is in. */
 function qualifier(shortname: string, longname: string): string {
     return longname.startsWith(shortname) ? longname.slice(shortname.length).replace(/^,\s*/g, '') : longname
@@ -396,16 +405,39 @@ function qualifier(shortname: string, longname: string): string {
  * footer rather than being clipped. Jost's average character is about half its size wide.
  */
 const characterWidth = 0.5
+// The regions' names are set semibold, whose average character is wider.
+const boldCharacterWidth = 0.56
 const lineHeight = 1.3
 
-function linesTaken(text: string, columnWidth: number, fontSize: number): number {
-    return Math.ceil(text.length / Math.max(1, Math.floor(columnWidth / (fontSize * characterWidth))))
+function linesTaken(text: string, columnWidth: number, fontSize: number, charWidth = characterWidth): number {
+    const perLine = Math.max(1, Math.floor(columnWidth / (fontSize * charWidth)))
+    let lines = 1
+    let used = 0
+    for (const word of text.split(' ')) {
+        const withWord = used === 0 ? word.length : used + 1 + word.length
+        if (withWord > perLine && used > 0) {
+            lines += 1
+            used = word.length
+        }
+        else {
+            used = withWord
+        }
+    }
+    return lines
 }
 
-/** The largest size at which the text stays on one line, or the floor if there is none. */
-function sizeToFit(texts: string[], columnWidth: number, max: number, min: number): number {
-    const longest = Math.max(1, ...texts.map(text => text.length))
-    return Math.max(min, Math.min(max, Math.floor(columnWidth / (longest * characterWidth))))
+/** The largest size at which the text wraps into no more lines than that, down to the floor. */
+function sizeToFit(texts: string[], columnWidth: number, maxLines: number, max: number, min: number, charWidth = characterWidth): number {
+    const fits = (text: string, size: number): boolean =>
+        linesTaken(text, columnWidth, size, charWidth) <= maxLines
+        // A word wider than the column overflows it rather than wrapping.
+        && Math.max(...text.split(' ').map(word => word.length)) * size * charWidth <= columnWidth
+    for (let size = max; size > min; size--) {
+        if (texts.every(text => fits(text, size))) {
+            return size
+        }
+    }
+    return min
 }
 
 interface TableLayout {
@@ -415,14 +447,15 @@ interface TableLayout {
     valueColumn: number
     valueSize: number
     headerSize: number
+    rowPadding: number
 }
 
 const cellPadding = 8
-const rowPadding = 10
 
 function rowHeight(stat: ComparisonCard['stats'][number], layout: TableLayout): number {
     const name = linesTaken(stat.name, layout.nameColumn - cellPadding, layout.nameSize) * layout.nameSize
-    return rowPadding * 2 + Math.max(name, layout.valueSize) * lineHeight
+    // Plus the rule above the row.
+    return layout.rowPadding * 2 + Math.max(name, layout.valueSize) * lineHeight + 2
 }
 
 function comparisonValue(value: number, unit: UnitType, units: Units, fontSize: number): ReactNode[] {
@@ -442,7 +475,7 @@ function comparisonRow(stat: ComparisonCard['stats'][number], index: number, lay
                 borderTop: index === 0 ? `2px solid ${colors.text}` : `1px solid ${colors.rule}`,
             }}
         >
-            <div style={{ flex: 1, fontSize: layout.nameSize, padding: `${rowPadding}px ${cellPadding}px ${rowPadding}px 0` }}>{stat.name}</div>
+            <div style={{ flex: 1, fontSize: layout.nameSize, padding: `${layout.rowPadding}px ${cellPadding}px ${layout.rowPadding}px 0` }}>{stat.name}</div>
             {layout.colors.map((color, region) => (
                 <div
                     key={region}
@@ -450,7 +483,7 @@ function comparisonRow(stat: ComparisonCard['stats'][number], index: number, lay
                         display: 'flex',
                         width: layout.valueColumn,
                         fontSize: layout.valueSize,
-                        padding: `${rowPadding}px ${cellPadding}px`,
+                        padding: `${layout.rowPadding}px ${cellPadding}px`,
                         justifyContent: 'flex-end',
                         // The largest value, shaded the way the comparison table shades it.
                         backgroundColor: stat.highlight === region ? mixWithBackground(color, theme.mixPct / 100, colors.background) : 'transparent',
@@ -473,7 +506,7 @@ function comparisonHeader(regions: ComparisonCard['regions'], layout: TableLayou
                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', textAlign: 'right', width: layout.valueColumn, padding: `0 ${cellPadding}px` }}
                 >
                     <div style={{ display: 'flex', fontSize: layout.headerSize, fontWeight: 600, color: layout.colors[index] }}>{region.shortname}</div>
-                    <div style={{ display: 'flex', fontSize: layout.headerSize * 0.7, color: colors.muted }}>{qualifier(region.shortname, region.longname)}</div>
+                    <div style={{ display: 'flex', fontSize: qualifierSize(layout.headerSize), color: colors.muted }}>{qualifier(region.shortname, region.longname)}</div>
                 </div>
             ))}
         </div>
@@ -507,42 +540,51 @@ export async function comparisonEmbedCard(comparison: ComparisonCard, shapes: Ri
     installHooks()
     const padding = { x: 48, y: 36 }
     const content = width - padding.x * 2
-    const mapSize = { width: 380, height: 340 }
+    const body = height - padding.y * 2 - (footerSize * lineHeight + 20)
+    const mapWidth = 420
     const mapGap = 32
 
-    // Past this the table has no column to spare for one; the embed's title still names them all.
+    // Past this the table has no column to spare for one; the embed's tags still name them all.
     const regions = comparison.regions.slice(0, 5)
     const cycle = regions.map((_, index) => colorFromCycle(theme.hueColors, index))
     const drawn = regions.map((_, index) => ({ rings: shapes[index] ?? [], color: cycle[index] }))
     const withMap = regions.length <= mappedRegions && shareAMap(drawn.map(shape => shape.rings))
 
-    const tableWidth = content - (withMap ? mapSize.width + mapGap : 0)
-    // The values take most of the table, the statistic names what is left of it.
+    const tableWidth = content - (withMap ? mapWidth + mapGap : 0)
+    // The values take most of the table, the statistic names what is left of it. Both are capped,
+    // so a comparison of two regions is a table across the middle rather than across the card.
     const valueColumn = Math.min(220, tableWidth * 0.62 / regions.length)
     const layout: TableLayout = {
         colors: cycle,
-        nameColumn: tableWidth - valueColumn * regions.length,
+        nameColumn: Math.min(tableWidth - valueColumn * regions.length, 460),
         nameSize: 22,
         valueColumn,
         valueSize: Math.min(26, Math.round(valueColumn / 6.5)),
-        headerSize: sizeToFit(regions.map(region => region.shortname), valueColumn - cellPadding * 2, 20, 13),
+        headerSize: sizeToFit(regions.map(region => region.shortname), valueColumn - cellPadding * 2, 2, maxHeaderSize, 13, boldCharacterWidth),
+        rowPadding: 10,
     }
 
-    const title = comparison.regions.map(region => region.shortname).join(' vs ')
-    // Held clear of the flag, which the title wraps under rather than beside.
-    const titleWidth = content - 140
-    const titleSize = sizeToFit([title], titleWidth, 56, 26)
-    const headerHeight = Math.max(linesTaken(title, titleWidth, titleSize) * titleSize * lineHeight, 98) + 12
-    const columnHeaderHeight = layout.headerSize * 1.7 * lineHeight + 6
-    let budget = height - padding.y * 2 - headerHeight - columnHeaderHeight - 24 * lineHeight
+    const headerLines = Math.max(...regions.map(region => linesTaken(region.shortname, valueColumn - cellPadding * 2, layout.headerSize, boldCharacterWidth)))
+    const columnHeaderHeight = (headerLines * layout.headerSize + qualifierSize(layout.headerSize)) * lineHeight + 6
+    let budget = body - columnHeaderHeight
 
     const stats: ComparisonCard['stats'] = []
     for (const stat of comparison.stats) {
-        budget -= rowHeight(stat, layout)
-        if (budget < 0) {
+        const takes = rowHeight(stat, layout)
+        if (takes > budget) {
             break
         }
+        budget -= takes
         stats.push(stat)
+    }
+    // What no further row fits into is spread over the rows, rather than left under the table.
+    layout.rowPadding += Math.min(14, budget / (2 * Math.max(1, stats.length)))
+
+    // Measured rather than given the whole body: the spread above is capped, so the table does not
+    // always reach the footer, and a map that did would hang below it.
+    const mapSize = {
+        width: mapWidth,
+        height: columnHeaderHeight + stats.reduce((total, stat) => total + rowHeight(stat, layout), 0),
     }
 
     return (
@@ -558,18 +600,14 @@ export async function comparisonEmbedCard(comparison: ComparisonCard, shapes: Ri
                 padding: `${padding.y}px ${padding.x}px`,
             }}
         >
-            <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 12 }}>
-                <div style={{ display: 'flex', flex: 1, fontSize: titleSize, fontWeight: 600, paddingRight: 24, overflow: 'hidden' }}>{title}</div>
-                {flag(comparison.universe, comparison.flag)}
-            </div>
-            <div style={{ display: 'flex', flex: 1, alignItems: 'flex-start' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingRight: withMap ? mapGap : 0 }}>
+            <div style={{ display: 'flex', flex: 1, alignItems: 'flex-start', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', width: layout.nameColumn + layout.valueColumn * regions.length, marginRight: withMap ? mapGap : 0 }}>
                     {comparisonHeader(regions, layout)}
                     {stats.map((stat, index) => comparisonRow(stat, index, layout, comparison.units))}
                 </div>
                 {withMap ? await mapPanel(drawn, mapSize, tileOrigin) : <div style={{ display: 'flex' }}></div>}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 24, color: colors.muted, alignItems: 'baseline' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: footerSize, color: colors.muted, alignItems: 'baseline' }}>
                 <div style={{ display: 'flex' }}>urbanstats.org</div>
                 <div style={{ display: 'flex', fontSize: 18 }}>{withMap ? tileAttribution : ''}</div>
             </div>
