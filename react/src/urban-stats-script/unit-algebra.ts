@@ -3,17 +3,17 @@ import { dimensionless, sameDimensions, StoredUnit, unitPower, unitProduct } fro
 import { BinaryOperatorSymbol, UnaryOperatorSymbol } from './operators'
 
 /** `any` is that it could be in any unit; `none` is that no quantity is of it, as people plus an area. */
-export type Known = (
+export type AbstractInterpValue = (
     { kind: 'any', constant?: number }
     | { kind: 'none' }
     | { kind: 'in', unit: StoredUnit, constant?: number }
 )
 
-export function constant(value: number): Known {
+export function constant(value: number): AbstractInterpValue {
     return { kind: 'any', constant: value }
 }
 
-export function inUnit(unit: StoredUnit): Known {
+export function inUnit(unit: StoredUnit): AbstractInterpValue {
     return { kind: 'in', unit }
 }
 
@@ -21,7 +21,7 @@ export function inUnit(unit: StoredUnit): Known {
  * Asked at the end rather than at every step: two temperatures added are neither one temperature
  * nor none, but their mean is one again, and refusing the sum on the way past would lose that.
  */
-export function unitToWriteIn(known: Known): StoredUnit | undefined {
+export function unitToWriteIn(known: AbstractInterpValue): StoredUnit | undefined {
     if (known.kind !== 'in') {
         return undefined
     }
@@ -33,9 +33,9 @@ export function unitToWriteIn(known: Known): StoredUnit | undefined {
 }
 
 /** What an operand can be, once forward and backward have refused what came from nothing. */
-type Possible = Exclude<Known, { kind: 'none' }>
+type KnownAIV = Exclude<AbstractInterpValue, { kind: 'none' }>
 
-function withTimes(unit: StoredUnit, times: number): Known {
+function withTimes(unit: StoredUnit, times: number): AbstractInterpValue {
     return { kind: 'in', unit: { ...unit, unit: { ...unit.unit, times } } }
 }
 
@@ -69,7 +69,7 @@ const forms: Record<BinaryOperatorSymbol, Form> = {
     '|': { kind: 'opaque' },
 }
 
-function addedForward(form: { combine: (left: number, right: number) => number }, left: Possible, right: Possible): Known {
+function addedForward(form: { combine: (left: number, right: number) => number }, left: KnownAIV, right: KnownAIV): AbstractInterpValue {
     // a side saying nothing is taken to be of the other's kind, since only alike things add, and a
     // bare number added to a temperature is a number of degrees rather than a temperature
     if (left.kind === 'any') {
@@ -85,7 +85,7 @@ function addedForward(form: { combine: (left: number, right: number) => number }
     return withTimes(left.unit, form.combine(left.unit.unit.times, right.unit.unit.times))
 }
 
-function productForward(rightPower: 1 | -1, left: Possible, right: Possible): Known {
+function productForward(rightPower: 1 | -1, left: KnownAIV, right: KnownAIV): AbstractInterpValue {
     if (left.kind === 'any') {
         if (right.kind === 'any' || left.constant === undefined) {
             return { kind: 'any' }
@@ -107,7 +107,7 @@ function productForward(rightPower: 1 | -1, left: Possible, right: Possible): Kn
     return product === undefined ? { kind: 'none' } : { kind: 'in', unit: product }
 }
 
-export function forward(operator: BinaryOperatorSymbol, left: Known, right: Known): Known {
+export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue {
     // nothing computed from something no quantity is of is a quantity either
     if (left.kind === 'none' || right.kind === 'none') {
         return { kind: 'none' }
@@ -133,7 +133,7 @@ export function forward(operator: BinaryOperatorSymbol, left: Known, right: Know
 const inverses = { '+': '-', '-': '+', '*': '/', '/': '*' } as const
 
 /** Solving an operator for one of its operands is running the operator that undoes it. */
-function undo(operator: keyof typeof inverses, result: Known, known: Known, side: 'left' | 'right'): Known {
+function undo(operator: keyof typeof inverses, result: AbstractInterpValue, known: AbstractInterpValue, side: 'left' | 'right'): AbstractInterpValue {
     if (side === 'left') {
         return forward(inverses[operator], result, known)
     }
@@ -145,7 +145,7 @@ function undo(operator: keyof typeof inverses, result: Known, known: Known, side
 }
 
 /** How the 0.1 of `commute_bike < 0.1` is read as ten percent. */
-export function backward(operator: BinaryOperatorSymbol, result: Known, known: Known, side: 'left' | 'right'): Known {
+export function backward(operator: BinaryOperatorSymbol, result: AbstractInterpValue, known: AbstractInterpValue, side: 'left' | 'right'): AbstractInterpValue {
     if (result.kind === 'none' || known.kind === 'none') {
         return { kind: 'none' }
     }
@@ -163,6 +163,6 @@ export function backward(operator: BinaryOperatorSymbol, result: Known, known: K
     }
 }
 
-export function forwardUnary(operator: UnaryOperatorSymbol, operand: Known): Known {
+export function forwardUnary(operator: UnaryOperatorSymbol, operand: AbstractInterpValue): AbstractInterpValue {
     return operator === '!' ? { kind: 'any' } : operand
 }

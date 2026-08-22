@@ -2,12 +2,12 @@ import assert from 'assert/strict'
 import test from 'node:test'
 
 import { BinaryOperatorSymbol, infixOperators } from '../src/urban-stats-script/operators'
-import { backward, constant, forward, forwardUnary, inUnit, Known, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
+import { backward, constant, forward, forwardUnary, inUnit, AbstractInterpValue, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
 import { StoredUnit } from '../src/utils/quantity'
 import { storedUnits } from '../src/utils/unit'
 
 /** What is known, as a string: the dimensions, how many of itself it is, and its scale. */
-function shape(known: Known): string {
+function shape(known: AbstractInterpValue): string {
     if (known.kind !== 'in') return known.kind === 'any' ? 'unknown' : 'inconsistent'
     const written = [...known.unit.unit.dimensions]
         .sort((a, b) => a.baseUnit.localeCompare(b.baseUnit))
@@ -16,12 +16,12 @@ function shape(known: Known): string {
     return `${written === '' ? 'dimensionless' : written} times=${known.unit.unit.times} x${known.unit.toBaseUnits}`
 }
 
-const unknown: Known = { kind: 'any' }
-const inconsistent: Known = { kind: 'none' }
+const unknown: AbstractInterpValue = { kind: 'any' }
+const inconsistent: AbstractInterpValue = { kind: 'none' }
 const people = inUnit(storedUnits.population)
 const area = inUnit(storedUnits.area)
 const temperature = inUnit(storedUnits.temperature)
-const difference = (of: StoredUnit): Known => inUnit({ ...of, unit: { ...of.unit, times: 0 } })
+const difference = (of: StoredUnit): AbstractInterpValue => inUnit({ ...of, unit: { ...of.unit, times: 0 } })
 
 void test('a product adds dimensions and a quotient subtracts them', () => {
     assert.equal(shape(forward('*', people, area)), 'm^2 person^1 times=1 x1000000')
