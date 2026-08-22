@@ -1,6 +1,7 @@
-import React, { ReactNode, useEffect, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
 
+import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 
 /** What a crawler gets back for a page: the tags the Worker rewrote on the way through. */
@@ -54,6 +55,7 @@ async function fetchEmbed(workerOrigin: string, target: string): Promise<Status>
 
 export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: number }): ReactNode {
     const colors = useColors()
+    const navContext = useContext(Navigator.Context)
     const workerOrigin = `http://localhost:${ogPort}`
 
     const [path, setPath] = useState(target)
@@ -66,6 +68,12 @@ export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: 
     const frame = useRef<HTMLIFrameElement>(null)
     const seen = useRef(target)
     const isolate = useRef<string | undefined>(undefined)
+
+    // Keeps the page reloadable at whatever the frame is showing, rather than back at the default.
+    const record = useCallback((newPath: string): void => {
+        seen.current = newPath
+        navContext.unsafeUpdateCurrentDescriptor({ kind: 'embedPreview', target: newPath }, { history: 'replaceState' })
+    }, [navContext])
 
     /*
      * The site navigates with pushState, which fires no load event on the frame, so polling is the
@@ -86,12 +94,12 @@ export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: 
                 return // navigated off-origin
             }
             if (here !== seen.current) {
-                seen.current = here
+                record(here)
                 setPath(here)
             }
         }, 250)
         return () => { clearInterval(interval) }
-    }, [])
+    }, [record])
 
     /*
      * Editing the Worker restarts it, which the site's own hot reload never hears about. The restart
@@ -131,7 +139,7 @@ export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: 
                 onChange={(e) => { setPath(e.target.value) }}
                 onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                        seen.current = path
+                        record(path)
                         setSrc(path)
                     }
                 }}
