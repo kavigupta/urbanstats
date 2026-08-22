@@ -10,15 +10,17 @@ import { getUnitDisplay } from '../../src/components/unit-display'
 import flagDimensions from '../../src/data/flag_dimensions'
 import { canonicalWidth } from '../../src/mapper/map-rendering'
 import { colorThemes } from '../../src/page_template/color-themes'
+import { colorFromCycle } from '../../src/page_template/colors'
 import { pieSlicePath, pieSlices } from '../../src/syau/cluster-geometry'
 import { Inset } from '../../src/urban-stats-script/constants/insets'
+import { mixWithBackground } from '../../src/utils/color'
 import { computeAspectRatioForInsets } from '../../src/utils/coordinates'
 import { UnitType, classifyStatistic } from '../../src/utils/unit'
 
 import { basemap } from './basemap'
 import { Marker, clusterMarkers } from './clusters'
-import { ArticleCard, MapCard, MapContents, Units } from './data'
-import { MapLayout, Ring, fitBounds, fitRings, place, polyline, withinBox } from './map-layout'
+import { ArticleCard, ComparisonCard, MapCard, MapContents, Units } from './data'
+import { Bounds, MapLayout, Ring, fitBounds, fitRings, place, polyline, projectedBounds, withinBox } from './map-layout'
 
 /*
  * Lets satori call the site's function components: React installs a hook dispatcher only while a
@@ -84,14 +86,18 @@ function mapImage(content: string, width: number, height: number): string {
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
 }
 
-async function mapPanel(rings: Ring[], { width, height }: { width: number, height: number }, tileOrigin: string): Promise<ReactElement> {
-    const layout = fitRings(rings, width, height)
+/** One map fitted around every shape on it, each drawn in its own colour. */
+async function mapPanel(shapes: { rings: Ring[], color: string }[], { width, height }: { width: number, height: number }, tileOrigin: string): Promise<ReactElement> {
+    const layout = fitRings(shapes.flatMap(shape => shape.rings), width, height)
     const paint = await basemap(layout, width, height, tileOrigin)
-    const d = rings.map(ring => ringPath(ring, layout, width, height)).join('')
-    const shape = `<path d="${d}" fill="${colors.shape}" fill-opacity="0.2" stroke="${colors.shape}" stroke-width="2.5" stroke-linejoin="round" fill-rule="evenodd"/>`
+    const drawn = shapes
+        .map(({ rings, color }) => ({ color, d: rings.map(ring => ringPath(ring, layout, width, height)).join('') }))
+        .filter(shape => shape.d !== '')
+        .map(shape => `<path d="${shape.d}" fill="${shape.color}" fill-opacity="0.2" stroke="${shape.color}" stroke-width="2.5" stroke-linejoin="round" fill-rule="evenodd"/>`)
+        .join('')
     return (
         <div style={{ display: 'flex', overflow: 'hidden', width, height, flexShrink: 0, borderRadius: 5 }}>
-            <img src={mapImage(`${paint.under}${shape}`, width, height)} width={width} height={height} />
+            <img src={mapImage(`${paint.under}${drawn}`, width, height)} width={width} height={height} />
         </div>
     )
 }
@@ -162,15 +168,15 @@ function row(stat: ArticleCard['stats'][number], index: number, units: Units): R
 }
 
 /** Sized the way the header's flag is: a fixed height, with the site's cap on a wide flag. */
-function flag(article: ArticleCard): ReactElement {
-    if (article.flag === undefined) {
+function flag(universe: string, image: string | undefined): ReactElement {
+    if (image === undefined) {
         return <div style={{ display: 'flex' }}></div>
     }
-    const aspectRatio = flagDimensions[article.universe]
+    const aspectRatio = flagDimensions[universe]
     const width = 76 * Math.min(aspectRatio, 1.8)
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-            <img src={article.flag} width={width} height={width / aspectRatio} />
+            <img src={image} width={width} height={width / aspectRatio} />
             <div style={{ display: 'flex', fontSize: 16, color: colors.muted, marginTop: 6 }}>UNIVERSE</div>
         </div>
     )
@@ -363,17 +369,209 @@ export async function embedCard(article: ArticleCard, rings: Ring[], { width, he
                     <div style={{ fontSize: 60, fontWeight: 600 }}>{article.shortname}</div>
                     <div style={{ fontSize: 26, color: colors.muted }}>{article.longname}</div>
                 </div>
-                {flag(article)}
+                {flag(article.universe, article.flag)}
             </div>
             <div style={{ display: 'flex', flex: 1, alignItems: 'flex-start' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingRight: 32 }}>
                     {article.stats.map((stat, index) => row(stat, index, article.units))}
                 </div>
-                {rings.length === 0 ? <div style={{ display: 'flex' }}></div> : await mapPanel(rings, mapSize, tileOrigin)}
+                {rings.length === 0 ? <div style={{ display: 'flex' }}></div> : await mapPanel([{ rings, color: colors.shape }], mapSize, tileOrigin)}
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 24, color: colors.muted, alignItems: 'baseline' }}>
                 <div style={{ display: 'flex' }}>urbanstats.org</div>
                 <div style={{ display: 'flex', fontSize: 18 }}>{rings.length === 0 ? '' : tileAttribution}</div>
+            </div>
+        </div>
+    )
+}
+
+/** What the longname adds to the shortname -- the state and country a "Chicago city" is in. */
+function qualifier(shortname: string, longname: string): string {
+    return longname.startsWith(shortname) ? longname.slice(shortname.length).replace(/^,\s*/g, '') : longname
+}
+
+/*
+ * Satori measures nothing before it lays out, so the comparison's table is fitted by hand: a column
+ * per region is as narrow as the regions are many, and a row that overflowed would run through the
+ * footer rather than being clipped. Jost's average character is about half its size wide.
+ */
+const characterWidth = 0.5
+const lineHeight = 1.3
+
+function linesTaken(text: string, columnWidth: number, fontSize: number): number {
+    return Math.ceil(text.length / Math.max(1, Math.floor(columnWidth / (fontSize * characterWidth))))
+}
+
+/** The largest size at which the text stays on one line, or the floor if there is none. */
+function sizeToFit(texts: string[], columnWidth: number, max: number, min: number): number {
+    const longest = Math.max(1, ...texts.map(text => text.length))
+    return Math.max(min, Math.min(max, Math.floor(columnWidth / (longest * characterWidth))))
+}
+
+interface TableLayout {
+    colors: string[]
+    nameColumn: number
+    nameSize: number
+    valueColumn: number
+    valueSize: number
+    headerSize: number
+}
+
+const cellPadding = 8
+const rowPadding = 10
+
+function rowHeight(stat: ComparisonCard['stats'][number], layout: TableLayout): number {
+    const name = linesTaken(stat.name, layout.nameColumn - cellPadding, layout.nameSize) * layout.nameSize
+    return rowPadding * 2 + Math.max(name, layout.valueSize) * lineHeight
+}
+
+function comparisonValue(value: number, unit: UnitType, units: Units, fontSize: number): ReactNode[] {
+    // A region the statistic has no value for, which the comparison table leaves blank.
+    return Number.isNaN(value) ? ['—'] : formatValue(value, unit, units, fontSize)
+}
+
+function comparisonRow(stat: ComparisonCard['stats'][number], index: number, layout: TableLayout, units: Units): ReactElement {
+    const unit = classifyStatistic(stat.name)
+    return (
+        <div
+            key={stat.name}
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                lineHeight,
+                borderTop: index === 0 ? `2px solid ${colors.text}` : `1px solid ${colors.rule}`,
+            }}
+        >
+            <div style={{ flex: 1, fontSize: layout.nameSize, padding: `${rowPadding}px ${cellPadding}px ${rowPadding}px 0` }}>{stat.name}</div>
+            {layout.colors.map((color, region) => (
+                <div
+                    key={region}
+                    style={{
+                        display: 'flex',
+                        width: layout.valueColumn,
+                        fontSize: layout.valueSize,
+                        padding: `${rowPadding}px ${cellPadding}px`,
+                        justifyContent: 'flex-end',
+                        // The largest value, shaded the way the comparison table shades it.
+                        backgroundColor: stat.highlight === region ? mixWithBackground(color, theme.mixPct / 100, colors.background) : 'transparent',
+                    }}
+                >
+                    {comparisonValue(stat.values[region], unit, units, layout.valueSize)}
+                </div>
+            ))}
+        </div>
+    )
+}
+
+function comparisonHeader(regions: ComparisonCard['regions'], layout: TableLayout): ReactElement {
+    return (
+        <div style={{ display: 'flex', alignItems: 'flex-end', lineHeight, paddingBottom: 6 }}>
+            <div style={{ display: 'flex', flex: 1 }}></div>
+            {regions.map((region, index) => (
+                <div
+                    key={region.longname}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', textAlign: 'right', width: layout.valueColumn, padding: `0 ${cellPadding}px` }}
+                >
+                    <div style={{ display: 'flex', fontSize: layout.headerSize, fontWeight: 600, color: layout.colors[index] }}>{region.shortname}</div>
+                    <div style={{ display: 'flex', fontSize: layout.headerSize * 0.7, color: colors.muted }}>{qualifier(region.shortname, region.longname)}</div>
+                </div>
+            ))}
+        </div>
+    )
+}
+
+/** More regions than this and the table would rather have the map's width than the map. */
+export const mappedRegions = 3
+
+/**
+ * Whether the regions belong on one map, by the same measure the comparison page's partitioner
+ * uses: below it they are so far apart that a map fitted around them shows none of them.
+ */
+function shareAMap(shapes: Ring[][]): boolean {
+    const boxes = shapes.flatMap((rings) => {
+        const bounds = projectedBounds(rings)
+        return bounds === undefined ? [] : [bounds]
+    })
+    const area = ({ minX, maxX, minY, maxY }: Bounds): number => (maxX - minX) * (maxY - minY)
+    const around = boxes.reduce<Bounds | undefined>((all, box) => all === undefined
+        ? box
+        : { minX: Math.min(all.minX, box.minX), maxX: Math.max(all.maxX, box.maxX), minY: Math.min(all.minY, box.minY), maxY: Math.max(all.maxY, box.maxY) }, undefined)
+    if (around === undefined || area(around) === 0) {
+        return boxes.length > 0
+    }
+    // partitionLongnames' own threshold, which is what decides this on the page.
+    return boxes.reduce((total, box) => total + area(box), 0) / area(around) >= 0.1
+}
+
+export async function comparisonEmbedCard(comparison: ComparisonCard, shapes: Ring[][], { width, height }: { width: number, height: number }, tileOrigin: string): Promise<ReactElement> {
+    installHooks()
+    const padding = { x: 48, y: 36 }
+    const content = width - padding.x * 2
+    const mapSize = { width: 380, height: 340 }
+    const mapGap = 32
+
+    // Past this the table has no column to spare for one; the embed's title still names them all.
+    const regions = comparison.regions.slice(0, 5)
+    const cycle = regions.map((_, index) => colorFromCycle(theme.hueColors, index))
+    const drawn = regions.map((_, index) => ({ rings: shapes[index] ?? [], color: cycle[index] }))
+    const withMap = regions.length <= mappedRegions && shareAMap(drawn.map(shape => shape.rings))
+
+    const tableWidth = content - (withMap ? mapSize.width + mapGap : 0)
+    // The values take most of the table, the statistic names what is left of it.
+    const valueColumn = Math.min(220, tableWidth * 0.62 / regions.length)
+    const layout: TableLayout = {
+        colors: cycle,
+        nameColumn: tableWidth - valueColumn * regions.length,
+        nameSize: 22,
+        valueColumn,
+        valueSize: Math.min(26, Math.round(valueColumn / 6.5)),
+        headerSize: sizeToFit(regions.map(region => region.shortname), valueColumn - cellPadding * 2, 20, 13),
+    }
+
+    const title = comparison.regions.map(region => region.shortname).join(' vs ')
+    // Held clear of the flag, which the title wraps under rather than beside.
+    const titleWidth = content - 140
+    const titleSize = sizeToFit([title], titleWidth, 56, 26)
+    const headerHeight = Math.max(linesTaken(title, titleWidth, titleSize) * titleSize * lineHeight, 98) + 12
+    const columnHeaderHeight = layout.headerSize * 1.7 * lineHeight + 6
+    let budget = height - padding.y * 2 - headerHeight - columnHeaderHeight - 24 * lineHeight
+
+    const stats: ComparisonCard['stats'] = []
+    for (const stat of comparison.stats) {
+        budget -= rowHeight(stat, layout)
+        if (budget < 0) {
+            break
+        }
+        stats.push(stat)
+    }
+
+    return (
+        <div
+            style={{
+                width,
+                height,
+                display: 'flex',
+                flexDirection: 'column',
+                backgroundColor: colors.background,
+                color: colors.text,
+                fontFamily: 'Jost',
+                padding: `${padding.y}px ${padding.x}px`,
+            }}
+        >
+            <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 12 }}>
+                <div style={{ display: 'flex', flex: 1, fontSize: titleSize, fontWeight: 600, paddingRight: 24, overflow: 'hidden' }}>{title}</div>
+                {flag(comparison.universe, comparison.flag)}
+            </div>
+            <div style={{ display: 'flex', flex: 1, alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingRight: withMap ? mapGap : 0 }}>
+                    {comparisonHeader(regions, layout)}
+                    {stats.map((stat, index) => comparisonRow(stat, index, layout, comparison.units))}
+                </div>
+                {withMap ? await mapPanel(drawn, mapSize, tileOrigin) : <div style={{ display: 'flex' }}></div>}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 24, color: colors.muted, alignItems: 'baseline' }}>
+                <div style={{ display: 'flex' }}>urbanstats.org</div>
+                <div style={{ display: 'flex', fontSize: 18 }}>{withMap ? tileAttribution : ''}</div>
             </div>
         </div>
     )

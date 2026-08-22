@@ -3,6 +3,7 @@
  * cannot drift from the page it describes. Only the origin handling is ours: those modules fetch
  * root-relative paths, which a Worker has no base URL for.
  */
+import { ArticleStatisticRow, getHighlightIndex } from '../../src/components/load-article'
 import { shapesByName } from '../../src/consolidated-shapes'
 import { defaultTypeEnvironment } from '../../src/mapper/context'
 import { centroidsByName, markerArea, markerRadius, MapResult, mapVisuals } from '../../src/mapper/map-rendering'
@@ -44,6 +45,9 @@ function setOrigin(origin: string): void {
 
 /** How many rows fit the card before it overflows. */
 const maxRows = 6
+
+/** The same, for a comparison, whose widest layout has no map to leave room for. */
+const maxComparisonRows = 8
 
 export interface Page {
     pageData: PageData
@@ -106,6 +110,39 @@ export async function articleCard(pageData: Extract<PageData, { kind: 'article' 
     const units = settings.getMultiple(['use_imperial', 'temperature_unit'])
     const universe = pageData.universe
     return { shortname, longname, articleType, universe, flag: await flagImage(universe), stats, units }
+}
+
+export interface ComparisonCard {
+    regions: { shortname: string, longname: string }[]
+    universe: string
+    /** The flag as a data URI, or undefined if it could not be read. */
+    flag: string | undefined
+    /** One per statistic, with a value per region and the index of the largest of them. */
+    stats: { name: StatName, values: number[], highlight: number | undefined }[]
+    units: Units
+}
+
+export async function comparisonCard(pageData: Extract<PageData, { kind: 'comparison' }>, settings: Settings): Promise<ComparisonCard> {
+    const byRegion = pageData.rows(settings.getMultiple(groupYearKeys()))
+    const stats = byRegion[0]
+        .map((_, statIndex) => byRegion.map(rows => rows[statIndex]))
+        // A statistic only some of the regions report as a number has nothing to compare.
+        .flatMap(rows => rows.every((row): row is ArticleStatisticRow => row.kind === 'statistic') ? [rows] : [])
+        // More than the card draws: how many fit depends on whether the layout keeps the map.
+        .slice(0, maxComparisonRows)
+        .map(rows => ({
+            name: rows[0].statname,
+            values: rows.map(row => row.statval),
+            highlight: getHighlightIndex(rows),
+        }))
+    const universe = pageData.universe
+    return {
+        regions: pageData.articles.map(({ shortname, longname }) => ({ shortname, longname })),
+        universe,
+        flag: await flagImage(universe),
+        stats,
+        units: settings.getMultiple(['use_imperial', 'temperature_unit']),
+    }
 }
 
 /**

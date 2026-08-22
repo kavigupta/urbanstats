@@ -7,6 +7,10 @@ import { saveImage, urbanstatsFixture } from './test_utils'
 
 const article = '/article.html?longname=San Marino city, California, USA'
 const comparison = '/comparison.html?longnames=["San Marino city, California, USA","Chicago city, Illinois, USA"]'
+// Two regions close enough to share a map, which the two above are not.
+const nearbyComparison = '/comparison.html?longnames=["San Marino city, California, USA","Pasadena city, California, USA"]'
+// More regions than the table gives a column to, and more than it keeps the map for.
+const manyRegions = '/comparison.html?longnames=["San Marino city, California, USA","Pasadena city, California, USA","Alhambra city, California, USA","Burbank city, California, USA","Glendale city, California, USA","Monterey Park city, California, USA"]'
 const statistic = '/statistic.html?statname=Population&article_type=City&start=1&amount=20&order=descending&universe=USA'
 // A link that carries several statistic categories, which the article shows more of than fit.
 const manyStats = `${article}&s=29ZqGgHgeNSXMA9`
@@ -81,6 +85,24 @@ test('embed-worker-antimeridian-card', async (t) => {
     await snapshotCard(t, antimeridian)
 })
 
+// The regions' shapes on one map, each in the colour the comparison table gives its column.
+test('embed-worker-comparison-card', async (t) => {
+    await snapshotCard(t, nearbyComparison)
+})
+
+/*
+ * The same card with the map gone: regions this far apart fail the fill the comparison page
+ * partitions on, so a map fitted around them would show neither of them.
+ */
+test('embed-worker-far-apart-comparison-card', async (t) => {
+    await snapshotCard(t, comparison)
+})
+
+// Satori measures no text, so the columns and the rows that fit are worked out by hand.
+test('embed-worker-many-region-comparison-card', async (t) => {
+    await snapshotCard(t, manyRegions)
+})
+
 test('embed-worker-inset-map-card', async (t) => {
     await snapshotCard(t, insetMap)
 })
@@ -136,8 +158,7 @@ test('embed-worker-crawler-tags', async (t) => {
         title: 'San Marino city vs Chicago city',
         ogTitle: 'San Marino city vs Chicago city',
         ogDescription: 'Comparing San Marino city, California, USA, Chicago city, Illinois, USA on Urban Stats.',
-        // Described but not drawn, so the site's static preview stands.
-        ogImage: '/link-preview.png',
+        ogImage: `${workerOrigin}/og/comparison.html?longnames=[%22San%20Marino%20city,%20California,%20USA%22,%22Chicago%20city,%20Illinois,%20USA%22]`,
     })
     await t.expect(await crawlerTags(statistic)).eql({
         title: 'Population',
@@ -184,7 +205,7 @@ test('embed-worker-image-endpoint', async (t) => {
     await t.expect(png.headers.get('content-type')).eql('image/png')
     await t.expect(png.headers.get('cache-control')).eql('public, max-age=86400')
 
-    const notDrawn = await fetch(new URL(`/og${comparison}`, workerOrigin))
+    const notDrawn = await fetch(new URL(`/og${statistic}`, workerOrigin))
     await t.expect(notDrawn.status).eql(404)
 
     const notAPage = await fetch(new URL('/og/nonsense.html', workerOrigin))
