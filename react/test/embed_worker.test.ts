@@ -14,8 +14,13 @@ const manyRegions = '/comparison.html?longnames=["San Marino city, California, U
 const statistic = '/statistic.html?statname=Population&article_type=City&start=1&amount=20&order=descending&universe=USA'
 // A table of several columns, whose own header row the single-column one above has no need of.
 const multiColumnStatistic = `/statistic.html?uss=${encodeURIComponent('customNode(""); condition (true); table(columns=[column(values=density_pw_1km), column(values=population), column(values=area, name="Area")])')}&article_type=City&start=1&amount=20&order=descending&universe=USA`
-// A table filtered by a condition, which the footer states after the geographies it ranks.
+// A table filtered by a condition, which the card states after the geographies it ranks.
 const filteredStatistic = `/statistic.html?uss=${encodeURIComponent('customNode(""); condition (population > 100000); table(columns=[column(values=density_pw_1km), column(values=population), column(values=area, name="Area")])')}&article_type=City&start=1&amount=20&order=descending&universe=USA`
+/*
+ * A table sorted by a column past the few the card fits: the rows carry that column's rank, so it
+ * takes the last of the card's slots rather than being cut off along with the columns after it.
+ */
+const lateSortedStatistic = `/statistic.html?uss=${encodeURIComponent('customNode(""); condition (true); table(columns=[column(values=density_pw_1km), column(values=population), column(values=area, name="Area"), column(values=elevation)])')}&article_type=City&start=1&amount=20&order=descending&universe=USA&sort_column=3`
 // A link that carries several statistic categories, which the article shows more of than fit.
 const manyStats = `${article}&s=29ZqGgHgeNSXMA9`
 // A shape crossing the antimeridian, stored as 178.3E to 180.4E rather than wrapping to -179.7.
@@ -118,6 +123,10 @@ test('embed-worker-multi-column-statistic-card', async (t) => {
 
 test('embed-worker-filtered-statistic-card', async (t) => {
     await snapshotCard(t, filteredStatistic)
+})
+
+test('embed-worker-late-sorted-statistic-card', async (t) => {
+    await snapshotCard(t, lateSortedStatistic)
 })
 
 test('embed-worker-inset-map-card', async (t) => {

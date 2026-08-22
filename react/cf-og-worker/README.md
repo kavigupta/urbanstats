@@ -15,9 +15,9 @@ its own script the same way, through `tableLabel`.
 A statistic's card runs the page's own table script through the interpreter directly, since the
 page runs it in a web worker, which a Worker has no equivalent of. It draws the rows of the page
 the link asks for, in the order that page sorts them, numbered by the ordinal its cells carry. A
-table of one column is titled the way the page titles it; a table of several is titled by its own
-column headers instead, and states the geographies it ranks, and the condition it filters them by,
-in the footer.
+table of one column is titled the way the page titles it, with the geographies it ranks and the
+condition it filters them by below the title; a table of several is titled by its own column
+headers instead, and heads its names with those geographies and that condition.
 
 A comparison's card keeps its map only while the regions are close enough together for one to show
 them, by the fill `partitionLongnames` decides that on; otherwise the table takes the whole card.
