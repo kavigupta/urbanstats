@@ -676,6 +676,8 @@ export async function comparisonEmbedCard(comparison: ComparisonCard, shapes: Ri
 
 /** The rank column, wide enough for four digits at the size the names are set. */
 const rankColumn = 64
+// What a row of the statistic table takes at most.
+const maxRowHeight = 56
 
 /** The arrow the page marks its sorted column with, drawn rather than fetched: it is one triangle. */
 function sortArrow(order: 'ascending' | 'descending', size: number): ReactElement {
@@ -707,7 +709,13 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
 
     const valueColumn = Math.min(260, (content - rankColumn) * 0.62 / statistic.columns.length)
     const nameColumn = content - rankColumn - valueColumn * statistic.columns.length
-    const nameSize = sizeToFit(statistic.rows.map(entry => entry.longname), nameColumn - cellPadding, 1, 26, 14)
+    const names = statistic.rows.map(entry => entry.longname)
+    // A name that fits on one line only at a size the rest of the table dwarfs takes two instead,
+    // at whatever size two lines fit a row at.
+    const nameSize = Math.max(
+        sizeToFit(names, nameColumn - cellPadding, 1, 26, 14),
+        sizeToFit(names, nameColumn - cellPadding, 2, Math.floor(maxRowHeight / (2 * lineHeight)), 14),
+    )
     const valueSize = Math.min(28, Math.round(valueColumn / 6.5))
     /*
      * A table of several columns is titled by its own headers, so it drops the title and the flag
@@ -790,7 +798,7 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
                             // a full page of rows would take: a short table sits at the top rather
                             // than stretching down the card.
                             flex: 1,
-                            maxHeight: 56,
+                            maxHeight: maxRowHeight,
                             alignItems: 'center',
                             lineHeight,
                             borderTop: index === 0 ? `2px solid ${colors.text}` : `1px solid ${colors.rule}`,
