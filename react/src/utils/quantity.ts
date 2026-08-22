@@ -20,7 +20,18 @@ export interface Dimension {
 
 export type Party = { kind: 'color', hue: Hue } | { kind: 'lead', system: PartySystem }
 
-export type Decoration = { kind: 'none' } | { kind: 'percent', party?: Party }
+export type System = 'metric' | 'imperial'
+
+/**
+ * What a statistic is written in, whatever the search would otherwise choose, and to how many
+ * places. The places come with the units: fixing them is a decision about a unit already chosen.
+ */
+export interface WrittenIn {
+    units: (system: System) => Partial<Record<BaseUnit, NamedUnit>>
+    style: NumberFormat
+}
+
+export type Decoration = { kind: 'none' } | { kind: 'percent', party?: Party } | { kind: 'writtenIn', in: WrittenIn }
 
 /** Temperature is not expressed in units that scale each other: 0°C is not 0°F. */
 export type Unit = (
@@ -112,7 +123,22 @@ const meter = scaling('m', 'm', 1, 0)
 const centimeter = scaling('m', 'cm', 0.01, costScaledUnit)
 const inch = scaling('m', 'in', metersPerInch, costScaledUnit)
 const year = scaling('s', 'yr', 365.25 * 24 * 60 * 60, 0)
-const microgram = scaling('g', 'μg', 1e-6, 0)
+const microgram = scaling('g', 'μg', 1e-6, costScaledUnit)
+
+const massUnits: NamedUnit[] = [
+    scaling('g', 'g', 1, 0),
+    microgram,
+    scaling('g', 'mg', 1e-3, costScaledUnit),
+    scaling('g', 'kg', 1e3, costScaledUnit),
+]
+
+const timeUnits: NamedUnit[] = [
+    scaling('s', 's', 1, 0),
+    scaling('s', 'min', 60, costScaledUnit),
+    scaling('s', 'hr', 60 * 60, costScaledUnit),
+    scaling('s', 'days', 24 * 60 * 60, costScaledUnit),
+    year,
+]
 
 const lengthUnits: Record<'metric' | 'imperial', NamedUnit[]> = {
     metric: [
@@ -142,6 +168,8 @@ function allUnits(settings: ReaderSettings): NamedUnit[] {
         // fatalities are not abbreviated: there are never enough of them for it to save a digit
         scaling('fatality', '', 1, 0),
         ...lengthUnits[systemOf(settings)],
+        ...massUnits,
+        ...timeUnits,
     ]
 }
 
@@ -160,33 +188,39 @@ function renderAsKey(scales: Dimension[]): DimensionKey {
  */
 interface Convention {
     style?: NumberFormat
-    /** Every base unit the quantity has, or there is no way left to write it in. */
-    writeIn?: Partial<Record<BaseUnit, NamedUnit>>
     prefix?: string
 }
 
-function conventionsUsing(kmLike: NamedUnit, cmLike: NamedUnit): Record<DimensionKey, Convention | undefined> {
-    return {
-        '': { style: { kind: 'significantFigures' } },
-        // things that are counted come in whole numbers, unless they are counted in thousands
-        'person^1': { style: { kind: 'fixed', places: 0 } },
-        'usd^1': { style: { kind: 'fixed', places: 0 }, prefix: '$' },
-        'fatality^1': { style: { kind: 'fixed', places: 0 } },
-        'fatality^1 person^-1': {
-            style: { kind: 'fixed', places: 2 },
-            writeIn: { fatality: scaling('fatality', '', 1, 0), person: scaling('person', '100k', 1e5, 0) },
-        },
-        // a density is not worth a third digit, and every one of them is read against the others
-        'm^-2 person^1': { style: { kind: 'rounded', significantDigits: 2 }, writeIn: { person: people, m: kmLike } },
-        // a concentration is scientific, and stays in the units science is written in
-        'g^1 m^-3': { style: { kind: 'fixed', places: 2 }, writeIn: { g: microgram, m: meter } },
-        'm^1 s^-1': { style: { kind: 'fixed', places: 1 }, writeIn: { m: cmLike, s: year } },
-    }
+/** What quantities of these dimensions are written like, however they arose. */
+const conventions: Record<DimensionKey, Convention | undefined> = {
+    '': { style: { kind: 'significantFigures' } },
+    // things that are counted come in whole numbers, unless they are counted in thousands
+    'person^1': { style: { kind: 'fixed', places: 0 } },
+    'usd^1': { style: { kind: 'fixed', places: 0 }, prefix: '$' },
+    'fatality^1': { style: { kind: 'fixed', places: 0 } },
 }
 
-const conventions: Record<'metric' | 'imperial', Record<DimensionKey, Convention | undefined>> = {
-    metric: conventionsUsing(kilometer, centimeter),
-    imperial: conventionsUsing(mile, inch),
+/** A death rate is per a hundred thousand people however many digits per person would save. */
+export const perHundredThousand: WrittenIn = {
+    units: () => ({ fatality: scaling('fatality', '', 1, 0), person: scaling('person', '100k', 1e5, 0) }),
+    style: { kind: 'fixed', places: 2 },
+}
+
+/** A density is not worth a third digit, and every one of them is read against the others. */
+export const perArea: WrittenIn = {
+    units: system => ({ person: people, m: system === 'metric' ? kilometer : mile }),
+    style: { kind: 'rounded', significantDigits: 2 },
+}
+
+/** A concentration is scientific, and stays in the units science is written in. */
+export const perCubicMeter: WrittenIn = {
+    units: () => ({ g: microgram, m: meter }),
+    style: { kind: 'fixed', places: 2 },
+}
+
+export const perYear: WrittenIn = {
+    units: system => ({ m: system === 'metric' ? centimeter : inch, s: year }),
+    style: { kind: 'fixed', places: 1 },
 }
 
 const defaultStyle: NumberFormat = { kind: 'rounded', significantDigits: 3 }
@@ -246,9 +280,12 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSett
         // a lead is given more digits the closer it is, since that is what is being read off it
         return unit.decoration.party?.kind === 'lead' ? margin : percent
     }
-    const convention = conventions[systemOf(settings)][renderAsKey(unit.dimensions)]
-    const pool = convention?.writeIn === undefined ? allUnits(settings) : Object.values(convention.writeIn)
-    const { written, scale, format } = chooseUnits(inBaseUnits, unit.dimensions, pool, chosen => styleFor(convention, chosen))
+    const convention = conventions[renderAsKey(unit.dimensions)]
+    // a statistic written in units of its own leaves the search nothing to choose between
+    const writtenIn = unit.decoration.kind === 'writtenIn' ? unit.decoration.in : undefined
+    const pool = writtenIn === undefined ? allUnits(settings) : Object.values(writtenIn.units(systemOf(settings)))
+    const { written, scale, format } = chooseUnits(inBaseUnits, unit.dimensions, pool,
+        chosen => writtenIn?.style ?? styleFor(convention, chosen))
     return { scale, unitName: nameOf(written), format, prefix: convention?.prefix }
 }
 
