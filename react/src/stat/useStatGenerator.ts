@@ -1,26 +1,22 @@
 import { useCallback } from 'react'
 
 import { CountsByUT, forType, getCountsByArticleType } from '../components/countsByArticleType'
-import explanation_page from '../data/explanation_page'
 import validGeographies from '../data/mapper/used_geographies'
 import stats from '../data/statistic_list'
 import statistic_name_list from '../data/statistic_name_list'
 import universes_ordered from '../data/universes_ordered'
 import { Universe } from '../universe'
 import { toStatement } from '../urban-stats-script/ast'
-import { orderNonNan, TableColumnWithPopulationPercentiles } from '../urban-stats-script/constants/table'
-import { deriveTableColumnLabel, deriveTableLabel } from '../urban-stats-script/derive-human-readable-name'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { renderType, TypeEnvironment } from '../urban-stats-script/types-values'
 import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
 import { assert } from '../utils/defensive'
-import { HumanReadableName } from '../utils/human-readable-name'
 import { pluralize } from '../utils/text'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
 import { StatData, Statistic } from './types'
-import { mapUSSFromStat } from './utils'
+import { mapUSSFromStat, statDataFromTable } from './utils'
 
 const statUpdateInterval = 500
 
@@ -101,65 +97,17 @@ async function makeStatGenerator({ stat, typeEnvironment, previousGenerator }: {
             return await errorResult(allErrors, exec.assignments)
         }
 
-        // Convert all columns to the data format
-        const firstColumn = table.columns[0]
-        const geonames = table.geo
-
-        const dataColumns = table.columns.map((col: TableColumnWithPopulationPercentiles, index) => {
-            let name: HumanReadableName | undefined = col.name
-
-            if (name === undefined) {
-                name = deriveTableColumnLabel(mapUSS, typeEnvironment, index)
-
-                if (name === undefined) {
-                    execErrors.push({
-                        type: 'error',
-                        kind: 'warning',
-                        value: `Name could not be derived for column ${index}, please pass name="<your name here>" to column(...)`,
-                        location: noLocation,
-                    })
-
-                    name = '[Unnamed Column]'
-                }
-            }
-
-            return {
-                value: col.values,
-                populationPercentile: col.populationPercentiles,
-                ordinal: computeOrdinals(col.values),
-                name,
-                unit: col.unit,
-            }
+        const statData = statDataFromTable({
+            table,
+            stat,
+            mapUSS,
+            typeEnvironment,
+            warn: (message) => {
+                execErrors.push({ type: 'error', kind: 'warning', value: message, location: noLocation })
+            },
         })
 
         const statIndex = stat.type === 'simple' ? statistic_name_list.indexOf(stat.statName) : undefined
-
-        let tableTitle: HumanReadableName | undefined = table.title
-
-        if (tableTitle === undefined) {
-            tableTitle = deriveTableLabel(mapUSS, typeEnvironment, dataColumns.map(col => col.name))
-
-            if (tableTitle === undefined) {
-                execErrors.push({
-                    type: 'error',
-                    kind: 'warning',
-                    value: `Name could not be derived for table, please pass title="<your name here>" to table(...)`,
-                    location: noLocation,
-                })
-
-                tableTitle = '[Unnamed Table]'
-            }
-        }
-
-        const statData: StatData = {
-            table: dataColumns,
-            articleNames: geonames,
-            renderedStatname: tableTitle,
-            totalCountInClass: firstColumn.values.length,
-            totalCountOverall: firstColumn.values.length,
-            hideOrdinalsPercentiles: table.hideOrdinalsPercentiles,
-            explanationPage: statIndex !== undefined ? explanation_page[statIndex] : undefined,
-        }
 
         return {
             data: statData,
@@ -189,14 +137,4 @@ function checkArticleCount(counts: CountsByUT, universe: Universe, articleType: 
         return [{ type: 'error', value: `There are no ${pluralize(articleType)} in ${universe}. Either adjust your universe or geography kind.`, location: noLocation, kind: 'error' }]
     }
     return []
-}
-
-function computeOrdinals(values: number[]): number[] {
-    const indices: number[] = values.map((_, idx) => idx)
-    indices.sort((a, b) => orderNonNan(values[b], values[a])) // descending: 1 = largest value
-    const ordinals: number[] = new Array<number>(values.length)
-    indices.forEach((rowIdx, rank) => {
-        ordinals[rowIdx] = rank + 1
-    })
-    return ordinals
 }
