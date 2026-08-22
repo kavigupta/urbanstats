@@ -170,5 +170,18 @@ export function backward(operator: BinaryOperatorSymbol, result: AbstractInterpV
 }
 
 export function forwardUnary(operator: UnaryOperatorSymbol, operand: AbstractInterpValue): AbstractInterpValue {
-    return operator === '!' ? { kind: 'any' } : operand
+    if (operator === '!') {
+        return { kind: 'any' }
+    }
+    if (operator === '+' || operand.kind === 'none') {
+        return operand
+    }
+    // negating is taking it from nothing, so a level becomes minus one of itself, which a
+    // temperature has no reading for, while a difference of two is still a difference
+    const constant = operand.constant === undefined ? undefined : -operand.constant
+    if (operand.kind === 'any') {
+        return { kind: 'any', constant }
+    }
+    const { unit } = operand
+    return { kind: 'in', unit: { ...unit, unit: { ...unit.unit, times: -unit.unit.times } }, constant }
 }

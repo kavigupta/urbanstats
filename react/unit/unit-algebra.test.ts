@@ -119,9 +119,20 @@ void test('every operator answers in both directions, whatever it is given', () 
     }
 })
 
-void test('negating a quantity leaves it what it was, and not-ing it says nothing', () => {
-    assert.equal(shape(forwardUnary('-', people)), 'person^1 times=1 x1')
+void test('negating takes a quantity from nothing, which is not what it was', () => {
+    assert.equal(shape(forwardUnary('+', people)), 'person^1 times=1 x1')
+    assert.equal(shape(forwardUnary('-', people)), 'person^1 times=-1 x1')
+    // a difference of two is one however it is signed, so it stays one to write
+    assert.equal(shape(forwardUnary('-', difference(storedUnits.population))), 'person^1 times=0 x1')
+    assert.notEqual(unitToWriteIn(forwardUnary('-', difference(storedUnits.population))), undefined)
+    // where minus a temperature is no reading at all: -50F and -10C are not the same one
+    assert.equal(unitToWriteIn(forwardUnary('-', temperature)), undefined)
     assert.equal(shape(forwardUnary('!', people)), 'unknown')
+})
+
+void test('a negated number is the negative of it, so that it scales the right way', () => {
+    assert.equal(shape(forward('*', people, forwardUnary('-', constant(2)))), 'person^1 times=-2 x1')
+    assert.equal(shape(forward('*', people, forwardUnary('+', constant(2)))), 'person^1 times=2 x1')
 })
 
 // Not knowing which unit something is in is a different thing from nothing being of any unit, and
