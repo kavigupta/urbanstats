@@ -292,12 +292,12 @@ export function sameDimensions(left: StoredUnit, right: StoredUnit): boolean {
  * Nothing scales a temperature, 0°C being no more nothing than 0°F is. A difference of two is
  * another matter: no degrees is no degrees on either scale, so it multiplies like anything else.
  */
-function scales(unit: Unit): boolean {
+function multiplies(unit: Unit): boolean {
     return unit.baseIsScalar || unit.times === 0
 }
 
 export function unitProduct(left: StoredUnit, right: StoredUnit, rightPower: 1 | -1): StoredUnit | undefined {
-    if (!scales(left.unit) || !scales(right.unit)) {
+    if (!multiplies(left.unit) || !multiplies(right.unit)) {
         return undefined
     }
     const [over, under] = [left.unit.dimensions, right.unit.dimensions]
@@ -309,7 +309,7 @@ export function unitProduct(left: StoredUnit, right: StoredUnit, rightPower: 1 |
 }
 
 export function unitPower(stored: StoredUnit, exponent: number): StoredUnit | undefined {
-    if (!scales(stored.unit)) {
+    if (!multiplies(stored.unit)) {
         return undefined
     }
     const raised = stored.unit.dimensions.map(({ baseUnit, power }) => ({ baseUnit, power: power * exponent }))
