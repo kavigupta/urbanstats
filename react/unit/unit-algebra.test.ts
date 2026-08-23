@@ -277,6 +277,21 @@ void test('a difference of temperatures multiplies as any other quantity does', 
     assert.equal(shape(forward('/', forwardUnary('-', temperature), area)), 'inconsistent')
 })
 
+void test('a difference of temperatures divides into things as well as by them', () => {
+    const change = forward('-', temperature, temperature)
+    const perDegree = unitToWriteIn(forward('/', people, change))
+    assert.notEqual(perDegree, undefined)
+    const write = (settings: object): string => {
+        const written = writeQuantity(5, perDegree!, settings)
+        return `${written.renderedValue}${reifyString(written.unitName)}`
+    }
+    // five to the Fahrenheit degree is nine to the Celsius one, that being the larger degree
+    assert.equal(write({}), '5.00/\u00a0°F')
+    assert.equal(write({ temperatureUnit: 'celsius' }), '9.00/\u00a0°C')
+    // and a reading is no more divisible into than it is by: nothing is so many people per 50°F
+    assert.equal(shape(forward('/', people, temperature)), 'inconsistent')
+})
+
 void test('a difference per something is read in degrees of the reader\'s own scale', () => {
     const perArea = unitToWriteIn(forward('/', forward('-', temperature, temperature), area))
     assert.notEqual(perArea, undefined)
