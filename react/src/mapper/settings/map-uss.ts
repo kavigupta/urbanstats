@@ -154,3 +154,45 @@ export function mapUssParser<T>(lastExpr: l.LiteralExprParser<T>, types: USSType
         return uss.type === 'statements' ? statementsSchema.parse(uss, typeEnvironment) : customNodeSchema.parse(uss, typeEnvironment)
     }
 }
+
+/** What a schema reads, or nothing where the script is not shaped the way it reads. */
+function read<T>(schema: (uss: MapUSS, typeEnvironment: TypeEnvironment) => T, uss: MapUSS, typeEnvironment: TypeEnvironment): T | undefined {
+    try {
+        return schema(uss, typeEnvironment)
+    }
+    catch (error) {
+        if (error instanceof l.LiteralParseError) {
+            return undefined
+        }
+        throw error
+    }
+}
+
+const mapData = mapUssParser(l.call({
+    fn: l.ignore(),
+    namedArgs: { data: l.passthrough() },
+    unnamedArgs: [],
+}), 'dont-reparse')
+
+/** The expression a map draws, which is what both its label and its units are read off. */
+export function mapDataExpression(uss: MapUSS, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression | undefined {
+    return read(mapData, uss, typeEnvironment)?.namedArgs.data
+}
+
+const tableColumns = mapUssParser(l.call({
+    fn: l.ignore(),
+    namedArgs: {
+        columns: l.vector(l.call({
+            fn: l.ignore(),
+            namedArgs: { values: l.passthrough() },
+            unnamedArgs: [],
+        })),
+    },
+    unnamedArgs: [],
+}), 'dont-reparse')
+
+/** The expression a column of a table takes its values from, likewise. */
+export function tableColumnExpression(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): UrbanStatsASTExpression | undefined {
+    const columns = read(tableColumns, uss, typeEnvironment)?.namedArgs.columns
+    return columns === undefined || columnIndex >= columns.length ? undefined : columns[columnIndex].namedArgs.values
+}

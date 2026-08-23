@@ -1,4 +1,4 @@
-import { MapUSS, mapUssParser } from '../mapper/settings/map-uss'
+import { MapUSS, mapUssParser, tableColumnExpression } from '../mapper/settings/map-uss'
 import { assert } from '../utils/defensive'
 import { HumanReadableElement, HumanReadableName, joinHumanReadableNames } from '../utils/human-readable-name'
 import { parseHumanReadableTemplate } from '../utils/human-readable-template'
@@ -302,31 +302,8 @@ export function tableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): Human
 }
 
 export function deriveTableColumnLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): HumanReadableName | undefined {
-    const schema = mapUssParser(l.call({
-        fn: l.ignore(),
-        namedArgs: {
-            columns: l.vector(l.call({
-                fn: l.ignore(),
-                namedArgs: {
-                    values: l.passthrough(),
-                },
-                unnamedArgs: [],
-            })),
-        },
-        unnamedArgs: [],
-    }), 'dont-reparse')
-    try {
-        const result = schema(uss, typeEnvironment)
-        const columns = result.namedArgs.columns
-        if (columns.length <= columnIndex || columns[columnIndex].namedArgs.values === undefined) return
-        return humanReadableElements(columns[columnIndex].namedArgs.values, typeEnvironment)
-    }
-    catch (error) {
-        if (error instanceof l.LiteralParseError) {
-            return undefined
-        }
-        throw error
-    }
+    const values = tableColumnExpression(uss, typeEnvironment, columnIndex)
+    return values === undefined ? undefined : humanReadableElements(values, typeEnvironment)
 }
 
 export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnNames: HumanReadableName[]): HumanReadableName | undefined {
