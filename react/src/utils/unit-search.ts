@@ -10,7 +10,9 @@ export interface Written {
 const artificialZeroCost = 100
 
 /**
- * We charge 1 for every digit that is printed.
+ * We charge 1 for every digit that is printed, and 1 for every figure of the three a reader is
+ * given that the digits do not carry: 1 234 is four digits of four figures, where the same
+ * quantity written smaller is 0.001, four digits of one, and is the worse of the two to read.
  *
  * This is almost, but not quite, the same as the number of significant figures, because
  * e.g., 1000 is counted as 4, not 1.
@@ -25,7 +27,8 @@ function digitCost(value: number, format: NumberFormat): number {
     if (value !== 0 && format.kind !== 'fixed' && !/[1-9]/.test(digits)) {
         return artificialZeroCost
     }
-    return digits.length
+    const figures = digits.length - digits.search(/[1-9]/)
+    return digits.length + Math.max(0, 3 - figures)
 }
 
 type Exponents = Partial<Record<BaseUnit, number>>

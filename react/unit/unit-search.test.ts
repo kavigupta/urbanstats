@@ -79,6 +79,18 @@ void test('a unit that rounds the quantity away is not worth choosing', () => {
     assert.equal(chosen(1e-5, { person: -1 }, [people, hundredThousand], () => threeDigits), '100k^-1')
 })
 
+const threeFiguresRounded: NumberFormat = { kind: 'rounded', significantDigits: 3 }
+const kilometer = unit('km', { m: 1 }, 1e3, 1)
+const meter = unit('m', { m: 1 }, 1)
+
+void test('a unit that leaves the figures behind is not reached for', () => {
+    // a thousand people per square kilometre is a thousandth of one per square metre, which is as
+    // many digits and one figure: written that way, a thousand and a thousand and a half are one
+    assert.equal(chosen(1e-3, { person: 1, m: -2 }, [people, kilometer, meter], () => threeFiguresRounded), 'km^-2 <none>^1')
+    // where a length small enough to leave three of them behind is
+    assert.equal(chosen(1e-3, { m: 1 }, [kilometer, meter, unit('cm', { m: 1 }, 0.01, 1)], () => threeFiguresRounded), 'cm^1')
+})
+
 void test('a fixed number of places is a decision that rounding away is precise enough', () => {
     // a fraction of a person is no people, which is what whole numbers of them means
     assert.equal(chosen(0.123, { person: 1 }, counting), '<none>^1')
