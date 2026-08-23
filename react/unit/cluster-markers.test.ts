@@ -23,7 +23,6 @@ const points = Array.from({ length: 900 }, (_, i) => ({
 const contents = {
     kind: 'clusters' as const,
     points,
-    // Only how many there are matters here; nothing in the clustering looks at a colour.
     categoryColors: Array.from({ length: 3 }, (_, i) => `category ${i}`),
     maxRadius: 30,
     clusterRadius: 30,
