@@ -43,6 +43,21 @@ void test('a map of what no unit can be read off says nothing', () => {
     assert.equal(mapUnit('someFunctionOrOther(population)'), 'nothing')
 })
 
+void test('a map of a regression is written in the units of what was regressed', () => {
+    const map = (preamble: string, data: string): StoredUnit | undefined =>
+        deriveMapUnit(mapUSSFromString(`${preamble}\ncondition (true)\ncMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), defaultTypeEnvironment('USA'))
+    const shares = 'regr = regression(y=commute_transit, x1=ln(density_pw_1km), weight=population)'
+    // what a share was above what the regression expected of it, which is a difference of two shares
+    assert.equal(written(map(shares, 'do { x = regr.residuals; x }'), 0.05), '+5.00%')
+    assert.equal(written(map(shares, 'regr.b'), 0.05), '5.00%')
+    // a share over a logarithm is over nothing anybody can name, and neither is r squared a quantity
+    assert.equal(written(map(shares, 'regr.m1'), 0.05), 'nothing')
+    assert.equal(written(map(shares, 'regr.r2'), 0.05), 'nothing')
+    const people = 'regr = regression(y=population, x1=area)'
+    assert.equal(written(map(people, 'regr.m1'), 1000), '1\u202f000/\u00a0km^{2}')
+    assert.equal(written(map(people, 'regr.residuals'), 1000), '+1\u202f000')
+})
+
 void test('a quantity with no writing is left to whatever its name is taken for', () => {
     // a root of a count is in no unit any pool holds, and asking for one threw
     assert.equal(mapUnit('population ** 0.5'), 'nothing')
