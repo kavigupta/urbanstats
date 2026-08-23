@@ -2374,6 +2374,13 @@ void test('clusterMap relativeArea not population and clusterRadiusSpacing', () 
     assert.deepStrictEqual(raw.data, [1, 2, 3, 4, 5])
 })
 
+void test('a relative area the data misses leaves the other markers their sizes', () => {
+    const [ctx] = contextForTestIfStatement()
+    const r = evaluate(parseExpr('pMap(data=[1, 2, 3, 4, 5], scale=linearScale(), ramp=rampViridis, relativeArea=[1, 2, 0 / 0, 4, 8], label="x")'), ctx)
+    const raw = (r.value as { type: 'opaque', value: PMap }).value
+    assert.deepStrictEqual(raw.relativeArea, [1 / 8, 2 / 8, 0, 4 / 8, 1])
+})
+
 void test('test basic column with name', () => {
     const effects: Effect[] = []
     const ctx = emptyContext(effects)
