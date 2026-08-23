@@ -193,7 +193,25 @@ export interface Documentation {
      * columns; other USS constants will omit this field.
      */
     unit?: UnitType
+    /** For a function, how a quantity it is given comes back out. */
+    unitPropagation?: UnitPropagation
 }
+
+/** How a function gives a quantity, which is what the units of a script that calls it are read off. */
+export type UnitPropagation = (
+    /** what it was given, as it was given it: an absolute value, a rounding, a mean, a median */
+    { kind: 'unchanged' }
+    /** one or the other of the two it was given: a larger of two, a smaller of two */
+    | { kind: 'either' }
+    /** as many of what it was given as there were, which is not a number anyone knows: a total */
+    | { kind: 'total' }
+    /** what it was given, raised: a square root */
+    | { kind: 'power', exponent: number }
+    /** a number of no kind, whatever it was given: a logarithm, a sine, a quantile of a column */
+    | { kind: 'number' }
+    /** an intercept, residuals and a coefficient for each parameter */
+    | { kind: 'regression' }
+)
 
 export interface USSDocumentedType {
     type: USSType

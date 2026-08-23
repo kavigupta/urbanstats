@@ -1,8 +1,9 @@
+import { dimensionless } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
-import { TypeEnvironment } from './types-values'
-import { AbstractInterpValue, constant, forward, forwardUnary, inUnit, join } from './unit-algebra'
+import { TypeEnvironment, UnitPropagation } from './types-values'
+import { AbstractInterpValue, constant, forward, forwardUnary, inUnit, join, manyOf } from './unit-algebra'
 
 const anything: AbstractInterpValue = { kind: 'any' }
 
@@ -54,6 +55,10 @@ function identifier(name: string, scope: Scope): Inferred {
 
 const parameterName = /^x(\d+)$/
 
+function positional(args: UrbanStatsASTArg[], index: number): UrbanStatsASTExpression | undefined {
+    return args.filter(arg => arg.type === 'unnamed')[index]?.value
+}
+
 function namedArgument(args: UrbanStatsASTArg[], name: string): UrbanStatsASTExpression | undefined {
     return args.find(arg => arg.type === 'named' && arg.name.node === name)?.value
 }
@@ -75,6 +80,37 @@ function regressionFields(args: UrbanStatsASTArg[], scope: Scope): Inferred {
         }
     }
     return { kind: 'fields', fields }
+}
+
+function propagated(propagation: UnitPropagation, args: UrbanStatsASTArg[], scope: Scope): Inferred {
+    if (propagation.kind === 'regression') {
+        return regressionFields(args, scope)
+    }
+    if (propagation.kind === 'number') {
+        return inUnit(dimensionless)
+    }
+    const given = positional(args, 0)
+    const value = given === undefined ? anything : quantity(infer(given, scope))
+    switch (propagation.kind) {
+        case 'unchanged':
+            return value
+        case 'total':
+            return manyOf(value)
+        case 'power':
+            return forward('**', value, constant(propagation.exponent))
+        case 'either': {
+            const other = positional(args, 1)
+            return join(value, other === undefined ? anything : quantity(infer(other, scope)))
+        }
+    }
+}
+
+/** What a function says of the quantity it gives, where it is the function of that name and not a name the script bound. */
+function propagationOf(fn: UrbanStatsASTExpression, scope: Scope): UnitPropagation | undefined {
+    if (fn.type !== 'identifier' || scope.named.has(fn.name.node)) {
+        return undefined
+    }
+    return scope.typeEnvironment.get(fn.name.node)?.documentation?.unitPropagation
 }
 
 function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Scope): Inferred {
@@ -114,11 +150,10 @@ function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Sco
             const object = infer(ast.expr, scope)
             return object.kind === 'fields' ? object.fields.get(ast.name.node) ?? anything : anything
         }
-        case 'call':
-            // a name the script bound is whatever it bound it to, rather than the regression it hides
-            return ast.fn.type === 'identifier' && ast.fn.name.node === 'regression' && !scope.named.has('regression')
-                ? regressionFields(ast.args, scope)
-                : anything
+        case 'call': {
+            const propagation = propagationOf(ast.fn, scope)
+            return propagation === undefined ? anything : propagated(propagation, ast.args, scope)
+        }
         case 'if': {
             const consequent = branch(ast.then, scope)
             // an arm that is not there leaves the value it would have written as it was

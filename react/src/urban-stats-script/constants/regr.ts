@@ -78,6 +78,7 @@ export function regression(numRegressionDependentsMax: number): USSValue {
         documentation: {
             humanReadableName: `Linear Regression`,
             category: 'regression',
+            unitPropagation: { kind: 'regression' },
             longDescription: `Performs linear regression analysis with up to ${numRegressionDependentsMax} independent variables. Returns coefficients, residuals, R-squared value, and intercept. Supports weighted regression and optional intercept removal.`,
             selectorRendering: { kind: 'subtitleLongDescription' },
         },

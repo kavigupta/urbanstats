@@ -18,6 +18,11 @@ export function inUnit(unit: StoredUnit): AbstractInterpValue {
     return { kind: 'in', unit }
 }
 
+/** As many of it as there were, where how many is not something the reading can say: a total. */
+export function manyOf(value: AbstractInterpValue): AbstractInterpValue {
+    return value.kind === 'in' ? written(value.unit, 'unknown') : value
+}
+
 /**
  * Asked at the end rather than at every step: two temperatures added are neither one temperature
  * nor none, but their mean is one again, and refusing the sum on the way past would lose that.
