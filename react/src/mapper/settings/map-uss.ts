@@ -154,3 +154,40 @@ export function mapUssParser<T>(lastExpr: l.LiteralExprParser<T>, types: USSType
         return uss.type === 'statements' ? statementsSchema.parse(uss, typeEnvironment) : customNodeSchema.parse(uss, typeEnvironment)
     }
 }
+
+export function read<T>(schema: (uss: MapUSS, typeEnvironment: TypeEnvironment) => T, uss: MapUSS, typeEnvironment: TypeEnvironment): T | undefined {
+    try {
+        return schema(uss, typeEnvironment)
+    }
+    catch (error) {
+        if (error instanceof l.LiteralParseError) {
+            return undefined
+        }
+        throw error
+    }
+}
+
+const mapDataCall = l.call({
+    fn: l.ignore(),
+    namedArgs: { data: l.passthrough() },
+    unnamedArgs: [],
+})
+
+export const editableMapData = mapUssParser(l.edit(mapDataCall), 'dont-reparse')
+
+const tableColumns = mapUssParser(l.call({
+    fn: l.ignore(),
+    namedArgs: {
+        columns: l.vector(l.call({
+            fn: l.ignore(),
+            namedArgs: { values: l.passthrough() },
+            unnamedArgs: [],
+        })),
+    },
+    unnamedArgs: [],
+}), 'dont-reparse')
+
+export function tableColumnExpression(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): UrbanStatsASTExpression | undefined {
+    const columns = read(tableColumns, uss, typeEnvironment)?.namedArgs.columns
+    return columns === undefined || columnIndex >= columns.length ? undefined : columns[columnIndex].namedArgs.values
+}
