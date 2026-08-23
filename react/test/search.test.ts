@@ -125,6 +125,40 @@ test('when adding another article for comparison, should prioritize regions of t
     await createComparison(t, 'san jose', 'San Jose city, California, USA')
 })
 
+test('compare to a search result from an article', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'Pasadena')
+    await waitForSelectedSearchResult(t)
+    await screencap(t)
+    await t.click(Selector('[data-test-id=search-result-compare]').nth(0))
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}/comparison.html?longnames=%5B%22San+Marino+city%2C+California%2C+USA%22%2C%22Pasadena+city%2C+Texas%2C+USA%22%5D`)
+})
+
+test('no compare button for the article being viewed', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'San Marino city, California')
+    await t.expect(await waitForSelectedSearchResult(t)).eql('San Marino city, California, USA')
+    await t.expect(Selector('[data-test-id=selected-search-result]').parent(0).find('[data-test-id=search-result-compare]').exists).notOk()
+    await t.expect(Selector('[data-test-id=search-result-compare]').exists).ok()
+})
+
+urbanstatsFixture('comparison', `${target}/comparison.html?longnames=%5B%22San+Marino+city%2C+California%2C+USA%22%2C%22Pasadena+city%2C+Texas%2C+USA%22%5D`)
+
+test('compare to a search result from a comparison', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'San Francisco city, California')
+    await waitForSelectedSearchResult(t)
+    await t.click(Selector('[data-test-id=search-result-compare]').nth(0))
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}/comparison.html?longnames=%5B%22San+Marino+city%2C+California%2C+USA%22%2C%22Pasadena+city%2C+Texas%2C+USA%22%2C%22San+Francisco+city%2C+California%2C+USA%22%5D`)
+})
+
+urbanstatsFixture('shorter article test again', `${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
+
 test('search for a MPC', async (t) => {
     await t
         .click(searchField)
