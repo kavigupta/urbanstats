@@ -2,7 +2,7 @@ import assert from 'assert/strict'
 import test from 'node:test'
 
 import { BinaryOperatorSymbol, infixOperators, unaryOperators } from '../src/urban-stats-script/operators'
-import { backward, backwardUnary, constant, forward, forwardUnary, inUnit, AbstractInterpValue, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
+import { backward, backwardUnary, constant, forward, forwardUnary, inUnit, join, AbstractInterpValue, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
 import { reifyString } from '../src/utils/human-readable-name'
 import { StoredUnit, writeQuantity } from '../src/utils/quantity'
 import { storedUnits } from '../src/utils/unit'
@@ -216,4 +216,53 @@ void test('a coefficient that comes back a hair off a whole one is the whole one
     const mean = forward('*', sum, constant(1 / 49))
     assert.equal(shape(mean), 'F^1 times=1 x1')
     assert.notEqual(unitToWriteIn(mean), undefined)
+})
+
+void test('either of two is of their kind, where they have one', () => {
+    assert.equal(shape(join(people, people)), 'person^1 times=1 x1')
+    assert.equal(shape(join(people, area)), 'unknown')
+    // stored at different scales, they are of one dimension but not of one unit
+    assert.equal(shape(join(inUnit(storedUnits.distanceInM), inUnit(storedUnits.distanceInKm))), 'unknown')
+    // and where they are of one kind but not one many-of-itself, of that kind, with how many unknown
+    assert.equal(shape(join(people, difference(storedUnits.population))), 'person^1 times=unknown x1')
+    assert.equal(shape(join(inconsistent, people)), 'person^1 times=1 x1')
+    assert.equal(shape(join(unknown, people)), 'unknown')
+    assert.equal(shape(join(constant(2), constant(2))), 'unknown')
+    assert.equal(shape(join(constant(2), constant(3))), 'unknown')
+})
+
+void test('either of two shares of different parties is a share of neither', () => {
+    const orange = inUnit(storedUnits.partyPctOrange)
+    const joined = join(orange, inUnit(storedUnits.partyPctRed))
+    assert.equal(shape(joined), shape(orange))
+    assert.equal(writeQuantity(0.05, unitToWriteIn(joined)!).hue, undefined)
+    assert.notEqual(writeQuantity(0.05, unitToWriteIn(orange)!).hue, undefined)
+})
+
+void test('a coefficient is carried through a product and raised through a power', () => {
+    const twice = forward('*', area, constant(2))
+    assert.equal(shape(forward('*', twice, people)), 'm^2 person^1 times=2 x1000000')
+    assert.equal(shape(forward('/', twice, people)), 'm^2 person^-1 times=2 x1000000')
+    assert.equal(shape(forward('/', people, twice)), 'm^-2 person^1 times=0.5 x0.000001')
+    assert.equal(shape(forward('**', twice, constant(0.5))), 'm^1 times=1.4142135623730951 x1000')
+    // and a difference is still one of nothing however it is scaled
+    assert.equal(shape(forward('/', forward('-', area, area), people)), 'm^2 person^-1 times=0 x1000000')
+})
+
+void test('a coefficient no longer known is no bar to writing a scalar, and is one to writing a temperature', () => {
+    const scaled = join(forward('*', area, constant(2)), area)
+    assert.equal(shape(scaled), 'm^2 times=unknown x1000000')
+    // an area is written the same whether it is one area or twice one, or a difference of two
+    assert.notEqual(unitToWriteIn(scaled), undefined)
+    assert.notEqual(unitToWriteIn(join(forward('-', area, area), area)), undefined)
+    // where a temperature is not, since only a level is written up from the zero of its scale
+    const eitherWay = join(temperature, forward('-', temperature, temperature))
+    assert.equal(shape(eitherWay), 'F^1 times=unknown x1')
+    assert.equal(unitToWriteIn(eitherWay), undefined)
+})
+
+void test('a coefficient that is not a number of anything is no longer known', () => {
+    // nothing is minus one area to the half, nor an area over none of one
+    assert.equal(shape(forward('**', forwardUnary('-', area), constant(0.5))), 'm^1 times=unknown x1000')
+    assert.equal(shape(forward('/', area, forward('-', area, area))), 'dimensionless times=unknown x1')
 })

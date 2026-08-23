@@ -1,5 +1,5 @@
 import { assert } from '../utils/defensive'
-import { Decoration, dimensionless, Party, sameDimensions, snapToWhole, StoredUnit, unitPower, unitProduct } from '../utils/quantity'
+import { Coefficient, Decoration, dimensionless, Party, sameDimensions, snapToWhole, StoredUnit, unitPower, unitProduct } from '../utils/quantity'
 
 import { BinaryOperatorSymbol, UnaryOperatorSymbol } from './operators'
 
@@ -60,8 +60,61 @@ function sharedDecoration(left: Decoration, right: Decoration): Decoration {
     return { kind: 'none' }
 }
 
-function written(unit: StoredUnit, times: number, decoration = unit.unit.decoration): AbstractInterpValue {
-    return { kind: 'in', unit: { ...unit, unit: { ...unit.unit, decoration, times: snapToWhole(times) } } }
+function written(unit: StoredUnit, times: Coefficient, decoration = unit.unit.decoration): AbstractInterpValue {
+    return { kind: 'in', unit: { ...unit, unit: { ...unit.unit, decoration, times } } }
+}
+
+/** A hair apart after arithmetic is the same size: a square root squared does not come back exact. */
+function sameSize(left: number, right: number): boolean {
+    return Math.abs(left - right) <= 1e-9 * Math.max(Math.abs(left), Math.abs(right))
+}
+
+/** Arithmetic on coefficients, where anything but a number of them leaves how many there are unknown. */
+function combined(left: Coefficient, right: Coefficient, combine: (left: number, right: number) => number): Coefficient {
+    if (left === 'unknown' || right === 'unknown') {
+        return 'unknown'
+    }
+    const times = combine(left, right)
+    return Number.isFinite(times) ? snapToWhole(times) : 'unknown'
+}
+
+function joinedTimes(left: Coefficient, right: Coefficient): Coefficient {
+    if (left === 'unknown' || right === 'unknown' || !sameSize(left, right)) {
+        return 'unknown'
+    }
+    return left
+}
+
+function joinedUnits(left: StoredUnit, right: StoredUnit): StoredUnit | undefined {
+    if (!sameDimensions(left, right) || left.unit.baseIsScalar !== right.unit.baseIsScalar) {
+        return undefined
+    }
+    if (!sameSize(left.toBaseUnits, right.toBaseUnits)) {
+        return undefined
+    }
+    return { ...left, unit: {
+        ...left.unit,
+        decoration: sharedDecoration(left.unit.decoration, right.unit.decoration),
+        times: joinedTimes(left.unit.times, right.unit.times),
+    } }
+}
+
+/** Either of two, as the arms of an `if` are: two of a kind are of it, and two of different kinds are of any. */
+export function join(left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue {
+    if (left.kind === 'none') {
+        return right
+    }
+    if (right.kind === 'none') {
+        return left
+    }
+    const shared = left.constant === right.constant ? left.constant : undefined
+    if (left.kind === 'in' && right.kind === 'in') {
+        const unit = joinedUnits(left.unit, right.unit)
+        if (unit !== undefined) {
+            return shared === undefined ? { kind: 'in', unit } : { kind: 'in', unit, constant: shared }
+        }
+    }
+    return shared === undefined ? { kind: 'any' } : { kind: 'any', constant: shared }
 }
 
 /** How an operator's slots relate, which is what both directions are read off. */
@@ -98,10 +151,10 @@ function addedForward(form: { combine: (left: number, right: number) => number }
     // a side saying nothing is taken to be of the other's kind, since only alike things add; a
     // bare number added to a temperature is a number of degrees
     if (left.kind === 'any') {
-        return right.kind === 'any' ? { kind: 'any' } : written(right.unit, form.combine(0, right.unit.unit.times))
+        return right.kind === 'any' ? { kind: 'any' } : written(right.unit, combined(0, right.unit.unit.times, form.combine))
     }
     if (right.kind === 'any') {
-        return written(left.unit, form.combine(left.unit.unit.times, 0))
+        return written(left.unit, combined(left.unit.unit.times, 0, form.combine))
     }
     // nothing is both people and an area, so nothing is their sum
     if (!sameDimensions(left.unit, right.unit)) {
@@ -109,7 +162,7 @@ function addedForward(form: { combine: (left: number, right: number) => number }
     }
     return written(
         left.unit,
-        form.combine(left.unit.unit.times, right.unit.unit.times),
+        combined(left.unit.unit.times, right.unit.unit.times, form.combine),
         sharedDecoration(left.unit.unit.decoration, right.unit.unit.decoration),
     )
 }
@@ -121,19 +174,20 @@ function productForward(rightPower: 1 | -1, left: KnownAIV, right: KnownAIV): Ab
         }
         // scaling a quantity scales how many of itself it is: half of two temperatures is one
         if (rightPower === 1) {
-            return written(right.unit, right.unit.unit.times * left.constant)
+            return written(right.unit, combined(right.unit.unit.times, left.constant, (times, scale) => times * scale))
         }
         // where a number over a quantity is not that many of it, but one over it
         const inverted = unitProduct(dimensionless, right.unit, -1)
-        return inverted === undefined ? { kind: 'none' } : { kind: 'in', unit: inverted }
+        return inverted === undefined ? { kind: 'none' } : written(inverted, combined(left.constant, right.unit.unit.times, (scale, times) => scale / times))
     }
     if (right.kind === 'any') {
         return right.constant === undefined
             ? { kind: 'any' }
-            : written(left.unit, left.unit.unit.times * (rightPower === 1 ? right.constant : 1 / right.constant))
+            : written(left.unit, combined(left.unit.unit.times, right.constant, (times, scale) => rightPower === 1 ? times * scale : times / scale))
     }
     const product = unitProduct(left.unit, right.unit, rightPower)
-    return product === undefined ? { kind: 'none' } : { kind: 'in', unit: product }
+    const times = combined(left.unit.unit.times, right.unit.unit.times, (over, under) => rightPower === 1 ? over * under : over / under)
+    return product === undefined ? { kind: 'none' } : written(product, times)
 }
 
 export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue {
@@ -154,7 +208,8 @@ export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValu
                 return { kind: 'any' }
             }
             const raised = unitPower(left.unit, right.constant)
-            return raised === undefined ? { kind: 'none' } : { kind: 'in', unit: raised }
+            // the coefficient is raised along with what it multiplies: (2a)^0.5 is 2^0.5 of a^0.5
+            return raised === undefined ? { kind: 'none' } : written(raised, combined(left.unit.unit.times, right.constant, Math.pow))
         }
     }
 }
@@ -215,6 +270,6 @@ export function forwardUnary(operator: UnaryOperatorSymbol, operand: AbstractInt
     if (operand.kind === 'any') {
         return { kind: 'any', constant: negated }
     }
-    const negatedTimes = written(operand.unit, -operand.unit.unit.times)
+    const negatedTimes = written(operand.unit, combined(operand.unit.unit.times, -1, (times, sign) => times * sign))
     return negatedTimes.kind === 'in' ? { ...negatedTimes, constant: negated } : negatedTimes
 }
