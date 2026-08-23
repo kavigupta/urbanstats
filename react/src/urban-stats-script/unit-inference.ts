@@ -71,7 +71,7 @@ function regressionFields(args: UrbanStatsASTArg[], scope: Scope): Inferred {
     const regressed = namedArgument(args, 'y')
     const level = regressed === undefined ? anything : quantity(infer(regressed, scope))
     const change = forward('-', level, level)
-    const fields = new Map<string, AbstractInterpValue>([['b', level], ['residuals', change], ['r2', anything]])
+    const fields = new Map<string, AbstractInterpValue>([['b', level], ['residuals', change], ['r2', inUnit(dimensionless)]])
     for (const arg of args) {
         const parameter = arg.type === 'named' ? parameterName.exec(arg.name.node) : null
         if (parameter !== null) {

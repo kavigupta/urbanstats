@@ -164,7 +164,9 @@ void test('a regression is read field by field', () => {
     assert.equal(inferred(`${people}regr.residuals`), 'person^1 times=0 x1')
     // a coefficient is that difference over a difference of its parameter: people per square kilometre
     assert.equal(inferred(`${people}regr.m1`), 'm^-2 person^1 times=unknown x0.000001')
-    assert.equal(inferred(`${people}regr.r2`), 'unknown')
+    assert.equal(inferred(`${people}regr.r2`), 'dimensionless times=1 x1')
+    // and of a temperature, degrees per square kilometre, a difference of them being what multiplies
+    assert.equal(inferred('regr = regression(y=high_temp, x1=area)\nregr.m1'), 'F^1 m^-2 times=unknown x0.000001')
     assert.equal(inferred(`${people}regr.nonesuch`), 'unknown')
 })
 
