@@ -1,6 +1,6 @@
 import { assert } from './defensive'
 import type { BaseUnit, Dimension, NamedUnit } from './quantity'
-import { formatNumber, NumberFormat } from './text'
+import { figuresWritten, formatNumber, NumberFormat } from './text'
 
 export interface Written {
     unit: NamedUnit
@@ -9,10 +9,25 @@ export interface Written {
 
 const artificialZeroCost = 100
 
+/** How many figures a style sets out to write, of those that write to figures at all. */
+function figuresWanted(format: NumberFormat): number {
+    switch (format.kind) {
+        case 'rounded':
+            return format.significantDigits
+        case 'significantFigures':
+            return figuresWritten
+        // the places are the style's own decision, and rounding past them is precise enough for it
+        case 'fixed':
+        case 'hoursMinutes':
+            return 0
+    }
+}
+
 /**
- * We charge 1 for every digit that is printed, and 1 for every figure of the three a reader is
- * given that the digits do not carry: 1 234 is four digits of four figures, where the same
- * quantity written smaller is 0.001, four digits of one, and is the worse of the two to read.
+ * We charge 1 for every digit that is printed, and 1 for every figure the style set out to write
+ * that the digits do not carry: 1 234 is four digits carrying four figures, where the same
+ * quantity written in a smaller unit is 0.001, four digits carrying one, and 1 234 and 1 500 are
+ * written alike.
  *
  * This is almost, but not quite, the same as the number of significant figures, because
  * e.g., 1000 is counted as 4, not 1.
@@ -28,7 +43,7 @@ function digitCost(value: number, format: NumberFormat): number {
         return artificialZeroCost
     }
     const figures = digits.length - digits.search(/[1-9]/)
-    return digits.length + Math.max(0, 3 - figures)
+    return digits.length + Math.max(0, figuresWanted(format) - figures)
 }
 
 type Exponents = Partial<Record<BaseUnit, number>>

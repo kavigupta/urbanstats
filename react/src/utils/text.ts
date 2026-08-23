@@ -61,6 +61,9 @@ function roundToDigits(value: number, rounding: Rounding): string {
 }
 
 /** How a number is written: to a fixed number of decimal places, or to a number of digits. */
+/** The figures `significantFigures` writes, and the most any other style is asked for. */
+export const figuresWritten = 3
+
 export type NumberFormat = (
     { kind: 'fixed', places: number }
     | ({ kind: 'rounded' } & Rounding)
@@ -86,7 +89,7 @@ export function formatNumber(value: number, format: NumberFormat): string {
         case 'rounded':
             return roundToDigits(value, format)
         case 'significantFigures':
-            return separateNumber(formatToSignificantFigures(value, 3))
+            return separateNumber(formatToSignificantFigures(value, figuresWritten))
         case 'hoursMinutes':
             return hoursAndMinutes(value).written
     }
