@@ -110,6 +110,28 @@ void test('a vector is of the kind of what is in it', () => {
     assert.ok(writable('if (population > 0) { area } else { area - area }'))
 })
 
+void test('a regression is read field by field', () => {
+    const people = 'regr = regression(y=population, x1=area)\n'
+    // the intercept is in the units of what was regressed, and the residuals are a difference of those
+    assert.equal(inferred(`${people}regr.b`), 'person^1 times=1 x1')
+    assert.equal(inferred(`${people}regr.residuals`), 'person^1 times=0 x1')
+    // a coefficient is that difference over a difference of its parameter: people per square kilometre
+    assert.equal(inferred(`${people}regr.m1`), 'm^-2 person^1 times=unknown x0.000001')
+    assert.equal(inferred(`${people}regr.r2`), 'unknown')
+    assert.equal(inferred(`${people}regr.nonesuch`), 'unknown')
+})
+
+void test('a regression says nothing of a parameter it cannot read', () => {
+    // the coefficient of a log is a share over nothing anybody can name
+    assert.equal(inferred('regr = regression(y=commute_bike, x1=ln(population))\nregr.m1'), 'unknown')
+    // and one of no dependent variable is a regression in name only
+    assert.equal(inferred('regr = regression(x1=area)\nregr.b'), 'unknown')
+})
+
+void test('a name bound over regression is that name, not the regression', () => {
+    assert.equal(inferred('regression = population\nregression'), 'person^1 times=1 x1')
+})
+
 void test('what cannot be read comes back as anything, rather than throwing', () => {
     assert.equal(inferred('someFunctionOrOther(population)'), 'unknown')
     assert.equal(inferred('"a string"'), 'unknown')
