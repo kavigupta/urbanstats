@@ -41,10 +41,10 @@ export function clusterMarkers(
         radius: contents.clusterRadius,
         maxZoom: clusterMaxZoom,
         map: props => ({ byCategory: props.byCategory.slice() }),
+        // A new array, not an add in place: supercluster seeds a cluster from a shallow copy of
+        // one a zoom in, so `byCategory` is still that cluster's own array.
         reduce: (accumulated, props) => {
-            for (let i = 0; i < accumulated.byCategory.length; i++) {
-                accumulated.byCategory[i] += props.byCategory[i]
-            }
+            accumulated.byCategory = accumulated.byCategory.map((size, i) => size + props.byCategory[i])
         },
     })
     index.load(contents.points.map(point => ({
