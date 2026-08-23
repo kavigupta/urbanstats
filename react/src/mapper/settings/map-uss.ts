@@ -156,7 +156,7 @@ export function mapUssParser<T>(lastExpr: l.LiteralExprParser<T>, types: USSType
 }
 
 /** What a schema reads, or nothing where the script is not shaped the way it reads. */
-function read<T>(schema: (uss: MapUSS, typeEnvironment: TypeEnvironment) => T, uss: MapUSS, typeEnvironment: TypeEnvironment): T | undefined {
+export function read<T>(schema: (uss: MapUSS, typeEnvironment: TypeEnvironment) => T, uss: MapUSS, typeEnvironment: TypeEnvironment): T | undefined {
     try {
         return schema(uss, typeEnvironment)
     }
@@ -168,11 +168,16 @@ function read<T>(schema: (uss: MapUSS, typeEnvironment: TypeEnvironment) => T, u
     }
 }
 
-const mapData = mapUssParser(l.call({
+const mapDataCall = l.call({
     fn: l.ignore(),
     namedArgs: { data: l.passthrough() },
     unnamedArgs: [],
-}), 'dont-reparse')
+})
+
+const mapData = mapUssParser(mapDataCall, 'dont-reparse')
+
+/** The map call with its data to hand, and the means to write something else in its place. */
+export const editableMapData = mapUssParser(l.edit(mapDataCall), 'dont-reparse')
 
 /** The expression a map draws, which is what both its label and its units are read off. */
 export function mapDataExpression(uss: MapUSS, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression | undefined {

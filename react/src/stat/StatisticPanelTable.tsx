@@ -11,6 +11,7 @@ import { useDefinedUniverse } from '../universe'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { reifyString } from '../utils/human-readable-name'
 import { sanitize } from '../utils/paths'
+import { plainNumber } from '../utils/unit'
 
 import { makeColumnDeleteHandler } from './makeColumnDeleteHandler'
 import { makeColumnReorderHandler } from './makeColumnReorderHandler'
@@ -56,7 +57,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
                 totalCountInClass: data.totalCountInClass,
                 totalCountOverall: data.totalCountOverall,
                 overallFirstLast: { isFirst: false, isLast: false },
-                unit: col.unit,
+                unit: col.unit ?? plainNumber,
             } satisfies StatisticCellRenderingInfo
         })
     })

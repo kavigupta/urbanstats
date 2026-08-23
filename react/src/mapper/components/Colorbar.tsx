@@ -7,7 +7,6 @@ import { useColors } from '../../page_template/colors'
 import { ScaleInstance } from '../../urban-stats-script/constants/scale'
 import { HumanReadableName, reifyReact } from '../../utils/human-readable-name'
 import { StoredUnit } from '../../utils/quantity'
-import { unitTypeToStoredUnit } from '../../utils/unit'
 import { rampColorer } from '../map-rendering'
 import { Keypoints } from '../ramps'
 import { Basemap } from '../settings/utils'
@@ -17,7 +16,7 @@ interface EmpiricalRamp {
     scale: ScaleInstance
     interpolations: number[]
     label: HumanReadableName
-    unit?: StoredUnit
+    unit: StoredUnit
     hasValuesClampedToStart: boolean
     hasValuesClampedToEnd: boolean
 }
@@ -161,15 +160,14 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
 // Show an inequality if the data goes over the scale
 function MaybeInequality({ ramp, index }: { ramp: EmpiricalRamp, index: number }): ReactNode {
     const scaleAscending = ramp.scale.inverse(0) < ramp.scale.inverse(1)
-    const unit = ramp.unit ?? unitTypeToStoredUnit('number')
     const isFirst = index === 0
     const isLast = index === ramp.interpolations.length - 1
     let prefix: string | undefined
     if (isFirst && ramp.hasValuesClampedToStart) {
-        prefix = renderInequality(ramp.scale.inverse(0), unit, scaleAscending ? 'leq' : 'geq')
+        prefix = renderInequality(ramp.scale.inverse(0), ramp.unit, scaleAscending ? 'leq' : 'geq')
     }
     else if (isLast && ramp.hasValuesClampedToEnd) {
-        prefix = renderInequality(ramp.scale.inverse(1), unit, scaleAscending ? 'geq' : 'leq')
+        prefix = renderInequality(ramp.scale.inverse(1), ramp.unit, scaleAscending ? 'geq' : 'leq')
     }
 
     return prefix !== undefined && (

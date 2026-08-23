@@ -123,6 +123,9 @@ export const storedUnits = {
 export function unitTypeToStoredUnit(unitType: UnitType): StoredUnit {
     return storedUnits[unitType]
 }
+
+/** What a quantity of no known kind is written as. */
+export const plainNumber: StoredUnit = storedUnits.number
 /* eslint-enable no-restricted-syntax */
 
 function fahrenheitToCelsius(value: number): number {

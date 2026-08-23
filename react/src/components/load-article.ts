@@ -113,12 +113,12 @@ const dataCreditExplanationPageByMetadataIndex = new Map<number, string>(
 interface StatisticCellRenderingInfoCommon {
     articleType: string
     statname: HumanReadableName
-    unit?: StoredUnit
     statpath?: StatPath
 }
 
 interface StatisticCellRenderingInfoStatistic extends StatisticCellRenderingInfoCommon {
     kind: 'statistic'
+    unit: StoredUnit
     ordinal: number
     totalCountInClass: number
     totalCountOverall: number

@@ -34,7 +34,7 @@ import { makeDebugLogger } from '../utils/debug-logging'
 import { HumanReadableName } from '../utils/human-readable-name'
 import { ICoordinate } from '../utils/protos'
 import { StoredUnit } from '../utils/quantity'
-import { unitTypeToStoredUnit } from '../utils/unit'
+import { plainNumber, unitTypeToStoredUnit } from '../utils/unit'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
 import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar'
@@ -554,7 +554,7 @@ async function loadMapResult({ mapResultMain, universe, geographyKind, cache, la
 function computeRampToDisplay(value: CommonMap, label: HumanReadableName, derivedUnit: StoredUnit | undefined, { scale, ticks }: { scale: ScaleInstance, ticks: number[] }): RampToDisplay & { type: 'ramp' } {
     const hasValuesClampedToStart = value.data.some(val => scale.forward(val) < 0)
     const hasValuesClampedToEnd = value.data.some(val => scale.forward(val) > 1)
-    const unit = value.unit === undefined ? derivedUnit : unitTypeToStoredUnit(value.unit)
+    const unit = value.unit === undefined ? derivedUnit ?? plainNumber : unitTypeToStoredUnit(value.unit)
     return { type: 'ramp', value: { ramp: value.ramp, interpolations: ticks, scale, label, unit, hasValuesClampedToStart, hasValuesClampedToEnd } }
 }
 
