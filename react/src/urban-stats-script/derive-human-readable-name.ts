@@ -1,4 +1,4 @@
-import { MapUSS, mapUssParser } from '../mapper/settings/map-uss'
+import { editableMapData, MapUSS, mapUssParser, read, tableColumnExpression } from '../mapper/settings/map-uss'
 import { assert } from '../utils/defensive'
 import { HumanReadableElement, HumanReadableName, joinHumanReadableNames } from '../utils/human-readable-name'
 import { parseHumanReadableTemplate } from '../utils/human-readable-template'
@@ -179,48 +179,26 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
 }
 
 /** The label a script states outright, which running it would otherwise be the only way to read. */
+const statedLabel = mapUssParser(l.call({
+    fn: l.ignore(),
+    namedArgs: { label: l.optional(l.string()) },
+    unnamedArgs: [],
+}), 'dont-reparse')
+
 function statedMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
-    const schema = mapUssParser(l.call({
-        fn: l.ignore(),
-        namedArgs: { label: l.optional(l.string()) },
-        unnamedArgs: [],
-    }), 'dont-reparse')
-    try {
-        const label = schema(uss, typeEnvironment).namedArgs.label
-        return label === undefined ? undefined : parseHumanReadableTemplate(label)
-    }
-    catch (error) {
-        if (error instanceof l.LiteralParseError) {
-            return undefined
-        }
-        throw error
-    }
+    const label = read(statedLabel, uss, typeEnvironment)?.namedArgs.label
+    return label === undefined ? undefined : parseHumanReadableTemplate(label)
 }
 
 export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
-    const schema = mapUssParser(l.edit(l.call({
-        fn: l.ignore(),
-        namedArgs: {
-            data: l.passthrough(),
-        },
-        unnamedArgs: [],
-    })), 'dont-reparse')
-    try {
-        const result = schema(uss, typeEnvironment)
-        if (result.currentValue.namedArgs.data === undefined) return
-        const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment)
-        if (dataLabel === undefined) return
-        // Replace the map call with just the data description to simplify the label (we know it's a map)
-        const withMapCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: dataLabel }, location: noLocation } })
-        assert(withMapCallReplacedByDataLabel !== undefined, 'should not happen')
-        return humanReadableElements(withMapCallReplacedByDataLabel, typeEnvironment)
-    }
-    catch (error) {
-        if (error instanceof l.LiteralParseError) {
-            return undefined
-        }
-        throw error
-    }
+    const result = read(editableMapData, uss, typeEnvironment)
+    if (result?.currentValue.namedArgs.data === undefined) return
+    const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment)
+    if (dataLabel === undefined) return
+    // Replace the map call with just the data description to simplify the label (we know it's a map)
+    const withMapCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: dataLabel }, location: noLocation } })
+    assert(withMapCallReplacedByDataLabel !== undefined, 'should not happen')
+    return humanReadableElements(withMapCallReplacedByDataLabel, typeEnvironment)
 }
 
 export function mapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
@@ -228,55 +206,45 @@ export function mapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanRe
 }
 
 /** The title a table states outright, which running it would otherwise be the only way to read. */
+const statedTitle = mapUssParser(l.call({
+    fn: l.ignore(),
+    namedArgs: { title: l.optional(l.string()) },
+    unnamedArgs: [],
+}), 'dont-reparse')
+
 function statedTableTitle(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
-    const schema = mapUssParser(l.call({
-        fn: l.ignore(),
-        namedArgs: { title: l.optional(l.string()) },
-        unnamedArgs: [],
-    }), 'dont-reparse')
-    try {
-        const title = schema(uss, typeEnvironment).namedArgs.title
-        return title === undefined ? undefined : parseHumanReadableTemplate(title)
-    }
-    catch (error) {
-        if (error instanceof l.LiteralParseError) {
-            return undefined
-        }
-        throw error
-    }
+    const title = read(statedTitle, uss, typeEnvironment)?.namedArgs.title
+    return title === undefined ? undefined : parseHumanReadableTemplate(title)
 }
 
 /** Every column's name, stated or derived. Undefined if any one of them cannot be read. */
+const statedColumnNames = mapUssParser(l.call({
+    fn: l.ignore(),
+    namedArgs: {
+        columns: l.vector(l.call({
+            fn: l.ignore(),
+            namedArgs: {
+                values: l.passthrough(),
+                name: l.optional(l.string()),
+            },
+            unnamedArgs: [],
+        })),
+    },
+    unnamedArgs: [],
+}), 'dont-reparse')
+
 function tableColumnLabels(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName[] | undefined {
-    const schema = mapUssParser(l.call({
-        fn: l.ignore(),
-        namedArgs: {
-            columns: l.vector(l.call({
-                fn: l.ignore(),
-                namedArgs: {
-                    values: l.passthrough(),
-                    name: l.optional(l.string()),
-                },
-                unnamedArgs: [],
-            })),
-        },
-        unnamedArgs: [],
-    }), 'dont-reparse')
-    try {
-        const labels = schema(uss, typeEnvironment).namedArgs.columns.map((column): HumanReadableName | undefined => {
-            if (column.namedArgs.name !== undefined) {
-                return parseHumanReadableTemplate(column.namedArgs.name)
-            }
-            return column.namedArgs.values === undefined ? undefined : humanReadableElements(column.namedArgs.values, typeEnvironment)
-        })
-        return labels.every(label => label !== undefined) ? labels : undefined
+    const columns = read(statedColumnNames, uss, typeEnvironment)?.namedArgs.columns
+    if (columns === undefined) {
+        return undefined
     }
-    catch (error) {
-        if (error instanceof l.LiteralParseError) {
-            return undefined
+    const labels = columns.map((column): HumanReadableName | undefined => {
+        if (column.namedArgs.name !== undefined) {
+            return parseHumanReadableTemplate(column.namedArgs.name)
         }
-        throw error
-    }
+        return column.namedArgs.values === undefined ? undefined : humanReadableElements(column.namedArgs.values, typeEnvironment)
+    })
+    return labels.every(label => label !== undefined) ? labels : undefined
 }
 
 /** The filter a script applies, or undefined for the `condition (true)` that filters nothing. */
@@ -302,52 +270,25 @@ export function tableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): Human
 }
 
 export function deriveTableColumnLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): HumanReadableName | undefined {
-    const schema = mapUssParser(l.call({
-        fn: l.ignore(),
-        namedArgs: {
-            columns: l.vector(l.call({
-                fn: l.ignore(),
-                namedArgs: {
-                    values: l.passthrough(),
-                },
-                unnamedArgs: [],
-            })),
-        },
-        unnamedArgs: [],
-    }), 'dont-reparse')
-    try {
-        const result = schema(uss, typeEnvironment)
-        const columns = result.namedArgs.columns
-        if (columns.length <= columnIndex || columns[columnIndex].namedArgs.values === undefined) return
-        return humanReadableElements(columns[columnIndex].namedArgs.values, typeEnvironment)
-    }
-    catch (error) {
-        if (error instanceof l.LiteralParseError) {
-            return undefined
-        }
-        throw error
-    }
+    const values = tableColumnExpression(uss, typeEnvironment, columnIndex)
+    return values === undefined ? undefined : humanReadableElements(values, typeEnvironment)
 }
 
+const editableTableCall = mapUssParser(l.edit(l.call({
+    fn: l.ignore(),
+    namedArgs: {},
+    unnamedArgs: [],
+})), 'dont-reparse')
+
 export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnNames: HumanReadableName[]): HumanReadableName | undefined {
-    const schema = mapUssParser(l.edit(l.call({
-        fn: l.ignore(),
-        namedArgs: {},
-        unnamedArgs: [],
-    })), 'dont-reparse')
-    try {
-        const result = schema(uss, typeEnvironment)
-        // Replace the table call with just the column to simplify the label (we know it's a table)
-        const withTableCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: joinHumanReadableNames(columnNames) }, location: noLocation } })
-        assert(withTableCallReplacedByDataLabel !== undefined, 'should not happen')
-        return humanReadableElements(withTableCallReplacedByDataLabel, typeEnvironment)
+    const result = read(editableTableCall, uss, typeEnvironment)
+    if (result === undefined) {
+        return undefined
     }
-    catch (error) {
-        if (error instanceof l.LiteralParseError) {
-            return undefined
-        }
-        throw error
-    }
+    // Replace the table call with just the column to simplify the label (we know it's a table)
+    const withTableCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: joinHumanReadableNames(columnNames) }, location: noLocation } })
+    assert(withTableCallReplacedByDataLabel !== undefined, 'should not happen')
+    return humanReadableElements(withTableCallReplacedByDataLabel, typeEnvironment)
 }
 
 function trimTrailingZeros(value: string): string {
