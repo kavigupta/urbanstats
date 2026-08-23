@@ -223,7 +223,8 @@ void test('either of two is of their kind, where they have one', () => {
     assert.equal(shape(join(people, area)), 'unknown')
     // stored at different scales, they are of one dimension but not of one unit
     assert.equal(shape(join(inUnit(storedUnits.distanceInM), inUnit(storedUnits.distanceInKm))), 'unknown')
-    assert.equal(shape(join(people, difference(storedUnits.population))), 'unknown')
+    // and where they are of one kind but not one many-of-itself, of that kind, with how many unknown
+    assert.equal(shape(join(people, difference(storedUnits.population))), 'person^1 times=unknown x1')
     assert.equal(shape(join(inconsistent, people)), 'person^1 times=1 x1')
     assert.equal(shape(join(unknown, people)), 'unknown')
     assert.equal(shape(join(constant(2), constant(2))), 'unknown')
@@ -248,7 +249,20 @@ void test('a coefficient is carried through a product and raised through a power
     assert.equal(shape(forward('/', forward('-', area, area), people)), 'm^2 person^-1 times=0 x1000000')
 })
 
-void test('of a scalar, a join asks only whether both are differences', () => {
-    assert.equal(shape(join(forward('*', area, constant(2)), area)), 'm^2 times=2 x1000000')
-    assert.equal(shape(join(forward('-', area, area), area)), 'unknown')
+void test('a coefficient no longer known is no bar to writing a scalar, and is one to writing a temperature', () => {
+    const scaled = join(forward('*', area, constant(2)), area)
+    assert.equal(shape(scaled), 'm^2 times=unknown x1000000')
+    // an area is written the same whether it is one area or twice one, or a difference of two
+    assert.notEqual(unitToWriteIn(scaled), undefined)
+    assert.notEqual(unitToWriteIn(join(forward('-', area, area), area)), undefined)
+    // where a temperature is not, since only a level is written up from the zero of its scale
+    const eitherWay = join(temperature, forward('-', temperature, temperature))
+    assert.equal(shape(eitherWay), 'F^1 times=unknown x1')
+    assert.equal(unitToWriteIn(eitherWay), undefined)
+})
+
+void test('a coefficient that is not a number of anything is no longer known', () => {
+    // nothing is minus one area to the half, nor an area over none of one
+    assert.equal(shape(forward('**', forwardUnary('-', area), constant(0.5))), 'm^1 times=unknown x1000')
+    assert.equal(shape(forward('/', area, forward('-', area, area))), 'dimensionless times=unknown x1')
 })

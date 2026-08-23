@@ -94,8 +94,12 @@ void test('either arm of an if, where they agree', () => {
 void test('a vector is of the kind of what is in it', () => {
     assert.equal(inferred('[high_temp, low_temp]'), 'F^1 times=1 x1')
     assert.equal(inferred('[population, area]'), 'unknown')
-    // two temperatures are not one, so either of them and one of them is neither
-    assert.equal(inferred('[high_temp, high_temp + high_temp]'), 'unknown')
+    // two temperatures are not one, so either of them and one of them is neither, and unwritable
+    assert.equal(inferred('[high_temp, high_temp + high_temp]'), 'F^1 times=unknown x1')
+    assert.ok(!writable('[high_temp, high_temp + high_temp]'))
+    // as is a temperature or a difference of two, where an area or a difference of two is an area
+    assert.ok(!writable('if (population > 0) { high_temp } else { high_temp - low_temp }'))
+    assert.ok(writable('if (population > 0) { area } else { area - area }'))
 })
 
 void test('what cannot be read comes back as anything, rather than throwing', () => {

@@ -38,16 +38,18 @@ export function inEitherSystem(units: Partial<Record<BaseUnit, NamedUnit>>): Rec
 
 export type Decoration = { kind: 'none' } | { kind: 'percent', party?: Party } | { kind: 'writtenIn', in: WrittenIn }
 
+/**
+ * The coefficients of the quantities that were added to make this one: a level is 1, a difference
+ * of two is 0, and the mean of two is 1 again. Where the base has no zero of its own only those
+ * two are quantities at all; where it has one, all that is read off this is whether it is zero,
+ * which is what a leading + is written for. Arithmetic that cannot say which it is says so.
+ */
+export type Coefficient = number | 'unknown'
+
 export interface Unit {
     dimensions: Dimension[]
     decoration: Decoration
-    /**
-     * The coefficients of the quantities that were added to make this one: a level is 1, a
-     * difference of two is 0, and the mean of two is 1 again. Where the base has no zero of its
-     * own only those two are quantities at all; where it has one, all that is read off this is
-     * whether it is zero, which is what a leading + is written for.
-     */
-    times: number
+    times: Coefficient
     /** Whether zero of it is nothing, which is false of a temperature: 0°C is not 0°F. */
     baseIsScalar: boolean
 }
@@ -321,7 +323,7 @@ export function nameOf(written: Written[]): HumanReadableElement[] {
  * Where the zero of the units a quantity is written in sits. A quantity measured from that zero is
  * written from it; a difference of two is not, since the zero cancels between them.
  */
-function offsetOf(written: Written[], times: number): number {
+function offsetOf(written: Written[], times: Coefficient): number {
     return times === 1 ? written.reduce((total, { unit, power }) => total + (unit.offset ?? 0) * power, 0) : 0
 }
 
