@@ -711,7 +711,7 @@ function ManipulationButton({ onClick, text, image }: { onClick: () => void, tex
                 paddingLeft: '0.5em', paddingRight: '0.5em',
                 verticalAlign: 'middle',
             }}
-            className={`serif manipulation-button-${text.toLowerCase()}`}
+            data-test-id={`manipulation-button-${text.toLowerCase()}`}
             onClick={onClick}
         >
             {!(isMobile && isTranspose) ? text : <Icon src={image} size="20px" color={colors.textMain} />}

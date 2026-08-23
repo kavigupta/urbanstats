@@ -70,7 +70,7 @@ test('comparison-3-add', async (t) => {
 })
 
 test('comparison-3-remove-first', async (t) => {
-    const remove = Selector('div').withAttribute('class', 'serif manipulation-button-delete').nth(0)
+    const remove = Selector('[data-test-id=manipulation-button-delete]').nth(0)
     await t
         .click(remove)
     await t.expect(getLocationWithoutSettings())
@@ -78,7 +78,7 @@ test('comparison-3-remove-first', async (t) => {
 })
 
 test('comparison-3-remove-second', async (t) => {
-    const remove = Selector('div').withAttribute('class', 'serif manipulation-button-delete').nth(1)
+    const remove = Selector('[data-test-id=manipulation-button-delete]').nth(1)
     await t
         .click(remove)
     await t.expect(getLocationWithoutSettings())
@@ -86,7 +86,7 @@ test('comparison-3-remove-second', async (t) => {
 })
 
 test('comparison-3-replace-second', async (t) => {
-    const replace = Selector('div').withAttribute('class', 'serif manipulation-button-replace').nth(1)
+    const replace = Selector('[data-test-id=manipulation-button-replace]').nth(1)
     await t
         .click(replace)
     // already focused on the input
