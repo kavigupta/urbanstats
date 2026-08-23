@@ -5,19 +5,23 @@ import { defaultTypeEnvironment } from '../src/mapper/context'
 import { mapUSSFromString } from '../src/mapper/settings/map-uss'
 import { deriveMapUnit, deriveTableColumnUnit } from '../src/urban-stats-script/derive-unit'
 import { reifyString } from '../src/utils/human-readable-name'
-import { StoredUnit, writeQuantity } from '../src/utils/quantity'
+import { ReaderSettings, StoredUnit, writeQuantity } from '../src/utils/quantity'
 
-/** A quantity of 1000 of the base units, written the way the map's ramp would write it. */
-function written(unit: StoredUnit | undefined): string {
+/** A quantity of the base units, written the way the map's ramp would write it. */
+function written(unit: StoredUnit | undefined, value = 1000, settings: ReaderSettings = {}): string {
     if (unit === undefined) {
         return 'nothing'
     }
-    const quantity = writeQuantity(1000, unit)
+    const quantity = writeQuantity(value, unit, settings)
     return `${quantity.renderedValue}${reifyString(quantity.unitName)}`
 }
 
+function unitOfMap(data: string): StoredUnit | undefined {
+    return deriveMapUnit(mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), defaultTypeEnvironment('USA'))
+}
+
 function mapUnit(data: string): string {
-    return written(deriveMapUnit(mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), defaultTypeEnvironment('USA')))
+    return written(unitOfMap(data))
 }
 
 function columnUnit(values: string, columnIndex = 0): string {
@@ -49,6 +53,18 @@ void test('a quantity with no writing is left to whatever its name is taken for'
     assert.equal(mapUnit('traffic_fatalities / population'), 'nothing')
     // where a count over something measured is written the way a density is
     assert.equal(mapUnit('traffic_fatalities / area'), '1\u202f000/\u00a0km^{2}')
+})
+
+void test('a reader in Celsius reads a difference of two temperatures as one', () => {
+    const asRead = (data: string, temperatureUnit: string): string => written(unitOfMap(data), 22.3, { temperatureUnit })
+    // twenty-two Fahrenheit degrees between the day's high and its low is twelve Celsius degrees,
+    // where a reading of twenty-two Fahrenheit is a reading of five and a half below freezing
+    assert.equal(asRead('high_temp - low_temp', 'celsius'), '+12.4°C')
+    assert.equal(asRead('high_temp', 'celsius'), '-5.4°C')
+    // and the mean of two readings is a reading again, which the coefficient is what keeps track of
+    assert.equal(asRead('(high_temp + low_temp) / 2', 'celsius'), '-5.4°C')
+    assert.equal(asRead('high_temp - low_temp', 'fahrenheit'), '+22.3°F')
+    assert.equal(asRead('high_temp', 'fahrenheit'), '22.3°F')
 })
 
 void test('a difference of two is written as one', () => {
