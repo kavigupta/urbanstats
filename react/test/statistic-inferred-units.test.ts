@@ -52,5 +52,6 @@ urbanstatsFixture('a quantity with no writing', tableOf('population ** 0.5'))
 
 test('a root of a count is written plainly rather than failing', async (t) => {
     await waitForLoading()
-    await t.expect(await rows()).eql(['8\u202f176', '6\u202f105', '6\u202f063'])
+    // to three figures, as anything of no known kind is, rather than whole as a count of people is
+    await t.expect(await rows()).eql(['8\u202f180', '6\u202f110', '6\u202f060'])
 })

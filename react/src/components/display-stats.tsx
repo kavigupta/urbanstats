@@ -2,15 +2,16 @@ import React, { ReactNode } from 'react'
 
 import { useSetting } from '../page_template/settings'
 import { StoredUnit } from '../utils/quantity'
-import { classifyStatistic, unitTypeToStoredUnit } from '../utils/unit'
+import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { renderQuantity } from './unit-display'
 
-export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, isUnit: boolean, unit?: StoredUnit }): ReactNode {
+export function Statistic(props: { style?: React.CSSProperties, value: number, isUnit: boolean, unit: StoredUnit | undefined }): ReactNode {
     const [useImperial] = useSetting('use_imperial')
     const [temperatureUnit] = useSetting('temperature_unit')
 
-    const stored = props.unit ?? unitTypeToStoredUnit(classifyStatistic(props.statname))
+    // what is in no unit is a plain number, rather than one guessed at from what it is called
+    const stored = props.unit ?? unitTypeToStoredUnit('number')
     const { value, unit } = renderQuantity(props.value, stored, { useImperial, temperatureUnit })
 
     return (

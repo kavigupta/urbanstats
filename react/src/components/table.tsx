@@ -535,7 +535,6 @@ export function StatisticRowCells(props: {
                 content: () => (
                     <span className="serif value testing-statistic-value">
                         <Statistic
-                            statname={reifyString(statisticRow.statname)}
                             value={statisticRow.statval}
                             isUnit={false}
                             style={props.statisticStyle ?? {}}
@@ -552,7 +551,6 @@ export function StatisticRowCells(props: {
                     <div className="value_unit">
                         <span className="serif value">
                             <Statistic
-                                statname={reifyString(statisticRow.statname)}
                                 value={statisticRow.statval}
                                 isUnit={true}
                                 unit={statisticRow.unit}

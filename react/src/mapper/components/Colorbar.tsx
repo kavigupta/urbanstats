@@ -5,9 +5,9 @@ import { renderInequality } from '../../components/unit-display'
 import { Colors } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
 import { ScaleInstance } from '../../urban-stats-script/constants/scale'
-import { HumanReadableName, reifyReact, reifyString } from '../../utils/human-readable-name'
+import { HumanReadableName, reifyReact } from '../../utils/human-readable-name'
 import { StoredUnit } from '../../utils/quantity'
-import { classifyStatistic, unitTypeToStoredUnit } from '../../utils/unit'
+import { unitTypeToStoredUnit } from '../../utils/unit'
 import { rampColorer } from '../map-rendering'
 import { Keypoints } from '../ramps'
 import { Basemap } from '../settings/utils'
@@ -88,13 +88,11 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
             <div className="centered_text">
                 <MaybeInequality ramp={ramp} index={index} />
                 <Statistic
-                    statname={reifyString(ramp.label)}
                     value={stat}
                     isUnit={false}
                     unit={ramp.unit}
                 />
                 <Statistic
-                    statname={reifyString(ramp.label)}
                     value={stat}
                     isUnit={true}
                     unit={ramp.unit}
@@ -163,8 +161,7 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
 // Show an inequality if the data goes over the scale
 function MaybeInequality({ ramp, index }: { ramp: EmpiricalRamp, index: number }): ReactNode {
     const scaleAscending = ramp.scale.inverse(0) < ramp.scale.inverse(1)
-    // Similarly to how we do it with <Statistic/> above
-    const unit = ramp.unit ?? unitTypeToStoredUnit(classifyStatistic(reifyString(ramp.label)))
+    const unit = ramp.unit ?? unitTypeToStoredUnit('number')
     const isFirst = index === 0
     const isLast = index === ramp.interpolations.length - 1
     let prefix: string | undefined
