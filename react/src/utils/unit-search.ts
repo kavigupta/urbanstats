@@ -10,18 +10,9 @@ export interface Written {
 const artificialZeroCost = 100
 
 /**
- * We charge 1 for every digit that is printed, and, of a number below one, 1 again for every zero
- * between the point and the first figure, each of those having pushed a figure out of what the
- * style writes: 1 234 is four digits carrying four figures, where the same quantity written in a
- * smaller unit is 0.001, four digits carrying one, and 1 234 and 1 500 are written alike.
- *
- * This is almost, but not quite, the same as the number of significant figures, because
- * e.g., 1000 is counted as 4, not 1.
- *
- * Two caveats:
- * 1. It is counted from the number as printed, so 999.5 is counted as if it were 1000.
- * 2. If a number is formatted to an "artificial 0" e.g., 0.0001 -> 0.000, we apply a huge penalty
- *      unless in fixed point.
+ * We charge 1 for every digit as printed, with two adjustments:
+ * - a number rounded away to 0 is heavily penalized, unless in fixed point
+ * - every leading 0 past the decimal point is charged as another digit
  */
 function digitCost(value: number, format: NumberFormat): number {
     const written = formatNumber(value, format)
