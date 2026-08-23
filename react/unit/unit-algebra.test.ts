@@ -266,3 +266,41 @@ void test('a coefficient that is not a number of anything is no longer known', (
     assert.equal(shape(forward('**', forwardUnary('-', area), constant(0.5))), 'm^1 times=unknown x1000')
     assert.equal(shape(forward('/', area, forward('-', area, area))), 'dimensionless times=unknown x1')
 })
+
+void test('a difference of temperatures multiplies as any other quantity does', () => {
+    const change = forward('-', temperature, temperature)
+    assert.equal(shape(forward('/', change, area)), 'F^1 m^-2 times=0 x0.000001')
+    assert.equal(shape(forward('**', change, constant(2))), 'F^2 times=0 x1')
+    // where a reading has no zero to multiply from, and nothing comes of trying
+    assert.equal(shape(forward('/', temperature, area)), 'inconsistent')
+    assert.equal(shape(forward('*', temperature, temperature)), 'inconsistent')
+    assert.equal(shape(forward('/', forwardUnary('-', temperature), area)), 'inconsistent')
+})
+
+void test('a difference of temperatures divides into things as well as by them', () => {
+    const change = forward('-', temperature, temperature)
+    const perDegree = unitToWriteIn(forward('/', people, change))
+    assert.notEqual(perDegree, undefined)
+    const write = (settings: object): string => {
+        const written = writeQuantity(5, perDegree!, settings)
+        return `${written.renderedValue}${reifyString(written.unitName)}`
+    }
+    // five to the Fahrenheit degree is nine to the Celsius one, that being the larger degree
+    assert.equal(write({}), '5.00/\u00a0°F')
+    assert.equal(write({ temperatureUnit: 'celsius' }), '9.00/\u00a0°C')
+    // and a reading is no more divisible into than it is by: nothing is so many people per 50°F
+    assert.equal(shape(forward('/', people, temperature)), 'inconsistent')
+})
+
+void test('a difference per something is read in degrees of the reader\'s own scale', () => {
+    const perArea = unitToWriteIn(forward('/', forward('-', temperature, temperature), area))
+    assert.notEqual(perArea, undefined)
+    const write = (settings: object): string => {
+        const written = writeQuantity(5, perArea!, settings)
+        return `${written.renderedValue}${reifyString(written.unitName)}`
+    }
+    // five Fahrenheit degrees per square kilometre is two and a bit Celsius degrees, the zero
+    // of neither scale being in it
+    assert.equal(write({}), '+5.00°F/km^{2}')
+    assert.equal(write({ temperatureUnit: 'celsius' }), '+2.78°C/km^{2}')
+})
