@@ -21,7 +21,7 @@ function block(statements: UrbanStatsASTStatement[], scope: Scope): AbstractInte
     return value
 }
 
-type Bindings = Map<string, AbstractInterpValue>
+export type Bindings = Map<string, AbstractInterpValue>
 
 function branch(statement: UrbanStatsASTStatement, scope: Scope): { value: AbstractInterpValue, named: Bindings } {
     const named = new Map(scope.named)
@@ -91,6 +91,13 @@ function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Sco
 }
 
 /** What kind of quantity an expression works out to, as far as reading it can say. */
-export function inferUnit(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment): AbstractInterpValue {
-    return infer(ast, { typeEnvironment, named: new Map() })
+export function inferUnit(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, named: Bindings = new Map()): AbstractInterpValue {
+    return infer(ast, { typeEnvironment, named })
+}
+
+/** What a program's names are worth, for reading an expression of it that is picked out on its own. */
+export function inferBindings(program: UrbanStatsASTStatement | UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): Bindings {
+    const named: Bindings = new Map()
+    infer(program, { typeEnvironment, named })
+    return named
 }
