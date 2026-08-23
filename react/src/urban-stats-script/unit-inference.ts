@@ -12,24 +12,27 @@ interface Scope {
     named: Map<string, AbstractInterpValue>
 }
 
-/**
- * A block is worth as much as its last statement, and an empty one as much as nothing said. The
- * names it binds along the way are read by the statements after them.
- */
+/** A block is worth as much as its last statement, and an empty one as much as nothing said. */
 function block(statements: UrbanStatsASTStatement[], scope: Scope): AbstractInterpValue {
     let value = anything
     for (const statement of statements) {
         value = infer(statement, scope)
-        if (statement.type === 'assignment' && statement.lhs.type === 'identifier') {
-            scope.named.set(statement.lhs.name.node, value)
-        }
     }
     return value
 }
 
-/** An arm of an `if` binds names for itself alone. */
-function branch(statement: UrbanStatsASTStatement, scope: Scope): AbstractInterpValue {
-    return infer(statement, { ...scope, named: new Map(scope.named) })
+type Bindings = Map<string, AbstractInterpValue>
+
+function branch(statement: UrbanStatsASTStatement, scope: Scope): { value: AbstractInterpValue, named: Bindings } {
+    const named = new Map(scope.named)
+    return { value: infer(statement, { ...scope, named }), named }
+}
+
+/** A name an arm bound is worth what that arm made it where its mask held, and what it was where it did not. */
+function bindArms(scope: Scope, consequent: Bindings, alternative: Bindings): void {
+    for (const name of new Set([...consequent.keys(), ...alternative.keys()])) {
+        scope.named.set(name, join(consequent.get(name) ?? { kind: 'none' }, alternative.get(name) ?? { kind: 'none' }))
+    }
 }
 
 function identifier(name: string, scope: Scope): AbstractInterpValue {
@@ -43,9 +46,15 @@ function identifier(name: string, scope: Scope): AbstractInterpValue {
 
 function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Scope): AbstractInterpValue {
     switch (ast.type) {
-        case 'assignment':
         case 'expression':
             return infer(ast.value, scope)
+        case 'assignment': {
+            const value = infer(ast.value, scope)
+            if (ast.lhs.type === 'identifier') {
+                scope.named.set(ast.lhs.name.node, value)
+            }
+            return value
+        }
         case 'autoUXNode':
         case 'customNode':
             return infer(ast.expr, scope)
@@ -66,8 +75,13 @@ function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Sco
             return forward(ast.operator.node, infer(ast.left, scope), infer(ast.right, scope))
         case 'vectorLiteral':
             return ast.elements.reduce<AbstractInterpValue>((soFar, element) => join(soFar, infer(element, scope)), { kind: 'none' })
-        case 'if':
-            return ast.else === undefined ? anything : join(branch(ast.then, scope), branch(ast.else, scope))
+        case 'if': {
+            const consequent = branch(ast.then, scope)
+            // an arm that is not there leaves the value it would have written as it was
+            const alternative = ast.else === undefined ? undefined : branch(ast.else, scope)
+            bindArms(scope, consequent.named, alternative?.named ?? new Map(scope.named))
+            return alternative === undefined ? consequent.value : join(consequent.value, alternative.value)
+        }
         case 'attribute':
         case 'call':
         case 'objectLiteral':

@@ -84,11 +84,19 @@ void test('a filter says nothing about what is measured of what it keeps', () =>
     assert.equal(inferred('condition(population > 1000)\npopulation / area'), 'm^-2 person^1 times=1 x0.000001')
 })
 
-void test('either arm of an if, where they agree', () => {
+void test('an if runs both of its arms over the column, so a value is either of theirs', () => {
     assert.equal(inferred('if (population > 0) { high_temp } else { low_temp }'), 'F^1 times=1 x1')
     assert.equal(inferred('if (population > 0) { population } else { area }'), 'unknown')
-    // an arm that binds a name binds it for itself alone
-    assert.equal(inferred('if (population > 0) { x = area\nx } else { population }\nx'), 'unknown')
+    // an arm with no counterpart writes where its mask holds and nothing where it does not
+    assert.equal(inferred('if (population > 0) { high_temp }'), 'F^1 times=1 x1')
+})
+
+void test('a name an arm binds is bound outside it', () => {
+    assert.equal(inferred('if (population > 0) { x = area }\nx'), 'm^2 times=1 x1000000')
+    assert.equal(inferred('if (population > 0) { x = area } else { x = population }\nx'), 'unknown')
+    // where the arm that did not run left it as it was
+    assert.equal(inferred('x = area\nif (population > 0) { x = area * 2 }\nx'), 'm^2 times=unknown x1000000')
+    assert.equal(inferred('x = area\nif (population > 0) { x = area / 2 }\nx'), 'm^2 times=unknown x1000000')
 })
 
 void test('a vector is of the kind of what is in it', () => {
