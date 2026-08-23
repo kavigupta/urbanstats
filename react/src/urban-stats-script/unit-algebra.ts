@@ -64,6 +64,39 @@ function written(unit: StoredUnit, times: number, decoration = unit.unit.decorat
     return { kind: 'in', unit: { ...unit, unit: { ...unit.unit, decoration, times: snapToWhole(times) } } }
 }
 
+/** A hair apart after arithmetic is the same size: a square root squared does not come back exact. */
+function sameSize(left: number, right: number): boolean {
+    return Math.abs(left - right) <= 1e-9 * Math.max(Math.abs(left), Math.abs(right))
+}
+
+function joinedUnits(left: StoredUnit, right: StoredUnit): StoredUnit | undefined {
+    if (!sameDimensions(left, right) || left.unit.baseIsScalar !== right.unit.baseIsScalar) {
+        return undefined
+    }
+    if (!sameSize(left.toBaseUnits, right.toBaseUnits) || !sameSize(left.unit.times, right.unit.times)) {
+        return undefined
+    }
+    return { ...left, unit: { ...left.unit, decoration: sharedDecoration(left.unit.decoration, right.unit.decoration) } }
+}
+
+/** Either of two, as the arms of an `if` are: two of a kind are of it, and two of different kinds are of any. */
+export function join(left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue {
+    if (left.kind === 'none') {
+        return right
+    }
+    if (right.kind === 'none') {
+        return left
+    }
+    const shared = left.constant === right.constant ? left.constant : undefined
+    if (left.kind === 'in' && right.kind === 'in') {
+        const unit = joinedUnits(left.unit, right.unit)
+        if (unit !== undefined) {
+            return shared === undefined ? { kind: 'in', unit } : { kind: 'in', unit, constant: shared }
+        }
+    }
+    return shared === undefined ? { kind: 'any' } : { kind: 'any', constant: shared }
+}
+
 /** How an operator's slots relate, which is what both directions are read off. */
 type Form =
     /** Every slot is the same unit, and the operands' coefficients combine into the result's. */

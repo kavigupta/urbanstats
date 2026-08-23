@@ -2,7 +2,7 @@ import assert from 'assert/strict'
 import test from 'node:test'
 
 import { BinaryOperatorSymbol, infixOperators, unaryOperators } from '../src/urban-stats-script/operators'
-import { backward, backwardUnary, constant, forward, forwardUnary, inUnit, AbstractInterpValue, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
+import { backward, backwardUnary, constant, forward, forwardUnary, inUnit, join, AbstractInterpValue, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
 import { reifyString } from '../src/utils/human-readable-name'
 import { StoredUnit, writeQuantity } from '../src/utils/quantity'
 import { storedUnits } from '../src/utils/unit'
@@ -216,4 +216,24 @@ void test('a coefficient that comes back a hair off a whole one is the whole one
     const mean = forward('*', sum, constant(1 / 49))
     assert.equal(shape(mean), 'F^1 times=1 x1')
     assert.notEqual(unitToWriteIn(mean), undefined)
+})
+
+void test('either of two is of their kind, where they have one', () => {
+    assert.equal(shape(join(people, people)), 'person^1 times=1 x1')
+    assert.equal(shape(join(people, area)), 'unknown')
+    // stored at different scales, they are of one dimension but not of one unit
+    assert.equal(shape(join(inUnit(storedUnits.distanceInM), inUnit(storedUnits.distanceInKm))), 'unknown')
+    assert.equal(shape(join(people, difference(storedUnits.population))), 'unknown')
+    assert.equal(shape(join(inconsistent, people)), 'person^1 times=1 x1')
+    assert.equal(shape(join(unknown, people)), 'unknown')
+    assert.equal(shape(join(constant(2), constant(2))), 'unknown')
+    assert.equal(shape(join(constant(2), constant(3))), 'unknown')
+})
+
+void test('either of two shares of different parties is a share of neither', () => {
+    const orange = inUnit(storedUnits.partyPctOrange)
+    const joined = join(orange, inUnit(storedUnits.partyPctRed))
+    assert.equal(shape(joined), shape(orange))
+    assert.equal(writeQuantity(0.05, unitToWriteIn(joined)!).hue, undefined)
+    assert.notEqual(writeQuantity(0.05, unitToWriteIn(orange)!).hue, undefined)
 })
