@@ -1,6 +1,5 @@
 import React, { CSSProperties, Fragment, ReactNode, useMemo } from 'react'
 
-import partyPages from '../../data/party_pages'
 import { NavLink, Navigator } from '../../navigation/Navigator'
 import { Colors } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
@@ -18,21 +17,14 @@ import {
     RepresentativesForRegion,
     RepresentativesForRegionAndDistrictSet,
 } from './model'
-
-function getPartyPage(party: string): (typeof partyPages)[keyof typeof partyPages] {
-    assert(party in partyPages, `Party ${party} not found in partyPages data`)
-    return partyPages[party as keyof typeof partyPages]
-}
+import { getPartyPage } from './party-page'
 
 /** Party hue used for links and run cell backgrounds; mirrors `RepresentativeParty`. */
 function partyHueColorString(colors: Colors, party: string | null | undefined): string | undefined {
-    if (!party || party === 'Independent') {
+    const partyPage = getPartyPage(party)
+    if (partyPage === undefined) {
         return undefined
     }
-    if (!(party in partyPages)) {
-        return undefined
-    }
-    const partyPage = partyPages[party as keyof typeof partyPages]
     // eslint-disable-next-line no-restricted-syntax -- not actual colors, just remapping
     const colorStr = partyPage.party_color === 'black' || partyPage.party_color === 'gray' ? 'grey' : partyPage.party_color
     return colors.hueColors[colorStr as keyof typeof colors.hueColors]
@@ -93,17 +85,18 @@ function displayRunFillStyle(
 
 function RepresentativeParty(props: { party?: string | null }): ReactNode {
     const colors = useColors()
-    if (!props.party || props.party === 'Independent') {
+    const party = props.party
+    const partyPage = getPartyPage(party)
+    if (party === null || party === undefined || partyPage === undefined) {
         return null
     }
-    const partyPage = getPartyPage(props.party)
     // eslint-disable-next-line no-restricted-syntax -- not actual colors, just remapping
     const colorStr = partyPage.party_color === 'black' || partyPage.party_color === 'gray' ? 'grey' : partyPage.party_color
     const color = colors.hueColors[colorStr]
 
     return (
         <a href={partyPage.wikipedia_page} style={{ textDecoration: 'none', color }} target="_blank" rel="noopener noreferrer">
-            {` (${props.party.slice(0, 1)})`}
+            {` (${party.slice(0, 1)})`}
         </a>
     )
 }
