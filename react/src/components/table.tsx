@@ -700,28 +700,22 @@ function articleStatnameButtonStyle(colors: Colors): React.CSSProperties {
     }
 }
 
-const manipulationButtonHeight = '24px'
-function ManipulationButton({ color: buttonColor, onClick, text, image }: { color: string, onClick: () => void, text: string, image: string }): ReactNode {
+function ManipulationButton({ onClick, text, image }: { onClick: () => void, text: string, image: string }): ReactNode {
     const isMobile = useMobileLayout()
     const isTranspose = useTranspose()
     const colors = useColors()
 
     return (
-        <div
+        <button
             style={{
-                height: manipulationButtonHeight,
-                lineHeight: manipulationButtonHeight,
-                cursor: 'pointer',
                 paddingLeft: '0.5em', paddingRight: '0.5em',
-                borderRadius: '0.25em',
                 verticalAlign: 'middle',
-                backgroundColor: buttonColor,
             }}
-            className={`serif manipulation-button-${text}`}
+            className={`serif manipulation-button-${text.toLowerCase()}`}
             onClick={onClick}
         >
-            {!(isMobile && isTranspose) ? text : <Icon src={image} size={manipulationButtonHeight} color={colors.textMain} />}
-        </div>
+            {!(isMobile && isTranspose) ? text : <Icon src={image} size="20px" color={colors.textMain} />}
+        </button>
     )
 }
 
@@ -733,25 +727,22 @@ function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipula
     manipulationJustify: CSSProperties['justifyContent']
     sharedTypeOfAllArticles: string | null | undefined
 }): ReactNode {
-    const colors = useColors()
     const [isEditing, setIsEditing] = React.useState(false)
     const currentUniverse = useUniverse()
     const comparisonHeadStyle = useComparisonHeadStyle()
 
     const manipulationButtons = (
-        <div style={{ height: manipulationButtonHeight }}>
-            <div style={{ display: 'flex', justifyContent: manipulationJustify, height: '100%' }}>
-                <ManipulationButton color={colors.unselectedButton} onClick={() => { setIsEditing(!isEditing) }} text="replace" image="/replace.png" />
-                {!includeDelete
-                    ? null
-                    : (
-                            <>
-                                <div style={{ width: '5px' }} />
-                                <ManipulationButton color={colors.unselectedButton} onClick={onDelete} text="delete" image="/close.png" />
-                            </>
-                        )}
-                <div style={{ width: '5px' }} />
-            </div>
+        <div style={{ display: 'flex', justifyContent: manipulationJustify, height: '100%' }}>
+            <ManipulationButton onClick={() => { setIsEditing(!isEditing) }} text="Replace" image="/replace.png" />
+            {!includeDelete
+                ? null
+                : (
+                        <>
+                            <div style={{ width: '5px' }} />
+                            <ManipulationButton onClick={onDelete} text="Delete" image="/close.png" />
+                        </>
+                    )}
+            <div style={{ width: '5px' }} />
         </div>
     )
 
@@ -761,8 +752,17 @@ function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipula
 
     return (
         <div>
-            {screenshotMode ? undefined : manipulationButtons}
-            <div style={{ height: '5px' }} />
+            {screenshotMode
+                ? undefined
+                : (
+                        <>
+                            <div style={{ height: '5px' }} />
+
+                            {manipulationButtons}
+                            <div style={{ height: '2px' }} />
+
+                        </>
+                    )}
             <a
                 className="serif"
                 {
