@@ -10,10 +10,10 @@ export interface Written {
 const artificialZeroCost = 100
 
 /**
- * We charge 1 for every digit that is printed, and 1 again for every zero between the point and
- * the first figure, each of those having pushed a figure out of what the style writes: 1 234 is
- * four digits carrying four figures, where the same quantity written in a smaller unit is 0.001,
- * four digits carrying one, and 1 234 and 1 500 are written alike.
+ * We charge 1 for every digit that is printed, and, of a number below one, 1 again for every zero
+ * between the point and the first figure, each of those having pushed a figure out of what the
+ * style writes: 1 234 is four digits carrying four figures, where the same quantity written in a
+ * smaller unit is 0.001, four digits carrying one, and 1 234 and 1 500 are written alike.
  *
  * This is almost, but not quite, the same as the number of significant figures, because
  * e.g., 1000 is counted as 4, not 1.
@@ -29,7 +29,7 @@ function digitCost(value: number, format: NumberFormat): number {
     if (value !== 0 && format.kind !== 'fixed' && !/[1-9]/.test(digits)) {
         return artificialZeroCost
     }
-    return digits.length + (/\.(0*)[1-9]/.exec(written)?.[1].length ?? 0)
+    return digits.length + (/^-?0\.(0*)[1-9]/.exec(written)?.[1].length ?? 0)
 }
 
 type Exponents = Partial<Record<BaseUnit, number>>

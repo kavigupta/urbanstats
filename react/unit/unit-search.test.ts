@@ -91,6 +91,8 @@ void test('a unit that pushes the figures past the point is not reached for', ()
     assert.equal(chosen(1e-3, { m: 1 }, [kilometer, meter, unit('cm', { m: 1 }, 0.01, 1)], () => threeFiguresRounded), 'cm^1')
     // and a leading zero with the figures behind it costs only the digit it is
     assert.equal(chosen(1000, { m: 2 }, [unit('acre', { m: 2 }, 4046.8564224, 1), unit('ft', { m: 1 }, 0.3048, 1)], () => threeFiguresRounded), 'acre^1')
+    // as does a zero the figures are written around: the 0 of 1.04 is a figure of it
+    assert.equal(chosen(1040, { m: 1 }, [unit('km', { m: 1 }, 1e3, 0.5), meter], () => threeFiguresRounded), 'km^1')
 })
 
 void test('a fixed number of places is a decision that rounding away is precise enough', () => {
