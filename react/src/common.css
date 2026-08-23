@@ -58,7 +58,7 @@
     font-family: 'Jost', 'Arial', sans-serif;
 }
 
-button, select {
+button, select, a[role=button] {
     font-family: 'Jost', 'Arial', sans-serif;
     background-color: var(--slightly-different-background);
     border-radius: 5px;
@@ -71,13 +71,21 @@ button, select {
     cursor: pointer;
 }
 
+/* Anchors don't get the browser's button metrics, so restate them */
+a[role=button] {
+    display: inline-block;
+    padding: 1px 6px;
+    font-size: 13.333px;
+    text-decoration: none;
+}
+
 button.borderless {
     border: none;
     background-color: transparent;
     border-radius: 7px;
 }
 
-button:hover:not(:disabled) {
+button:hover:not(:disabled), a[role=button]:hover {
     background-color: var(--slightly-different-background-focused);
 }
 

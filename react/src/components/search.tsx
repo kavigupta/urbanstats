@@ -12,6 +12,7 @@ import type { SearchWorkerInputMessage, SearchWorkerOutputMessage, SearchWorkerS
 import { Universe, useUniverse } from '../universe'
 import { Property } from '../utils/Property'
 import { TestUtils } from '../utils/TestUtils'
+import { withButtonRole } from '../utils/a11y'
 import { makeDebugLogger } from '../utils/debug-logging'
 
 import { GenericSearchBox } from './search-generic'
@@ -111,16 +112,7 @@ export function SearchBox(props: {
                     : (
                             <a
                                 {...compare}
-                                style={{
-                                    flexShrink: 0,
-                                    padding: '0.25em 0.5em',
-                                    borderRadius: '0.25em',
-                                    backgroundColor: colors.unselectedButton,
-                                    color: colors.textMain,
-                                    textDecoration: 'none',
-                                    fontSize: '75%',
-                                    whiteSpace: 'nowrap',
-                                }}
+                                {...withButtonRole(`Compare with ${match.longname}`, compare.onClick)}
                                 data-test-id="search-result-compare"
                             >
                                 Compare
