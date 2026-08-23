@@ -3,7 +3,7 @@ import test from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { parseNoError } from '../src/urban-stats-script/parser'
-import { AbstractInterpValue } from '../src/urban-stats-script/unit-algebra'
+import { AbstractInterpValue, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
 import { inferUnit } from '../src/urban-stats-script/unit-inference'
 
 /** What is known, as a string: the dimensions, how many of itself it is, and its scale. */
@@ -21,8 +21,16 @@ function shape(known: AbstractInterpValue): string {
     return `${written === '' ? 'dimensionless' : written} times=${known.unit.unit.times} x${known.unit.toBaseUnits}`
 }
 
+function of(code: string): AbstractInterpValue {
+    return inferUnit(parseNoError(code, 'test'), defaultTypeEnvironment('USA'))
+}
+
 function inferred(code: string): string {
-    return shape(inferUnit(parseNoError(code, 'test'), defaultTypeEnvironment('USA')))
+    return shape(of(code))
+}
+
+function writable(code: string): boolean {
+    return unitToWriteIn(of(code)) !== undefined
 }
 
 void test('a statistic is of the kind its column is', () => {
@@ -37,6 +45,27 @@ void test('arithmetic on statistics carries their kinds through', () => {
     assert.equal(inferred('population * 2'), 'person^1 times=2 x1')
     assert.equal(inferred('-population'), 'person^1 times=-1 x1')
     assert.equal(inferred('(high_temp + low_temp) / 2'), 'F^1 times=1 x1')
+})
+
+void test('a chain of temperatures is one of them, where its coefficients come back to one', () => {
+    assert.equal(inferred('high_temp - low_temp + high_temp_djf'), 'F^1 times=1 x1')
+    assert.equal(inferred('high_temp * 2 - high_temp'), 'F^1 times=1 x1')
+    assert.equal(inferred('(high_temp + low_temp + high_temp_djf) / 3'), 'F^1 times=1 x1')
+    assert.ok(writable('high_temp - low_temp + high_temp_djf'))
+    // and where they cancel, a number of degrees, which is also a thing to write
+    assert.equal(inferred('high_temp - low_temp + high_temp_djf - high_temp'), 'F^1 times=0 x1')
+    assert.ok(writable('high_temp - low_temp + high_temp_djf - high_temp'))
+    // but minus one temperature is no temperature, and there is nothing to write it as
+    assert.equal(inferred('5 - high_temp'), 'F^1 times=-1 x1')
+    assert.ok(!writable('5 - high_temp'))
+})
+
+void test('a power raises what an expression worked out to', () => {
+    assert.equal(inferred('(area * 2) ** 0.5'), 'm^1 times=1 x1000')
+    assert.equal(inferred('(area ** 0.5) ** 2'), 'm^2 times=1 x1000000')
+    assert.equal(inferred('(population / area) ** 0.5 * area ** 0.5'), 'person^0.5 times=1 x1')
+    // where a temperature has no scale to raise, since twice as far above freezing is not twice as warm
+    assert.equal(inferred('(high_temp * 2) ** 0.5'), 'inconsistent')
 })
 
 void test('nothing is the sum of two unlike kinds', () => {
