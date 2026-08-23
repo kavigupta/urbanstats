@@ -2,7 +2,6 @@ import { Selector } from 'testcafe'
 
 import { dataValues, target, urbanstatsFixture, waitForLoading } from './test_utils'
 
-/** Each row as it reads: the value, and the unit written in the column beside it. */
 async function rows(): Promise<string[]> {
     const values = await dataValues()
     const unit = Selector('div').withAttribute('class', /value_unit/)
@@ -13,7 +12,7 @@ async function rows(): Promise<string[]> {
     return values.map((value, index) => `${value} ${units[index] ?? ''}`.trim())
 }
 
-/** The judicial circuits, of which there are thirteen, so that a page of them is quick to draw. */
+/** Thirteen judicial circuits, so that a page of them is quick to draw. */
 function tableOf(values: string): string {
     return `${target}/statistic.html?uss=${encodeURIComponent(`customNode(""); condition (true); table(columns=[column(values=${values})])`)}&article_type=Judicial+Circuit&start=1&amount=3&order=descending&universe=USA`
 }

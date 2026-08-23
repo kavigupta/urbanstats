@@ -95,7 +95,6 @@ export function inferUnit(ast: UrbanStatsASTExpression | UrbanStatsASTStatement,
     return infer(ast, { typeEnvironment, named })
 }
 
-/** What a program's names are worth, for reading an expression of it that is picked out on its own. */
 export function inferBindings(program: UrbanStatsASTStatement | UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): Bindings {
     const named: Bindings = new Map()
     infer(program, { typeEnvironment, named })
