@@ -155,7 +155,6 @@ export function mapUssParser<T>(lastExpr: l.LiteralExprParser<T>, types: USSType
     }
 }
 
-/** What a schema reads, or nothing where the script is not shaped the way it reads. */
 export function read<T>(schema: (uss: MapUSS, typeEnvironment: TypeEnvironment) => T, uss: MapUSS, typeEnvironment: TypeEnvironment): T | undefined {
     try {
         return schema(uss, typeEnvironment)
@@ -174,7 +173,6 @@ const mapDataCall = l.call({
     unnamedArgs: [],
 })
 
-/** The map call with its data to hand, and the means to write something else in its place. */
 export const editableMapData = mapUssParser(l.edit(mapDataCall), 'dont-reparse')
 
 const tableColumns = mapUssParser(l.call({
@@ -189,7 +187,6 @@ const tableColumns = mapUssParser(l.call({
     unnamedArgs: [],
 }), 'dont-reparse')
 
-/** The expression a column of a table takes its values from, likewise. */
 export function tableColumnExpression(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): UrbanStatsASTExpression | undefined {
     const columns = read(tableColumns, uss, typeEnvironment)?.namedArgs.columns
     return columns === undefined || columnIndex >= columns.length ? undefined : columns[columnIndex].namedArgs.values
