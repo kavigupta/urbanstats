@@ -353,7 +353,8 @@ test('universe/geography have no overlap', async (t) => {
 
 urbanstatsFixture('edit starting from a statname page', `${target}/statistic.html?statname=Population&article_type=County&start=1&amount=5&universe=California%2C+USA`)
 
-const densityRatio = ['3.0', '2.5', '2.3', '2.3', '2.1']
+// a ratio of two densities is of no kind, so it is written to three figures rather than a density's two
+const densityRatio = ['3.03', '2.49', '2.28', '2.28', '2.10']
 const densityRatioPage2 = ['1.97', '1.96', '1.90', '1.89', '1.81']
 
 test('edit starting from a statname page works', async (t) => {
