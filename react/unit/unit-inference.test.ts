@@ -61,7 +61,8 @@ void test('a chain of temperatures is one of them, where its coefficients come b
 })
 
 void test('a power raises what an expression worked out to', () => {
-    assert.equal(inferred('(area * 2) ** 0.5'), 'm^1 times=1 x1000')
+    // in kilometres, of which it is root two, since the coefficient is raised along with the area
+    assert.equal(inferred('(area * 2) ** 0.5'), 'm^1 times=1.4142135623730951 x1000')
     assert.equal(inferred('(area ** 0.5) ** 2'), 'm^2 times=1 x1000000')
     assert.equal(inferred('(population / area) ** 0.5 * area ** 0.5'), 'person^0.5 times=1 x1')
     // where a temperature has no scale to raise, since twice as far above freezing is not twice as warm

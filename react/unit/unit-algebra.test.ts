@@ -237,3 +237,18 @@ void test('either of two shares of different parties is a share of neither', () 
     assert.equal(writeQuantity(0.05, unitToWriteIn(joined)!).hue, undefined)
     assert.notEqual(writeQuantity(0.05, unitToWriteIn(orange)!).hue, undefined)
 })
+
+void test('a coefficient is carried through a product and raised through a power', () => {
+    const twice = forward('*', area, constant(2))
+    assert.equal(shape(forward('*', twice, people)), 'm^2 person^1 times=2 x1000000')
+    assert.equal(shape(forward('/', twice, people)), 'm^2 person^-1 times=2 x1000000')
+    assert.equal(shape(forward('/', people, twice)), 'm^-2 person^1 times=0.5 x0.000001')
+    assert.equal(shape(forward('**', twice, constant(0.5))), 'm^1 times=1.4142135623730951 x1000')
+    // and a difference is still one of nothing however it is scaled
+    assert.equal(shape(forward('/', forward('-', area, area), people)), 'm^2 person^-1 times=0 x1000000')
+})
+
+void test('of a scalar, a join asks only whether both are differences', () => {
+    assert.equal(shape(join(forward('*', area, constant(2)), area)), 'm^2 times=2 x1000000')
+    assert.equal(shape(join(forward('-', area, area), area)), 'unknown')
+})

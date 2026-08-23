@@ -1,5 +1,5 @@
 import { assert } from '../utils/defensive'
-import { Decoration, dimensionless, Party, sameDimensions, snapToWhole, StoredUnit, unitPower, unitProduct } from '../utils/quantity'
+import { Decoration, dimensionless, Party, sameDimensions, snapToWhole, StoredUnit, Unit, unitPower, unitProduct } from '../utils/quantity'
 
 import { BinaryOperatorSymbol, UnaryOperatorSymbol } from './operators'
 
@@ -69,11 +69,16 @@ function sameSize(left: number, right: number): boolean {
     return Math.abs(left - right) <= 1e-9 * Math.max(Math.abs(left), Math.abs(right))
 }
 
+/** Of a scalar, all that is written is whether it is a difference; of a temperature, how many of one. */
+function sameTimes(left: Unit, right: Unit): boolean {
+    return left.baseIsScalar ? (left.times === 0) === (right.times === 0) : sameSize(left.times, right.times)
+}
+
 function joinedUnits(left: StoredUnit, right: StoredUnit): StoredUnit | undefined {
     if (!sameDimensions(left, right) || left.unit.baseIsScalar !== right.unit.baseIsScalar) {
         return undefined
     }
-    if (!sameSize(left.toBaseUnits, right.toBaseUnits) || !sameSize(left.unit.times, right.unit.times)) {
+    if (!sameSize(left.toBaseUnits, right.toBaseUnits) || !sameTimes(left.unit, right.unit)) {
         return undefined
     }
     return { ...left, unit: { ...left.unit, decoration: sharedDecoration(left.unit.decoration, right.unit.decoration) } }
@@ -158,7 +163,7 @@ function productForward(rightPower: 1 | -1, left: KnownAIV, right: KnownAIV): Ab
         }
         // where a number over a quantity is not that many of it, but one over it
         const inverted = unitProduct(dimensionless, right.unit, -1)
-        return inverted === undefined ? { kind: 'none' } : { kind: 'in', unit: inverted }
+        return inverted === undefined ? { kind: 'none' } : written(inverted, left.constant / right.unit.unit.times)
     }
     if (right.kind === 'any') {
         return right.constant === undefined
@@ -166,7 +171,8 @@ function productForward(rightPower: 1 | -1, left: KnownAIV, right: KnownAIV): Ab
             : written(left.unit, left.unit.unit.times * (rightPower === 1 ? right.constant : 1 / right.constant))
     }
     const product = unitProduct(left.unit, right.unit, rightPower)
-    return product === undefined ? { kind: 'none' } : { kind: 'in', unit: product }
+    const times = rightPower === 1 ? right.unit.unit.times : 1 / right.unit.unit.times
+    return product === undefined ? { kind: 'none' } : written(product, left.unit.unit.times * times)
 }
 
 export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue {
@@ -187,7 +193,8 @@ export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValu
                 return { kind: 'any' }
             }
             const raised = unitPower(left.unit, right.constant)
-            return raised === undefined ? { kind: 'none' } : { kind: 'in', unit: raised }
+            // the coefficient is raised along with what it multiplies: (2a)^0.5 is 2^0.5 of a^0.5
+            return raised === undefined ? { kind: 'none' } : written(raised, Math.pow(left.unit.unit.times, right.constant))
         }
     }
 }
