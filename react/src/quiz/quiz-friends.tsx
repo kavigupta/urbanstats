@@ -576,8 +576,7 @@ function FriendScoreCorrects(props: FriendScore & { otherResults: ResultToDispla
     if ('forThisSeed' in props.result) {
         const link
             = props.result.maxScoreSeed === null || props.result.maxScoreVersion === null
-                // eslint-disable-next-line @typescript-eslint/no-empty-function -- this is a dummy onClick function for when there is no link
-                ? { href: undefined, onClick: () => { } }
+                ? {}
                 : navContext.link({
                     kind: 'quiz', mode: 'infinite', seed: props.result.maxScoreSeed, v: props.result.maxScoreVersion,
                 }, { scroll: { kind: 'position', top: 0 } })
@@ -592,12 +591,12 @@ function FriendScoreCorrects(props: FriendScore & { otherResults: ResultToDispla
                 <div style={{ ...baseStyle, backgroundColor: maxForThisSeed ? colors.hueColors.green : colors.hueColors.blue }}>
                     {props.result.forThisSeed ?? '-'}
                 </div>
-                <div
-                    style={{ ...baseStyle, backgroundColor: maxMaxScore ? colors.hueColors.green : colors.hueColors.blue }}
-                    onClick={link.onClick}
+                <a
+                    style={{ ...baseStyle, backgroundColor: maxMaxScore ? colors.hueColors.green : colors.hueColors.blue, textDecoration: 'none' }}
+                    {...link}
                 >
-                    <a style={{ textDecoration: 'none', color: colors.buttonTextWhite }} href={link.href}>{props.result.maxScore ?? '-'}</a>
-                </div>
+                    {props.result.maxScore ?? '-'}
+                </a>
             </div>
         )
     }
