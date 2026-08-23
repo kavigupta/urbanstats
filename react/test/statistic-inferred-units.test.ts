@@ -39,6 +39,15 @@ test('a difference of two temperatures is a number of degrees', async (t) => {
     await t.expect(await rows()).eql(['+22.3 °F', '+19.1 °F', '+18.3 °F'])
 })
 
+test('a reader in Celsius reads that difference as one', async (t) => {
+    await waitForLoading()
+    const temperatures = Selector('[data-test-id=temperature_select]')
+    await t.click(temperatures).click(temperatures.find('option').withText(/C/))
+    // twenty-two Fahrenheit degrees between the day's high and its low is twelve Celsius degrees,
+    // where a reading of 22.3°F would be 5.4 below freezing
+    await t.expect(await rows()).eql(['+12.4 °C', '+10.6 °C', '+10.2 °C'])
+})
+
 urbanstatsFixture('a quantity with no writing', tableOf('population ** 0.5'))
 
 test('a root of a count is written plainly rather than failing', async (t) => {
