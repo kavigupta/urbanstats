@@ -193,7 +193,23 @@ export interface Documentation {
      * columns; other USS constants will omit this field.
      */
     unit?: UnitType
+    /** For a function, how a quantity it is given comes back out. */
+    unitPropagation?: UnitPropagation
 }
+
+export type UnitPropagation = (
+    // keeps the unit
+    {
+        kind: 'unchanged'
+        /** Unless what it is given is a difference, the coefficient comes back unknown. */
+        unknownTimes?: boolean
+    }
+    | { kind: 'either' } // joins the units of two
+    | { kind: 'power', exponent: number } // raises the unit
+    | { kind: 'number' } // coerces to a number
+    | { kind: 'rank' } // takes two of one unit, gives a number
+    | { kind: 'regression' } // gives a unit for each field of the result
+)
 
 export interface USSDocumentedType {
     type: USSType
