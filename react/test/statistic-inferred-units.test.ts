@@ -47,6 +47,36 @@ test('a reader in Celsius reads that difference as one', async (t) => {
     await t.expect(await rows()).eql(['+12.4 °C', '+10.6 °C', '+10.2 °C'])
 })
 
+urbanstatsFixture('several columns at once', `${target}/statistic.html?uss=${encodeURIComponent('customNode(""); condition (true); table(columns=[column(values=high_temp), column(values=high_temp - low_temp), column(values=population / area)])')}&article_type=Judicial+Circuit&start=1&amount=2&order=descending&universe=USA`)
+
+test('each column of a table is written in its own units', async (t) => {
+    await waitForLoading()
+    await t.expect(await rows()).eql(['78.3 °F', '+19.1 °F', '39.4 /\u00a0km2', '77.5 °F', '+15.8 °F', '85.2 /\u00a0km2'])
+})
+
+urbanstatsFixture('the size of a reading and of a difference', tableOf('abs(high_temp)'))
+
+test('the size of a reading is no reading', async (t) => {
+    await waitForLoading()
+    // no degrees, the zero of a temperature being wherever its scale puts it
+    await t.expect(await rows()).eql(['78.3', '77.5', '69.5'])
+})
+
+urbanstatsFixture('the size of a difference', tableOf('abs(high_temp - low_temp)'))
+
+test('the size of a difference is a number of degrees', async (t) => {
+    await waitForLoading()
+    await t.expect(await rows()).eql(['+22.3 °F', '+19.1 °F', '+18.3 °F'])
+})
+
+urbanstatsFixture('residuals of a regression', `${target}/statistic.html?uss=${encodeURIComponent('regr = regression(y=commute_transit, x1=ln(density_pw_1km))\ncondition (true)\ntable(columns=[column(values=regr.residuals)])')}&article_type=Judicial+Circuit&start=1&amount=3&order=descending&universe=USA`)
+
+test('what a regression did not expect is a difference of shares', async (t) => {
+    await waitForLoading()
+    // above expectation, which is what the sign is there to say
+    await t.expect(await rows()).eql(['+9.92 %', '+3.26 %', '+3.21 %'])
+})
+
 urbanstatsFixture('a quantity with no writing', tableOf('population ** 0.5'))
 
 test('a root of a count is written plainly rather than failing', async (t) => {
