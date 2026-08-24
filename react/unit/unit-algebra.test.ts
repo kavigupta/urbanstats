@@ -107,6 +107,17 @@ void test('a difference gives back the level it was taken from', () => {
     assert.equal(shape(backward('+', people, difference(storedUnits.population), 'left')), 'person^1 times=1 x1')
 })
 
+void test('with nothing known of a sum, an operand is of the other\'s dimensions and no count of them', () => {
+    // a temperature and a difference of two add to each other either way round, so which of the
+    // two an operand is cannot be said, and the 32 of high_temp - 32 is no reading of 32 degrees
+    assert.equal(shape(backward('-', unknown, temperature, 'right')), 'F^1 times=unknown x1')
+    assert.equal(shape(backward('+', unknown, temperature, 'left')), 'F^1 times=unknown x1')
+    assert.equal(unitToWriteIn(backward('-', unknown, temperature, 'right')), undefined)
+    // people and a difference of people are written alike, so saying only that much costs nothing
+    assert.equal(shape(backward('-', unknown, people, 'right')), 'person^1 times=unknown x1')
+    assert.notEqual(unitToWriteIn(backward('-', unknown, people, 'right')), undefined)
+})
+
 void test('every operator answers in both directions, whatever it is given', () => {
     const inputs = [unknown, people, temperature, constant(2), constant(0)]
     for (const operator of infixOperators satisfies readonly BinaryOperatorSymbol[]) {
