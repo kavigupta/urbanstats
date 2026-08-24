@@ -1,9 +1,9 @@
-import { dimensionless } from '../utils/quantity'
+import { dimensionless, StoredUnit } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import { TypeEnvironment, UnitPropagation } from './types-values'
-import { AbstractInterpValue, constant, forward, forwardUnary, inUnit, join, manyOf } from './unit-algebra'
+import { AbstractInterpValue, backward, backwardUnary, constant, forward, forwardUnary, inUnit, join, manyOf, unitToWriteIn } from './unit-algebra'
 
 const anything: AbstractInterpValue = { kind: 'any' }
 
@@ -172,6 +172,97 @@ function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Sco
         case 'parseError':
             return anything
     }
+}
+
+/** Where each number written in an expression is read from, which is what a caption writes it in. */
+export type ConstantUnits = Map<UrbanStatsASTExpression, StoredUnit>
+
+function pushedInto(propagation: UnitPropagation | undefined, expected: AbstractInterpValue, args: UrbanStatsASTArg[], index: number, scope: Scope): AbstractInterpValue {
+    if (propagation?.kind === 'unchanged') {
+        return expected
+    }
+    // a larger of two is of the kind of the other, where what it is larger than says more
+    if (propagation?.kind !== 'either') {
+        return anything
+    }
+    return expected.kind === 'in' ? expected : argument(args, 1 - index, scope)
+}
+
+/**
+ * The other way through: what the expression works out to is pushed back down it, so that the 0.1
+ * of a share below a tenth is read as a tenth of a share rather than as a tenth of nothing.
+ */
+function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expected: AbstractInterpValue, scope: Scope, into: ConstantUnits): void {
+    switch (ast.type) {
+        case 'constant': {
+            const unit = unitToWriteIn(expected)
+            if (ast.value.node.type === 'number' && unit !== undefined) {
+                into.set(ast, unit)
+            }
+            return
+        }
+        case 'expression':
+        case 'assignment':
+            readBack(ast.value, expected, scope, into)
+            return
+        case 'autoUXNode':
+        case 'customNode':
+            readBack(ast.expr, expected, scope, into)
+            return
+        case 'unaryOperator':
+            readBack(ast.expr, backwardUnary(ast.operator.node, expected), scope, into)
+            return
+        case 'binaryOperator': {
+            const left = quantity(infer(ast.left, scope))
+            const right = quantity(infer(ast.right, scope))
+            readBack(ast.left, backward(ast.operator.node, expected, right, 'left'), scope, into)
+            readBack(ast.right, backward(ast.operator.node, expected, left, 'right'), scope, into)
+            return
+        }
+        case 'call': {
+            const propagation = propagationOf(ast.fn, scope)
+            ast.args.forEach((arg, index) => { readBack(arg.value, pushedInto(propagation, expected, ast.args, index, scope), scope, into) })
+            return
+        }
+        case 'vectorLiteral':
+            ast.elements.forEach((element) => { readBack(element, expected, scope, into) })
+            return
+        case 'objectLiteral':
+            ast.properties.forEach(([, value]) => { readBack(value, anything, scope, into) })
+            return
+        case 'if':
+            readBack(ast.condition, anything, scope, into)
+            readBack(ast.then, expected, scope, into)
+            if (ast.else !== undefined) {
+                readBack(ast.else, expected, scope, into)
+            }
+            return
+        case 'do':
+        case 'statements':
+        case 'condition': {
+            // only the last of a block is what the block works out to; a filter is worth nothing itself
+            const statements = ast.type === 'do' ? ast.statements : (ast.type === 'statements' ? ast.result : ast.rest)
+            if (ast.type === 'condition') {
+                readBack(ast.condition, anything, scope, into)
+            }
+            statements.forEach((statement, index) => {
+                readBack(statement, index === statements.length - 1 ? expected : anything, scope, into)
+            })
+            return
+        }
+        case 'identifier':
+        case 'attribute':
+        case 'parseError':
+    }
+}
+
+/** What each number written in a script is a quantity of, as far as the script says. */
+export function inferConstantUnits(program: UrbanStatsASTStatement | UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): ConstantUnits {
+    const scope = { typeEnvironment, named: new Map() }
+    infer(program, scope)
+    const into: ConstantUnits = new Map()
+    readBack(program, anything, scope, into)
+    return into
 }
 
 /** What kind of quantity an expression works out to, as far as reading it can say. */

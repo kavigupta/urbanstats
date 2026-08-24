@@ -41,7 +41,8 @@ cMap(data=density_pw_1km_2000 / (density_pw_1km * density_pw_2km), scale=linearS
 testMapLabel(test,
     `condition(ped_cyclist_fatalities_per_capita > 1e-5)
 cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)`,
-    'PW Density (r=1km) where Pedestrian/Cyclist Fatalities Per Capita Per Year > 1x10^{-5}',
+    // in the units the statistic is read in, rather than as the fraction it is stored as
+    'PW Density (r=1km) where Pedestrian/Cyclist Fatalities Per Capita Per Year > 1/\u00a0100k',
 )
 
 // Number formatting, in particular the boundaries where rounding to 3 significant

@@ -1,4 +1,4 @@
-import { Selector } from 'testcafe'
+import { ClientFunction, Selector } from 'testcafe'
 
 import { dataValues, target, urbanstatsFixture, waitForLoading } from './test_utils'
 
@@ -75,6 +75,18 @@ test('what a regression did not expect is a difference of shares', async (t) => 
     await waitForLoading()
     // above expectation, which is what the sign is there to say
     await t.expect(await rows()).eql(['+9.92 %', '+3.26 %', '+3.21 %'])
+})
+
+const filtered = `${target}/statistic.html?uss=${encodeURIComponent('customNode(""); condition (commute_bike > 0.05 & high_temp > 80); table(columns=[column(values=population)])')}&article_type=Judicial+Circuit&start=1&amount=3&order=descending&universe=USA`
+
+urbanstatsFixture('a table filtered on a share and a temperature', filtered)
+
+// eslint-disable-next-line no-restricted-syntax -- Reading the title the router set, not setting one.
+const documentTitle = ClientFunction(() => document.title)
+
+test('the numbers a filter names are written in the units it reads them from', async (t) => {
+    await waitForLoading()
+    await t.expect(documentTitle()).eql('Population where Commute Bike % > 5% and Mean high temp > 80°F')
 })
 
 urbanstatsFixture('a quantity with no writing', tableOf('population ** 0.5'))
