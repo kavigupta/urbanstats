@@ -5,7 +5,7 @@ import React, { CSSProperties, ReactNode, useContext, useRef, useState } from 'r
 
 import { ArticleOrderingListInternal, loadOrdering, loadStatisticsPage } from '../load_json'
 import './table.css'
-import { Navigator } from '../navigation/Navigator'
+import { NavLink, Navigator } from '../navigation/Navigator'
 import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
@@ -700,31 +700,47 @@ function articleStatnameButtonStyle(colors: Colors): React.CSSProperties {
     }
 }
 
-function ManipulationButton({ onClick, text, image }: { onClick: () => void, text: string, image: string }): ReactNode {
+function ManipulationButton({ text, image, ...props }: { text: string, image: string } & ({ onClick: () => void } | { link: NavLink })): ReactNode {
     const isMobile = useMobileLayout()
     const isTranspose = useTranspose()
     const colors = useColors()
 
+    const style: CSSProperties = {
+        paddingLeft: '0.5em', paddingRight: '0.5em',
+        verticalAlign: 'middle',
+    }
+    const testId = `manipulation-button-${text.toLowerCase()}`
+    const contents = !(isMobile && isTranspose) ? text : <Icon src={image} size="20px" color={colors.textMain} />
+
+    if ('link' in props) {
+        return (
+            <a
+                {...props.link}
+                {...withButtonRole(text, props.link.onClick)}
+                style={style}
+                data-test-id={testId}
+            >
+                {contents}
+            </a>
+        )
+    }
+
     return (
         <button
-            style={{
-                paddingLeft: '0.5em', paddingRight: '0.5em',
-                verticalAlign: 'middle',
-            }}
+            style={style}
             aria-label={text}
-            data-test-id={`manipulation-button-${text.toLowerCase()}`}
-            onClick={onClick}
+            data-test-id={testId}
+            onClick={props.onClick}
         >
-            {!(isMobile && isTranspose) ? text : <Icon src={image} size="20px" color={colors.textMain} />}
+            {contents}
         </button>
     )
 }
 
-function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipulationJustify, sharedTypeOfAllArticles }: {
+function HeadingDisplay({ longname, deleteLink, onReplace, manipulationJustify, sharedTypeOfAllArticles }: {
     longname: string
-    includeDelete: boolean
-    onDelete: () => void
-    onReplace: (q: string) => ReturnType<Navigator['link']>
+    deleteLink: NavLink | undefined
+    onReplace: (q: string) => NavLink
     manipulationJustify: CSSProperties['justifyContent']
     sharedTypeOfAllArticles: string | null | undefined
 }): ReactNode {
@@ -735,12 +751,12 @@ function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipula
     const manipulationButtons = (
         <div style={{ display: 'flex', justifyContent: manipulationJustify, height: '100%' }}>
             <ManipulationButton onClick={() => { setIsEditing(!isEditing) }} text="Replace" image="/replace.png" />
-            {!includeDelete
+            {deleteLink === undefined
                 ? null
                 : (
                         <>
                             <div style={{ width: '5px' }} />
-                            <ManipulationButton onClick={onDelete} text="Delete" image="/close.png" />
+                            <ManipulationButton link={deleteLink} text="Delete" image="/close.png" />
                         </>
                     )}
             <div style={{ width: '5px' }} />
@@ -858,14 +874,13 @@ export function ComparisonLongnameCell(props: ComparisonLongnameCellProps & { wi
             >
                 <HeadingDisplay
                     longname={props.articles[props.articleIndex].longname}
-                    includeDelete={props.articles.length > 1}
-                    onDelete={() => {
-                        void navContext.navigate({
+                    deleteLink={props.articles.length > 1
+                        ? navContext.link({
                             kind: 'comparison',
                             universe: currentUniverse,
                             longnames: props.names.filter((_, index) => index !== props.articleIndex),
-                        }, { history: 'push', scroll: { kind: 'none' } })
-                    }}
+                        }, { scroll: { kind: 'none' } })
+                        : undefined}
                     onReplace={x =>
                         navContext.link({
                             kind: 'comparison',
