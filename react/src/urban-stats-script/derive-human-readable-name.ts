@@ -11,7 +11,7 @@ import * as l from './literal-parser'
 import { noLocation } from './location'
 import { expressionOperatorMap } from './operators'
 import { TypeEnvironment } from './types-values'
-import { ConstantUnits, inferConstantUnits } from './unit-inference'
+import { ConstantUnits, inferConstantUnits, whereWritten } from './unit-inference'
 
 function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, units: ConstantUnits): HumanReadableElement[] | undefined {
     switch (ast.type) {
@@ -98,7 +98,7 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
                 case 'humanReadableElements':
                     return ast.value.node.value
                 case 'number':
-                    return formatNumber(ast.value.node.value, units.get(ast))
+                    return formatNumber(ast.value.node.value, units.get(whereWritten(ast.value.location)))
                 case 'string':
                     return [{ type: 'atom', value: ast.value.node.value }]
             }

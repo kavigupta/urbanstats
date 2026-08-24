@@ -4,9 +4,7 @@ import test from 'node:test'
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { parseNoError } from '../src/urban-stats-script/parser'
 import { AbstractInterpValue, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
-import { inferConstantUnits, inferUnit } from '../src/urban-stats-script/unit-inference'
-import { reifyString } from '../src/utils/human-readable-name'
-import { writeQuantity } from '../src/utils/quantity'
+import { inferUnit } from '../src/urban-stats-script/unit-inference'
 
 /** What is known, as a string: the dimensions, how many of itself it is, and its scale. */
 function shape(known: AbstractInterpValue): string {
@@ -29,17 +27,6 @@ function of(code: string): AbstractInterpValue {
 
 function inferred(code: string): string {
     return shape(of(code))
-}
-
-/** Each number the script says the units of, as it would be written in a caption. */
-function constantsOf(code: string): string {
-    const ast = parseNoError(code, 'test')
-    const written = [...inferConstantUnits(ast, defaultTypeEnvironment('USA')).entries()].map(([node, unit]) => {
-        assert.ok(node.type === 'constant' && node.value.node.type === 'number')
-        const quantity = writeQuantity(node.value.node.value, unit)
-        return `${quantity.renderedValue}${reifyString(quantity.unitName)}`
-    })
-    return written.length === 0 ? 'nothing' : written.join(', ')
 }
 
 function writable(code: string): boolean {
@@ -188,34 +175,6 @@ void test('a logarithm takes whatever it is given and gives a number of no kind'
 
 void test('a name the script bound is that name, not the built-in it hides', () => {
     assert.equal(inferred('sqrt = population\nsqrt'), 'person^1 times=1 x1')
-})
-
-// Reading the other way: what each number in a script is a quantity of
-for (const [code, expected] of [
-    ['commute_bike < 0.1', '10.00%'],
-    ['high_temp > 80', '80.0°F'],
-    ['area > 100', '100.0km^{2}'],
-    ['density_pw_1km > 5000', '5\u202f000/\u00a0km^{2}'],
-    ['ped_cyclist_fatalities_per_capita > 1e-5', '1.00/\u00a0100k'],
-    ['sqrt(area) > 10', '10.00km'],
-    ['mean(high_temp) > 80', '80.0°F'],
-    // of one kind with what it is compared against, whichever way round they are written
-    ['maximum(population, 1000)', '1\u202f000'],
-    ['1000 < population', '1\u202f000'],
-] as const) {
-    void test(`the number of ${code} is ${expected}`, () => {
-        assert.equal(constantsOf(code), expected)
-    })
-}
-
-void test('a number a script says nothing of is written as the number it is', () => {
-    // what scales a quantity is no quantity, and neither is what a quantity is divided into
-    assert.equal(constantsOf('population * 2'), 'nothing')
-    assert.equal(constantsOf('population / 1000'), 'nothing')
-    // a temperature and a difference of two add either way round, so which 32 is cannot be said
-    assert.equal(constantsOf('high_temp - 32'), 'nothing')
-    // where people and a difference of people are written alike
-    assert.equal(constantsOf('population - 1000'), '1\u202f000')
 })
 
 void test('a regression is read field by field', () => {

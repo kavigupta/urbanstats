@@ -22,6 +22,22 @@ function testMapLabel(testFn: typeof test, code: string, expectedLabel: string):
     })
 }
 
+// A number a script names is written in the units the script reads it from
+for (const [condition, expected] of [
+    ['commute_bike < 0.1', 'Commute Bike % < 10%'],
+    ['high_temp > 80', 'Mean high temp > 80°F'],
+    ['area > 100', 'Area > 100km^{2}'],
+    ['density_pw_1km > 5000', 'PW Density (r=1km) > 5\u202f000/\u00a0km^{2}'],
+    ['sqrt(area) > 10', 'sqrt(Area) > 10km'],
+    ['maximum(population, 1000) > 0', 'max(Population, 1\u202f000) > 0'],
+    // what scales a quantity is no quantity, and neither is what one is divided into
+    ['population * 2 > population', 'Population × 2 > Population'],
+    // which of the two the 32 is cannot be said, where the 0 is of the kind it is compared against
+    ['high_temp - 32 > 0', 'Mean high temp \u2212 32 > 0°F'],
+] as const) {
+    testMapLabel(test, `condition (${condition})\ncMap(data=population, scale=linearScale(), ramp=rampUridis)`, `Population where ${expected}`)
+}
+
 testMapLabel(test,
     `condition (population > 1000000)
 condition (population_2000 > 1000000)

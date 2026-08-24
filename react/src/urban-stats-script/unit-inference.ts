@@ -2,6 +2,7 @@ import { dimensionless, StoredUnit } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
+import { LocInfo } from './location'
 import { TypeEnvironment, UnitPropagation } from './types-values'
 import { AbstractInterpValue, backward, backwardUnary, constant, forward, forwardUnary, inUnit, join, manyOf, unitToWriteIn } from './unit-algebra'
 
@@ -175,7 +176,16 @@ function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Sco
 }
 
 /** Where each number written in an expression is read from, which is what a caption writes it in. */
-export type ConstantUnits = Map<UrbanStatsASTExpression, StoredUnit>
+export type ConstantUnits = Map<string, StoredUnit>
+
+/**
+ * A number is looked up by where it was written rather than by which object it is, an edited tree
+ * being made of new nodes and a reparsed one of nodes read again from the same source.
+ */
+export function whereWritten(location: LocInfo): string {
+    const where = location.start.block
+    return `${where.type === 'single' ? where.ident : ''}:${location.start.charIdx}-${location.end.charIdx}`
+}
 
 function pushedInto(propagation: UnitPropagation | undefined, expected: AbstractInterpValue, args: UrbanStatsASTArg[], index: number, scope: Scope): AbstractInterpValue {
     if (propagation?.kind === 'unchanged') {
@@ -197,7 +207,7 @@ function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expecte
         case 'constant': {
             const unit = unitToWriteIn(expected)
             if (ast.value.node.type === 'number' && unit !== undefined) {
-                into.set(ast, unit)
+                into.set(whereWritten(ast.value.location), unit)
             }
             return
         }
