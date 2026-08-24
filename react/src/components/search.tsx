@@ -110,6 +110,7 @@ export function SearchBox(props: {
                 {compare === undefined
                     ? undefined
                     : (
+                            // This is an anchor so we get modifier key functionality (e.g. open link in new tab)
                             <a
                                 {...compare}
                                 {...withButtonRole(`Compare with ${match.longname}`, compare.onClick)}
