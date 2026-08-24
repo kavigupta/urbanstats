@@ -58,24 +58,27 @@ jobs:
 
             const latestRun = usableRuns[0];
             core.setOutput('run-id', latestRun.id);
+            core.setOutput('run-attempt', latestRun.run_attempt);
 
-      - name: Download changed_screenshots artifact
+      - name: Download combined artifact
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
 
+            const name = `combined-${{ steps.workflow-run.outputs.run-attempt }}`;
+
             const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
               owner: context.repo.owner,
               repo: context.repo.repo,
               run_id: '${{ steps.workflow-run.outputs.run-id }}',
-              name: 'changed_screenshots'
+              name
             });
 
             const artifact = artifacts.data.artifacts[0];
 
             if (!artifact) {
-              core.setFailed('No changed_screenshots artifact found');
+              core.setFailed(`No ${name} artifact found`);
               return;
             }
 
@@ -86,12 +89,13 @@ jobs:
               archive_format: 'zip'
             });
 
-            fs.writeFileSync('changed_screenshots.zip', Buffer.from(download.data));
+            fs.writeFileSync('combined.zip', Buffer.from(download.data));
 
       - name: Extract and copy screenshots
         run: |
           # Extract the artifact
-          unzip changed_screenshots.zip -d changed_screenshots_temp/
+          unzip combined.zip -d combined_temp/
+          mv combined_temp/changed_screenshots changed_screenshots_temp
 
           # Check if there are any screenshots to copy
           if [ ! -d "changed_screenshots_temp" ] || [ -z "$(find changed_screenshots_temp -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' 2>/dev/null)" ]; then
