@@ -200,22 +200,25 @@ jobs:
         run: |
           name="${{ matrix.test-file }}"
           echo "name=${name:0:200}" >> $GITHUB_OUTPUT
+      # A re-run keeps the artifacts the earlier attempt uploaded, so these names carry the
+      # attempt. Re-running only the failed jobs loses nothing, because only a failing shard
+      # writes screenshots, and a failing shard is exactly what gets re-run.
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
-          name: delta-${{ steps.artifact-name.outputs.name }}
+          name: delta-${{ github.run_attempt }}-${{ steps.artifact-name.outputs.name }}
           path: react/delta
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
-          name: changed_screenshots-${{ steps.artifact-name.outputs.name }}
+          name: changed_screenshots-${{ github.run_attempt }}-${{ steps.artifact-name.outputs.name }}
           path: react/changed_screenshots
       # Both TestCafe's take-on-fail shots and the ones `flaky` takes per attempt land here, and
       # a run that passes deletes them, so this only ever carries pictures of something going wrong.
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
-          name: error_screenshots-${{ steps.artifact-name.outputs.name }}
+          name: error_screenshots-${{ github.run_attempt }}-${{ steps.artifact-name.outputs.name }}
           path: react/screenshots/**/*.error.png
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
@@ -223,31 +226,31 @@ jobs:
         with:
           name: test_histories-${{ steps.artifact-name.outputs.name }}
           path: react/test_histories
+          overwrite: true
 
   merge-screenshots:
     runs-on: ubuntu-22.04
     needs: [e2e]
     if: "!cancelled()"
     steps:
-      - uses: actions/upload-artifact/merge@v4
-        with:
-          name: delta
-          pattern: "delta-*"
-        continue-on-error: true
-      - uses: actions/upload-artifact/merge@v4
-        with:
-          name: changed_screenshots
-          pattern: "changed_screenshots-*"
-        continue-on-error: true
-      - id: upload-combined
-        uses: actions/upload-artifact/merge@v4
-        with:
-          name: combined
-          pattern: "{delta,changed_screenshots}"
-          separate-directories: true
-        continue-on-error: true
       - *checkout
       - uses: ./.github/actions/node_modules
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "delta-${{ github.run_attempt }}-*"
+          path: combined/delta
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "changed_screenshots-${{ github.run_attempt }}-*"
+          path: combined/changed_screenshots
+          merge-multiple: true
+      - id: upload-combined
+        uses: actions/upload-artifact@v4
+        with:
+          name: combined-${{ github.run_attempt }}
+          path: combined
+          if-no-files-found: ignore
       - uses: actions/download-artifact@v4
         with:
           pattern: "test_histories-*"
