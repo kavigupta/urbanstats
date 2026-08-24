@@ -82,27 +82,39 @@ function regressionFields(args: UrbanStatsASTArg[], scope: Scope): Inferred {
     return { kind: 'fields', fields }
 }
 
-function propagated(propagation: UnitPropagation, args: UrbanStatsASTArg[], scope: Scope): Inferred {
-    if (propagation.kind === 'regression') {
-        return regressionFields(args, scope)
-    }
-    if (propagation.kind === 'number') {
-        return inUnit(dimensionless)
-    }
-    const given = positional(args, 0)
-    const value = given === undefined ? anything : quantity(infer(given, scope))
+function argument(args: UrbanStatsASTArg[], index: number, scope: Scope): AbstractInterpValue {
+    const arg = positional(args, index)
+    return arg === undefined ? anything : quantity(infer(arg, scope))
+}
+
+function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' }>, value: AbstractInterpValue, args: UrbanStatsASTArg[], scope: Scope): AbstractInterpValue {
     switch (propagation.kind) {
+        case 'number':
+            return inUnit(dimensionless)
         case 'unchanged':
             return value
         case 'total':
             return manyOf(value)
         case 'power':
             return forward('**', value, constant(propagation.exponent))
-        case 'either': {
-            const other = positional(args, 1)
-            return join(value, other === undefined ? anything : quantity(infer(other, scope)))
+        case 'either':
+            return join(value, argument(args, 1, scope))
+        case 'rank': {
+            // one is ranked among the other, so nothing is the rank of people among areas
+            const alike = forward('-', value, argument(args, 1, scope))
+            return alike.kind === 'none' ? alike : inUnit(dimensionless)
         }
     }
+}
+
+function propagated(propagation: UnitPropagation, args: UrbanStatsASTArg[], scope: Scope): Inferred {
+    if (propagation.kind === 'regression') {
+        return regressionFields(args, scope)
+    }
+    const value = argument(args, 0, scope)
+    const result = whatItGives(propagation, value, args, scope)
+    const isDifference = value.kind === 'in' && value.unit.unit.times === 0
+    return propagation.readsTheZero === true && !isDifference ? manyOf(result) : result
 }
 
 /** What a function says of the quantity it gives, where it is the function of that name and not a name the script bound. */

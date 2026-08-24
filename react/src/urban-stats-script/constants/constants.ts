@@ -227,7 +227,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['NaN', { type: { type: 'number' }, value: NaN, documentation: { humanReadableName: 'NaN', category: 'math', longDescription: 'Not a Number, a special numeric value representing an undefined or unrepresentable numeric result.' } }] satisfies [string, USSValue],
     ...colorConstants,
     ...unitConstants,
-    createNumberToNumberFunction('abs', Math.abs, 'abs', { kind: 'unchanged' }, 'Returns the absolute value of a number (removes the negative sign).'),
+    createNumberToNumberFunction('abs', Math.abs, 'abs', { kind: 'unchanged', readsTheZero: true }, 'Returns the absolute value of a number (removes the negative sign).'),
     createNumberToNumberFunction('sqrt', Math.sqrt, 'sqrt', { kind: 'power', exponent: 0.5 }, 'Returns the square root of a number.'),
     createNumberToNumberFunction('ln', Math.log, 'ln', { kind: 'number' }, 'Returns the natural logarithm (base e) of a number.', 'logarithm-functions'),
     createNumberToNumberFunction('log10', Math.log10, hre`log_{10}`, { kind: 'number' }, 'Returns the base-10 logarithm of a number.', 'logarithm-functions'),
@@ -242,8 +242,8 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     createNumberToNumberFunction('floor', Math.floor, 'floor', { kind: 'unchanged' }, 'Rounds a number down to the nearest integer.'),
     createNumberToNumberFunction('round', Math.round, 'round', { kind: 'unchanged' }, 'Rounds a number to the nearest integer.'),
     createNumberToNumberFunction('exp', Math.exp, 'exp', { kind: 'number' }, 'Returns e raised to the power of the given number.'),
-    createNumberToNumberFunction('sign', Math.sign, 'sign', { kind: 'number' }, 'Returns the sign of a number: 1 for positive, -1 for negative, 0 for zero.'),
-    createNumberToNumberFunction('nanTo0', (x: number) => isNaN(x) ? 0 : x, 'NaN to Zero', { kind: 'unchanged' }, 'Converts NaN values to 0, leaving other numbers unchanged.'),
+    createNumberToNumberFunction('sign', Math.sign, 'sign', { kind: 'number', readsTheZero: true }, 'Returns the sign of a number: 1 for positive, -1 for negative, 0 for zero.'),
+    createNumberToNumberFunction('nanTo0', (x: number) => isNaN(x) ? 0 : x, 'NaN to Zero', { kind: 'unchanged', readsTheZero: true }, 'Converts NaN values to 0, leaving other numbers unchanged.'),
     createTwoNumberToNumberFunction('maximum', Math.max, 'max', { kind: 'either' }, 'Returns the larger of two numbers.'),
     createTwoNumberToNumberFunction('minimum', Math.min, 'min', { kind: 'either' }, 'Returns the smaller of two numbers.'),
     createVectorToNumberFunction('sum', values => values.reduce((a, b) => a + b, 0), 0, 'sum', { kind: 'total' }, 'Returns the sum of all numbers in a vector.'),
@@ -266,10 +266,10 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     }, 'percentile', { kind: 'unchanged' }, 'Returns the percentile value from a vector. Takes a percentile value (between 0 and 100) as the second argument and optional weights as a named argument.'),
     createQuantileFunction('inverseQuantile', (values, x, weights) => {
         return weightedInverseQuantile(values, weights, x)
-    }, hre`quantile^{-1}`, { kind: 'number' }, 'Returns the quantile (between 0 and 1) of a given value within a vector. Takes the value as the second argument and optional weights as a named argument. Pass the same vector as both arguments to broadcast over it, ranking each element as a quantile within the vector.'),
+    }, hre`quantile^{-1}`, { kind: 'rank' }, 'Returns the quantile (between 0 and 1) of a given value within a vector. Takes the value as the second argument and optional weights as a named argument. Pass the same vector as both arguments to broadcast over it, ranking each element as a quantile within the vector.'),
     createQuantileFunction('inversePercentile', (values, x, weights) => {
         return weightedInverseQuantile(values, weights, x) * 100
-    }, hre`percentile^{-1}`, { kind: 'number' }, 'Returns the percentile (between 0 and 100) of a given value within a vector. Takes the value as the second argument and optional weights as a named argument. Pass the same vector as both arguments to broadcast over it, ranking each element as a percentile within the vector.'),
+    }, hre`percentile^{-1}`, { kind: 'rank' }, 'Returns the percentile (between 0 and 100) of a given value within a vector. Takes the value as the second argument and optional weights as a named argument. Pass the same vector as both arguments to broadcast over it, ranking each element as a percentile within the vector.'),
     ...setConstants,
     ['toNumber', toNumber],
     ['toString', toString],

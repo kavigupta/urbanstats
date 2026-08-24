@@ -114,7 +114,7 @@ void test('a vector is of the kind of what is in it', () => {
 for (const [code, expected] of [
     ['abs(high_temp - low_temp)', 'F^1 times=0 x1'],
     ['round(population)', 'person^1 times=1 x1'],
-    ['nanTo0(density_pw_1km)', 'm^-2 person^1 times=1 x0.000001'],
+    ['nanTo0(density_pw_1km)', 'm^-2 person^1 times=unknown x0.000001'],
     ['sqrt(area)', 'm^1 times=1 x1000'],
     ['min(high_temp)', 'F^1 times=1 x1'],
     ['mean(density_pw_1km, weight=population)', 'm^-2 person^1 times=1 x0.000001'],
@@ -125,8 +125,7 @@ for (const [code, expected] of [
     // of two unlike kinds, neither
     ['maximum(population, area)', 'unknown'],
     ['inverseQuantile(population, population)', 'dimensionless times=1 x1'],
-    ['sign(population)', 'dimensionless times=1 x1'],
-    ['toNumber(population)', 'dimensionless times=1 x1'],
+    ['sign(population)', 'dimensionless times=unknown x1'],
     // a function that says nothing of its units says nothing
     ['rgb(0.1, 0.2, 0.3)', 'unknown'],
 ] as const) {
@@ -134,6 +133,25 @@ for (const [code, expected] of [
         assert.equal(inferred(code), expected)
     })
 }
+
+void test('what reads the zero it is measured from is of a difference, where the zero is nothing', () => {
+    // ten degrees below freezing is one number in Fahrenheit and another in Celsius, so the size
+    // of a reading is not a reading; the size of a difference of two is a difference all the same
+    assert.equal(inferred('abs(high_temp)'), 'F^1 times=unknown x1')
+    assert.ok(!writable('abs(high_temp)'))
+    assert.equal(inferred('abs(high_temp - low_temp)'), 'F^1 times=0 x1')
+    assert.ok(writable('abs(high_temp - low_temp)'))
+    // and putting a zero where a reading is missing puts it wherever the scale's zero happens to be
+    assert.equal(inferred('nanTo0(high_temp)'), 'F^1 times=unknown x1')
+    assert.equal(inferred('nanTo0(high_temp - low_temp)'), 'F^1 times=0 x1')
+})
+
+void test('a rank is of two of one kind, and is a number of none', () => {
+    assert.equal(inferred('inverseQuantile(population, population)'), 'dimensionless times=1 x1')
+    assert.equal(inferred('inversePercentile(high_temp, low_temp)'), 'dimensionless times=1 x1')
+    // nothing is the rank of a population among areas
+    assert.equal(inferred('inverseQuantile(population, area)'), 'inconsistent')
+})
 
 void test('a total is as many of them as there were, which is not a number anyone knows', () => {
     assert.equal(inferred('sum(population)'), 'person^1 times=unknown x1')

@@ -50,7 +50,6 @@ export const toNumber = {
     documentation: {
         humanReadableName: 'Anything to Number',
         category: 'basic',
-        unitPropagation: { kind: 'number' },
         longDescription: 'Converts any primitive value to a number. Strings are parsed as numbers, booleans become 0 or 1, and numbers are returned as-is.',
     },
 } satisfies USSValue

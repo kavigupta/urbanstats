@@ -198,8 +198,15 @@ export interface Documentation {
 }
 
 /** How a function gives a quantity, which is what the units of a script that calls it are read off. */
-export type UnitPropagation = (
-    /** what it was given, as it was given it: an absolute value, a rounding, a mean, a median */
+export type UnitPropagation = {
+    /**
+     * Whether it reads the zero it is measured from, as |x| and sign(x) do. Of a difference that
+     * zero is nothing, and they mean what they say; of a reading it is wherever the scale puts it,
+     * and 10 degrees below freezing is one thing in Fahrenheit and another in Celsius.
+     */
+    readsTheZero?: boolean
+} & (
+    /** what it was given, as it was given it: a rounding, a mean, a median */
     { kind: 'unchanged' }
     /** one or the other of the two it was given: a larger of two, a smaller of two */
     | { kind: 'either' }
@@ -207,8 +214,10 @@ export type UnitPropagation = (
     | { kind: 'total' }
     /** what it was given, raised: a square root */
     | { kind: 'power', exponent: number }
-    /** a number of no kind, whatever it was given: a logarithm, a sine, a quantile of a column */
+    /** a number of no kind, whatever it was given: a logarithm, a sine */
     | { kind: 'number' }
+    /** where the two it was given are of one kind, and what comes back is a number of none */
+    | { kind: 'rank' }
     /** an intercept, residuals and a coefficient for each parameter */
     | { kind: 'regression' }
 )
