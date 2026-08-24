@@ -126,8 +126,11 @@ for (const [code, expected] of [
     ['maximum(population, area)', 'unknown'],
     ['inverseQuantile(population, population)', 'dimensionless times=1 x1'],
     ['sign(population)', 'dimensionless times=unknown x1'],
-    // a function that says nothing of its units says nothing
+    // a function that states no rule says nothing, which is any quantity at all rather than none:
+    // what a string converts to is a number, but its argument is no quantity to read a rule off
     ['rgb(0.1, 0.2, 0.3)', 'unknown'],
+    ['toNumber(population)', 'unknown'],
+    ['toNumber(population) + population', 'person^1 times=1 x1'],
 ] as const) {
     void test(`${code} is ${expected}`, () => {
         assert.equal(inferred(code), expected)
