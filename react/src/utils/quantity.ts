@@ -1,6 +1,6 @@
 import { HueColors } from '../page_template/color-themes'
 
-import { atom, HumanReadableElement } from './human-readable-name'
+import { atom, HumanReadableElement } from './human-readable-element'
 import { formatNumber, hoursAndMinutes, NumberFormat } from './text'
 import { chooseUnits, Written } from './unit-search'
 

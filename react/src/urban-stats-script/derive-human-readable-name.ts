@@ -1,6 +1,7 @@
 import { editableMapData, MapUSS, mapUssParser, read, tableColumnExpression } from '../mapper/settings/map-uss'
 import { assert } from '../utils/defensive'
-import { HumanReadableElement, HumanReadableName, joinHumanReadableNames } from '../utils/human-readable-name'
+import { HumanReadableElement, HumanReadableName } from '../utils/human-readable-element'
+import { joinHumanReadableNames } from '../utils/human-readable-name'
 import { parseHumanReadableTemplate } from '../utils/human-readable-template'
 import { abbreviate, formatToSignificantFigures, separateNumber } from '../utils/text'
 

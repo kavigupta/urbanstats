@@ -1,5 +1,5 @@
 import { assert } from '../../utils/defensive'
-import { HumanReadableName } from '../../utils/human-readable-name'
+import { HumanReadableName } from '../../utils/human-readable-element'
 import { hre, parseHumanReadableTemplate } from '../../utils/human-readable-template'
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'

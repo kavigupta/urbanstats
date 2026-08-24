@@ -1,4 +1,4 @@
-import { HumanReadableName } from '../../utils/human-readable-name'
+import { HumanReadableName } from '../../utils/human-readable-element'
 import { Context } from '../context'
 import { USSFunctionArgType, USSFunctionReturnType, USSPrimitiveRawValue, USSRawValue, USSValue } from '../types-values'
 

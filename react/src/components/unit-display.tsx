@@ -1,7 +1,8 @@
 import React, { CSSProperties, ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { HumanReadableElement, reifyReact } from '../utils/human-readable-name'
+import { HumanReadableElement } from '../utils/human-readable-element'
+import { reifyReact } from '../utils/human-readable-name'
 import { Hue, ReaderSettings, StoredUnit, Unit, writeQuantity } from '../utils/quantity'
 import { UnitType } from '../utils/unit'
 

@@ -1,4 +1,4 @@
-import { HumanReadableName } from '../../utils/human-readable-name'
+import { HumanReadableName } from '../../utils/human-readable-element'
 import { hre } from '../../utils/human-readable-template'
 import { Context } from '../context'
 import { renderType, USSRawValue, USSValue, DocumentationTable, UnitPropagation, createConstantExpression } from '../types-values'
