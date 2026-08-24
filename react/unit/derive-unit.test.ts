@@ -50,9 +50,9 @@ void test('a map of a regression is written in the units of what was regressed',
     // what a share was above what the regression expected of it, which is a difference of two shares
     assert.equal(written(map(shares, 'do { x = regr.residuals; x }'), 0.05), '+5.00%')
     assert.equal(written(map(shares, 'regr.b'), 0.05), '5.00%')
-    // a share over a logarithm is over nothing anybody can name, and neither is r squared a quantity
-    assert.equal(written(map(shares, 'regr.m1'), 0.05), 'nothing')
-    assert.equal(written(map(shares, 'regr.r2'), 0.05), 'nothing')
+    // a share over a logarithm is a number of neither kind, as r squared is a number of no kind
+    assert.equal(written(map(shares, 'regr.m1'), 0.05), '0.0500')
+    assert.equal(written(map(shares, 'regr.r2'), 0.05), '0.0500')
     const people = 'regr = regression(y=population, x1=area)'
     assert.equal(written(map(people, 'regr.m1'), 1000), '1\u202f000/\u00a0km^{2}')
     assert.equal(written(map(people, 'regr.residuals'), 1000), '+1\u202f000')
