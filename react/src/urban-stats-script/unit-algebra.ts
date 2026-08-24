@@ -250,8 +250,7 @@ export function backward(operator: BinaryOperatorSymbol, result: AbstractInterpV
                 return known
             }
             assert(operator === '+' || operator === '-', `${operator} keeps the unit of what it adds`)
-            // with nothing known of the sum, an operand is of the other's dimensions, but a
-            // temperature and a difference of two add to each other either way round
+            // An operand of an unknown sum may be a level or a difference, so only its dimensions are known.
             return result.kind === 'any' ? manyOf(known) : undo(operator, result, known, side)
         case 'product':
             assert(operator === '*' || operator === '/', `${operator} is a product`)
