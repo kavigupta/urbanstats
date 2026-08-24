@@ -30,8 +30,12 @@ for (const [condition, expected] of [
     ['density_pw_1km > 5000', 'PW Density (r=1km) > 5\u202f000/\u00a0km^{2}'],
     ['sqrt(area) > 10', 'sqrt(Area) > 10km'],
     ['maximum(population, 1000) > 0', 'max(Population, 1\u202f000) > 0'],
+    // a pollution over an area is neither of those, and the number it is measured against is of it
+    ['pm25_pollution * area > 10', 'PW Mean PM2.5 Pollution × Area > 10g/m'],
+    ['pm25_pollution > 10', 'PW Mean PM2.5 Pollution > 10μg/m^{3}'],
     // what scales a quantity is no quantity, and neither is what one is divided into
     ['population * 2 > population', 'Population × 2 > Population'],
+    ['rainfall * 2 > 100', 'Rainfall × 2 > 10\u202f000cm/yr'],
     // which of the two the 32 is cannot be said, where the 0 is of the kind it is compared against
     ['high_temp - 32 > 0', 'Mean high temp \u2212 32 > 0°F'],
 ] as const) {

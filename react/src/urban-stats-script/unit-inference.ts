@@ -202,7 +202,9 @@ function pushedInto(propagation: UnitPropagation | undefined, expected: Abstract
  * The other way through: what the expression works out to is pushed back down it, so that the 0.1
  * of a share below a tenth is read as a tenth of a share rather than as a tenth of nothing.
  */
-function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expected: AbstractInterpValue, scope: Scope, into: ConstantUnits): void {
+function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, wanted: AbstractInterpValue, scope: Scope, into: ConstantUnits): void {
+    // a bare number says what it is worth and nothing of what it is in, which is all that is asked here
+    const expected: AbstractInterpValue = wanted.kind === 'any' ? { kind: 'any' } : wanted
     switch (ast.type) {
         case 'constant': {
             const unit = unitToWriteIn(expected)
