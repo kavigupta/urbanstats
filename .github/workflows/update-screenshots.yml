@@ -49,12 +49,14 @@ jobs:
               status: 'completed'
             });
 
-            if (runs.data.workflow_runs.length === 0) {
+            const usableRuns = runs.data.workflow_runs.filter(run => run.conclusion !== 'cancelled');
+
+            if (usableRuns.length === 0) {
               core.setFailed('No completed workflow runs found for this PR head commit');
               return;
             }
 
-            const latestRun = runs.data.workflow_runs[0];
+            const latestRun = usableRuns[0];
             core.setOutput('run-id', latestRun.id);
 
       - name: Download changed_screenshots artifact
