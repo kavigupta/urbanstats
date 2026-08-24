@@ -2,6 +2,7 @@ import React, { ReactNode, useCallback, useContext, useMemo, useRef } from 'reac
 
 import { CountsByUT } from '../components/countsByArticleType'
 import { generateStatisticsPanelCSVData } from '../components/csv-export'
+import { useReaderSettings } from '../components/display-stats'
 import { createScreenshot } from '../components/screenshot'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { MapSettings } from '../mapper/settings/utils'
@@ -44,6 +45,8 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
 
     const subHeaderTextClass = useSubHeaderTextClass()
 
+    const readerSettings = useReaderSettings()
+
     const subHeaderText = useMemo(() => data?.renderedStatname ?? (stat.type === 'simple' ? variable(stat.statName).humanReadableName : '\u00A0'), [data, stat])
 
     return (
@@ -68,7 +71,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
                 would otherwise end up in the screenshot. */}
             <div ref={headersRef} style={{ position: 'relative' }}>
                 <StatisticPanelHead articleType={stat.articleType} universe={stat.universe} />
-                <div className={subHeaderTextClass}>{reifyReact(subHeaderText)}</div>
+                <div className={subHeaderTextClass}>{reifyReact(subHeaderText, readerSettings)}</div>
             </div>
             {!view.edit && <ViewHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} />}
             <CrossSourceBorderDisclaimer stat={stat} view={view} counts={counts} isFootnote={false} />

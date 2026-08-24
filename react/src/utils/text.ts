@@ -79,6 +79,11 @@ export function hoursAndMinutes(inMinutes: number): { written: string, unit: 'h'
         : { written: `${sign}${hours}:${minutes.toString().padStart(2, '0')}`, unit: 'h' }
 }
 
+export function trimTrailingZeros(value: string): string {
+    if (!value.includes('.')) return value
+    return value.replace(/\.?0+$/g, '')
+}
+
 export function formatNumber(value: number, format: NumberFormat): string {
     switch (format.kind) {
         case 'fixed':

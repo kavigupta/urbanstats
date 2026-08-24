@@ -1,6 +1,6 @@
 import React, { ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
-import { Statistic } from '../../components/display-stats'
+import { Statistic, useReaderSettings } from '../../components/display-stats'
 import { renderInequality } from '../../components/unit-display'
 import { Colors } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
@@ -53,6 +53,7 @@ export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Base
 }
 
 function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
+    const readerSettings = useReaderSettings()
     // do this as a table with 10 columns, each 10% wide and
     // 2 rows. Top one is the colorbar, bottom one is the
     // labels.
@@ -152,7 +153,7 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
             <div ref={valuesRef} style={{ position: 'absolute', top: 0, left: 0, display: 'flex', width: '100%', visibility: 'hidden' }}>{valuesDivs(false)}</div>
             <div style={{ display: 'flex', width: '100%' }}>{valuesDivs(shouldRotate)}</div>
             <div className="centered_text user_input">
-                {reifyReact(ramp.label)}
+                {reifyReact(ramp.label, readerSettings)}
             </div>
         </div>
     )

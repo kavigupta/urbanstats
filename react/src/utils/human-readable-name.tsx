@@ -2,8 +2,16 @@ import React, { ReactNode } from 'react'
 
 import { codeStyle } from './code-style'
 import { HumanReadableElement, HumanReadableName } from './human-readable-element'
+import { ReaderSettings, StoredUnit, writeQuantity } from './quantity'
+import { trimTrailingZeros } from './text'
 
-export function reifyReact(elements: HumanReadableElement[] | string): ReactNode {
+export function writtenPlainly(value: number, unit: StoredUnit, settings: ReaderSettings = {}): string {
+    const written = writeQuantity(value, unit, settings)
+    return `${trimTrailingZeros(written.renderedValue)}${reifyString(written.unitName)}`
+}
+
+/** Whoever is reading is asked what units they read in; where nobody is, a title takes the default. */
+export function reifyReact(elements: HumanReadableElement[] | string, settings: ReaderSettings = {}): ReactNode {
     if (typeof elements === 'string') return elements
     return elements.map((element, index) => {
         switch (element.type) {
@@ -12,24 +20,26 @@ export function reifyReact(elements: HumanReadableElement[] | string): ReactNode
             case 'code':
                 return <code key={index} style={codeStyle}>{element.value}</code>
             case 'subscript':
-                return <sub key={index}>{reifyReact(element.value)}</sub>
+                return <sub key={index}>{reifyReact(element.value, settings)}</sub>
             case 'superscript':
-                return <sup key={index}>{reifyReact(element.value)}</sup>
+                return <sup key={index}>{reifyReact(element.value, settings)}</sup>
             case 'where':
                 return (
                     <React.Fragment key={index}>
                         {' where '}
-                        {reifyReact(element.value)}
+                        {reifyReact(element.value, settings)}
                     </React.Fragment>
                 )
             case 'parens':
                 return (
                     <React.Fragment key={index}>
                         (
-                        {reifyReact(element.value)}
+                        {reifyReact(element.value, settings)}
                         )
                     </React.Fragment>
                 )
+            case 'quantity':
+                return writtenPlainly(element.value, element.unit, settings)
         }
     })
 }
@@ -50,6 +60,8 @@ export function reifyString(elements: HumanReadableElement[] | string): string {
                 return ` where ${reifyString(element.value)}`
             case 'parens':
                 return `(${reifyString(element.value)})`
+            case 'quantity':
+                return writtenPlainly(element.value, element.unit)
         }
     }).join('')
 }

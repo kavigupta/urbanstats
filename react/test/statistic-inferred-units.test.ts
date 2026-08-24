@@ -84,9 +84,19 @@ urbanstatsFixture('a table filtered on a share and a temperature', filtered)
 // eslint-disable-next-line no-restricted-syntax -- Reading the title the router set, not setting one.
 const documentTitle = ClientFunction(() => document.title)
 
+const captions = ClientFunction(() => Array.from(document.querySelectorAll('div, h1, h2, span')).map(node => (node as HTMLElement).innerText).filter(text => text.includes('where Commute Bike')).slice(0, 2))
+
 test('the numbers a filter names are written in the units it reads them from', async (t) => {
     await waitForLoading()
     await t.expect(documentTitle()).eql('Population where Commute Bike % > 5% and Mean high temp > 80°F')
+})
+
+test('a reader in Celsius is given the caption in Celsius', async (t) => {
+    await waitForLoading()
+    const temperatures = Selector('[data-test-id=temperature_select]')
+    await t.click(temperatures).click(temperatures.find('option').withText(/C/))
+    await waitForLoading()
+    await t.expect(captions()).eql([])
 })
 
 urbanstatsFixture('a quantity with no writing', tableOf('population ** 0.5'))
