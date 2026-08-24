@@ -199,16 +199,16 @@ export interface Documentation {
 
 /** How a function gives a quantity, which is read off the arguments a script passes it. */
 export type UnitPropagation = {
-    /** Of anything but a difference, how many of it there are comes back unknown: |x|, sign(x). */
+    /** Unless what it is given is a difference, the coefficient comes back unknown. */
     unknownTimes?: boolean
 } & (
-    { kind: 'unchanged' } // a rounding, a mean, a median, a quantile
-    | { kind: 'either' } // a larger of two, a smaller of two
-    | { kind: 'total' } // a sum
-    | { kind: 'power', exponent: number } // a square root
-    | { kind: 'number' } // a logarithm, a sine
-    | { kind: 'rank' } // where one value falls among a column of them
-    | { kind: 'regression' }
+    { kind: 'unchanged' } // keeps the unit
+    | { kind: 'either' } // joins the units of two
+    | { kind: 'total' } // keeps the unit, however many of it there were
+    | { kind: 'power', exponent: number } // raises the unit
+    | { kind: 'number' } // coerces to a number
+    | { kind: 'rank' } // takes two of one unit, gives a number
+    | { kind: 'regression' } // gives a unit for each field of the result
 )
 
 export interface USSDocumentedType {
