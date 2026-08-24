@@ -49,7 +49,7 @@ export interface NavigationOptions {
     | { kind: 'element', element: HTMLElement } // Scroll keeping a specific element in the same place
 }
 
-export interface NavLink { href: string, onClick: (e?: React.MouseEvent) => Promise<void> }
+export interface NavLink { href: string, onClick: (e?: React.MouseEvent | React.KeyboardEvent) => Promise<void> }
 
 export class Navigator {
     /* eslint-disable react-hooks/rules-of-hooks, no-restricted-syntax -- This is a logic class with custom hooks and core navigation functions */
@@ -308,11 +308,15 @@ export class Navigator {
         postNavigationCallback?: () => void
     }): NavLink {
         const url = urlFromPageDescriptor(pageDescriptor)
+        const href = url.pathname + url.search + url.hash
         return {
-            href: url.pathname + url.search + url.hash,
-            onClick: async (e?: React.MouseEvent) => {
+            href,
+            onClick: async (e?: React.MouseEvent | React.KeyboardEvent) => {
                 if (e?.altKey || e?.ctrlKey || e?.metaKey || e?.shiftKey) {
-                    // Some sort of shortcut to open in new tab, etc.
+                    // Some sort of shortcut to open in new tab, etc. Anchors do this themselves, other elements need our help.
+                    if (!(e.target instanceof Element) || e.target.closest('a[href]') === null) {
+                        window.open(href, '_blank')
+                    }
                     return
                 }
                 e?.preventDefault()

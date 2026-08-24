@@ -4,6 +4,7 @@ import '../common.css'
 import flag_dimensions from '../data/flag_dimensions'
 import statistic_name_list from '../data/statistic_name_list'
 import { Navigator } from '../navigation/Navigator'
+import { ExceptionalPageDescriptor } from '../navigation/PageDescriptor'
 import { universePath } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { useHeaderLogoKey, useHideSidebarDesktop } from '../page_template/utils'
@@ -97,6 +98,20 @@ export function Header(props: {
                                     postNavigationCallback: () => { props.setHamburgerOpen(false) },
                                 })
                             }
+                            compareLink={(newLocation) => {
+                                const comparedTo = articlesBeingViewed(navContext.currentDescriptor)
+                                if (comparedTo === undefined || comparedTo.includes(newLocation)) {
+                                    return undefined
+                                }
+                                return navContext.link({
+                                    kind: 'comparison',
+                                    universe: currentUniverse,
+                                    longnames: [...comparedTo, newLocation],
+                                }, {
+                                    scroll: { kind: 'position', top: 0 },
+                                    postNavigationCallback: () => { props.setHamburgerOpen(false) },
+                                })
+                            }}
                             statisticLink={(statisticIndex, articleType, universe) => {
                                 const currentDescriptor = navContext.currentDescriptor
                                 return navContext.link({
@@ -131,6 +146,18 @@ export function Header(props: {
             </div>
         </div>
     )
+}
+
+// The regions a comparison from the search bar would start from, if the current page is about regions.
+function articlesBeingViewed(descriptor: ExceptionalPageDescriptor): string[] | undefined {
+    switch (descriptor.kind) {
+        case 'article':
+            return [descriptor.longname]
+        case 'comparison':
+            return descriptor.longnames
+        default:
+            return undefined
+    }
 }
 
 function TopLeft(props: {

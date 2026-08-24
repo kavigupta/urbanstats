@@ -12,6 +12,7 @@ import type { SearchWorkerInputMessage, SearchWorkerOutputMessage, SearchWorkerS
 import { Universe, useUniverse } from '../universe'
 import { Property } from '../utils/Property'
 import { TestUtils } from '../utils/TestUtils'
+import { withButtonRole } from '../utils/a11y'
 import { makeDebugLogger } from '../utils/debug-logging'
 
 import { GenericSearchBox } from './search-generic'
@@ -23,6 +24,7 @@ const debugPerformance = makeDebugLogger('searchPerformance')
 export function SearchBox(props: {
     onChange?: (inp: string) => void
     articleLink: (inp: string) => ReturnType<Navigator['link']>
+    compareLink?: (inp: string) => ReturnType<Navigator['link']> | undefined
     statisticLink?: (statIdx: number, articleType: string, universe: Universe) => ReturnType<Navigator['link']>
     autoFocus: boolean
     placeholder: string
@@ -82,26 +84,44 @@ export function SearchBox(props: {
         }
     }
 
-    const renderMatch = (currentMatch: (() => SearchResult), onMouseOver: () => void, onClick: () => void, style: React.CSSProperties, dataTestId: string | undefined): ReactElement => (
-        <a
-            key={currentMatch().longname}
-            {...link(currentMatch())}
-            style={{
-                textDecoration: 'none',
-                color: colors.textMain,
-            }}
-            data-test-id={dataTestId}
-        >
+    const renderMatch = (currentMatch: (() => SearchResult), onMouseOver: () => void, onClick: () => void, style: React.CSSProperties, dataTestId: string | undefined): ReactElement => {
+        const match = currentMatch()
+        const compare = match.type === 'article' ? props.compareLink?.(match.longname) : undefined
+        return (
             <div
+                key={match.longname}
                 className="serif searchbox-dropdown-item"
-                style={style}
+                style={{ ...style, display: 'flex', alignItems: 'center', gap: '0.5em' }}
                 onClick={onClick}
                 onMouseOver={onMouseOver}
             >
-                <SingleSearchResult {...currentMatch()} />
+                <a
+                    {...link(match)}
+                    style={{
+                        flexGrow: 1,
+                        minWidth: 0,
+                        textDecoration: 'none',
+                        color: colors.textMain,
+                    }}
+                    data-test-id={dataTestId}
+                >
+                    <SingleSearchResult {...match} />
+                </a>
+                {compare === undefined
+                    ? undefined
+                    : (
+                            // This is an anchor so we get modifier key functionality (e.g. open link in new tab)
+                            <a
+                                {...compare}
+                                {...withButtonRole(`Compare with ${match.longname}`, compare.onClick)}
+                                data-test-id="search-result-compare"
+                            >
+                                Compare
+                            </a>
+                        )}
             </div>
-        </a>
-    )
+        )
+    }
 
     return (
         <GenericSearchBox
