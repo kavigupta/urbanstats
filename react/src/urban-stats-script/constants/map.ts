@@ -1,6 +1,6 @@
 import { Basemap } from '../../mapper/settings/utils'
 import { assert } from '../../utils/defensive'
-import { HumanReadableName } from '../../utils/human-readable-name'
+import { HumanReadableName } from '../../utils/human-readable-element'
 import { parseHumanReadableTemplate, hre } from '../../utils/human-readable-template'
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'

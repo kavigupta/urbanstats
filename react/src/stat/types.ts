@@ -2,7 +2,7 @@ import { StatCol } from '../components/load-article'
 import statnames from '../data/statistic_name_list'
 import { MapUSS } from '../mapper/settings/map-uss'
 import { Universe } from '../universe'
-import { HumanReadableName } from '../utils/human-readable-name'
+import { HumanReadableName } from '../utils/human-readable-element'
 import { StoredUnit } from '../utils/quantity'
 
 export type Statistic = {

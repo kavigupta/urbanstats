@@ -5,7 +5,8 @@ import { defaultTypeEnvironment } from '../src/mapper/context'
 import { mapUSSFromString } from '../src/mapper/settings/map-uss'
 import { deriveMapLabel, deriveTableColumnLabel, deriveTableLabel } from '../src/urban-stats-script/derive-human-readable-name'
 import { TypeEnvironment } from '../src/urban-stats-script/types-values'
-import { HumanReadableName, reifyString } from '../src/utils/human-readable-name'
+import { HumanReadableName } from '../src/utils/human-readable-element'
+import { reifyString } from '../src/utils/human-readable-name'
 
 function getTypeEnvironment(): TypeEnvironment {
     return defaultTypeEnvironment('USA')

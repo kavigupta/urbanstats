@@ -5,7 +5,8 @@ import { checkboxCategoryName, sourceEnabledKey, useIsStaged } from '../page_tem
 import { GroupTreeState, useAvailableYears, useCategoriesMatchingSearch, useCategoryTreeState, useDataSourceCheckboxes, useExpandCategoriesHidingStagedChanges } from '../page_template/statistic-settings'
 import { Category, statParents } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
-import { HumanReadableName, reifyReact } from '../utils/human-readable-name'
+import { HumanReadableName } from '../utils/human-readable-element'
+import { reifyReact } from '../utils/human-readable-name'
 
 import { useWarningsByGroup } from './ArticleWarnings'
 import { ExpandButton } from './ExpandButton'

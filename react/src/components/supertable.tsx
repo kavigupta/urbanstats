@@ -3,7 +3,7 @@ import React, { CSSProperties, Fragment, ReactNode, useMemo } from 'react'
 import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { Universe, useDefinedUniverse } from '../universe'
-import { HumanReadableName } from '../utils/human-readable-name'
+import { HumanReadableName } from '../utils/human-readable-element'
 import { Article } from '../utils/protos'
 
 import { WarningColumn, WarningRow } from './ArticleWarnings'

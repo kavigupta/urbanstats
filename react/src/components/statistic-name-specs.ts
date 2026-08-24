@@ -1,6 +1,7 @@
 import { statParents } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
-import { HumanReadableName, joinHumanReadableNames } from '../utils/human-readable-name'
+import { HumanReadableName } from '../utils/human-readable-element'
+import { joinHumanReadableNames } from '../utils/human-readable-name'
 
 import { ArticleRow } from './load-article'
 import { CellSpec } from './supertable'
