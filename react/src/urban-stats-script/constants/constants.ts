@@ -242,11 +242,11 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     createNumberToNumberFunction('floor', Math.floor, 'floor', { kind: 'unchanged' }, 'Rounds a number down to the nearest integer.'),
     createNumberToNumberFunction('round', Math.round, 'round', { kind: 'unchanged' }, 'Rounds a number to the nearest integer.'),
     createNumberToNumberFunction('exp', Math.exp, 'exp', { kind: 'number' }, 'Returns e raised to the power of the given number.'),
-    createNumberToNumberFunction('sign', Math.sign, 'sign', { kind: 'number', unknownTimes: true }, 'Returns the sign of a number: 1 for positive, -1 for negative, 0 for zero.'),
+    createNumberToNumberFunction('sign', Math.sign, 'sign', { kind: 'number' }, 'Returns the sign of a number: 1 for positive, -1 for negative, 0 for zero.'),
     createNumberToNumberFunction('nanTo0', (x: number) => isNaN(x) ? 0 : x, 'NaN to Zero', { kind: 'unchanged', unknownTimes: true }, 'Converts NaN values to 0, leaving other numbers unchanged.'),
     createTwoNumberToNumberFunction('maximum', Math.max, 'max', { kind: 'either' }, 'Returns the larger of two numbers.'),
     createTwoNumberToNumberFunction('minimum', Math.min, 'min', { kind: 'either' }, 'Returns the smaller of two numbers.'),
-    createVectorToNumberFunction('sum', values => values.reduce((a, b) => a + b, 0), 0, 'sum', { kind: 'total' }, 'Returns the sum of all numbers in a vector.'),
+    createVectorToNumberFunction('sum', values => values.reduce((a, b) => a + b, 0), 0, 'sum', { kind: 'unchanged', unknownTimes: true }, 'Returns the sum of all numbers in a vector.'),
     createVectorToNumberFunction('min', values => Math.min(...values), Infinity, 'min', { kind: 'unchanged' }, 'Returns the smallest number in a vector.'),
     createVectorToNumberFunction('max', values => Math.max(...values), -Infinity, 'max', { kind: 'unchanged' }, 'Returns the largest number in a vector.'),
     createWeightedVectorFunction('mean', (values, weights) => {

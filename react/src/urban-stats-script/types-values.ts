@@ -197,14 +197,14 @@ export interface Documentation {
     unitPropagation?: UnitPropagation
 }
 
-/** How a function gives a quantity, which is read off the arguments a script passes it. */
-export type UnitPropagation = {
-    /** Unless what it is given is a difference, the coefficient comes back unknown. */
-    unknownTimes?: boolean
-} & (
-    { kind: 'unchanged' } // keeps the unit
+export type UnitPropagation = (
+    // keeps the unit
+    {
+        kind: 'unchanged'
+        /** Unless what it is given is a difference, the coefficient comes back unknown. */
+        unknownTimes?: boolean
+    }
     | { kind: 'either' } // joins the units of two
-    | { kind: 'total' } // keeps the unit, however many of it there were
     | { kind: 'power', exponent: number } // raises the unit
     | { kind: 'number' } // coerces to a number
     | { kind: 'rank' } // takes two of one unit, gives a number

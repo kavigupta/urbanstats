@@ -125,7 +125,7 @@ for (const [code, expected] of [
     // of two unlike kinds, neither
     ['maximum(population, area)', 'unknown'],
     ['inverseQuantile(population, population)', 'dimensionless times=1 x1'],
-    ['sign(population)', 'dimensionless times=unknown x1'],
+    ['sign(population)', 'dimensionless times=1 x1'],
     // a function that states no rule says any quantity at all, rather than none
     ['rgb(0.1, 0.2, 0.3)', 'unknown'],
     ['toNumber(population)', 'unknown'],
@@ -160,8 +160,9 @@ void test('a total is as many of them as there were, which is not a number anyon
     assert.ok(writable('sum(population)'))
     assert.equal(inferred('sum(high_temp)'), 'F^1 times=unknown x1')
     assert.ok(!writable('sum(high_temp)'))
-    // a mean of them is one of them again
+    // a mean of them is one of them again, and a total of differences is a difference
     assert.ok(writable('mean(high_temp)'))
+    assert.equal(inferred('sum(high_temp - low_temp)'), 'F^1 times=0 x1')
 })
 
 void test('a logarithm takes whatever it is given and gives a number of no kind', () => {

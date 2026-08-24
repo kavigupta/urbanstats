@@ -91,10 +91,10 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
     switch (propagation.kind) {
         case 'number':
             return inUnit(dimensionless)
-        case 'unchanged':
-            return value
-        case 'total':
-            return manyOf(value)
+        case 'unchanged': {
+            const isDifference = value.kind === 'in' && value.unit.unit.times === 0
+            return propagation.unknownTimes === true && !isDifference ? manyOf(value) : value
+        }
         case 'power':
             return forward('**', value, constant(propagation.exponent))
         case 'either':
@@ -108,13 +108,9 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
 }
 
 function propagated(propagation: UnitPropagation, args: UrbanStatsASTArg[], scope: Scope): Inferred {
-    if (propagation.kind === 'regression') {
-        return regressionFields(args, scope)
-    }
-    const value = argument(args, 0, scope)
-    const result = whatItGives(propagation, value, args, scope)
-    const isDifference = value.kind === 'in' && value.unit.unit.times === 0
-    return propagation.unknownTimes === true && !isDifference ? manyOf(result) : result
+    return propagation.kind === 'regression'
+        ? regressionFields(args, scope)
+        : whatItGives(propagation, argument(args, 0, scope), args, scope)
 }
 
 /** Nothing, where the script bound the name itself and the function of that name is not what is called. */
