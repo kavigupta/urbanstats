@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-import { HumanReadableElement } from '../utils/human-readable-name'
+import { HumanReadableElement } from '../utils/human-readable-element'
 
 import { AutoUXNodeMetadata } from './autoux-node-metadata'
 import { LocInfo } from './location'
