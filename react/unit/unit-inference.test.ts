@@ -126,8 +126,7 @@ for (const [code, expected] of [
     ['maximum(population, area)', 'unknown'],
     ['inverseQuantile(population, population)', 'dimensionless times=1 x1'],
     ['sign(population)', 'dimensionless times=unknown x1'],
-    // a function that states no rule says nothing, which is any quantity at all rather than none:
-    // what a string converts to is a number, but its argument is no quantity to read a rule off
+    // a function that states no rule says any quantity at all, rather than none
     ['rgb(0.1, 0.2, 0.3)', 'unknown'],
     ['toNumber(population)', 'unknown'],
     ['toNumber(population) + population', 'person^1 times=1 x1'],
@@ -137,14 +136,13 @@ for (const [code, expected] of [
     })
 }
 
-void test('what reads the zero it is measured from is of a difference, where the zero is nothing', () => {
-    // ten degrees below freezing is one number in Fahrenheit and another in Celsius, so the size
-    // of a reading is not a reading; the size of a difference of two is a difference all the same
+void test('the size of a reading is no reading, where the size of a difference is a difference', () => {
+    // ten degrees below freezing is one number in Fahrenheit and another in Celsius
     assert.equal(inferred('abs(high_temp)'), 'F^1 times=unknown x1')
     assert.ok(!writable('abs(high_temp)'))
     assert.equal(inferred('abs(high_temp - low_temp)'), 'F^1 times=0 x1')
     assert.ok(writable('abs(high_temp - low_temp)'))
-    // and putting a zero where a reading is missing puts it wherever the scale's zero happens to be
+    // as is putting a zero in for a missing reading, that zero being wherever the scale puts it
     assert.equal(inferred('nanTo0(high_temp)'), 'F^1 times=unknown x1')
     assert.equal(inferred('nanTo0(high_temp - low_temp)'), 'F^1 times=0 x1')
 })
@@ -170,7 +168,7 @@ void test('a logarithm takes whatever it is given and gives a number of no kind'
     assert.equal(inferred('ln(density_pw_1km)'), 'dimensionless times=1 x1')
     assert.equal(inferred('log10(area)'), 'dimensionless times=1 x1')
     assert.equal(inferred('sin(population)'), 'dimensionless times=1 x1')
-    // and being of no kind, it scales whatever it multiplies rather than adding a dimension to it
+    // being of no kind, it scales what it multiplies rather than adding a dimension to it
     assert.equal(inferred('ln(population) * area'), 'm^2 times=1 x1000000')
 })
 

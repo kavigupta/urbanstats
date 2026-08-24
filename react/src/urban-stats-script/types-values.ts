@@ -197,28 +197,17 @@ export interface Documentation {
     unitPropagation?: UnitPropagation
 }
 
-/** How a function gives a quantity, which is what the units of a script that calls it are read off. */
+/** How a function gives a quantity, which is read off the arguments a script passes it. */
 export type UnitPropagation = {
-    /**
-     * Whether it reads the zero it is measured from, as |x| and sign(x) do. Of a difference that
-     * zero is nothing, and they mean what they say; of a reading it is wherever the scale puts it,
-     * and 10 degrees below freezing is one thing in Fahrenheit and another in Celsius.
-     */
-    readsTheZero?: boolean
+    /** Of anything but a difference, how many of it there are comes back unknown: |x|, sign(x). */
+    unknownTimes?: boolean
 } & (
-    /** what it was given, as it was given it: a rounding, a mean, a median */
-    { kind: 'unchanged' }
-    /** one or the other of the two it was given: a larger of two, a smaller of two */
-    | { kind: 'either' }
-    /** as many of what it was given as there were, which is not a number anyone knows: a total */
-    | { kind: 'total' }
-    /** what it was given, raised: a square root */
-    | { kind: 'power', exponent: number }
-    /** a number of no kind, whatever it was given: a logarithm, a sine */
-    | { kind: 'number' }
-    /** where the two it was given are of one kind, and what comes back is a number of none */
-    | { kind: 'rank' }
-    /** an intercept, residuals and a coefficient for each parameter */
+    { kind: 'unchanged' } // a rounding, a mean, a median, a quantile
+    | { kind: 'either' } // a larger of two, a smaller of two
+    | { kind: 'total' } // a sum
+    | { kind: 'power', exponent: number } // a square root
+    | { kind: 'number' } // a logarithm, a sine
+    | { kind: 'rank' } // where one value falls among a column of them
     | { kind: 'regression' }
 )
 

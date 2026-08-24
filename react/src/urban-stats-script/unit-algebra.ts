@@ -18,7 +18,7 @@ export function inUnit(unit: StoredUnit): AbstractInterpValue {
     return { kind: 'in', unit }
 }
 
-/** As many of it as there were, where how many is not something the reading can say: a total. */
+/** As many of it as there were, which is not a number the reading can say. */
 export function manyOf(value: AbstractInterpValue): AbstractInterpValue {
     return value.kind === 'in' ? written(value.unit, 'unknown') : value
 }

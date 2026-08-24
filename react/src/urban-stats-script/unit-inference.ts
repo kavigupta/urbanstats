@@ -100,7 +100,7 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
         case 'either':
             return join(value, argument(args, 1, scope))
         case 'rank': {
-            // one is ranked among the other, so nothing is the rank of people among areas
+            // of one kind, so nothing is the rank of a population among areas
             const alike = forward('-', value, argument(args, 1, scope))
             return alike.kind === 'none' ? alike : inUnit(dimensionless)
         }
@@ -114,10 +114,10 @@ function propagated(propagation: UnitPropagation, args: UrbanStatsASTArg[], scop
     const value = argument(args, 0, scope)
     const result = whatItGives(propagation, value, args, scope)
     const isDifference = value.kind === 'in' && value.unit.unit.times === 0
-    return propagation.readsTheZero === true && !isDifference ? manyOf(result) : result
+    return propagation.unknownTimes === true && !isDifference ? manyOf(result) : result
 }
 
-/** What a function says of the quantity it gives, where it is the function of that name and not a name the script bound. */
+/** Nothing, where the script bound the name itself and the function of that name is not what is called. */
 function propagationOf(fn: UrbanStatsASTExpression, scope: Scope): UnitPropagation | undefined {
     if (fn.type !== 'identifier' || scope.named.has(fn.name.node)) {
         return undefined
