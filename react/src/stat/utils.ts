@@ -8,6 +8,7 @@ import { StatName } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 import { orderNonNan, Table, tableType } from '../urban-stats-script/constants/table'
 import { deriveTableColumnLabel, deriveTableLabel, tableLabel } from '../urban-stats-script/derive-human-readable-name'
+import { deriveTableColumnUnit } from '../urban-stats-script/derive-unit'
 import { unparse } from '../urban-stats-script/parser'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
@@ -76,8 +77,9 @@ function computeOrdinals(values: number[]): number[] {
 }
 
 /**
- * What the panel draws, out of the table its script produced. The names a column or the table does
- * not state are derived from the script, and whatever cannot be derived is reported through `warn`.
+ * What the panel draws, out of the table its script produced. The names and units a column or the
+ * table does not state are derived from the script, and a name that cannot be derived is reported
+ * through `warn`; a unit that cannot be is simply not written.
  */
 export function statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn }: {
     table: Table
@@ -97,7 +99,9 @@ export function statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn }
             populationPercentile: column.populationPercentiles,
             ordinal: computeOrdinals(column.values),
             name,
-            unit: column.unit === undefined ? undefined : unitTypeToStoredUnit(column.unit),
+            unit: column.unit === undefined
+                ? deriveTableColumnUnit(mapUSS, typeEnvironment, index)
+                : unitTypeToStoredUnit(column.unit),
         }
     })
 

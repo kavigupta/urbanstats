@@ -13,6 +13,7 @@ import { Settings, useSetting } from '../page_template/settings'
 import { getVector, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { allGroups, allYears, statParents, StatPath, StatName } from '../page_template/statistic-tree'
 import { withButtonRole } from '../utils/a11y'
+import { classifyStatistic, unitTypeToStoredUnit } from '../utils/unit'
 import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { AuthenticationStateMachine } from './AuthenticationStateMachine'
@@ -544,14 +545,14 @@ function Value({ stat, statColumn }: { stat: number, statColumn: StatName | Lega
     return (
         <span>
             <Statistic
-                statname={statColumn}
                 value={stat}
                 isUnit={false}
+                unit={unitTypeToStoredUnit(classifyStatistic(statColumn))}
             />
             <Statistic
-                statname={statColumn}
                 value={stat}
                 isUnit={true}
+                unit={unitTypeToStoredUnit(classifyStatistic(statColumn))}
             />
         </span>
     )

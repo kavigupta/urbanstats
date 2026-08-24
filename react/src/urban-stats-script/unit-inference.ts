@@ -14,7 +14,7 @@ function quantity(value: Inferred): AbstractInterpValue {
     return value.kind === 'fields' ? anything : value
 }
 
-type Bindings = Map<string, Inferred>
+export type Bindings = Map<string, Inferred>
 
 /** What has been worked out so far: the statistics as the script found them, and the names it gave. */
 interface Scope {
@@ -175,6 +175,12 @@ function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Sco
 }
 
 /** What kind of quantity an expression works out to, as far as reading it can say. */
-export function inferUnit(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment): AbstractInterpValue {
-    return quantity(infer(ast, { typeEnvironment, named: new Map() }))
+export function inferUnit(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, named: Bindings = new Map()): AbstractInterpValue {
+    return quantity(infer(ast, { typeEnvironment, named }))
+}
+
+export function inferBindings(program: UrbanStatsASTStatement | UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): Bindings {
+    const named: Bindings = new Map()
+    infer(program, { typeEnvironment, named })
+    return named
 }

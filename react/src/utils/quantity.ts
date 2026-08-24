@@ -197,6 +197,24 @@ function allUnits(settings: ReaderSettings): NamedUnit[] {
     ]
 }
 
+const counted: BaseUnit[] = ['person', 'usd', 'fatality']
+
+/**
+ * A count goes unnamed, so it can only be the one thing counted: people times square kilometres
+ * would be written `km²` and read as an area. A fractional power is in no pool at all.
+ */
+export function writableDimensions(dimensions: Dimension[]): boolean {
+    if (!dimensions.every(({ power }) => Number.isInteger(power))) {
+        return false
+    }
+    const counts = dimensions.filter(({ baseUnit }) => counted.includes(baseUnit))
+    if (counts.length === 0) {
+        return true
+    }
+    const above = dimensions.filter(({ power }) => power > 0)
+    return counts.length === 1 && counts[0].power === 1 && above.length === 1
+}
+
 type DimensionKey = string
 
 function renderAsKey(scales: Dimension[]): DimensionKey {

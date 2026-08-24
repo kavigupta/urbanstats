@@ -173,7 +173,13 @@ const mapDataCall = l.call({
     unnamedArgs: [],
 })
 
+const mapData = mapUssParser(mapDataCall, 'dont-reparse')
+
 export const editableMapData = mapUssParser(l.edit(mapDataCall), 'dont-reparse')
+
+export function mapDataExpression(uss: MapUSS, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression | undefined {
+    return read(mapData, uss, typeEnvironment)?.namedArgs.data
+}
 
 const tableColumns = mapUssParser(l.call({
     fn: l.ignore(),

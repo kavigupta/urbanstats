@@ -123,6 +123,8 @@ export const storedUnits = {
 export function unitTypeToStoredUnit(unitType: UnitType): StoredUnit {
     return storedUnits[unitType]
 }
+
+export const plainNumber: StoredUnit = storedUnits.number
 /* eslint-enable no-restricted-syntax */
 
 function fahrenheitToCelsius(value: number): number {

@@ -22,6 +22,7 @@ import { CommonMap } from '../urban-stats-script/constants/map'
 import { ScaleInstance } from '../urban-stats-script/constants/scale'
 import { TextBox } from '../urban-stats-script/constants/text-box'
 import { deriveMapLabel } from '../urban-stats-script/derive-human-readable-name'
+import { deriveMapUnit } from '../urban-stats-script/derive-unit'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
@@ -32,7 +33,8 @@ import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { makeDebugLogger } from '../utils/debug-logging'
 import { HumanReadableName } from '../utils/human-readable-name'
 import { ICoordinate } from '../utils/protos'
-import { unitTypeToStoredUnit } from '../utils/unit'
+import { StoredUnit } from '../utils/quantity'
+import { plainNumber, unitTypeToStoredUnit } from '../utils/unit'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
 import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar'
@@ -145,7 +147,9 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         }
     }
 
-    const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind, cache, label })
+    const derivedUnit = deriveMapUnit(mapSettings.script.uss, typeEnvironment)
+
+    const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind, cache, label, derivedUnit })
 
     function MapComponent({ props, exportImageRef }: { props: MapUIProps<{ loading: boolean }>, exportImageRef: (fn: () => Promise<HTMLCanvasElement>) => void }): ReactNode {
         const mapsRef: (MapRef | null)[] = []
@@ -416,13 +420,14 @@ type MapComponentCreator = (
     clickable: boolean,
 ) => ReactNode
 
-async function loadMapResult({ mapResultMain, universe, geographyKind, cache, label }:
+async function loadMapResult({ mapResultMain, universe, geographyKind, cache, label, derivedUnit }:
 {
     mapResultMain: MapResult
     universe: Universe
     geographyKind: typeof valid_geographies[number]
     cache: MapCache
     label: HumanReadableName
+    derivedUnit: StoredUnit | undefined
 }): Promise<{ features: GeoJSON.Feature[], mapComponentCreator: MapComponentCreator, ramp: RampToDisplay }> {
     const { opaqueType, value } = mapResultMain
     const visuals = mapVisuals(mapResultMain)
@@ -431,7 +436,7 @@ async function loadMapResult({ mapResultMain, universe, geographyKind, cache, la
     const clusterRampBins = visuals.bins ?? []
     const ramp: RampToDisplay = opaqueType === 'cMapRGB'
         ? { type: 'label', value: value.label }
-        : computeRampToDisplay(value, label, visuals.ramp!)
+        : computeRampToDisplay(value, label, derivedUnit, visuals.ramp!)
 
     let features: GeoJSON.Feature[]
     let mapChildren: (fs: GeoJSON.Feature[], clickable: boolean) => ReactNode
@@ -546,10 +551,10 @@ async function loadMapResult({ mapResultMain, universe, geographyKind, cache, la
     }
 }
 
-function computeRampToDisplay(value: CommonMap, label: HumanReadableName, { scale, ticks }: { scale: ScaleInstance, ticks: number[] }): RampToDisplay & { type: 'ramp' } {
+function computeRampToDisplay(value: CommonMap, label: HumanReadableName, derivedUnit: StoredUnit | undefined, { scale, ticks }: { scale: ScaleInstance, ticks: number[] }): RampToDisplay & { type: 'ramp' } {
     const hasValuesClampedToStart = value.data.some(val => scale.forward(val) < 0)
     const hasValuesClampedToEnd = value.data.some(val => scale.forward(val) > 1)
-    const unit = value.unit === undefined ? undefined : unitTypeToStoredUnit(value.unit)
+    const unit = value.unit === undefined ? derivedUnit ?? plainNumber : unitTypeToStoredUnit(value.unit)
     return { type: 'ramp', value: { ramp: value.ramp, interpolations: ticks, scale, label, unit, hasValuesClampedToStart, hasValuesClampedToEnd } }
 }
 

@@ -11,6 +11,7 @@ import { assert } from '../utils/defensive'
 import { HumanReadableName } from '../utils/human-readable-name'
 import { Article, CongressionalRepresentativeTable, ICongressionalRepresentative, ICongressionalRepresentativePointer, IFirstOrLast, IMetadata } from '../utils/protos'
 import { StoredUnit } from '../utils/quantity'
+import { classifyStatistic, unitTypeToStoredUnit } from '../utils/unit'
 
 import { CountsByUT, forType } from './countsByArticleType'
 import { electionDisclaimerForRow, type Disclaimer } from './disclaimer-text'
@@ -68,6 +69,7 @@ export type MetadataStatValue = (
 export interface ArticleStatisticRow {
     kind: 'statistic'
     statname: StatName
+    unit: StoredUnit
     statval: number
     ordinal: number
     percentileByPopulation: number
@@ -111,12 +113,12 @@ const dataCreditExplanationPageByMetadataIndex = new Map<number, string>(
 interface StatisticCellRenderingInfoCommon {
     articleType: string
     statname: HumanReadableName
-    unit?: StoredUnit
     statpath?: StatPath
 }
 
 interface StatisticCellRenderingInfoStatistic extends StatisticCellRenderingInfoCommon {
     kind: 'statistic'
+    unit: StoredUnit
     ordinal: number
     totalCountInClass: number
     totalCountOverall: number
@@ -352,6 +354,7 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
             percentileByPopulation: rowOriginal.percentileByPopulationByUniverse![universeIndex],
             statcol: stats[i],
             statname: names[i],
+            unit: unitTypeToStoredUnit(classifyStatistic(names[i])),
             statpath: paths[i],
             explanationPage: explanation_page[i],
             articleType,
