@@ -308,15 +308,11 @@ export class Navigator {
         postNavigationCallback?: () => void
     }): NavLink {
         const url = urlFromPageDescriptor(pageDescriptor)
-        const href = url.pathname + url.search + url.hash
         return {
-            href,
+            href: url.pathname + url.search + url.hash,
             onClick: async (e?: React.MouseEvent | React.KeyboardEvent) => {
                 if (e?.altKey || e?.ctrlKey || e?.metaKey || e?.shiftKey) {
-                    // Some sort of shortcut to open in new tab, etc. Anchors do this themselves, other elements need our help.
-                    if (!(e.target instanceof Element) || e.target.closest('a[href]') === null) {
-                        window.open(href, '_blank')
-                    }
+                    // Some sort of shortcut to open in new tab, etc. Every NavLink is spread onto an anchor, so the browser handles these.
                     return
                 }
                 e?.preventDefault()
