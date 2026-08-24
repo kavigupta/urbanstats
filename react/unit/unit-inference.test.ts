@@ -110,6 +110,73 @@ void test('a vector is of the kind of what is in it', () => {
     assert.ok(writable('if (population > 0) { area } else { area - area }'))
 })
 
+// What each built-in makes of a quantity it is given, which each one says for itself
+for (const [code, expected] of [
+    ['abs(high_temp - low_temp)', 'F^1 times=0 x1'],
+    ['round(population)', 'person^1 times=1 x1'],
+    ['nanTo0(density_pw_1km)', 'm^-2 person^1 times=unknown x0.000001'],
+    ['sqrt(area)', 'm^1 times=1 x1000'],
+    ['min(high_temp)', 'F^1 times=1 x1'],
+    ['mean(density_pw_1km, weight=population)', 'm^-2 person^1 times=1 x0.000001'],
+    ['median(population)', 'person^1 times=1 x1'],
+    ['quantile(population, 0.5)', 'person^1 times=1 x1'],
+    ['percentile(area, 90)', 'm^2 times=1 x1000000'],
+    ['maximum(population, population)', 'person^1 times=1 x1'],
+    // of two unlike kinds, neither
+    ['maximum(population, area)', 'unknown'],
+    ['inverseQuantile(population, population)', 'dimensionless times=1 x1'],
+    ['sign(population)', 'dimensionless times=1 x1'],
+    // a function that states no rule says any quantity at all, rather than none
+    ['rgb(0.1, 0.2, 0.3)', 'unknown'],
+    ['toNumber(population)', 'unknown'],
+    ['toNumber(population) + population', 'person^1 times=1 x1'],
+] as const) {
+    void test(`${code} is ${expected}`, () => {
+        assert.equal(inferred(code), expected)
+    })
+}
+
+void test('the size of a reading is no reading, where the size of a difference is a difference', () => {
+    // ten degrees below freezing is one number in Fahrenheit and another in Celsius
+    assert.equal(inferred('abs(high_temp)'), 'F^1 times=unknown x1')
+    assert.ok(!writable('abs(high_temp)'))
+    assert.equal(inferred('abs(high_temp - low_temp)'), 'F^1 times=0 x1')
+    assert.ok(writable('abs(high_temp - low_temp)'))
+    // as is putting a zero in for a missing reading, that zero being wherever the scale puts it
+    assert.equal(inferred('nanTo0(high_temp)'), 'F^1 times=unknown x1')
+    assert.equal(inferred('nanTo0(high_temp - low_temp)'), 'F^1 times=0 x1')
+})
+
+void test('a rank is of two of one kind, and is a number of none', () => {
+    assert.equal(inferred('inverseQuantile(population, population)'), 'dimensionless times=1 x1')
+    assert.equal(inferred('inversePercentile(high_temp, low_temp)'), 'dimensionless times=1 x1')
+    // nothing is the rank of a population among areas
+    assert.equal(inferred('inverseQuantile(population, area)'), 'inconsistent')
+})
+
+void test('a total is as many of them as there were, which is not a number anyone knows', () => {
+    assert.equal(inferred('sum(population)'), 'person^1 times=unknown x1')
+    // so many people are people all the same, where so many temperatures are no temperature
+    assert.ok(writable('sum(population)'))
+    assert.equal(inferred('sum(high_temp)'), 'F^1 times=unknown x1')
+    assert.ok(!writable('sum(high_temp)'))
+    // a mean of them is one of them again, and a total of differences is a difference
+    assert.ok(writable('mean(high_temp)'))
+    assert.equal(inferred('sum(high_temp - low_temp)'), 'F^1 times=0 x1')
+})
+
+void test('a logarithm takes whatever it is given and gives a number of no kind', () => {
+    assert.equal(inferred('ln(density_pw_1km)'), 'dimensionless times=1 x1')
+    assert.equal(inferred('log10(area)'), 'dimensionless times=1 x1')
+    assert.equal(inferred('sin(population)'), 'dimensionless times=1 x1')
+    // being of no kind, it scales what it multiplies rather than adding a dimension to it
+    assert.equal(inferred('ln(population) * area'), 'm^2 times=1 x1000000')
+})
+
+void test('a name the script bound is that name, not the built-in it hides', () => {
+    assert.equal(inferred('sqrt = population\nsqrt'), 'person^1 times=1 x1')
+})
+
 void test('a regression is read field by field', () => {
     const people = 'regr = regression(y=population, x1=area)\n'
     // the intercept is in the units of what was regressed, and the residuals are a difference of those
@@ -117,19 +184,19 @@ void test('a regression is read field by field', () => {
     assert.equal(inferred(`${people}regr.residuals`), 'person^1 times=0 x1')
     // a coefficient is that difference over a difference of its parameter: people per square kilometre
     assert.equal(inferred(`${people}regr.m1`), 'm^-2 person^1 times=unknown x0.000001')
-    assert.equal(inferred(`${people}regr.r2`), 'unknown')
+    assert.equal(inferred(`${people}regr.r2`), 'dimensionless times=1 x1')
+    // and of a temperature, degrees per square kilometre, a difference of them being what multiplies
+    assert.equal(inferred('regr = regression(y=high_temp, x1=area)\nregr.m1'), 'F^1 m^-2 times=unknown x0.000001')
     assert.equal(inferred(`${people}regr.nonesuch`), 'unknown')
 })
 
 void test('a regression says nothing of a parameter it cannot read', () => {
-    // the coefficient of a log is a share over nothing anybody can name
-    assert.equal(inferred('regr = regression(y=commute_bike, x1=ln(population))\nregr.m1'), 'unknown')
+    // a share over a logarithm is a number of neither kind, the logarithm being of no kind at all
+    assert.equal(inferred('regr = regression(y=commute_bike, x1=ln(population))\nregr.m1'), 'dimensionless times=unknown x1')
+    // where a parameter nothing is known of leaves the coefficient unknown too
+    assert.equal(inferred('regr = regression(y=commute_bike, x1=rgb(0, 0, 0))\nregr.m1'), 'unknown')
     // and one of no dependent variable is a regression in name only
     assert.equal(inferred('regr = regression(x1=area)\nregr.b'), 'unknown')
-})
-
-void test('a name bound over regression is that name, not the regression', () => {
-    assert.equal(inferred('regression = population\nregression'), 'person^1 times=1 x1')
 })
 
 void test('what cannot be read comes back as anything, rather than throwing', () => {
