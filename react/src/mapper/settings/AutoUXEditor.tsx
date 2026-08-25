@@ -578,33 +578,17 @@ export function AutoUXEditor(props: {
 
             )
 
-    const component = (): ReactNode => {
-        if (twoLines) {
-            return (
-                <>
-                    <div style={{ display: 'flex', alignItems: 'top' }}>
-                        {leftSegment}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'top' }}>
-                        <div style={{ width: labelWidth }} />
-                        {rightSegment}
-                    </div>
-                </>
-            )
-        }
-        else {
-            return (
-                <div style={{ display: 'flex', alignItems: 'top' }}>
-                    <div style={{ width: labelWidth }}>
-                        {leftSegment}
-                    </div>
-                    {rightSegment}
-                </div>
-            )
-        }
-    }
+    const headerLine = (label: ReactNode): ReactNode => (
+        <div style={{ display: 'flex', alignItems: 'top' }}>
+            <div style={{ width: labelWidth }}>{label}</div>
+            {rightSegment}
+        </div>
+    )
 
     const hasHeader = leftSegment !== undefined || rightSegment !== undefined
+    // On mobile the label goes above the selector rather than beside it, and it is the selector that the row controls line up with
+    const labelOnOwnRow = twoLines && leftSegment !== undefined && rightSegment !== undefined
+    const headerRow = labelOnOwnRow ? 2 : 1
 
     return (
         <div
@@ -621,20 +605,23 @@ export function AutoUXEditor(props: {
             }}
             id={`auto-ux-editor-${props.blockIdent}`}
         >
-            {hasHeader
-                ? (
-                        <div style={{ gridRow: 1, gridColumn: 1, position: 'relative', width: '100%' }}>
-                            {props.dragHandle}
-                            {component()}
-                        </div>
-                    )
-                : undefined}
+            {labelOnOwnRow && (
+                <div style={{ gridRow: 1, gridColumn: 1, display: 'flex', alignItems: 'top' }}>
+                    {leftSegment}
+                </div>
+            )}
+            {hasHeader && (
+                <div style={{ gridRow: headerRow, gridColumn: 1, position: 'relative', width: '100%' }}>
+                    {props.dragHandle}
+                    {headerLine(labelOnOwnRow ? undefined : leftSegment)}
+                </div>
+            )}
             {props.removeButton !== undefined && (
-                <div style={{ gridRow: 1, gridColumn: 2, alignSelf: 'center' }}>
+                <div style={{ gridRow: headerRow, gridColumn: 2, alignSelf: 'center' }}>
                     {props.removeButton}
                 </div>
             )}
-            {wrapped !== undefined && <div style={{ gridRow: hasHeader ? 2 : 1, gridColumn: 1 }}>{wrapped}</div>}
+            {wrapped !== undefined && <div style={{ gridRow: hasHeader ? headerRow + 1 : 1, gridColumn: 1 }}>{wrapped}</div>}
         </div>
     )
 }
