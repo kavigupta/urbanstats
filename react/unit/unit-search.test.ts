@@ -95,6 +95,13 @@ void test('a unit that pushes the figures past the point is not reached for', ()
     assert.equal(chosen(1040, { m: 1 }, [unit('km', { m: 1 }, 1e3, 0.5), meter], () => threeFiguresRounded), 'km^1')
 })
 
+void test('a unit that hides the number behind an exponent is not reached for', () => {
+    const centimeter = unit('cm', { m: 1 }, 0.01, 1)
+    // a hundred square kilometres squared is 1e+22 square centimetres squared, which prints one
+    // figure and an exponent standing in for twenty-two digits nobody has been shown
+    assert.equal(chosen(1e14, { m: 4 }, [kilometer, meter, centimeter], () => threeFiguresRounded), 'km^4')
+})
+
 void test('a fixed number of places is a decision that rounding away is precise enough', () => {
     // a fraction of a person is no people, which is what whole numbers of them means
     assert.equal(chosen(0.123, { person: 1 }, counting), '<none>^1')

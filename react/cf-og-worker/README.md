@@ -55,8 +55,10 @@ origin rather than openfreemap. The card screenshot tests point it at a snapshot
 [`site_workflows/deploy-cf-og-worker.yml`](../../site_workflows/deploy-cf-og-worker.yml)
 is copied into the site repository by
 [`urbanstats/website_data/build.py`](../../urbanstats/website_data/build.py) along with the rest of
-the site, and runs *there*, on that repo's `page_build` event. It checks out urbanstats `main` and
-deploys the Worker from it, on the assumption that whatever built the site is on `main` by then.
+the site, and runs *there*, on that repo's `page_build` event. `build.py` substitutes the urbanstats
+commit it is building from into the workflow's `ref`, so the Worker is deployed from the same code
+as the site it fronts. Building the site from a commit that is not pushed to urbanstats fails that
+checkout rather than deploying a mismatched Worker.
 
 It needs three secrets on the site repository: `URBANSTATS_TOKEN` to check out this repo, and
 `CLOUDFLARE_API_TOKEN` plus `CLOUDFLARE_ACCOUNT_ID` for an account holding the `urbanstats.org`
