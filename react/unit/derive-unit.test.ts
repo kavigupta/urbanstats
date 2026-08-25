@@ -58,6 +58,13 @@ void test('a map of a regression is written in the units of what was regressed',
     assert.equal(written(map(people, 'regr.residuals'), 1000), '+1\u202f000')
 })
 
+void test('a statistic that names its own units is written in them, counted things and all', () => {
+    // fatalities over people, both of them counted, which the statistic names as fatalities per 100k
+    const perCapita = deriveTableColumnUnit(mapUSSFromString('table(columns=[column(values=ped_cyclist_fatalities_per_capita)])'), defaultTypeEnvironment('USA'), 0)
+    assert.equal(written(perCapita, 1e-5), '1.00/\u00a0100k')
+    assert.equal(written(unitOfMap('traffic_fatalities_per_capita'), 1e-5), '1.00/\u00a0100k')
+})
+
 void test('a quantity with no writing is left to whatever its name is taken for', () => {
     // a root of a count is in no unit any pool holds, and asking for one threw
     assert.equal(mapUnit('population ** 0.5'), 'nothing')
