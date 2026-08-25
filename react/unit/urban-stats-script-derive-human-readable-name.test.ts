@@ -36,7 +36,7 @@ for (const [condition, expected] of [
     // what scales a quantity is no quantity, and neither is what one is divided into
     ['population * 2 > population', 'Population × 2 > Population'],
     ['rainfall * 2 > 100', 'Rainfall × 2 > 10\u202f000cm/yr'],
-    // which of the two the 32 is cannot be said, where the 0 is of the kind it is compared against
+    // which of the two the 32 is cannot be said, where the 0 is in the unit it is compared against
     ['high_temp - 32 > 0', 'Mean high temp \u2212 32 > 0°F'],
     // either side of a comparison carries it to the other, and each side of an and is read alone
     ['80 < high_temp', '80°F < Mean high temp'],

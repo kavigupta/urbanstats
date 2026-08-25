@@ -101,7 +101,7 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
         case 'either':
             return join(value, argument(args, 1, scope))
         case 'rank': {
-            // of one kind, so nothing is the rank of a population among areas
+            // in one unit, so nothing is the rank of a population among areas
             const alike = forward('-', value, argument(args, 1, scope))
             return alike.kind === 'none' ? alike : inUnit(dimensionless)
         }
@@ -176,9 +176,9 @@ function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Sco
 }
 
 /**
- * What an expression is expected to be, which is a kind and never a value. A number a script wrote
- * is read as a bare one where it scales something and as a quantity where it is measured against
- * one, so carrying a value into the reading would take the first of those where the second is meant.
+ * What an expression is expected to be written in, which is a unit and never a value. A number a
+ * script wrote is read as a bare one where it scales something and as a quantity where it is
+ * measured against one, so a value carried in here would take the first where the second is meant.
  */
 type Expected = { kind: 'any' } | { kind: 'none' } | { kind: 'in', unit: StoredUnit }
 
@@ -209,7 +209,7 @@ function pushedInto(propagation: UnitPropagation | undefined, expected: Expected
     if (propagation?.kind === 'unchanged') {
         return expected
     }
-    // a larger of two is of the kind of the other, where what it is larger than says more
+    // a larger of two is in the unit of the other, where what it is larger than says more
     if (propagation?.kind !== 'either') {
         return anything
     }
@@ -294,7 +294,7 @@ export function inferConstantUnits(program: UrbanStatsASTStatement | UrbanStatsA
     return into
 }
 
-/** What kind of quantity an expression works out to, as far as reading it can say. */
+/** What unit an expression works out to, as far as reading it can say. */
 export function inferUnit(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, named: Bindings = new Map()): AbstractInterpValue {
     return quantity(infer(ast, { typeEnvironment, named }))
 }
