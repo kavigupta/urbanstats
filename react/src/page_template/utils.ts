@@ -18,7 +18,6 @@ function hideSidebarDesktop(page: ExceptionalPageDescriptor): boolean {
 
 export function useHideSidebarDesktop(): boolean {
     const navigator = useContext(Navigator.Context)
-    // The descriptor rather than the page data, since the statistic panel updates it in place as edit mode is toggled
     return hideSidebarDesktop(navigator.usePageState().current.descriptor)
 }
 
