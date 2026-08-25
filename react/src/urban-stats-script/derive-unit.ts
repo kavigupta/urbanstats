@@ -12,7 +12,7 @@ function unitOf(values: UrbanStatsASTExpression | undefined, uss: MapUSS, typeEn
         return undefined
     }
     const unit = unitToWriteIn(inferUnit(values, typeEnvironment, inferBindings(uss, typeEnvironment)))
-    return unit !== undefined && writableDimensions(unit.unit.dimensions) ? unit : undefined
+    return unit !== undefined && writableDimensions(unit.unit) ? unit : undefined
 }
 
 export function deriveMapUnit(uss: MapUSS, typeEnvironment: TypeEnvironment): StoredUnit | undefined {
