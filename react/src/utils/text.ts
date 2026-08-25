@@ -56,8 +56,20 @@ function decimalPlaces(value: number, { significantDigits, minDecimals, maxDecim
     return Math.min(Math.max(significantDigits - Math.ceil(Math.log10(Math.abs(value))), minDecimals ?? 0), most)
 }
 
+/** The digits of a number in scientific notation and then as many zeros, every float that large being a whole one. */
+function expanded(scientific: string): string {
+    const [mantissa, exponent] = scientific.split('e')
+    const digits = mantissa.replace(/[-.]/g, '')
+    return `${mantissa.startsWith('-') ? '-' : ''}${digits}${'0'.repeat(Number(exponent) - digits.length + 1)}`
+}
+
+/** toFixed gives up past 1e21 and writes scientific notation, which no quantity here is written in. */
+function toPlainFixed(value: number, places: number): string {
+    return Math.abs(value) < 1e21 ? value.toFixed(places) : expanded(value.toExponential())
+}
+
 function roundToDigits(value: number, rounding: Rounding): string {
-    return separateNumber(value.toFixed(decimalPlaces(value, rounding)))
+    return separateNumber(toPlainFixed(value, decimalPlaces(value, rounding)))
 }
 
 /** How a number is written: to a fixed number of decimal places, or to a number of digits. */
@@ -82,7 +94,7 @@ export function hoursAndMinutes(inMinutes: number): { written: string, unit: 'h'
 export function formatNumber(value: number, format: NumberFormat): string {
     switch (format.kind) {
         case 'fixed':
-            return separateNumber(value.toFixed(format.places))
+            return separateNumber(toPlainFixed(value, format.places))
         case 'rounded':
             return roundToDigits(value, format)
         case 'significantFigures':
@@ -121,12 +133,13 @@ export function formatToSignificantFigures(value: number, sigFigs: number = 3): 
         const integerPart = Math.floor(Math.abs(rounded))
         const integerDigits = integerPart.toString().length
         const places = Math.max(0, sigFigs - integerDigits)
-        return rounded.toFixed(places)
+        // past 1e21 the figures asked for are all there is to write, the rest being zeros
+        return Math.abs(rounded) < 1e21 ? rounded.toFixed(places) : expanded(rounded.toExponential(sigFigs - 1))
     }
     else {
         // For numbers < 1, we need sigFigs digits after the decimal point
         // The first non-zero digit is at position -magnitude
         const places = -magnitude + sigFigs - 1
-        return rounded.toFixed(places)
+        return toPlainFixed(rounded, places)
     }
 }
