@@ -17,12 +17,13 @@ const artificialZeroCost = 100
  */
 function digitCost(value: number, format: NumberFormat): number {
     const written = formatNumber(value, format)
-    const [mantissa, exponent] = written.split('e')
+    const exponent = /e([+-]?\d+)$/.exec(written)
+    const mantissa = exponent === null ? written : written.slice(0, exponent.index)
     const digits = mantissa.replace(/[^0-9]/g, '')
     if (value !== 0 && format.kind !== 'fixed' && !/[1-9]/.test(digits)) {
         return artificialZeroCost
     }
-    const standsIn = exponent === undefined ? 0 : Math.abs(Number(exponent))
+    const standsIn = exponent === null ? 0 : Math.abs(Number(exponent[1]))
     return digits.length + standsIn + (/^-?0\.(0*)[1-9]/.exec(mantissa)?.[1].length ?? 0)
 }
 
