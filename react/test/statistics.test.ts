@@ -419,7 +419,6 @@ test('editing on desktop puts the settings beside the table', async (t) => {
     await waitForLoading()
 
     await t.expect(splitLeft.exists).ok()
-    // the sidebar collapses into the hamburger, as it does on the mapper
     await t.expect(hamburgerMenu.exists).ok()
     // the title, the buttons, and the table are all on the table side of the split
     await t.expect(Selector('.headertext').exists).ok()
