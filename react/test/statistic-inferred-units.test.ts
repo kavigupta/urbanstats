@@ -84,6 +84,30 @@ test('a number a script names is written in the units it is read from', async (t
     await t.expect(Selector('[data-test-id="statistic-link"]').innerText).eql('max(Mean high temp, 80°F)')
 })
 
+const everything = `${target}/statistic.html?uss=${encodeURIComponent(`customNode(""); condition (commute_bike > 0.004 & high_temp > 60); table(columns=[
+    column(values=population / area),
+    column(values=high_temp - low_temp),
+    column(values=maximum(commute_bike, 0.05)),
+    column(values=population ** 0.5)
+])`)}&article_type=Judicial+Circuit&start=1&amount=2&order=descending&universe=USA`
+
+urbanstatsFixture('a filtered table of four derived columns', everything)
+
+const columnNames = Selector('[data-test-id="statistic-link"]')
+
+test('every column of a filtered table is named and written in what the script works out', async (t) => {
+    await waitForLoading()
+    const names = [] as string[]
+    for (let i = 0; i < await columnNames.count; i++) {
+        names.push(await columnNames.nth(i).innerText)
+    }
+    await t.expect(names).eql(['Population ÷ Area', 'Mean high temp − Mean low temp', 'max(Commute Bike %, 5%)', 'Population0.5'])
+    await t.expect(await rows()).eql([
+        '3\u202f897 /\u00a0km2', '+16.8 °F', '0.0500', '830',
+        '163 /\u00a0km2', '+15.9 °F', '0.0500', '4\u202f830',
+    ])
+})
+
 urbanstatsFixture('a quantity with no writing', tableOf('population ** 0.5'))
 
 test('a root of a count is written plainly rather than failing', async (t) => {
