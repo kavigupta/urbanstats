@@ -309,8 +309,9 @@ export function Editor(
         return () => { editor.removeEventListener('blur', listener) }
     }, [])
 
+    const [hover, setHover] = useState<{ token: AnnotatedToken, elemOffset: number, opts: Omit<InspectState, 'kind' | 'element'> } | undefined>(undefined)
+
     useEffect(() => {
-        let hoveredToken: AnnotatedToken | undefined
         const listener = (event: MouseEvent): void => {
             for (const elem of document.elementsFromPoint(event.clientX, event.clientY)) {
                 const token = spanTokenMapRef.current.get(elem)
@@ -319,39 +320,39 @@ export function Editor(
                     const documentation = typeEnvironment.get(name)
                     const value = assignments.get(name)
                     if (documentation !== undefined || value !== undefined) {
-                        hoveredToken = token
-                        const opts = {
-                            location: token.location,
-                            name,
-                            documentation,
-                            value,
-                        }
-                        const elemOffset = totalOffset(elem).left
-                        setTimeout(() => {
-                            if (hoveredToken === token) {
-                                setPopoverState({
-                                    kind: 'inspect',
-                                    ...opts,
-                                    element: createDocumentationPopover(colors, editorRef.current!, elemOffset),
-                                })
-                            }
-                        }, 500)
+                        // Keep the same object while we're on the same token, so we don't restart the delay
+                        const next = { token, elemOffset: totalOffset(elem).left, opts: { location: token.location, name, documentation, value } }
+                        setHover(prev => prev?.token === token ? prev : next)
                         return
                     }
                 }
                 if (popoverState?.kind === 'inspect' && popoverState.element === elem) {
-                    hoveredToken = undefined
+                    setHover(undefined)
                     return
                 }
             }
-            hoveredToken = undefined
+            setHover(undefined)
             if (popoverState?.kind === 'inspect') {
                 setPopoverState(undefined)
             }
         }
         document.addEventListener('mousemove', listener)
         return () => { document.removeEventListener('mousemove', listener) }
-    }, [colors, typeEnvironment, popoverState, assignments])
+    }, [typeEnvironment, popoverState, assignments])
+
+    useEffect(() => {
+        if (hover === undefined) {
+            return
+        }
+        const timeout = setTimeout(() => {
+            setPopoverState({
+                kind: 'inspect',
+                ...hover.opts,
+                element: createDocumentationPopover(colors, editorRef.current!, hover.elemOffset),
+            })
+        }, 500)
+        return () => { clearTimeout(timeout) }
+    }, [hover, colors])
 
     const borderColor = useResultsColor(colorKey(results))
 
