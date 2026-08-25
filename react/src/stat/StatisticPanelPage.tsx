@@ -103,8 +103,6 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
             screencap={data && ((...args) => createScreenshot(() => ({
                 path: `${sanitize(reifyString(data.renderedStatname))}.png`,
                 overallWidth: tableRef.current!.offsetWidth * 2,
-                // Resolved inside screenshot mode: the disclaimer has moved into the footer by
-                // now, so include the footer as a footnote below the table when it has content.
                 elementsToRender: [
                     headersRef.current!,
                     tableRef.current!,
