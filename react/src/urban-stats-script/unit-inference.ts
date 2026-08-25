@@ -6,7 +6,7 @@ import { LocInfo } from './location'
 import { TypeEnvironment, UnitPropagation } from './types-values'
 import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, unitToWriteIn } from './unit-algebra'
 
-const anything: AbstractInterpValue = { kind: 'any' }
+const anything = { kind: 'any' } satisfies AbstractInterpValue
 
 /** A script has objects in it as well as quantities, a regression's result being one. */
 type Inferred = AbstractInterpValue | { kind: 'fields', fields: Map<string, AbstractInterpValue> }
@@ -175,6 +175,24 @@ function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Sco
     }
 }
 
+/**
+ * What an expression is expected to be, which is a kind and never a value. A number a script wrote
+ * is read as a bare one where it scales something and as a quantity where it is measured against
+ * one, so carrying a value into the reading would take the first of those where the second is meant.
+ */
+type Expected = { kind: 'any' } | { kind: 'none' } | { kind: 'in', unit: StoredUnit }
+
+function expectation(value: AbstractInterpValue): Expected {
+    switch (value.kind) {
+        case 'in':
+            return { kind: 'in', unit: value.unit }
+        case 'any':
+            return { kind: 'any' }
+        case 'none':
+            return value
+    }
+}
+
 /** Where each number written in an expression is read from, which is what a caption writes it in. */
 export type ConstantUnits = Map<string, StoredUnit>
 
@@ -187,7 +205,7 @@ export function whereWritten(location: LocInfo): string {
     return `${where.type === 'single' ? where.ident : ''}:${location.start.charIdx}-${location.end.charIdx}`
 }
 
-function pushedInto(propagation: UnitPropagation | undefined, expected: AbstractInterpValue, args: UrbanStatsASTArg[], index: number, scope: Scope): AbstractInterpValue {
+function pushedInto(propagation: UnitPropagation | undefined, expected: Expected, args: UrbanStatsASTArg[], index: number, scope: Scope): Expected {
     if (propagation?.kind === 'unchanged') {
         return expected
     }
@@ -195,17 +213,14 @@ function pushedInto(propagation: UnitPropagation | undefined, expected: Abstract
     if (propagation?.kind !== 'either') {
         return anything
     }
-    return expected.kind === 'in' ? expected : argument(args, 1 - index, scope)
+    return expected.kind === 'in' ? expected : expectation(argument(args, 1 - index, scope))
 }
 
 /**
  * The other way through: what the expression works out to is pushed back down it, so that the 0.1
  * of a share below a tenth is read as a tenth of a share rather than as a tenth of nothing.
  */
-function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, wanted: AbstractInterpValue, scope: Scope, into: ConstantUnits): void {
-    // what an expression is worth says nothing of what it is in, and a constant left on the
-    // expectation is read as a scale: the 2 of rainfall * 2 > 100 came back as 731 days per metre
-    const expected = wanted.kind === 'any' && wanted.constant !== undefined ? anything : wanted
+function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expected: Expected, scope: Scope, into: ConstantUnits): void {
     switch (ast.type) {
         case 'constant': {
             const unit = unitToWriteIn(expected)
@@ -229,8 +244,8 @@ function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, wanted:
         case 'binaryOperator': {
             const left = quantity(infer(ast.left, scope))
             const right = quantity(infer(ast.right, scope))
-            readBack(ast.left, backward(ast.operator.node, expected, right, 'left'), scope, into)
-            readBack(ast.right, backward(ast.operator.node, expected, left, 'right'), scope, into)
+            readBack(ast.left, expectation(backward(ast.operator.node, expected, right, 'left')), scope, into)
+            readBack(ast.right, expectation(backward(ast.operator.node, expected, left, 'right')), scope, into)
             return
         }
         case 'call': {
