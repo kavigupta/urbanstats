@@ -7,13 +7,13 @@ import React, { ReactNode, useRef } from 'react'
 import { ExpandButton } from '../../components/ExpandButton'
 import { RenderTwiceHidden } from '../../components/RenderTwiceHidden'
 import { CheckboxSettingCustom } from '../../components/checkbox-setting'
-import { UrbanStatsASTExpression, UrbanStatsASTArg, locationOf } from '../../urban-stats-script/ast'
+import { UrbanStatsASTExpression, locationOf } from '../../urban-stats-script/ast'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement, noLocation } from '../../urban-stats-script/location'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
-import { USSType, USSFunctionArgType, renderType, USSFunctionType, TypeEnvironment } from '../../urban-stats-script/types-values'
+import { USSType, USSFunctionArgType, TypeEnvironment } from '../../urban-stats-script/types-values'
 import { AssignmentsResult } from '../../urban-stats-script/workerManager'
 import { DefaultMap } from '../../utils/DefaultMap'
 import { Property } from '../../utils/Property'
@@ -26,46 +26,8 @@ import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
 import { SelectionContext, Selection as ContextSelection } from './SelectionContext'
 import { Selector, getColor, labelPadding } from './Selector'
-import { maybeParseExpr, parseExpr, possibilities, changeBlockId } from './parseExpr'
+import { createDefaultExpression, getDefaultFunction, getDefaultVariable, maybeParseExpr, parseExpr, possibilities, changeBlockId } from './parseExpr'
 import { classifyExpr, maybeClassifyExpr, Selection } from './selector-classifier'
-
-function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression {
-    if (type.type === 'number') {
-        return { type: 'constant', value: { node: { type: 'number', value: 0 }, location: emptyLocation(blockIdent) } }
-    }
-    if (type.type === 'string') {
-        return { type: 'constant', value: { node: { type: 'string', value: '' }, location: emptyLocation(blockIdent) } }
-    }
-    for (const [name, tdoc] of typeEnvironment) {
-        if (!tdoc.documentation?.isDefault) {
-            continue
-        }
-        if (renderType(tdoc.type) === renderType(type)) {
-            return getDefaultVariable({ type: 'variable', name }, typeEnvironment, blockIdent)
-        }
-        if (tdoc.type.type === 'function' && tdoc.type.returnType.type === 'concrete' && renderType(tdoc.type.returnType.value) === renderType(type)) {
-            return getDefaultFunction({ type: 'function', name }, typeEnvironment, blockIdent)
-        }
-    }
-    if (type.type === 'vector') {
-        return {
-            type: 'vectorLiteral',
-            entireLoc: emptyLocation(blockIdent),
-            elements: type.elementType.type === 'elementOfEmptyVector' ? [] : [createDefaultExpression(type.elementType, extendBlockIdVectorElement(blockIdent, 0), typeEnvironment)],
-        }
-    }
-    if (type.type === 'object') {
-        return {
-            type: 'objectLiteral',
-            entireLoc: emptyLocation(blockIdent),
-            properties: Array.from(type.properties.entries()).map(([key, propertyType]) => [
-                key,
-                createDefaultExpression(propertyType, extendBlockIdObjectProperty(blockIdent, key), typeEnvironment),
-            ]),
-        }
-    }
-    return parseNoErrorAsCustomNode('', blockIdent, [type])
-}
 
 function ArgumentEditor(props: {
     name: string
@@ -169,7 +131,7 @@ function ArgumentEditor(props: {
                                             else {
                                                 exprToUse = defaultExpr
                                             }
-                                            exprToUse = deconstruct(exprToUse, props.typeEnvironment, subident, arg.value) ?? parseExpr(exprToUse, subident, [arg.value], props.typeEnvironment, () => {
+                                            exprToUse = deconstruct(exprToUse, props.typeEnvironment, subident, [arg.value]) ?? parseExpr(exprToUse, subident, [arg.value], props.typeEnvironment, () => {
                                                 throw new Error('Should not happen')
                                             }, true)
                                             // Add the argument with default value
@@ -504,13 +466,14 @@ export function AutoUXEditor(props: {
         if (uss.type === 'vectorLiteral') {
             // Determine the element type
             let elementType: USSType = { type: 'number' } // fallback
-            if (props.type[0].type === 'vector') {
+            const vectorType = props.type.find(t => t.type === 'vector')
+            if (vectorType !== undefined) {
                 assert(
-                    props.type[0].elementType.type !== 'elementOfEmptyVector',
+                    vectorType.elementType.type !== 'elementOfEmptyVector',
                     'the provided type for an autoux editor shouldn\'t be an empty vector',
                 )
                 // something of a hack, but this really shouldn't be an issue because we don't support multiple types for vectors
-                elementType = props.type[0].elementType
+                elementType = vectorType.elementType
             }
             const element = (
                 <VectorLiteralEditor
@@ -528,9 +491,10 @@ export function AutoUXEditor(props: {
         if (uss.type === 'objectLiteral') {
             // Determine the element type
             let propertiesTypes: Map<string, USSType> = new DefaultMap(() => ({ type: 'number' })) // fallback
-            if (props.type[0].type === 'object') {
+            const objectType = props.type.find(t => t.type === 'object')
+            if (objectType !== undefined) {
                 // something of a hack, but this really shouldn't be an issue because we don't support multiple types for objects
-                propertiesTypes = props.type[0].properties
+                propertiesTypes = objectType.properties
             }
             const element = (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em', width: '100%' }}>
@@ -593,7 +557,7 @@ export function AutoUXEditor(props: {
                     <Selector
                         uss={props.uss}
                         setSelection={(selection: Selection) => {
-                            props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent, props.type[0]), {})
+                            props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent, props.type), {})
                         }}
                         setUss={props.setUss}
                         typeEnvironment={props.typeEnvironment}
@@ -648,67 +612,7 @@ export function AutoUXEditor(props: {
     )
 }
 
-function getDefaultVariable(selection: Selection & { type: 'variable' }, typeEnvironment: TypeEnvironment, blockIdent: string): UrbanStatsASTExpression {
-    const varType = typeEnvironment.get(selection.name)?.type
-    assert(varType !== undefined, `Variable ${selection.name} not found in type environment`)
-    return { type: 'identifier', name: { node: selection.name, location: emptyLocation(blockIdent) } }
-}
-
-// Returns a function that pulls named or unnamed arguments of the same type and position out of the passed `expr`
-// Returns undefined if incompatible
-// We're assuming the result will have the correct idnet, since we're using the same position, and it's hard to check
-function extractCompatiblePreviousArgs(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): (arg: number | string, type: USSType) => UrbanStatsASTExpression | undefined {
-    let type
-    if (expr.type === 'call' && expr.fn.type === 'identifier' && (type = typeEnvironment.get(expr.fn.name.node)) && type.type.type === 'function') {
-        const foundType: USSFunctionType = type.type
-        return (arg, targetType) => {
-            if (typeof arg === 'number' && arg < foundType.posArgs.length && foundType.posArgs[arg].type === 'concrete' && renderType(targetType) === renderType(foundType.posArgs[arg].value)) {
-                return expr.args.filter(a => a.type === 'unnamed')[arg]?.value
-            }
-            if (typeof arg === 'string' && arg in foundType.namedArgs && foundType.namedArgs[arg].type.type === 'concrete' && renderType(targetType) === renderType(foundType.namedArgs[arg].type.value)) {
-                return expr.args.find(a => a.type === 'named' && a.name.node === arg)?.value
-            }
-            return undefined
-        }
-    }
-    return () => undefined
-}
-
-function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnvironment: TypeEnvironment, blockIdent: string, previous?: UrbanStatsASTExpression): UrbanStatsASTExpression {
-    const fn = typeEnvironment.get(selection.name)
-    assert(fn?.type.type === 'function', `Function ${selection.name} not found or not a function`)
-    const compatiblePreviousArg = previous ? extractCompatiblePreviousArgs(previous, typeEnvironment) : undefined
-    const args: UrbanStatsASTArg[] = []
-    // Only include positional arguments by default, not named arguments with defaults, unless there's an existing value for the named argument
-    for (let i = 0; i < fn.type.posArgs.length; i++) {
-        const arg = fn.type.posArgs[i]
-        assert(arg.type === 'concrete', `Positional argument must be concrete`)
-        args.push({
-            type: 'unnamed',
-            value: compatiblePreviousArg?.(i, arg.value) ?? createDefaultExpression(arg.value, extendBlockIdPositionalArg(blockIdent, i), typeEnvironment),
-        })
-    }
-    for (const [name, argWDefault] of Object.entries(fn.type.namedArgs)) {
-        const arg = argWDefault.type
-        assert(arg.type === 'concrete', `Named argument ${name} must be concrete`)
-        const prev = compatiblePreviousArg?.(name, arg.value)
-        if (prev || argWDefault.defaultValue === undefined) {
-            args.push({
-                type: 'named',
-                name: { node: name, location: emptyLocation(blockIdent) },
-                value: prev ?? createDefaultExpression(arg.value, extendBlockIdKwarg(blockIdent, name), typeEnvironment),
-            })
-        }
-    }
-    return {
-        type: 'call',
-        fn: { type: 'identifier', name: { node: selection.name, location: emptyLocation(blockIdent) } },
-        args,
-        entireLoc: emptyLocation(blockIdent),
-    }
-}
-
-function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment, blockIdent: string, type: USSType, selection?: Selection): UrbanStatsASTExpression | undefined {
+function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment, blockIdent: string, types: USSType[], selection?: Selection): UrbanStatsASTExpression | undefined {
     switch (expr.type) {
         case 'identifier': {
             const reference = typeEnvironment.get(expr.name.node)
@@ -722,7 +626,7 @@ function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnviron
             }
 
             for (const equiv of reference.documentation.equivalentExpressions) {
-                const valid = maybeParseExpr(equiv, blockIdent, type, typeEnvironment)
+                const valid = maybeParseExpr(equiv, blockIdent, types, typeEnvironment)
                 if (valid !== undefined && (selection === undefined || stableStringify(classifyExpr(valid)) === stableStringify(selection))) {
                     return valid
                 }
@@ -732,11 +636,11 @@ function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnviron
         }
         case 'customNode':
             if (expr.expr.type === 'expression') {
-                return deconstruct(expr.expr.value, typeEnvironment, blockIdent, type, selection)
+                return deconstruct(expr.expr.value, typeEnvironment, blockIdent, types, selection)
             }
             return
         case 'call': {
-            if (type.type === 'opaque' && type.name === 'color' && selection?.type === 'function') {
+            if (types.some(t => t.type === 'opaque' && t.name === 'color') && selection?.type === 'function') {
                 // Conversion between RGB and HSV functions
                 const color = getColor(expr, typeEnvironment)
                 switch (true) {
@@ -760,23 +664,23 @@ function defaultForSelection(
     current: UrbanStatsASTExpression,
     typeEnvironment: TypeEnvironment,
     blockIdent: string,
-    type: USSType,
+    types: USSType[],
 ): UrbanStatsASTExpression {
-    const deconstructed = deconstruct(current, typeEnvironment, blockIdent, type, selection)
+    const deconstructed = deconstruct(current, typeEnvironment, blockIdent, types, selection)
     if (deconstructed !== undefined) {
         return deconstructed
     }
 
-    const parsed = maybeParseExpr(current, blockIdent, type, typeEnvironment)
+    const parsed = maybeParseExpr(current, blockIdent, types, typeEnvironment)
     if (parsed !== undefined && stableStringify(classifyExpr(parsed)) === stableStringify(selection)) {
         return parsed
     }
 
     switch (selection.type) {
         case 'custom':
-            return parseNoErrorAsCustomNode(unparse(current, { simplify: 'auto-ux' }), blockIdent, [type])
+            return parseNoErrorAsCustomNode(unparse(current, { simplify: 'auto-ux' }), blockIdent, types)
         case 'constant':
-            return createDefaultExpression(type, blockIdent, typeEnvironment)
+            return createDefaultExpression(types.find(t => t.type === 'number' || t.type === 'string') ?? types[0], blockIdent, typeEnvironment)
         case 'variable':
             return getDefaultVariable(selection as Selection & { type: 'variable' }, typeEnvironment, blockIdent)
         case 'function':
@@ -790,6 +694,6 @@ function defaultForSelection(
             }
         }
         case 'object':
-            return createDefaultExpression(type, blockIdent, typeEnvironment)
+            return createDefaultExpression(types.find(t => t.type === 'object') ?? types[0], blockIdent, typeEnvironment)
     }
 }
