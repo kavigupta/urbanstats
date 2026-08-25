@@ -90,7 +90,7 @@ function ConditionNodeEditor({
     const classified = classifyCondition(uss)
 
     const setKind = useCallback((kind: ConditionKind) => {
-        setUss(changeConditionKind(uss, classifyCondition(uss), kind, blockIdent, typeEnvironment), {})
+        setUss(changeConditionKind(uss, kind, blockIdent, typeEnvironment), {})
     }, [uss, setUss, blockIdent, typeEnvironment])
 
     const ourErrors = errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === blockIdent)

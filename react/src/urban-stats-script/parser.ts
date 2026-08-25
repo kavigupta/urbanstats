@@ -841,7 +841,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
         node = applyRewriteRules(node)
     }
 
-    // A simplified wrapper prints as its contents, so parenthesization follows those
+    // The node this one will print as. Parens have to be decided against that rather than against the node itself.
     function effectiveExpression(expr: UrbanStatsASTExpression): UrbanStatsASTExpression {
         if (opts.simplify === undefined) {
             return expr
@@ -852,7 +852,6 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
         if (expr.type === 'customNode' && expr.expr.type === 'expression') {
             return effectiveExpression(expr.expr.value)
         }
-        // Rules are applied to whatever node `unparse` is handed, so the printed form can be simpler than the node
         return opts.simplify === 'auto-ux' ? applyRewriteRules(expr) : expr
     }
     function isSimpleExpression(expr: UrbanStatsASTExpression): boolean {

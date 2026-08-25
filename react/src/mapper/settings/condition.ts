@@ -1,7 +1,7 @@
 /**
  * The subset of USS that the condition editor can display graphically:
  *
- *     condition = condition & condition | condition | condition
+ *     condition = condition & condition | (condition | condition)
  *               | number[] <comparison operator> (number | number[])
  *
  * Anything else is kept as a custom node. Groups are flattened, so `a & b & c`
@@ -24,8 +24,8 @@ export type GroupOperator = typeof groupOperators[number]
 export const comparisonOperators = ['==', '!=', '<', '<=', '>', '>='] as const
 export type ComparisonOperator = typeof comparisonOperators[number]
 
-export type ConditionKind = GroupOperator | 'comparison' | 'custom'
-export const conditionKinds = [...groupOperators, 'comparison', 'custom'] as const satisfies ConditionKind[]
+export const conditionKinds = [...groupOperators, 'comparison', 'custom'] as const
+export type ConditionKind = typeof conditionKinds[number]
 
 const conditionTypes = [{ type: 'vector', elementType: { type: 'boolean' } }] satisfies USSType[]
 export const comparisonLhsTypes = [{ type: 'vector', elementType: { type: 'number' } }] satisfies USSType[]
@@ -112,11 +112,6 @@ function asCustomCondition(expr: UrbanStatsASTExpression, blockIdent: string): U
     return parseNoErrorAsCustomNode(unparse(expr, { simplify: 'auto-ux' }), blockIdent, conditionTypes)
 }
 
-/**
- * Normalizes an arbitrary expression into the condition grammar, assigning block idents.
- * Custom nodes are looked inside of, so that conditions written as code before there was a
- * graphical editor come up graphically.
- */
 export function parseCondition(
     expr: UrbanStatsASTExpression,
     blockIdent: string,
@@ -164,41 +159,40 @@ function attemptParseCondition(
 }
 
 export function changeConditionKind(
-    current: UrbanStatsASTExpression,
-    classified: Condition,
-    kind: ConditionKind,
+    condition: UrbanStatsASTExpression,
+    newKind: ConditionKind,
     blockIdent: string,
     typeEnvironment: TypeEnvironment,
 ): UrbanStatsASTExpression {
-    if (kind === classified.kind) {
-        return current
+    const current = classifyCondition(condition)
+    if (newKind === current.kind) {
+        return condition
     }
-    if (classified.kind === 'custom') {
-        // Leaving custom is a request to read the code as a condition, not to keep it as one opaque operand
-        const reparsed = parseCondition(current, blockIdent, typeEnvironment, false)
-        const reclassified = classifyCondition(reparsed)
-        if (reclassified.kind !== 'custom') {
-            return changeConditionKind(reparsed, reclassified, kind, blockIdent, typeEnvironment)
+    if (current.kind === 'custom') {
+        // Leaving custom reads the code as a condition rather than keeping it as one opaque operand
+        const reparsed = parseCondition(condition, blockIdent, typeEnvironment, false)
+        if (classifyCondition(reparsed).kind !== 'custom') {
+            return changeConditionKind(reparsed, newKind, blockIdent, typeEnvironment)
         }
     }
-    if (isGroupOperator(kind)) {
-        if (classified.kind === '&' || classified.kind === '|') {
-            return buildGroup(kind, classified.operands.map((expr, i) => ({ expr, blockIdent: extendBlockIdVectorElement(blockIdent, i) })), blockIdent)
+    if (isGroupOperator(newKind)) {
+        if (current.kind === '&' || current.kind === '|') {
+            return buildGroup(newKind, current.operands.map((expr, i) => ({ expr, blockIdent: extendBlockIdVectorElement(blockIdent, i) })), blockIdent)
         }
-        return buildGroup(kind, [
-            { expr: current, blockIdent },
+        return buildGroup(newKind, [
+            { expr: condition, blockIdent },
             { expr: defaultComparison(extendBlockIdVectorElement(blockIdent, 1), typeEnvironment), blockIdent: extendBlockIdVectorElement(blockIdent, 1) },
         ], blockIdent)
     }
-    if (kind === 'comparison') {
+    if (newKind === 'comparison') {
         // Keep the first operand of a group if it is itself a comparison, rather than starting over
-        if (classified.kind === '&' || classified.kind === '|') {
-            const first = classified.operands[0]
+        if (current.kind === '&' || current.kind === '|') {
+            const first = current.operands[0]
             if (classifyCondition(first).kind === 'comparison') {
                 return changeBlockId(first, extendBlockIdVectorElement(blockIdent, 0), blockIdent)
             }
         }
         return defaultComparison(blockIdent, typeEnvironment)
     }
-    return asCustomCondition(current, blockIdent)
+    return asCustomCondition(condition, blockIdent)
 }

@@ -144,7 +144,6 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
     // eslint-disable-next-line no-restricted-syntax -- Dynamic tag name
     const InputElem = iframe ? IFrameInput : 'input'
 
-    // `auto` rather than a zero basis so a squeeze is shared with whatever is beside this, not taken entirely out of it
     return (
         <div style={{ position: 'relative', flex: '1 1 auto', minWidth: '3em', display: 'flex', alignItems: 'center' }}>
             <InputElem
@@ -178,7 +177,6 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                 placeholder="Search options..."
                 style={{
                     flex: 1,
-                    // Without this the input keeps its intrinsic width and overruns whatever is beside it
                     minWidth: 0,
                     padding: `${labelPadding} 8px`,
                     border: `1px solid ${colors.ordinalTextColor}`,
