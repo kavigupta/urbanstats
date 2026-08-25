@@ -380,7 +380,9 @@ export function AutoUXEditor(props: {
         console.error('[failtest] USS expression location does not match block identifier', props.uss, ussLoc.block.type === 'single' ? ussLoc.block.ident : '(multi)', props.blockIdent)
     }
     const labelWidth = props.labelWidth ?? '5%'
-    const twoLines = useMobileLayout() || (props.label?.length ?? 0) > 5
+    const mobileLayout = useMobileLayout()
+    // A list row's label is its index, which is short enough to keep beside the drag handle even on mobile
+    const twoLines = props.dragHandle === undefined && (mobileLayout || (props.label?.length ?? 0) > 5)
 
     if (props.uss.type === 'autoUXNode') {
         const uss = props.uss
@@ -586,7 +588,7 @@ export function AutoUXEditor(props: {
     )
 
     const hasHeader = leftSegment !== undefined || rightSegment !== undefined
-    // On mobile the label goes above the selector rather than beside it, and it is the selector that the row controls line up with
+    // Where the label goes above the selector rather than beside it, it is the selector the row controls line up with
     const labelOnOwnRow = twoLines && leftSegment !== undefined && rightSegment !== undefined
     const headerRow = labelOnOwnRow ? 2 : 1
 
