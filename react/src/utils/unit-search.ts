@@ -10,17 +10,20 @@ export interface Written {
 const artificialZeroCost = 100
 
 /**
- * We charge 1 for every digit as printed, with two adjustments:
+ * We charge 1 for every digit as printed, with three adjustments:
  * - a number rounded away to 0 is heavily penalized, unless in fixed point
  * - every leading 0 past the decimal point is charged as another digit
+ * - an exponent is charged for the digits it stands in for, having printed none of them
  */
 function digitCost(value: number, format: NumberFormat): number {
     const written = formatNumber(value, format)
-    const digits = written.replace(/[^0-9]/g, '')
+    const [mantissa, exponent] = written.split('e')
+    const digits = mantissa.replace(/[^0-9]/g, '')
     if (value !== 0 && format.kind !== 'fixed' && !/[1-9]/.test(digits)) {
         return artificialZeroCost
     }
-    return digits.length + (/^-?0\.(0*)[1-9]/.exec(written)?.[1].length ?? 0)
+    const standsIn = exponent === undefined ? 0 : Math.abs(Number(exponent))
+    return digits.length + standsIn + (/^-?0\.(0*)[1-9]/.exec(mantissa)?.[1].length ?? 0)
 }
 
 type Exponents = Partial<Record<BaseUnit, number>>
