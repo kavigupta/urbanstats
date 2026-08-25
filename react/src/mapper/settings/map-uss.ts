@@ -6,6 +6,7 @@ import * as l from '../../urban-stats-script/literal-parser'
 import { parse, parseNoErrorAsCustomNode, unparse } from '../../urban-stats-script/parser'
 import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 
+import { parseCondition } from './condition'
 import { parseExpr } from './parseExpr'
 
 export const rootBlockIdent = 'r'
@@ -95,13 +96,13 @@ export function makeStatements<const T extends UrbanStatsASTStatement[]>(element
     }
 }
 
-function attemptParseCondition(conditionStmt: UrbanStatsASTStatement | undefined): { conditionRest: UrbanStatsASTStatement[], conditionExpr: UrbanStatsASTExpression } {
+function attemptParseCondition(conditionStmt: UrbanStatsASTStatement | undefined, typeEnvironment: TypeEnvironment, preserveCustomNodes: boolean): { conditionRest: UrbanStatsASTStatement[], conditionExpr: UrbanStatsASTExpression } {
     let stmts = conditionStmt !== undefined ? [conditionStmt] : []
     if (conditionStmt?.type === 'condition') {
         const conditionText = unparse(conditionStmt.condition, { simplify: 'auto-ux' })
         if (conditionText.trim() !== 'true') {
             return {
-                conditionExpr: parseNoErrorAsCustomNode(conditionText, idCondition, [{ type: 'vector', elementType: { type: 'boolean' } }]),
+                conditionExpr: parseCondition(conditionStmt.condition, idCondition, typeEnvironment, preserveCustomNodes),
                 conditionRest: conditionStmt.rest,
             }
         }
@@ -127,7 +128,7 @@ export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, ty
         entireLoc: locationOf(stmt),
     } satisfies UrbanStatsASTStatement
     const conditionStmt = stmts.length > 0 ? stmts[stmts.length - 1] : undefined
-    const { conditionRest, conditionExpr } = attemptParseCondition(conditionStmt)
+    const { conditionRest, conditionExpr } = attemptParseCondition(conditionStmt, typeEnvironment, preserveCustomNodes)
     const body = parseExpr(makeStatements(conditionRest, idOutput), idOutput, targetOutputTypes, typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes)
     const condition = {
         type: 'condition',

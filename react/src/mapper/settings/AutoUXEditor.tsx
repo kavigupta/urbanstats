@@ -602,6 +602,7 @@ export function AutoUXEditor(props: {
                 flexDirection: 'column',
                 width: '100%',
                 flex: 1,
+                minWidth: 0,
                 margin: props.margin === false ? 0 : '0.25em 0', gap: '0.25em',
             }}
             id={`auto-ux-editor-${props.blockIdent}`}
