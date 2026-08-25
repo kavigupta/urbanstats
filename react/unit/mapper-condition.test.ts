@@ -88,14 +88,14 @@ void test('a custom operand of a group keeps its grouping', () => {
 
 void test('switching between all-of and any-of keeps the operands', () => {
     const condition = asCondition('population < 1000 & density_pw_1km > 5')
-    const flipped = changeConditionKind(condition, classifyCondition(condition), '|', 'test', defaultTypeEnvironment('world'))
+    const flipped = changeConditionKind(condition, '|', 'test', defaultTypeEnvironment('world'))
     changeBlockId(flipped, 'test', '')
     assert.strictEqual(simplified(flipped), 'population < 1000 | density_pw_1km > 5')
 })
 
 void test('grouping a comparison keeps it as the first operand', () => {
     const condition = asCondition('population < 1000')
-    const grouped = changeConditionKind(condition, classifyCondition(condition), '&', 'test', defaultTypeEnvironment('world'))
+    const grouped = changeConditionKind(condition, '&', 'test', defaultTypeEnvironment('world'))
     changeBlockId(grouped, 'test', '')
     const classified = classifyCondition(grouped)
     assert.strictEqual(classified.kind, '&')
@@ -104,14 +104,14 @@ void test('grouping a comparison keeps it as the first operand', () => {
 
 void test('ungrouping keeps the first comparison', () => {
     const condition = asCondition('population < 1000 & density_pw_1km > 5')
-    const ungrouped = changeConditionKind(condition, classifyCondition(condition), 'comparison', 'test', defaultTypeEnvironment('world'))
+    const ungrouped = changeConditionKind(condition, 'comparison', 'test', defaultTypeEnvironment('world'))
     changeBlockId(ungrouped, 'test', '')
     assert.strictEqual(simplified(ungrouped), 'population < 1000')
 })
 
 void test('going custom keeps the whole condition as code', () => {
     const condition = asCondition('population < 1000 & density_pw_1km > 5')
-    const custom = changeConditionKind(condition, classifyCondition(condition), 'custom', 'test', defaultTypeEnvironment('world'))
+    const custom = changeConditionKind(condition, 'custom', 'test', defaultTypeEnvironment('world'))
     assert.strictEqual(classifyCondition(custom).kind, 'custom')
     assert.strictEqual(simplified(custom), 'population < 1000 & density_pw_1km > 5')
 })
@@ -137,10 +137,10 @@ void test('leaving custom reads the code as a condition', () => {
     const custom = asCondition(customNode('population > (50) & density_pw_1km < (80)'))
     assert.strictEqual(classifyCondition(custom).kind, '&')
 
-    const asCustom = changeConditionKind(custom, classifyCondition(custom), 'custom', 'test', typeEnvironment)
+    const asCustom = changeConditionKind(custom, 'custom', 'test', typeEnvironment)
     assert.strictEqual(classifyCondition(asCustom).kind, 'custom')
 
-    const backToGroup = changeConditionKind(asCustom, classifyCondition(asCustom), '&', 'test', typeEnvironment)
+    const backToGroup = changeConditionKind(asCustom, '&', 'test', typeEnvironment)
     changeBlockId(backToGroup, 'test', '')
     const classified = classifyCondition(backToGroup)
     assert.strictEqual(classified.kind, '&')
@@ -149,15 +149,15 @@ void test('leaving custom reads the code as a condition', () => {
 
 void test('leaving custom for a comparison reads the code as one', () => {
     const custom = asCondition(customNode('population > 50'))
-    const asCustom = changeConditionKind(custom, classifyCondition(custom), 'custom', 'test', defaultTypeEnvironment('world'))
-    const comparison = changeConditionKind(asCustom, classifyCondition(asCustom), 'comparison', 'test', defaultTypeEnvironment('world'))
+    const asCustom = changeConditionKind(custom, 'custom', 'test', defaultTypeEnvironment('world'))
+    const comparison = changeConditionKind(asCustom, 'comparison', 'test', defaultTypeEnvironment('world'))
     changeBlockId(comparison, 'test', '')
     assert.strictEqual(simplified(comparison), 'population > 50')
 })
 
 void test('code outside the grammar becomes the first operand of a group', () => {
     const custom = asCondition('!(population < 1000)')
-    const grouped = changeConditionKind(custom, classifyCondition(custom), '&', 'test', defaultTypeEnvironment('world'))
+    const grouped = changeConditionKind(custom, '&', 'test', defaultTypeEnvironment('world'))
     changeBlockId(grouped, 'test', '')
     const classified = classifyCondition(grouped)
     assert.strictEqual(classified.kind, '&')

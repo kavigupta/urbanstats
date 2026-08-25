@@ -1,10 +1,13 @@
-import { Selector } from 'testcafe'
+import { ClientFunction, Selector } from 'testcafe'
 
 import { nthEditor, typeInEditor } from './editor_test_utils'
 import { getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript } from './mapper-utils'
 import { checkTextboxesDirect, mapper, screencap } from './test_utils'
 
 const base = 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)'
+
+// Errors render as #test-editor-result, so the count inside a subtree says where one was routed
+const errorsWithin = ClientFunction((id: string) => document.getElementById(id)?.querySelectorAll('#test-editor-result').length)
 
 function addConditionButton(nth = 0): Selector {
     return Selector('button').withAttribute('data-test-id', 'test-add-condition-button').nth(nth)
@@ -117,4 +120,27 @@ mapper(() => test)('unchecking the filter clears it', { code: base }, async (t) 
     await t.expect(getInput('Comparison').exists).notOk()
     await toggleCustomScript(t)
     await t.expect(getCodeFromMainField()).notContains('condition')
+})
+
+mapper(() => test)('a parse error in one side of a comparison is reported there', { code: base }, async (t) => {
+    await toggleCustomScript(t)
+    await checkTextboxesDirect(t, ['Filter?'])
+    await replaceInput(t, 'PW Density (r=1km)', 'Custom Expression')
+    await typeInEditor(t, 0, 'density_pw_1km +', true)
+
+    await t.expect(getErrors()).eql(['Unexpected end of input at 1:16'])
+    // Against the operand that has the problem, and only there
+    await t.expect(errorsWithin('auto-ux-editor-rc_pos_0')).eql(1)
+    await t.expect(errorsWithin('condition-editor-rc')).eql(1)
+})
+
+mapper(() => test)('an error in one condition of a group is reported there', { code: base }, async (t) => {
+    await toggleCustomScript(t)
+    await checkTextboxesDirect(t, ['Filter?'])
+    await replaceInput(t, 'Comparison', 'All of')
+    await replaceInput(t, 'PW Density (r=1km)', 'Custom Expression', 1)
+    await typeInEditor(t, 0, 'density_pw_1km +', true)
+
+    await t.expect(errorsWithin('condition-editor-rc_el_1')).eql(1)
+    await t.expect(errorsWithin('condition-editor-rc_el_0')).eql(0)
 })
