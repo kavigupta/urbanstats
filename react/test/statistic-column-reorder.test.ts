@@ -122,7 +122,6 @@ test('reordering via autoux', async (t) => {
     await waitForLoading()
     await t.click('button[data-test-id="edit"]')
     await toggleCustomScript(t)
-    // the settings pane scrolls on its own, so the target has to be brought into it first
     await t.scrollIntoView(dragHandle(2))
     await t.dragToElement(dragHandle(0), dragHandle(2))
     await t.expect(columnHeaderLink(0).innerText).eql('C2')
