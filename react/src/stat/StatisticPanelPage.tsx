@@ -8,6 +8,7 @@ import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { MapSettings } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { RelativeLoader } from '../navigation/loading'
+import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { DisplayResults } from '../urban-stats-script/Editor'
 import { tableType } from '../urban-stats-script/constants/table'
@@ -147,6 +148,7 @@ function StatisticPanelHead(props: { articleType: string, universe: string }): R
 }
 
 function ConvertToMapButton({ stat, flexWidth, typeEnvironment }: { stat: Statistic, flexWidth?: string, typeEnvironment: TypeEnvironment }): ReactNode {
+    const colors = useColors()
     const navContext = useContext(Navigator.Context)
 
     const mapperExpression = useMemo(
@@ -184,6 +186,11 @@ function ConvertToMapButton({ stat, flexWidth, typeEnvironment }: { stat: Statis
             style={{
                 flex: flexWidth ? `0 0 ${flexWidth}` : undefined,
                 padding: '0.25em 0.5em',
+                backgroundColor: colors.unselectedButton,
+                color: colors.textMain,
+                border: `1px solid ${colors.textMain}`,
+                borderRadius: '4px',
+                cursor: 'pointer',
                 fontSize: '12px',
             }}
         >
@@ -193,6 +200,8 @@ function ConvertToMapButton({ stat, flexWidth, typeEnvironment }: { stat: Statis
 }
 
 function ViewHeader({ stat, set, typeEnvironment, view }: { stat: Statistic, set: StatSetter, typeEnvironment: TypeEnvironment, view: View }): ReactNode {
+    const colors = useColors()
+
     return (
         <div style={{ marginLeft: 'auto', marginTop: '8px', display: 'flex', gap: '8px', width: 'fit-content' }}>
             <AddColumnSearchBox stat={stat} set={set} typeEnvironment={typeEnvironment} />
@@ -201,6 +210,11 @@ function ViewHeader({ stat, set, typeEnvironment, view }: { stat: Statistic, set
                 onClick={() => { set({ view: { ...view, edit: true } }, { push: true, undoable: false }) }}
                 style={{
                     padding: '0.25em 0.5em',
+                    backgroundColor: colors.unselectedButton,
+                    color: colors.textMain,
+                    border: `1px solid ${colors.textMain}`,
+                    borderRadius: '4px',
+                    cursor: 'pointer',
                     fontSize: '12px',
                 }}
             >
@@ -212,6 +226,8 @@ function ViewHeader({ stat, set, typeEnvironment, view }: { stat: Statistic, set
 }
 
 function EditHeader({ stat, set, typeEnvironment, view, inline }: { stat: Statistic, set: StatSetter, typeEnvironment: TypeEnvironment, view: View, inline: boolean }): ReactNode {
+    const colors = useColors()
+
     const hasConvertButton = useMemo(
         () => tableToMapper(mapUSSFromStat(stat), typeEnvironment) !== undefined,
         [stat, typeEnvironment],
@@ -228,6 +244,11 @@ function EditHeader({ stat, set, typeEnvironment, view, inline }: { stat: Statis
                 style={{
                     flex: inline ? undefined : (hasConvertButton ? '0 0 85%' : '1 1 100%'),
                     padding: inline ? '0.25em 2em' : '0.5em 1em',
+                    backgroundColor: colors.unselectedButton,
+                    color: colors.textMain,
+                    border: `1px solid ${colors.textMain}`,
+                    borderRadius: '4px',
+                    cursor: 'pointer',
                     fontSize: inline ? '12px' : '14px',
                 }}
             >
