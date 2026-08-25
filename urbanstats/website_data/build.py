@@ -216,7 +216,7 @@ def build_react_site(site_folder: str, mode: str) -> None:
 BUILD_STEPS = frozenset({"shapes", "articles", "index", "ordering", "sitemap", "juxta"})
 
 
-# pylint: disable-next=too-many-branches,too-many-statements
+# pylint: disable-next=too-many-branches,too-many-statements,too-many-locals
 def build_urbanstats(
     site_folder: str, *, steps: Union[Set[str], FrozenSet[str]], mode: str
 ) -> None:
