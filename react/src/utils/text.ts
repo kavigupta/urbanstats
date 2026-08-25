@@ -56,14 +56,14 @@ function decimalPlaces(value: number, { significantDigits, minDecimals, maxDecim
     return Math.min(Math.max(significantDigits - Math.ceil(Math.log10(Math.abs(value))), minDecimals ?? 0), most)
 }
 
-/** The digits of an exponential and then as many zeros, every float that large being a whole one. */
-function expanded(exponential: string): string {
-    const [mantissa, exponent] = exponential.split('e')
+/** The digits of a number in scientific notation and then as many zeros, every float that large being a whole one. */
+function expanded(scientific: string): string {
+    const [mantissa, exponent] = scientific.split('e')
     const digits = mantissa.replace(/[-.]/g, '')
     return `${mantissa.startsWith('-') ? '-' : ''}${digits}${'0'.repeat(Number(exponent) - digits.length + 1)}`
 }
 
-/** toFixed gives up past 1e21 and writes an exponent, which no quantity here is written with. */
+/** toFixed gives up past 1e21 and writes scientific notation, which no quantity here is written in. */
 function toPlainFixed(value: number, places: number): string {
     return Math.abs(value) < 1e21 ? value.toFixed(places) : expanded(value.toExponential())
 }

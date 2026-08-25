@@ -119,7 +119,7 @@ void describe('formatToSignificantFigures', () => {
         assert.equal(formatToSignificantFigures(1e12), '1000000000000')
     })
 
-    void test('writes a number too large for toFixed in full, rather than with an exponent', () => {
+    void test('writes a number too large for toFixed in full, rather than in scientific notation', () => {
         // toFixed gives up past 1e21, and a unit written 1e+22cm^{4} says nothing to anybody
         assert.equal(formatToSignificantFigures(1e22), '10000000000000000000000')
         assert.equal(formatToSignificantFigures(1.234e22), '12300000000000000000000')
