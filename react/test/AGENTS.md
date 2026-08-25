@@ -9,11 +9,11 @@ direnv exec . npm run test:e2e -- '--test=test/checkbox_bug.test.ts' --docker=ho
 That's the whole thing. In particular:
 
 - **On a Mac, always pass `--docker=host-arch --browser=chromium`, as above.** Without it
-  the tests drive a browser on the host, and its window takes over the user's screen for
-  the minutes the run lasts. The exception is screenshot work — `--compare=true` and
-  regenerating references — which needs `--docker` (`ci`) instead, since `arm64` Chromium
-  renders a few pixels differently from the references. On Linux the tests are already
-  headless, so no Docker flag is needed.
+  the tests drive a browser on the host, which opens a window and takes focus; the user
+  can tab away and the run carries on, but they shouldn't have to. The exception is
+  screenshot work — `--compare=true` and regenerating references — which needs `--docker`
+  (`ci`) instead, since `arm64` Chromium renders a few pixels differently from the
+  references. On Linux the tests are already headless, so no Docker flag is needed.
 - **Assume a dev server is already running, and don't start one.** The test runner
   doesn't start or manage it. If nothing is serving the site, ask rather than
   starting your own — `npm run watch` needs the path to the site repository, which
