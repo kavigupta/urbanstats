@@ -3,7 +3,7 @@ import { ClientFunction, Selector } from 'testcafe'
 
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor, typeTextWithKeys } from './editor_test_utils'
 import { getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript } from './mapper-utils'
-import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForLoading, dataValues, checkSidebarTextboxes, checkTextboxesDirect, downloadCSV, downloadImage, resizeForPlatform, searchField, waitForSelectedSearchResult, goBack, goForward } from './test_utils'
+import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForLoading, dataValues, checkTextboxesDirect, downloadCSV, downloadImage, resizeForPlatform, searchField, waitForSelectedSearchResult, goBack, goForward } from './test_utils'
 
 // eslint-disable-next-line no-restricted-syntax -- Reading the title the router set, not setting one.
 const documentTitle = ClientFunction(() => document.title)
@@ -389,7 +389,7 @@ test('edit starting from a statname page works', async (t) => {
     await t.expect(text.exists).notOk() // no error box
     await screencap(t)
     // set the name
-    await checkSidebarTextboxes(t, ['Name', 'Unit'])
+    await checkTextboxesDirect(t, ['Name', 'Unit'])
     await t.click(Selector('textarea:not([inert] *)'))
     await typeTextWithKeys(t, 'Density Ratio')
     await t.expect(text.exists).notOk() // still no error box
