@@ -3,7 +3,7 @@ import { ClientFunction, Selector } from 'testcafe'
 
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor, typeTextWithKeys } from './editor_test_utils'
 import { getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript } from './mapper-utils'
-import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForLoading, dataValues, checkSidebarTextboxes, checkTextboxesDirect, downloadCSV, downloadImage, searchField, waitForSelectedSearchResult, goBack, goForward } from './test_utils'
+import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForLoading, dataValues, checkSidebarTextboxes, checkTextboxesDirect, downloadCSV, downloadImage, resizeForPlatform, searchField, waitForSelectedSearchResult, goBack, goForward } from './test_utils'
 
 // eslint-disable-next-line no-restricted-syntax -- Reading the title the router set, not setting one.
 const documentTitle = ClientFunction(() => document.title)
@@ -403,6 +403,45 @@ test('edit starting from a statname page works', async (t) => {
     await t.click(Selector('button[data-test-id="view"]'))
     await waitForLoading()
     await t.expect(await dataValues()).eql(densityRatioPage2)
+    await screencap(t)
+})
+
+urbanstatsFixture('edit mode layout', createUSSStatisticsPage(basicPage, 1, 5))
+
+const splitLeft = Selector('[data-test=split-left]')
+const hamburgerMenu = Selector('div').withAttribute('class', 'hamburgermenu')
+
+test('editing on desktop puts the settings beside the table', async (t) => {
+    await t.expect(splitLeft.exists).notOk()
+    await t.expect(hamburgerMenu.exists).notOk()
+
+    await t.click(Selector('button[data-test-id="edit"]'))
+    await waitForLoading()
+
+    await t.expect(splitLeft.exists).ok()
+    // the sidebar collapses into the hamburger, as it does on the mapper
+    await t.expect(hamburgerMenu.exists).ok()
+    // the title, the buttons, and the table are all on the table side of the split
+    await t.expect(Selector('.headertext').exists).ok()
+    await t.expect(splitLeft.find('.headertext').exists).notOk()
+    await t.expect(splitLeft.find('button[data-test-id="view"]').exists).notOk()
+    await t.expect(splitLeft.find('[data-test-id="statistic-panel-longname-link"]').exists).notOk()
+    await screencap(t)
+
+    await t.click(Selector('button[data-test-id="view"]'))
+    await waitForLoading()
+
+    await t.expect(splitLeft.exists).notOk()
+    await t.expect(hamburgerMenu.exists).notOk()
+})
+
+test('editing on mobile stacks the settings above the table', async (t) => {
+    await resizeForPlatform(t, 'mobile')
+    await t.click(Selector('button[data-test-id="edit"]'))
+    await waitForLoading()
+
+    await t.expect(splitLeft.exists).notOk()
+    await t.expect(await dataValues()).eql(densityRatio)
     await screencap(t)
 })
 

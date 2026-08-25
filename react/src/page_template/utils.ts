@@ -1,14 +1,16 @@
 import { useContext } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
-import { PageData, PageDescriptor } from '../navigation/PageDescriptor'
+import { ExceptionalPageDescriptor, PageData, PageDescriptor } from '../navigation/PageDescriptor'
 
-function hideSidebarDesktop(page: PageData | PageDescriptor): boolean {
+function hideSidebarDesktop(page: ExceptionalPageDescriptor): boolean {
     switch (page.kind) {
         case 'initialLoad':
             return hideSidebarDesktop(page.descriptor)
         case 'mapper':
             return true
+        case 'statistic':
+            return page.edit === true
         default:
             return false
     }
@@ -16,7 +18,8 @@ function hideSidebarDesktop(page: PageData | PageDescriptor): boolean {
 
 export function useHideSidebarDesktop(): boolean {
     const navigator = useContext(Navigator.Context)
-    return hideSidebarDesktop(navigator.usePageState().current.data)
+    // The descriptor rather than the page data, since the statistic panel updates it in place as edit mode is toggled
+    return hideSidebarDesktop(navigator.usePageState().current.descriptor)
 }
 
 function headerLogoKey(page: PageData | PageDescriptor): 'bannerURL' | 'mapperBannerURL' {

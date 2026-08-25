@@ -75,7 +75,7 @@ export function AddColumnSearchBox({ stat, set, typeEnvironment }: {
                 onChange={(result) => { handleAddColumn(result) }}
                 autoFocus={false}
                 placeholder="Add column..."
-                style={{ width: '100%' }}
+                style={{ width: '100%', padding: '0 0.5em' }}
                 renderMatch={renderMatch}
                 allowEmptyQuery={true}
             />
