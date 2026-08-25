@@ -65,6 +65,42 @@ void test('a statistic that names its own units is written in them, counted thin
     assert.equal(written(unitOfMap('traffic_fatalities_per_capita'), 1e-5), '1.00/\u00a0100k')
 })
 
+// What a map of each of these is written in, at a stored value of 1234
+for (const [data, expected] of [
+    // a rate times a time is a length, and a count over a time is a rate of its own
+    ['rainfall * sunny_hours', '14.1cm'],
+    ['population / sunny_hours', '20.6/\u00a0min'],
+    ['elevation * elevation', '1\u202f234m^{2}'],
+    ['area ** -1', '1\u202f234/\u00a0km^{2}'],
+    // of no dimension left, and of no kind either
+    ['area / area', '1\u202f230'],
+    ['population ** 0', '1\u202f230'],
+    ['inverseQuantile(area, area)', '1\u202f230'],
+    // a reading over a reading has no zero to divide from, and two lengths held apart do not meet
+    ['high_temp / high_temp', 'nothing'],
+    ['minimum(elevation, hospital_mean_dist)', 'nothing'],
+    // an empty vector is of every kind and so of none
+    ['[]', 'nothing'],
+    // the ways a script has of saying the same thing
+    ['if (population > 0) { area } else { area }', '1\u202f234km^{2}'],
+    ['if (population > 0) { area }', '1\u202f234km^{2}'],
+    ['do { x = area; x }', '1\u202f234km^{2}'],
+    ['[area, area]', '1\u202f234km^{2}'],
+    ['sum(area)', '1\u202f234km^{2}'],
+] as const) {
+    void test(`a map of ${data} is written ${expected}`, () => {
+        assert.equal(written(unitOfMap(data), 1234), expected)
+    })
+}
+
+void test('a difference of two leads is written as the lead it is, and not twice over', () => {
+    // whose lead it is carries a plus of its own, so a swing of four and a half is D+4.50%
+    assert.equal(written(unitOfMap('pres_2020_margin - pres_2016_margin'), 0.045), 'D+4.50%')
+    assert.equal(written(unitOfMap('pres_2020_margin'), 0.045), 'D+4.50%')
+    // where a change of no party's keeps the plus that says it is a change
+    assert.equal(written(unitOfMap('commute_bike - commute_transit'), 0.045), '+4.50%')
+})
+
 void test('a quantity with no writing is left to whatever its name is taken for', () => {
     // a root of a count is in no unit any pool holds, and asking for one threw
     assert.equal(mapUnit('population ** 0.5'), 'nothing')

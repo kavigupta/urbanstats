@@ -410,7 +410,8 @@ export function writeQuantity(value: number, stored: StoredUnit, settings: Reade
         party = getParty(leads, inBaseUnits)
         inBaseUnits = Math.abs(inBaseUnits)
     }
-    const explicitSign = unit.times === 0 && inBaseUnits >= 0 ? '+' : ''
+    // whose lead it is carries a plus of its own, and a difference of two leads is not D++4.5
+    const explicitSign = party === undefined && unit.times === 0 && inBaseUnits >= 0 ? '+' : ''
     const written = formatNumber(representation.scale(inBaseUnits), representation.format)
     return {
         renderedValue: `${party === undefined ? '' : `${party.label}+`}${explicitSign}${representation.prefix ?? ''}${written}`,
