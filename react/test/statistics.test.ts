@@ -1293,6 +1293,7 @@ urbanstatsFixture('table with warning', `${target}/statistic.html?uss=customNode
 test('warning', async (t) => {
     await waitForLoading()
     await t.expect(await getErrors()).eql(['Name could not be derived for column 0, please pass name="<your name here>" to column(...)'])
+    await t.scrollIntoView('#test-editor-result:not([inert] *)')
     await screencap(t)
     // switch to view mode
     await t.click(Selector('button[data-test-id="view"]'))
