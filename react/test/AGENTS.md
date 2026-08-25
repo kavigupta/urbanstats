@@ -3,11 +3,17 @@
 Run from `react/`:
 
 ```
-direnv exec . npm run test:e2e -- '--test=test/checkbox_bug.test.ts' > /tmp/e2e.log 2>&1
+direnv exec . npm run test:e2e -- '--test=test/checkbox_bug.test.ts' --docker=host-arch --browser=chromium > /tmp/e2e.log 2>&1
 ```
 
 That's the whole thing. In particular:
 
+- **On a Mac, always pass `--docker=host-arch --browser=chromium`, as above.** Without it
+  the tests drive a browser on the host, and its window takes over the user's screen for
+  the minutes the run lasts. The exception is screenshot work — `--compare=true` and
+  regenerating references — which needs `--docker` (`ci`) instead, since `arm64` Chromium
+  renders a few pixels differently from the references. On Linux the tests are already
+  headless, so no Docker flag is needed.
 - **Assume a dev server is already running, and don't start one.** The test runner
   doesn't start or manage it. If nothing is serving the site, ask rather than
   starting your own — `npm run watch` needs the path to the site repository, which
@@ -54,11 +60,6 @@ test against the wrong site (or fail to connect) unless you go through
 
 ## Other flags
 
-`--live` watches the test file and re-runs it, `--compare=true` runs the screenshot
-comparison, and `--docker` runs in a CI-equivalent container. On a Mac, `--docker=host-arch`
-builds that container for the host's architecture, which is the only way to run tests
-without a browser window taking over the screen — but it renders a few pixels differently
-from the references, so anything screenshot-related has to use `--docker` (`ci`) instead.
-That includes regenerating the references locally, which `ci` mode can do. Either Docker
-mode needs `--browser=chromium`. See [README.md](README.md) for worked examples and the
-full set of caveats.
+`--live` watches the test file and re-runs it, and `--compare=true` runs the screenshot
+comparison. See [README.md](README.md) for the Docker modes in full, worked examples of
+regenerating references, and the caveats on each.
