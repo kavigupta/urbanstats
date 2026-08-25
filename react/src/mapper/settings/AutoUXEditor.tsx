@@ -581,7 +581,7 @@ export function AutoUXEditor(props: {
             )
 
     const headerLine = (label: ReactNode): ReactNode => (
-        <div style={{ display: 'flex', alignItems: 'top' }}>
+        <div style={{ display: 'flex', alignItems: 'top', gap: label === undefined ? undefined : '0.5em' }}>
             <div style={{ width: labelWidth }}>{label}</div>
             {rightSegment}
         </div>
