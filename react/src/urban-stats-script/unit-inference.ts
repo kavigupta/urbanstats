@@ -203,8 +203,9 @@ function pushedInto(propagation: UnitPropagation | undefined, expected: Abstract
  * of a share below a tenth is read as a tenth of a share rather than as a tenth of nothing.
  */
 function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, wanted: AbstractInterpValue, scope: Scope, into: ConstantUnits): void {
-    // a bare number says what it is worth and nothing of what it is in, which is all that is asked here
-    const expected: AbstractInterpValue = wanted.kind === 'any' ? { kind: 'any' } : wanted
+    // what an expression is worth says nothing of what it is in, and a constant left on the
+    // expectation is read as a scale: the 2 of rainfall * 2 > 100 came back as 731 days per metre
+    const expected = wanted.kind === 'any' && wanted.constant !== undefined ? anything : wanted
     switch (ast.type) {
         case 'constant': {
             const unit = unitToWriteIn(expected)
