@@ -202,8 +202,28 @@ function ArgumentEditor(props: {
 
 const nullSelectionContext = new Property<ContextSelection | undefined>(undefined)
 
-function SortableVectorItem(props: { id: string, children: ReactNode }): ReactNode {
+function SortableVectorItem(props: { id: string, children: (dragHandle: ReactNode) => ReactNode }): ReactNode {
     const { attributes, listeners, setNodeRef, transform, isDragging, transition } = useSortable({ id: props.id })
+    const dragHandle = (
+        <button
+            {...attributes}
+            {...listeners}
+            style={{
+                cursor: 'grab',
+                background: 'none',
+                border: 'none',
+                padding: '0 4px',
+                touchAction: 'none',
+                position: 'absolute',
+                right: '100%',
+                top: '50%',
+                transform: 'translateY(-50%)',
+            }}
+            title="Drag to reorder"
+        >
+            ⠿
+        </button>
+    )
     return (
         <div
             ref={setNodeRef}
@@ -214,27 +234,9 @@ function SortableVectorItem(props: { id: string, children: ReactNode }): ReactNo
                 alignItems: 'center',
                 width: '100%',
                 transition,
-                position: 'relative',
             }}
         >
-            <button
-                {...attributes}
-                {...listeners}
-                style={{
-                    flexShrink: 0,
-                    cursor: 'grab',
-                    background: 'none',
-                    border: 'none',
-                    padding: '0 4px',
-                    touchAction: 'none',
-                    position: 'absolute',
-                    right: '100%',
-                }}
-                title="Drag to reorder"
-            >
-                ⠿
-            </button>
-            {props.children}
+            {props.children(dragHandle)}
         </div>
     )
 }
@@ -289,43 +291,47 @@ function VectorLiteralEditor(props: {
                 <SortableContext items={ids.current} strategy={verticalListSortingStrategy}>
                     {props.uss.elements.map((el, i) => (
                         <SortableVectorItem key={ids.current[i]} id={ids.current[i]}>
-                            <AutoUXEditor
-                                uss={el}
-                                setUss={(newEl, options) => {
-                                    const newElements = [...props.uss.elements]
-                                    newElements[i] = newEl
-                                    props.setUss({ ...props.uss, elements: newElements }, options)
-                                }}
-                                typeEnvironment={props.typeEnvironment}
-                                errors={props.errors}
-                                blockIdent={extendBlockIdVectorElement(props.blockIdent, i)}
-                                type={[props.elementType]}
-                                label={`${i + 1}`}
-                                assignments={props.assignments}
-                            />
-                            <button
-                                style={{ flexShrink: 0, marginLeft: '0.5em' }}
-                                onClick={() => {
-                                    const newElements = props.uss.elements.flatMap((vectorElement, j) => {
-                                        if (j === i) {
-                                            return []
-                                        }
-                                        if (j < i) {
-                                            return [vectorElement]
-                                        }
-                                        return [changeBlockId(
-                                            vectorElement,
-                                            extendBlockIdVectorElement(props.blockIdent, j),
-                                            extendBlockIdVectorElement(props.blockIdent, j - 1),
-                                        )]
-                                    })
-                                    ids.current.splice(i, 1)
-                                    props.setUss({ ...props.uss, elements: newElements }, {})
-                                }}
-                                title="Remove element"
-                            >
-                                –
-                            </button>
+                            {dragHandle => (
+                                <AutoUXEditor
+                                    uss={el}
+                                    setUss={(newEl, options) => {
+                                        const newElements = [...props.uss.elements]
+                                        newElements[i] = newEl
+                                        props.setUss({ ...props.uss, elements: newElements }, options)
+                                    }}
+                                    typeEnvironment={props.typeEnvironment}
+                                    errors={props.errors}
+                                    blockIdent={extendBlockIdVectorElement(props.blockIdent, i)}
+                                    type={[props.elementType]}
+                                    label={`${i + 1}`}
+                                    assignments={props.assignments}
+                                    dragHandle={dragHandle}
+                                    removeButton={(
+                                        <button
+                                            onClick={() => {
+                                                const newElements = props.uss.elements.flatMap((vectorElement, j) => {
+                                                    if (j === i) {
+                                                        return []
+                                                    }
+                                                    if (j < i) {
+                                                        return [vectorElement]
+                                                    }
+                                                    return [changeBlockId(
+                                                        vectorElement,
+                                                        extendBlockIdVectorElement(props.blockIdent, j),
+                                                        extendBlockIdVectorElement(props.blockIdent, j - 1),
+                                                    )]
+                                                })
+                                                ids.current.splice(i, 1)
+                                                props.setUss({ ...props.uss, elements: newElements }, {})
+                                            }}
+                                            title="Remove element"
+                                        >
+                                            –
+                                        </button>
+                                    )}
+                                />
+                            )}
                         </SortableVectorItem>
                     ))}
                 </SortableContext>
@@ -362,6 +368,9 @@ export function AutoUXEditor(props: {
     labelWidth?: string
     margin?: boolean
     assignments: AssignmentsResult
+    // Rendered on the header's line: the handle hangs outside to the left, the button sits to the right
+    dragHandle?: ReactNode
+    removeButton?: ReactNode
 }): ReactNode {
     const ussLoc = locationOf(props.uss).start
     if (ussLoc.block.type !== 'single' || ussLoc.block.ident !== props.blockIdent) {
@@ -595,20 +604,37 @@ export function AutoUXEditor(props: {
         }
     }
 
+    const hasHeader = leftSegment !== undefined || rightSegment !== undefined
+
     return (
         <div
             style={{
-                display: 'flex',
-                flexDirection: 'column',
+                display: 'grid',
+                // The remove button sits beside the header, and the body lines up with the header rather than the button
+                gridTemplateColumns: props.removeButton === undefined ? 'minmax(0, 1fr)' : 'minmax(0, 1fr) auto',
+                columnGap: '0.5em',
+                rowGap: '0.25em',
                 width: '100%',
                 flex: 1,
                 minWidth: 0,
-                margin: props.margin === false ? 0 : '0.25em 0', gap: '0.25em',
+                margin: props.margin === false ? 0 : '0.25em 0',
             }}
             id={`auto-ux-editor-${props.blockIdent}`}
         >
-            {leftSegment !== undefined || rightSegment !== undefined ? <div style={{ width: '100%', flex: 1 }}>{component()}</div> : undefined}
-            {wrapped}
+            {hasHeader
+                ? (
+                        <div style={{ gridRow: 1, gridColumn: 1, position: 'relative', width: '100%' }}>
+                            {props.dragHandle}
+                            {component()}
+                        </div>
+                    )
+                : undefined}
+            {props.removeButton !== undefined && (
+                <div style={{ gridRow: 1, gridColumn: 2, alignSelf: 'center' }}>
+                    {props.removeButton}
+                </div>
+            )}
+            {wrapped !== undefined && <div style={{ gridRow: hasHeader ? 2 : 1, gridColumn: 1 }}>{wrapped}</div>}
         </div>
     )
 }
