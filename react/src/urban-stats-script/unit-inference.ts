@@ -1,10 +1,10 @@
-import { dimensionless, StoredUnit } from '../utils/quantity'
+import { dimensionless, StoredUnit, writableDimensions } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import { LocInfo } from './location'
 import { TypeEnvironment, UnitPropagation } from './types-values'
-import { AbstractInterpValue, backward, backwardUnary, constant, forward, forwardUnary, inUnit, join, manyOf, unitToWriteIn } from './unit-algebra'
+import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, unitToWriteIn } from './unit-algebra'
 
 const anything: AbstractInterpValue = { kind: 'any' }
 
@@ -208,7 +208,7 @@ function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, wanted:
     switch (ast.type) {
         case 'constant': {
             const unit = unitToWriteIn(expected)
-            if (ast.value.node.type === 'number' && unit !== undefined) {
+            if (ast.value.node.type === 'number' && unit !== undefined && writableDimensions(unit.unit)) {
                 into.set(whereWritten(ast.value.location), unit)
             }
             return
@@ -222,7 +222,8 @@ function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, wanted:
             readBack(ast.expr, expected, scope, into)
             return
         case 'unaryOperator':
-            readBack(ast.expr, backwardUnary(ast.operator.node, expected), scope, into)
+            // the sign is written beside the number rather than in it, so -10 is ten degrees below
+            readBack(ast.expr, ast.operator.node === '!' ? anything : expected, scope, into)
             return
         case 'binaryOperator': {
             const left = quantity(infer(ast.left, scope))
