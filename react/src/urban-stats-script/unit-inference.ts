@@ -101,7 +101,7 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
         case 'either':
             return join(value, argument(args, 1, scope))
         case 'rank': {
-            // in one unit, so nothing is the rank of a population among areas
+            // both arguments are in one unit, so there is no ranking a population among areas
             const alike = forward('-', value, argument(args, 1, scope))
             return alike.kind === 'none' ? alike : inUnit(dimensionless)
         }
@@ -176,9 +176,9 @@ function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Sco
 }
 
 /**
- * What an expression is expected to be written in, which is a unit and never a value. A number a
- * script wrote is read as a bare one where it scales something and as a quantity where it is
- * measured against one, so a value carried in here would take the first where the second is meant.
+ * The unit an expression is expected to be in. It never carries a value, because a literal is read
+ * two ways: as dimensionless where it scales something (x * 2), and as the other side's unit where
+ * it is compared against one (x > 100). A value here would get the first reading in both places.
  */
 type Expected = { kind: 'any' } | { kind: 'none' } | { kind: 'in', unit: StoredUnit }
 
@@ -193,13 +193,10 @@ function expectation(value: AbstractInterpValue): Expected {
     }
 }
 
-/** Where each number written in an expression is read from, which is what a caption writes it in. */
+/** The unit each numeric literal is written in, keyed by where in the source it was written. */
 export type ConstantUnits = Map<string, StoredUnit>
 
-/**
- * A number is looked up by where it was written rather than by which object it is, an edited tree
- * being made of new nodes and a reparsed one of nodes read again from the same source.
- */
+/** We index by location to avoid depending on object identity: editing or reparsing makes new nodes. */
 export function whereWritten(location: LocInfo): string {
     const where = location.start.block
     return `${where.type === 'single' ? where.ident : ''}:${location.start.charIdx}-${location.end.charIdx}`
@@ -209,7 +206,7 @@ function pushedInto(propagation: UnitPropagation | undefined, expected: Expected
     if (propagation?.kind === 'unchanged') {
         return expected
     }
-    // a larger of two is in the unit of the other, where what it is larger than says more
+    // max and min take both arguments in one unit, so each is expected in the other's
     if (propagation?.kind !== 'either') {
         return anything
     }
@@ -217,8 +214,8 @@ function pushedInto(propagation: UnitPropagation | undefined, expected: Expected
 }
 
 /**
- * The other way through: what the expression works out to is pushed back down it, so that the 0.1
- * of a share below a tenth is read as a tenth of a share rather than as a tenth of nothing.
+ * Pushes the unit an expression works out to back down through it, recording what each literal is
+ * expected to be in: the 0.1 of commute_bike < 0.1 is a share, and is written 10%.
  */
 function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expected: Expected, scope: Scope, into: ConstantUnits): void {
     switch (ast.type) {
@@ -238,7 +235,7 @@ function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expecte
             readBack(ast.expr, expected, scope, into)
             return
         case 'unaryOperator':
-            // the sign is written beside the number rather than in it, so -10 is ten degrees below
+            // the sign is rendered outside the number, so -10 keeps the unit and reads -10°F
             readBack(ast.expr, ast.operator.node === '!' ? anything : expected, scope, into)
             return
         case 'binaryOperator': {
@@ -269,7 +266,7 @@ function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expecte
         case 'do':
         case 'statements':
         case 'condition': {
-            // only the last of a block is what the block works out to; a filter is worth nothing itself
+            // a block works out to its last statement; a condition works out to nothing itself
             const statements = ast.type === 'do' ? ast.statements : (ast.type === 'statements' ? ast.result : ast.rest)
             if (ast.type === 'condition') {
                 readBack(ast.condition, anything, scope, into)
@@ -285,7 +282,7 @@ function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expecte
     }
 }
 
-/** What each number written in a script is a quantity of, as far as the script says. */
+/** The unit of each numeric literal in a script, where the script determines one. */
 export function inferConstantUnits(program: UrbanStatsASTStatement | UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): ConstantUnits {
     const scope = { typeEnvironment, named: new Map() }
     infer(program, scope)
@@ -294,7 +291,7 @@ export function inferConstantUnits(program: UrbanStatsASTStatement | UrbanStatsA
     return into
 }
 
-/** What unit an expression works out to, as far as reading it can say. */
+/** The unit an expression works out to, where reading it determines one. */
 export function inferUnit(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, named: Bindings = new Map()): AbstractInterpValue {
     return quantity(infer(ast, { typeEnvironment, named }))
 }
