@@ -364,12 +364,18 @@ def build_urbanstats(
     shutil.copy("icons/main/arrow-right.png", f"{site_folder}/")
 
     os.makedirs(f"{site_folder}/.github/workflows", exist_ok=True)
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
+    ).stdout.strip()
     for workflow in [
         "update-retrostat.yml",
         "deploy-cf-og-worker.yml",
         "sync-cf-proxy.yml",
     ]:
-        shutil.copy(f"site_workflows/{workflow}", f"{site_folder}/.github/workflows/")
+        with open(f"site_workflows/{workflow}") as f_workflow:
+            contents = f_workflow.read()
+        with open(f"{site_folder}/.github/workflows/{workflow}", "w") as f_workflow:
+            f_workflow.write(contents.replace("$URBANSTATS_REF", head))
 
     with open(f"{site_folder}/CNAME", "w") as f_cname:
         f_cname.write("urbanstats.org")
