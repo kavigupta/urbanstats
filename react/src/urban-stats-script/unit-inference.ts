@@ -1,4 +1,4 @@
-import { dimensionless } from '../utils/quantity'
+import { dimensionless, sameDimensions } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
@@ -98,10 +98,14 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
         case 'power':
             return forward('**', value, constant(propagation.exponent))
         case 'either': {
-            // a bare number is comparable with anything, so it takes the unit of what it is compared
-            // with, as it does in a sum; two knowns have to agree, and two bare numbers stay bare
             const other = argument(args, 1, scope)
-            return value.kind === 'any' || other.kind === 'any' ? forward('+', value, other) : join(value, other)
+            // two knowns must be alike, and the larger of them is one of them rather than two: an
+            // area and an area is an area, where a population and an area is nothing at all
+            if (value.kind === 'in' && other.kind === 'in') {
+                return sameDimensions(value.unit, other.unit) ? join(value, other) : { kind: 'none' }
+            }
+            // a bare number takes the unit of what it is compared with, as it does in a sum
+            return forward('+', value, other)
         }
         case 'rank': {
             // of one kind, so nothing is the rank of a population among areas

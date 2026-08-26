@@ -122,8 +122,8 @@ for (const [code, expected] of [
     ['quantile(population, 0.5)', 'person^1 times=1 x1'],
     ['percentile(area, 90)', 'm^2 times=1 x1000000'],
     ['maximum(population, population)', 'person^1 times=1 x1'],
-    // of two unlike kinds, neither
-    ['maximum(population, area)', 'unknown'],
+    // nothing is the larger of a population and an area
+    ['maximum(population, area)', 'inconsistent'],
     ['inverseQuantile(population, population)', 'dimensionless times=1 x1'],
     ['sign(population)', 'dimensionless times=1 x1'],
     // a function that states no rule says any quantity at all, rather than none
@@ -159,9 +159,11 @@ void test('a larger of a quantity and a bare number is that quantity', () => {
     assert.equal(inferred('maximum(high_temp, 80)'), 'F^1 times=1 x1')
     assert.equal(inferred('minimum(area, 100)'), 'm^2 times=1 x1000000')
     assert.equal(inferred('maximum(0.05, commute_bike)'), 'dimensionless times=1 x1')
-    // where two bare numbers are bare, and two of unlike units are of neither
+    // two bare numbers stay bare, no unit being known of either
     assert.equal(inferred('maximum(1, 2)'), 'unknown')
-    assert.equal(inferred('maximum(population, area)'), 'unknown')
+    // and nothing is the larger of a population and an area, as nothing is their sum
+    assert.equal(inferred('maximum(population, area)'), 'inconsistent')
+    assert.equal(inferred('maximum(population + area, population)'), 'inconsistent')
 })
 
 void test('a total is as many of them as there were, which is not a number anyone knows', () => {
