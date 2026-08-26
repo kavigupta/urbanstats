@@ -39,7 +39,12 @@ export async function checkTextboxesDirect(t: TestController, txts: string[], nt
             .nth(nth)
         // find checkbox
             .find('input')
-        await t.click(checkbox)
+        // a click that lands while the panel is still moving misses, leaving the setting as it was
+        await flaky(t, async () => {
+            const wasChecked = await checkbox.checked
+            await t.click(checkbox)
+            await t.expect(checkbox.checked).eql(!wasChecked, `Clicking ${txt} did not toggle it`)
+        })
     }
 }
 /** For the checkboxes that are still in the sidebar: the settings, appearance and random ones. */
