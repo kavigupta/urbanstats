@@ -97,8 +97,12 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
         }
         case 'power':
             return forward('**', value, constant(propagation.exponent))
-        case 'either':
-            return join(value, argument(args, 1, scope))
+        case 'either': {
+            // a bare number is comparable with anything, so it takes the unit of what it is compared
+            // with, as it does in a sum; two knowns have to agree, and two bare numbers stay bare
+            const other = argument(args, 1, scope)
+            return value.kind === 'any' || other.kind === 'any' ? forward('+', value, other) : join(value, other)
+        }
         case 'rank': {
             // of one kind, so nothing is the rank of a population among areas
             const alike = forward('-', value, argument(args, 1, scope))

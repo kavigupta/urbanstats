@@ -154,6 +154,16 @@ void test('a rank is of two of one kind, and is a number of none', () => {
     assert.equal(inferred('inverseQuantile(population, area)'), 'inconsistent')
 })
 
+void test('a larger of a quantity and a bare number is that quantity', () => {
+    // as a sum of one and the other is, only alike things being comparable in the first place
+    assert.equal(inferred('maximum(high_temp, 80)'), 'F^1 times=1 x1')
+    assert.equal(inferred('minimum(area, 100)'), 'm^2 times=1 x1000000')
+    assert.equal(inferred('maximum(0.05, commute_bike)'), 'dimensionless times=1 x1')
+    // where two bare numbers are bare, and two of unlike units are of neither
+    assert.equal(inferred('maximum(1, 2)'), 'unknown')
+    assert.equal(inferred('maximum(population, area)'), 'unknown')
+})
+
 void test('a total is as many of them as there were, which is not a number anyone knows', () => {
     assert.equal(inferred('sum(population)'), 'person^1 times=unknown x1')
     // so many people are people all the same, where so many temperatures are no temperature
