@@ -67,14 +67,14 @@ export function TopLevelEditor({
                 {/* Condition */}
                 <ConditionEditor
                     condition={uss.result[1].condition}
-                    setCondition={(newConditionExpr) => {
+                    setCondition={(newConditionExpr, options) => {
                         const conditionStatement = {
                             type: 'condition',
                             entireLoc: locationOf(newConditionExpr),
                             condition: newConditionExpr,
                             rest: uss.result[1].rest,
                         } satisfies UrbanStatsASTStatement
-                        setUss(makeStatements([uss.result[0], conditionStatement]), {})
+                        setUss(makeStatements([uss.result[0], conditionStatement]), options)
                     }}
                     typeEnvironment={typeEnvironment}
                     errors={errors}

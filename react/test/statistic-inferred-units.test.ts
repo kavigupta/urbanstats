@@ -103,8 +103,8 @@ test('every column of a filtered table is named and written in what the script w
     }
     await t.expect(names).eql(['Population ÷ Area', 'Mean high temp − Mean low temp', 'max(Commute Bike %, 5%)', 'Population0.5'])
     await t.expect(await rows()).eql([
-        '3\u202f897 /\u00a0km2', '+16.8 °F', '0.0500', '830',
-        '163 /\u00a0km2', '+15.9 °F', '0.0500', '4\u202f830',
+        '3\u202f897 /\u00a0km2', '+16.8 °F', '5.00 %', '830',
+        '163 /\u00a0km2', '+15.9 °F', '5.00 %', '4\u202f830',
     ])
 })
 

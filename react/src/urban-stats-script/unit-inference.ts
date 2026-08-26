@@ -1,4 +1,4 @@
-import { dimensionless, StoredUnit, writableDimensions } from '../utils/quantity'
+import { dimensionless, sameDimensions, StoredUnit, writableDimensions } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
@@ -98,8 +98,15 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
         }
         case 'power':
             return forward('**', value, constant(propagation.exponent))
-        case 'either':
-            return join(value, argument(args, 1, scope))
+        case 'either': {
+            const other = argument(args, 1, scope)
+            // Two known units must match, and the result is one of them, not their sum.
+            if (value.kind === 'in' && other.kind === 'in') {
+                return sameDimensions(value.unit, other.unit) ? join(value, other) : { kind: 'none' }
+            }
+            // A bare number takes the other argument's unit, as it does in a sum.
+            return forward('+', value, other)
+        }
         case 'rank': {
             // both arguments are in one unit, so there is no ranking a population among areas
             const alike = forward('-', value, argument(args, 1, scope))

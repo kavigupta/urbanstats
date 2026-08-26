@@ -3,7 +3,7 @@ import { ClientFunction, Selector } from 'testcafe'
 
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor, typeTextWithKeys } from './editor_test_utils'
 import { getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript } from './mapper-utils'
-import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForLoading, dataValues, checkSidebarTextboxes, checkTextboxesDirect, downloadCSV, downloadImage, searchField, waitForSelectedSearchResult, goBack, goForward } from './test_utils'
+import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForLoading, dataValues, checkTextboxesDirect, downloadCSV, downloadImage, resizeForPlatform, searchField, waitForSelectedSearchResult, goBack, goForward } from './test_utils'
 
 // eslint-disable-next-line no-restricted-syntax -- Reading the title the router set, not setting one.
 const documentTitle = ClientFunction(() => document.title)
@@ -389,7 +389,7 @@ test('edit starting from a statname page works', async (t) => {
     await t.expect(text.exists).notOk() // no error box
     await screencap(t)
     // set the name
-    await checkSidebarTextboxes(t, ['Name', 'Unit'])
+    await checkTextboxesDirect(t, ['Name', 'Unit'])
     await t.click(Selector('textarea:not([inert] *)'))
     await typeTextWithKeys(t, 'Density Ratio')
     await t.expect(text.exists).notOk() // still no error box
@@ -403,6 +403,44 @@ test('edit starting from a statname page works', async (t) => {
     await t.click(Selector('button[data-test-id="view"]'))
     await waitForLoading()
     await t.expect(await dataValues()).eql(densityRatioPage2)
+    await screencap(t)
+})
+
+urbanstatsFixture('edit mode layout', createUSSStatisticsPage(basicPage, 1, 5))
+
+const splitLeft = Selector('[data-test=split-left]')
+const hamburgerMenu = Selector('div').withAttribute('class', 'hamburgermenu')
+
+test('editing on desktop puts the settings beside the table', async (t) => {
+    await t.expect(splitLeft.exists).notOk()
+    await t.expect(hamburgerMenu.exists).notOk()
+
+    await t.click(Selector('button[data-test-id="edit"]'))
+    await waitForLoading()
+
+    await t.expect(splitLeft.exists).ok()
+    await t.expect(hamburgerMenu.exists).ok()
+    // the title, the buttons, and the table are all on the table side of the split
+    await t.expect(Selector('.headertext').exists).ok()
+    await t.expect(splitLeft.find('.headertext').exists).notOk()
+    await t.expect(splitLeft.find('button[data-test-id="view"]').exists).notOk()
+    await t.expect(splitLeft.find('[data-test-id="statistic-panel-longname-link"]').exists).notOk()
+    await screencap(t)
+
+    await t.click(Selector('button[data-test-id="view"]'))
+    await waitForLoading()
+
+    await t.expect(splitLeft.exists).notOk()
+    await t.expect(hamburgerMenu.exists).notOk()
+})
+
+test('editing on mobile stacks the settings above the table', async (t) => {
+    await resizeForPlatform(t, 'mobile')
+    await t.click(Selector('button[data-test-id="edit"]'))
+    await waitForLoading()
+
+    await t.expect(splitLeft.exists).notOk()
+    await t.expect(await dataValues()).eql(densityRatio)
     await screencap(t)
 })
 
@@ -625,6 +663,7 @@ test('error display on correct field -- second', async (t) => {
 
 test('add filter', async (t) => {
     await checkTextboxesDirect(t, ['Filter?'])
+    await replaceInput(t, 'Comparison', 'Custom Expression')
     await typeInEditor(t, 0, 'population>1m', true)
     await waitForLoading()
     await t.expect(await dataValues()).eql(['1.16', '1.14', '1.13', '1.13', '1.13'])
@@ -633,6 +672,7 @@ test('add filter', async (t) => {
 
 test('add filter that kicks you to an earlier page', async (t) => {
     await checkTextboxesDirect(t, ['Filter?'])
+    await replaceInput(t, 'Comparison', 'Custom Expression')
     await typeInEditor(t, 0, 'population>6m', true) // only one county matches
     await waitForLoading()
     await t.expect(await getLocation()).contains('start=1')
@@ -1185,6 +1225,7 @@ urbanstatsFixture('filter', `${target}/statistic.html?uss=customNode%28%22%22%29
 
 test('type in filter should preserve spaces', async (t) => {
     await checkTextboxesDirect(t, ['Filter?'])
+    await replaceInput(t, 'Comparison', 'Custom Expression')
     await typeInEditor(t, 0, 'population > 10m', true)
     await t.expect(nthEditor(0).textContent).eql('population > 10m\n')
 })
@@ -1255,6 +1296,7 @@ urbanstatsFixture('table with warning', `${target}/statistic.html?uss=customNode
 test('warning', async (t) => {
     await waitForLoading()
     await t.expect(await getErrors()).eql(['Name could not be derived for column 0, please pass name="<your name here>" to column(...)'])
+    await t.scrollIntoView('#test-editor-result:not([inert] *)')
     await screencap(t)
     // switch to view mode
     await t.click(Selector('button[data-test-id="view"]'))

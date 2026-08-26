@@ -3,11 +3,11 @@ import React, { ReactNode, useCallback, useContext, useMemo, useRef } from 'reac
 import { CountsByUT } from '../components/countsByArticleType'
 import { generateStatisticsPanelCSVData } from '../components/csv-export'
 import { createScreenshot } from '../components/screenshot'
+import { MaybeSplitLayout } from '../components/split-layout'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { MapSettings } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { RelativeLoader } from '../navigation/loading'
-import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
 import { DisplayResults } from '../urban-stats-script/Editor'
 import { tableType } from '../urban-stats-script/constants/table'
@@ -17,7 +17,7 @@ import { AssignmentsResult } from '../urban-stats-script/workerManager'
 import { reifyReact, reifyString } from '../utils/human-readable-name'
 import { tableToMapper } from '../utils/page-conversion'
 import { sanitize } from '../utils/paths'
-import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
+import { useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 import { displayType } from '../utils/text'
 import { base64Gzip } from '../utils/urlParamShort'
 
@@ -46,34 +46,42 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
 
     const subHeaderText = useMemo(() => data?.renderedStatname ?? (stat.type === 'simple' ? variable(stat.statName).humanReadableName : '\u00A0'), [data, stat])
 
-    return (
-        <PageTemplate
-            screencap={data && ((...args) => createScreenshot(() => ({
-                path: `${sanitize(reifyString(data.renderedStatname))}.png`,
-                overallWidth: tableRef.current!.offsetWidth * 2,
-                // Resolved inside screenshot mode: the disclaimer has moved into the footer by
-                // now, so include the footer as a footnote below the table when it has content.
-                elementsToRender: [
-                    headersRef.current!,
-                    tableRef.current!,
-                    ...(footerRef.current && footerRef.current.childElementCount > 0 ? [footerRef.current] : []),
-                ],
-            }), ...args))}
-            csvExportCallback={data && (() => ({
-                csvData: generateStatisticsPanelCSVData(data.articleNames, data.table, data.hideOrdinalsPercentiles),
-                csvFilename: `${sanitize(reifyString(data.renderedStatname))}.csv`,
-            }))}
-        >
+    const mobileLayout = useMobileLayout()
+    const splitLayout = view.edit && !mobileLayout
+
+    const preamble = view.edit
+        ? (
+                <EditPreamble
+                    stat={stat}
+                    view={view}
+                    set={set}
+                    typeEnvironment={typeEnvironment}
+                    counts={counts}
+                    errors={errors}
+                    assignments={assignments}
+                    split={splitLayout}
+                />
+            )
+        : undefined
+
+    const headers = (
+        <>
             {/* Only the titles are inside headersRef; the controls below it are interactive, and
                 would otherwise end up in the screenshot. */}
             <div ref={headersRef} style={{ position: 'relative' }}>
                 <StatisticPanelHead articleType={stat.articleType} universe={stat.universe} />
                 <div className={subHeaderTextClass}>{reifyReact(subHeaderText)}</div>
             </div>
-            {!view.edit && <ViewHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} />}
+            {view.edit
+                ? splitLayout && <EditHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} inline={true} />
+                : <ViewHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} />}
             <CrossSourceBorderDisclaimer stat={stat} view={view} counts={counts} isFootnote={false} />
             <div style={{ marginBlockEnd: '16px' }}></div>
-            {view.edit && <EditPreamble stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} counts={counts} errors={errors} assignments={assignments} />}
+        </>
+    )
+
+    const results = (
+        <>
             {!view.edit && <DisplayResults results={errors.filter(error => error.kind === 'error')} editor={false} />}
             {data
                 ? <StatisticPanelTable view={view} stat={stat} data={data} set={set} tableRef={tableRef} loading={loading} typeEnvironment={typeEnvironment} />
@@ -85,6 +93,44 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
             <div ref={footerRef}>
                 <CrossSourceBorderDisclaimer stat={stat} view={view} counts={counts} isFootnote={true} />
             </div>
+        </>
+    )
+
+    return (
+        <PageTemplate
+            showFooter={!splitLayout}
+            screencap={data && ((...args) => createScreenshot(() => ({
+                path: `${sanitize(reifyString(data.renderedStatname))}.png`,
+                overallWidth: tableRef.current!.offsetWidth * 2,
+                elementsToRender: [
+                    headersRef.current!,
+                    tableRef.current!,
+                    ...(footerRef.current && footerRef.current.childElementCount > 0 ? [footerRef.current] : []),
+                ],
+            }), ...args))}
+            csvExportCallback={data && (() => ({
+                csvData: generateStatisticsPanelCSVData(data.articleNames, data.table, data.hideOrdinalsPercentiles),
+                csvFilename: `${sanitize(reifyString(data.renderedStatname))}.csv`,
+            }))}
+        >
+            {!splitLayout && headers}
+            {view.edit
+                ? (
+                        <MaybeSplitLayout
+                            error={errors.some(error => error.kind === 'error')}
+                            left={preamble}
+                            right={splitLayout
+                                ? (
+                                        <>
+                                            {headers}
+                                            {results}
+                                        </>
+                                    )
+                                : results}
+                            rightStyle={{ justifyContent: 'flex-start', overflowY: 'auto' }}
+                        />
+                    )
+                : results}
         </PageTemplate>
     )
 }
@@ -99,7 +145,6 @@ function StatisticPanelHead(props: { articleType: string, universe: string }): R
 }
 
 function ConvertToMapButton({ stat, flexWidth, typeEnvironment }: { stat: Statistic, flexWidth?: string, typeEnvironment: TypeEnvironment }): ReactNode {
-    const colors = useColors()
     const navContext = useContext(Navigator.Context)
 
     const mapperExpression = useMemo(
@@ -137,11 +182,6 @@ function ConvertToMapButton({ stat, flexWidth, typeEnvironment }: { stat: Statis
             style={{
                 flex: flexWidth ? `0 0 ${flexWidth}` : undefined,
                 padding: '0.25em 0.5em',
-                backgroundColor: colors.unselectedButton,
-                color: colors.textMain,
-                border: `1px solid ${colors.textMain}`,
-                borderRadius: '4px',
-                cursor: 'pointer',
                 fontSize: '12px',
             }}
         >
@@ -151,8 +191,6 @@ function ConvertToMapButton({ stat, flexWidth, typeEnvironment }: { stat: Statis
 }
 
 function ViewHeader({ stat, set, typeEnvironment, view }: { stat: Statistic, set: StatSetter, typeEnvironment: TypeEnvironment, view: View }): ReactNode {
-    const colors = useColors()
-
     return (
         <div style={{ marginLeft: 'auto', marginTop: '8px', display: 'flex', gap: '8px', width: 'fit-content' }}>
             <AddColumnSearchBox stat={stat} set={set} typeEnvironment={typeEnvironment} />
@@ -161,11 +199,6 @@ function ViewHeader({ stat, set, typeEnvironment, view }: { stat: Statistic, set
                 onClick={() => { set({ view: { ...view, edit: true } }, { push: true, undoable: false }) }}
                 style={{
                     padding: '0.25em 0.5em',
-                    backgroundColor: colors.unselectedButton,
-                    color: colors.textMain,
-                    border: `1px solid ${colors.textMain}`,
-                    borderRadius: '4px',
-                    cursor: 'pointer',
                     fontSize: '12px',
                 }}
             >
@@ -176,7 +209,34 @@ function ViewHeader({ stat, set, typeEnvironment, view }: { stat: Statistic, set
     )
 }
 
-function EditPreamble({ stat, set, errors, counts, typeEnvironment, view, assignments }: {
+function EditHeader({ stat, set, typeEnvironment, view, inline }: { stat: Statistic, set: StatSetter, typeEnvironment: TypeEnvironment, view: View, inline: boolean }): ReactNode {
+    const hasConvertButton = useMemo(
+        () => tableToMapper(mapUSSFromStat(stat), typeEnvironment) !== undefined,
+        [stat, typeEnvironment],
+    )
+
+    return (
+        <div style={inline
+            ? { marginLeft: 'auto', marginTop: '8px', display: 'flex', gap: '8px', width: 'fit-content' }
+            : { display: 'flex', gap: '0.5em', width: '100%' }}
+        >
+            <button
+                data-test-id="view"
+                onClick={() => { set({ view: { ...view, edit: false } }, { push: true, undoable: false }) }}
+                style={{
+                    flex: inline ? undefined : (hasConvertButton ? '0 0 85%' : '1 1 100%'),
+                    padding: inline ? '0.25em 2em' : '0.5em 1em',
+                    fontSize: inline ? '12px' : '14px',
+                }}
+            >
+                View
+            </button>
+            <ConvertToMapButton stat={stat} flexWidth={inline ? undefined : '15%'} typeEnvironment={typeEnvironment} />
+        </div>
+    )
+}
+
+function EditPreamble({ stat, set, errors, counts, typeEnvironment, view, assignments, split }: {
     stat: Statistic
     set: StatSetter
     errors: EditorError[]
@@ -184,6 +244,7 @@ function EditPreamble({ stat, set, errors, counts, typeEnvironment, view, assign
     typeEnvironment: TypeEnvironment
     view: View
     assignments: AssignmentsResult
+    split: boolean
 }): ReactNode {
     const mapSettings = useMemo((): MapSettings => ({
         universe: stat.universe,
@@ -191,15 +252,8 @@ function EditPreamble({ stat, set, errors, counts, typeEnvironment, view, assign
         script: { uss: mapUSSFromStat(stat) },
     }), [stat])
 
-    const hasConvertButton = useMemo(
-        () => tableToMapper(mapUSSFromStat(stat), typeEnvironment) !== undefined,
-        [stat, typeEnvironment],
-    )
-
-    const colors = useColors()
-
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1em', padding: '1em' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1em', padding: split ? undefined : '1em' }}>
             <MapperSettings
                 mapSettings={mapSettings}
                 setMapSettings={(newMapSettings, actionOptions) => {
@@ -218,31 +272,7 @@ function EditPreamble({ stat, set, errors, counts, typeEnvironment, view, assign
                 targetOutputTypes={[tableType]}
                 assignments={assignments}
             />
-            <div style={{ display: 'flex', gap: '0.5em', width: '100%' }}>
-                <button
-                    data-test-id="view"
-                    onClick={() => { set({ view: { ...view, edit: false } }, { push: true, undoable: false }) }}
-                    style={{
-                        flex: hasConvertButton ? '0 0 85%' : '1 1 100%',
-                        padding: '0.5em 1em',
-                        backgroundColor: colors.unselectedButton,
-                        color: colors.textMain,
-                        border: `1px solid ${colors.textMain}`,
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                    }}
-                >
-                    View
-                </button>
-                {hasConvertButton && (
-                    <ConvertToMapButton
-                        stat={stat}
-                        flexWidth="15%"
-                        typeEnvironment={typeEnvironment}
-                    />
-                )}
-            </div>
+            {!split && <EditHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} inline={false} />}
         </div>
     )
 }

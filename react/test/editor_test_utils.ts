@@ -39,10 +39,18 @@ export function nthEditor(n: number): Selector {
     return Selector('pre[contenteditable="plaintext-only"]:not([inert] *)').nth(n)
 }
 
+// Clicking a narrow editor lands the caret inside the text rather than past the end of it
+const moveCaretToEnd = ClientFunction(() => {
+    const selection = window.getSelection()!
+    selection.selectAllChildren(document.activeElement!)
+    selection.collapseToEnd()
+})
+
 export async function typeInEditor(t: TestController, n: number, text: string, clear = false): Promise<void> {
     await t.expect(nthEditor(n).exists).ok()
     await t.expect(nthEditor(n).visible).ok()
     await t.click(nthEditor(n))
+    await moveCaretToEnd()
     if (clear) {
         await t.pressKey('ctrl+a backspace')
     }
