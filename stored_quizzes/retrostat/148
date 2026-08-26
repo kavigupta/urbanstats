@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Diagnosed diabetes %",
+      "stat_path": "DIABETES_cdc_2",
+      "question": "higher % of adults with diagnosed diabetes",
+      "longname_a": "MI-05 (2023), USA",
+      "longname_b": "FL-08 (2023), USA",
+      "stat_a": 0.1046245137008391,
+      "stat_b": 0.11329064190900166
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km)",
+      "stat_path": "ad_1",
+      "question": "higher population-weighted density (r=1km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Marin County, California, USA",
+      "longname_b": "Lee County, Florida, USA",
+      "stat_a": 1402.8890434562697,
+      "stat_b": 843.396692187918
+    },
+    "a_ease": 0.7551669316375199,
+    "b_ease": 0.35299073294018535
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2008-2012 Swing",
+      "stat_path": "2008-2012 Swing-margin",
+      "question": "!FULL Which swung less towards Republicans from 2008 to 2012?",
+      "longname_a": "Phoenix-Mesa-Scottsdale MSA, AZ, USA",
+      "longname_b": "College Station-Bryan MSA, TX, USA",
+      "stat_a": -0.015901324982832782,
+      "stat_b": -0.06110807189284351
+    },
+    "b": {
+      "stat_column": "Sales and related occupations %",
+      "stat_path": "occupation_sales_and_related_occupations",
+      "question": "higher % of workers employed in sales and related occupations!TOOLTIP retail salespersons, cashiers, telemarketers, real estate agents, travel agents, travelling salespeople, etc.",
+      "longname_a": "Madison County, Alabama, USA",
+      "longname_b": "Baltimore city-County, Maryland, USA",
+      "stat_a": 0.08883148700468692,
+      "stat_b": 0.0783283211825674
+    },
+    "a_ease": 0.5972093023255814,
+    "b_ease": 0.19425287356321838
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Binge drinking among adults %",
+      "stat_path": "BINGE_cdc_2",
+      "question": "higher % of adults who binge drink",
+      "longname_a": "Cumberland County, Maine, USA",
+      "longname_b": "Lake County, Florida, USA",
+      "stat_a": 0.19219580246913517,
+      "stat_b": 0.16555453666054576
+    },
+    "b": {
+      "stat_column": "COPD %",
+      "stat_path": "COPD_cdc_2",
+      "question": "higher % of adults with COPD !TOOLTIP (Chronic obstructive pulmonary disease, a lung disease linked to smoking)",
+      "longname_a": "WV-01 (2023), USA",
+      "longname_b": "KS-04 (2023), USA",
+      "stat_a": 0.12123013308771682,
+      "stat_b": 0.06623338424828373
+    },
+    "a_ease": 0.3842887473460722,
+    "b_ease": 0.8007085916740478
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Silent %",
+      "stat_path": "generation_silent",
+      "question": "higher % of people who are silent generation!TOOLTIP born before 1946",
+      "longname_a": "Baltimore city, Maryland, USA",
+      "longname_b": "San Juan zona urbana, Puerto Rico, USA",
+      "stat_a": 0.05458433089041283,
+      "stat_b": 0.11899642225155017
+    },
+    "b": {
+      "stat_column": "Snowfall [rain-equivalent]",
+      "stat_path": "snowfall_4",
+      "question": "higher snowfall (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Afghanistan",
+      "longname_b": "Greece",
+      "stat_a": 0.1444021619620948,
+      "stat_b": 0.029490833810473367
+    },
+    "a_ease": 0.37742207245155857,
+    "b_ease": 0.8067940552016986
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household income < C$50k %",
+      "stat_path": "household_income_under_50cad",
+      "question": "higher % of households that have household income under C$50k",
+      "longname_a": "Calgary City, Division No. 6, Alberta, Canada",
+      "longname_b": "Saskatoon City, Division No. 11, Saskatchewan, Canada",
+      "stat_a": 0.1883211528986693,
+      "stat_b": 0.2387601362698523
+    },
+    "b": {
+      "stat_column": "Commute Bike %",
+      "stat_path": "transportation_means_bike_no_wfh",
+      "question": "higher % of people who commute by bike",
+      "longname_a": "Indianapolis Urban Center, USA",
+      "longname_b": "Provo Urban Center, USA",
+      "stat_a": 0.004693527957451539,
+      "stat_b": 0.016729602144242055
+    },
+    "a_ease": 0.8511480601741884,
+    "b_ease": 0.43481717011128773
+  }
+]
