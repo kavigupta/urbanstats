@@ -663,6 +663,7 @@ test('error display on correct field -- second', async (t) => {
 
 test('add filter', async (t) => {
     await checkTextboxesDirect(t, ['Filter?'])
+    await replaceInput(t, 'Comparison', 'Custom Expression')
     await typeInEditor(t, 0, 'population>1m', true)
     await waitForLoading()
     await t.expect(await dataValues()).eql(['1.16', '1.14', '1.13', '1.13', '1.13'])
@@ -671,6 +672,7 @@ test('add filter', async (t) => {
 
 test('add filter that kicks you to an earlier page', async (t) => {
     await checkTextboxesDirect(t, ['Filter?'])
+    await replaceInput(t, 'Comparison', 'Custom Expression')
     await typeInEditor(t, 0, 'population>6m', true) // only one county matches
     await waitForLoading()
     await t.expect(await getLocation()).contains('start=1')
@@ -1223,6 +1225,7 @@ urbanstatsFixture('filter', `${target}/statistic.html?uss=customNode%28%22%22%29
 
 test('type in filter should preserve spaces', async (t) => {
     await checkTextboxesDirect(t, ['Filter?'])
+    await replaceInput(t, 'Comparison', 'Custom Expression')
     await typeInEditor(t, 0, 'population > 10m', true)
     await t.expect(nthEditor(0).textContent).eql('population > 10m\n')
 })

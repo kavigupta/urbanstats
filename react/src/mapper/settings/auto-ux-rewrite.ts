@@ -37,6 +37,8 @@ function isExpressionNode(n: UrbanStatsASTStatement | UrbanStatsASTExpression): 
     }
 }
 
+export function applyRewriteRules(expr: UrbanStatsASTExpression): UrbanStatsASTExpression
+export function applyRewriteRules(expr: UrbanStatsASTExpression | UrbanStatsASTStatement): UrbanStatsASTExpression | UrbanStatsASTStatement
 export function applyRewriteRules(expr: UrbanStatsASTExpression | UrbanStatsASTStatement): UrbanStatsASTExpression | UrbanStatsASTStatement {
     if (!isExpressionNode(expr)) {
         return expr
