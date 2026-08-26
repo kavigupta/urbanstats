@@ -85,6 +85,9 @@ Push your branch to Github. If changes on the frontend depend on changes on the 
 
 Correct any failing checks.
 
+Pushing again cancels the checks still running on the PR's previous commit. Label the PR
+`keep-ci` if you need those to finish — the label has to be on the PR before you push.
+
 Create a PR for your branch.
 
 # Running Multiple Urban Stats Frontends at Once
