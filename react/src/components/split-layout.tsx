@@ -1,11 +1,11 @@
-import React, { ComponentProps, MutableRefObject, ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, { ComponentProps, CSSProperties, MutableRefObject, ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { mixWithBackground } from '../utils/color'
 import { useMobileLayout } from '../utils/responsive'
 
-export function MaybeSplitLayout(props: { left: ReactNode, right: ReactNode, error: boolean }): ReactNode {
+export function MaybeSplitLayout(props: { left: ReactNode, right: ReactNode, error: boolean, rightStyle?: CSSProperties }): ReactNode {
     const mobileLayout = useMobileLayout()
 
     return mobileLayout
@@ -55,7 +55,7 @@ export function DivThatTakesUpTheRestOfThePage({ divRef, ...props }: ComponentPr
     )
 }
 
-function SplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode, error: boolean }): ReactNode {
+function SplitLayout({ left, right, error, rightStyle }: { left: ReactNode, right: ReactNode, error: boolean, rightStyle?: CSSProperties }): ReactNode {
     const splitRef = useRef<HTMLDivElement>(null)
     const colors = useColors()
 
@@ -134,7 +134,7 @@ function SplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode
                     </div>
                 </>
             )}
-            <div style={{ width: `calc(100% - max(${minLeftWidth}px, ${leftPct}) - ${dividerWidth})`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ width: `calc(100% - max(${minLeftWidth}px, ${leftPct}) - ${dividerWidth})`, display: 'flex', flexDirection: 'column', justifyContent: 'center', ...rightStyle }}>
                 {right}
             </div>
         </DivThatTakesUpTheRestOfThePage>

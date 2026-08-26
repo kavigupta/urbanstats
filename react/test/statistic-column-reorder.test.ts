@@ -122,6 +122,7 @@ test('reordering via autoux', async (t) => {
     await waitForLoading()
     await t.click('button[data-test-id="edit"]')
     await toggleCustomScript(t)
+    await t.scrollIntoView(dragHandle(2))
     await t.dragToElement(dragHandle(0), dragHandle(2))
     await t.expect(columnHeaderLink(0).innerText).eql('C2')
     await t.expect(columnHeaderLink(1).innerText).eql('C3')
