@@ -841,8 +841,22 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
         node = applyRewriteRules(node)
     }
 
+    // The node this one will print as. Parens have to be decided against that rather than against the node itself.
+    function effectiveExpression(expr: UrbanStatsASTExpression): UrbanStatsASTExpression {
+        if (opts.simplify === undefined) {
+            return expr
+        }
+        if (expr.type === 'autoUXNode') {
+            return effectiveExpression(expr.expr)
+        }
+        if (expr.type === 'customNode' && expr.expr.type === 'expression') {
+            return effectiveExpression(expr.expr.value)
+        }
+        return opts.simplify === 'auto-ux' ? applyRewriteRules(expr) : expr
+    }
     function isSimpleExpression(expr: UrbanStatsASTExpression): boolean {
-        return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant' || expr.type === 'autoUXNode' || expr.type === 'customNode'
+        const e = effectiveExpression(expr)
+        return e.type === 'identifier' || e.type === 'vectorLiteral' || e.type === 'constant' || e.type === 'autoUXNode' || e.type === 'customNode'
     }
     function indentSpaces(level: number): string {
         return '    '.repeat(level)
@@ -919,9 +933,11 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
             const leftStr = unparse(node.left, { ...opts, inline: true, expressionalContext: true })
             const rightStr = unparse(node.right, { ...opts, inline: true, expressionalContext: true })
             const opPrecedence = expressionOperatorMap[node.operator.node].precedence
+            const effectiveLeft = effectiveExpression(node.left)
+            const effectiveRight = effectiveExpression(node.right)
             let leftWithParens = leftStr
-            if (node.left.type === 'binaryOperator') {
-                const leftOpPrecedence = expressionOperatorMap[node.left.operator.node].precedence
+            if (effectiveLeft.type === 'binaryOperator') {
+                const leftOpPrecedence = expressionOperatorMap[effectiveLeft.operator.node].precedence
                 if (leftOpPrecedence < opPrecedence) {
                     leftWithParens = `(${leftStr})`
                 }
@@ -930,8 +946,8 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
                 leftWithParens = `(${leftStr})`
             }
             let rightWithParens = rightStr
-            if (node.right.type === 'binaryOperator') {
-                const rightOpPrecedence = expressionOperatorMap[node.right.operator.node].precedence
+            if (effectiveRight.type === 'binaryOperator') {
+                const rightOpPrecedence = expressionOperatorMap[effectiveRight.operator.node].precedence
                 if (rightOpPrecedence <= opPrecedence) {
                     rightWithParens = `(${rightStr})`
                 }
