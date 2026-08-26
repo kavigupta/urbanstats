@@ -156,7 +156,7 @@ export async function waitForLoading(): Promise<void> {
     return ClientFunction(() => (window as unknown as TestWindow).testUtils.waitForLoading('test_utils'))()
 }
 
-async function prepForImage(t: TestController, options: { hover: boolean, removeEntireMap: boolean }): Promise<void> {
+async function prepForImage(t: TestController, options: { hover: boolean, removeEntireMap: boolean, resetPaneScroll: boolean }): Promise<void> {
     if (options.hover) {
         await t.hover('body', { offsetX: 0, offsetY: 0 }) // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
     }
@@ -186,6 +186,11 @@ async function prepForImage(t: TestController, options: { hover: boolean, remove
 
         // hide corners on some elements where having corners causes screenshot comparison flakes
         document.querySelectorAll('[data-test-hide-corners]').forEach((element) => { (element as HTMLElement).style.borderRadius = '0px' })
+
+        // A pane that scrolls on its own would otherwise photograph wherever the last click left it
+        if (options.resetPaneScroll) {
+            document.querySelectorAll('[data-test=split-left]').forEach((pane) => { (pane as HTMLElement).scrollTop = 0 })
+        }
     }, { dependencies: { options } })
 }
 
@@ -196,13 +201,21 @@ function screenshotPath(t: TestController): string {
     return `${t.browser.name}/${t.test.name}-${screenshotNumber}.png`
 }
 
-type ScreencapOptions = { wait?: boolean, fullPage?: boolean, removeEntireMap?: boolean } & ({ selector?: undefined } | ({ selector?: Selector } & TakeElementScreenshotOptions))
+/**
+ * A pane that scrolls on its own starts each screenshot at the top, so that where the last click
+ * left it doesn't end up in the image. `scrollPaneTo` names what to scroll back into view when the
+ * subject of the shot lives below that.
+ */
+type ScreencapOptions = { wait?: boolean, fullPage?: boolean, removeEntireMap?: boolean, scrollPaneTo?: Selector } & ({ selector?: undefined } | ({ selector?: Selector } & TakeElementScreenshotOptions))
 
-export async function screencap(t: TestController, { fullPage = true, wait = true, selector, removeEntireMap = true, ...options }: ScreencapOptions = {}): Promise<void> {
+export async function screencap(t: TestController, { fullPage = true, wait = true, selector, removeEntireMap = true, scrollPaneTo, ...options }: ScreencapOptions = {}): Promise<void> {
     if (wait) {
         await waitForLoading()
     }
-    await prepForImage(t, { hover: fullPage, removeEntireMap })
+    await prepForImage(t, { hover: fullPage, removeEntireMap, resetPaneScroll: selector === undefined })
+    if (scrollPaneTo !== undefined) {
+        await t.scrollIntoView(scrollPaneTo)
+    }
     if (selector !== undefined) {
         await t.takeElementScreenshot(selector, screenshotPath(t), options)
     }

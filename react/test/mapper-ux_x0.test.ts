@@ -1,7 +1,7 @@
 import { ClientFunction, Selector } from 'testcafe'
 
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor } from './editor_test_utils'
-import { checkBox, getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript } from './mapper-utils'
+import { checkBox, checkSelector, getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript } from './mapper-utils'
 import { mapper, screencap } from './test_utils'
 
 // eslint-disable-next-line no-restricted-syntax -- Reading the title the router set, not setting one.
@@ -53,7 +53,7 @@ mapper(() => test)('cluster map enable insets', { code: 'clusterMap(data=density
     await t.expect(getErrors()).eql([])
     await checkBox(t, /^Insets/)
     await t.expect(getErrors()).eql([])
-    await screencap(t, { removeEntireMap: false })
+    await screencap(t, { removeEntireMap: false, scrollPaneTo: checkSelector(/^Insets/) })
 })
 
 const errorInSubfield = (testFn: () => TestFn) => (category: string, errorCausingCode: string, error: string): void => {
