@@ -164,7 +164,7 @@ function TextInput({ currentValue, blockIdent, setUss }: { currentValue: string,
                     },
                 }, {})
             }}
-            style={{ width: '200px', fontSize: '14px', padding: '4px 8px', resize: 'vertical', borderRadius: TestUtils.shared.isTesting ? 0 : undefined }}
+            style={{ width: '200px', minWidth: '4em', flexShrink: 2, fontSize: '14px', padding: '4px 8px', resize: 'vertical', borderRadius: TestUtils.shared.isTesting ? 0 : undefined }}
             placeholder="Enter string"
         />
     )
@@ -180,7 +180,7 @@ function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: strin
                 const newUss: UrbanStatsASTExpression = toNumberAST(value, blockIdent)
                 setUss(newUss, {})
             }}
-            style={{ width: '200px', fontSize: '14px', padding: '4px 8px', resize: 'none' }}
+            style={{ width: '200px', minWidth: '4em', flexShrink: 2, fontSize: '14px', padding: '4px 8px', resize: 'none' }}
             placeholder="Enter number"
         />
     )

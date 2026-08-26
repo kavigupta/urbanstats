@@ -457,10 +457,14 @@ test('cluster-map-population-filter-steps', async (t) => {
     await t.expect(getErrors()).eql([])
     await toggleCustomScript(t) // switch to Auto UX (custom unchecked)
     await checkTextboxesDirect(t, ['Filter?'])
+    await replaceInput(t, 'PW Density (r=1km)', 'Population')
+    await replaceInput(t, '>', '<')
 
     const thresholds = [1000000, 100000, 10000, 1000, 100]
+    let previous = '0'
     for (const threshold of thresholds) {
-        await typeInEditor(t, 0, `population < ${threshold}`, true)
+        await replaceInput(t, previous, `${threshold}`)
+        previous = `${threshold}`
         await t.expect(getErrors()).eql([])
         await screencap(t, { removeEntireMap: false })
     }

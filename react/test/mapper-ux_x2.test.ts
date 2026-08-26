@@ -150,7 +150,7 @@ mapper(() => test)('custom rendering for selector options', { code: 'customNode(
 
 const expectedExportOutput = `meta(kind="mapper", universe="USA", geographyKind="Urban Area")
 customNode("regr = regression(y=traffic_fatalities_per_capita, x1=ln(density_pw_1km), x2=commute_car, weight=population);\\ny = (regr.residuals) * 100000");
-condition (customNode("population > 10000"))
+condition (population > 10000)
 pMap(
     data=customNode("y"),
     scale=linearScale(center=0, min=customNode("percentile(y, 1)")),
@@ -162,7 +162,7 @@ pMap(
 )`
 
 const userCode = `customNode("regr = regression(y=traffic_fatalities_per_capita, x1=ln(density_pw_1km), x2=commute_car, weight=population);\\ny = (regr.residuals) * 100000");
-condition (customNode("population > 10000"))
+condition (population > 10000)
 pMap(
     data=customNode("y"),
     scale=linearScale(center=0, min=customNode("percentile(y, 1)")),
