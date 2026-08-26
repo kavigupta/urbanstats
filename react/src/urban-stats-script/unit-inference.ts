@@ -99,12 +99,11 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
             return forward('**', value, constant(propagation.exponent))
         case 'either': {
             const other = argument(args, 1, scope)
-            // two knowns must be alike, and the larger of them is one of them rather than two: an
-            // area and an area is an area, where a population and an area is nothing at all
+            // Two known units must match, and the result is one of them, not their sum.
             if (value.kind === 'in' && other.kind === 'in') {
                 return sameDimensions(value.unit, other.unit) ? join(value, other) : { kind: 'none' }
             }
-            // a bare number takes the unit of what it is compared with, as it does in a sum
+            // A bare number takes the other argument's unit, as it does in a sum.
             return forward('+', value, other)
         }
         case 'rank': {
