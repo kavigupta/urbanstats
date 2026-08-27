@@ -338,15 +338,19 @@ export function unitPower(stored: StoredUnit, exponent: number): StoredUnit | un
     return computedUnit(gathered(raised), Math.pow(stored.toBaseUnits, exponent))
 }
 
-export function nameOf(written: Written[]): HumanReadableElement[] {
+/**
+ * A solidus with nothing in front of it takes a space where the name stands by itself, as in a
+ * column of units: `/ km²` reads as "per square kilometre". Beside its number it does not, `5
+ * 000/km²` being one thing to read rather than two.
+ */
+export function nameOf(written: Written[], alone = false): HumanReadableElement[] {
     const named = written.filter(({ unit }) => unit.name !== '')
     const over = named.filter(({ power }) => power > 0)
     const under = named.filter(({ power }) => power < 0)
     if (under.length === 0) {
         return merged(product(over))
     }
-    // a solidus with nothing in front of it is set with a space, as a bare per reads better that way
-    return merged([...product(over), ...atom(over.length === 0 ? '/\u00a0' : '/'), ...product(under)])
+    return merged([...product(over), ...atom(over.length === 0 && alone ? '/\u00a0' : '/'), ...product(under)])
 }
 
 /**
@@ -357,7 +361,7 @@ function offsetOf(written: Written[], times: Coefficient): number {
     return times === 1 ? written.reduce((total, { unit, power }) => total + (unit.offset ?? 0) * power, 0) : 0
 }
 
-function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSettings): Representation {
+function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSettings, alone: boolean): Representation {
     if (unit.decoration.kind === 'percent') {
         // a lead is given more digits the closer it is, since that is what is being read off it
         return unit.decoration.party?.kind === 'lead' ? margin : percent
@@ -372,7 +376,7 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSett
     // h:mm spends two units and names one, so which one it names is the format's to say
     const unitName = format.kind === 'hoursMinutes'
         ? atom(hoursAndMinutes(scale(inBaseUnits)).unit)
-        : nameOf(written)
+        : nameOf(written, alone)
     return { scale: value => scale(value - zero), unitName, format, prefix: convention?.prefix }
 }
 
@@ -395,13 +399,13 @@ export interface WrittenQuantity {
     hue?: Hue
 }
 
-export function writeQuantity(value: number, stored: StoredUnit, settings: ReaderSettings = {}): WrittenQuantity {
+export function writeQuantity(value: number, stored: StoredUnit, settings: ReaderSettings = {}, alone = false): WrittenQuantity {
     if (!isFinite(value)) {
         return { renderedValue: missingValue, unitName: [] }
     }
     const { unit } = stored
     let inBaseUnits = value * stored.toBaseUnits
-    const representation = representationFor(inBaseUnits, unit, settings)
+    const representation = representationFor(inBaseUnits, unit, settings, alone)
     const leads = unit.decoration.kind === 'percent' && unit.decoration.party?.kind === 'lead'
         ? unit.decoration.party.system
         : undefined

@@ -297,8 +297,8 @@ void test('a difference of temperatures divides into things as well as by them',
         return `${written.renderedValue}${reifyString(written.unitName)}`
     }
     // five to the Fahrenheit degree is nine to the Celsius one, that being the larger degree
-    assert.equal(write({}), '5.00/\u00a0°F')
-    assert.equal(write({ temperatureUnit: 'celsius' }), '9.00/\u00a0°C')
+    assert.equal(write({}), '5.00/°F')
+    assert.equal(write({ temperatureUnit: 'celsius' }), '9.00/°C')
     // and a reading is no more divisible into than it is by: nothing is so many people per 50°F
     assert.equal(shape(forward('/', people, temperature)), 'inconsistent')
 })

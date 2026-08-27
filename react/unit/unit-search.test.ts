@@ -108,12 +108,18 @@ void test('a fixed number of places is a decision that rounding away is precise 
 })
 
 // The name the chosen units are written under, which is what goes in the unit column
+void test('a bare solidus takes a space where the name stands by itself', () => {
+    const perArea = [{ unit: people, power: 1 }, { unit: unit('km', { person: 1 }, 1e3), power: -2 }]
+    assert.equal(reifyString(nameOf([...perArea], true)), '/\u00a0km^{2}')
+    assert.equal(reifyString(nameOf([...perArea])), '/km^{2}')
+})
+
 for (const [written, expected] of [
     [[{ unit: people, power: 1 }], ''],
     [[{ unit: thousands, power: 1 }], 'k'],
     // a unit raised to a power says so, and one below the line goes under a solidus
     [[{ unit: unit('km', { person: 1 }, 1e3), power: 2 }], 'km^{2}'],
-    [[{ unit: people, power: 1 }, { unit: unit('km', { person: 1 }, 1e3), power: -2 }], '/ km^{2}'],
+    [[{ unit: people, power: 1 }, { unit: unit('km', { person: 1 }, 1e3), power: -2 }], '/km^{2}'],
     [[{ unit: unit('g', { fatality: 1 }, 1), power: 1 }, { unit: unit('km', { person: 1 }, 1e3), power: -2 }], 'g/km^{2}'],
     [[{ unit: unit('g', { fatality: 1 }, 1), power: 1 }, { unit: unit('k', { person: 1 }, 1e3), power: 1 }], 'g·k'],
 ] as const) {

@@ -36,8 +36,8 @@ function InParty({ value, hue }: { value: string, hue: Hue }): ReactNode {
     return <span style={spanStyle}>{value}</span>
 }
 
-export function renderQuantity(value: number, stored: StoredUnit, settings: ReaderSettings = {}): DisplayedQuantity {
-    const { renderedValue, unitName, hue } = writeQuantity(value, stored, settings)
+export function renderQuantity(value: number, stored: StoredUnit, settings: ReaderSettings = {}, alone = false): DisplayedQuantity {
+    const { renderedValue, unitName, hue } = writeQuantity(value, stored, settings, alone)
     return {
         value: hue === undefined ? <span>{renderedValue}</span> : <InParty value={renderedValue} hue={hue} />,
         unit: unitColumn(unitName),

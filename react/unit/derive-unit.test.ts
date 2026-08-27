@@ -30,7 +30,7 @@ function columnUnit(values: string, columnIndex = 0): string {
 
 void test('a map is written in the units of what it maps', () => {
     assert.equal(mapUnit('population'), '1\u202f000')
-    assert.equal(mapUnit('population / area'), '1\u202f000/\u00a0km^{2}')
+    assert.equal(mapUnit('population / area'), '1\u202f000/km^{2}')
     assert.equal(mapUnit('area ** 0.5'), '1\u202f000km')
     assert.equal(mapUnit('high_temp'), '1\u202f000.0°F')
     // a difference of two temperatures is degrees, and written from no zero of its own
@@ -54,24 +54,24 @@ void test('a map of a regression is written in the units of what was regressed',
     assert.equal(written(map(shares, 'regr.m1'), 0.05), '0.0500')
     assert.equal(written(map(shares, 'regr.r2'), 0.05), '0.0500')
     const people = 'regr = regression(y=population, x1=area)'
-    assert.equal(written(map(people, 'regr.m1'), 1000), '1\u202f000/\u00a0km^{2}')
+    assert.equal(written(map(people, 'regr.m1'), 1000), '1\u202f000/km^{2}')
     assert.equal(written(map(people, 'regr.residuals'), 1000), '+1\u202f000')
 })
 
 void test('a statistic that names its own units is written in them, counted things and all', () => {
     // fatalities over people, both of them counted, which the statistic names as fatalities per 100k
     const perCapita = deriveTableColumnUnit(mapUSSFromString('table(columns=[column(values=ped_cyclist_fatalities_per_capita)])'), defaultTypeEnvironment('USA'), 0)
-    assert.equal(written(perCapita, 1e-5), '1.00/\u00a0100k')
-    assert.equal(written(unitOfMap('traffic_fatalities_per_capita'), 1e-5), '1.00/\u00a0100k')
+    assert.equal(written(perCapita, 1e-5), '1.00/100k')
+    assert.equal(written(unitOfMap('traffic_fatalities_per_capita'), 1e-5), '1.00/100k')
 })
 
 // What a map of each of these is written in, at a stored value of 1234
 for (const [data, expected] of [
     // a rate times a time is a length, and a count over a time is a rate of its own
     ['rainfall * sunny_hours', '14.1cm'],
-    ['population / sunny_hours', '20.6/\u00a0min'],
+    ['population / sunny_hours', '20.6/min'],
     ['elevation * elevation', '1\u202f234m^{2}'],
-    ['area ** -1', '1\u202f234/\u00a0km^{2}'],
+    ['area ** -1', '1\u202f234/km^{2}'],
     // of no dimension left, and of no kind either
     ['area / area', '1\u202f230'],
     ['population ** 0', '1\u202f230'],
@@ -110,7 +110,7 @@ void test('a quantity with no writing is left to whatever its name is taken for'
     assert.equal(mapUnit('area / population'), 'nothing')
     assert.equal(mapUnit('traffic_fatalities / population'), 'nothing')
     // where a count over something measured is written the way a density is
-    assert.equal(mapUnit('traffic_fatalities / area'), '1\u202f000/\u00a0km^{2}')
+    assert.equal(mapUnit('traffic_fatalities / area'), '1\u202f000/km^{2}')
 })
 
 void test('a reader in Celsius reads a difference of two temperatures as one', () => {
@@ -131,11 +131,11 @@ void test('a difference of two is written as one', () => {
 
 void test('a script is read as a whole, so a map of what it named is in those units', () => {
     const uss = mapUSSFromString('x = population / area\ncondition (true)\ncMap(data=x, scale=linearScale(), ramp=rampUridis)')
-    assert.equal(written(deriveMapUnit(uss, defaultTypeEnvironment('USA'))), '1\u202f000/\u00a0km^{2}')
+    assert.equal(written(deriveMapUnit(uss, defaultTypeEnvironment('USA'))), '1\u202f000/km^{2}')
 })
 
 void test('a column is written in the units of its values', () => {
-    assert.equal(columnUnit('column(values=population / area)'), '1\u202f000/\u00a0km^{2}')
+    assert.equal(columnUnit('column(values=population / area)'), '1\u202f000/km^{2}')
     assert.equal(columnUnit('column(values=population), column(values=area)', 1), '1\u202f000km^{2}')
     assert.equal(columnUnit('column(values=population)', 1), 'nothing')
 })
