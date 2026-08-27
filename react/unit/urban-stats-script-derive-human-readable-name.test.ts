@@ -27,7 +27,7 @@ for (const [condition, expected] of [
     ['commute_bike < 0.1', 'Commute Bike % < 10%'],
     ['high_temp > 80', 'Mean high temp > 80°F'],
     ['area > 100', 'Area > 100km^{2}'],
-    ['density_pw_1km > 5000', 'PW Density (r=1km) > 5\u202f000/\u00a0km^{2}'],
+    ['density_pw_1km > 5000', 'PW Density (r=1km) > 5\u202f000/km^{2}'],
     ['sqrt(area) > 10', 'sqrt(Area) > 10km'],
     ['maximum(population, 1000) > 0', 'max(Population, 1\u202f000) > 0'],
     // a pollution over an area is neither of those, and the number it is measured against is of it
@@ -80,7 +80,7 @@ testMapLabel(test,
     `condition(ped_cyclist_fatalities_per_capita > 1e-5)
 cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)`,
     // in the units the statistic is read in, rather than as the fraction it is stored as
-    'PW Density (r=1km) where Pedestrian/Cyclist Fatalities Per Capita Per Year > 1/\u00a0100k',
+    'PW Density (r=1km) where Pedestrian/Cyclist Fatalities Per Capita Per Year > 1/100k',
 )
 
 // Number formatting, in particular the boundaries where rounding to 3 significant
