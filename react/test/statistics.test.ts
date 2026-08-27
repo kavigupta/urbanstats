@@ -658,7 +658,7 @@ test('error display on correct field -- second', async (t) => {
     await typeInEditor(t, 1, '+')
     await waitForLoading()
     await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:16'])
-    await screencap(t)
+    await screencap(t, { scrollPaneTo: Selector('#test-editor-result:not([inert] *)') })
 })
 
 test('add filter', async (t) => {
@@ -1296,8 +1296,7 @@ urbanstatsFixture('table with warning', `${target}/statistic.html?uss=customNode
 test('warning', async (t) => {
     await waitForLoading()
     await t.expect(await getErrors()).eql(['Name could not be derived for column 0, please pass name="<your name here>" to column(...)'])
-    await t.scrollIntoView('#test-editor-result:not([inert] *)')
-    await screencap(t)
+    await screencap(t, { scrollPaneTo: Selector('#test-editor-result:not([inert] *)') })
     // switch to view mode
     await t.click(Selector('button[data-test-id="view"]'))
     await waitForLoading()
