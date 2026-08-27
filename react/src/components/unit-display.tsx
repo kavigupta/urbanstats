@@ -1,9 +1,10 @@
 import React, { CSSProperties, ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
+import { useSetting } from '../page_template/settings'
 import { HumanReadableElement } from '../utils/human-readable-element'
 import { reifyReact } from '../utils/human-readable-name'
-import { Hue, ReaderSettings, StoredUnit, Unit, writeQuantity } from '../utils/quantity'
+import { Hue, ReaderSettings, StoredUnit, Unit, UnitPlacement, writeQuantity } from '../utils/quantity'
 import { UnitType } from '../utils/unit'
 
 /** A quantity as it is displayed: the number and its unit, which sit in separate columns. */
@@ -36,12 +37,31 @@ function InParty({ value, hue }: { value: string, hue: Hue }): ReactNode {
     return <span style={spanStyle}>{value}</span>
 }
 
-export function renderQuantity(value: number, stored: StoredUnit, settings: ReaderSettings = {}): DisplayedQuantity {
-    const { renderedValue, unitName, hue } = writeQuantity(value, stored, settings)
+export function renderQuantity(value: number, stored: StoredUnit, settings: ReaderSettings = {}, placement: UnitPlacement = {}): DisplayedQuantity {
+    const { renderedValue, unitName, hue } = writeQuantity(value, stored, settings, placement)
     return {
         value: hue === undefined ? <span>{renderedValue}</span> : <InParty value={renderedValue} hue={hue} />,
         unit: unitColumn(unitName),
     }
+}
+
+/**
+ * A number and its unit as one run of text, for anywhere they are written together. Two runs are
+ * rasterized apart, and where the line sits on a half pixel each rounds its own way, leaving the
+ * unit a pixel off the number. The zero width space is where the line may still break.
+ */
+export function QuantityTogether({ value, stored }: { value: number, stored: StoredUnit }): ReactNode {
+    const [useImperial] = useSetting('use_imperial')
+    const [temperatureUnit] = useSetting('temperature_unit')
+    const { renderedValue, unitName, hue } = writeQuantity(value, stored, { useImperial, temperatureUnit })
+    const colors = useColors()
+    return (
+        <span style={hue === undefined ? undefined : { color: colors.hueColors[hue] }}>
+            {renderedValue}
+            {unitName.length === 0 ? '' : '\u200b'}
+            {reifyReact(unitName)}
+        </span>
+    )
 }
 
 export function getUnit(unit: UnitType): ReactNode {

@@ -200,7 +200,7 @@ function humanReadable(name: HumanReadableName, fontSize: number): ReactNode[] {
 }
 
 function formatValue(value: number, unit: StoredUnit, units: Units, fontSize: number): ReactNode[] {
-    const rendered = renderQuantity(value, unit, { useImperial: units.use_imperial, temperatureUnit: units.temperature_unit })
+    const rendered = renderQuantity(value, unit, { useImperial: units.use_imperial, temperatureUnit: units.temperature_unit }, { alone: true })
     // An array rather than a fragment, which satori does not have.
     return [
         keyed(styleBareTags(rendered.value, fontSize), 'value'),

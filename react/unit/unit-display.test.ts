@@ -57,12 +57,12 @@ for (const [value, expected] of [
 for (const [unitType, value, expected] of [
     ['population', 1234, '1\u202f234'],
     ['fatalities', 1234, '1\u202f234'],
-    ['density', 1234, '1\u202f234/\u00a0km2'],
+    ['density', 1234, '1\u202f234/km2'],
     ['area', 1234, '1\u202f234km2'],
     ['distanceInKm', 1234, '1\u202f234km'],
     ['contaminantLevel', 1234, '1\u202f234.00μg/m3'],
     ['percentage', 12.34, '1\u202f234.00%'],
-    ['fatalitiesPerCapita', 0.01234, '1\u202f234.00/\u00a0100k'],
+    ['fatalitiesPerCapita', 0.01234, '1\u202f234.00/100k'],
     ['distancePerYear', 12.34, '1\u202f234.0cm/yr'],
     ['number', 1234, '1\u202f230'],
     ['temperature', 1234, '1\u202f234.0°F'],
@@ -120,10 +120,10 @@ for (const [unitType, value, expected] of [
 // A density is written per the area a reader measures in, and its people are never counted in
 // thousands however many of them there are
 for (const [value, imperial, expected] of [
-    [1234, false, '1\u202f234/\u00a0km2'],
-    [12345, false, '12\u202f345/\u00a0km2'],
-    [1234, true, '3\u202f196/\u00a0mi2'],
-    [12345, true, '31\u202f973/\u00a0mi2'],
+    [1234, false, '1\u202f234/km2'],
+    [12345, false, '12\u202f345/km2'],
+    [1234, true, '3\u202f196/mi2'],
+    [12345, true, '31\u202f973/mi2'],
 ] as const) {
     void test(`density renders ${value} in ${imperial ? 'imperial' : 'metric'} as ${expected}`, () => {
         assert.equal(renderValue('density', value, imperial), expected)
@@ -132,9 +132,9 @@ for (const [value, imperial, expected] of [
 
 // A rate is written per the number of people it is conventionally counted per, whatever its size
 for (const [value, expected] of [
-    [1.2e-5, '1.20/\u00a0100k'],
-    [0.5, '50\u202f000.00/\u00a0100k'],
-    [1e-9, '0.00/\u00a0100k'],
+    [1.2e-5, '1.20/100k'],
+    [0.5, '50\u202f000.00/100k'],
+    [1e-9, '0.00/100k'],
 ] as const) {
     void test(`fatalitiesPerCapita renders ${value} as ${expected}`, () => {
         assert.equal(renderValue('fatalitiesPerCapita', value), expected)
@@ -143,8 +143,8 @@ for (const [value, expected] of [
 
 // A solidus with nothing in front of it is set with a space, as a bare per reads better that way
 for (const [unitType, value, expected] of [
-    ['density', 5.67, '5.7/\u00a0km2'],
-    ['fatalitiesPerCapita', 1.2e-5, '1.20/\u00a0100k'],
+    ['density', 5.67, '5.7/km2'],
+    ['fatalitiesPerCapita', 1.2e-5, '1.20/100k'],
     ['contaminantLevel', 8.2, '8.20μg/m3'],
     ['distancePerYear', 1.2, '120.0cm/yr'],
 ] as const) {
@@ -207,7 +207,7 @@ for (const [unitType, value, expected] of [
     ['area', -1234, '-1\u202f234km2'],
     ['area', -0.5, '-0.500km2'],
     ['area', -0.005, '-5\u202f000m2'],
-    ['density', -1234, '-1\u202f234/\u00a0km2'],
+    ['density', -1234, '-1\u202f234/km2'],
     ['usd', -12345, '$-12.3k'],
 ] as const) {
     void test(`${unitType} renders ${value} as ${expected}`, () => {
@@ -217,11 +217,11 @@ for (const [unitType, value, expected] of [
 
 // The places a number is written to, where that depends on how large it is
 for (const [unitType, value, expected] of [
-    ['density', 1234, '1\u202f234/\u00a0km2'],
-    ['density', 12.3, '12/\u00a0km2'],
-    ['density', 5.67, '5.7/\u00a0km2'],
-    ['density', 0.5, '0.50/\u00a0km2'],
-    ['density', 0, '0.00/\u00a0km2'],
+    ['density', 1234, '1\u202f234/km2'],
+    ['density', 12.3, '12/km2'],
+    ['density', 5.67, '5.7/km2'],
+    ['density', 0.5, '0.50/km2'],
+    ['density', 0, '0.00/km2'],
     ['area', 1234, '1\u202f234km2'],
     ['area', 12.34, '12.3km2'],
     ['area', 0.5, '0.500km2'],
@@ -313,7 +313,7 @@ for (const [unitType, dimensions, toBaseUnits, value, asStatistic, asDerived] of
     ['contaminantLevel', [{ baseUnit: 'g', power: 1 }, { baseUnit: 'm', power: -3 }], 1e-6, 8.2, '8.20μg/m^{3}', '8.20μg/m^{3}'],
     ['distancePerYear', [{ baseUnit: 'm', power: 1 }, { baseUnit: 's', power: -1 }], 1 / (365.25 * 24 * 60 * 60), 1.2, '120.0cm/yr', '1.20m/yr'],
     // where a density read shortest is the same square kilometre the statistic is declared in
-    ['density', [{ baseUnit: 'person', power: 1 }, { baseUnit: 'm', power: -2 }], 1e-6, 1234, '1\u202f234/\u00a0km^{2}', '1\u202f234/\u00a0km^{2}'],
+    ['density', [{ baseUnit: 'person', power: 1 }, { baseUnit: 'm', power: -2 }], 1e-6, 1234, '1\u202f234/km^{2}', '1\u202f234/km^{2}'],
 ] as ['contaminantLevel' | 'distancePerYear' | 'density', Dimension[], number, number, string, string][]) {
     const write = (stored: StoredUnit): string => {
         const written = writeQuantity(value, stored)
