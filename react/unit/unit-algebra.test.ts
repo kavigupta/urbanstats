@@ -211,7 +211,7 @@ for (const [level, declared] of [
         const inferred = unitToWriteIn(forward('-', inUnit(storedUnits[level]), inUnit(storedUnits[level])))
         assert.notEqual(inferred, undefined)
         const write = (stored: StoredUnit): string => {
-            const written = writeQuantity(0.05, stored)
+            const written = writeQuantity(0.05, stored, {}, {})
             return `${written.renderedValue}${reifyString(written.unitName)} ${written.hue ?? ''}`
         }
         assert.equal(write(inferred!), write(storedUnits[declared]))
@@ -246,8 +246,8 @@ void test('either of two shares of different parties is a share of neither', () 
     const orange = inUnit(storedUnits.partyPctOrange)
     const joined = join(orange, inUnit(storedUnits.partyPctRed))
     assert.equal(shape(joined), shape(orange))
-    assert.equal(writeQuantity(0.05, unitToWriteIn(joined)!).hue, undefined)
-    assert.notEqual(writeQuantity(0.05, unitToWriteIn(orange)!).hue, undefined)
+    assert.equal(writeQuantity(0.05, unitToWriteIn(joined)!, {}, {}).hue, undefined)
+    assert.notEqual(writeQuantity(0.05, unitToWriteIn(orange)!, {}, {}).hue, undefined)
 })
 
 void test('a coefficient is carried through a product and raised through a power', () => {
@@ -293,7 +293,7 @@ void test('a difference of temperatures divides into things as well as by them',
     const perDegree = unitToWriteIn(forward('/', people, change))
     assert.notEqual(perDegree, undefined)
     const write = (settings: object): string => {
-        const written = writeQuantity(5, perDegree!, settings)
+        const written = writeQuantity(5, perDegree!, settings, {})
         return `${written.renderedValue}${reifyString(written.unitName)}`
     }
     // five to the Fahrenheit degree is nine to the Celsius one, that being the larger degree
@@ -307,7 +307,7 @@ void test('a difference per something is read in degrees of the reader\'s own sc
     const perArea = unitToWriteIn(forward('/', forward('-', temperature, temperature), area))
     assert.notEqual(perArea, undefined)
     const write = (settings: object): string => {
-        const written = writeQuantity(5, perArea!, settings)
+        const written = writeQuantity(5, perArea!, settings, {})
         return `${written.renderedValue}${reifyString(written.unitName)}`
     }
     // five Fahrenheit degrees per square kilometre is two and a bit Celsius degrees, the zero

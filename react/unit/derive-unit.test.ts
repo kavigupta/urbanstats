@@ -12,7 +12,7 @@ function written(unit: StoredUnit | undefined, value = 1000, settings: ReaderSet
     if (unit === undefined) {
         return 'nothing'
     }
-    const quantity = writeQuantity(value, unit, settings)
+    const quantity = writeQuantity(value, unit, settings, {})
     return `${quantity.renderedValue}${reifyString(quantity.unitName)}`
 }
 
