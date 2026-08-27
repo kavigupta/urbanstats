@@ -306,7 +306,7 @@ function trimTrailingZeros(value: string): string {
 
 function formatNumber(number: number, unit?: StoredUnit): HumanReadableElement[] {
     if (unit !== undefined) {
-        const { renderedValue, unitName } = writeQuantity(number, unit)
+        const { renderedValue, unitName } = writeQuantity(number, unit, {}, {})
         return [{ type: 'atom', value: trimTrailingZeros(renderedValue) }, ...unitName]
     }
     if (number >= 1e4) {

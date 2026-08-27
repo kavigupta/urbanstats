@@ -37,7 +37,7 @@ function InParty({ value, hue }: { value: string, hue: Hue }): ReactNode {
     return <span style={spanStyle}>{value}</span>
 }
 
-export function renderQuantity(value: number, stored: StoredUnit, settings: ReaderSettings = {}, placement: UnitPlacement = {}): DisplayedQuantity {
+export function renderQuantity(value: number, stored: StoredUnit, settings: ReaderSettings, placement: UnitPlacement): DisplayedQuantity {
     const { renderedValue, unitName, hue } = writeQuantity(value, stored, settings, placement)
     return {
         value: hue === undefined ? <span>{renderedValue}</span> : <InParty value={renderedValue} hue={hue} />,
@@ -53,7 +53,7 @@ export function renderQuantity(value: number, stored: StoredUnit, settings: Read
 export function QuantityTogether({ value, stored }: { value: number, stored: StoredUnit }): ReactNode {
     const [useImperial] = useSetting('use_imperial')
     const [temperatureUnit] = useSetting('temperature_unit')
-    const { renderedValue, unitName, hue } = writeQuantity(value, stored, { useImperial, temperatureUnit })
+    const { renderedValue, unitName, hue } = writeQuantity(value, stored, { useImperial, temperatureUnit }, {})
     const colors = useColors()
     return (
         <span style={hue === undefined ? undefined : { color: colors.hueColors[hue] }}>
