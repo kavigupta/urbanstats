@@ -60,6 +60,11 @@ export interface StoredUnit {
     toBaseUnits: number
 }
 
+/** Whether a unit is rendered by itself or against the number it belongs to. */
+export interface UnitPlacement {
+    alone?: boolean
+}
+
 export interface ReaderSettings {
     useImperial?: boolean
     temperatureUnit?: string
@@ -342,7 +347,7 @@ export function unitPower(stored: StoredUnit, exponent: number): StoredUnit | un
  * Set `alone` when the unit is rendered by itself, as in a table's unit column. A leading solidus
  * then takes a space, so that it reads as "per square kilometre" rather than as a dangling slash.
  */
-export function nameOf(written: Written[], alone = false): HumanReadableElement[] {
+export function nameOf(written: Written[], { alone = false }: UnitPlacement = {}): HumanReadableElement[] {
     const named = written.filter(({ unit }) => unit.name !== '')
     const over = named.filter(({ power }) => power > 0)
     const under = named.filter(({ power }) => power < 0)
@@ -360,7 +365,7 @@ function offsetOf(written: Written[], times: Coefficient): number {
     return times === 1 ? written.reduce((total, { unit, power }) => total + (unit.offset ?? 0) * power, 0) : 0
 }
 
-function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSettings, alone: boolean): Representation {
+function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSettings, placement: UnitPlacement): Representation {
     if (unit.decoration.kind === 'percent') {
         // a lead is given more digits the closer it is, since that is what is being read off it
         return unit.decoration.party?.kind === 'lead' ? margin : percent
@@ -375,7 +380,7 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSett
     // h:mm spends two units and names one, so which one it names is the format's to say
     const unitName = format.kind === 'hoursMinutes'
         ? atom(hoursAndMinutes(scale(inBaseUnits)).unit)
-        : nameOf(written, alone)
+        : nameOf(written, placement)
     return { scale: value => scale(value - zero), unitName, format, prefix: convention?.prefix }
 }
 
@@ -398,13 +403,13 @@ export interface WrittenQuantity {
     hue?: Hue
 }
 
-export function writeQuantity(value: number, stored: StoredUnit, settings: ReaderSettings = {}, alone = false): WrittenQuantity {
+export function writeQuantity(value: number, stored: StoredUnit, settings: ReaderSettings = {}, placement: UnitPlacement = {}): WrittenQuantity {
     if (!isFinite(value)) {
         return { renderedValue: missingValue, unitName: [] }
     }
     const { unit } = stored
     let inBaseUnits = value * stored.toBaseUnits
-    const representation = representationFor(inBaseUnits, unit, settings, alone)
+    const representation = representationFor(inBaseUnits, unit, settings, placement)
     const leads = unit.decoration.kind === 'percent' && unit.decoration.party?.kind === 'lead'
         ? unit.decoration.party.system
         : undefined

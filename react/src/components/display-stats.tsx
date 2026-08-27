@@ -9,7 +9,7 @@ export function Statistic(props: { style?: React.CSSProperties, value: number, i
     const [useImperial] = useSetting('use_imperial')
     const [temperatureUnit] = useSetting('temperature_unit')
 
-    const { value, unit } = renderQuantity(props.value, props.unit, { useImperial, temperatureUnit }, props.unitAlone)
+    const { value, unit } = renderQuantity(props.value, props.unit, { useImperial, temperatureUnit }, { alone: props.unitAlone })
 
     return (
         <span style={props.style}>

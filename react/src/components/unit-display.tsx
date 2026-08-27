@@ -3,7 +3,7 @@ import React, { CSSProperties, ReactNode } from 'react'
 import { useColors } from '../page_template/colors'
 import { HumanReadableElement } from '../utils/human-readable-element'
 import { reifyReact } from '../utils/human-readable-name'
-import { Hue, ReaderSettings, StoredUnit, Unit, writeQuantity } from '../utils/quantity'
+import { Hue, ReaderSettings, StoredUnit, Unit, UnitPlacement, writeQuantity } from '../utils/quantity'
 import { UnitType } from '../utils/unit'
 
 /** A quantity as it is displayed: the number and its unit, which sit in separate columns. */
@@ -36,8 +36,8 @@ function InParty({ value, hue }: { value: string, hue: Hue }): ReactNode {
     return <span style={spanStyle}>{value}</span>
 }
 
-export function renderQuantity(value: number, stored: StoredUnit, settings: ReaderSettings = {}, alone = false): DisplayedQuantity {
-    const { renderedValue, unitName, hue } = writeQuantity(value, stored, settings, alone)
+export function renderQuantity(value: number, stored: StoredUnit, settings: ReaderSettings = {}, placement: UnitPlacement = {}): DisplayedQuantity {
+    const { renderedValue, unitName, hue } = writeQuantity(value, stored, settings, placement)
     return {
         value: hue === undefined ? <span>{renderedValue}</span> : <InParty value={renderedValue} hue={hue} />,
         unit: unitColumn(unitName),
