@@ -3,8 +3,8 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useStat
 import { GenericShareButton } from '../components/GenericShareButton'
 import { Icon } from '../components/Icon'
 import { CheckboxSetting } from '../components/checkbox-setting'
-import { Statistic } from '../components/display-stats'
 import { JuxtastatInfiniteButton, OtherQuizzesButtons } from '../components/quiz-panel'
+import { QuantityTogether } from '../components/unit-display'
 import { LegacyStatName } from '../data/legacy_statistic_columns'
 import { Navigator } from '../navigation/Navigator'
 import { JuxtastatColors } from '../page_template/color-themes'
@@ -544,16 +544,7 @@ function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNode {
 function Value({ stat, statColumn }: { stat: number, statColumn: StatName | LegacyStatName | '%' }): ReactNode {
     return (
         <span>
-            <Statistic
-                value={stat}
-                isUnit={false}
-                unit={unitTypeToStoredUnit(classifyStatistic(statColumn))}
-            />
-            <Statistic
-                value={stat}
-                isUnit={true}
-                unit={unitTypeToStoredUnit(classifyStatistic(statColumn))}
-            />
+            <QuantityTogether value={stat} stored={unitTypeToStoredUnit(classifyStatistic(statColumn))} />
         </span>
     )
 }

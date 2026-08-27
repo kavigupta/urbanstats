@@ -1,7 +1,6 @@
 import React, { ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
-import { Statistic } from '../../components/display-stats'
-import { renderInequality } from '../../components/unit-display'
+import { QuantityTogether, renderInequality } from '../../components/unit-display'
 import { Colors } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
 import { ScaleInstance } from '../../urban-stats-script/constants/scale'
@@ -87,16 +86,7 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
         return (
             <div className="centered_text">
                 <MaybeInequality ramp={ramp} index={index} />
-                <Statistic
-                    value={stat}
-                    isUnit={false}
-                    unit={ramp.unit}
-                />
-                <Statistic
-                    value={stat}
-                    isUnit={true}
-                    unit={ramp.unit}
-                />
+                <QuantityTogether value={stat} stored={ramp.unit} />
             </div>
         )
     }
