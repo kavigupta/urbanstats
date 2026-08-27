@@ -6,6 +6,7 @@ import stat_path_list from '../data/statistic_path_list'
 import { dataSources } from '../data/statistics_tree'
 import article_types_other from '../data/type_to_type_category'
 import { DefaultMap } from '../utils/DefaultMap'
+import type { ReaderSettings } from '../utils/quantity'
 import { useObserverSets } from '../utils/useObserverSets'
 
 import { Theme } from './color-themes'
@@ -182,6 +183,11 @@ export class Settings {
 
     getMultiple<const Keys extends readonly (keyof SettingsDictionary)[]>(keys: Keys): Pick<SettingsDictionary, Keys[number]> {
         return Object.fromEntries(keys.map(key => [key, this.get(key)])) as Pick<SettingsDictionary, Keys[number]>
+    }
+
+    readerSettings(): ReaderSettings {
+        const { use_imperial: useImperial, temperature_unit: temperatureUnit } = this.getMultiple(['use_imperial', 'temperature_unit'])
+        return { useImperial, temperatureUnit }
     }
 
     // Singular settings means we can use observers

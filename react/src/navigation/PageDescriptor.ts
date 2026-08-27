@@ -591,7 +591,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                             sortColumn: newDescriptor.sort_column ?? 0,
                         },
                     },
-                    title: utils.statPageTitle(stat),
+                    title: utils.statPageTitle(stat, settings.readerSettings()),
                     counts: await counts,
                 },
                 newPageDescriptor: {
@@ -776,7 +776,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     kind: 'mapper',
                     view: newDescriptor.view,
                     settings: mapSettings,
-                    title: utils.mapPageTitle(mapSettings),
+                    title: utils.mapPageTitle(mapSettings, settings.readerSettings()),
                     mapperPanel: (await panel).MapperPanel,
                     counts: await counts,
                 },

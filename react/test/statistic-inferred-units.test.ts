@@ -91,6 +91,11 @@ test('a reader in Celsius is given that number in Celsius', async (t) => {
     const temperatures = Selector('[data-test-id=temperature_select]')
     await t.click(temperatures).click(temperatures.find('option').withText(/C/))
     await t.expect(columnName.innerText).eql('max(Mean high temp, 26.7°C)')
+    // the same name flattened to a string, for the screen reader and for the tab
+    await t.expect(Selector('[aria-label^="Sort by max"]').getAttribute('aria-label'))
+        .eql('Sort by max(Mean high temp, 26.7°C), currently descending')
+    // eslint-disable-next-line no-restricted-syntax -- reading the tab the statistic panel writes
+    await t.expect(await t.eval(() => document.title)).eql('max(Mean high temp, 26.7°C)')
 })
 
 const everything = `${target}/statistic.html?uss=${encodeURIComponent(`customNode(""); condition (commute_bike > 0.004 & high_temp > 60); table(columns=[

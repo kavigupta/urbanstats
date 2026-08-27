@@ -1,6 +1,7 @@
 import React, { ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import { CountsByUT } from '../components/countsByArticleType'
+import { useReaderSettings } from '../components/display-stats'
 import { defaultTypeEnvironment } from '../mapper/context'
 import { Selection, SelectionContext } from '../mapper/settings/SelectionContext'
 import { Navigator } from '../navigation/Navigator'
@@ -100,13 +101,14 @@ export function StatisticPanel({ settings, counts }: { settings: StatSettings, c
     }, [selectionContext, updateCurrentSelection])
 
     const { stat, view } = settingsState
+    const readerSettings = useReaderSettings()
 
     useEffect(() => {
         // Written straight to the document rather than through the page state, which would rerender
         // the whole page for every edit.
         // eslint-disable-next-line no-restricted-syntax -- The exception the rule describes.
-        document.title = statPageTitle(stat)
-    }, [stat])
+        document.title = statPageTitle(stat, readerSettings)
+    }, [stat, readerSettings])
 
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(stat.universe), [stat.universe])
 
