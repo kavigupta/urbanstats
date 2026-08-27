@@ -197,7 +197,8 @@ function humanReadable(name: HumanReadableName, fontSize: number, units: Units):
             case 'parens':
                 return ['(', ...humanReadable(element.value, fontSize, units), ')']
             case 'quantity': {
-                // expanded rather than written out, so that a superscript is one to satori as well
+                // writeQuantity rather than writtenPlainly, which would flatten mi^{2} into those
+                // literal characters instead of leaving the exponent for the superscript case below
                 const { renderedValue, unitName } = writeQuantity(element.value, element.unit, readerOf(units), {})
                 return [narrowSpaces(trimTrailingZeros(renderedValue)), ...humanReadable(unitName, fontSize, units)]
             }
