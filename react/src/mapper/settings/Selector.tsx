@@ -17,6 +17,7 @@ import { Documentation, TypeEnvironment, USSType } from '../../urban-stats-scrip
 import { TestUtils } from '../../utils/TestUtils'
 import { HumanReadableName } from '../../utils/human-readable-element'
 import { reifyReact, reifyString } from '../../utils/human-readable-name'
+import { ReaderSettings } from '../../utils/quantity'
 import { useTextAreaSizeSync } from '../../utils/text-area-size-sync'
 
 import * as l from './../../urban-stats-script/literal-parser'
@@ -41,6 +42,7 @@ export function Selector(props: {
     errors: EditorError[]
 }): ReactNode {
     const { setSelection, typeEnvironment } = props
+    const readerSettings = useReaderSettings()
     const selected = classifyExpr(props.uss)
 
     const selectionPossibilities = useMemo(() => {
@@ -59,7 +61,7 @@ export function Selector(props: {
         return selectionPossibilities.some(possibility => isCustomConstructor(possibility, props.typeEnvironment)) && !isCustomConstructor(selected, props.typeEnvironment)
     }, [selectionPossibilities, props.typeEnvironment, selected])
 
-    const renderPossibility = useCallback((selection: Selection) => renderSelection(props.typeEnvironment, selection), [props.typeEnvironment])
+    const renderPossibility = useCallback((selection: Selection) => renderSelection(props.typeEnvironment, selection, readerSettings), [props.typeEnvironment, readerSettings])
 
     const onEdit = useCallback(() => {
         const customConstructorOption = selectionPossibilities.find(possibility => isCustomConstructor(possibility, typeEnvironment))
@@ -187,7 +189,7 @@ function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: strin
     )
 }
 
-function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection): SelectorRenderResult {
+function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection, settings: ReaderSettings): SelectorRenderResult {
     if (selection.type === 'custom') {
         return { text: 'Custom Expression' }
     }
@@ -203,19 +205,19 @@ function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection)
     const doc = typeEnvironment.get(selection.name)?.documentation
     if (doc?.selectorRendering?.kind === 'subtitleLongDescription') {
         return {
-            text: reifyString(doc.humanReadableName, {}),
+            text: reifyString(doc.humanReadableName, settings),
             node: highlighted => <LongDescriptionSubtitle doc={doc} highlighted={highlighted} />,
         }
     }
     if (doc?.selectorRendering?.kind === 'gradientBackground') {
         const ramp = doc.selectorRendering.ramp
         return {
-            text: reifyString(doc.humanReadableName, {}),
+            text: reifyString(doc.humanReadableName, settings),
             node: highlighted => <RampSelectorOption name={doc.humanReadableName} ramp={ramp} highlighted={highlighted} />,
         }
     }
     else {
-        return { text: reifyString(doc?.humanReadableName ?? selection.name, {}) }
+        return { text: reifyString(doc?.humanReadableName ?? selection.name, settings) }
     }
 }
 
