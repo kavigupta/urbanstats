@@ -16,7 +16,7 @@ import { Inset } from '../../src/urban-stats-script/constants/insets'
 import { mixWithBackground } from '../../src/utils/color'
 import { computeAspectRatioForInsets } from '../../src/utils/coordinates'
 import { HumanReadableName } from '../../src/utils/human-readable-element'
-import { reifyString } from '../../src/utils/human-readable-name'
+import { reifyString, writtenPlainly } from '../../src/utils/human-readable-name'
 import { StoredUnit } from '../../src/utils/quantity'
 import { classifyStatistic, unitTypeToStoredUnit } from '../../src/utils/unit'
 import logoSvg from '../assets/logo.svg'
@@ -195,6 +195,8 @@ function humanReadable(name: HumanReadableName, fontSize: number): ReactNode[] {
                 return ['\u00a0where\u00a0', ...humanReadable(element.value, fontSize)]
             case 'parens':
                 return ['(', ...humanReadable(element.value, fontSize), ')']
+            case 'quantity':
+                return [narrowSpaces(writtenPlainly(element.value, element.unit))]
         }
     })
 }

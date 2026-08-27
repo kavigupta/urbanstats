@@ -1,9 +1,16 @@
 import React, { ReactNode } from 'react'
 
 import { useSetting } from '../page_template/settings'
-import { StoredUnit } from '../utils/quantity'
+import { ReaderSettings, StoredUnit } from '../utils/quantity'
 
 import { renderQuantity } from './unit-display'
+
+/** What the reader reads in, which a caption's numbers are written in as much as a table's are. */
+export function useReaderSettings(): ReaderSettings {
+    const [useImperial] = useSetting('use_imperial')
+    const [temperatureUnit] = useSetting('temperature_unit')
+    return { useImperial, temperatureUnit }
+}
 
 export function Statistic(props: { style?: React.CSSProperties, value: number, isUnit: boolean, unit: StoredUnit, unitAlone?: boolean }): ReactNode {
     const [useImperial] = useSetting('use_imperial')

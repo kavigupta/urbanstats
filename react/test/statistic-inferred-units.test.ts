@@ -79,9 +79,18 @@ test('what a regression did not expect is a difference of shares', async (t) => 
 
 urbanstatsFixture('a column named after what it is measured against', tableOf('maximum(high_temp, 80)'))
 
+const columnName = Selector('[data-test-id="statistic-link"]')
+
 test('a number a script names is written in the units it is read from', async (t) => {
     await waitForLoading()
-    await t.expect(Selector('[data-test-id="statistic-link"]').innerText).eql('max(Mean high temp, 80°F)')
+    await t.expect(columnName.innerText).eql('max(Mean high temp, 80°F)')
+})
+
+test('a reader in Celsius is given that number in Celsius', async (t) => {
+    await waitForLoading()
+    const temperatures = Selector('[data-test-id=temperature_select]')
+    await t.click(temperatures).click(temperatures.find('option').withText(/C/))
+    await t.expect(columnName.innerText).eql('max(Mean high temp, 26.7°C)')
 })
 
 const everything = `${target}/statistic.html?uss=${encodeURIComponent(`customNode(""); condition (commute_bike > 0.004 & high_temp > 60); table(columns=[

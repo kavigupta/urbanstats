@@ -23,7 +23,7 @@ import { zIndex } from '../utils/zIndex'
 
 import { Icon } from './Icon'
 import { computeDisclaimerText, type Disclaimer } from './disclaimer-text'
-import { percentileSuffix, percentileText, Statistic } from './display-stats'
+import { percentileSuffix, percentileText, Statistic, useReaderSettings } from './display-stats'
 import { EditModeButton, EditModeTopLeftHeader, useEnterEditModeButton } from './edit-mode-header'
 import { EditableNumber } from './editable-field'
 import { footnoteSymbol } from './footnote-symbol'
@@ -991,6 +991,7 @@ function StatisticName(props: {
 }): ReactNode {
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
+    const readerSettings = useReaderSettings()
 
     const link = props.row?.kind === 'metadata'
         ? (
@@ -1002,7 +1003,7 @@ function StatisticName(props: {
                     )}
                     data-test-id="statistic-link"
                 >
-                    {reifyReact(props.displayName)}
+                    {reifyReact(props.displayName, readerSettings)}
                 </a>
             )
         : props.row?.kind === 'statistic'
@@ -1022,12 +1023,12 @@ function StatisticName(props: {
                         }, { scroll: { kind: 'position', top: 0 } })}
                         data-test-id="statistic-link"
                     >
-                        {reifyReact(props.displayName)}
+                        {reifyReact(props.displayName, readerSettings)}
                     </a>
                 )
             : (
                     <span style={{ color: colors.textMain }} data-test-id="statistic-link">
-                        {reifyReact(props.displayName)}
+                        {reifyReact(props.displayName, readerSettings)}
                     </span>
                 )
     const elements = [link, ...useStatisticNameAdornments(props.row, props.footnoteSymbol)]
