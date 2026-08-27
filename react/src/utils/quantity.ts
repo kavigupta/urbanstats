@@ -339,9 +339,8 @@ export function unitPower(stored: StoredUnit, exponent: number): StoredUnit | un
 }
 
 /**
- * A solidus with nothing in front of it takes a space where the name stands by itself, as in a
- * column of units: `/ km²` reads as "per square kilometre". Beside its number it does not, `5
- * 000/km²` being one thing to read rather than two.
+ * Set `alone` when the unit is rendered by itself, as in a table's unit column. A leading solidus
+ * then takes a space, so that it reads as "per square kilometre" rather than as a dangling slash.
  */
 export function nameOf(written: Written[], alone = false): HumanReadableElement[] {
     const named = written.filter(({ unit }) => unit.name !== '')

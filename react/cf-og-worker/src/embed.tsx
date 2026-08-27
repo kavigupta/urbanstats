@@ -200,7 +200,7 @@ function humanReadable(name: HumanReadableName, fontSize: number): ReactNode[] {
 }
 
 function formatValue(value: number, unit: StoredUnit, units: Units, fontSize: number): ReactNode[] {
-    // set apart from its number below, as the site's own table column is
+    // The gap below separates the unit from its number, as the site's unit column does.
     const rendered = renderQuantity(value, unit, { useImperial: units.use_imperial, temperatureUnit: units.temperature_unit }, true)
     // An array rather than a fragment, which satori does not have.
     return [
