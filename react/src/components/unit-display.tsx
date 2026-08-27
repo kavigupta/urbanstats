@@ -26,8 +26,8 @@ export function renderInequality(value: number, stored: StoredUnit, inequality: 
     return reads === 'leq' ? '\u2264' /* ≤ */ : '\u2265' /* ≥ */
 }
 
-function unitColumn(name: HumanReadableElement[]): ReactNode {
-    return <span>{name.length === 0 ? <>&nbsp;</> : reifyReact(name)}</span>
+function unitColumn(name: HumanReadableElement[], settings: ReaderSettings): ReactNode {
+    return <span>{name.length === 0 ? <>&nbsp;</> : reifyReact(name, settings)}</span>
 }
 
 /** A quantity written in a party's color, set flush right so that a fourth digit overflows left. */
@@ -41,7 +41,7 @@ export function renderQuantity(value: number, stored: StoredUnit, settings: Read
     const { renderedValue, unitName, hue } = writeQuantity(value, stored, settings, placement)
     return {
         value: hue === undefined ? <span>{renderedValue}</span> : <InParty value={renderedValue} hue={hue} />,
-        unit: unitColumn(unitName),
+        unit: unitColumn(unitName, settings),
     }
 }
 
@@ -53,13 +53,14 @@ export function renderQuantity(value: number, stored: StoredUnit, settings: Read
 export function QuantityTogether({ value, stored }: { value: number, stored: StoredUnit }): ReactNode {
     const [useImperial] = useSetting('use_imperial')
     const [temperatureUnit] = useSetting('temperature_unit')
-    const { renderedValue, unitName, hue } = writeQuantity(value, stored, { useImperial, temperatureUnit })
+    const settings = { useImperial, temperatureUnit }
+    const { renderedValue, unitName, hue } = writeQuantity(value, stored, settings)
     const colors = useColors()
     return (
         <span style={hue === undefined ? undefined : { color: colors.hueColors[hue] }}>
             {renderedValue}
             {unitName.length === 0 ? '' : '\u200b'}
-            {reifyReact(unitName)}
+            {reifyReact(unitName, settings)}
         </span>
     )
 }

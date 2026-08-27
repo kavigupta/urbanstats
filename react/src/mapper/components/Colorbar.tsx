@@ -32,6 +32,7 @@ export function styleFromBasemap(basemap: Basemap, colors: Colors): { background
 
 export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Basemap }): ReactNode {
     const colors = useColors()
+    const readerSettings = useReaderSettings()
 
     return (
         <div style={{
@@ -42,7 +43,7 @@ export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Base
         >
             {props.ramp?.type === 'label' && (
                 <div className="centered_text user_input">
-                    {reifyReact(props.ramp.value)}
+                    {reifyReact(props.ramp.value, readerSettings)}
                 </div>
             )}
             {props.ramp?.type === 'ramp' && (

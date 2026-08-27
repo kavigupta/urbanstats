@@ -2,6 +2,7 @@ import ColorLib from 'color'
 import stableStringify from 'json-stable-stringify'
 import React, { ReactNode, useMemo, useCallback, useRef } from 'react'
 
+import { useReaderSettings } from '../../components/display-stats'
 import { colorThemes } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
 import { DisplayResults } from '../../urban-stats-script/Editor'
@@ -258,6 +259,7 @@ export function getColor(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnv
 }
 
 function LongDescriptionSubtitle(props: { doc: Documentation, highlighted: boolean }): ReactNode {
+    const readerSettings = useReaderSettings()
     const colors = useColors()
     return (
         <div style={{
@@ -265,15 +267,16 @@ function LongDescriptionSubtitle(props: { doc: Documentation, highlighted: boole
             background: props.highlighted ? colors.slightlyDifferentBackgroundFocused : colors.slightlyDifferentBackground,
         }}
         >
-            <div>{reifyReact(props.doc.humanReadableName)}</div>
+            <div>{reifyReact(props.doc.humanReadableName, readerSettings)}</div>
             <div style={{ fontSize: 'smaller', color: colors.ordinalTextColor }}>
-                {props.doc.longDescription !== undefined ? reifyReact(props.doc.longDescription) : undefined}
+                {props.doc.longDescription !== undefined ? reifyReact(props.doc.longDescription, readerSettings) : undefined}
             </div>
         </div>
     )
 }
 
 function RampSelectorOption(props: { name: HumanReadableName, ramp: RampT, highlighted: boolean }): ReactNode {
+    const readerSettings = useReaderSettings()
     const colors = useColors()
     const firstRampColor = ColorLib(props.ramp[0][1])
     const highlightedColor = `rgb(from ${colors.slightlyDifferentBackgroundFocused} r g b / 1)`
@@ -284,7 +287,7 @@ function RampSelectorOption(props: { name: HumanReadableName, ramp: RampT, highl
             background: props.highlighted ? `${selectionGradient(highlightedColor, 'bottom')}, ${selectionGradient(highlightedColor, 'right')}, ${toCssGradient(props.ramp)}` : toCssGradient(props.ramp),
         }}
         >
-            {reifyReact(props.name)}
+            {reifyReact(props.name, readerSettings)}
         </div>
     )
 }

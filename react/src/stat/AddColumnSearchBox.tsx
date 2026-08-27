@@ -1,5 +1,6 @@
 import React, { ReactNode, useMemo } from 'react'
 
+import { useReaderSettings } from '../components/display-stats'
 import { GenericSearchBox } from '../components/search-generic'
 import { possibilities } from '../mapper/settings/parseExpr'
 import { Selection } from '../mapper/settings/selector-classifier'
@@ -18,6 +19,7 @@ export function AddColumnSearchBox({ stat, set, typeEnvironment }: {
     set: StatSetter
     typeEnvironment: TypeEnvironment
 }): ReactNode {
+    const readerSettings = useReaderSettings()
     const allVariables = useMemo(() => relevantSelections(typeEnvironment), [typeEnvironment])
 
     const doSearch = useMemo(() => {
@@ -63,7 +65,7 @@ export function AddColumnSearchBox({ stat, set, typeEnvironment }: {
             onMouseOver={onMouseOver}
             data-test-id={dataTestId}
         >
-            {reifyReact(currentMatch().displayName)}
+            {reifyReact(currentMatch().displayName, readerSettings)}
         </div>
     )
 

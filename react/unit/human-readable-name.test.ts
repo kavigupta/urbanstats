@@ -29,6 +29,6 @@ void describe('reifyString', () => {
         assert.equal(writtenPlainly(80, storedUnits.temperature, { temperatureUnit: 'celsius' }), '26.7°C')
         assert.equal(writtenPlainly(100, storedUnits.area, { useImperial: true }), '38.6mi^{2}')
         // and the trailing zeros a unit's own style writes are not what a caption wants
-        assert.equal(writtenPlainly(1e6, storedUnits.population), '1m')
+        assert.equal(writtenPlainly(1e6, storedUnits.population, {}), '1m')
     })
 })

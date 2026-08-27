@@ -11,6 +11,7 @@ import { reifyReact } from '../utils/human-readable-name'
 import { useWarningsByGroup } from './ArticleWarnings'
 import { ExpandButton } from './ExpandButton'
 import { BooleanSettingKey, CheckboxSettingCustomJustInputProps, CheckboxSettingJustBox, useBooleanSetting, useHighlightStyle } from './checkbox-setting'
+import { useReaderSettings } from './display-stats'
 import { EditModeOpenHeader } from './edit-mode-header'
 import { ArticleRow } from './load-article'
 import { useScreenshotMode } from './screenshot'
@@ -139,6 +140,7 @@ function EditLabelRow(props: {
 }
 
 function EditStatRow({ layout, index, spec }: { layout: MeasuredTableLayout, index: number, spec: EditStatSpec }): ReactNode {
+    const readerSettings = useReaderSettings()
     const adornments = useStatisticNameAdornments(spec.editRow.row)
     return (
         <StatisticTableRow
@@ -151,7 +153,7 @@ function EditStatRow({ layout, index, spec }: { layout: MeasuredTableLayout, ind
                         htmlFor={spec.checkbox.kind === 'headers' ? spec.checkbox.id : undefined}
                         checkbox={spec.checkbox.kind === 'own' ? spec.checkbox.node : undefined}
                     >
-                        {reifyReact(spec.editRow.displayName)}
+                        {reifyReact(spec.editRow.displayName, readerSettings)}
                     </EditCheckboxLabel>
                     {adornments}
                 </div>

@@ -16,8 +16,9 @@ import { Inset } from '../../src/urban-stats-script/constants/insets'
 import { mixWithBackground } from '../../src/utils/color'
 import { computeAspectRatioForInsets } from '../../src/utils/coordinates'
 import { HumanReadableName } from '../../src/utils/human-readable-element'
-import { reifyString, writtenPlainly } from '../../src/utils/human-readable-name'
-import { StoredUnit } from '../../src/utils/quantity'
+import { reifyString } from '../../src/utils/human-readable-name'
+import { ReaderSettings, StoredUnit, writeQuantity } from '../../src/utils/quantity'
+import { trimTrailingZeros } from '../../src/utils/text'
 import { classifyStatistic, unitTypeToStoredUnit } from '../../src/utils/unit'
 import logoSvg from '../assets/logo.svg'
 
@@ -166,7 +167,7 @@ function styleBareTags(node: ReactNode, fontSize: number): ReactNode {
  * A name the site renders through `reifyReact`, whose fragments satori has no equivalent of.
  * Satori lays smaller text out from the top of the line, so a subscript is dropped by hand.
  */
-function humanReadable(name: HumanReadableName, fontSize: number): ReactNode[] {
+function humanReadable(name: HumanReadableName, fontSize: number, units: Units): ReactNode[] {
     if (typeof name === 'string') {
         return [narrowSpaces(name)]
     }
@@ -188,21 +189,28 @@ function humanReadable(name: HumanReadableName, fontSize: number): ReactNode[] {
                             marginTop: element.type === 'subscript' ? fontSize * 0.45 : 0,
                         }}
                     >
-                        {humanReadable(element.value, fontSize * 0.65)}
+                        {humanReadable(element.value, fontSize * 0.65, units)}
                     </div>
                 )]
             case 'where':
-                return ['\u00a0where\u00a0', ...humanReadable(element.value, fontSize)]
+                return ['\u00a0where\u00a0', ...humanReadable(element.value, fontSize, units)]
             case 'parens':
-                return ['(', ...humanReadable(element.value, fontSize), ')']
-            case 'quantity':
-                return [narrowSpaces(writtenPlainly(element.value, element.unit))]
+                return ['(', ...humanReadable(element.value, fontSize, units), ')']
+            case 'quantity': {
+                // expanded rather than written out, so that a superscript is one to satori as well
+                const { renderedValue, unitName } = writeQuantity(element.value, element.unit, readerOf(units))
+                return [narrowSpaces(trimTrailingZeros(renderedValue)), ...humanReadable(unitName, fontSize, units)]
+            }
         }
     })
 }
 
+function readerOf(units: Units): ReaderSettings {
+    return { useImperial: units.use_imperial, temperatureUnit: units.temperature_unit }
+}
+
 function formatValue(value: number, unit: StoredUnit, units: Units, fontSize: number): ReactNode[] {
-    const rendered = renderQuantity(value, unit, { useImperial: units.use_imperial, temperatureUnit: units.temperature_unit }, { alone: true })
+    const rendered = renderQuantity(value, unit, readerOf(units), { alone: true })
     // An array rather than a fragment, which satori does not have.
     return [
         keyed(styleBareTags(rendered.value, fontSize), 'value'),
@@ -738,7 +746,7 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
         : sizeToFit([note], rankColumn + nameColumn - cellPadding, 2, 30, 14, boldCharacterWidth)
     const noteElements = [
         `${statistic.heading} in ${statistic.universe}`,
-        ...(statistic.filter === undefined ? [] : ['\u00a0where\u00a0', ...humanReadable(statistic.filter, noteSize)]),
+        ...(statistic.filter === undefined ? [] : ['\u00a0where\u00a0', ...humanReadable(statistic.filter, noteSize, statistic.units)]),
     ]
 
     return (
@@ -759,7 +767,7 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
                 : (
                         <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 16 }}>
                             <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingRight: 24, overflow: 'hidden' }}>
-                                <div style={{ display: 'flex', fontSize: titleSize, fontWeight: 600, alignItems: 'flex-start' }}>{humanReadable(statistic.title, titleSize)}</div>
+                                <div style={{ display: 'flex', fontSize: titleSize, fontWeight: 600, alignItems: 'flex-start' }}>{humanReadable(statistic.title, titleSize, statistic.units)}</div>
                                 <div style={{ display: 'flex', fontSize: noteSize, color: colors.muted }}>{noteElements}</div>
                             </div>
                             {flag(statistic.universe, statistic.flag)}
@@ -787,7 +795,7 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
                                             alignItems: 'flex-end',
                                         }}
                                     >
-                                        {humanReadable(column.name, columnHeaders)}
+                                        {humanReadable(column.name, columnHeaders, statistic.units)}
                                         {index === statistic.sortColumn ? sortArrow(statistic.order, columnHeaders * 0.6) : ''}
                                     </div>
                                 ))}

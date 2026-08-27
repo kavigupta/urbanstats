@@ -9,12 +9,12 @@ import { trimTrailingZeros } from './text'
  * A quantity written out, for a title, a card or a file, where there is no reader to ask what
  * units they read in. On a page `reifyReact` asks, and writes it in those.
  */
-export function writtenPlainly(value: number, unit: StoredUnit, settings: ReaderSettings = {}): string {
+export function writtenPlainly(value: number, unit: StoredUnit, settings: ReaderSettings): string {
     const written = writeQuantity(value, unit, settings)
     return `${trimTrailingZeros(written.renderedValue)}${reifyString(written.unitName)}`
 }
 
-export function reifyReact(elements: HumanReadableElement[] | string, settings: ReaderSettings = {}): ReactNode {
+export function reifyReact(elements: HumanReadableElement[] | string, settings: ReaderSettings): ReactNode {
     if (typeof elements === 'string') return elements
     return elements.map((element, index) => {
         switch (element.type) {
@@ -75,7 +75,8 @@ export function reifyString(elements: HumanReadableElement[] | string): string {
             case 'parens':
                 return `(${reifyString(element.value)})`
             case 'quantity':
-                return writtenPlainly(element.value, element.unit)
+                // a string has no reader to ask, so it is written in the units the site is written in
+                return writtenPlainly(element.value, element.unit, {})
         }
     }).join('')
 }
