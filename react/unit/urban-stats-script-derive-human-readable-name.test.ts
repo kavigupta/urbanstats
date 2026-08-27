@@ -22,6 +22,43 @@ function testMapLabel(testFn: typeof test, code: string, expectedLabel: string):
     })
 }
 
+// A number a script names is written in the units the script reads it from
+for (const [condition, expected] of [
+    ['commute_bike < 0.1', 'Commute Bike % < 10%'],
+    ['high_temp > 80', 'Mean high temp > 80°F'],
+    ['area > 100', 'Area > 100km^{2}'],
+    ['density_pw_1km > 5000', 'PW Density (r=1km) > 5\u202f000/\u00a0km^{2}'],
+    ['sqrt(area) > 10', 'sqrt(Area) > 10km'],
+    ['maximum(population, 1000) > 0', 'max(Population, 1\u202f000) > 0'],
+    // a pollution over an area is neither of those, and the number it is measured against is of it
+    ['pm25_pollution * area > 10', 'PW Mean PM2.5 Pollution × Area > 10g/m'],
+    ['pm25_pollution > 10', 'PW Mean PM2.5 Pollution > 10μg/m^{3}'],
+    // what scales a quantity is no quantity, and neither is what one is divided into
+    ['population * 2 > population', 'Population × 2 > Population'],
+    ['rainfall * 2 > 100', 'Rainfall × 2 > 10\u202f000cm/yr'],
+    // which of the two the 32 is cannot be said, where the 0 is in the unit it is compared against
+    ['high_temp - 32 > 0', 'Mean high temp \u2212 32 > 0°F'],
+    // either side of a comparison carries it to the other, and each side of an and is read alone
+    ['80 < high_temp', '80°F < Mean high temp'],
+    ['population > 1000 & high_temp > 80', 'Population > 1\u202f000 and Mean high temp > 80°F'],
+    // a sign is written beside a number rather than in it, where minus a reading is no reading
+    ['high_temp > -10', 'Mean high temp > -10°F'],
+    ['-high_temp > -80', '-Mean high temp > -80'],
+    // a root of a count is in no unit any pool holds, and writing one threw
+    ['population ** 0.5 > 100', 'Population^{0.5} > 100'],
+    // however many people there are they are still people, where the size of a reading is nothing
+    ['sum(population) > 1000000', 'sum(Population) > 1m'],
+    ['abs(high_temp) > 5', 'abs(Mean high temp) > 5'],
+    ['ln(1000) > 0', 'ln(1\u202f000) > 0'],
+    // a lead is written as whose it is, and a change from one year to another as a change
+    ['pres_2020_margin > 0.1', '2020 Presidential Election > D+10%'],
+    ['population_change_2000_2020 > 0.05', 'Population Change (2000-2020) > +5%'],
+    ['population > 0', 'Population > 0'],
+    ['sunny_hours > 2000', 'Mean sunny hours > 2000:00h'],
+] as const) {
+    testMapLabel(test, `condition (${condition})\ncMap(data=population, scale=linearScale(), ramp=rampUridis)`, `Population where ${expected}`)
+}
+
 testMapLabel(test,
     `condition (population > 1000000)
 condition (population_2000 > 1000000)
@@ -42,7 +79,8 @@ cMap(data=density_pw_1km_2000 / (density_pw_1km * density_pw_2km), scale=linearS
 testMapLabel(test,
     `condition(ped_cyclist_fatalities_per_capita > 1e-5)
 cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)`,
-    'PW Density (r=1km) where Pedestrian/Cyclist Fatalities Per Capita Per Year > 1x10^{-5}',
+    // in the units the statistic is read in, rather than as the fraction it is stored as
+    'PW Density (r=1km) where Pedestrian/Cyclist Fatalities Per Capita Per Year > 1/\u00a0100k',
 )
 
 // Number formatting, in particular the boundaries where rounding to 3 significant

@@ -1,11 +1,12 @@
-import { dimensionless, sameDimensions } from '../utils/quantity'
+import { dimensionless, sameDimensions, StoredUnit, writableDimensions } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
+import { LocInfo } from './location'
 import { TypeEnvironment, UnitPropagation } from './types-values'
-import { AbstractInterpValue, constant, forward, forwardUnary, inUnit, join, manyOf } from './unit-algebra'
+import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, unitToWriteIn } from './unit-algebra'
 
-const anything: AbstractInterpValue = { kind: 'any' }
+const anything = { kind: 'any' } satisfies AbstractInterpValue
 
 /** A script has objects in it as well as quantities, a regression's result being one. */
 type Inferred = AbstractInterpValue | { kind: 'fields', fields: Map<string, AbstractInterpValue> }
@@ -107,7 +108,7 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
             return forward('+', value, other)
         }
         case 'rank': {
-            // of one kind, so nothing is the rank of a population among areas
+            // both arguments are in one unit, so there is no ranking a population among areas
             const alike = forward('-', value, argument(args, 1, scope))
             return alike.kind === 'none' ? alike : inUnit(dimensionless)
         }
@@ -181,7 +182,123 @@ function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Sco
     }
 }
 
-/** What kind of quantity an expression works out to, as far as reading it can say. */
+/**
+ * The unit an expression is expected to be in. It never carries a value, because a literal is read
+ * two ways: as dimensionless where it scales something (x * 2), and as the other side's unit where
+ * it is compared against one (x > 100). A value here would get the first reading in both places.
+ */
+type Expected = { kind: 'any' } | { kind: 'none' } | { kind: 'in', unit: StoredUnit }
+
+function expectation(value: AbstractInterpValue): Expected {
+    switch (value.kind) {
+        case 'in':
+            return { kind: 'in', unit: value.unit }
+        case 'any':
+            return { kind: 'any' }
+        case 'none':
+            return value
+    }
+}
+
+/** The unit each numeric literal is written in, keyed by where in the source it was written. */
+export type ConstantUnits = Map<string, StoredUnit>
+
+/** We index by location to avoid depending on object identity: editing or reparsing makes new nodes. */
+export function whereWritten(location: LocInfo): string {
+    const where = location.start.block
+    return `${where.type === 'single' ? where.ident : ''}:${location.start.charIdx}-${location.end.charIdx}`
+}
+
+function pushedInto(propagation: UnitPropagation | undefined, expected: Expected, args: UrbanStatsASTArg[], index: number, scope: Scope): Expected {
+    if (propagation?.kind === 'unchanged') {
+        return expected
+    }
+    // max and min take both arguments in one unit, so each is expected in the other's
+    if (propagation?.kind !== 'either') {
+        return anything
+    }
+    return expected.kind === 'in' ? expected : expectation(argument(args, 1 - index, scope))
+}
+
+/**
+ * Pushes the unit an expression works out to back down through it, recording what each literal is
+ * expected to be in: the 0.1 of commute_bike < 0.1 is a share, and is written 10%.
+ */
+function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expected: Expected, scope: Scope, into: ConstantUnits): void {
+    switch (ast.type) {
+        case 'constant': {
+            const unit = unitToWriteIn(expected)
+            if (ast.value.node.type === 'number' && unit !== undefined && writableDimensions(unit.unit)) {
+                into.set(whereWritten(ast.value.location), unit)
+            }
+            return
+        }
+        case 'expression':
+        case 'assignment':
+            readBack(ast.value, expected, scope, into)
+            return
+        case 'autoUXNode':
+        case 'customNode':
+            readBack(ast.expr, expected, scope, into)
+            return
+        case 'unaryOperator':
+            // the sign is rendered outside the number, so -10 keeps the unit and reads -10°F
+            readBack(ast.expr, ast.operator.node === '!' ? anything : expected, scope, into)
+            return
+        case 'binaryOperator': {
+            const left = quantity(infer(ast.left, scope))
+            const right = quantity(infer(ast.right, scope))
+            readBack(ast.left, expectation(backward(ast.operator.node, expected, right, 'left')), scope, into)
+            readBack(ast.right, expectation(backward(ast.operator.node, expected, left, 'right')), scope, into)
+            return
+        }
+        case 'call': {
+            const propagation = propagationOf(ast.fn, scope)
+            ast.args.forEach((arg, index) => { readBack(arg.value, pushedInto(propagation, expected, ast.args, index, scope), scope, into) })
+            return
+        }
+        case 'vectorLiteral':
+            ast.elements.forEach((element) => { readBack(element, expected, scope, into) })
+            return
+        case 'objectLiteral':
+            ast.properties.forEach(([, value]) => { readBack(value, anything, scope, into) })
+            return
+        case 'if':
+            readBack(ast.condition, anything, scope, into)
+            readBack(ast.then, expected, scope, into)
+            if (ast.else !== undefined) {
+                readBack(ast.else, expected, scope, into)
+            }
+            return
+        case 'do':
+        case 'statements':
+        case 'condition': {
+            // a block works out to its last statement; a condition works out to nothing itself
+            const statements = ast.type === 'do' ? ast.statements : (ast.type === 'statements' ? ast.result : ast.rest)
+            if (ast.type === 'condition') {
+                readBack(ast.condition, anything, scope, into)
+            }
+            statements.forEach((statement, index) => {
+                readBack(statement, index === statements.length - 1 ? expected : anything, scope, into)
+            })
+            return
+        }
+        case 'identifier':
+        case 'attribute':
+        case 'parseError':
+    }
+}
+
+/** The unit of each numeric literal in a script, where the script determines one. */
+export function inferConstantUnits(program: UrbanStatsASTStatement | UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): ConstantUnits {
+    const scope = { typeEnvironment, named: new Map() }
+    infer(program, scope)
+    const into: ConstantUnits = new Map()
+    readBack(program, anything, scope, into)
+    return into
+}
+
+/** The unit an expression works out to, where reading it determines one. */
 export function inferUnit(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, named: Bindings = new Map()): AbstractInterpValue {
     return quantity(infer(ast, { typeEnvironment, named }))
 }

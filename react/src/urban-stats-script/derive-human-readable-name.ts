@@ -3,6 +3,7 @@ import { assert } from '../utils/defensive'
 import { HumanReadableElement, HumanReadableName } from '../utils/human-readable-element'
 import { joinHumanReadableNames } from '../utils/human-readable-name'
 import { parseHumanReadableTemplate } from '../utils/human-readable-template'
+import { StoredUnit, writeQuantity } from '../utils/quantity'
 import { abbreviate, formatToSignificantFigures, separateNumber } from '../utils/text'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
@@ -10,20 +11,21 @@ import * as l from './literal-parser'
 import { noLocation } from './location'
 import { expressionOperatorMap } from './operators'
 import { TypeEnvironment } from './types-values'
+import { ConstantUnits, inferConstantUnits, whereWritten } from './unit-inference'
 
-function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment): HumanReadableElement[] | undefined {
+function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, units: ConstantUnits): HumanReadableElement[] | undefined {
     switch (ast.type) {
         case 'assignment':
-            return humanReadableElements(ast.value, typeEnvironment)
+            return humanReadableElements(ast.value, typeEnvironment, units)
         case 'autoUXNode':
-            return humanReadableElements(ast.expr, typeEnvironment)
+            return humanReadableElements(ast.expr, typeEnvironment, units)
         case 'binaryOperator': {
             const centerOp = expressionOperatorMap[ast.operator.node]
             /*
              * (A op1 B) op2 C => A op1 B op2 C iff prec(op1) > prec(op2) or op1 = op2
              * A op1 (B op2 C) => A op1 B op2 C iff prec(op2) > prec(op1) or (op1 = op2 and is_assoc(op1))
              */
-            let lhs = humanReadableElements(ast.left, typeEnvironment)
+            let lhs = humanReadableElements(ast.left, typeEnvironment, units)
             if (lhs === undefined) return
             if (ast.left.type === 'binaryOperator') {
                 const leftOp = expressionOperatorMap[ast.left.operator.node]
@@ -33,7 +35,7 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
                 }
             }
 
-            let rhs = humanReadableElements(ast.right, typeEnvironment)
+            let rhs = humanReadableElements(ast.right, typeEnvironment, units)
             if (rhs === undefined) return
             if (ast.right.type === 'binaryOperator') {
                 const rightOp = expressionOperatorMap[ast.right.operator.node]
@@ -96,12 +98,12 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
                 case 'humanReadableElements':
                     return ast.value.node.value
                 case 'number':
-                    return formatNumber(ast.value.node.value)
+                    return formatNumber(ast.value.node.value, units.get(whereWritten(ast.value.location)))
                 case 'string':
                     return [{ type: 'atom', value: ast.value.node.value }]
             }
         case 'unaryOperator': {
-            const operand = humanReadableElements(ast.expr, typeEnvironment)
+            const operand = humanReadableElements(ast.expr, typeEnvironment, units)
             if (operand === undefined) return
             let operator: HumanReadableElement[]
             switch (ast.operator.node) {
@@ -118,15 +120,15 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
             return [...operator, ...operand]
         }
         case 'customNode':
-            return humanReadableElements(ast.expr, typeEnvironment)
+            return humanReadableElements(ast.expr, typeEnvironment, units)
         case 'expression':
-            return humanReadableElements(ast.value, typeEnvironment)
+            return humanReadableElements(ast.value, typeEnvironment, units)
         case 'call': {
-            const fn = humanReadableElements(ast.fn, typeEnvironment)
+            const fn = humanReadableElements(ast.fn, typeEnvironment, units)
             if (fn === undefined) return
             const args: HumanReadableElement[][] = []
             for (const arg of ast.args) {
-                const humanArg = humanReadableElements(arg.value, typeEnvironment)
+                const humanArg = humanReadableElements(arg.value, typeEnvironment, units)
                 if (humanArg === undefined) return
                 switch (arg.type) {
                     case 'named':
@@ -146,15 +148,15 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
         }
         case 'do':
             if (ast.statements.length === 0) return
-            return humanReadableElements(ast.statements[ast.statements.length - 1], typeEnvironment)
+            return humanReadableElements(ast.statements[ast.statements.length - 1], typeEnvironment, units)
         case 'statements':
             if (ast.result.length === 0) return
-            return humanReadableElements(ast.result[ast.result.length - 1], typeEnvironment)
+            return humanReadableElements(ast.result[ast.result.length - 1], typeEnvironment, units)
         case 'condition': {
             if (ast.rest.length === 0) return
-            const rest = humanReadableElements(ast.rest[ast.rest.length - 1], typeEnvironment)
+            const rest = humanReadableElements(ast.rest[ast.rest.length - 1], typeEnvironment, units)
             if (rest === undefined) return
-            const cond = humanReadableElements(ast.condition, typeEnvironment)
+            const cond = humanReadableElements(ast.condition, typeEnvironment, units)
             if (cond === undefined) return
 
             // Special Case: condition that is just "true" is not interesting
@@ -192,14 +194,15 @@ function statedMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanRea
 }
 
 export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
+    const units = inferConstantUnits(uss, typeEnvironment)
     const result = read(editableMapData, uss, typeEnvironment)
     if (result?.currentValue.namedArgs.data === undefined) return
-    const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment)
+    const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment, units)
     if (dataLabel === undefined) return
     // Replace the map call with just the data description to simplify the label (we know it's a map)
     const withMapCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: dataLabel }, location: noLocation } })
     assert(withMapCallReplacedByDataLabel !== undefined, 'should not happen')
-    return humanReadableElements(withMapCallReplacedByDataLabel, typeEnvironment)
+    return humanReadableElements(withMapCallReplacedByDataLabel, typeEnvironment, units)
 }
 
 export function mapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
@@ -235,6 +238,7 @@ const statedColumnNames = mapUssParser(l.call({
 }), 'dont-reparse')
 
 function tableColumnLabels(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName[] | undefined {
+    const units = inferConstantUnits(uss, typeEnvironment)
     const columns = read(statedColumnNames, uss, typeEnvironment)?.namedArgs.columns
     if (columns === undefined) {
         return undefined
@@ -243,7 +247,7 @@ function tableColumnLabels(uss: MapUSS, typeEnvironment: TypeEnvironment): Human
         if (column.namedArgs.name !== undefined) {
             return parseHumanReadableTemplate(column.namedArgs.name)
         }
-        return column.namedArgs.values === undefined ? undefined : humanReadableElements(column.namedArgs.values, typeEnvironment)
+        return column.namedArgs.values === undefined ? undefined : humanReadableElements(column.namedArgs.values, typeEnvironment, units)
     })
     return labels.every(label => label !== undefined) ? labels : undefined
 }
@@ -253,7 +257,8 @@ export function deriveConditionLabel(uss: MapUSS, typeEnvironment: TypeEnvironme
     if (uss.type !== 'statements') {
         return undefined
     }
-    const condition = humanReadableElements(uss.result[1].condition, typeEnvironment)
+    const units = inferConstantUnits(uss, typeEnvironment)
+    const condition = humanReadableElements(uss.result[1].condition, typeEnvironment, units)
     if (condition?.length === 1 && condition[0].type === 'atom' && condition[0].value === 'true') {
         return undefined
     }
@@ -271,8 +276,9 @@ export function tableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): Human
 }
 
 export function deriveTableColumnLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): HumanReadableName | undefined {
+    const units = inferConstantUnits(uss, typeEnvironment)
     const values = tableColumnExpression(uss, typeEnvironment, columnIndex)
-    return values === undefined ? undefined : humanReadableElements(values, typeEnvironment)
+    return values === undefined ? undefined : humanReadableElements(values, typeEnvironment, units)
 }
 
 const editableTableCall = mapUssParser(l.edit(l.call({
@@ -282,6 +288,7 @@ const editableTableCall = mapUssParser(l.edit(l.call({
 })), 'dont-reparse')
 
 export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnNames: HumanReadableName[]): HumanReadableName | undefined {
+    const units = inferConstantUnits(uss, typeEnvironment)
     const result = read(editableTableCall, uss, typeEnvironment)
     if (result === undefined) {
         return undefined
@@ -289,7 +296,7 @@ export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, 
     // Replace the table call with just the column to simplify the label (we know it's a table)
     const withTableCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: joinHumanReadableNames(columnNames) }, location: noLocation } })
     assert(withTableCallReplacedByDataLabel !== undefined, 'should not happen')
-    return humanReadableElements(withTableCallReplacedByDataLabel, typeEnvironment)
+    return humanReadableElements(withTableCallReplacedByDataLabel, typeEnvironment, units)
 }
 
 function trimTrailingZeros(value: string): string {
@@ -297,7 +304,11 @@ function trimTrailingZeros(value: string): string {
     return value.replace(/\.?0+$/g, '')
 }
 
-function formatNumber(number: number): HumanReadableElement[] {
+function formatNumber(number: number, unit?: StoredUnit): HumanReadableElement[] {
+    if (unit !== undefined) {
+        const { renderedValue, unitName } = writeQuantity(number, unit)
+        return [{ type: 'atom', value: trimTrailingZeros(renderedValue) }, ...unitName]
+    }
     if (number >= 1e4) {
         const { number: written, suffix } = abbreviate(number)
         return [{ type: 'atom', value: `${trimTrailingZeros(written)}${suffix}` }]
