@@ -10,23 +10,22 @@ void describe('reifyString', () => {
             reifyString([
                 { type: 'atom', value: 'e.g. ' },
                 { type: 'code', value: 'label="log_{10}(Density)^{2}"' },
-            ]),
+            ], {}),
             'e.g. `label="log_{10}(Density)^{2}"`',
         )
     })
 
     void test('leaves subscript/superscript content nested inside code untouched', () => {
         assert.equal(
-            reifyString([{ type: 'code', value: 'x_{1}^{2}' }]),
+            reifyString([{ type: 'code', value: 'x_{1}^{2}' }], {}),
             '`x_{1}^{2}`',
         )
     })
 
     void test('a quantity is written in the units it is read in', () => {
-        const eighty = { type: 'quantity' as const, value: 80, unit: storedUnits.temperature }
-        // a title, a card and a file have nobody to ask, and take the units the site is written in
-        assert.equal(reifyString([{ type: 'atom', value: 'above ' }, eighty]), 'above 80°F')
-        assert.equal(writtenPlainly(80, storedUnits.temperature, { temperatureUnit: 'celsius' }), '26.7°C')
+        const eighty = [{ type: 'atom' as const, value: 'above ' }, { type: 'quantity' as const, value: 80, unit: storedUnits.temperature }]
+        assert.equal(reifyString(eighty, {}), 'above 80°F')
+        assert.equal(reifyString(eighty, { temperatureUnit: 'celsius' }), 'above 26.7°C')
         assert.equal(writtenPlainly(100, storedUnits.area, { useImperial: true }), '38.6mi^{2}')
         // and the trailing zeros a unit's own style writes are not what a caption wants
         assert.equal(writtenPlainly(1e6, storedUnits.population, {}), '1m')

@@ -61,7 +61,7 @@ export interface MapSettings {
 /** What a map is titled before it runs. */
 export function mapTitle(mapSettings: MapSettings): string | undefined {
     const label = mapLabel(mapSettings.script.uss, defaultTypeEnvironment(mapSettings.universe))
-    return label === undefined ? undefined : reifyString(label)
+    return label === undefined ? undefined : reifyString(label, {})
 }
 
 export function mapPageTitle(mapSettings: MapSettings): string {

@@ -26,12 +26,12 @@ export function AddColumnSearchBox({ stat, set, typeEnvironment }: {
         return (query: string): Promise<VariableSearchResult[]> => {
             const lowerQuery = query.toLowerCase()
             const filtered = allVariables.filter(v =>
-                reifyString(v.displayName).toLowerCase().includes(lowerQuery)
+                reifyString(v.displayName, readerSettings).toLowerCase().includes(lowerQuery)
                 || v.name.toLowerCase().includes(lowerQuery),
             )
             return Promise.resolve(filtered)
         }
-    }, [allVariables])
+    }, [allVariables, readerSettings])
 
     const colAdder = useMemo(() => addColumn(mapUSSFromStat(stat), typeEnvironment), [stat, typeEnvironment])
 

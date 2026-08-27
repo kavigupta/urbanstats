@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useMemo } from 'react'
 
 import { useSetting } from '../page_template/settings'
 import { ReaderSettings, StoredUnit } from '../utils/quantity'
@@ -9,7 +9,8 @@ import { renderQuantity } from './unit-display'
 export function useReaderSettings(): ReaderSettings {
     const [useImperial] = useSetting('use_imperial')
     const [temperatureUnit] = useSetting('temperature_unit')
-    return { useImperial, temperatureUnit }
+    // memoized, so that a caller that puts it in a dependency array does not rebuild every render
+    return useMemo(() => ({ useImperial, temperatureUnit }), [useImperial, temperatureUnit])
 }
 
 export function Statistic(props: { style?: React.CSSProperties, value: number, isUnit: boolean, unit: StoredUnit, unitAlone?: boolean }): ReactNode {

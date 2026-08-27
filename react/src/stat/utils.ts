@@ -41,7 +41,7 @@ export function parseStatUSS(uss: string, universe: Universe): MapUSS {
 /** @public this is included dynamically */
 export function tableTitle(uss: MapUSS, universe: Universe): string | undefined {
     const label = tableLabel(uss, defaultTypeEnvironment(universe))
-    return label === undefined ? undefined : reifyString(label)
+    return label === undefined ? undefined : reifyString(label, {})
 }
 
 /** What a table is titled before it runs, the way `mapPageTitle` titles a map. */

@@ -718,7 +718,7 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
     const padding = { x: 48, y: 36 }
     const content = width - padding.x * 2
     // Room for the flag beside it, as the article card's title leaves.
-    const titleSize = sizeToFit([reifyString(statistic.title)], content - 140, 1, 54, 26, boldCharacterWidth)
+    const titleSize = sizeToFit([reifyString(statistic.title, readerOf(statistic.units))], content - 140, 1, 54, 26, boldCharacterWidth)
 
     const valueColumn = Math.min(260, (content - rankColumn) * 0.62 / statistic.columns.length)
     const nameColumn = content - rankColumn - valueColumn * statistic.columns.length
@@ -736,10 +736,10 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
      * and leaves the header out.
      */
     const columnHeaders = statistic.columns.length > 1
-        ? sizeToFit(statistic.columns.map(column => reifyString(column.name)), valueColumn - cellPadding * 2, 2, 30, 14, boldCharacterWidth)
+        ? sizeToFit(statistic.columns.map(column => reifyString(column.name, readerOf(statistic.units))), valueColumn - cellPadding * 2, 2, 30, 14, boldCharacterWidth)
         : undefined
     // Which geographies these are, and which of them: what neither the title nor the headers say.
-    const note = `${statistic.heading} in ${statistic.universe}${statistic.filter === undefined ? '' : ` where ${reifyString(statistic.filter)}`}`
+    const note = `${statistic.heading} in ${statistic.universe}${statistic.filter === undefined ? '' : ` where ${reifyString(statistic.filter, readerOf(statistic.units))}`}`
     const noteSize = columnHeaders === undefined
         // Under the title, in whatever the flag beside it leaves.
         ? sizeToFit([note], content - 140, 1, 26, 14)
@@ -833,7 +833,7 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
                                     justifyContent: 'flex-end',
                                 }}
                             >
-                                {cellValue(entry.values[index2], column.unit ?? unitTypeToStoredUnit(classifyStatistic(reifyString(column.name))), statistic.units, valueSize)}
+                                {cellValue(entry.values[index2], column.unit ?? unitTypeToStoredUnit(classifyStatistic(reifyString(column.name, {}))), statistic.units, valueSize)}
                             </div>
                         ))}
                     </div>

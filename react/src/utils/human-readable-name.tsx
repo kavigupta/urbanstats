@@ -11,7 +11,7 @@ import { trimTrailingZeros } from './text'
  */
 export function writtenPlainly(value: number, unit: StoredUnit, settings: ReaderSettings): string {
     const written = writeQuantity(value, unit, settings, {})
-    return `${trimTrailingZeros(written.renderedValue)}${reifyString(written.unitName)}`
+    return `${trimTrailingZeros(written.renderedValue)}${reifyString(written.unitName, settings)}`
 }
 
 export function reifyReact(elements: HumanReadableElement[] | string, settings: ReaderSettings): ReactNode {
@@ -58,7 +58,7 @@ function writtenQuantity(value: number, unit: StoredUnit, settings: ReaderSettin
     )
 }
 
-export function reifyString(elements: HumanReadableElement[] | string): string {
+export function reifyString(elements: HumanReadableElement[] | string, settings: ReaderSettings): string {
     if (typeof elements === 'string') return elements
     return elements.map((element) => {
         switch (element.type) {
@@ -67,16 +67,15 @@ export function reifyString(elements: HumanReadableElement[] | string): string {
             case 'code':
                 return `\`${element.value}\``
             case 'subscript':
-                return `_{${reifyString(element.value)}}`
+                return `_{${reifyString(element.value, settings)}}`
             case 'superscript':
-                return `^{${reifyString(element.value)}}`
+                return `^{${reifyString(element.value, settings)}}`
             case 'where':
-                return ` where ${reifyString(element.value)}`
+                return ` where ${reifyString(element.value, settings)}`
             case 'parens':
-                return `(${reifyString(element.value)})`
+                return `(${reifyString(element.value, settings)})`
             case 'quantity':
-                // a string has no reader to ask, so it is written in the units the site is written in
-                return writtenPlainly(element.value, element.unit, {})
+                return writtenPlainly(element.value, element.unit, settings)
         }
     }).join('')
 }

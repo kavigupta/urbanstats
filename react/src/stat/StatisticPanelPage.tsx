@@ -103,7 +103,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
         <PageTemplate
             showFooter={!splitLayout}
             screencap={data && ((...args) => createScreenshot(() => ({
-                path: `${sanitize(reifyString(data.renderedStatname))}.png`,
+                path: `${sanitize(reifyString(data.renderedStatname, readerSettings))}.png`,
                 overallWidth: tableRef.current!.offsetWidth * 2,
                 elementsToRender: [
                     headersRef.current!,
@@ -112,8 +112,8 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
                 ],
             }), ...args))}
             csvExportCallback={data && (() => ({
-                csvData: generateStatisticsPanelCSVData(data.articleNames, data.table, data.hideOrdinalsPercentiles),
-                csvFilename: `${sanitize(reifyString(data.renderedStatname))}.csv`,
+                csvData: generateStatisticsPanelCSVData(data.articleNames, data.table, data.hideOrdinalsPercentiles, readerSettings),
+                csvFilename: `${sanitize(reifyString(data.renderedStatname, readerSettings))}.csv`,
             }))}
         >
             {!splitLayout && headers}
