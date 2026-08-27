@@ -198,7 +198,7 @@ function humanReadable(name: HumanReadableName, fontSize: number, units: Units):
                 return ['(', ...humanReadable(element.value, fontSize, units), ')']
             case 'quantity': {
                 // expanded rather than written out, so that a superscript is one to satori as well
-                const { renderedValue, unitName } = writeQuantity(element.value, element.unit, readerOf(units))
+                const { renderedValue, unitName } = writeQuantity(element.value, element.unit, readerOf(units), {})
                 return [narrowSpaces(trimTrailingZeros(renderedValue)), ...humanReadable(unitName, fontSize, units)]
             }
         }

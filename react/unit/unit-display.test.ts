@@ -18,7 +18,7 @@ function textOf(node: unknown): string {
 }
 
 function renderValue(unitType: UnitType, value: number, useImperial = false, temperatureUnit = 'fahrenheit'): string {
-    const { value: valueEl, unit: unitEl } = renderQuantity(value, unitTypeToStoredUnit(unitType), { useImperial, temperatureUnit })
+    const { value: valueEl, unit: unitEl } = renderQuantity(value, unitTypeToStoredUnit(unitType), { useImperial, temperatureUnit }, {})
     return `${textOf(valueEl)}${textOf(unitEl)}`.trim()
 }
 
@@ -259,7 +259,7 @@ for (const [unitType, value, expected, hue] of [
     ['partyChangeTeal', -0.125, '-12.50', 'cyan'],
 ] as const) {
     void test(`${unitType} writes ${value} as ${expected} in ${hue}`, () => {
-        const written = writeQuantity(value, storedUnits[unitType])
+        const written = writeQuantity(value, storedUnits[unitType], {}, {})
         assert.equal(written.renderedValue, expected)
         assert.equal(written.hue, hue)
     })
@@ -269,7 +269,7 @@ for (const [unitType, value, expected, hue] of [
 // A quantity we do not have belongs to no party, and is measured in nothing
 for (const unitType of ['democraticMargin', 'partyPctOrange', 'percentage', 'temperature'] as const) {
     void test(`${unitType} writes a missing value plainly`, () => {
-        assert.deepEqual(writeQuantity(NaN, storedUnits[unitType]), { renderedValue: 'N/A', unitName: [] })
+        assert.deepEqual(writeQuantity(NaN, storedUnits[unitType], {}, {}), { renderedValue: 'N/A', unitName: [] })
     })
 }
 
@@ -316,7 +316,7 @@ for (const [unitType, dimensions, toBaseUnits, value, asStatistic, asDerived] of
     ['density', [{ baseUnit: 'person', power: 1 }, { baseUnit: 'm', power: -2 }], 1e-6, 1234, '1\u202f234/km^{2}', '1\u202f234/km^{2}'],
 ] as ['contaminantLevel' | 'distancePerYear' | 'density', Dimension[], number, number, string, string][]) {
     const write = (stored: StoredUnit): string => {
-        const written = writeQuantity(value, stored)
+        const written = writeQuantity(value, stored, {}, {})
         return `${written.renderedValue}${reifyString(written.unitName)}`
     }
     void test(`${unitType} keeps its units, where the same dimensions on their own do not`, () => {
@@ -341,7 +341,7 @@ for (const [times, value, temperatureUnit, expected] of [
     void test(`${times === 1 ? 'a temperature' : 'a difference'} of ${value}F reads as ${expected}`, () => {
         const temperature = unitTypeToStoredUnit('temperature')
         const stored: StoredUnit = { ...temperature, unit: { ...temperature.unit, times } }
-        const written = writeQuantity(value, stored, { temperatureUnit })
+        const written = writeQuantity(value, stored, { temperatureUnit }, {})
         assert.equal(`${written.renderedValue}${reifyString(written.unitName)}`, expected)
     })
 }

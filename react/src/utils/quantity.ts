@@ -403,7 +403,7 @@ export interface WrittenQuantity {
     hue?: Hue
 }
 
-export function writeQuantity(value: number, stored: StoredUnit, settings: ReaderSettings = {}, placement: UnitPlacement = {}): WrittenQuantity {
+export function writeQuantity(value: number, stored: StoredUnit, settings: ReaderSettings, placement: UnitPlacement): WrittenQuantity {
     if (!isFinite(value)) {
         return { renderedValue: missingValue, unitName: [] }
     }
