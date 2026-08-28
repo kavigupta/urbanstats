@@ -4,6 +4,7 @@ import { z } from 'zod'
 
 import { PageDescriptor, urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { TestUtils } from '../utils/TestUtils'
+import { traced } from '../utils/traced'
 import { persistentClient } from '../utils/urbanstats-persistent-client'
 import { useObserverSets } from '../utils/useObserverSets'
 
@@ -40,6 +41,7 @@ const googleClient = new OAuth2Client({
     */
     clientSecret: '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',
     discoveryEndpoint: '/.well-known/openid-configuration',
+    fetch: (input, init) => traced(`oauth ${input instanceof Request ? input.url : String(input)}`, () => globalThis.fetch(input, init)),
 })
 
 const redirectUri = urlFromPageDescriptor({ kind: 'oauthCallback', params: {} }).toString()
@@ -190,6 +192,7 @@ export class AuthenticationStateMachine {
     /* eslint-enable react-hooks/rules-of-hooks */
 
     async completeSignIn(descriptor: Extract<PageDescriptor, { kind: 'oauthCallback' }>): Promise<void> {
+        console.warn(`completeSignIn: entered while ${this._state.state}`)
         if (this._state.state !== 'signedOut') {
             throw new Error('Already signed in')
         }
@@ -201,16 +204,16 @@ export class AuthenticationStateMachine {
         localStorage.removeItem(codeVerifierKey)
 
         // Not retryable: an authorization code is single use, and redeeming a spent one revokes the tokens it issued
-        const rawToken = await googleClient.authorizationCode.getTokenFromCodeRedirect(url, {
+        const rawToken = await traced('completeSignIn token exchange', () => googleClient.authorizationCode.getTokenFromCodeRedirect(url, {
             redirectUri,
             codeVerifier,
-        })
+        }))
 
         const token = tokenSchema.parse(rawToken)
 
-        const email = await this.associateEmail(token.accessToken)
+        const email = await traced('completeSignIn associate email', () => this.associateEmail(token.accessToken))
 
-        await this.syncProfile(token.accessToken)
+        await traced('completeSignIn sync profile', () => this.syncProfile(token.accessToken))
 
         this.setState({
             state: 'signedIn',

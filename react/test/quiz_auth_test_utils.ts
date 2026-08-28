@@ -36,6 +36,8 @@ function headersJSON(headers: Headers): string {
 // eslint-disable-next-line no-restricted-syntax -- Reporting on Google's pages, which have no page descriptor
 const pageURL = ClientFunction(() => window.location.href)
 
+const pageText = ClientFunction(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 300))
+
 // Google's interstitials look much alike in the error screenshot; the URL is what tells them apart.
 async function expectOrWarn(t: TestController, selector: Selector, what: string): Promise<void> {
     try {
@@ -43,6 +45,7 @@ async function expectOrWarn(t: TestController, selector: Selector, what: string)
     }
     catch (error) {
         console.warn(`${what}, at ${await pageURL()}`)
+        console.warn(`showing: ${await pageText()}`)
         throw error
     }
 }
