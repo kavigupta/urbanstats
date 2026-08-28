@@ -43,3 +43,11 @@ antialiases a handful of pixels differently, well below what anyone would notice
 
 TestCafe ships no `arm64` build of the helper binaries behind `t.resizeWindow` and friends, so those
 run as `i386` binaries under emulation. Chromium and Node, where the time goes, run natively.
+
+`--docker-options` passes whitespace-separated options through to `docker run`. GitHub's runners have
+four cores, so capping the container's is a way to tell whether a failure is timing-dependent:
+
+`npm run test:e2e -- '--test=test/mapper-ux_x1.test.ts' --docker=host-arch --browser=chromium --docker-options='--cpus 2'`
+
+Write each option in its `--flag value` form. `zodcli` drops everything after a second `=`, so
+`--docker-options=--cpus=2` silently arrives as `--cpus` alone.

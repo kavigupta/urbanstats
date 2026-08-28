@@ -35,12 +35,15 @@ const options = argumentParser({
             z.null().transform(() => 'ci' as const),
         ])).default('none'),
         remoteDebuggingPort: z.optional(z.coerce.number().int()), // Connect with `chrome://inspect` in your browser.
+        // Whitespace-separated options for `docker run`. `zodcli` eats everything after a second
+        // `=`, so write them in the form `--docker-options='--cpus 2'`, not `--cpus=2`.
+        dockerOptions: z.optional(z.string()).default(''),
     }).strict(),
 }).parse(process.argv.slice(2))
 
 if (options.docker !== 'none') {
-    const argsWithoutDocker = process.argv.slice(2).filter(arg => !/--docker($|=)/.test(arg))
-    const exitCode = await runE2eTestsDocker(argsWithoutDocker, options.docker === 'host-arch')
+    const argsWithoutDocker = process.argv.slice(2).filter(arg => !/--docker(-options)?($|=)/.test(arg))
+    const exitCode = await runE2eTestsDocker(argsWithoutDocker, options.docker === 'host-arch', options.dockerOptions.split(/\s+/).filter(option => option !== ''))
     process.exit(exitCode)
 }
 
