@@ -36,6 +36,12 @@ void describe('mergeHistories', () => {
         assert.deepEqual(mergeHistories(a, b), { 1: quiz(true, false) })
         assert.deepEqual(mergeHistories(b, a), { 1: quiz(true, false) })
     })
+
+    void test('resolves an equal-score conflict the same way from either side', () => {
+        const a: QuizHistory = { 1: quiz(true, false) }
+        const b: QuizHistory = { 1: quiz(false, true) }
+        assert.deepEqual(mergeHistories(a, b), mergeHistories(b, a))
+    })
 })
 
 void describe('mergeFriends', () => {

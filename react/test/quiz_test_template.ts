@@ -638,7 +638,7 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
                 + '• Juxtastat 91\n'
                 + '• Retrostat W39\n'
                 + '\n'
-                + 'Are you sure you want to merge them? (The lowest score will be used)',
+                + 'Are you sure you want to merge them? (Whichever result is further along will be used, and otherwise the lowest score)',
                 type: 'confirm',
                 url: `${target}/quiz.html#date=91`,
             },

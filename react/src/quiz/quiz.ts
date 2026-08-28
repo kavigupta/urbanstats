@@ -191,7 +191,7 @@ export class QuizModel {
 
 ${conflicts.map(key => `• ${key.startsWith('W') ? 'Retrostat' : 'Juxtastat'} ${key}`).join('\n')}
 
-Are you sure you want to merge them? (The lowest score will be used)`)) {
+Are you sure you want to merge them? (Whichever result is further along will be used, and otherwise the lowest score)`)) {
                     newHistory = mergeHistories(currentHistory, persona.quiz_history)
                 }
                 else {
