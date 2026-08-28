@@ -9,6 +9,10 @@ from ..db.email import associate_email_db, dissociate_email_db, get_user_email
 from ..dependencies.authenticate import AuthenticateRequest, authenticate_responses
 from ..main import app
 
+google_client_id = (
+    "866758015458-r7t30bm7b492c1mevid587apej6cjte6.apps.googleusercontent.com"
+)
+
 
 class AssociateEmailRequestBody(BaseModel):
     token: str
@@ -40,12 +44,22 @@ def get_email_from_token(token: str) -> str:
 
     class InfoSchema(BaseModel):
         email: str
+        email_verified: bool
+        aud: str
 
     try:
         info = InfoSchema(**json.loads(response.content))
-        return info.email
     except Exception as exc:
         raise fastapi.HTTPException(500, "Invalid response from Google") from exc
+
+    # Google will describe a token issued to any client, so without this an
+    # attacker could authenticate as anyone who signed into an app they control
+    if info.aud != google_client_id:
+        raise fastapi.HTTPException(401, "Access token was issued to another client")
+    if not info.email_verified:
+        raise fastapi.HTTPException(401, "Email is not verified")
+
+    return info.email
 
 
 @app.post(

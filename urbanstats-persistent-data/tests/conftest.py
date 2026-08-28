@@ -6,6 +6,7 @@ import fastapi
 import fastapi.testclient
 import pytest
 from urbanstats_persistent_data.main import app
+from urbanstats_persistent_data.routes.email import google_client_id
 
 
 @pytest.fixture()
@@ -17,7 +18,13 @@ def setup_app(mocker):
 
         class MockResponse:
             status_code = 200
-            content = json.dumps({"email": access_token})
+            content = json.dumps(
+                {
+                    "email": access_token,
+                    "email_verified": True,
+                    "aud": google_client_id,
+                }
+            )
 
         return MockResponse()
 
