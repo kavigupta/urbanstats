@@ -1,9 +1,7 @@
 export function randomID(numCharacters = 15): string {
-    let randomHex = ''
-    for (let i = 0; i < numCharacters; i++) {
-        randomHex += Math.floor(Math.random() * 16).toString(16)[0]
-    }
-    return randomHex
+    const bytes = new Uint8Array(numCharacters)
+    crypto.getRandomValues(bytes)
+    return Array.from(bytes, byte => (byte & 0xf).toString(16)).join('')
 }
 
 export function randomBase62ID(numCharacters: number): string {
