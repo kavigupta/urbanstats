@@ -173,6 +173,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         // authentication failure, so no change to the database
         await t.expect(await juxtastatTable(t)).eql('7|30|0\n')
         await t.expect(await secureIdTable(t)).eql('7|4\n')
+        await t.expect(Selector('b').withText(/attempting to hijack your account/).exists).ok()
         await quizScreencap(t)
     })
 
