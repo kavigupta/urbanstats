@@ -161,6 +161,10 @@ export async function waitForLoading(): Promise<void> {
     return ClientFunction(() => (window as unknown as TestWindow).testUtils.waitForLoading('test_utils'))()
 }
 
+async function waitForMapsToRender(): Promise<void> {
+    return ClientFunction(() => (window as unknown as TestWindow).testUtils.waitForMapsToRender())()
+}
+
 async function prepForImage(t: TestController, options: { hover: boolean, removeEntireMap: boolean, resetPaneScroll: boolean }): Promise<void> {
     if (options.hover) {
         await t.hover('body', { offsetX: 0, offsetY: 0 }) // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
@@ -218,6 +222,9 @@ export async function screencap(t: TestController, { fullPage = true, wait = tru
         await waitForLoading()
     }
     await prepForImage(t, { hover: fullPage, removeEntireMap, resetPaneScroll: selector === undefined })
+    if (!removeEntireMap) {
+        await waitForMapsToRender()
+    }
     if (scrollPaneTo !== undefined) {
         await t.scrollIntoView(scrollPaneTo)
     }
