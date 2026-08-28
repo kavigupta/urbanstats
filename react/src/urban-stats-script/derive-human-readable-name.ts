@@ -3,8 +3,8 @@ import { assert } from '../utils/defensive'
 import { HumanReadableElement, HumanReadableName } from '../utils/human-readable-element'
 import { joinHumanReadableNames } from '../utils/human-readable-name'
 import { parseHumanReadableTemplate } from '../utils/human-readable-template'
-import { StoredUnit, writeQuantity } from '../utils/quantity'
-import { abbreviate, formatToSignificantFigures, separateNumber } from '../utils/text'
+import { StoredUnit } from '../utils/quantity'
+import { abbreviate, formatToSignificantFigures, separateNumber, trimTrailingZeros } from '../utils/text'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import * as l from './literal-parser'
@@ -299,15 +299,9 @@ export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, 
     return humanReadableElements(withTableCallReplacedByDataLabel, typeEnvironment, units)
 }
 
-function trimTrailingZeros(value: string): string {
-    if (!value.includes('.')) return value
-    return value.replace(/\.?0+$/g, '')
-}
-
 function formatNumber(number: number, unit?: StoredUnit): HumanReadableElement[] {
     if (unit !== undefined) {
-        const { renderedValue, unitName } = writeQuantity(number, unit, {}, {})
-        return [{ type: 'atom', value: trimTrailingZeros(renderedValue) }, ...unitName]
+        return [{ type: 'quantity', value: number, unit }]
     }
     if (number >= 1e4) {
         const { number: written, suffix } = abbreviate(number)

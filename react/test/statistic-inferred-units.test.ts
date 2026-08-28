@@ -79,9 +79,23 @@ test('what a regression did not expect is a difference of shares', async (t) => 
 
 urbanstatsFixture('a column named after what it is measured against', tableOf('maximum(high_temp, 80)'))
 
+const columnName = Selector('[data-test-id="statistic-link"]')
+
 test('a number a script names is written in the units it is read from', async (t) => {
     await waitForLoading()
-    await t.expect(Selector('[data-test-id="statistic-link"]').innerText).eql('max(Mean high temp, 80°F)')
+    await t.expect(columnName.innerText).eql('max(Mean high temp, 80°F)')
+})
+
+test('a reader in Celsius is given that number in Celsius', async (t) => {
+    await waitForLoading()
+    const temperatures = Selector('[data-test-id=temperature_select]')
+    await t.click(temperatures).click(temperatures.find('option').withText(/C/))
+    await t.expect(columnName.innerText).eql('max(Mean high temp, 26.7°C)')
+    // the same name flattened to a string, for the screen reader and for the tab
+    await t.expect(Selector('[aria-label^="Sort by max"]').getAttribute('aria-label'))
+        .eql('Sort by max(Mean high temp, 26.7°C), currently descending')
+    // eslint-disable-next-line no-restricted-syntax -- reading the tab the statistic panel writes
+    await t.expect(await t.eval(() => document.title)).eql('max(Mean high temp, 26.7°C)')
 })
 
 const everything = `${target}/statistic.html?uss=${encodeURIComponent(`customNode(""); condition (commute_bike > 0.004 & high_temp > 60); table(columns=[

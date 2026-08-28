@@ -9,6 +9,7 @@ import { getUnit } from './components/unit-display'
 import { Navigator } from './navigation/Navigator'
 import { urlFromPageDescriptor } from './navigation/PageDescriptor'
 import { useColors } from './page_template/colors'
+import { useUnitSettings } from './page_template/settings'
 import { PageTemplate } from './page_template/template'
 import { StandaloneEditor } from './urban-stats-script/StandaloneEditor'
 import { ConstantCategory } from './urban-stats-script/documentation-category'
@@ -662,6 +663,7 @@ function DocumentationForCategory(props: { category: ConstantCategory, constants
 }
 
 export function LongFormDocumentation(props: { name: string, value: USSDocumentedType }): ReactNode {
+    const unitSettings = useUnitSettings()
     const colors = useColors()
     return (
         <Header key={props.name} title={props.name} header="h4" ident={props.name} docQuery={props.value.documentation!.category}>
@@ -682,7 +684,7 @@ export function LongFormDocumentation(props: { name: string, value: USSDocumente
                     )}
                 </div>
                 <div style={{ marginBottom: '10px' }}>
-                    {reifyReact(props.value.documentation?.longDescription ?? 'No description available.')}
+                    {reifyReact(props.value.documentation?.longDescription ?? 'No description available.', unitSettings)}
                 </div>
                 {props.value.documentation?.namedArgs && Object.keys(props.value.documentation.namedArgs).length > 0 && (
                     <div style={{ marginBottom: '10px' }}>
@@ -718,6 +720,7 @@ export function LongFormDocumentation(props: { name: string, value: USSDocumente
 }
 
 function ShortFormTableDocumentation(props: { tableName: DocumentationTable, tableConstants: [string, USSDocumentedType][] }): ReactNode {
+    const unitSettings = useUnitSettings()
     const colors = useColors()
     const headers = ['Name', 'Type', 'Description']
     const cells = props.tableConstants.map(([name, value]) => ({
@@ -728,7 +731,7 @@ function ShortFormTableDocumentation(props: { tableName: DocumentationTable, tab
                 {renderType(value.type)}
             </code>,
             <span key="description">
-                {reifyReact(value.documentation?.longDescription ?? 'No description available.')}
+                {reifyReact(value.documentation?.longDescription ?? 'No description available.', unitSettings)}
                 {value.documentation?.isDefault && (
                     <span key="default-indicator" style={{ fontStyle: 'italic', color: colors.textMain }}>
                         {' '}

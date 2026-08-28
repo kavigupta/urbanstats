@@ -317,7 +317,7 @@ for (const [unitType, dimensions, toBaseUnits, value, asStatistic, asDerived] of
 ] as ['contaminantLevel' | 'distancePerYear' | 'density', Dimension[], number, number, string, string][]) {
     const write = (stored: StoredUnit): string => {
         const written = writeQuantity(value, stored, {}, {})
-        return `${written.renderedValue}${reifyString(written.unitName)}`
+        return `${written.renderedValue}${reifyString(written.unitName, {})}`
     }
     void test(`${unitType} keeps its units, where the same dimensions on their own do not`, () => {
         assert.equal(write(storedUnits[unitType]), asStatistic)
@@ -342,6 +342,6 @@ for (const [times, value, temperatureUnit, expected] of [
         const temperature = unitTypeToStoredUnit('temperature')
         const stored: StoredUnit = { ...temperature, unit: { ...temperature.unit, times } }
         const written = writeQuantity(value, stored, { temperatureUnit }, {})
-        assert.equal(`${written.renderedValue}${reifyString(written.unitName)}`, expected)
+        assert.equal(`${written.renderedValue}${reifyString(written.unitName, {})}`, expected)
     })
 }

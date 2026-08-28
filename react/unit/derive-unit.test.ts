@@ -13,7 +13,7 @@ function written(unit: StoredUnit | undefined, value = 1000, settings: UnitSetti
         return 'nothing'
     }
     const quantity = writeQuantity(value, unit, settings, {})
-    return `${quantity.renderedValue}${reifyString(quantity.unitName)}`
+    return `${quantity.renderedValue}${reifyString(quantity.unitName, {})}`
 }
 
 function unitOfMap(data: string): StoredUnit | undefined {

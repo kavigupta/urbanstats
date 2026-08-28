@@ -212,7 +212,7 @@ for (const [level, declared] of [
         assert.notEqual(inferred, undefined)
         const write = (stored: StoredUnit): string => {
             const written = writeQuantity(0.05, stored, {}, {})
-            return `${written.renderedValue}${reifyString(written.unitName)} ${written.hue ?? ''}`
+            return `${written.renderedValue}${reifyString(written.unitName, {})} ${written.hue ?? ''}`
         }
         assert.equal(write(inferred!), write(storedUnits[declared]))
     })
@@ -294,7 +294,7 @@ void test('a difference of temperatures divides into things as well as by them',
     assert.notEqual(perDegree, undefined)
     const write = (settings: object): string => {
         const written = writeQuantity(5, perDegree!, settings, {})
-        return `${written.renderedValue}${reifyString(written.unitName)}`
+        return `${written.renderedValue}${reifyString(written.unitName, {})}`
     }
     // five to the Fahrenheit degree is nine to the Celsius one, that being the larger degree
     assert.equal(write({}), '5.00/°F')
@@ -308,7 +308,7 @@ void test('a difference per something is read in degrees of the reader\'s own sc
     assert.notEqual(perArea, undefined)
     const write = (settings: object): string => {
         const written = writeQuantity(5, perArea!, settings, {})
-        return `${written.renderedValue}${reifyString(written.unitName)}`
+        return `${written.renderedValue}${reifyString(written.unitName, {})}`
     }
     // five Fahrenheit degrees per square kilometre is two and a bit Celsius degrees, the zero
     // of neither scale being in it

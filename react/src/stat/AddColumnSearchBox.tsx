@@ -3,6 +3,7 @@ import React, { ReactNode, useMemo } from 'react'
 import { GenericSearchBox } from '../components/search-generic'
 import { possibilities } from '../mapper/settings/parseExpr'
 import { Selection } from '../mapper/settings/selector-classifier'
+import { useUnitSettings } from '../page_template/settings'
 import { addColumn } from '../urban-stats-script/add-column'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { HumanReadableName } from '../utils/human-readable-element'
@@ -18,18 +19,19 @@ export function AddColumnSearchBox({ stat, set, typeEnvironment }: {
     set: StatSetter
     typeEnvironment: TypeEnvironment
 }): ReactNode {
+    const unitSettings = useUnitSettings()
     const allVariables = useMemo(() => relevantSelections(typeEnvironment), [typeEnvironment])
 
     const doSearch = useMemo(() => {
         return (query: string): Promise<VariableSearchResult[]> => {
             const lowerQuery = query.toLowerCase()
             const filtered = allVariables.filter(v =>
-                reifyString(v.displayName).toLowerCase().includes(lowerQuery)
+                reifyString(v.displayName, unitSettings).toLowerCase().includes(lowerQuery)
                 || v.name.toLowerCase().includes(lowerQuery),
             )
             return Promise.resolve(filtered)
         }
-    }, [allVariables])
+    }, [allVariables, unitSettings])
 
     const colAdder = useMemo(() => addColumn(mapUSSFromStat(stat), typeEnvironment), [stat, typeEnvironment])
 
@@ -63,7 +65,7 @@ export function AddColumnSearchBox({ stat, set, typeEnvironment }: {
             onMouseOver={onMouseOver}
             data-test-id={dataTestId}
         >
-            {reifyReact(currentMatch().displayName)}
+            {reifyReact(currentMatch().displayName, unitSettings)}
         </div>
     )
 

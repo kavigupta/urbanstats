@@ -7,6 +7,7 @@ import { toStatement, UrbanStatsASTStatement } from '../../urban-stats-script/as
 import { mapLabel } from '../../urban-stats-script/derive-human-readable-name'
 import { parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
 import { reifyString } from '../../utils/human-readable-name'
+import { UnitSettings } from '../../utils/quantity'
 import { base64Gunzip } from '../../utils/urlParamShort'
 import { defaultTypeEnvironment } from '../context'
 
@@ -59,13 +60,13 @@ export interface MapSettings {
 }
 
 /** What a map is titled before it runs. */
-export function mapTitle(mapSettings: MapSettings): string | undefined {
+export function mapTitle(mapSettings: MapSettings, settings: UnitSettings): string | undefined {
     const label = mapLabel(mapSettings.script.uss, defaultTypeEnvironment(mapSettings.universe))
-    return label === undefined ? undefined : reifyString(label)
+    return label === undefined ? undefined : reifyString(label, settings)
 }
 
-export function mapPageTitle(mapSettings: MapSettings): string {
-    return mapTitle(mapSettings) ?? 'Urban Stats Mapper'
+export function mapPageTitle(mapSettings: MapSettings, settings: UnitSettings): string {
+    return mapTitle(mapSettings, settings) ?? 'Urban Stats Mapper'
 }
 
 export function computeUSS(mapSettings: MapperScriptSettings): UrbanStatsASTStatement {

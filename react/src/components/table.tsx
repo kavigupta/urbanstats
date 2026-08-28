@@ -8,7 +8,7 @@ import './table.css'
 import { NavLink, Navigator } from '../navigation/Navigator'
 import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
-import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
+import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings, useUnitSettings } from '../page_template/settings'
 import { Universe, useDefinedUniverse, useUniverse } from '../universe'
 import { withButtonRole } from '../utils/a11y'
 import { assert } from '../utils/defensive'
@@ -906,7 +906,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                 <ComparisonColorBar highlightIndex={props.highlightIndex} />
             )}
             <div
-                key={`statName_${reifyString(props.renderedStatname)}`}
+                key={`statName_${reifyString(props.renderedStatname, {})}`}
                 style={{ width: `${width}%`, padding: '1px', paddingLeft: props.isIndented ? '1em' : '1px', textAlign: props.center ? 'center' : undefined }}
             >
                 <span className="serif value" style={{ display: 'flex', alignItems: 'center', justifyContent: props.center ? 'center' : 'flex-start', gap: '0.25em' }}>
@@ -933,7 +933,8 @@ function displayName(props: StatisticNameCellProps): HumanReadableName {
 }
 
 function SortButton(props: StatisticNameCellProps & { sortInfo: NonNullable<StatisticNameCellProps['sortInfo']> }): ReactNode {
-    const sortButtonLabel = `Sort by ${reifyString(displayName(props))}${
+    const unitSettings = useUnitSettings()
+    const sortButtonLabel = `Sort by ${reifyString(displayName(props), unitSettings)}${
         props.sortInfo.sortDirection === 'up'
             ? ', currently ascending'
             : props.sortInfo.sortDirection === 'down' ? ', currently descending' : ''
@@ -991,6 +992,7 @@ function StatisticName(props: {
 }): ReactNode {
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
+    const unitSettings = useUnitSettings()
 
     const link = props.row?.kind === 'metadata'
         ? (
@@ -1002,7 +1004,7 @@ function StatisticName(props: {
                     )}
                     data-test-id="statistic-link"
                 >
-                    {reifyReact(props.displayName)}
+                    {reifyReact(props.displayName, unitSettings)}
                 </a>
             )
         : props.row?.kind === 'statistic'
@@ -1022,12 +1024,12 @@ function StatisticName(props: {
                         }, { scroll: { kind: 'position', top: 0 } })}
                         data-test-id="statistic-link"
                     >
-                        {reifyReact(props.displayName)}
+                        {reifyReact(props.displayName, unitSettings)}
                     </a>
                 )
             : (
                     <span style={{ color: colors.textMain }} data-test-id="statistic-link">
-                        {reifyReact(props.displayName)}
+                        {reifyReact(props.displayName, unitSettings)}
                     </span>
                 )
     const elements = [link, ...useStatisticNameAdornments(props.row, props.footnoteSymbol)]

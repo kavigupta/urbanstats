@@ -5,6 +5,7 @@ import { DivThatTakesUpTheRestOfThePage, MaybeSplitLayout } from '../../componen
 import universes_ordered from '../../data/universes_ordered'
 import { Navigator } from '../../navigation/Navigator'
 import { useColors } from '../../page_template/colors'
+import { useUnitSettings } from '../../page_template/settings'
 import { PageTemplate } from '../../page_template/template'
 import { universeContext } from '../../universe'
 import { Inset } from '../../urban-stats-script/constants/insets'
@@ -120,12 +121,14 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
     // eslint-disable-next-line react-hooks/exhaustive-deps -- props.view won't be set except from the navigator
     }, [jsonedSettings, navContext])
 
+    const unitSettings = useUnitSettings()
+
     useEffect(() => {
         // Written straight to the document rather than through the page state, which would rerender
         // the whole page for every edit.
         // eslint-disable-next-line no-restricted-syntax -- The exception the rule describes.
-        document.title = mapPageTitle(mapSettings)
-    }, [mapSettings])
+        document.title = mapPageTitle(mapSettings, unitSettings)
+    }, [mapSettings, unitSettings])
 
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(mapSettings.universe), [mapSettings.universe])
 

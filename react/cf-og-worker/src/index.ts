@@ -38,7 +38,7 @@ async function describeMap(settings: string | undefined): Promise<{ title: strin
         // which is most of what is left of startup once the drawing half is out of it.
         const { mapSettingsFromURLParam, mapTitle } = await import('../../src/mapper/settings/utils')
         const mapSettings = await mapSettingsFromURLParam(settings)
-        const title = mapTitle(mapSettings)
+        const title = mapTitle(mapSettings, {})
         const { universe, geographyKind } = mapSettings
         if (title === undefined || universe === undefined || geographyKind === undefined) {
             return undefined
@@ -63,7 +63,7 @@ async function describeTable(uss: string, universe: Universe): Promise<string | 
     try {
         // Deferred for the same reason as describeMap's imports.
         const { parseStatUSS, tableTitle } = await import('../../src/stat/utils')
-        return tableTitle(parseStatUSS(uss, universe), universe)
+        return tableTitle(parseStatUSS(uss, universe), universe, {})
     }
     catch {
         // Any script we cannot read a title out of falls back to the generic one.
