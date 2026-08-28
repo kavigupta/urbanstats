@@ -4002,8 +4002,7 @@ export default {
                     "population_statcan",
                     "population_ghsl"
                 ],
-                "humanReadableName": "Population",
-                "unit": "population"
+                "humanReadableName": "Population"
             }
         ],
         [
@@ -4013,8 +4012,7 @@ export default {
                     "population_2010_us_census",
                     "population_2010_statcan"
                 ],
-                "humanReadableName": "Population (2010)",
-                "unit": "population"
+                "humanReadableName": "Population (2010)"
             }
         ],
         [
@@ -4024,8 +4022,7 @@ export default {
                     "population_change_2010_2020_us_census",
                     "population_change_2010_2020_statcan"
                 ],
-                "humanReadableName": "Population Change (2010-2020)",
-                "unit": "percentageChange"
+                "humanReadableName": "Population Change (2010-2020)"
             }
         ],
         [
@@ -4036,8 +4033,7 @@ export default {
                     "density_pw_1km_statcan",
                     "density_pw_1km_ghsl"
                 ],
-                "humanReadableName": "PW Density (r=1km)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=1km)"
             }
         ],
         [
@@ -4047,8 +4043,7 @@ export default {
                     "density_pw_1km_2010_us_census",
                     "density_pw_1km_2010_statcan"
                 ],
-                "humanReadableName": "PW Density (r=1km) (2010)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=1km) (2010)"
             }
         ],
         [
@@ -4058,8 +4053,7 @@ export default {
                     "density_pw_1km_change_2010_2020_us_census",
                     "density_pw_1km_change_2010_2020_statcan"
                 ],
-                "humanReadableName": "PW Density (r=1km) Change (2010-2020)",
-                "unit": "percentageChange"
+                "humanReadableName": "PW Density (r=1km) Change (2010-2020)"
             }
         ],
         [
@@ -4070,8 +4064,7 @@ export default {
                     "density_aw_statcan",
                     "density_aw_ghsl"
                 ],
-                "humanReadableName": "AW Density",
-                "unit": "density"
+                "humanReadableName": "AW Density"
             }
         ],
         [
@@ -4081,8 +4074,7 @@ export default {
                     "density_aw_2010_us_census",
                     "density_aw_2010_statcan"
                 ],
-                "humanReadableName": "AW Density (2010)",
-                "unit": "density"
+                "humanReadableName": "AW Density (2010)"
             }
         ],
         [
@@ -4092,8 +4084,7 @@ export default {
                     "white_us_census",
                     "white_statcan"
                 ],
-                "humanReadableName": "White %",
-                "unit": "percentage"
+                "humanReadableName": "White %"
             }
         ],
         [
@@ -4103,8 +4094,7 @@ export default {
                     "hispanic_us_census",
                     "hispanic_statcan"
                 ],
-                "humanReadableName": "Hispanic %",
-                "unit": "percentage"
+                "humanReadableName": "Hispanic %"
             }
         ],
         [
@@ -4114,8 +4104,7 @@ export default {
                     "black_us_census",
                     "black_statcan"
                 ],
-                "humanReadableName": "Black %",
-                "unit": "percentage"
+                "humanReadableName": "Black %"
             }
         ],
         [
@@ -4125,8 +4114,7 @@ export default {
                     "asian_us_census",
                     "asian_statcan"
                 ],
-                "humanReadableName": "Asian %",
-                "unit": "percentage"
+                "humanReadableName": "Asian %"
             }
         ],
         [
@@ -4136,8 +4124,7 @@ export default {
                     "native_us_census",
                     "native_statcan"
                 ],
-                "humanReadableName": "Native %",
-                "unit": "percentage"
+                "humanReadableName": "Native %"
             }
         ],
         [
@@ -4147,8 +4134,7 @@ export default {
                     "hawaiian_pi_us_census",
                     "hawaiian_pi_statcan"
                 ],
-                "humanReadableName": "Hawaiian / PI %",
-                "unit": "percentage"
+                "humanReadableName": "Hawaiian / PI %"
             }
         ],
         [
@@ -4158,8 +4144,7 @@ export default {
                     "other_mixed_us_census",
                     "other_mixed_statcan"
                 ],
-                "humanReadableName": "Other / Mixed %",
-                "unit": "percentage"
+                "humanReadableName": "Other / Mixed %"
             }
         ],
         [
@@ -4169,8 +4154,7 @@ export default {
                     "citizen_by_birth_us_census",
                     "citizen_by_birth_statcan"
                 ],
-                "humanReadableName": "Citizen by Birth %",
-                "unit": "percentage"
+                "humanReadableName": "Citizen by Birth %"
             }
         ],
         [
@@ -4180,8 +4164,7 @@ export default {
                     "naturalized_citizen_us_census",
                     "naturalized_citizen_statcan"
                 ],
-                "humanReadableName": "Citizen by Naturalization %",
-                "unit": "percentage"
+                "humanReadableName": "Citizen by Naturalization %"
             }
         ],
         [
@@ -4191,8 +4174,7 @@ export default {
                     "non_citizen_us_census",
                     "non_citizen_statcan"
                 ],
-                "humanReadableName": "Non-citizen %",
-                "unit": "percentage"
+                "humanReadableName": "Non-citizen %"
             }
         ],
         [
@@ -4202,8 +4184,7 @@ export default {
                     "english_only_us_census",
                     "english_only_statcan"
                 ],
-                "humanReadableName": "Only English at Home %",
-                "unit": "percentage"
+                "humanReadableName": "Only English at Home %"
             }
         ],
         [
@@ -4213,8 +4194,7 @@ export default {
                     "spanish_us_census",
                     "spanish_statcan"
                 ],
-                "humanReadableName": "Spanish at Home %",
-                "unit": "percentage"
+                "humanReadableName": "Spanish at Home %"
             }
         ],
         [
@@ -4224,8 +4204,7 @@ export default {
                     "silent_us_census",
                     "silent_statcan"
                 ],
-                "humanReadableName": "Silent %",
-                "unit": "percentage"
+                "humanReadableName": "Silent %"
             }
         ],
         [
@@ -4235,8 +4214,7 @@ export default {
                     "boomer_us_census",
                     "boomer_statcan"
                 ],
-                "humanReadableName": "Boomer %",
-                "unit": "percentage"
+                "humanReadableName": "Boomer %"
             }
         ],
         [
@@ -4246,8 +4224,7 @@ export default {
                     "gen_x_us_census",
                     "gen_x_statcan"
                 ],
-                "humanReadableName": "Gen X %",
-                "unit": "percentage"
+                "humanReadableName": "Gen X %"
             }
         ],
         [
@@ -4257,8 +4234,7 @@ export default {
                     "millennial_us_census",
                     "millennial_statcan"
                 ],
-                "humanReadableName": "Millennial %",
-                "unit": "percentage"
+                "humanReadableName": "Millennial %"
             }
         ],
         [
@@ -4268,8 +4244,7 @@ export default {
                     "gen_z_us_census",
                     "gen_z_statcan"
                 ],
-                "humanReadableName": "Gen Z %",
-                "unit": "percentage"
+                "humanReadableName": "Gen Z %"
             }
         ],
         [
@@ -4279,8 +4254,7 @@ export default {
                     "gen_alpha_us_census",
                     "gen_alpha_statcan"
                 ],
-                "humanReadableName": "Gen Alpha %",
-                "unit": "percentage"
+                "humanReadableName": "Gen Alpha %"
             }
         ],
         [
@@ -4290,8 +4264,7 @@ export default {
                     "housing_per_adult_us_census",
                     "housing_per_adult_statcan"
                 ],
-                "humanReadableName": "Housing Units per Adult",
-                "unit": "number"
+                "humanReadableName": "Housing Units per Adult"
             }
         ],
         [
@@ -4301,8 +4274,7 @@ export default {
                     "housing_per_person_us_census",
                     "housing_per_person_statcan"
                 ],
-                "humanReadableName": "Housing Units per Person",
-                "unit": "number"
+                "humanReadableName": "Housing Units per Person"
             }
         ],
         [
@@ -4312,8 +4284,7 @@ export default {
                     "household_size_pw_us_census",
                     "household_size_pw_statcan"
                 ],
-                "humanReadableName": "PW Household Size",
-                "unit": "number"
+                "humanReadableName": "PW Household Size"
             }
         ],
         [
@@ -4323,8 +4294,7 @@ export default {
                     "renter_us_census",
                     "renter_statcan"
                 ],
-                "humanReadableName": "Renter %",
-                "unit": "percentage"
+                "humanReadableName": "Renter %"
             }
         ],
         [
@@ -4334,8 +4304,7 @@ export default {
                     "commute_car_us_census",
                     "commute_car_statcan"
                 ],
-                "humanReadableName": "Commute Car %",
-                "unit": "percentage"
+                "humanReadableName": "Commute Car %"
             }
         ],
         [
@@ -4345,8 +4314,7 @@ export default {
                     "commute_bike_us_census",
                     "commute_bike_statcan"
                 ],
-                "humanReadableName": "Commute Bike %",
-                "unit": "percentage"
+                "humanReadableName": "Commute Bike %"
             }
         ],
         [
@@ -4356,8 +4324,7 @@ export default {
                     "commute_walk_us_census",
                     "commute_walk_statcan"
                 ],
-                "humanReadableName": "Commute Walk %",
-                "unit": "percentage"
+                "humanReadableName": "Commute Walk %"
             }
         ],
         [
@@ -4367,8 +4334,7 @@ export default {
                     "commute_transit_us_census",
                     "commute_transit_statcan"
                 ],
-                "humanReadableName": "Commute Transit %",
-                "unit": "percentage"
+                "humanReadableName": "Commute Transit %"
             }
         ],
         [
@@ -4378,8 +4344,7 @@ export default {
                     "commute_time_median_us_census",
                     "commute_time_median_statcan"
                 ],
-                "humanReadableName": "Median Commute Time (min)",
-                "unit": "minutes"
+                "humanReadableName": "Median Commute Time (min)"
             }
         ],
         [
@@ -4389,8 +4354,7 @@ export default {
                     "commute_time_under_15_us_census",
                     "commute_time_under_15_statcan"
                 ],
-                "humanReadableName": "Commute Time < 15 min %",
-                "unit": "percentage"
+                "humanReadableName": "Commute Time < 15 min %"
             }
         ],
         [
@@ -4400,8 +4364,7 @@ export default {
                     "commute_time_15_to_29_us_census",
                     "commute_time_15_to_29_statcan"
                 ],
-                "humanReadableName": "Commute Time 15 - 29 min %",
-                "unit": "percentage"
+                "humanReadableName": "Commute Time 15 - 29 min %"
             }
         ],
         [
@@ -4411,8 +4374,7 @@ export default {
                     "commute_time_30_to_59_us_census",
                     "commute_time_30_to_59_statcan"
                 ],
-                "humanReadableName": "Commute Time 30 - 59 min %",
-                "unit": "percentage"
+                "humanReadableName": "Commute Time 30 - 59 min %"
             }
         ],
         [
@@ -4422,8 +4384,7 @@ export default {
                     "commute_time_over_60_us_census",
                     "commute_time_over_60_statcan"
                 ],
-                "humanReadableName": "Commute Time > 60 min %",
-                "unit": "percentage"
+                "humanReadableName": "Commute Time > 60 min %"
             }
         ],
         [
@@ -4433,8 +4394,7 @@ export default {
                     "industry_agriculture_forestry_fishing_us_census",
                     "industry_agriculture_forestry_fishing_statcan"
                 ],
-                "humanReadableName": "Employed in Agriculture, forestry, fishing and hunting %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Agriculture, forestry, fishing and hunting %"
             }
         ],
         [
@@ -4444,8 +4404,7 @@ export default {
                     "industry_mining_oil_gas_us_census",
                     "industry_mining_oil_gas_statcan"
                 ],
-                "humanReadableName": "Employed in Mining, quarrying, and oil and gas extraction %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Mining, quarrying, and oil and gas extraction %"
             }
         ],
         [
@@ -4455,8 +4414,7 @@ export default {
                     "industry_accommodation_food_us_census",
                     "industry_accommodation_food_statcan"
                 ],
-                "humanReadableName": "Employed in Accommodation and food services %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Accommodation and food services %"
             }
         ],
         [
@@ -4466,8 +4424,7 @@ export default {
                     "industry_arts_entertainment_us_census",
                     "industry_arts_entertainment_statcan"
                 ],
-                "humanReadableName": "Employed in Arts, entertainment, and recreation %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Arts, entertainment, and recreation %"
             }
         ],
         [
@@ -4477,8 +4434,7 @@ export default {
                     "industry_construction_us_census",
                     "industry_construction_statcan"
                 ],
-                "humanReadableName": "Employed in Construction %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Construction %"
             }
         ],
         [
@@ -4488,8 +4444,7 @@ export default {
                     "industry_education_us_census",
                     "industry_education_statcan"
                 ],
-                "humanReadableName": "Employed in Educational services %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Educational services %"
             }
         ],
         [
@@ -4499,8 +4454,7 @@ export default {
                     "industry_healthcare_social_us_census",
                     "industry_healthcare_social_statcan"
                 ],
-                "humanReadableName": "Employed in Health care and social assistance %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Health care and social assistance %"
             }
         ],
         [
@@ -4510,8 +4464,7 @@ export default {
                     "industry_finance_insurance_us_census",
                     "industry_finance_insurance_statcan"
                 ],
-                "humanReadableName": "Employed in Finance and insurance %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Finance and insurance %"
             }
         ],
         [
@@ -4521,8 +4474,7 @@ export default {
                     "industry_real_estate_rental_us_census",
                     "industry_real_estate_rental_statcan"
                 ],
-                "humanReadableName": "Employed in Real estate and rental and leasing %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Real estate and rental and leasing %"
             }
         ],
         [
@@ -4532,8 +4484,7 @@ export default {
                     "industry_information_us_census",
                     "industry_information_statcan"
                 ],
-                "humanReadableName": "Employed in Information %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Information %"
             }
         ],
         [
@@ -4543,8 +4494,7 @@ export default {
                     "industry_manufacturing_us_census",
                     "industry_manufacturing_statcan"
                 ],
-                "humanReadableName": "Employed in Manufacturing %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Manufacturing %"
             }
         ],
         [
@@ -4554,8 +4504,7 @@ export default {
                     "industry_other_services_us_census",
                     "industry_other_services_statcan"
                 ],
-                "humanReadableName": "Employed in Other services, except public administration %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Other services, except public administration %"
             }
         ],
         [
@@ -4565,8 +4514,7 @@ export default {
                     "industry_admin_support_waste_mgmt_us_census",
                     "industry_admin_support_waste_mgmt_statcan"
                 ],
-                "humanReadableName": "Employed in Administrative and support and waste management services %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Administrative and support and waste management services %"
             }
         ],
         [
@@ -4576,8 +4524,7 @@ export default {
                     "industry_management_us_census",
                     "industry_management_statcan"
                 ],
-                "humanReadableName": "Employed in Management of companies and enterprises %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Management of companies and enterprises %"
             }
         ],
         [
@@ -4587,8 +4534,7 @@ export default {
                     "industry_professional_scientific_technical_us_census",
                     "industry_professional_scientific_technical_statcan"
                 ],
-                "humanReadableName": "Employed in Professional, scientific, and technical services %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Professional, scientific, and technical services %"
             }
         ],
         [
@@ -4598,8 +4544,7 @@ export default {
                     "industry_public_admin_us_census",
                     "industry_public_admin_statcan"
                 ],
-                "humanReadableName": "Employed in Public administration %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Public administration %"
             }
         ],
         [
@@ -4609,8 +4554,7 @@ export default {
                     "industry_retail_trade_us_census",
                     "industry_retail_trade_statcan"
                 ],
-                "humanReadableName": "Employed in Retail trade %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Retail trade %"
             }
         ],
         [
@@ -4620,8 +4564,7 @@ export default {
                     "industry_transportation_warehousing_us_census",
                     "industry_transportation_warehousing_statcan"
                 ],
-                "humanReadableName": "Employed in Transportation and warehousing %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Transportation and warehousing %"
             }
         ],
         [
@@ -4631,8 +4574,7 @@ export default {
                     "industry_utilities_us_census",
                     "industry_utilities_statcan"
                 ],
-                "humanReadableName": "Employed in Utilities %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Utilities %"
             }
         ],
         [
@@ -4642,8 +4584,7 @@ export default {
                     "industry_wholesale_trade_us_census",
                     "industry_wholesale_trade_statcan"
                 ],
-                "humanReadableName": "Employed in Wholesale trade %",
-                "unit": "percentage"
+                "humanReadableName": "Employed in Wholesale trade %"
             }
         ],
         [
@@ -4653,8 +4594,7 @@ export default {
                     "never_married_us_census",
                     "never_married_statcan"
                 ],
-                "humanReadableName": "Never Married %",
-                "unit": "percentage"
+                "humanReadableName": "Never Married %"
             }
         ],
         [
@@ -4664,8 +4604,7 @@ export default {
                     "married_us_census",
                     "married_statcan"
                 ],
-                "humanReadableName": "Married (not divorced) %",
-                "unit": "percentage"
+                "humanReadableName": "Married (not divorced) %"
             }
         ],
         [
@@ -4675,8 +4614,7 @@ export default {
                     "divorced_us_census",
                     "divorced_statcan"
                 ],
-                "humanReadableName": "Divorced %",
-                "unit": "percentage"
+                "humanReadableName": "Divorced %"
             }
         ],
         [
@@ -4686,8 +4624,7 @@ export default {
                     "density_pw_250m_us_census",
                     "density_pw_250m_statcan"
                 ],
-                "humanReadableName": "PW Density (r=250m)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=250m)"
             }
         ],
         [
@@ -4697,8 +4634,7 @@ export default {
                     "density_pw_250m_2010_us_census",
                     "density_pw_250m_2010_statcan"
                 ],
-                "humanReadableName": "PW Density (r=250m) (2010)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=250m) (2010)"
             }
         ],
         [
@@ -4708,8 +4644,7 @@ export default {
                     "density_pw_250m_change_2010_2020_us_census",
                     "density_pw_250m_change_2010_2020_statcan"
                 ],
-                "humanReadableName": "PW Density (r=250m) Change (2010-2020)",
-                "unit": "percentageChange"
+                "humanReadableName": "PW Density (r=250m) Change (2010-2020)"
             }
         ],
         [
@@ -4719,8 +4654,7 @@ export default {
                     "density_pw_500m_us_census",
                     "density_pw_500m_statcan"
                 ],
-                "humanReadableName": "PW Density (r=500m)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=500m)"
             }
         ],
         [
@@ -4730,8 +4664,7 @@ export default {
                     "density_pw_500m_2010_us_census",
                     "density_pw_500m_2010_statcan"
                 ],
-                "humanReadableName": "PW Density (r=500m) (2010)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=500m) (2010)"
             }
         ],
         [
@@ -4741,8 +4674,7 @@ export default {
                     "density_pw_500m_change_2010_2020_us_census",
                     "density_pw_500m_change_2010_2020_statcan"
                 ],
-                "humanReadableName": "PW Density (r=500m) Change (2010-2020)",
-                "unit": "percentageChange"
+                "humanReadableName": "PW Density (r=500m) Change (2010-2020)"
             }
         ],
         [
@@ -4753,8 +4685,7 @@ export default {
                     "density_pw_1mi_statcan",
                     "density_pw_1mi_ghsl"
                 ],
-                "humanReadableName": "PW Density (r=1mi)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=1mi)"
             }
         ],
         [
@@ -4764,8 +4695,7 @@ export default {
                     "density_pw_1mi_2010_us_census",
                     "density_pw_1mi_2010_statcan"
                 ],
-                "humanReadableName": "PW Density (r=1mi) (2010)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=1mi) (2010)"
             }
         ],
         [
@@ -4775,8 +4705,7 @@ export default {
                     "density_pw_1mi_change_2010_2020_us_census",
                     "density_pw_1mi_change_2010_2020_statcan"
                 ],
-                "humanReadableName": "PW Density (r=1mi) Change (2010-2020)",
-                "unit": "percentageChange"
+                "humanReadableName": "PW Density (r=1mi) Change (2010-2020)"
             }
         ],
         [
@@ -4787,8 +4716,7 @@ export default {
                     "density_pw_2km_statcan",
                     "density_pw_2km_ghsl"
                 ],
-                "humanReadableName": "PW Density (r=2km)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=2km)"
             }
         ],
         [
@@ -4798,8 +4726,7 @@ export default {
                     "density_pw_2km_2010_us_census",
                     "density_pw_2km_2010_statcan"
                 ],
-                "humanReadableName": "PW Density (r=2km) (2010)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=2km) (2010)"
             }
         ],
         [
@@ -4809,8 +4736,7 @@ export default {
                     "density_pw_2km_change_2010_2020_us_census",
                     "density_pw_2km_change_2010_2020_statcan"
                 ],
-                "humanReadableName": "PW Density (r=2km) Change (2010-2020)",
-                "unit": "percentageChange"
+                "humanReadableName": "PW Density (r=2km) Change (2010-2020)"
             }
         ],
         [
@@ -4821,8 +4747,7 @@ export default {
                     "density_pw_4km_statcan",
                     "density_pw_4km_ghsl"
                 ],
-                "humanReadableName": "PW Density (r=4km)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=4km)"
             }
         ],
         [
@@ -4832,8 +4757,7 @@ export default {
                     "density_pw_4km_2010_us_census",
                     "density_pw_4km_2010_statcan"
                 ],
-                "humanReadableName": "PW Density (r=4km) (2010)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=4km) (2010)"
             }
         ],
         [
@@ -4843,8 +4767,7 @@ export default {
                     "density_pw_4km_change_2010_2020_us_census",
                     "density_pw_4km_change_2010_2020_statcan"
                 ],
-                "humanReadableName": "PW Density (r=4km) Change (2010-2020)",
-                "unit": "percentageChange"
+                "humanReadableName": "PW Density (r=4km) Change (2010-2020)"
             }
         ],
         [
@@ -4855,8 +4778,7 @@ export default {
                     "density_pw_8km_statcan",
                     "density_pw_8km_ghsl"
                 ],
-                "humanReadableName": "PW Density (r=8km)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=8km)"
             }
         ],
         [
@@ -4866,8 +4788,7 @@ export default {
                     "density_pw_8km_2010_us_census",
                     "density_pw_8km_2010_statcan"
                 ],
-                "humanReadableName": "PW Density (r=8km) (2010)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=8km) (2010)"
             }
         ],
         [
@@ -4877,8 +4798,7 @@ export default {
                     "density_pw_8km_change_2010_2020_us_census",
                     "density_pw_8km_change_2010_2020_statcan"
                 ],
-                "humanReadableName": "PW Density (r=8km) Change (2010-2020)",
-                "unit": "percentageChange"
+                "humanReadableName": "PW Density (r=8km) Change (2010-2020)"
             }
         ],
         [
@@ -4889,8 +4809,7 @@ export default {
                     "density_pw_16km_statcan",
                     "density_pw_16km_ghsl"
                 ],
-                "humanReadableName": "PW Density (r=16km)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=16km)"
             }
         ],
         [
@@ -4900,8 +4819,7 @@ export default {
                     "density_pw_16km_2010_us_census",
                     "density_pw_16km_2010_statcan"
                 ],
-                "humanReadableName": "PW Density (r=16km) (2010)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=16km) (2010)"
             }
         ],
         [
@@ -4911,8 +4829,7 @@ export default {
                     "density_pw_16km_change_2010_2020_us_census",
                     "density_pw_16km_change_2010_2020_statcan"
                 ],
-                "humanReadableName": "PW Density (r=16km) Change (2010-2020)",
-                "unit": "percentageChange"
+                "humanReadableName": "PW Density (r=16km) Change (2010-2020)"
             }
         ],
         [
@@ -4923,8 +4840,7 @@ export default {
                     "density_pw_32km_statcan",
                     "density_pw_32km_ghsl"
                 ],
-                "humanReadableName": "PW Density (r=32km)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=32km)"
             }
         ],
         [
@@ -4934,8 +4850,7 @@ export default {
                     "density_pw_32km_2010_us_census",
                     "density_pw_32km_2010_statcan"
                 ],
-                "humanReadableName": "PW Density (r=32km) (2010)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=32km) (2010)"
             }
         ],
         [
@@ -4945,8 +4860,7 @@ export default {
                     "density_pw_32km_change_2010_2020_us_census",
                     "density_pw_32km_change_2010_2020_statcan"
                 ],
-                "humanReadableName": "PW Density (r=32km) Change (2010-2020)",
-                "unit": "percentageChange"
+                "humanReadableName": "PW Density (r=32km) Change (2010-2020)"
             }
         ],
         [
@@ -4957,8 +4871,7 @@ export default {
                     "density_pw_64km_statcan",
                     "density_pw_64km_ghsl"
                 ],
-                "humanReadableName": "PW Density (r=64km)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=64km)"
             }
         ],
         [
@@ -4968,8 +4881,7 @@ export default {
                     "density_pw_64km_2010_us_census",
                     "density_pw_64km_2010_statcan"
                 ],
-                "humanReadableName": "PW Density (r=64km) (2010)",
-                "unit": "density"
+                "humanReadableName": "PW Density (r=64km) (2010)"
             }
         ],
         [
@@ -4979,8 +4891,7 @@ export default {
                     "density_pw_64km_change_2010_2020_us_census",
                     "density_pw_64km_change_2010_2020_statcan"
                 ],
-                "humanReadableName": "PW Density (r=64km) Change (2010-2020)",
-                "unit": "percentageChange"
+                "humanReadableName": "PW Density (r=64km) Change (2010-2020)"
             }
         ]
     ]

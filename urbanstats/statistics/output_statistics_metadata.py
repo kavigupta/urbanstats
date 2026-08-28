@@ -179,8 +179,9 @@ def statistic_variables_info() -> Dict[str, Any]:
         multi_source[ms_name] = dict(
             individualVariables=combo,
             humanReadableName=stat.compute_name(statistic_internal_to_display_name()),
-            unit=unit_shared_by(stat.by_source.values()),
         )
+        # the frontend reads the unit off any one of the sources, which have to agree
+        check_sources_agree_on_unit(stat.by_source.values())
 
     variable_objects = construct_variable_objects(
         internal_to_actual_variable, multi_source_variable_names, multi_source_stats
@@ -249,14 +250,10 @@ def construct_variable_objects(
     return variable_objects
 
 
-def unit_shared_by(stats: Iterable[str]) -> str:
-    """
-    The unit of a multi-source variable, which its sources have to agree on.
-    """
+def check_sources_agree_on_unit(stats: Iterable[str]) -> None:
     units = {get_statistic_units()[stat] for stat in stats}
     if len(units) != 1:
         raise ValueError(f"Sources of one variable disagree on its unit: {units}")
-    return units.pop()
 
 
 def multi_source_statistics() -> Iterable[Any]:

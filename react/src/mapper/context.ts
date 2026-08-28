@@ -143,13 +143,12 @@ export const defaultTypeEnvironment = (universe: Universe | undefined): TypeEnvi
         })
     }
     for (const [name, info] of statistic_variables_info.multiSourceVariables) {
-        // Find the minimum priority of the individual variables (using raw order values)
-        const individualPriorities = info.individualVariables.map((varName) => {
+        const individualInfos = info.individualVariables.map((varName) => {
             const variableInfo = statistic_variables_info.variableNames.find(v => v.varName === varName)
             assert(variableInfo !== undefined, `Variable info for ${varName} not found`)
-            return variableInfo.order
+            return variableInfo
         })
-        const minPriority = Math.min(...individualPriorities)
+        const minPriority = Math.min(...individualInfos.map(variableInfo => variableInfo.order))
 
         te.set(name, {
             type: { type: 'vector', elementType: { type: 'number' } },
@@ -162,7 +161,8 @@ export const defaultTypeEnvironment = (universe: Universe | undefined): TypeEnvi
                 isDefault: name === 'density_pw_1km',
                 selectorRendering: { kind: 'subtitleLongDescription' },
                 fromStatisticColumn: true,
-                unit: info.unit,
+                // whichever source answers, the statistics behind it are in one unit
+                unit: statistic_unit_list[individualInfos[0].index],
             },
         })
     }
