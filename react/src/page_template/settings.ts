@@ -330,3 +330,11 @@ export function settingValue<K extends keyof SettingsDictionary>(info: SettingIn
 export function useIsStaged(): boolean {
     return useStagedSettingKeys() !== undefined
 }
+
+/** The units the person looking at the page reads in. */
+export function useReaderSettings(): ReaderSettings {
+    const [useImperial] = useSetting('use_imperial')
+    const [temperatureUnit] = useSetting('temperature_unit')
+    // memoized, so that a caller putting it in a dependency array does not rebuild every render
+    return useMemo(() => ({ useImperial, temperatureUnit }), [useImperial, temperatureUnit])
+}

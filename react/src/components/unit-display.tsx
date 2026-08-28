@@ -1,12 +1,11 @@
 import React, { CSSProperties, ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
+import { useReaderSettings } from '../page_template/settings'
 import { HumanReadableElement } from '../utils/human-readable-element'
 import { reifyReact } from '../utils/human-readable-name'
 import { Hue, ReaderSettings, StoredUnit, Unit, UnitPlacement, writeQuantity } from '../utils/quantity'
 import { UnitType } from '../utils/unit'
-
-import { useReaderSettings } from './display-stats'
 
 /** A quantity as it is displayed: the number and its unit, which sit in separate columns. */
 export interface DisplayedQuantity {
