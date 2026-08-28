@@ -251,6 +251,7 @@ export default tseslint.config(
                 },
             ],
             'react/prop-types': 'off',
+            'react/jsx-key': ['error', { checkFragmentShorthand: true, checkKeyMustBeforeSpread: true, warnOnDuplicates: true }],
             'no-shadow': 'error',
             '@eslint-community/eslint-comments/require-description': ['error', {
                 ignore: ['eslint-enable']
