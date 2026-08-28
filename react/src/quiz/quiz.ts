@@ -8,7 +8,7 @@ import { randomID } from '../utils/random'
 import { cancelled, uploadFile } from '../utils/upload'
 
 import { infiniteQuizIsDone, sampleRandomQuestion } from './infinite'
-import { historyConflicts, mergeHistories } from './sync'
+import { historyConflicts, mergeHistories } from './merge'
 
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string } | { kind: 'infinite', name: string, seed: string, version: number }
 
@@ -90,12 +90,6 @@ const quizPersonaSchema = z.object({
 }).strict()
 
 export type QuizPersona = z.infer<typeof quizPersonaSchema>
-
-// Used in sync but must be here to avoid circular dependency
-export const syncProfileSchema = z.object({
-    quiz_history: quizHistorySchema,
-    friends: quizFriends,
-})
 
 export class StoredProperty<T> extends Property<T> {
     constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T, private readonly store: (value: T) => string | null) {
