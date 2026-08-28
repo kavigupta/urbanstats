@@ -7,7 +7,6 @@ from urbanstats.statistics.stat_path import get_statistic_column_path
 
 from ..utils import output_typescript
 from .collections_list import statistic_collections
-from .statistic_unit import UNIT_TYPES
 from .statistics_tree import statistics_tree
 
 
@@ -83,6 +82,44 @@ def get_explanation_page() -> Dict[str, Optional[str]]:
         result.update(statistic_collection.explanation_page_for_each_statistic())
 
     return {k: result[k] for k in statistic_internal_to_display_name()}
+
+
+# Every name here is a UnitType in react/src/utils/unit.ts, which decides how a number in
+# that unit is written.
+UNIT_TYPES = frozenset(
+    {
+        "percentage",
+        "percentageChange",
+        "fatalities",
+        "fatalitiesPerCapita",
+        "density",
+        "population",
+        "area",
+        "distanceInKm",
+        "distanceInM",
+        "democraticMargin",
+        "temperature",
+        "time",
+        "distancePerYear",
+        "contaminantLevel",
+        "number",
+        "usd",
+        "minutes",
+        "partyPctBlue",
+        "partyPctRed",
+        "partyPctOrange",
+        "partyPctTeal",
+        "partyPctGreen",
+        "partyPctPurple",
+        "partyChangeBlue",
+        "partyChangeRed",
+        "partyChangeOrange",
+        "partyChangeTeal",
+        "partyChangeGreen",
+        "partyChangePurple",
+        "leftMargin",
+    }
+)
 
 
 def get_statistic_units() -> Dict[str, str]:
