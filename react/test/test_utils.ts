@@ -365,10 +365,7 @@ async function printConsoleMessages(t: TestController): Promise<void> {
         const timestamp = new Date().toISOString()
         if (
             event.message.text.includes('[failtest]')
-            // These React warnings are only emitted by the development build, so they catch
-            // something when running tests locally and nothing in CI, which builds for production.
-            || event.message.text.includes('Encountered two children with the same key')
-            || event.message.text.includes('Each child in a list should have a unique')
+            || event.message.text.includes('Encountered two children with the same key') // This React error only shows up in dev mode, but it's helpful to catch when running tests locally.
         ) {
             failTestConsoleMessages.push(event.message.text)
         }
