@@ -13,7 +13,7 @@ import { unparse } from '../urban-stats-script/parser'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { reifyString } from '../utils/human-readable-name'
-import { ReaderSettings } from '../utils/quantity'
+import { UnitSettings } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { StatData, Statistic, StatSettings, View } from './types'
@@ -40,13 +40,13 @@ export function parseStatUSS(uss: string, universe: Universe): MapUSS {
 }
 
 /** @public this is included dynamically */
-export function tableTitle(uss: MapUSS, universe: Universe, settings: ReaderSettings): string | undefined {
+export function tableTitle(uss: MapUSS, universe: Universe, settings: UnitSettings): string | undefined {
     const label = tableLabel(uss, defaultTypeEnvironment(universe))
     return label === undefined ? undefined : reifyString(label, settings)
 }
 
 /** What a table is titled before it runs, the way `mapPageTitle` titles a map. */
-export function statPageTitle(stat: Statistic, settings: ReaderSettings): string {
+export function statPageTitle(stat: Statistic, settings: UnitSettings): string {
     if (stat.type === 'simple') {
         return stat.statName
     }

@@ -2,13 +2,13 @@ import React, { ReactNode, useCallback, useContext, useMemo, useRef } from 'reac
 
 import { CountsByUT } from '../components/countsByArticleType'
 import { generateStatisticsPanelCSVData } from '../components/csv-export'
-import { useReaderSettings } from '../components/display-stats'
 import { createScreenshot } from '../components/screenshot'
 import { MaybeSplitLayout } from '../components/split-layout'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { MapSettings } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { RelativeLoader } from '../navigation/loading'
+import { useUnitSettings } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
 import { DisplayResults } from '../urban-stats-script/Editor'
 import { tableType } from '../urban-stats-script/constants/table'
@@ -45,7 +45,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
 
     const subHeaderTextClass = useSubHeaderTextClass()
 
-    const readerSettings = useReaderSettings()
+    const unitSettings = useUnitSettings()
 
     const subHeaderText = useMemo(() => data?.renderedStatname ?? (stat.type === 'simple' ? variable(stat.statName).humanReadableName : '\u00A0'), [data, stat])
 
@@ -73,7 +73,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
                 would otherwise end up in the screenshot. */}
             <div ref={headersRef} style={{ position: 'relative' }}>
                 <StatisticPanelHead articleType={stat.articleType} universe={stat.universe} />
-                <div className={subHeaderTextClass}>{reifyReact(subHeaderText, readerSettings)}</div>
+                <div className={subHeaderTextClass}>{reifyReact(subHeaderText, unitSettings)}</div>
             </div>
             {view.edit
                 ? splitLayout && <EditHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} inline={true} />
@@ -103,7 +103,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
         <PageTemplate
             showFooter={!splitLayout}
             screencap={data && ((...args) => createScreenshot(() => ({
-                path: `${sanitize(reifyString(data.renderedStatname, readerSettings))}.png`,
+                path: `${sanitize(reifyString(data.renderedStatname, unitSettings))}.png`,
                 overallWidth: tableRef.current!.offsetWidth * 2,
                 elementsToRender: [
                     headersRef.current!,
@@ -112,8 +112,8 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
                 ],
             }), ...args))}
             csvExportCallback={data && (() => ({
-                csvData: generateStatisticsPanelCSVData(data.articleNames, data.table, data.hideOrdinalsPercentiles, readerSettings),
-                csvFilename: `${sanitize(reifyString(data.renderedStatname, readerSettings))}.csv`,
+                csvData: generateStatisticsPanelCSVData(data.articleNames, data.table, data.hideOrdinalsPercentiles, unitSettings),
+                csvFilename: `${sanitize(reifyString(data.renderedStatname, unitSettings))}.csv`,
             }))}
         >
             {!splitLayout && headers}

@@ -2,19 +2,19 @@ import React, { ReactNode } from 'react'
 
 import { codeStyle } from './code-style'
 import { HumanReadableElement, HumanReadableName } from './human-readable-element'
-import { ReaderSettings, StoredUnit, writeQuantity } from './quantity'
+import { UnitSettings, StoredUnit, writeQuantity } from './quantity'
 import { trimTrailingZeros } from './text'
 
 /**
  * A quantity written out, for a title, a card or a file, where there is no reader to ask what
  * units they read in. On a page `reifyReact` asks, and writes it in those.
  */
-export function writtenPlainly(value: number, unit: StoredUnit, settings: ReaderSettings): string {
+export function writtenPlainly(value: number, unit: StoredUnit, settings: UnitSettings): string {
     const written = writeQuantity(value, unit, settings, {})
     return `${trimTrailingZeros(written.renderedValue)}${reifyString(written.unitName, settings)}`
 }
 
-export function reifyReact(elements: HumanReadableElement[] | string, settings: ReaderSettings): ReactNode {
+export function reifyReact(elements: HumanReadableElement[] | string, settings: UnitSettings): ReactNode {
     if (typeof elements === 'string') return elements
     return elements.map((element, index) => {
         switch (element.type) {
@@ -48,7 +48,7 @@ export function reifyReact(elements: HumanReadableElement[] | string, settings: 
 }
 
 /** One run of text, so that the unit cannot be rasterized a pixel off the number it belongs to. */
-function writtenQuantity(value: number, unit: StoredUnit, settings: ReaderSettings): ReactNode {
+function writtenQuantity(value: number, unit: StoredUnit, settings: UnitSettings): ReactNode {
     const { renderedValue, unitName } = writeQuantity(value, unit, settings, {})
     return (
         <>
@@ -58,7 +58,7 @@ function writtenQuantity(value: number, unit: StoredUnit, settings: ReaderSettin
     )
 }
 
-export function reifyString(elements: HumanReadableElement[] | string, settings: ReaderSettings): string {
+export function reifyString(elements: HumanReadableElement[] | string, settings: UnitSettings): string {
     if (typeof elements === 'string') return elements
     return elements.map((element) => {
         switch (element.type) {

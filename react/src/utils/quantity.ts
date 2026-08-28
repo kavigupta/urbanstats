@@ -65,7 +65,7 @@ export interface UnitPlacement {
     alone?: boolean
 }
 
-export interface ReaderSettings {
+export interface UnitSettings {
     useImperial?: boolean
     temperatureUnit?: string
 }
@@ -134,7 +134,7 @@ const metersPerInch = 0.0254
 const metersPerFoot = 12 * metersPerInch
 const metersPerMile = 5280 * metersPerFoot
 
-function systemOf(settings: ReaderSettings): 'metric' | 'imperial' {
+function systemOf(settings: UnitSettings): 'metric' | 'imperial' {
     return settings.useImperial === true ? 'imperial' : 'metric'
 }
 
@@ -186,7 +186,7 @@ const lengthUnits: Record<'metric' | 'imperial', NamedUnit[]> = {
  * The units there are to write a quantity in, whatever dimensions it turns out to have. A count is
  * named by the statistic counting it, so the unit it is counted in has no name to show.
  */
-function allUnits(settings: ReaderSettings): NamedUnit[] {
+function allUnits(settings: UnitSettings): NamedUnit[] {
     return [
         scaling('person', '', 1, 0),
         ...abbreviationsOf('person'),
@@ -365,7 +365,7 @@ function offsetOf(written: Written[], times: Coefficient): number {
     return times === 1 ? written.reduce((total, { unit, power }) => total + (unit.offset ?? 0) * power, 0) : 0
 }
 
-function representationFor(inBaseUnits: number, unit: Unit, settings: ReaderSettings, placement: UnitPlacement): Representation {
+function representationFor(inBaseUnits: number, unit: Unit, settings: UnitSettings, placement: UnitPlacement): Representation {
     if (unit.decoration.kind === 'percent') {
         // a lead is given more digits the closer it is, since that is what is being read off it
         return unit.decoration.party?.kind === 'lead' ? margin : percent
@@ -403,7 +403,7 @@ export interface WrittenQuantity {
     hue?: Hue
 }
 
-export function writeQuantity(value: number, stored: StoredUnit, settings: ReaderSettings, placement: UnitPlacement): WrittenQuantity {
+export function writeQuantity(value: number, stored: StoredUnit, settings: UnitSettings, placement: UnitPlacement): WrittenQuantity {
     if (!isFinite(value)) {
         return { renderedValue: missingValue, unitName: [] }
     }

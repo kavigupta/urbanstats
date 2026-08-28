@@ -6,7 +6,7 @@ import stat_path_list from '../data/statistic_path_list'
 import { dataSources } from '../data/statistics_tree'
 import article_types_other from '../data/type_to_type_category'
 import { DefaultMap } from '../utils/DefaultMap'
-import type { ReaderSettings } from '../utils/quantity'
+import type { UnitSettings } from '../utils/quantity'
 import { useObserverSets } from '../utils/useObserverSets'
 
 import { Theme } from './color-themes'
@@ -185,7 +185,8 @@ export class Settings {
         return Object.fromEntries(keys.map(key => [key, this.get(key)])) as Pick<SettingsDictionary, Keys[number]>
     }
 
-    readerSettings(): ReaderSettings {
+    /** The same two settings `useUnitSettings` reads, for a caller with no hooks to read them. */
+    unitSettings(): UnitSettings {
         const { use_imperial: useImperial, temperature_unit: temperatureUnit } = this.getMultiple(['use_imperial', 'temperature_unit'])
         return { useImperial, temperatureUnit }
     }
@@ -328,4 +329,12 @@ export function settingValue<K extends keyof SettingsDictionary>(info: SettingIn
 
 export function useIsStaged(): boolean {
     return useStagedSettingKeys() !== undefined
+}
+
+/** The units the person looking at the page reads in. */
+export function useUnitSettings(): UnitSettings {
+    const [useImperial] = useSetting('use_imperial')
+    const [temperatureUnit] = useSetting('temperature_unit')
+    // memoized, so that a caller putting it in a dependency array does not rebuild every render
+    return useMemo(() => ({ useImperial, temperatureUnit }), [useImperial, temperatureUnit])
 }

@@ -5,10 +5,10 @@ import { defaultTypeEnvironment } from '../src/mapper/context'
 import { mapUSSFromString } from '../src/mapper/settings/map-uss'
 import { deriveMapUnit, deriveTableColumnUnit } from '../src/urban-stats-script/derive-unit'
 import { reifyString } from '../src/utils/human-readable-name'
-import { ReaderSettings, StoredUnit, writeQuantity } from '../src/utils/quantity'
+import { UnitSettings, StoredUnit, writeQuantity } from '../src/utils/quantity'
 
 /** A quantity of the base units, written the way the map's ramp would write it. */
-function written(unit: StoredUnit | undefined, value = 1000, settings: ReaderSettings = {}): string {
+function written(unit: StoredUnit | undefined, value = 1000, settings: UnitSettings = {}): string {
     if (unit === undefined) {
         return 'nothing'
     }

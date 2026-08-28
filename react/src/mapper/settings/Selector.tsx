@@ -2,9 +2,9 @@ import ColorLib from 'color'
 import stableStringify from 'json-stable-stringify'
 import React, { ReactNode, useMemo, useCallback, useRef } from 'react'
 
-import { useReaderSettings } from '../../components/display-stats'
 import { colorThemes } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
+import { useUnitSettings } from '../../page_template/settings'
 import { DisplayResults } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { hsvToColor, rgbToColor } from '../../urban-stats-script/constants/color'
@@ -17,7 +17,7 @@ import { Documentation, TypeEnvironment, USSType } from '../../urban-stats-scrip
 import { TestUtils } from '../../utils/TestUtils'
 import { HumanReadableName } from '../../utils/human-readable-element'
 import { reifyReact, reifyString } from '../../utils/human-readable-name'
-import { ReaderSettings } from '../../utils/quantity'
+import { UnitSettings } from '../../utils/quantity'
 import { useTextAreaSizeSync } from '../../utils/text-area-size-sync'
 
 import * as l from './../../urban-stats-script/literal-parser'
@@ -42,7 +42,7 @@ export function Selector(props: {
     errors: EditorError[]
 }): ReactNode {
     const { setSelection, typeEnvironment } = props
-    const readerSettings = useReaderSettings()
+    const unitSettings = useUnitSettings()
     const selected = classifyExpr(props.uss)
 
     const selectionPossibilities = useMemo(() => {
@@ -61,7 +61,7 @@ export function Selector(props: {
         return selectionPossibilities.some(possibility => isCustomConstructor(possibility, props.typeEnvironment)) && !isCustomConstructor(selected, props.typeEnvironment)
     }, [selectionPossibilities, props.typeEnvironment, selected])
 
-    const renderPossibility = useCallback((selection: Selection) => renderSelection(props.typeEnvironment, selection, readerSettings), [props.typeEnvironment, readerSettings])
+    const renderPossibility = useCallback((selection: Selection) => renderSelection(props.typeEnvironment, selection, unitSettings), [props.typeEnvironment, unitSettings])
 
     const onEdit = useCallback(() => {
         const customConstructorOption = selectionPossibilities.find(possibility => isCustomConstructor(possibility, typeEnvironment))
@@ -189,7 +189,7 @@ function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: strin
     )
 }
 
-function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection, settings: ReaderSettings): SelectorRenderResult {
+function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection, settings: UnitSettings): SelectorRenderResult {
     if (selection.type === 'custom') {
         return { text: 'Custom Expression' }
     }
@@ -261,7 +261,7 @@ export function getColor(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnv
 }
 
 function LongDescriptionSubtitle(props: { doc: Documentation, highlighted: boolean }): ReactNode {
-    const readerSettings = useReaderSettings()
+    const unitSettings = useUnitSettings()
     const colors = useColors()
     return (
         <div style={{
@@ -269,16 +269,16 @@ function LongDescriptionSubtitle(props: { doc: Documentation, highlighted: boole
             background: props.highlighted ? colors.slightlyDifferentBackgroundFocused : colors.slightlyDifferentBackground,
         }}
         >
-            <div>{reifyReact(props.doc.humanReadableName, readerSettings)}</div>
+            <div>{reifyReact(props.doc.humanReadableName, unitSettings)}</div>
             <div style={{ fontSize: 'smaller', color: colors.ordinalTextColor }}>
-                {props.doc.longDescription !== undefined ? reifyReact(props.doc.longDescription, readerSettings) : undefined}
+                {props.doc.longDescription !== undefined ? reifyReact(props.doc.longDescription, unitSettings) : undefined}
             </div>
         </div>
     )
 }
 
 function RampSelectorOption(props: { name: HumanReadableName, ramp: RampT, highlighted: boolean }): ReactNode {
-    const readerSettings = useReaderSettings()
+    const unitSettings = useUnitSettings()
     const colors = useColors()
     const firstRampColor = ColorLib(props.ramp[0][1])
     const highlightedColor = `rgb(from ${colors.slightlyDifferentBackgroundFocused} r g b / 1)`
@@ -289,7 +289,7 @@ function RampSelectorOption(props: { name: HumanReadableName, ramp: RampT, highl
             background: props.highlighted ? `${selectionGradient(highlightedColor, 'bottom')}, ${selectionGradient(highlightedColor, 'right')}, ${toCssGradient(props.ramp)}` : toCssGradient(props.ramp),
         }}
         >
-            {reifyReact(props.name, readerSettings)}
+            {reifyReact(props.name, unitSettings)}
         </div>
     )
 }

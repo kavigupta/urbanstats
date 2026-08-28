@@ -17,7 +17,7 @@ import { mixWithBackground } from '../../src/utils/color'
 import { computeAspectRatioForInsets } from '../../src/utils/coordinates'
 import { HumanReadableName } from '../../src/utils/human-readable-element'
 import { reifyString } from '../../src/utils/human-readable-name'
-import { ReaderSettings, StoredUnit, writeQuantity } from '../../src/utils/quantity'
+import { UnitSettings, StoredUnit, writeQuantity } from '../../src/utils/quantity'
 import { trimTrailingZeros } from '../../src/utils/text'
 import { unitForStatistic, unitTypeToStoredUnit } from '../../src/utils/unit'
 import logoSvg from '../assets/logo.svg'
@@ -206,7 +206,7 @@ function humanReadable(name: HumanReadableName, fontSize: number, units: Units):
     })
 }
 
-function readerOf(units: Units): ReaderSettings {
+function readerOf(units: Units): UnitSettings {
     return { useImperial: units.use_imperial, temperatureUnit: units.temperature_unit }
 }
 

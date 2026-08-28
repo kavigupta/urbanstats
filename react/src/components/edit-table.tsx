@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode, useMemo, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { checkboxCategoryName, sourceEnabledKey, useIsStaged } from '../page_template/settings'
+import { checkboxCategoryName, sourceEnabledKey, useIsStaged, useUnitSettings } from '../page_template/settings'
 import { GroupTreeState, useAvailableYears, useCategoriesMatchingSearch, useCategoryTreeState, useDataSourceCheckboxes, useExpandCategoriesHidingStagedChanges } from '../page_template/statistic-settings'
 import { Category, statParents } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
@@ -11,7 +11,6 @@ import { reifyReact } from '../utils/human-readable-name'
 import { useWarningsByGroup } from './ArticleWarnings'
 import { ExpandButton } from './ExpandButton'
 import { BooleanSettingKey, CheckboxSettingCustomJustInputProps, CheckboxSettingJustBox, useBooleanSetting, useHighlightStyle } from './checkbox-setting'
-import { useReaderSettings } from './display-stats'
 import { EditModeOpenHeader } from './edit-mode-header'
 import { ArticleRow } from './load-article'
 import { useScreenshotMode } from './screenshot'
@@ -140,7 +139,7 @@ function EditLabelRow(props: {
 }
 
 function EditStatRow({ layout, index, spec }: { layout: MeasuredTableLayout, index: number, spec: EditStatSpec }): ReactNode {
-    const readerSettings = useReaderSettings()
+    const unitSettings = useUnitSettings()
     const adornments = useStatisticNameAdornments(spec.editRow.row)
     return (
         <StatisticTableRow
@@ -153,7 +152,7 @@ function EditStatRow({ layout, index, spec }: { layout: MeasuredTableLayout, ind
                         htmlFor={spec.checkbox.kind === 'headers' ? spec.checkbox.id : undefined}
                         checkbox={spec.checkbox.kind === 'own' ? spec.checkbox.node : undefined}
                     >
-                        {reifyReact(spec.editRow.displayName, readerSettings)}
+                        {reifyReact(spec.editRow.displayName, unitSettings)}
                     </EditCheckboxLabel>
                     {adornments}
                 </div>

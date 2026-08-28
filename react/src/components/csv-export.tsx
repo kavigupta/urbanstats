@@ -11,7 +11,7 @@ import { HumanReadableName } from '../utils/human-readable-element'
 import { reifyString } from '../utils/human-readable-name'
 import { sanitize } from '../utils/paths'
 import { Article } from '../utils/protos'
-import { ReaderSettings } from '../utils/quantity'
+import { UnitSettings } from '../utils/quantity'
 
 import { ArticleRow } from './load-article'
 
@@ -185,7 +185,7 @@ export function generateStatisticsPanelCSVData(
     articleNames: string[],
     data: { name: HumanReadableName, value: number[], ordinal: number[], populationPercentile: number[] }[],
     hideOrdinalsPercentiles: boolean,
-    settings: ReaderSettings,
+    settings: UnitSettings,
 ): string[][] {
     // Build header row: Name, then for each column: column name, optionally "column name Ord", "column name percentile"
     const headerRow: string[] = ['Name']

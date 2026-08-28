@@ -1,23 +1,12 @@
-import React, { ReactNode, useMemo } from 'react'
+import React, { ReactNode } from 'react'
 
-import { useSetting } from '../page_template/settings'
-import { ReaderSettings, StoredUnit } from '../utils/quantity'
+import { useUnitSettings } from '../page_template/settings'
+import { StoredUnit } from '../utils/quantity'
 
 import { renderQuantity } from './unit-display'
 
-/** What the reader reads in, which a caption's numbers are written in as much as a table's are. */
-export function useReaderSettings(): ReaderSettings {
-    const [useImperial] = useSetting('use_imperial')
-    const [temperatureUnit] = useSetting('temperature_unit')
-    // memoized, so that a caller that puts it in a dependency array does not rebuild every render
-    return useMemo(() => ({ useImperial, temperatureUnit }), [useImperial, temperatureUnit])
-}
-
 export function Statistic(props: { style?: React.CSSProperties, value: number, isUnit: boolean, unit: StoredUnit, unitAlone?: boolean }): ReactNode {
-    const [useImperial] = useSetting('use_imperial')
-    const [temperatureUnit] = useSetting('temperature_unit')
-
-    const { value, unit } = renderQuantity(props.value, props.unit, { useImperial, temperatureUnit }, { alone: props.unitAlone })
+    const { value, unit } = renderQuantity(props.value, props.unit, useUnitSettings(), { alone: props.unitAlone })
 
     return (
         <span style={props.style}>

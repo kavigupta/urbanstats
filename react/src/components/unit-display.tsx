@@ -1,10 +1,10 @@
 import React, { CSSProperties, ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { useSetting } from '../page_template/settings'
+import { useUnitSettings } from '../page_template/settings'
 import { HumanReadableElement } from '../utils/human-readable-element'
 import { reifyReact } from '../utils/human-readable-name'
-import { Hue, ReaderSettings, StoredUnit, Unit, UnitPlacement, writeQuantity } from '../utils/quantity'
+import { Hue, UnitSettings, StoredUnit, Unit, UnitPlacement, writeQuantity } from '../utils/quantity'
 import { UnitType } from '../utils/unit'
 
 /** A quantity as it is displayed: the number and its unit, which sit in separate columns. */
@@ -26,7 +26,7 @@ export function renderInequality(value: number, stored: StoredUnit, inequality: 
     return reads === 'leq' ? '\u2264' /* ≤ */ : '\u2265' /* ≥ */
 }
 
-function unitColumn(name: HumanReadableElement[], settings: ReaderSettings): ReactNode {
+function unitColumn(name: HumanReadableElement[], settings: UnitSettings): ReactNode {
     return <span>{name.length === 0 ? <>&nbsp;</> : reifyReact(name, settings)}</span>
 }
 
@@ -37,7 +37,7 @@ function InParty({ value, hue }: { value: string, hue: Hue }): ReactNode {
     return <span style={spanStyle}>{value}</span>
 }
 
-export function renderQuantity(value: number, stored: StoredUnit, settings: ReaderSettings, placement: UnitPlacement): DisplayedQuantity {
+export function renderQuantity(value: number, stored: StoredUnit, settings: UnitSettings, placement: UnitPlacement): DisplayedQuantity {
     const { renderedValue, unitName, hue } = writeQuantity(value, stored, settings, placement)
     return {
         value: hue === undefined ? <span>{renderedValue}</span> : <InParty value={renderedValue} hue={hue} />,
@@ -51,9 +51,7 @@ export function renderQuantity(value: number, stored: StoredUnit, settings: Read
  * unit a pixel off the number. The zero width space is where the line may still break.
  */
 export function QuantityTogether({ value, stored }: { value: number, stored: StoredUnit }): ReactNode {
-    const [useImperial] = useSetting('use_imperial')
-    const [temperatureUnit] = useSetting('temperature_unit')
-    const settings = { useImperial, temperatureUnit }
+    const settings = useUnitSettings()
     const { renderedValue, unitName, hue } = writeQuantity(value, stored, settings, {})
     const colors = useColors()
     return (
