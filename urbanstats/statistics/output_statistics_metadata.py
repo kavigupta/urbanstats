@@ -84,44 +84,6 @@ def get_explanation_page() -> Dict[str, Optional[str]]:
     return {k: result[k] for k in statistic_internal_to_display_name()}
 
 
-# Every name here is a UnitType in react/src/utils/unit.ts, which decides how a number in
-# that unit is written.
-UNIT_TYPES = frozenset(
-    {
-        "percentage",
-        "percentageChange",
-        "fatalities",
-        "fatalitiesPerCapita",
-        "density",
-        "population",
-        "area",
-        "distanceInKm",
-        "distanceInM",
-        "democraticMargin",
-        "temperature",
-        "time",
-        "distancePerYear",
-        "contaminantLevel",
-        "number",
-        "usd",
-        "minutes",
-        "partyPctBlue",
-        "partyPctRed",
-        "partyPctOrange",
-        "partyPctTeal",
-        "partyPctGreen",
-        "partyPctPurple",
-        "partyChangeBlue",
-        "partyChangeRed",
-        "partyChangeOrange",
-        "partyChangeTeal",
-        "partyChangeGreen",
-        "partyChangePurple",
-        "leftMargin",
-    }
-)
-
-
 def get_statistic_units() -> Dict[str, str]:
     """
     Map from internal statistic names to the unit their numbers are in.
@@ -130,10 +92,6 @@ def get_statistic_units() -> Dict[str, str]:
 
     for statistic_collection in statistic_collections:
         result.update(statistic_collection.unit_for_each_statistic())
-
-    unknown = {(k, v) for k, v in result.items() if v not in UNIT_TYPES}
-    if unknown:
-        raise ValueError(f"Statistics declaring units that do not exist: {unknown}")
 
     return {k: result[k] for k in statistic_internal_to_display_name()}
 
