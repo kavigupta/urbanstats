@@ -11,7 +11,8 @@ from urbanstats_persistent_data.routes.email import google_client_id
 
 @pytest.fixture()
 def setup_app(mocker):
-    def mock_get(url):
+    def mock_get(url, timeout):
+        del timeout
         parsed_url = urlparse(url)
         params = parse_qs(parsed_url.query)
         access_token = params.get("access_token", [None])[0]
