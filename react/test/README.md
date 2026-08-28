@@ -51,8 +51,3 @@ four cores, so capping the container's is a way to tell whether a failure is tim
 
 Write each option in its `--flag value` form. `zodcli` drops everything after a second `=`, so
 `--docker-options=--cpus=2` silently arrives as `--cpus` alone.
-
-`--docker-option` passes an option through to `docker run`, and may be repeated. GitHub's runners
-have four cores, so `--docker-option=--cpus=2` is a way to see whether a failure is timing-dependent:
-
-`npm run test:e2e -- '--test=test/mapper-ux_x1.test.ts' --docker=host-arch --browser=chromium --docker-option=--cpus=2`
