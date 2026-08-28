@@ -7,7 +7,6 @@ from urbanstats.statistics.stat_path import get_statistic_column_path
 
 from ..utils import output_typescript
 from .collections_list import statistic_collections
-from .statistic_unit import UNIT_TYPES
 from .statistics_tree import statistics_tree
 
 
@@ -93,10 +92,6 @@ def get_statistic_units() -> Dict[str, str]:
 
     for statistic_collection in statistic_collections:
         result.update(statistic_collection.unit_for_each_statistic())
-
-    unknown = {(k, v) for k, v in result.items() if v not in UNIT_TYPES}
-    if unknown:
-        raise ValueError(f"Statistics declaring units that do not exist: {unknown}")
 
     return {k: result[k] for k in statistic_internal_to_display_name()}
 
