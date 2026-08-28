@@ -101,6 +101,9 @@ class CensusCanadaEducationField(CanadaStatistics):
             "education_field_business_canada": "Undergrad Business [25-64] % [StatCan]",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "education_field_stem_canada": "stem_degree_statcan",

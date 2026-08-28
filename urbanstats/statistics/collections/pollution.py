@@ -18,6 +18,9 @@ class PollutionStatistics(GeographicStatistics):
             "pm_25_2018_2022": "PW Mean PM2.5 Pollution",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("contaminantLevel")
+
     def varname_for_each_statistic(self):
         return {
             "pm_25_2018_2022": "pm25_pollution",

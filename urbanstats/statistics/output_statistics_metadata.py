@@ -7,6 +7,7 @@ from urbanstats.statistics.stat_path import get_statistic_column_path
 
 from ..utils import output_typescript
 from .collections_list import statistic_collections
+from .statistic_unit import UNIT_TYPES
 from .statistics_tree import statistics_tree
 
 
@@ -80,6 +81,22 @@ def get_explanation_page() -> Dict[str, Optional[str]]:
 
     for statistic_collection in statistic_collections:
         result.update(statistic_collection.explanation_page_for_each_statistic())
+
+    return {k: result[k] for k in statistic_internal_to_display_name()}
+
+
+def get_statistic_units() -> Dict[str, str]:
+    """
+    Map from internal statistic names to the unit their numbers are in.
+    """
+    result: Dict[str, str] = {}
+
+    for statistic_collection in statistic_collections:
+        result.update(statistic_collection.unit_for_each_statistic())
+
+    unknown = {(k, v) for k, v in result.items() if v not in UNIT_TYPES}
+    if unknown:
+        raise ValueError(f"Statistics declaring units that do not exist: {unknown}")
 
     return {k: result[k] for k in statistic_internal_to_display_name()}
 
@@ -162,6 +179,7 @@ def statistic_variables_info() -> Dict[str, Any]:
         multi_source[ms_name] = dict(
             individualVariables=combo,
             humanReadableName=stat.compute_name(statistic_internal_to_display_name()),
+            unit=unit_shared_by(stat.by_source.values()),
         )
 
     variable_objects = construct_variable_objects(
@@ -217,6 +235,7 @@ def construct_variable_objects(
                 "order": i,
                 "index": lexicographic_index,
                 "deprecated": deprecation_messages[stat],
+                "unit": get_statistic_units()[stat],
             }
         )
 
@@ -229,6 +248,16 @@ def construct_variable_objects(
         )
 
     return variable_objects
+
+
+def unit_shared_by(stats: Iterable[str]) -> str:
+    """
+    The unit of a multi-source variable, which its sources have to agree on.
+    """
+    units = {get_statistic_units()[stat] for stat in stats}
+    if len(units) != 1:
+        raise ValueError(f"Sources of one variable disagree on its unit: {units}")
+    return units.pop()
 
 
 def multi_source_statistics() -> Iterable[Any]:
@@ -258,6 +287,9 @@ def output_statistics_metadata() -> None:
     with open("react/src/data/explanation_page.ts", "w") as f:
         output_typescript(list(get_explanation_page().values()), f)
 
+    with open("react/src/data/statistic_unit_list.ts", "w") as f:
+        output_typescript(list(get_statistic_units().values()), f)
+
     export_statistics_tree("react/src/data/statistics_tree.ts")
 
     with open("react/src/data/statistic_variables_info.ts", "w") as f:
@@ -267,6 +299,11 @@ def output_statistics_metadata() -> None:
         f.write(
             "export type LegacyStatName = never"
             + "".join(" | " + json.dumps(name) for name in all_legacy_statistic_names())
+            + ";\n"
+        )
+        f.write(
+            "export const currentNameOf: Record<LegacyStatName, string> = "
+            + json.dumps(all_legacy_statistic_names(), indent=4)
             + ";\n"
         )
 

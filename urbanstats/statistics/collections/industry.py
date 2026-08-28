@@ -15,6 +15,9 @@ class IndustryStatistics(ACSStatisticsColection):
     def name_for_each_statistic(self):
         return {k: "Employed in " + v for k, v in industry.industry_display.items()}
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def legacy_statistic_names(self):
         return {v: f"Employed in {v}" for v in industry.industry_display.values()}
 

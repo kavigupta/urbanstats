@@ -65,6 +65,9 @@ class CDCStatistics(USAStatistics):
         out = {f"{k}_cdc_2": v for k, v in cdc_columns.items()}
         return out
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "GHLTH_cdc_2": "poor_health",

@@ -10,6 +10,9 @@ class HousingRentOrOwn(ACSStatisticsColection):
             "rent_or_own_rent": "Renter %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "rent_or_own_rent": "renter",

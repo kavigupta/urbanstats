@@ -36,6 +36,9 @@ class USCountyLevelElectionsStatistics(USAStatisticsCounties):
             ("2012-2016 Swing", "margin"): "2012-2016 Swing",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("democraticMargin")
+
     def dependencies(self):
         return [
             ("2016 Presidential Election", "margin"),

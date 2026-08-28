@@ -34,6 +34,9 @@ class IMHELifeExpectancyStatistics(USAStatisticsCounties):
             "performance_score_adj_2019": "IHME Health Performance Score (2019)",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("number")
+
     def dependencies(self):
         return ["population"]
 

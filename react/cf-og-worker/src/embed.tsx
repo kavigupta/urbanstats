@@ -18,7 +18,7 @@ import { computeAspectRatioForInsets } from '../../src/utils/coordinates'
 import { HumanReadableName } from '../../src/utils/human-readable-element'
 import { reifyString } from '../../src/utils/human-readable-name'
 import { StoredUnit } from '../../src/utils/quantity'
-import { classifyStatistic, unitTypeToStoredUnit } from '../../src/utils/unit'
+import { unitForStatistic, unitTypeToStoredUnit } from '../../src/utils/unit'
 import logoSvg from '../assets/logo.svg'
 
 import { basemap } from './basemap'
@@ -222,7 +222,7 @@ function row(stat: ArticleCard['stats'][number], index: number, units: Units): R
             }}
         >
             <div style={{ flex: 1, fontSize: 24 }}>{stat.name}</div>
-            <div style={{ width: 170, fontSize: 26, justifyContent: 'flex-end', display: 'flex' }}>{formatValue(stat.value, unitTypeToStoredUnit(classifyStatistic(stat.name)), units, 26)}</div>
+            <div style={{ width: 170, fontSize: 26, justifyContent: 'flex-end', display: 'flex' }}>{formatValue(stat.value, unitTypeToStoredUnit(unitForStatistic(stat.name)), units, 26)}</div>
             <div style={{ width: 60, fontSize: 20, color: colors.muted, justifyContent: 'flex-end', display: 'flex' }}>
                 {`${stat.percentile}${percentileSuffix(stat.percentile)}`}
             </div>
@@ -339,7 +339,7 @@ async function insetImage(map: MapCard, inset: Inset, box: { width: number, heig
 }
 
 function colorbar(ramp: NonNullable<MapCard['ramp']>, label: string, units: Units): ReactElement {
-    const unit = ramp.unit ?? unitTypeToStoredUnit(classifyStatistic(label))
+    const unit = ramp.unit ?? unitTypeToStoredUnit('number')
     return (
         <div style={{ display: 'flex', flexDirection: 'column', marginTop: 8 }}>
             <div style={{ display: 'flex' }}>
@@ -530,7 +530,7 @@ function cellValue(value: number, unit: StoredUnit, units: Units, fontSize: numb
 }
 
 function comparisonRow(stat: ComparisonCard['stats'][number], index: number, layout: TableLayout, units: Units): ReactElement {
-    const unit = unitTypeToStoredUnit(classifyStatistic(stat.name))
+    const unit = unitTypeToStoredUnit(unitForStatistic(stat.name))
     return (
         <div
             key={stat.name}
@@ -822,7 +822,7 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
                                     justifyContent: 'flex-end',
                                 }}
                             >
-                                {cellValue(entry.values[index2], column.unit ?? unitTypeToStoredUnit(classifyStatistic(reifyString(column.name))), statistic.units, valueSize)}
+                                {cellValue(entry.values[index2], column.unit ?? unitTypeToStoredUnit('number'), statistic.units, valueSize)}
                             </div>
                         ))}
                     </div>

@@ -19,6 +19,9 @@ class HousingRent(ACSStatisticsColection):
             "rent_2br_over_1500": "2BR Rent > $1500 %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "rent_1br_under_750": "one_br_under_750",

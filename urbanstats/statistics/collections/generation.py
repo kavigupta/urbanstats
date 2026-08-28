@@ -16,6 +16,9 @@ class GenerationStatistics(ACSStatisticsColection):
             "generation_genalpha": "Gen Alpha %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "generation_silent": "silent",

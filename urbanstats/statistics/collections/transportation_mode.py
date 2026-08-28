@@ -35,6 +35,9 @@ class TransportationModeStatistics(ACSStatisticsColection):
             "transportation_means_transit_no_wfh": "Commute Transit %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "transportation_means_car": "commute_car_incl_wfh",
@@ -75,9 +78,9 @@ class TransportationModeStatistics(ACSStatisticsColection):
                 f"Use {vname[new_key]} ({nname[new_key]}) instead,"
                 " which excludes work-from-home from the denominator and is more accurate for comparisons"
             )
-        result[
-            "transportation_means_worked_at_home"
-        ] = "This statistic is deprecated because it is highly inconsistent across time"
+        result["transportation_means_worked_at_home"] = (
+            "This statistic is deprecated because it is highly inconsistent across time"
+        )
         return result
 
     def quiz_question_descriptors(self):

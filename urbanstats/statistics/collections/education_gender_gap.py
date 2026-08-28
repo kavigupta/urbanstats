@@ -13,6 +13,9 @@ class EducationGenderGapStatistics(ACSStatisticsColection):
             "female_grad_gap_4": "% of women with graduate education - % of men with graduate education",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "female_hs_gap_4": "hs_gender_gap",
