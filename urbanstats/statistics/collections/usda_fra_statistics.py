@@ -19,6 +19,9 @@ class USDAFRAStatistics(USAStatistics):
             "lapop20share_usda_fra_1": "Within 20mi of a grocery store %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "lapophalfshare_usda_fra_1": "grocery_store_within_half_mile",

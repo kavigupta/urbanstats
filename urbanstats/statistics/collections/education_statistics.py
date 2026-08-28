@@ -18,6 +18,9 @@ class EducationStatistics(ACSStatisticsColection):
             "education_field_business": "Undergrad Business %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "education_high_school": "high_school_us_census",

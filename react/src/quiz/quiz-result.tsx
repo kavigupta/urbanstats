@@ -13,7 +13,7 @@ import { Settings, useSetting } from '../page_template/settings'
 import { getVector, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { allGroups, allYears, statParents, StatPath, StatName } from '../page_template/statistic-tree'
 import { withButtonRole } from '../utils/a11y'
-import { classifyStatistic, unitTypeToStoredUnit } from '../utils/unit'
+import { unitForStatistic, unitTypeToStoredUnit } from '../utils/unit'
 import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { AuthenticationStateMachine } from './AuthenticationStateMachine'
@@ -544,7 +544,7 @@ function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNode {
 function Value({ stat, statColumn }: { stat: number, statColumn: StatName | LegacyStatName | '%' }): ReactNode {
     return (
         <span>
-            <QuantityTogether value={stat} stored={unitTypeToStoredUnit(classifyStatistic(statColumn))} />
+            <QuantityTogether value={stat} stored={unitTypeToStoredUnit(statColumn === '%' ? 'percentage' : unitForStatistic(statColumn))} />
         </span>
     )
 }

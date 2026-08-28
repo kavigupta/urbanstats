@@ -3,8 +3,10 @@ import { z } from 'zod'
 
 import { TestUtils } from '../utils/TestUtils'
 import { gdriveClient } from '../utils/google-drive-client'
+import { traced } from '../utils/traced'
 
-import { QuizFriends, QuizHistory, QuizModel, syncProfileSchema } from './quiz'
+import { mergeFriends, mergeHistories } from './merge'
+import { quizFriends, quizHistorySchema, QuizModel } from './quiz'
 
 export class AuthenticationError extends Error {}
 
@@ -13,6 +15,7 @@ export async function syncWithGoogleDrive(token: string): Promise<void> {
     const localProfile = getLocalProfile()
     if (stableStringify(remoteProfile) === stableStringify(localProfile)) {
         // Profiles same
+        console.warn('sync: profiles already match')
         return
     }
     const mergedProfile = mergeProfiles(localProfile, remoteProfile)
@@ -20,6 +23,11 @@ export async function syncWithGoogleDrive(token: string): Promise<void> {
     QuizModel.shared.friends.value = mergedProfile.friends
     await uploadProfile(token, mergedProfile, fileId)
 }
+
+const syncProfileSchema = z.object({
+    quiz_history: quizHistorySchema,
+    friends: quizFriends,
+})
 
 type Profile = z.infer<typeof syncProfileSchema>
 
@@ -35,84 +43,6 @@ function mergeProfiles(a: Profile, b: Profile): Profile {
         quiz_history: mergeHistories(a.quiz_history, b.quiz_history),
         friends: mergeFriends(a.friends, b.friends),
     }
-}
-
-export function historyConflicts(a: QuizHistory, b: QuizHistory): string[] {
-    return Object.keys(a)
-        .filter(key =>
-            key in b
-            && stableStringify(a[key]) !== stableStringify(b[key]))
-}
-
-// When a result ties, we must resolve it consistently, otherwise we get into a sync loop
-export function mergeHistories(a: QuizHistory, b: QuizHistory): QuizHistory {
-    const conflicts = historyConflicts(a, b)
-    return {
-        ...a, ...b, ...Object.fromEntries(conflicts.map((key) => {
-            const aPattern = a[key].correct_pattern
-            const bPattern = b[key].correct_pattern
-            if (aPattern.length !== bPattern.length) {
-                // If one is more complete, return that one, since the user is taking the quiz
-                return [key, aPattern.length > bPattern.length ? a[key] : b[key]]
-            }
-
-            const aCorrect = aPattern.filter(value => value).length
-            const bCorrect = bPattern.filter(value => value).length
-            let quizRecord
-            if (aCorrect !== bCorrect) {
-                quizRecord = bCorrect > aCorrect ? a[key] : b[key]
-            }
-            else {
-                quizRecord = stableStringify(bCorrect)! > stableStringify(aCorrect)! ? a[key] : b[key]
-            }
-            return [key, quizRecord]
-        })),
-    }
-}
-
-/*
- * Merge friends.
- * When two lists have overlapping ids, the entry that has the lowest index in its list wins
- * When both entries have the same index, the lowest name wins
- */
-function mergeFriends(a: QuizFriends, b: QuizFriends): QuizFriends {
-    let aIdx = 0
-    let bIdx = 0
-    const result: QuizFriends = []
-    const usedIds = new Set<string>()
-    while (aIdx < a.length && bIdx < b.length) {
-        if (a[aIdx][1] === b[bIdx][1]) {
-            // ids same
-            if (!usedIds.has(a[aIdx][1])) {
-                // prefer latest timestamp
-                if ((a[aIdx][2] ?? 0) > (b[bIdx][2] ?? 0)) {
-                    result.push(a[aIdx])
-                }
-                else {
-                    result.push(b[bIdx])
-                }
-                usedIds.add(a[aIdx][1])
-            }
-            aIdx++
-            bIdx++
-        }
-        // sort by timestamp
-        else if ((a[aIdx][2] ?? 0) < (b[bIdx][2] ?? 0)) {
-            if (!usedIds.has(a[aIdx][1])) {
-                result.push(a[aIdx])
-                usedIds.add(a[aIdx][1])
-            }
-            aIdx++
-        }
-        else {
-            if (!usedIds.has(b[aIdx][1])) {
-                result.push(b[aIdx])
-                usedIds.add(b[aIdx][1])
-            }
-            bIdx++
-        }
-    }
-    return result.concat(a.slice(aIdx)).concat(b.slice(bIdx))
 }
 
 function getFileName(): string {
@@ -134,6 +64,7 @@ async function getProfileFile(token: string): Promise<{ fileId: string, profile:
     }
 
     const profileFile = data.files?.[0]
+    console.warn(`sync: remote profile ${profileFile === undefined ? 'absent, creating' : 'found'}`)
     if (profileFile === undefined) {
         const profile = getLocalProfile()
 
@@ -185,13 +116,14 @@ async function uploadProfile(token: string, json: unknown, existingFileId?: stri
         new Blob([media.body], { type: media.mimeType }),
     )
 
-    const response = await fetch(`https://www.googleapis.com/upload/drive/v3/files${existingFileId ? `/${existingFileId}` : ''}?uploadType=multipart`, {
+    const url = `https://www.googleapis.com/upload/drive/v3/files${existingFileId ? `/${existingFileId}` : ''}?uploadType=multipart`
+    const response = await traced(`drive upload ${url}`, () => fetch(url, {
         method: existingFileId ? 'PATCH' : 'POST',
         headers: {
             Authorization: `Bearer ${token}`,
         },
         body: multipart,
-    })
+    }))
 
     if (!response.ok) {
         throw new Error('Could not upload profile file')

@@ -42,6 +42,10 @@ class StatisticCollection(ABC):
         pass
 
     @abstractmethod
+    def unit_for_each_statistic(self):
+        """Returns a dictionary mapping statistic keys to the unit their numbers are in."""
+
+    @abstractmethod
     def varname_for_each_statistic(self):
         """Returns a dictionary mapping statistic keys to program-friendly variable names."""
 

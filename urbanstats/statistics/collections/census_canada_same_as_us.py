@@ -50,6 +50,13 @@ class CensusCanadaSameAsUS(CanadaStatistics):
             if k in self.us_equivalent_fields()
         }
 
+    def unit_for_each_statistic(self):
+        return {
+            self.remap_name(k): v
+            for k, v in self.us_equivalent().unit_for_each_statistic().items()
+            if k in self.us_equivalent_fields()
+        }
+
     def varname_for_each_statistic(self):
         return {
             self.remap_name(k): v

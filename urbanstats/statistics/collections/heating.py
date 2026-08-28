@@ -19,6 +19,9 @@ class HouseHeating(ACSStatisticsColection):
             "heating_no": "No heating %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "heating_utility_gas": "utility_gas",

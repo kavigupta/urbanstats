@@ -11,4 +11,8 @@ rm -r venv
 virtualenv -p /root/.pyenv/versions/3.10.*/bin/python venv
 source venv/bin/activate
 pip3 install -r requirements.txt
-uvicorn --ssl-certfile $certificate --ssl-keyfile $key --host 0.0.0.0 --port 443 urbanstats_persistent_data.main:app
+while true; do
+    uvicorn --ssl-certfile $certificate --ssl-keyfile $key --host 0.0.0.0 --port 443 urbanstats_persistent_data.main:app
+    echo "server exited with $?, restarting in 5s"
+    sleep 5
+done

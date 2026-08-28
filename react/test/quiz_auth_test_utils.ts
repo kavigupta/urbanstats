@@ -36,13 +36,16 @@ function headersJSON(headers: Headers): string {
 // eslint-disable-next-line no-restricted-syntax -- Reporting on Google's pages, which have no page descriptor
 const pageURL = ClientFunction(() => window.location.href)
 
+const pageText = ClientFunction(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 300))
+
 // Google's interstitials look much alike in the error screenshot; the URL is what tells them apart.
-async function expectOrWarn(t: TestController, selector: Selector, what: string): Promise<void> {
+async function expectOrWarn(t: TestController, selector: Selector, what: string, timeout?: number): Promise<void> {
     try {
-        await t.expect(selector.exists).ok()
+        await t.expect(selector.exists).ok({ timeout })
     }
     catch (error) {
         console.warn(`${what}, at ${await pageURL()}`)
+        console.warn(`showing: ${await pageText()}`)
         throw error
     }
 }
@@ -201,8 +204,9 @@ async function signInPopup(t: TestController, enableDrive: boolean): Promise<voi
     while (await continueButton.exists) {
         await t.click(continueButton)
     }
-    // Waiting on the outcome first, since waitForLoading needs the callback page to have replaced Google's
-    await expectOrWarn(t, Selector('h1').withText(/Signed In!|Sign In Failed/), 'Sign in popup ended on neither Signed In! nor Sign In Failed')
+    // Waiting on the outcome first, since waitForLoading needs the callback page to have replaced Google's.
+    // Google Drive has taken 5s to answer during sign in, well past the default assertion timeout.
+    await expectOrWarn(t, Selector('h1').withText(/Signed In!|Sign In Failed/), 'Sign in popup ended on neither Signed In! nor Sign In Failed', 30000)
     await waitForLoading()
 }
 

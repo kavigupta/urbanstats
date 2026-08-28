@@ -3,9 +3,9 @@ import { Selector } from 'testcafe'
 // eslint-disable-next-line no-restricted-syntax -- One of the two auth files
 import { corruptTokens, email, quizAuthFixture, signInLink, signOutLink, urbanStatsGoogleSignIn, waitForSync } from './quiz_auth_test_utils'
 import { addFriend, createUser, restoreUser, startingState } from './quiz_friends_test_utils'
-import { exampleQuizHistory } from './quiz_test_template'
+import { exampleQuizHistory, runQuery } from './quiz_test_template'
 import { clickButtons, friendsText, withMockedClipboard } from './quiz_test_utils'
-import { safeClearLocalStorage, safeReload, target } from './test_utils'
+import { safeClearLocalStorage, safeReload, target, withInterceptedRequests } from './test_utils'
 
 quizAuthFixture('existing state', `${target}/quiz.html#enableAuth=true`, {
     quiz_history: JSON.stringify(exampleQuizHistory(600, 650)),
@@ -147,4 +147,33 @@ test('paste friend email link', async (t) => {
     const friends = await friendsText()
     await t.expect(friends.length).eql(2)
     await t.expect(friends[1]).eql('spudwaffleAsk\u00a0spudwaffle\u00a0to add youRemove')
+})
+
+test('a sign out the server never receives says so, rather than looking like it worked', async (t) => {
+    await urbanStatsGoogleSignIn(t)
+    await t.setNativeDialogHandler(() => true)
+    await withInterceptedRequests(t, request => request.url.includes('/juxtastat/dissociate_email') ? 'fail' : 'continue', async () => {
+        await t.click(signOutLink)
+        await t.expect(Selector('div').withText(`Signed in with ${email}.`).exists).ok()
+    })
+    await t.expect((await t.getNativeDialogHistory()).map(dialog => dialog.type)).eql(['alert'])
+})
+
+test('a stored sign-in state we cannot read leaves the email association alone', async (t) => {
+    await urbanStatsGoogleSignIn(t)
+    await t.expect(await runQuery(t, 'SELECT email FROM EmailUsers')).eql(`${email}\n`)
+
+    // Valid JSON of the wrong shape, which is what changing the stored schema would produce
+    await t.eval(() => { localStorage.setItem('quizAuthenticationState', '{}') })
+    await safeReload(t)
+    await waitForSync(t)
+    await t.expect(signInLink.exists).ok()
+    await t.expect(await runQuery(t, 'SELECT email FROM EmailUsers')).eql(`${email}\n`)
+
+    // Not JSON at all, which used to throw out of the state machine's constructor
+    await t.eval(() => { localStorage.setItem('quizAuthenticationState', 'not json') })
+    await safeReload(t)
+    await waitForSync(t)
+    await t.expect(signInLink.exists).ok()
+    await t.expect(await runQuery(t, 'SELECT email FROM EmailUsers')).eql(`${email}\n`)
 })

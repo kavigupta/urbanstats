@@ -87,6 +87,20 @@ export class TestUtils {
         }
     }
 
+    /**
+     * A screenshot taken while the map is still loading catches polygon edges a pixel or two off,
+     * which is enough to fail the near-exact screenshot comparison.
+     */
+    async waitForMapsToRender(): Promise<void> {
+        const deadline = Date.now() + mapRenderTimeoutMs
+        await Promise.all(Array.from(this.maps.values()).map(async (map) => {
+            // A frame first: right after a commit, `loaded()` can still be true from before the map noticed the new work.
+            do {
+                await new Promise(resolve => requestAnimationFrame(resolve))
+            } while (!map._removed && !map.loaded() && Date.now() < deadline)
+        }))
+    }
+
     disableBasemapLayers(): void {
         for (const map of this.maps.values()) {
             const layers = map.getLayersOrder()
@@ -108,3 +122,5 @@ export interface TestWindow {
 (window as unknown as TestWindow).testUtils = TestUtils.shared
 
 const debugWait = makeDebugLogger('waitForLoading')
+
+const mapRenderTimeoutMs = 5000

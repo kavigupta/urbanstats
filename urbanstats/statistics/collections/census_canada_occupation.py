@@ -68,6 +68,9 @@ class CensusCanadaOccupation(CanadaStatistics):
             "occupation_manufacturing_utilities_canada": "Manufacturing and utilities occupations % [StatCan]",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "occupation_legislative_and_senior_management_canada": "occupation_legislative_senior_management",

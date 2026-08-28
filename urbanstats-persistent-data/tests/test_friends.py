@@ -348,3 +348,55 @@ def test_unfriend_after_email_association(client):
     # But a can still see b since b has friended them
     result = check_todays_score_for(client, identity_a, ["b"], "1", "juxtastat")
     assert result == {"results": [{"corrects": None, "friends": True}]}
+
+
+def test_friends_infinite_across_associated_devices(client):
+    # a + b are the same person on two devices
+    associate_email(client, identity_a, "email@gmail.com")
+    associate_email(client, identity_b, "email@gmail.com")
+
+    # friend from c to a
+    response = client.post(
+        "/juxtastat/friend_request", headers=identity_c, json={"requestee": "a"}
+    )
+    assert response.status_code == 204
+
+    # friend from b to c
+    response = client.post(
+        "/juxtastat/friend_request", headers=identity_b, json={"requestee": "c"}
+    )
+    assert response.status_code == 204
+
+    # The device that got less far reports first
+    response = client.post(
+        "/juxtastat_infinite/store_user_stats",
+        headers=identity_a,
+        json={"seed": "abc", "version": 1, "corrects": [True, False]},
+    )
+    assert response.status_code == 204
+
+    response = client.post(
+        "/juxtastat_infinite/store_user_stats",
+        headers=identity_b,
+        json={"seed": "abc", "version": 1, "corrects": [True, True, True, False]},
+    )
+    assert response.status_code == 204
+
+    # c sees the better of the two runs, not whichever row the planner returns first
+    response = client.post(
+        "/juxtastat/infinite_results",
+        headers=identity_c,
+        json={"requesters": ["a"], "seed": "abc", "version": 1},
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "results": [
+            {
+                "forThisSeed": 3,
+                "friends": True,
+                "maxScore": 3,
+                "maxScoreSeed": "abc",
+                "maxScoreVersion": 1,
+            }
+        ]
+    }

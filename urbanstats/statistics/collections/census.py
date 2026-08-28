@@ -77,6 +77,19 @@ class CensusForPreviousYear(USAStatistics):
         )
         return {self.ysk(k): self.ysn(v) for k, v in result.items()}
 
+    def unit_for_each_statistic(self):
+        result = {"population": "population", "sd": "density"}
+        result.update({k: "density" for k in density_metrics})
+        result.update({k: "percentage" for k in race_names})
+        result.update(
+            {
+                "housing_per_pop": "number",
+                "housing_per_person": "number",
+                "vacancy": "percentage",
+            }
+        )
+        return {self.ysk(k): v for k, v in result.items()}
+
     def varname_for_each_statistic(self):
         result = {}
         result.update({"population": "population"})
@@ -184,6 +197,9 @@ class CensusChange(USAStatistics):
             {k: ad_change[k] for k in ad_change if k != f"ad_1_change_{year}"}
         )
         return result
+
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentageChange")
 
     def varname_for_each_statistic(self):
         year = self.year()

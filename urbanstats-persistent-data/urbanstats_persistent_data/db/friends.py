@@ -143,11 +143,11 @@ def _infinite_results(
     """
 
     c.execute(
-        f"SELECT score FROM JuxtaStatInfiniteStats WHERE user IN {sqlTuple(len(for_users))} AND seed=? AND version=?",
+        f"SELECT MAX(score) FROM JuxtaStatInfiniteStats WHERE user IN {sqlTuple(len(for_users))} AND seed=? AND version=?",
         list(for_users) + [seed, version],
     )
-    res = c.fetchone()
-    for_this_seed = None if res is None else res[0]
+    # MAX over no rows still returns one row, holding NULL
+    for_this_seed = c.fetchone()[0]
 
     c.execute(
         f"SELECT seed, version, score FROM JuxtaStatInfiniteStats WHERE user IN {sqlTuple(len(for_users))} "

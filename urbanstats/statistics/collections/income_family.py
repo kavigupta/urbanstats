@@ -16,6 +16,9 @@ class IncomeFamily(ACSStatisticsColection):
             "household_income_over_100k": "Household Income > $100k %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "household_income_under_50k": "household_income_under_50k_usd",

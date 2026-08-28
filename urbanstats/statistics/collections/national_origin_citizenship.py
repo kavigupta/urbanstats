@@ -15,6 +15,9 @@ class NationalOriginCitizenshipStatistics(ACSUSPRStatisticsColection):
             "citizenship_not_citizen": "Non-citizen %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "citizenship_citizen_by_birth": "citizen_by_birth",

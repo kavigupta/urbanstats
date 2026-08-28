@@ -95,7 +95,9 @@ export function QuizAuthStatus(): ReactNode {
     else {
         const signOut = (e: React.MouseEvent): void => {
             e.preventDefault()
-            void AuthenticationStateMachine.shared.userSignOut()
+            AuthenticationStateMachine.shared.userSignOut().catch((error: unknown) => {
+                alert(error instanceof Error ? error.message : 'Could not sign out')
+            })
         }
 
         return (

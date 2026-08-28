@@ -1,3 +1,11 @@
+import json
+
+import requests
+from urbanstats_persistent_data.routes.email import (
+    google_client_id,
+    google_tokeninfo_timeout_seconds,
+)
+
 from .utils import (
     associate_email,
     create_identity,
@@ -84,3 +92,66 @@ def test_user_limit_drop(client):
             total_associated += 1
 
     assert total_associated == 16
+
+
+def test_rejects_token_from_another_client(client, mocker):
+    class MockResponse:
+        status_code = 200
+        content = json.dumps(
+            {
+                "email": "victim@gmail.com",
+                "email_verified": True,
+                "aud": "attackers-own-client.apps.googleusercontent.com",
+            }
+        )
+
+    mocker.patch("requests.get", lambda url, timeout: MockResponse())
+
+    response = client.post(
+        "/juxtastat/associate_email",
+        headers=identity_1,
+        json={"token": "victim-token"},
+    )
+    assert response.status_code == 401
+
+
+def test_rejects_unverified_email(client, mocker):
+    class MockResponse:
+        status_code = 200
+        content = json.dumps(
+            {
+                "email": "victim@gmail.com",
+                "email_verified": False,
+                "aud": google_client_id,
+            }
+        )
+
+    mocker.patch("requests.get", lambda url, timeout: MockResponse())
+
+    response = client.post(
+        "/juxtastat/associate_email",
+        headers=identity_1,
+        json={"token": "unverified-token"},
+    )
+    assert response.status_code == 401
+
+
+def test_associate_email_survives_google_hanging(client, mocker):
+    timeouts = []
+
+    def hang(url, timeout):
+        del url
+        timeouts.append(timeout)
+        raise requests.Timeout()
+
+    mocker.patch("requests.get", hang)
+
+    response = client.post(
+        "/juxtastat/associate_email",
+        headers=identity_1,
+        json={"token": "email@gmail.com"},
+    )
+
+    # Without a timeout this request pins a worker thread for as long as Google holds it open
+    assert timeouts == [google_tokeninfo_timeout_seconds]
+    assert response.status_code == 500

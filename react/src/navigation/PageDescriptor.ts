@@ -35,6 +35,7 @@ import type { USSDocumentationPanel } from '../uss-documentation'
 import type { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
 import { loadArticleFromPossibleSymlink, loadArticlesFromPossibleSymlink as loadArticlesFromPossibleSymlinks } from '../utils/symlinks'
+import { traced } from '../utils/traced'
 import { base64Gunzip } from '../utils/urlParamShort'
 
 import { byPopulation, uniform } from './random'
@@ -785,6 +786,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'oauthCallback': {
+            console.warn('oauth callback: loading')
             const panel = import('../quiz/OauthCallbackPanel')
             let result: Extract<PageData, { kind: 'oauthCallback' }>['result']
             try {
@@ -802,8 +804,9 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     result = { success: false, error: 'Unknown error' }
                 }
             }
+            console.warn(`oauth callback: rendering ${result.success ? 'success' : 'failure'}`)
             return {
-                pageData: { kind: 'oauthCallback', result, oauthCallbackPanel: (await panel).OauthCallbackPanel },
+                pageData: { kind: 'oauthCallback', result, oauthCallbackPanel: (await traced('oauth callback panel import', () => panel)).OauthCallbackPanel },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
             }
