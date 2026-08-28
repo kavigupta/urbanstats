@@ -49,18 +49,27 @@ const googleClient = new OAuth2Client({
 
 const redirectUri = urlFromPageDescriptor({ kind: 'oauthCallback', params: {} }).toString()
 
-function loadState(): State {
+// undefined when there is a stored state that we cannot read, which is not the same thing as being
+// signed out, and which the caller must not act on as though the user had signed out deliberately.
+function loadState(): State | undefined {
     const item = localStorage.getItem(localStorageKey)
-    if (item !== null) {
-        const parseResult = stateSchema.safeParse(JSON.parse(item))
-        if (parseResult.success) {
-            return parseResult.data
-        }
-        else {
-            console.error(`Failed to parse ${localStorageKey}, using default state`, parseResult.error)
-        }
+    if (item === null) {
+        return { state: 'signedOut', email: null }
     }
-    return { state: 'signedOut', email: null }
+    let parsed: unknown
+    try {
+        parsed = JSON.parse(item)
+    }
+    catch (e) {
+        console.error(`Failed to parse ${localStorageKey}, using default state`, e)
+        return undefined
+    }
+    const parseResult = stateSchema.safeParse(parsed)
+    if (parseResult.success) {
+        return parseResult.data
+    }
+    console.error(`Failed to parse ${localStorageKey}, using default state`, parseResult.error)
+    return undefined
 }
 
 export class AuthenticationStateMachine {
@@ -68,12 +77,16 @@ export class AuthenticationStateMachine {
 
     private _state: State
 
+    private stateIsReadable: boolean
+
     get state(): State {
         return this._state
     }
 
     private setState(newState: State): void {
         this._state = newState
+        // Whatever we could not read before, we know what the state is now
+        this.stateIsReadable = true
         localStorage.setItem(localStorageKey, JSON.stringify(newState))
         this.stateObservers.forEach((observer) => { observer() })
     }
@@ -90,45 +103,59 @@ export class AuthenticationStateMachine {
     private isSyncing = false
 
     private constructor() {
-        this._state = loadState()
+        const loaded = loadState()
+        this.stateIsReadable = loaded !== undefined
+        this._state = loaded ?? { state: 'signedOut', email: null }
         addEventListener('storage', (event) => {
             if (event.key === localStorageKey) {
-                this._state = loadState()
+                const reloaded = loadState()
+                this.stateIsReadable = reloaded !== undefined
+                this._state = reloaded ?? { state: 'signedOut', email: null }
                 this.stateObservers.forEach((observer) => { observer() })
             }
         })
 
-        QuizModel.shared.uniquePersistentId.observers.add(() => this.syncEmailAssociation())
+        QuizModel.shared.uniquePersistentId.observers.add(() => { this.syncEmailAssociationInBackground() })
 
-        void this.syncEmailAssociation()
+        this.syncEmailAssociationInBackground()
 
         let syncTimeout: ReturnType<typeof setTimeout> | undefined
         const syncDelay = 1000
 
-        const obeserver = (): void => {
+        const observer = (): void => {
             if (!this.isSyncing) {
                 clearTimeout(syncTimeout)
-                syncTimeout = setTimeout(() => this.syncProfile(), syncDelay)
+                syncTimeout = setTimeout(() => { this.syncProfileInBackground() }, syncDelay)
             }
         }
 
-        QuizModel.shared.history.observers.add(obeserver)
-        QuizModel.shared.friends.observers.add(obeserver)
+        QuizModel.shared.history.observers.add(observer)
+        QuizModel.shared.friends.observers.add(observer)
 
-        window.addEventListener('focus', obeserver)
+        window.addEventListener('focus', observer)
 
-        void this.syncProfile().catch((e: unknown) => {
+        this.syncProfileInBackground()
+    }
+
+    private syncProfileInBackground(): void {
+        this.syncProfile().catch((e: unknown) => {
             console.error('Error syncing profile', e)
+        })
+    }
+
+    private syncEmailAssociationInBackground(): void {
+        this.syncEmailAssociation().catch((e: unknown) => {
+            console.error('Error syncing email association', e)
         })
     }
 
     private async syncProfile(token?: string): Promise<void> {
         TestUtils.shared.testSyncing = true
-        token ??= await this.getAccessToken()
-        if (token === undefined) {
-            return
-        }
         try {
+            token ??= await this.getAccessToken()
+            if (token === undefined) {
+                return
+            }
             this.isSyncing = true
             await syncWithGoogleDrive(token)
         }
@@ -153,6 +180,11 @@ export class AuthenticationStateMachine {
         const { data } = await persistentClient.GET('/juxtastat/email', { params: { header: QuizModel.shared.userHeaders() } })
         if (data) {
             if (data.email !== null && this._state.state === 'signedOut') {
+                if (!this.stateIsReadable) {
+                    // We could not read our own sign-in state, so dropping the server's record of
+                    // this device would be guessing. Leave it for a load that can read the state.
+                    return
+                }
                 await this.userSignOut() // dissociates email
                 return
             }
@@ -254,9 +286,10 @@ export class AuthenticationStateMachine {
         const { error } = await persistentClient.POST('/juxtastat/dissociate_email', {
             params: { header: QuizModel.shared.userHeaders() },
         })
-        if (!error) {
-            this.setState({ state: 'signedOut', email: null })
+        if (error) {
+            throw new Error('Could not sign out. Check your connection and try again.')
         }
+        this.setState({ state: 'signedOut', email: null })
     }
 
     async getAccessToken(): Promise<string | undefined> {

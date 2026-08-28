@@ -173,6 +173,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         // authentication failure, so no change to the database
         await t.expect(await juxtastatTable(t)).eql('7|30|0\n')
         await t.expect(await secureIdTable(t)).eql('7|4\n')
+        await t.expect(Selector('b').withText(/attempting to hijack your account/).exists).ok()
         await quizScreencap(t)
     })
 
@@ -638,7 +639,7 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
                 + '• Juxtastat 91\n'
                 + '• Retrostat W39\n'
                 + '\n'
-                + 'Are you sure you want to merge them? (The lowest score will be used)',
+                + 'Are you sure you want to merge them? (Whichever result is further along will be used, and otherwise the lowest score)',
                 type: 'confirm',
                 url: `${target}/quiz.html#date=91`,
             },

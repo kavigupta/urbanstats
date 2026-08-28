@@ -21,7 +21,14 @@ export function SignedOutPanel(): ReactNode {
             <button style={{ margin: '1em', padding: '0.5em 1em' }} onClick={() => { startSignIn?.() }}>
                 Sign In
             </button>
-            <button style={{ margin: '1em', padding: '0.5em 1em' }} onClick={() => { void AuthenticationStateMachine.shared.userSignOut() }}>
+            <button
+                style={{ margin: '1em', padding: '0.5em 1em' }}
+                onClick={() => {
+                    AuthenticationStateMachine.shared.userSignOut().catch((error: unknown) => {
+                        alert(error instanceof Error ? error.message : 'Could not sign out')
+                    })
+                }}
+            >
                 Sign Out
             </button>
         </ErrorBox>
