@@ -13,7 +13,13 @@ void describe('the unit a statistic declares', () => {
     })
 
     void test('is found through the name an old quiz stored, where a statistic has been renamed', () => {
-        assert.equal(unitForStatistic('Commute Car %'), 'percentage')
+        // Employed in Wholesale trade %, since that quiz was written
+        assert.equal(unitForStatistic('Wholesale trade %'), 'percentage')
+    })
+
+    void test('is the live statistic\'s, for a name that is both', () => {
+        // an old quiz meant Commute Car % (incl WFH) by this, but it names a statistic of its own now
+        assert.equal(unitForStatistic('Commute Car %'), unitForStatistic('Commute Car % (incl WFH)'))
     })
 
     void test('is declared for every statistic, and is a unit that exists', () => {

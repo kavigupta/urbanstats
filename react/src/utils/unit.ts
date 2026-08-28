@@ -1,4 +1,4 @@
-import { currentNameOf, LegacyStatName } from '../data/legacy_statistic_columns'
+import { LegacyStatName, whatOldQuizzesMeantBy } from '../data/legacy_statistic_columns'
 import statistic_name_list from '../data/statistic_name_list'
 import statistic_unit_list from '../data/statistic_unit_list'
 import { StatName } from '../page_template/statistic-tree'
@@ -224,9 +224,13 @@ const unitByStatistic = new Map<string, UnitType>(
     statistic_name_list.map((statname, index) => [statname, statistic_unit_list[index]]),
 )
 
-/** The unit a statistic's numbers are in, as the statistic declares it in Python. */
+/**
+ * The unit a statistic's numbers are in, as the statistic declares it in Python. A live statistic
+ * is looked up first: four of the names old quizzes stored, `Commute Car %` and its like, are also
+ * the names of statistics that exist today.
+ */
 export function unitForStatistic(statname: StatName | LegacyStatName): UnitType {
-    const unit = unitByStatistic.get(statname) ?? unitByStatistic.get(currentNameOf[statname as LegacyStatName])
+    const unit = unitByStatistic.get(statname) ?? unitByStatistic.get(whatOldQuizzesMeantBy[statname as LegacyStatName])
     assert(unit !== undefined, `no unit is declared for ${statname}`)
     return unit
 }

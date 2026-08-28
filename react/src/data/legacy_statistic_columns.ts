@@ -1,5 +1,5 @@
 export type LegacyStatName = never | "Commute Car %" | "Commute Bike %" | "Commute Walk %" | "Commute Transit %" | "Commute Work From Home %" | "Agriculture, forestry, fishing and hunting %" | "Mining, quarrying, and oil and gas extraction %" | "Accommodation and food services %" | "Arts, entertainment, and recreation %" | "Construction %" | "Educational services %" | "Health care and social assistance %" | "Finance and insurance %" | "Real estate and rental and leasing %" | "Information %" | "Manufacturing %" | "Other services, except public administration %" | "Administrative and support and waste management services %" | "Management of companies and enterprises %" | "Professional, scientific, and technical services %" | "Public administration %" | "Retail trade %" | "Transportation and warehousing %" | "Utilities %" | "Wholesale trade %" | "Non-humid days (50\u00b0F < dewpt < 70\u00b0F) %";
-export const currentNameOf: Record<LegacyStatName, string> = {
+export const whatOldQuizzesMeantBy: Record<LegacyStatName, string> = {
     "Commute Car %": "Commute Car % (incl WFH)",
     "Commute Bike %": "Commute Bike % (incl WFH)",
     "Commute Walk %": "Commute Walk % (incl WFH)",

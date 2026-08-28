@@ -302,7 +302,7 @@ def output_statistics_metadata() -> None:
             + ";\n"
         )
         f.write(
-            "export const currentNameOf: Record<LegacyStatName, string> = "
+            "export const whatOldQuizzesMeantBy: Record<LegacyStatName, string> = "
             + json.dumps(all_legacy_statistic_names(), indent=4)
             + ";\n"
         )
