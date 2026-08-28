@@ -24,6 +24,20 @@ class GPWStatistics(InternationalStatistics):
             "gpw_aw_density": "AW Density [GHS-POP]",
         }
 
+    def unit_for_each_statistic(self):
+        return {
+            "gpw_population": "population",
+            "gpw_pw_density_1": "density",
+            "gpw_pw_density_1.609344": "density",
+            "gpw_pw_density_2": "density",
+            "gpw_pw_density_4": "density",
+            "gpw_pw_density_8": "density",
+            "gpw_pw_density_16": "density",
+            "gpw_pw_density_32": "density",
+            "gpw_pw_density_64": "density",
+            "gpw_aw_density": "density",
+        }
+
     def varname_for_each_statistic(self):
         return {
             "gpw_population": "population",

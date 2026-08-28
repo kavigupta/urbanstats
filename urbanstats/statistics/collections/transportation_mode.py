@@ -35,6 +35,9 @@ class TransportationModeStatistics(ACSStatisticsColection):
             "transportation_means_transit_no_wfh": "Commute Transit %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "transportation_means_car": "commute_car_incl_wfh",

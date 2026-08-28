@@ -20,6 +20,9 @@ class HousingYearBuiltStatistics(ACSStatisticsColection):
             "year_built_2010_or_later": "% units built in 2010s+",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "year_built_1969_or_earlier": "built_pre_1970",

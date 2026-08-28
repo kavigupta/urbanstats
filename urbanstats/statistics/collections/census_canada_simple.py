@@ -81,6 +81,9 @@ class CensusCanadaIncomeIndividual(CensusCanadaSimple):
             "individual_income_above_100_cad": "Individual income > C$100k %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "individual_income_under_50cad": "individual_income_under_50k_cad",
@@ -153,6 +156,9 @@ class CensusCanadaIncomeHousehold(CensusCanadaSimple):
             "household_income_above_100_cad": "Household income > C$100k %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "household_income_under_50cad": "income_under_50k",
@@ -218,6 +224,9 @@ class CensusCanadaLICOAT(CensusCanadaSimple):
             "lico_at_canada": "LICO-AT %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "lico_at_canada": "low_income",
@@ -280,6 +289,9 @@ class CensusCanadaLIMAT(CensusCanadaSimple):
         return {
             "lim_at_canada": "LIM-AT %",
         }
+
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
 
     def varname_for_each_statistic(self):
         return {
@@ -358,6 +370,9 @@ class CensusCanadaEducation(CensusCanadaSimple):
             "education_ugrad_canada": "Bachelor's degree [25-64] %",
             "education_grad_canada": "Graduate degree [25-64] %",
         }
+
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
 
     def varname_for_each_statistic(self):
         return {

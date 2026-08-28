@@ -19,6 +19,9 @@ class IncomeMedian(GeoIDStatisticsACS):
             "median_household_income": "Median Household Income (USD)",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("usd")
+
     def quiz_question_descriptors(self):
         return {
             "median_household_income": QuizQuestionDescriptor(

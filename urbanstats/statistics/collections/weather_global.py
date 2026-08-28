@@ -58,6 +58,36 @@ class GlobalWeatherStatistics(GeographicStatistics):
             "mean_low_temp_son": "Mean low temperature in Sep/Oct/Nov",
         }
 
+    def unit_for_each_statistic(self):
+        return {
+            "mean_high_temp_4": "temperature",
+            "mean_low_temp": "temperature",
+            "mean_high_heat_index_4": "temperature",
+            "mean_high_dewpoint_4": "temperature",
+            "days_above_90_4": "percentage",
+            "days_between_40_and_90_4": "percentage",
+            "days_below_40_4": "percentage",
+            "days_dewpoint_70_inf_4": "percentage",
+            "days_dewpoint_50_70_4": "percentage",
+            "days_dewpoint_-inf_50_4": "percentage",
+            "hours_sunny_4": "time",
+            "rainfall_4": "distancePerYear",
+            "snowfall_4": "distancePerYear",
+            "wind_speed_over_10mph_4": "percentage",
+            "mean_high_temp_summer_4": "temperature",
+            "mean_high_temp_winter_4": "temperature",
+            "mean_high_temp_fall_4": "temperature",
+            "mean_high_temp_spring_4": "temperature",
+            "mean_high_temp_djf": "temperature",
+            "mean_high_temp_mam": "temperature",
+            "mean_high_temp_jja": "temperature",
+            "mean_high_temp_son": "temperature",
+            "mean_low_temp_djf": "temperature",
+            "mean_low_temp_mam": "temperature",
+            "mean_low_temp_jja": "temperature",
+            "mean_low_temp_son": "temperature",
+        }
+
     def legacy_statistic_names(self):
         return {
             "Non-humid days (50°F < dewpt < 70°F) %": "Non-humid, Non-dry days (50°F < dewpt < 70°F) %",

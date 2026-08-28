@@ -4,6 +4,7 @@ import metadata from '../data/metadata'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
+import units from '../data/statistic_unit_list'
 import { loadProtobuf } from '../load_json'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
@@ -11,7 +12,7 @@ import { assert } from '../utils/defensive'
 import { HumanReadableName } from '../utils/human-readable-element'
 import { Article, CongressionalRepresentativeTable, ICongressionalRepresentative, ICongressionalRepresentativePointer, IFirstOrLast, IMetadata } from '../utils/protos'
 import { StoredUnit } from '../utils/quantity'
-import { classifyStatistic, unitTypeToStoredUnit } from '../utils/unit'
+import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { CountsByUT, forType } from './countsByArticleType'
 import { electionDisclaimerForRow, type Disclaimer } from './disclaimer-text'
@@ -354,7 +355,7 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
             percentileByPopulation: rowOriginal.percentileByPopulationByUniverse![universeIndex],
             statcol: stats[i],
             statname: names[i],
-            unit: unitTypeToStoredUnit(classifyStatistic(names[i])),
+            unit: unitTypeToStoredUnit(units[i]),
             statpath: paths[i],
             explanationPage: explanation_page[i],
             articleType,

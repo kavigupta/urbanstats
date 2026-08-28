@@ -31,6 +31,9 @@ class SegregationStatistics(USAStatistics):
                 result[f"{k}_{year}"] = f"{v}"
         return {k: v + " %" for k, v in result.items()}
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         result = {}
         base_var_names = {

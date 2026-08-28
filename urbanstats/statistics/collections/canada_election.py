@@ -15,6 +15,16 @@ COALITION_TOOLTIP = (
 )
 
 
+PARTY_UNITS = {
+    "V_LIB": ("partyPctRed", "partyChangeRed"),
+    "V_CON": ("partyPctBlue", "partyChangeBlue"),
+    "V_NDP": ("partyPctOrange", "partyChangeOrange"),
+    "V_BQ": ("partyPctTeal", "partyChangeTeal"),
+    "V_GRN": ("partyPctGreen", "partyChangeGreen"),
+    "V_PPC": ("partyPctPurple", "partyChangePurple"),
+}
+
+
 class CanadaElectionStatistics(CanadaStatistics):
     version = 9
 
@@ -57,6 +67,16 @@ class CanadaElectionStatistics(CanadaStatistics):
             if elect1.year != 2015:
                 result[(swing_name, "V_PPC")] = f"{swing_name} PPC %"
 
+        return result
+
+    def unit_for_each_statistic(self):
+        result = {}
+        for election, party in self.name_for_each_statistic():
+            if party == "coalition_margin":
+                result[(election, party)] = "leftMargin"
+            else:
+                vote_share, swing = PARTY_UNITS[party]
+                result[(election, party)] = swing if "Swing" in election else vote_share
         return result
 
     def varname_for_each_statistic(self):

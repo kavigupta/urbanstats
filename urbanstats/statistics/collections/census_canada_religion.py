@@ -63,6 +63,9 @@ class CensusCanadaReligion(CanadaStatistics):
             "religion_other_canada": "Other religion % [StatCan]",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         return {
             "religion_catholic_canada": "religion_catholic",

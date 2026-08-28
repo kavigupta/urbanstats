@@ -23,6 +23,19 @@ class USFeatureDistanceStatistics(USAStatistics):
             **feature_columns,
         }
 
+    def unit_for_each_statistic(self):
+        return {
+            "park_percent_1km_v2": "percentage",
+            "within_Hospital_10": "percentage",
+            "mean_dist_Hospital_updated": "distanceInKm",
+            "within_Public School_2": "percentage",
+            "mean_dist_Public School_updated": "distanceInKm",
+            "within_Airport_30": "percentage",
+            "mean_dist_Airport_updated": "distanceInKm",
+            "within_Active Superfund Site_10": "percentage",
+            "mean_dist_Active Superfund Site_updated": "distanceInKm",
+        }
+
     def varname_for_each_statistic(self):
         return {
             "park_percent_1km_v2": "park_1km",

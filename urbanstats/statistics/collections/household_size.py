@@ -50,6 +50,9 @@ class HouseholdSizeStatistics(ACSStatisticsColection):
             "household_size_pw": "PW Household Size",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("number")
+
     def varname_for_each_statistic(self):
         return {
             "household_size_pw": "household_size_pw",

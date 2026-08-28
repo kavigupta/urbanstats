@@ -1,4 +1,5 @@
 import insets from '../data/insets'
+import statistic_unit_list from '../data/statistic_unit_list'
 import statistic_variables_info from '../data/statistic_variables_info'
 import { Universe } from '../universe'
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
@@ -11,7 +12,6 @@ import { allIdentifiers } from '../urban-stats-script/parser'
 import { TypeEnvironment, USSValue } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { firstNonNan } from '../utils/math'
-import { classifyStatistic } from '../utils/unit'
 
 export async function mapperContext(stmts: UrbanStatsASTStatement, getVariable: (name: string) => Promise<USSValue | undefined>, effects: Effect[], universe: Universe): Promise<Context> {
     const ctx = new Context(
@@ -138,18 +138,17 @@ export const defaultTypeEnvironment = (universe: Universe | undefined): TypeEnvi
                 documentationTable: 'mapper-data-variables',
                 fromStatisticColumn: true,
                 deprecated: (variableInfo as { deprecated: string | null }).deprecated ?? undefined,
-                unit: classifyStatistic(variableInfo.humanReadableName),
+                unit: statistic_unit_list[variableInfo.index],
             },
         })
     }
     for (const [name, info] of statistic_variables_info.multiSourceVariables) {
-        // Find the minimum priority of the individual variables (using raw order values)
-        const individualPriorities = info.individualVariables.map((varName) => {
+        const individualInfos = info.individualVariables.map((varName) => {
             const variableInfo = statistic_variables_info.variableNames.find(v => v.varName === varName)
             assert(variableInfo !== undefined, `Variable info for ${varName} not found`)
-            return variableInfo.order
+            return variableInfo
         })
-        const minPriority = Math.min(...individualPriorities)
+        const minPriority = Math.min(...individualInfos.map(variableInfo => variableInfo.order))
 
         te.set(name, {
             type: { type: 'vector', elementType: { type: 'number' } },
@@ -162,7 +161,8 @@ export const defaultTypeEnvironment = (universe: Universe | undefined): TypeEnvi
                 isDefault: name === 'density_pw_1km',
                 selectorRendering: { kind: 'subtitleLongDescription' },
                 fromStatisticColumn: true,
-                unit: classifyStatistic(info.humanReadableName),
+                // whichever source answers, the statistics behind it are in one unit
+                unit: statistic_unit_list[individualInfos[0].index],
             },
         })
     }

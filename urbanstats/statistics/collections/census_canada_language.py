@@ -381,6 +381,9 @@ class CensusCanadaLanguage(CensusCanadaSameAsUS):
         )
         return names
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
     def varname_for_each_statistic(self):
         varnames = super().varname_for_each_statistic()
         varnames.update(

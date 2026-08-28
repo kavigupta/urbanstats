@@ -38,6 +38,34 @@ class CensusCanada(CanadaStatistics):
             result[f"sd_{year}_canada"] = f"Area-weighted Density{label} [StatCan]"
         return result
 
+    def unit_for_each_statistic(self):
+        return {
+            "population_2021_canada": "population",
+            "density_2021_pw_0.25_canada": "density",
+            "density_2021_pw_0.5_canada": "density",
+            "density_2021_pw_1_canada": "density",
+            "density_2021_pw_1.609344_canada": "density",
+            "density_2021_pw_2_canada": "density",
+            "density_2021_pw_4_canada": "density",
+            "density_2021_pw_8_canada": "density",
+            "density_2021_pw_16_canada": "density",
+            "density_2021_pw_32_canada": "density",
+            "density_2021_pw_64_canada": "density",
+            "sd_2021_canada": "density",
+            "population_2011_canada": "population",
+            "density_2011_pw_0.25_canada": "density",
+            "density_2011_pw_0.5_canada": "density",
+            "density_2011_pw_1_canada": "density",
+            "density_2011_pw_1.609344_canada": "density",
+            "density_2011_pw_2_canada": "density",
+            "density_2011_pw_4_canada": "density",
+            "density_2011_pw_8_canada": "density",
+            "density_2011_pw_16_canada": "density",
+            "density_2011_pw_32_canada": "density",
+            "density_2011_pw_64_canada": "density",
+            "sd_2011_canada": "density",
+        }
+
     def varname_for_each_statistic(self):
         result = {}
         for year in self.canada_years:
