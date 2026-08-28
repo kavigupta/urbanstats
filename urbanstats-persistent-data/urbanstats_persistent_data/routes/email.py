@@ -13,6 +13,8 @@ google_client_id = (
     "866758015458-r7t30bm7b492c1mevid587apej6cjte6.apps.googleusercontent.com"
 )
 
+google_tokeninfo_timeout_seconds = 5
+
 
 class AssociateEmailRequestBody(BaseModel):
     token: str
@@ -32,9 +34,15 @@ def associate_email(
 
 
 def get_email_from_token(token: str) -> str:
-    response = requests.get(
-        f"https://oauth2.googleapis.com/tokeninfo?access_token={token}"
-    )
+    try:
+        response = requests.get(
+            f"https://oauth2.googleapis.com/tokeninfo?access_token={token}",
+            timeout=google_tokeninfo_timeout_seconds,
+        )
+    except requests.RequestException as exc:
+        raise fastapi.HTTPException(
+            500, "Couldn't communicate successfully with Google"
+        ) from exc
     if response.status_code // 100 == 4:
         raise fastapi.HTTPException(401, "Couldn't validate access token")
     if response.status_code != 200:

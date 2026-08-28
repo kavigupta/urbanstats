@@ -1,6 +1,10 @@
 import json
 
-from urbanstats_persistent_data.routes.email import google_client_id
+import requests
+from urbanstats_persistent_data.routes.email import (
+    google_client_id,
+    google_tokeninfo_timeout_seconds,
+)
 
 from .utils import (
     associate_email,
@@ -101,7 +105,7 @@ def test_rejects_token_from_another_client(client, mocker):
             }
         )
 
-    mocker.patch("requests.get", lambda url: MockResponse())
+    mocker.patch("requests.get", lambda url, timeout: MockResponse())
 
     response = client.post(
         "/juxtastat/associate_email",
@@ -122,7 +126,7 @@ def test_rejects_unverified_email(client, mocker):
             }
         )
 
-    mocker.patch("requests.get", lambda url: MockResponse())
+    mocker.patch("requests.get", lambda url, timeout: MockResponse())
 
     response = client.post(
         "/juxtastat/associate_email",
@@ -130,3 +134,24 @@ def test_rejects_unverified_email(client, mocker):
         json={"token": "unverified-token"},
     )
     assert response.status_code == 401
+
+
+def test_associate_email_survives_google_hanging(client, mocker):
+    timeouts = []
+
+    def hang(url, timeout):
+        del url
+        timeouts.append(timeout)
+        raise requests.Timeout()
+
+    mocker.patch("requests.get", hang)
+
+    response = client.post(
+        "/juxtastat/associate_email",
+        headers=identity_1,
+        json={"token": "email@gmail.com"},
+    )
+
+    # Without a timeout this request pins a worker thread for as long as Google holds it open
+    assert timeouts == [google_tokeninfo_timeout_seconds]
+    assert response.status_code == 500
