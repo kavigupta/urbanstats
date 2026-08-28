@@ -34,7 +34,8 @@ export function mergeHistories(a: QuizHistory, b: QuizHistory): QuizHistory {
                 quizRecord = bCorrect > aCorrect ? a[key] : b[key]
             }
             else {
-                quizRecord = stableStringify(bCorrect)! > stableStringify(aCorrect)! ? a[key] : b[key]
+                // Same score, different answers. Order on the records so both devices pick the same one
+                quizRecord = stableStringify(a[key])! < stableStringify(b[key])! ? a[key] : b[key]
             }
             return [key, quizRecord]
         })),
