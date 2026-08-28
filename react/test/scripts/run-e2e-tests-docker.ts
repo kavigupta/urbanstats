@@ -3,7 +3,7 @@ import path from 'path'
 
 import { execa } from 'execa'
 
-export async function runE2eTestsDocker(args: string[], hostArch: boolean): Promise<number> {
+export async function runE2eTestsDocker(args: string[], hostArch: boolean, dockerOptions: string[]): Promise<number> {
     const arch = hostArch && os.arch() === 'arm64' ? 'arm64' : 'amd64'
     const platform = `linux/${arch}`
     // Tagged per architecture so switching modes doesn't clobber the other mode's image
@@ -17,6 +17,7 @@ export async function runE2eTestsDocker(args: string[], hostArch: boolean): Prom
         [
             'run', '--rm',
             '--platform', platform,
+            ...dockerOptions,
             '--network', 'host',
             ...process.stdout.isTTY ? ['-it'] : [],
             '-v', `${repoRoot}:/urbanstats`,
