@@ -42,46 +42,27 @@ export function mergeHistories(a: QuizHistory, b: QuizHistory): QuizHistory {
 }
 
 /*
- * Merge friends.
- * When two lists have overlapping ids, the entry that has the lowest index in its list wins
- * When both entries have the same index, the lowest name wins
+ * Merge two friend lists by id, keeping the more recently touched entry for each.
+ *
+ * Both devices have to arrive at the same list from the same pair of inputs, or each will keep
+ * uploading its own and the two will sync back and forth forever. So the result is ordered by
+ * timestamp rather than by either input's order, and timestamp ties are broken on content rather
+ * than on which list the entry came from. Ids are compared directly rather than with
+ * `localeCompare`, whose ordering depends on the device's locale.
  */
 export function mergeFriends(a: QuizFriends, b: QuizFriends): QuizFriends {
-    let aIdx = 0
-    let bIdx = 0
-    const result: QuizFriends = []
-    const usedIds = new Set<string>()
-    while (aIdx < a.length && bIdx < b.length) {
-        if (a[aIdx][1] === b[bIdx][1]) {
-            // ids same
-            if (!usedIds.has(a[aIdx][1])) {
-                // prefer latest timestamp
-                if ((a[aIdx][2] ?? 0) > (b[bIdx][2] ?? 0)) {
-                    result.push(a[aIdx])
-                }
-                else {
-                    result.push(b[bIdx])
-                }
-                usedIds.add(a[aIdx][1])
-            }
-            aIdx++
-            bIdx++
-        }
-        // sort by timestamp
-        else if ((a[aIdx][2] ?? 0) < (b[bIdx][2] ?? 0)) {
-            if (!usedIds.has(a[aIdx][1])) {
-                result.push(a[aIdx])
-                usedIds.add(a[aIdx][1])
-            }
-            aIdx++
-        }
-        else {
-            if (!usedIds.has(b[aIdx][1])) {
-                result.push(b[aIdx])
-                usedIds.add(b[aIdx][1])
-            }
-            bIdx++
+    const byId = new Map<string, QuizFriends[number]>()
+    for (const entry of [...a, ...b]) {
+        const existing = byId.get(entry[1])
+        if (existing === undefined || supersedes(entry, existing)) {
+            byId.set(entry[1], entry)
         }
     }
-    return result.concat(a.slice(aIdx)).concat(b.slice(bIdx))
+    return [...byId.values()].sort((x, y) => (x[2] ?? 0) - (y[2] ?? 0) || (x[1] < y[1] ? -1 : 1))
+}
+
+function supersedes(x: QuizFriends[number], y: QuizFriends[number]): boolean {
+    const xTime = x[2] ?? 0
+    const yTime = y[2] ?? 0
+    return xTime === yTime ? stableStringify(x)! < stableStringify(y)! : xTime > yTime
 }
