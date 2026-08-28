@@ -1,4 +1,5 @@
 import insets from '../data/insets'
+import statistic_unit_list from '../data/statistic_unit_list'
 import statistic_variables_info from '../data/statistic_variables_info'
 import { Universe } from '../universe'
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
@@ -137,7 +138,7 @@ export const defaultTypeEnvironment = (universe: Universe | undefined): TypeEnvi
                 documentationTable: 'mapper-data-variables',
                 fromStatisticColumn: true,
                 deprecated: (variableInfo as { deprecated: string | null }).deprecated ?? undefined,
-                unit: variableInfo.unit,
+                unit: statistic_unit_list[variableInfo.index],
             },
         })
     }

@@ -235,7 +235,6 @@ def construct_variable_objects(
                 "order": i,
                 "index": lexicographic_index,
                 "deprecated": deprecation_messages[stat],
-                "unit": get_statistic_units()[stat],
             }
         )
 
