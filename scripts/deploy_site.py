@@ -39,6 +39,7 @@ def update_scripts(branch):
     if current_branch != branch:
         # create a new branch if it doesn't exist
         subprocess.run(["git", "checkout", "-b", branch], cwd=PATH, check=True)
+    catch_up_with_deployed(branch)
     # add the files to the git repo
     subprocess.run(["git", "add", "."], cwd=PATH, check=True)
     # commit the changes, using the commit message corresponding to the one in the local repo
@@ -51,6 +52,19 @@ def update_scripts(branch):
     ).stdout.strip()
     subprocess.run(["git", "commit", "-m", local_commit_message], cwd=PATH, check=True)
     subprocess.run(["git", "push", "origin", branch], cwd=PATH, check=True)
+
+
+def catch_up_with_deployed(branch):
+    """
+    Put the site folder back on the history that is deployed, keeping the files just copied
+    into it. Anything deployed since this folder was last written to would otherwise make the
+    push a non-fast-forward, which git refuses.
+    """
+    fetched = subprocess.run(["git", "fetch", "origin", branch], cwd=PATH, check=False)
+    if fetched.returncode != 0:
+        # nothing is deployed under this name yet, so there is nothing to catch up with
+        return
+    subprocess.run(["git", "reset", "--soft", "FETCH_HEAD"], cwd=PATH, check=True)
 
 
 def update_all():
