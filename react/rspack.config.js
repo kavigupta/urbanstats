@@ -7,6 +7,14 @@ import { port } from "./port.js"
 
 const isProduction = process.env.NODE_ENV === 'production'
 
+// A production build that keeps React's warnings, for the site the e2e tests run against: a test
+// that logs one fails, and a production React logs none.
+const keepReactWarnings = process.env.REACT_WARNINGS === '1'
+
+// React's development build costs 170kB, which that build is allowed on top of what our own code
+// is allowed in the one people are served.
+const sizeLimit = 1_200_000 + (keepReactWarnings ? 200_000 : 0)
+
 // dev-server-advice listens on the dev server's websocket, which only exists under `serve`.
 const isServing = process.argv.includes('serve')
 
@@ -82,11 +90,12 @@ export default env => ({
     },
     performance: {
         hints: isProduction ? 'error' : false,
-        maxAssetSize: 1_200_000,
-        maxEntrypointSize: 1_200_000,
+        maxAssetSize: sizeLimit,
+        maxEntrypointSize: sizeLimit,
         assetFilter: asset => asset !== 'quiz_infinite.js' && !asset.endsWith('.map')
     },
     optimization: {
+        nodeEnv: keepReactWarnings ? 'development' : undefined,
         splitChunks: {
             cacheGroups: {
                 maplibre: {
