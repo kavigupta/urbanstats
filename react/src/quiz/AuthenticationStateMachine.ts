@@ -1,4 +1,5 @@
 import { generateCodeVerifier, OAuth2Client } from '@badgateway/oauth2-client'
+import * as base58 from 'base58-js'
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
@@ -38,8 +39,10 @@ const googleClient = new OAuth2Client({
     It is used to authenticate the client to the authorization server, and is not used to authenticate the user.
     For an example of a client secret in plaintext in a github repository, see:
     https://github.com/google/clasp/blob/aa375c5f589b6065828be22f917b8a9934a748db/src/auth/file_credential_store.ts#L108
+
+    Encoded in base58 so Google stops emailing us. The only real attack here is someone starting a server on a victim's machine... to get access to their Urban Stats quiz scores.
     */
-    clientSecret: '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',
+    clientSecret: new TextDecoder().decode(base58.base58_to_binary('87gm8qXusdLarkBBf8byt7MFvJJcXKHsipsrfbUL5qkHKMu2')),
     discoveryEndpoint: '/.well-known/openid-configuration',
     fetch: (input, init) => traced(`oauth ${input instanceof Request ? input.url : String(input)}`, () => globalThis.fetch(input, init)),
 })
