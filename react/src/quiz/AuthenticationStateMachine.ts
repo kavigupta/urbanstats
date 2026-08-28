@@ -85,6 +85,8 @@ export class AuthenticationStateMachine {
 
     private setState(newState: State): void {
         this._state = newState
+        // Whatever we could not read before, we know what the state is now
+        this.stateIsReadable = true
         localStorage.setItem(localStorageKey, JSON.stringify(newState))
         this.stateObservers.forEach((observer) => { observer() })
     }
