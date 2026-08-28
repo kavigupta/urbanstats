@@ -3,6 +3,7 @@ import { z } from 'zod'
 
 import { TestUtils } from '../utils/TestUtils'
 import { gdriveClient } from '../utils/google-drive-client'
+import { traced } from '../utils/traced'
 
 import { QuizFriends, QuizHistory, QuizModel, syncProfileSchema } from './quiz'
 
@@ -13,6 +14,7 @@ export async function syncWithGoogleDrive(token: string): Promise<void> {
     const localProfile = getLocalProfile()
     if (stableStringify(remoteProfile) === stableStringify(localProfile)) {
         // Profiles same
+        console.warn('sync: profiles already match')
         return
     }
     const mergedProfile = mergeProfiles(localProfile, remoteProfile)
@@ -134,6 +136,7 @@ async function getProfileFile(token: string): Promise<{ fileId: string, profile:
     }
 
     const profileFile = data.files?.[0]
+    console.warn(`sync: remote profile ${profileFile === undefined ? 'absent, creating' : 'found'}`)
     if (profileFile === undefined) {
         const profile = getLocalProfile()
 
@@ -185,13 +188,14 @@ async function uploadProfile(token: string, json: unknown, existingFileId?: stri
         new Blob([media.body], { type: media.mimeType }),
     )
 
-    const response = await fetch(`https://www.googleapis.com/upload/drive/v3/files${existingFileId ? `/${existingFileId}` : ''}?uploadType=multipart`, {
+    const url = `https://www.googleapis.com/upload/drive/v3/files${existingFileId ? `/${existingFileId}` : ''}?uploadType=multipart`
+    const response = await traced(`drive upload ${url}`, () => fetch(url, {
         method: existingFileId ? 'PATCH' : 'POST',
         headers: {
             Authorization: `Bearer ${token}`,
         },
         body: multipart,
-    })
+    }))
 
     if (!response.ok) {
         throw new Error('Could not upload profile file')
