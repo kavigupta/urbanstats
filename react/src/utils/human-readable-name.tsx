@@ -42,7 +42,7 @@ export function reifyReact(elements: HumanReadableElement[] | string, settings: 
                     </React.Fragment>
                 )
             case 'quantity':
-                return writtenQuantity(element.value, element.unit, settings)
+                return <React.Fragment key={index}>{writtenQuantity(element.value, element.unit, settings)}</React.Fragment>
         }
     })
 }
