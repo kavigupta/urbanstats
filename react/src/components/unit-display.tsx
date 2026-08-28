@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { useSetting } from '../page_template/settings'
+import { useReaderSettings } from '../page_template/settings'
 import { HumanReadableElement } from '../utils/human-readable-element'
 import { reifyReact } from '../utils/human-readable-name'
 import { Hue, ReaderSettings, StoredUnit, Unit, UnitPlacement, writeQuantity } from '../utils/quantity'
@@ -51,9 +51,7 @@ export function renderQuantity(value: number, stored: StoredUnit, settings: Read
  * unit a pixel off the number. The zero width space is where the line may still break.
  */
 export function QuantityTogether({ value, stored }: { value: number, stored: StoredUnit }): ReactNode {
-    const [useImperial] = useSetting('use_imperial')
-    const [temperatureUnit] = useSetting('temperature_unit')
-    const { renderedValue, unitName, hue } = writeQuantity(value, stored, { useImperial, temperatureUnit }, {})
+    const { renderedValue, unitName, hue } = writeQuantity(value, stored, useReaderSettings(), {})
     const colors = useColors()
     return (
         <span style={hue === undefined ? undefined : { color: colors.hueColors[hue] }}>
