@@ -43,7 +43,9 @@ export const toNumber = {
         assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for toNumber, got ${Object.keys(namedArgs).length}`)
         const arg = posArgs[0]
         const num = asNumber(arg as USSPrimitiveRawValue)
-        assert(num !== undefined, `Expected a number, a string that can be converted to one, or a boolean, got ${typeof arg === 'string' ? arg : typeof arg}`)
+        assert(num !== undefined, typeof arg === 'string'
+            ? `Expected a number or a string that can be converted to a number, got ${arg}`
+            : `Expected a number, string, or boolean argument for toNumber, got ${typeof arg}`)
         return num
     },
     documentation: {
