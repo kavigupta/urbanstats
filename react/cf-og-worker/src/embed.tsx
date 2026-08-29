@@ -381,7 +381,7 @@ export async function mapEmbedCard(map: MapCard, { width, height }: { width: num
         : { width: boxWidth, height: boxWidth / aspectRatio }
 
     // The page lays its map out at a fixed width and scales the result; radii are in those pixels.
-    const scale = container.width / canonicalWidth
+    const scale = container.width / canonicalWidth(aspectRatio)
     const boxes = map.insets.map((inset) => {
         const box = insetBox(inset, container.width, container.height)
         return { inset, box, layout: fitBounds(inset.coordBox, box.width, box.height) }

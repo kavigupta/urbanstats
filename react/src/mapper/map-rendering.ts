@@ -18,9 +18,12 @@ import { Keypoints } from './ramps'
 /**
  * The width the mapper lays a map out at before scaling the whole thing to fit its container. Pixel
  * sizes in a map's settings, marker radii above all, are in these pixels, so anything drawing a map
- * at another width has to scale them against this.
+ * at another width has to scale them against this. A map taller than it is wide is laid out at 1200
+ * tall instead, so a narrow map gets the same number of pixels to work with as a wide one.
  */
-export const canonicalWidth = 1200
+export function canonicalWidth(aspectRatio: number): number {
+    return 1200 * Math.min(1, aspectRatio)
+}
 
 /** Keyed by longname, which is how a map's result names its geographies. */
 export async function centroidsByName(universe: Universe, geographyKind: string): Promise<Map<string, ICoordinate>> {
