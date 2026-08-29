@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode, useMemo, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { checkboxCategoryName, sourceEnabledKey, useIsStaged } from '../page_template/settings'
+import { checkboxCategoryName, sourceEnabledKey, useIsStaged, useUnitSettings } from '../page_template/settings'
 import { GroupTreeState, useAvailableYears, useCategoriesMatchingSearch, useCategoryTreeState, useDataSourceCheckboxes, useExpandCategoriesHidingStagedChanges } from '../page_template/statistic-settings'
 import { Category, statParents } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
@@ -139,6 +139,7 @@ function EditLabelRow(props: {
 }
 
 function EditStatRow({ layout, index, spec }: { layout: MeasuredTableLayout, index: number, spec: EditStatSpec }): ReactNode {
+    const unitSettings = useUnitSettings()
     const adornments = useStatisticNameAdornments(spec.editRow.row)
     return (
         <StatisticTableRow
@@ -151,7 +152,7 @@ function EditStatRow({ layout, index, spec }: { layout: MeasuredTableLayout, ind
                         htmlFor={spec.checkbox.kind === 'headers' ? spec.checkbox.id : undefined}
                         checkbox={spec.checkbox.kind === 'own' ? spec.checkbox.node : undefined}
                     >
-                        {reifyReact(spec.editRow.displayName)}
+                        {reifyReact(spec.editRow.displayName, unitSettings)}
                     </EditCheckboxLabel>
                     {adornments}
                 </div>

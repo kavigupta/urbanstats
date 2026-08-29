@@ -28,7 +28,7 @@ export interface UnparseOptions {
 type USSInfixSequenceElement = { type: 'operator', operatorType: 'unary', value: Decorated<UnaryOperatorSymbol> } | { type: 'operator', operatorType: 'binary', value: Decorated<BinaryOperatorSymbol> } | UrbanStatsASTExpression
 
 export function constantString(constant: UrbanStatsASTConstant): string {
-    return constant.type === 'humanReadableElements' ? reifyString(constant.value) : constant.value.toString()
+    return constant.type === 'humanReadableElements' ? reifyString(constant.value, {}) : constant.value.toString()
 }
 
 export function toSExp(node: UrbanStatsAST): string {

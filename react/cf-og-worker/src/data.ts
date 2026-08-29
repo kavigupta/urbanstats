@@ -338,7 +338,7 @@ export async function mapCard(origin: string, pageData: Extract<PageData, { kind
 
     const label = map.label ?? deriveMapLabel(script.uss, defaultTypeEnvironment(universe))
     return {
-        label: label === undefined ? '' : reifyString(label),
+        label: label === undefined ? '' : reifyString(label, {}),
         contents,
         opacity: map.opacity,
         insets: map.insets,

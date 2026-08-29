@@ -18,7 +18,7 @@ function testMapLabel(testFn: typeof test, code: string, expectedLabel: string):
     void testFn(`map label ${++mapLabelIdx}`, () => {
         const label = deriveMapLabel(mapUSSFromString(code), getTypeEnvironment())
         assert.ok(label)
-        assert.equal(reifyString(label), expectedLabel)
+        assert.equal(reifyString(label, {}), expectedLabel)
     })
 }
 
@@ -64,6 +64,14 @@ for (const [condition, expected] of [
 ] as const) {
     testMapLabel(test, `condition (${condition})\ncMap(data=population, scale=linearScale(), ramp=rampUridis)`, `Population where ${expected}`)
 }
+
+void test('a label reads in the units of whoever is reading it', () => {
+    const label = deriveMapLabel(mapUSSFromString('condition (high_temp > 80 & area > 100)\ncMap(data=population, scale=linearScale(), ramp=rampUridis)'), getTypeEnvironment())
+    assert.ok(label)
+    assert.equal(reifyString(label, {}), 'Population where Mean high temp > 80°F and Area > 100km^{2}')
+    assert.equal(reifyString(label, { temperatureUnit: 'celsius' }), 'Population where Mean high temp > 26.7°C and Area > 100km^{2}')
+    assert.equal(reifyString(label, { useImperial: true }), 'Population where Mean high temp > 80°F and Area > 38.6mi^{2}')
+})
 
 testMapLabel(test,
     `condition (population > 1000000)
@@ -152,7 +160,7 @@ function testTableColumnLabel(testFn: typeof test, code: string, columnIndex: nu
         }
         else {
             assert.ok(label)
-            assert.equal(reifyString(label), expectedLabel)
+            assert.equal(reifyString(label, {}), expectedLabel)
         }
     })
 }
@@ -193,7 +201,7 @@ function testTableLabel(testFn: typeof test, code: string, columnNames: HumanRea
         }
         else {
             assert.ok(label)
-            assert.equal(reifyString(label), expectedLabel)
+            assert.equal(reifyString(label, {}), expectedLabel)
         }
     })
 }

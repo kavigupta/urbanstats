@@ -93,7 +93,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
     const headerSpecs: CellSpec[] = data.table.map((col, colIndex) => ({
         type: 'statistic-name',
         renderedStatname: col.name,
-        longname: reifyString(col.name),
+        longname: reifyString(col.name, {}),
         currentUniverse,
         sortInfo: {
             onSort: () => {

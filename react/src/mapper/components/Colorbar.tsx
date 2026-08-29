@@ -3,6 +3,7 @@ import React, { ReactNode, useLayoutEffect, useMemo, useRef, useState } from 're
 import { QuantityTogether, renderInequality } from '../../components/unit-display'
 import { Colors } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
+import { useUnitSettings } from '../../page_template/settings'
 import { ScaleInstance } from '../../urban-stats-script/constants/scale'
 import { HumanReadableName } from '../../utils/human-readable-element'
 import { reifyReact } from '../../utils/human-readable-name'
@@ -31,6 +32,7 @@ export function styleFromBasemap(basemap: Basemap, colors: Colors): { background
 
 export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Basemap }): ReactNode {
     const colors = useColors()
+    const unitSettings = useUnitSettings()
 
     return (
         <div style={{
@@ -41,7 +43,7 @@ export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Base
         >
             {props.ramp?.type === 'label' && (
                 <div className="centered_text user_input">
-                    {reifyReact(props.ramp.value)}
+                    {reifyReact(props.ramp.value, unitSettings)}
                 </div>
             )}
             {props.ramp?.type === 'ramp' && (
@@ -52,6 +54,7 @@ export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Base
 }
 
 function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
+    const unitSettings = useUnitSettings()
     // do this as a table with 10 columns, each 10% wide and
     // 2 rows. Top one is the colorbar, bottom one is the
     // labels.
@@ -142,7 +145,7 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
             <div ref={valuesRef} style={{ position: 'absolute', top: 0, left: 0, display: 'flex', width: '100%', visibility: 'hidden' }}>{valuesDivs(false)}</div>
             <div style={{ display: 'flex', width: '100%' }}>{valuesDivs(shouldRotate)}</div>
             <div className="centered_text user_input">
-                {reifyReact(ramp.label)}
+                {reifyReact(ramp.label, unitSettings)}
             </div>
         </div>
     )

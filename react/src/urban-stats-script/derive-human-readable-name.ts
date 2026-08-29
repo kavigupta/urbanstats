@@ -1,10 +1,10 @@
 import { editableMapData, MapUSS, mapUssParser, read, tableColumnExpression } from '../mapper/settings/map-uss'
 import { assert } from '../utils/defensive'
 import { HumanReadableElement, HumanReadableName } from '../utils/human-readable-element'
-import { joinHumanReadableNames } from '../utils/human-readable-name'
+import { joinHumanReadableNames, nameOfUnit } from '../utils/human-readable-name'
 import { parseHumanReadableTemplate } from '../utils/human-readable-template'
-import { StoredUnit, writeQuantity } from '../utils/quantity'
-import { abbreviate, formatToSignificantFigures, separateNumber } from '../utils/text'
+import { StoredUnit } from '../utils/quantity'
+import { abbreviate, formatToSignificantFigures, separateNumber, trimTrailingZeros } from '../utils/text'
 
 import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import * as l from './literal-parser'
@@ -149,11 +149,10 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
                 argsFlat.push(...args[i])
             }
             const call: HumanReadableElement[] = [...fn, { type: 'atom', value: '(' }, ...argsFlat, { type: 'atom', value: ')' }]
-            // a call whose number cannot be written here is at least said to be read in a unit,
-            // where there is a unit to name: a count is named by the statistic counting it
-            const unitName = unit === undefined ? [] : unitNameOf(unit)
-            if (unitName.length === 0) return call
-            return [...call, { type: 'atom', value: ' [in ' }, ...unitName, { type: 'atom', value: ']' }]
+            // a call whose number cannot be written here is at least said to be read in a unit.
+            // A count has no name in any units, being named by the statistic counting it.
+            if (unit === undefined || nameOfUnit(unit, {}).length === 0) return call
+            return [...call, { type: 'atom', value: ' [in ' }, { type: 'unitName', unit }, { type: 'atom', value: ']' }]
         }
         case 'do':
             if (ast.statements.length === 0) return
@@ -308,20 +307,9 @@ export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, 
     return humanReadableElements(withTableCallReplacedByDataLabel, typeEnvironment, units)
 }
 
-function trimTrailingZeros(value: string): string {
-    if (!value.includes('.')) return value
-    return value.replace(/\.?0+$/g, '')
-}
-
-/** What the unit is called, taken off a quantity of one, which is what a unit is named per. */
-function unitNameOf(unit: StoredUnit): HumanReadableElement[] {
-    return writeQuantity(1, unit, {}, {}).unitName
-}
-
 function formatNumber(number: number, unit?: StoredUnit): HumanReadableElement[] {
     if (unit !== undefined) {
-        const { renderedValue, unitName } = writeQuantity(number, unit, {}, {})
-        return [{ type: 'atom', value: trimTrailingZeros(renderedValue) }, ...unitName]
+        return [{ type: 'quantity', value: number, unit }]
     }
     if (number >= 1e4) {
         const { number: written, suffix } = abbreviate(number)
