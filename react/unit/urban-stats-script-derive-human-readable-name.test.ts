@@ -54,6 +54,12 @@ for (const [condition, expected] of [
     ['ln(density_pw_1km) > 0', 'ln(PW Density (r=1km) [in /km^{2}]) > 0'],
     ['ln(population) > 10', 'ln(Population) > 10'],
     ['ln(density_pw_1km / density_pw_2km) > 0', 'ln(PW Density (r=1km) ÷ PW Density (r=2km)) > 0'],
+    // what the script computes with, which is not what a reader is shown: rainfall reads in cm/yr
+    ['ln(rainfall) > 0', 'ln(Rainfall [in m/yr]) > 0'],
+    // and a share is stored as the fraction it is, which nothing names
+    ['ln(commute_bike) > 0', 'ln(Commute Bike %) > 0'],
+    // a root of a count is in no unit at all, so there is nothing to say it is in
+    ['ln(population ** 0.5) > 0', 'ln(Population^{0.5}) > 0'],
     // a number written the long way is written as the number, in the unit it is read in
     ['density_pw_1km > toNumber("1000")', 'PW Density (r=1km) > 1\u202f000/km^{2}'],
     ['high_temp > toNumber("80")', 'Mean high temp > 80°F'],
@@ -87,7 +93,8 @@ cMap(
     scale=linearScale(),
     ramp=rampUridis
 )`,
-    // a number made of a quantity says what the quantity was read in, counts having no name to give
+    // per person to the fourth per km to the fourth, the people dropping out of the name as they
+    // do in a density
     'sin^{-1}((PW Density (r=1km) ÷ Population^{3})^{2} [in /km^{4}]) where Population (2000) > 1m and Population > 1m',
 )
 

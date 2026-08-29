@@ -1,9 +1,9 @@
 import { editableMapData, MapUSS, mapUssParser, read, tableColumnExpression } from '../mapper/settings/map-uss'
 import { assert } from '../utils/defensive'
 import { HumanReadableElement, HumanReadableName } from '../utils/human-readable-element'
-import { joinHumanReadableNames, nameOfUnit } from '../utils/human-readable-name'
+import { joinHumanReadableNames } from '../utils/human-readable-name'
 import { parseHumanReadableTemplate } from '../utils/human-readable-template'
-import { StoredUnit } from '../utils/quantity'
+import { nameOfStoredUnit, StoredUnit } from '../utils/quantity'
 import { abbreviate, formatToSignificantFigures, separateNumber, trimTrailingZeros } from '../utils/text'
 
 import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
@@ -315,12 +315,14 @@ export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, 
 }
 
 /**
- * The elements followed by the unit they are read in, as in "[in /km^{2}]". A count has no name in
- * any units, being named by the statistic counting it, and gets nothing.
+ * The elements followed by what the numbers behind them are counted in, as in "[in /km^{2}]". The
+ * reader's units are not it: a logarithm is of the number a script computed with, whatever units
+ * the reader has the same number written to them in. A count gets nothing, having no name.
  */
 function inUnitWritten(written: HumanReadableElement[], unit: StoredUnit | undefined): HumanReadableElement[] {
-    if (unit === undefined || nameOfUnit(unit, {}).length === 0) return written
-    return [...written, { type: 'atom', value: ' [in ' }, { type: 'unitName', unit }, { type: 'atom', value: ']' }]
+    const name = unit === undefined ? undefined : nameOfStoredUnit(unit)
+    if (name === undefined || name.length === 0) return written
+    return [...written, { type: 'atom', value: ' [in ' }, ...name, { type: 'atom', value: ']' }]
 }
 
 function formatNumber(number: number, unit?: StoredUnit): HumanReadableElement[] {

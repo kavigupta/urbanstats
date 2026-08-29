@@ -84,11 +84,11 @@ test('a logarithm names what its argument was read in', async (t) => {
     await t.expect(Selector('[data-test-id="statistic-link"]').innerText).eql('ln(Mean high temp [in °F])')
 })
 
-test('and names it in the units the reader reads', async (t) => {
+test('and keeps naming it that to a reader in Celsius, the logarithm being of the Fahrenheit number', async (t) => {
     await waitForLoading()
     const temperatures = Selector('[data-test-id=temperature_select]')
     await t.click(temperatures).click(temperatures.find('option').withText(/C/))
-    await t.expect(Selector('[data-test-id="statistic-link"]').innerText).eql('ln(Mean high temp [in °C])')
+    await t.expect(Selector('[data-test-id="statistic-link"]').innerText).eql('ln(Mean high temp [in °F])')
 })
 
 urbanstatsFixture('a column named after what it is measured against', tableOf('maximum(high_temp, 80)'))

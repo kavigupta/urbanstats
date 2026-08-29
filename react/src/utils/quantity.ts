@@ -2,7 +2,7 @@ import { HueColors } from '../page_template/color-themes'
 
 import { atom, HumanReadableElement } from './human-readable-element'
 import { formatNumber, hoursAndMinutes, NumberFormat } from './text'
-import { chooseUnits, Written } from './unit-search'
+import { chooseUnits, Written, writtenAsCounted } from './unit-search'
 
 export type Hue = keyof HueColors
 
@@ -341,6 +341,20 @@ export function unitPower(stored: StoredUnit, exponent: number): StoredUnit | un
     }
     const raised = stored.unit.dimensions.map(({ baseUnit, power }) => ({ baseUnit, power: power * exponent }))
     return computedUnit(gathered(raised), Math.pow(stored.toBaseUnits, exponent))
+}
+
+/**
+ * What the numbers a statistic is stored as are counted in, which is what a script computes with:
+ * rainfall is stored per metre though it is read per centimetre, and a share is stored as a
+ * fraction though it is read as a percentage. Empty where nothing names it, a fraction and a count
+ * having no name, and undefined where no unit is exactly it.
+ */
+export function nameOfStoredUnit(stored: StoredUnit): HumanReadableElement[] | undefined {
+    // both systems, since the unit a statistic is stored in is not the reader's to choose, and no
+    // abbreviations, which shorten a number rather than saying what it is counted in
+    const pool = [...allUnits({}), ...lengthUnits.imperial, celsius].filter(({ abbreviation }) => !abbreviation)
+    const written = writtenAsCounted(stored.unit.dimensions, pool, stored.toBaseUnits)
+    return written === undefined ? undefined : nameOf(written, {})
 }
 
 /**
