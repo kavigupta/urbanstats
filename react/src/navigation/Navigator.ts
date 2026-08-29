@@ -42,6 +42,25 @@ function loadingStateFromPageState(pageState: PageState): SubsequentLoadingState
     return Date.now() - pageState.loadStartTime >= quickThresholdDuration ? { kind: 'longLoad', updateAt: undefined } : { kind: 'quickLoad', updateAt: pageState.loadStartTime + quickThresholdDuration }
 }
 
+const chunkReloadKey = 'lastChunkReload'
+
+// A deploy replaces the hashed chunk files, so an index.js cached from an earlier one asks for chunks
+// that are gone. Chrome's reload only revalidates the document, so evict that index.js ourselves first.
+async function reloadIfBundleIsStale(error: unknown): Promise<boolean> {
+    if (!(error instanceof Error) || error.name !== 'ChunkLoadError') {
+        return false
+    }
+    const lastReload = Number(sessionStorage.getItem(chunkReloadKey) ?? 0)
+    if (Date.now() - lastReload < 60_000) {
+        return false
+    }
+    sessionStorage.setItem(chunkReloadKey, String(Date.now()))
+    await fetch('/scripts/index.js', { cache: 'reload' }).catch(() => undefined)
+    // eslint-disable-next-line no-restricted-syntax -- The loaded bundle is the thing that's broken, so navigating within it won't help
+    location.reload()
+    return true
+}
+
 export interface NavigationOptions {
     history: 'push' | 'replace' | null // What should we do with this browser history? `null` means nothing, usually you want 'push' or 'replace'
     scroll: { kind: 'none' } // Does not perform any scrolling when navigating, just re-render the page in place (will scroll to anchor if hash is present)
@@ -237,6 +256,9 @@ export class Navigator {
         }
         catch (error) {
             console.error('Error loading page', error)
+            if (await reloadIfBundleIsStale(error)) {
+                return
+            }
             if (this.pageState.kind !== 'loading' || this.pageState.loading.descriptor !== newDescriptor) {
                 // Another load has started, don't race it
                 return
