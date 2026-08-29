@@ -157,28 +157,25 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         const mapsContainerRef = useRef<HTMLDivElement>(null)
         const wholeRenderRef = useRef<HTMLDivElement>(null)
 
-        const insetsFeatures = (props.mode === 'insets' ? props.editInsets.edited : mapResultMain.value.insets).flatMap((inset) => {
-            const insetFeatures = filterOverlaps(inset, features)
-            if (insetFeatures.length === 0 && props.mode !== 'insets') {
-                return []
-            }
-            return [{
-                inset,
-                insetFeatures,
-            }]
-        })
+        const acceptedInsets = mapResultMain.value.insets
+            .map(inset => ({ inset, insetFeatures: filterOverlaps(inset, features) }))
+            .filter(({ insetFeatures }) => insetFeatures.length > 0)
+
+        const maybeEditingInsets = props.mode === 'insets'
+            ? props.editInsets.edited.map(inset => ({ inset, insetFeatures: filterOverlaps(inset, features) }))
+            : acceptedInsets
 
         const insetMaps = (
-            <ClusterScaleProvider numInsets={insetsFeatures.length}>
+            <ClusterScaleProvider numInsets={maybeEditingInsets.length}>
                 {(i: number) => {
-                    const { inset, insetFeatures } = insetsFeatures[i]
+                    const { inset, insetFeatures } = maybeEditingInsets[i]
                     return (
                         <InsetMap
                             i={i}
                             inset={inset}
                             ref={e => mapsRef[i] = e}
                             container={mapsContainerRef}
-                            numInsets={insetsFeatures.length}
+                            numInsets={maybeEditingInsets.length}
                             editInset={props.mode === 'insets'
                                 ? editIndex(props.editInsets, i)
                                 : undefined}
@@ -196,8 +193,6 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
                 }}
             </ClusterScaleProvider>
         )
-
-        const visibleInsets = insetsFeatures.map(({ inset }) => inset)
 
         const colorbar = (
             <Colorbar
@@ -252,7 +247,8 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
                     maps={insetMaps}
                     loading={props.loading}
                     colorbar={colorbar}
-                    aspectRatio={computeAspectRatioForInsets(visibleInsets)}
+                    // Don't change the aspect ratio while editing, otherwise things get nasty
+                    aspectRatio={computeAspectRatioForInsets(acceptedInsets.map(({ inset }) => inset))}
                     mapsContainerRef={mapsContainerRef}
                     wholeRenderRef={wholeRenderRef}
                     textBoxes={textBoxes}

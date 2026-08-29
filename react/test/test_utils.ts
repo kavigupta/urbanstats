@@ -161,7 +161,7 @@ export async function waitForLoading(): Promise<void> {
     return ClientFunction(() => (window as unknown as TestWindow).testUtils.waitForLoading('test_utils'))()
 }
 
-async function waitForMapsToRender(): Promise<void> {
+export async function waitForMapsToRender(): Promise<void> {
     return ClientFunction(() => (window as unknown as TestWindow).testUtils.waitForMapsToRender())()
 }
 
