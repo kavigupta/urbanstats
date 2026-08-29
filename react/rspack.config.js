@@ -26,6 +26,8 @@ export default env => ({
     },
     output: {
         filename: '[name].js',
+        // Hashed so a stale index.js can never load a chunk built against different module ids
+        chunkFilename: '[name].[contenthash].js',
         path: path.resolve(import.meta.dirname, '..', 'dist'),
         clean: true,
     },
@@ -84,7 +86,7 @@ export default env => ({
         hints: isProduction ? 'error' : false,
         maxAssetSize: 1_200_000,
         maxEntrypointSize: 1_200_000,
-        assetFilter: asset => asset !== 'quiz_infinite.js' && !asset.endsWith('.map')
+        assetFilter: asset => !asset.startsWith('quiz_infinite.') && !asset.endsWith('.map')
     },
     optimization: {
         splitChunks: {
