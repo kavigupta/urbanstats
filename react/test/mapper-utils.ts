@@ -135,3 +135,17 @@ export function testCode(testFn: () => TestFn, geographyKind: string, universe: 
         await downloadPNG(t)
     })
 }
+
+export const editInsetsButton = Selector('button[data-test=edit-insets]')
+
+export function numMaps(): Promise<number> {
+    return Selector('[id^="map-"]').count
+}
+
+export function map(n: number): string {
+    return `[id^="map-${n}"]`
+}
+
+export function handle(mapNumber: number, pos: 'move' | 'topRight' | 'bottomRight' | 'bottomLeft' | 'topLeft' | 'duplicate' | 'delete' | 'add' | 'moveUp' | 'moveDown'): string {
+    return `${map(mapNumber)} [data-test="${pos}"]`
+}

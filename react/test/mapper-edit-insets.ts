@@ -2,8 +2,8 @@ import { ClientFunction, Selector } from 'testcafe'
 
 import { TestWindow } from '../src/utils/TestUtils'
 
-import { drag, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { screencap, urbanstatsFixture } from './test_utils'
+import { drag, editInsetsButton, handle, map, numMaps, toggleCustomScript, urlFromCode } from './mapper-utils'
+import { screencap, urbanstatsFixture, wheel } from './test_utils'
 
 export function runTests(platform: 'desktop' | 'mobile', shard = 0, numShards = 1): void {
     urbanstatsFixture(`default map`, '/mapper.html', async (t) => {
@@ -11,18 +11,6 @@ export function runTests(platform: 'desktop' | 'mobile', shard = 0, numShards = 
             await t.resizeWindow(400, 800)
         }
     })
-
-    function numMaps(): Promise<number> {
-        return Selector('[id^="map-"]').count
-    }
-
-    function map(n: number): string {
-        return `[id^="map-${n}"]`
-    }
-
-    function handle(mapNumber: number, pos: 'move' | 'topRight' | 'bottomRight' | 'bottomLeft' | 'topLeft' | 'duplicate' | 'delete' | 'add' | 'moveUp' | 'moveDown'): string {
-        return `${map(mapNumber)} [data-test="${pos}"]`
-    }
 
     interface Bounds { n: number, e: number, s: number, w: number }
 
@@ -66,19 +54,6 @@ export function runTests(platform: 'desktop' | 'mobile', shard = 0, numShards = 
         }, { dependencies: { selector, map0 } })()
     }
 
-    async function wheel(t: TestController, selector: string, deltaY: number, offset: { x: number, y: number }): Promise<void> {
-        return ClientFunction(() => {
-            const element = document.querySelector(`${selector} .maplibregl-canvas-container`)!
-            const elementRect = element.getBoundingClientRect()
-            const eventLocation = {
-                clientX: ((elementRect.left + elementRect.right) / 2) + offset.x,
-                clientY: ((elementRect.bottom + elementRect.top) / 2) + offset.y,
-            }
-            // Magic constant simulates a scroll wheel so our events are processed properly
-            element.dispatchEvent(new WheelEvent('wheel', { deltaY: deltaY * 4.000244140625, ...eventLocation }))
-        }, { dependencies: { selector, deltaY, offset } })()
-    }
-
     type MapPositions = { frame: Rect | undefined, bounds: Bounds | undefined }[]
 
     function mapPositionsEqual(a: MapPositions, b: MapPositions): boolean {
@@ -101,8 +76,6 @@ export function runTests(platform: 'desktop' | 'mobile', shard = 0, numShards = 
             )
         })
     }
-
-    const editInsetsButton = Selector('button[data-test=edit-insets]')
 
     let insetsEditIndex = 0
 

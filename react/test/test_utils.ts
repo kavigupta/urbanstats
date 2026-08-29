@@ -698,3 +698,16 @@ export async function withInterceptedRequests(t: TestController, requestHandler:
         await cdp.Fetch.disable()
     }
 }
+
+export async function wheel(t: TestController, selector: string, deltaY: number, offset: { x: number, y: number }): Promise<void> {
+    return ClientFunction(() => {
+        const element = document.querySelector(`${selector} .maplibregl-canvas-container`)!
+        const elementRect = element.getBoundingClientRect()
+        const eventLocation = {
+            clientX: ((elementRect.left + elementRect.right) / 2) + offset.x,
+            clientY: ((elementRect.bottom + elementRect.top) / 2) + offset.y,
+        }
+        // Magic constant simulates a scroll wheel so our events are processed properly
+        element.dispatchEvent(new WheelEvent('wheel', { deltaY: deltaY * 4.000244140625, ...eventLocation }))
+    }, { dependencies: { selector, deltaY, offset } })()
+}
