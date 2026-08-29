@@ -50,6 +50,8 @@ for (const [condition, expected] of [
     ['sum(population) > 1000000', 'sum(Population) > 1m'],
     ['abs(high_temp) > 5', 'abs(Mean high temp) > 5'],
     ['ln(1000) > 0', 'ln(1\u202f000) > 0'],
+    // a function is written as it is called, rather than as its documentation titles it
+    ['density_pw_1km > toNumber("1000")', 'PW Density (r=1km) > toNumber(1000)'],
     // a lead is written as whose it is, and a change from one year to another as a change
     ['pres_2020_margin > 0.1', '2020 Presidential Election > D+10%'],
     ['population_change_2000_2020 > 0.05', 'Population Change (2000-2020) > +5%'],
