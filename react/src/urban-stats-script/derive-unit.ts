@@ -6,27 +6,43 @@ import { TypeEnvironment } from './types-values'
 import { unitToWriteIn } from './unit-algebra'
 import { inferBindings, inferUnit } from './unit-inference'
 
+/** A unit read off the script, or what stopped it being read. */
+export type DerivedUnit = { unit: StoredUnit } | { problem: string }
+
 /** Read against the whole script, so that a name the script assigned is followed. */
-function unitOf(values: UrbanStatsASTExpression | undefined, uss: MapUSS, typeEnvironment: TypeEnvironment): StoredUnit | undefined {
+function unitOf(values: UrbanStatsASTExpression | undefined, uss: MapUSS, typeEnvironment: TypeEnvironment): DerivedUnit {
     if (values === undefined) {
-        return undefined
+        return { problem: 'its values are not written as an expression the units can be read from' }
     }
-    const unit = unitToWriteIn(inferUnit(values, typeEnvironment, inferBindings(uss, typeEnvironment)))
-    return unit !== undefined && writableDimensions(unit.unit) ? unit : undefined
+    const known = inferUnit(values, typeEnvironment, inferBindings(uss, typeEnvironment))
+    if (known.kind === 'any') {
+        return { problem: 'nothing in the script says what its values are measured in' }
+    }
+    if (known.kind === 'none') {
+        return { problem: 'its values put together quantities that are not in the same unit' }
+    }
+    if (unitToWriteIn(known) === undefined) {
+        return { problem: 'its values are neither readings nor differences of readings, so a scale with no zero of its own cannot be written' }
+    }
+    if (!writableDimensions(known.unit.unit)) {
+        return {
+            problem: known.unit.unit.dimensions.some(({ power }) => !Number.isInteger(power))
+                ? 'a fractional power of a unit is in no units anybody writes'
+                : 'a count of one thing times another has no name of its own',
+        }
+    }
+    return { unit: known.unit }
 }
 
-export function deriveMapUnit(uss: MapUSS, typeEnvironment: TypeEnvironment): StoredUnit | undefined {
+export function deriveMapUnit(uss: MapUSS, typeEnvironment: TypeEnvironment): DerivedUnit {
     return unitOf(mapDataExpression(uss, typeEnvironment), uss, typeEnvironment)
 }
 
-export function deriveTableColumnUnit(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): StoredUnit | undefined {
+export function deriveTableColumnUnit(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): DerivedUnit {
     return unitOf(tableColumnExpression(uss, typeEnvironment, columnIndex), uss, typeEnvironment)
 }
 
-/**
- * What to tell someone whose map or column is drawn in no units at all, naming the argument that
- * would say so. The caller adds the function it goes to, which differs between the maps.
- */
-export function unitCouldNotBeDerived(what: string): string {
-    return `Unit could not be derived for ${what}, please pass unit=<a unit, such as unitNumber>`
+/** The unit where one was read, for a caller with nothing to say about why there is none. */
+export function unitOrNothing(derived: DerivedUnit): StoredUnit | undefined {
+    return 'unit' in derived ? derived.unit : undefined
 }

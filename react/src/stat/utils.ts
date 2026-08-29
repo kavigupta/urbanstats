@@ -8,7 +8,7 @@ import { StatName } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 import { orderNonNan, Table, tableType } from '../urban-stats-script/constants/table'
 import { deriveTableColumnLabel, deriveTableLabel, tableLabel } from '../urban-stats-script/derive-human-readable-name'
-import { deriveTableColumnUnit, unitCouldNotBeDerived } from '../urban-stats-script/derive-unit'
+import { deriveTableColumnUnit } from '../urban-stats-script/derive-unit'
 import { unparse } from '../urban-stats-script/parser'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
@@ -78,11 +78,12 @@ function computeOrdinals(values: number[]): number[] {
 }
 
 function derivedUnit(mapUSS: MapUSS, typeEnvironment: TypeEnvironment, index: number, warn: (message: string) => void): StoredUnit | undefined {
-    const unit = deriveTableColumnUnit(mapUSS, typeEnvironment, index)
-    if (unit === undefined) {
-        warn(`${unitCouldNotBeDerived(`column ${index}`)} to column(...)`)
+    const derived = deriveTableColumnUnit(mapUSS, typeEnvironment, index)
+    if ('unit' in derived) {
+        return derived.unit
     }
-    return unit
+    warn(`Unit could not be derived for column ${index}: ${derived.problem}. Please pass unit=<a unit, such as unitNumber> to column(...)`)
+    return undefined
 }
 
 /**

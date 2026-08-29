@@ -3,7 +3,7 @@ import test from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { mapUSSFromString } from '../src/mapper/settings/map-uss'
-import { deriveMapUnit, deriveTableColumnUnit } from '../src/urban-stats-script/derive-unit'
+import { deriveMapUnit, deriveTableColumnUnit, unitOrNothing } from '../src/urban-stats-script/derive-unit'
 import { reifyString } from '../src/utils/human-readable-name'
 import { UnitSettings, StoredUnit, writeQuantity } from '../src/utils/quantity'
 
@@ -17,7 +17,7 @@ function written(unit: StoredUnit | undefined, value = 1000, settings: UnitSetti
 }
 
 function unitOfMap(data: string): StoredUnit | undefined {
-    return deriveMapUnit(mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), defaultTypeEnvironment('USA'))
+    return unitOrNothing(deriveMapUnit(mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), defaultTypeEnvironment('USA')))
 }
 
 function mapUnit(data: string): string {
@@ -25,7 +25,7 @@ function mapUnit(data: string): string {
 }
 
 function columnUnit(values: string, columnIndex = 0): string {
-    return written(deriveTableColumnUnit(mapUSSFromString(`table(columns=[${values}])`), defaultTypeEnvironment('USA'), columnIndex))
+    return written(unitOrNothing(deriveTableColumnUnit(mapUSSFromString(`table(columns=[${values}])`), defaultTypeEnvironment('USA'), columnIndex)))
 }
 
 void test('a map is written in the units of what it maps', () => {
@@ -45,7 +45,7 @@ void test('a map of what no unit can be read off says nothing', () => {
 
 void test('a map of a regression is written in the units of what was regressed', () => {
     const map = (preamble: string, data: string): StoredUnit | undefined =>
-        deriveMapUnit(mapUSSFromString(`${preamble}\ncondition (true)\ncMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), defaultTypeEnvironment('USA'))
+        unitOrNothing(deriveMapUnit(mapUSSFromString(`${preamble}\ncondition (true)\ncMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), defaultTypeEnvironment('USA')))
     const shares = 'regr = regression(y=commute_transit, x1=ln(density_pw_1km), weight=population)'
     // what a share was above what the regression expected of it, which is a difference of two shares
     assert.equal(written(map(shares, 'do { x = regr.residuals; x }'), 0.05), '+5.00%')
@@ -60,7 +60,7 @@ void test('a map of a regression is written in the units of what was regressed',
 
 void test('a statistic that names its own units is written in them, counted things and all', () => {
     // fatalities over people, both of them counted, which the statistic names as fatalities per 100k
-    const perCapita = deriveTableColumnUnit(mapUSSFromString('table(columns=[column(values=ped_cyclist_fatalities_per_capita)])'), defaultTypeEnvironment('USA'), 0)
+    const perCapita = unitOrNothing(deriveTableColumnUnit(mapUSSFromString('table(columns=[column(values=ped_cyclist_fatalities_per_capita)])'), defaultTypeEnvironment('USA'), 0))
     assert.equal(written(perCapita, 1e-5), '1.00/100k')
     assert.equal(written(unitOfMap('traffic_fatalities_per_capita'), 1e-5), '1.00/100k')
 })
@@ -131,7 +131,7 @@ void test('a difference of two is written as one', () => {
 
 void test('a script is read as a whole, so a map of what it named is in those units', () => {
     const uss = mapUSSFromString('x = population / area\ncondition (true)\ncMap(data=x, scale=linearScale(), ramp=rampUridis)')
-    assert.equal(written(deriveMapUnit(uss, defaultTypeEnvironment('USA'))), '1\u202f000/km^{2}')
+    assert.equal(written(unitOrNothing(deriveMapUnit(uss, defaultTypeEnvironment('USA')))), '1\u202f000/km^{2}')
 })
 
 void test('a column is written in the units of its values', () => {
