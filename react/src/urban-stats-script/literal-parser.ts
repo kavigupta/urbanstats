@@ -408,6 +408,19 @@ export function lastExpression<T>(expressionSchema: LiteralExprParser<T>): Liter
     }
 }
 
+/** What the schema reads off the expression, or undefined where the expression is not that shape. */
+export function tryParse<T>(schema: LiteralExprParser<T>, expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): T | undefined {
+    try {
+        return schema.parse(expr, typeEnvironment)
+    }
+    catch (e) {
+        if (e instanceof LiteralParseError) {
+            return undefined
+        }
+        throw e
+    }
+}
+
 export function transformExpr<T, U>(schema: LiteralExprParser<T>, map: (t: T) => U): LiteralExprParser<U> {
     return {
         parse(ast, env, doEdit = e => e) {

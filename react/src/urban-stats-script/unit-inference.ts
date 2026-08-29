@@ -3,8 +3,9 @@ import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import { asNumber } from './constants/convert'
+import * as l from './literal-parser'
 import { LocInfo } from './location'
-import { TypeEnvironment, UnitPropagation } from './types-values'
+import { TypeEnvironment, UnitPropagation, USSPrimitiveRawValue } from './types-values'
 import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, unitToWriteIn } from './unit-algebra'
 
 const anything = { kind: 'any' } satisfies AbstractInterpValue
@@ -210,19 +211,26 @@ export function whereWritten(location: LocInfo): string {
     return `${where.type === 'single' ? where.ident : ''}:${location.start.charIdx}-${location.end.charIdx}`
 }
 
+const toNumberOfOneThing = l.call({
+    fn: l.identifier('toNumber'),
+    unnamedArgs: [l.passthrough()],
+    namedArgs: {},
+})
+
+const primitive = l.union<USSPrimitiveRawValue>([l.number(), l.string(), l.boolean()])
+
 /**
  * A call to toNumber, which a caption writes as the number it works out to where it works out to
  * one, and as its argument where it does not. Either way the number written is read in a unit,
  * which the backward pass records at the call.
  */
 export function readAsANumber(ast: UrbanStatsASTExpression, scope: Scope): { value?: number, read: UrbanStatsASTExpression } | undefined {
-    if (ast.type !== 'call' || ast.fn.type !== 'identifier' || ast.fn.name.node !== 'toNumber') return undefined
-    if (scope.named.has(ast.fn.name.node) || ast.args.length !== 1 || ast.args[0].type !== 'unnamed') return undefined
-    const read = ast.args[0].value
-    const value = read.type === 'constant' && read.value.node.type !== 'humanReadableElements'
-        ? asNumber(read.value.node.value)
-        : undefined
-    return { value, read }
+    // a script that binds the name itself is calling something else
+    if (scope.named.has('toNumber')) return undefined
+    const read = l.tryParse(toNumberOfOneThing, ast, scope.typeEnvironment)?.unnamedArgs[0]
+    if (read === undefined) return undefined
+    const literal = l.tryParse(primitive, read, scope.typeEnvironment)
+    return { value: literal === undefined ? undefined : asNumber(literal), read }
 }
 
 function pushedInto(propagation: UnitPropagation | undefined, expected: Expected, args: UrbanStatsASTArg[], index: number, scope: Scope): Expected {
