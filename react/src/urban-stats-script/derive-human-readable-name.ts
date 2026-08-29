@@ -320,7 +320,12 @@ export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, 
  * the reader has the same number written to them in. A count gets nothing, having no name.
  */
 function inUnitWritten(written: HumanReadableElement[], unit: StoredUnit | undefined): HumanReadableElement[] {
-    const name = unit === undefined ? undefined : nameOfStoredUnit(unit)
+    if (unit === undefined) return written
+    // a share is stored as the fraction it is, whatever percentage it is written as
+    if (unit.unit.decoration.kind === 'percent') {
+        return [...written, { type: 'atom', value: ' [as a fraction]' }]
+    }
+    const name = nameOfStoredUnit(unit)
     if (name === undefined || name.length === 0) return written
     return [...written, { type: 'atom', value: ' [in ' }, ...name, { type: 'atom', value: ']' }]
 }

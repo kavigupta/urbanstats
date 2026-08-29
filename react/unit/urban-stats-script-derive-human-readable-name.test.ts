@@ -56,8 +56,9 @@ for (const [condition, expected] of [
     ['ln(density_pw_1km / density_pw_2km) > 0', 'ln(PW Density (r=1km) ÷ PW Density (r=2km)) > 0'],
     // what the script computes with, which is not what a reader is shown: rainfall reads in cm/yr
     ['ln(rainfall) > 0', 'ln(Rainfall [in m/yr]) > 0'],
-    // and a share is stored as the fraction it is, which nothing names
-    ['ln(commute_bike) > 0', 'ln(Commute Bike %) > 0'],
+    // and a share is stored as the fraction it is, whatever percentage it is written as
+    ['ln(commute_bike) > 0', 'ln(Commute Bike % [as a fraction]) > 0'],
+    ['ln(pres_2020_margin) > 0', 'ln(2020 Presidential Election [as a fraction]) > 0'],
     // a root of a count is in no unit at all, so there is nothing to say it is in
     ['ln(population ** 0.5) > 0', 'ln(Population^{0.5}) > 0'],
     // a number written the long way is written as the number, in the unit it is read in
