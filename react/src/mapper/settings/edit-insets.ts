@@ -81,6 +81,28 @@ export function swapInsets(edits: InsetEdits, indexA: number, indexB: number): I
     }
 }
 
+/** Rescales screen bounds so the insets span the whole canvas in both dimensions. */
+export function normalizeInsetScreenBounds(edits: InsetEdits, insets: Inset[]): InsetEdits {
+    const scaleAxis = (axis: 0 | 1): (v: number) => number => {
+        const values = insets.flatMap(inset => [inset.bottomLeft[axis], inset.topRight[axis]])
+        const min = Math.min(...values)
+        const max = Math.max(...values)
+        return max > min ? v => (v - min) / (max - min) : v => v
+    }
+    const scaleX = scaleAxis(0)
+    const scaleY = scaleAxis(1)
+
+    return insets.reduce((result, inset, i) => {
+        const bottomLeft: [number, number] = [scaleX(inset.bottomLeft[0]), scaleY(inset.bottomLeft[1])]
+        const topRight: [number, number] = [scaleX(inset.topRight[0]), scaleY(inset.topRight[1])]
+        if (bottomLeft[0] === inset.bottomLeft[0] && bottomLeft[1] === inset.bottomLeft[1]
+            && topRight[0] === inset.topRight[0] && topRight[1] === inset.topRight[1]) {
+            return result
+        }
+        return replaceInsets(result, [i, i + 1], [{ ...inset, bottomLeft, topRight }])
+    }, edits)
+}
+
 export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvironment: TypeEnvironment): MapUSS {
     assert(settings.script.uss.type === 'statements', 'Trying to do an inset edit on USS that is not inset editable')
     const mapInsets = mapSchema(settings.script.uss, typeEnvironment).namedArgs.insets
