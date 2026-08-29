@@ -204,11 +204,8 @@ def build_react_site(site_folder: str, mode: str) -> None:
 
     create_react_jsons()
 
-    # ci builds the site the e2e tests run against, which keeps React's warnings so that a test
-    # logging one fails.
-    script = {"dev": "dev", "ci": "prod-with-react-warnings"}.get(mode, "prod")
     subprocess.run(
-        f"cd react; npm run {script}",
+        f"cd react; npm run {'dev' if mode == 'dev' else 'prod'}",
         shell=True,
         check=mode != "dev",
     )

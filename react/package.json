@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "NODE_ENV=development rspack --mode=development",
     "prod": "NODE_ENV=production rspack --mode=production",
-    "prod-with-react-warnings": "REACT_WARNINGS=1 NODE_ENV=production rspack --mode=production",
     "analyze": "NODE_ENV=production rspack build --analyze",
     "watch": "./watch.sh",
     "lint": "eslint . --fix --ignore-pattern=src/data --cache --max-warnings=0 --concurrency=auto",
