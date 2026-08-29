@@ -50,6 +50,10 @@ for (const [condition, expected] of [
     ['sum(population) > 1000000', 'sum(Population) > 1m'],
     ['abs(high_temp) > 5', 'abs(Mean high temp) > 5'],
     ['ln(1000) > 0', 'ln(1\u202f000) > 0'],
+    // a logarithm of a quantity is a number, so the caption says what the quantity was read in
+    ['ln(density_pw_1km) > 0', 'ln(PW Density (r=1km) [in /km^{2}]) > 0'],
+    ['ln(population) > 10', 'ln(Population) > 10'],
+    ['ln(density_pw_1km / density_pw_2km) > 0', 'ln(PW Density (r=1km) ÷ PW Density (r=2km)) > 0'],
     // a number written the long way is written as the number, in the unit it is read in
     ['density_pw_1km > toNumber("1000")', 'PW Density (r=1km) > 1\u202f000/km^{2}'],
     ['high_temp > toNumber("80")', 'Mean high temp > 80°F'],
@@ -83,7 +87,8 @@ cMap(
     scale=linearScale(),
     ramp=rampUridis
 )`,
-    'sin^{-1}((PW Density (r=1km) ÷ Population^{3})^{2}) where Population (2000) > 1m and Population > 1m',
+    // a number made of a quantity says what the quantity was read in, counts having no name to give
+    'sin^{-1}((PW Density (r=1km) ÷ Population^{3})^{2} [in /km^{4}]) where Population (2000) > 1m and Population > 1m',
 )
 
 testMapLabel(test,
