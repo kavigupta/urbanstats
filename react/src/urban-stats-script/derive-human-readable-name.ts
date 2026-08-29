@@ -6,12 +6,12 @@ import { parseHumanReadableTemplate } from '../utils/human-readable-template'
 import { StoredUnit, writeQuantity } from '../utils/quantity'
 import { abbreviate, formatToSignificantFigures, separateNumber } from '../utils/text'
 
-import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
+import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import * as l from './literal-parser'
 import { noLocation } from './location'
 import { expressionOperatorMap } from './operators'
 import { TypeEnvironment } from './types-values'
-import { ConstantUnits, inferConstantUnits, whereWritten } from './unit-inference'
+import { ConstantUnits, inferConstantUnits, numberWrittenAsACall, whereWritten } from './unit-inference'
 
 function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, units: ConstantUnits): HumanReadableElement[] | undefined {
     switch (ast.type) {
@@ -124,6 +124,10 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
         case 'expression':
             return humanReadableElements(ast.value, typeEnvironment, units)
         case 'call': {
+            const unit = units.get(whereWritten(locationOf(ast)))
+            const literal = numberWrittenAsACall(ast, { typeEnvironment, named: new Map() })
+            // toNumber("1000") is the number 1000 written the long way, so it is written as one
+            if (literal !== undefined) return formatNumber(literal, unit)
             const fn = humanReadableElements(ast.fn, typeEnvironment, units)
             if (fn === undefined) return
             const args: HumanReadableElement[][] = []
@@ -144,7 +148,12 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
                 if (i > 0) argsFlat.push({ type: 'atom', value: ', ' })
                 argsFlat.push(...args[i])
             }
-            return [...fn, { type: 'atom', value: '(' }, ...argsFlat, { type: 'atom', value: ')' }]
+            const call: HumanReadableElement[] = [...fn, { type: 'atom', value: '(' }, ...argsFlat, { type: 'atom', value: ')' }]
+            // a call whose number cannot be written here is at least said to be read in a unit,
+            // where there is a unit to name: a count is named by the statistic counting it
+            const unitName = unit === undefined ? [] : unitNameOf(unit)
+            if (unitName.length === 0) return call
+            return [...call, { type: 'atom', value: ' [in ' }, ...unitName, { type: 'atom', value: ']' }]
         }
         case 'do':
             if (ast.statements.length === 0) return
@@ -302,6 +311,11 @@ export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, 
 function trimTrailingZeros(value: string): string {
     if (!value.includes('.')) return value
     return value.replace(/\.?0+$/g, '')
+}
+
+/** What the unit is called, taken off a quantity of one, which is what a unit is named per. */
+function unitNameOf(unit: StoredUnit): HumanReadableElement[] {
+    return writeQuantity(1, unit, {}, {}).unitName
 }
 
 function formatNumber(number: number, unit?: StoredUnit): HumanReadableElement[] {

@@ -23,6 +23,14 @@ export const toString = {
     },
 } satisfies USSValue
 
+/** What toNumber makes of a primitive, or undefined where it makes nothing. */
+export function asNumber(value: USSPrimitiveRawValue): number | undefined {
+    if (typeof value === 'number') return value
+    if (typeof value === 'string') return parseNumber(value)
+    if (typeof value === 'boolean') return value ? 1 : 0
+    return undefined
+}
+
 export const toNumber = {
     type: {
         type: 'function',
@@ -34,18 +42,9 @@ export const toNumber = {
         assert(posArgs.length === 1, `Expected 1 argument for toNumber, got ${posArgs.length}`)
         assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for toNumber, got ${Object.keys(namedArgs).length}`)
         const arg = posArgs[0]
-        if (typeof arg === 'number') {
-            return arg
-        }
-        if (typeof arg === 'string') {
-            const num = parseNumber(arg)
-            assert(num !== undefined, `Expected a number or a string that can be converted to a number, got ${arg}`)
-            return num
-        }
-        if (typeof arg === 'boolean') {
-            return arg ? 1 : 0
-        }
-        throw new Error(`Expected a number, string, or boolean argument for toNumber, got ${typeof arg}`)
+        const num = asNumber(arg as USSPrimitiveRawValue)
+        assert(num !== undefined, `Expected a number, a string that can be converted to one, or a boolean, got ${typeof arg === 'string' ? arg : typeof arg}`)
+        return num
     },
     documentation: {
         humanReadableName: 'toNumber',

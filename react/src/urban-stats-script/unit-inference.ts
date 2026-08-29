@@ -1,7 +1,8 @@
 import { dimensionless, sameDimensions, StoredUnit, writableDimensions } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
-import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
+import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
+import { asNumber } from './constants/convert'
 import { LocInfo } from './location'
 import { TypeEnvironment, UnitPropagation } from './types-values'
 import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, unitToWriteIn } from './unit-algebra'
@@ -209,6 +210,19 @@ export function whereWritten(location: LocInfo): string {
     return `${where.type === 'single' ? where.ident : ''}:${location.start.charIdx}-${location.end.charIdx}`
 }
 
+/**
+ * The number a call works out to on its own, as `toNumber("1000")` works out to 1000. A caption
+ * writes that as the number rather than as the call, so the number needs the unit read here.
+ */
+export function numberWrittenAsACall(ast: UrbanStatsASTExpression, scope: Scope): number | undefined {
+    if (ast.type !== 'call' || ast.fn.type !== 'identifier' || ast.fn.name.node !== 'toNumber') return undefined
+    if (scope.named.has(ast.fn.name.node) || ast.args.length !== 1 || ast.args[0].type !== 'unnamed') return undefined
+    const only = ast.args[0].value
+    return only.type === 'constant' && only.value.node.type !== 'humanReadableElements'
+        ? asNumber(only.value.node.value)
+        : undefined
+}
+
 function pushedInto(propagation: UnitPropagation | undefined, expected: Expected, args: UrbanStatsASTArg[], index: number, scope: Scope): Expected {
     if (propagation?.kind === 'unchanged') {
         return expected
@@ -254,6 +268,13 @@ function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expecte
         }
         case 'call': {
             const propagation = propagationOf(ast.fn, scope)
+            // a call a caption writes as a number, or names the unit of, is read in one
+            if (ast.fn.type === 'identifier' && ast.fn.name.node === 'toNumber' && !scope.named.has(ast.fn.name.node)) {
+                const unit = unitToWriteIn(expected)
+                if (unit !== undefined && writableDimensions(unit.unit)) {
+                    into.set(whereWritten(locationOf(ast)), unit)
+                }
+            }
             ast.args.forEach((arg, index) => { readBack(arg.value, pushedInto(propagation, expected, ast.args, index, scope), scope, into) })
             return
         }
