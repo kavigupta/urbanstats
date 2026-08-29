@@ -24,7 +24,7 @@ export const toString = {
 } satisfies USSValue
 
 /** What toNumber makes of a primitive, or undefined where it makes nothing. */
-function asNumber(value: USSPrimitiveRawValue): number | undefined {
+export function asNumber(value: USSPrimitiveRawValue): number | undefined {
     if (typeof value === 'number') return value
     if (typeof value === 'string') return parseNumber(value)
     if (typeof value === 'boolean') return value ? 1 : 0

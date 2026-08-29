@@ -1,9 +1,11 @@
 import { dimensionless, sameDimensions, StoredUnit, writableDimensions } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
-import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
+import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
+import { asNumber } from './constants/convert'
+import * as l from './literal-parser'
 import { LocInfo } from './location'
-import { TypeEnvironment, UnitPropagation } from './types-values'
+import { TypeEnvironment, UnitPropagation, USSPrimitiveRawValue } from './types-values'
 import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, unitToWriteIn } from './unit-algebra'
 
 const anything = { kind: 'any' } satisfies AbstractInterpValue
@@ -209,6 +211,24 @@ export function whereWritten(location: LocInfo): string {
     return `${where.type === 'single' ? where.ident : ''}:${location.start.charIdx}-${location.end.charIdx}`
 }
 
+const toNumberOfOneThing = l.call({
+    fn: l.identifier('toNumber'),
+    unnamedArgs: [l.passthrough()],
+    namedArgs: {},
+})
+
+const primitive = l.union<USSPrimitiveRawValue>([l.number(), l.string(), l.boolean()])
+
+/** A call to toNumber, carrying the number its argument is when the argument is a literal. */
+export function readAsANumber(ast: UrbanStatsASTExpression, scope: Scope): { value?: number, read: UrbanStatsASTExpression } | undefined {
+    // a script that binds the name itself is calling something else
+    if (scope.named.has('toNumber')) return undefined
+    const read = l.tryParse(toNumberOfOneThing, ast, scope.typeEnvironment)?.unnamedArgs[0]
+    if (read === undefined) return undefined
+    const literal = l.tryParse(primitive, read, scope.typeEnvironment)
+    return { value: literal === undefined ? undefined : asNumber(literal), read }
+}
+
 function pushedInto(propagation: UnitPropagation | undefined, expected: Expected, args: UrbanStatsASTArg[], index: number, scope: Scope): Expected {
     if (propagation?.kind === 'unchanged') {
         return expected
@@ -254,6 +274,13 @@ function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expecte
         }
         case 'call': {
             const propagation = propagationOf(ast.fn, scope)
+            // a caption writes a number where this call is, so record its unit as for a literal
+            if (readAsANumber(ast, scope) !== undefined) {
+                const unit = unitToWriteIn(expected)
+                if (unit !== undefined && writableDimensions(unit.unit)) {
+                    into.set(whereWritten(locationOf(ast)), unit)
+                }
+            }
             ast.args.forEach((arg, index) => { readBack(arg.value, pushedInto(propagation, expected, ast.args, index, scope), scope, into) })
             return
         }

@@ -1,17 +1,17 @@
 import { editableMapData, MapUSS, mapUssParser, read, tableColumnExpression } from '../mapper/settings/map-uss'
 import { assert } from '../utils/defensive'
 import { HumanReadableElement, HumanReadableName } from '../utils/human-readable-element'
-import { joinHumanReadableNames } from '../utils/human-readable-name'
+import { joinHumanReadableNames, nameOfUnit } from '../utils/human-readable-name'
 import { parseHumanReadableTemplate } from '../utils/human-readable-template'
 import { StoredUnit } from '../utils/quantity'
 import { abbreviate, formatToSignificantFigures, separateNumber, trimTrailingZeros } from '../utils/text'
 
-import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
+import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import * as l from './literal-parser'
 import { noLocation } from './location'
 import { expressionOperatorMap } from './operators'
 import { TypeEnvironment } from './types-values'
-import { ConstantUnits, inferConstantUnits, whereWritten } from './unit-inference'
+import { ConstantUnits, inferConstantUnits, readAsANumber, whereWritten } from './unit-inference'
 
 function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, units: ConstantUnits): HumanReadableElement[] | undefined {
     switch (ast.type) {
@@ -124,6 +124,20 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
         case 'expression':
             return humanReadableElements(ast.value, typeEnvironment, units)
         case 'call': {
+            const readNumber = readAsANumber(ast, { typeEnvironment, named: new Map() })
+            if (readNumber !== undefined) {
+                // toNumber says its argument is read as a number, which writing a number says
+                const unit = units.get(whereWritten(locationOf(ast)))
+                if (readNumber.value !== undefined) return formatNumber(readNumber.value, unit)
+                const written = humanReadableElements(readNumber.read, typeEnvironment, units)
+                if (written === undefined) return
+                // whatever encloses this sees a call, so -toNumber(a + b) would read -a + b
+                const isOperator = readNumber.read.type === 'binaryOperator' || readNumber.read.type === 'unaryOperator'
+                const inner: HumanReadableElement[] = isOperator ? [{ type: 'parens', value: written }] : written
+                // a count has no name in any units, being named by the statistic counting it
+                if (unit === undefined || nameOfUnit(unit, {}).length === 0) return inner
+                return [...inner, { type: 'atom', value: ' [in ' }, { type: 'unitName', unit }, { type: 'atom', value: ']' }]
+            }
             const fn = humanReadableElements(ast.fn, typeEnvironment, units)
             if (fn === undefined) return
             const args: HumanReadableElement[][] = []
