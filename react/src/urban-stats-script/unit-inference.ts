@@ -211,16 +211,18 @@ export function whereWritten(location: LocInfo): string {
 }
 
 /**
- * The number a call works out to on its own, as `toNumber("1000")` works out to 1000. A caption
- * writes that as the number rather than as the call, so the number needs the unit read here.
+ * A call to toNumber, which a caption writes as the number it works out to where it works out to
+ * one, and as its argument where it does not. Either way the number written is read in a unit,
+ * which the backward pass records at the call.
  */
-export function numberWrittenAsACall(ast: UrbanStatsASTExpression, scope: Scope): number | undefined {
+export function readAsANumber(ast: UrbanStatsASTExpression, scope: Scope): { value?: number, read: UrbanStatsASTExpression } | undefined {
     if (ast.type !== 'call' || ast.fn.type !== 'identifier' || ast.fn.name.node !== 'toNumber') return undefined
     if (scope.named.has(ast.fn.name.node) || ast.args.length !== 1 || ast.args[0].type !== 'unnamed') return undefined
-    const only = ast.args[0].value
-    return only.type === 'constant' && only.value.node.type !== 'humanReadableElements'
-        ? asNumber(only.value.node.value)
+    const read = ast.args[0].value
+    const value = read.type === 'constant' && read.value.node.type !== 'humanReadableElements'
+        ? asNumber(read.value.node.value)
         : undefined
+    return { value, read }
 }
 
 function pushedInto(propagation: UnitPropagation | undefined, expected: Expected, args: UrbanStatsASTArg[], index: number, scope: Scope): Expected {
@@ -269,7 +271,7 @@ function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expecte
         case 'call': {
             const propagation = propagationOf(ast.fn, scope)
             // a call a caption writes as a number, or names the unit of, is read in one
-            if (ast.fn.type === 'identifier' && ast.fn.name.node === 'toNumber' && !scope.named.has(ast.fn.name.node)) {
+            if (readAsANumber(ast, scope) !== undefined) {
                 const unit = unitToWriteIn(expected)
                 if (unit !== undefined && writableDimensions(unit.unit)) {
                     into.set(whereWritten(locationOf(ast)), unit)

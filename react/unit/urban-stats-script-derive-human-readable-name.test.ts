@@ -54,8 +54,8 @@ for (const [condition, expected] of [
     ['density_pw_1km > toNumber("1000")', 'PW Density (r=1km) > 1\u202f000/km^{2}'],
     ['high_temp > toNumber("80")', 'Mean high temp > 80°F'],
     // and one that cannot be read off the script says what it would be read in, where that has a name
-    ['density_pw_1km > toNumber(geoName)', 'PW Density (r=1km) > toNumber(Default Universe Geography Names) [in /km^{2}]'],
-    ['population > toNumber(geoName)', 'Population > toNumber(Default Universe Geography Names)'],
+    ['density_pw_1km > toNumber(geoName)', 'PW Density (r=1km) > Default Universe Geography Names [in /km^{2}]'],
+    ['population > toNumber(geoName)', 'Population > Default Universe Geography Names'],
     // a lead is written as whose it is, and a change from one year to another as a change
     ['pres_2020_margin > 0.1', '2020 Presidential Election > D+10%'],
     ['population_change_2000_2020 > 0.05', 'Population Change (2000-2020) > +5%'],

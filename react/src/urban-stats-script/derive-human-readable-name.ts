@@ -11,7 +11,7 @@ import * as l from './literal-parser'
 import { noLocation } from './location'
 import { expressionOperatorMap } from './operators'
 import { TypeEnvironment } from './types-values'
-import { ConstantUnits, inferConstantUnits, numberWrittenAsACall, whereWritten } from './unit-inference'
+import { ConstantUnits, inferConstantUnits, readAsANumber, whereWritten } from './unit-inference'
 
 function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, units: ConstantUnits): HumanReadableElement[] | undefined {
     switch (ast.type) {
@@ -124,10 +124,18 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
         case 'expression':
             return humanReadableElements(ast.value, typeEnvironment, units)
         case 'call': {
-            const unit = units.get(whereWritten(locationOf(ast)))
-            const literal = numberWrittenAsACall(ast, { typeEnvironment, named: new Map() })
-            // toNumber("1000") is the number 1000 written the long way, so it is written as one
-            if (literal !== undefined) return formatNumber(literal, unit)
+            const readNumber = readAsANumber(ast, { typeEnvironment, named: new Map() })
+            if (readNumber !== undefined) {
+                const unit = units.get(whereWritten(locationOf(ast)))
+                // toNumber("1000") is the number 1000 written the long way, so it is written as one
+                if (readNumber.value !== undefined) return formatNumber(readNumber.value, unit)
+                // and toNumber of anything else is that thing, read as a number in some unit
+                const inner = humanReadableElements(readNumber.read, typeEnvironment, units)
+                if (inner === undefined) return
+                // A count has no name in any units, being named by the statistic counting it.
+                if (unit === undefined || nameOfUnit(unit, {}).length === 0) return inner
+                return [...inner, { type: 'atom', value: ' [in ' }, { type: 'unitName', unit }, { type: 'atom', value: ']' }]
+            }
             const fn = humanReadableElements(ast.fn, typeEnvironment, units)
             if (fn === undefined) return
             const args: HumanReadableElement[][] = []
@@ -148,11 +156,7 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
                 if (i > 0) argsFlat.push({ type: 'atom', value: ', ' })
                 argsFlat.push(...args[i])
             }
-            const call: HumanReadableElement[] = [...fn, { type: 'atom', value: '(' }, ...argsFlat, { type: 'atom', value: ')' }]
-            // a call whose number cannot be written here is at least said to be read in a unit.
-            // A count has no name in any units, being named by the statistic counting it.
-            if (unit === undefined || nameOfUnit(unit, {}).length === 0) return call
-            return [...call, { type: 'atom', value: ' [in ' }, { type: 'unitName', unit }, { type: 'atom', value: ']' }]
+            return [...fn, { type: 'atom', value: '(' }, ...argsFlat, { type: 'atom', value: ')' }]
         }
         case 'do':
             if (ast.statements.length === 0) return
