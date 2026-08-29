@@ -17,7 +17,7 @@ export const toString = {
         return String(arg)
     },
     documentation: {
-        humanReadableName: 'toString',
+        humanReadableName: 'Anything to string',
         category: 'basic',
         longDescription: 'Converts any primitive value (number, boolean, string, null) to its string representation.',
     },
@@ -47,7 +47,7 @@ export const toNumber = {
         return num
     },
     documentation: {
-        humanReadableName: 'toNumber',
+        humanReadableName: 'Anything to Number',
         category: 'basic',
         longDescription: 'Converts any primitive value to a number. Strings are parsed as numbers, booleans become 0 or 1, and numbers are returned as-is.',
     },
