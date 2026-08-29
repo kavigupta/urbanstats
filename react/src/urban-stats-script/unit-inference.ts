@@ -229,6 +229,15 @@ export function readAsANumber(ast: UrbanStatsASTExpression, scope: Scope): { val
     return { value: literal === undefined ? undefined : asNumber(literal), read }
 }
 
+/**
+ * The unit each argument of a call is in, where the call reads a quantity and gives back a plain
+ * number: a logarithm of a density is a number, and the caption has to say of what.
+ */
+export function unitsReadAndDropped(ast: UrbanStatsASTExpression, scope: Scope): (StoredUnit | undefined)[] | undefined {
+    if (ast.type !== 'call' || propagationOf(ast.fn, scope)?.kind !== 'number') return undefined
+    return ast.args.map(arg => unitToWriteIn(quantity(infer(arg.value, scope))))
+}
+
 function pushedInto(propagation: UnitPropagation | undefined, expected: Expected, args: UrbanStatsASTArg[], index: number, scope: Scope): Expected {
     if (propagation?.kind === 'unchanged') {
         return expected

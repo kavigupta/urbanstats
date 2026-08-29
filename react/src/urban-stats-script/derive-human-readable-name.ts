@@ -1,9 +1,9 @@
 import { editableMapData, MapUSS, mapUssParser, read, tableColumnExpression } from '../mapper/settings/map-uss'
 import { assert } from '../utils/defensive'
 import { HumanReadableElement, HumanReadableName } from '../utils/human-readable-element'
-import { joinHumanReadableNames, nameOfUnit } from '../utils/human-readable-name'
+import { joinHumanReadableNames } from '../utils/human-readable-name'
 import { parseHumanReadableTemplate } from '../utils/human-readable-template'
-import { StoredUnit } from '../utils/quantity'
+import { nameOfStoredUnit, StoredUnit } from '../utils/quantity'
 import { abbreviate, formatToSignificantFigures, separateNumber, trimTrailingZeros } from '../utils/text'
 
 import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
@@ -11,7 +11,7 @@ import * as l from './literal-parser'
 import { noLocation } from './location'
 import { expressionOperatorMap } from './operators'
 import { TypeEnvironment } from './types-values'
-import { ConstantUnits, inferConstantUnits, readAsANumber, whereWritten } from './unit-inference'
+import { ConstantUnits, inferConstantUnits, readAsANumber, unitsReadAndDropped, whereWritten } from './unit-inference'
 
 function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, units: ConstantUnits): HumanReadableElement[] | undefined {
     switch (ast.type) {
@@ -134,16 +134,17 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
                 // whatever encloses this sees a call, so -toNumber(a + b) would read -a + b
                 const isOperator = readNumber.read.type === 'binaryOperator' || readNumber.read.type === 'unaryOperator'
                 const inner: HumanReadableElement[] = isOperator ? [{ type: 'parens', value: written }] : written
-                // a count has no name in any units, being named by the statistic counting it
-                if (unit === undefined || nameOfUnit(unit, {}).length === 0) return inner
-                return [...inner, { type: 'atom', value: ' [in ' }, { type: 'unitName', unit }, { type: 'atom', value: ']' }]
+                return inUnitWritten(inner, unit)
             }
             const fn = humanReadableElements(ast.fn, typeEnvironment, units)
             if (fn === undefined) return
+            // ln of a density is a number, so the caption says what the density was read in
+            const dropped = unitsReadAndDropped(ast, { typeEnvironment, named: new Map() })
             const args: HumanReadableElement[][] = []
-            for (const arg of ast.args) {
-                const humanArg = humanReadableElements(arg.value, typeEnvironment, units)
-                if (humanArg === undefined) return
+            for (const [index, arg] of ast.args.entries()) {
+                const written = humanReadableElements(arg.value, typeEnvironment, units)
+                if (written === undefined) return
+                const humanArg = inUnitWritten(written, dropped?.[index])
                 switch (arg.type) {
                     case 'named':
                         args.push([{ type: 'atom', value: `${arg.name.node} = ` }, ...humanArg])
@@ -311,6 +312,24 @@ export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, 
     const withTableCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: joinHumanReadableNames(columnNames) }, location: noLocation } })
     assert(withTableCallReplacedByDataLabel !== undefined, 'should not happen')
     return humanReadableElements(withTableCallReplacedByDataLabel, typeEnvironment, units)
+}
+
+/**
+ * The elements followed by what the numbers behind them are counted in, as in "[in /km^{2}]". The
+ * reader's units are not it: a logarithm is of the number a script computed with, whatever units
+ * the reader has the same number written to them in. A count gets nothing, having no name.
+ */
+function inUnitWritten(written: HumanReadableElement[], unit: StoredUnit | undefined): HumanReadableElement[] {
+    if (unit === undefined) return written
+    const name = nameOfStoredUnit(unit)
+    // A share is stored as the fraction it is, whatever percentage it is written as, and so is a
+    // count of one thing per another: fatalities per capita are stored per person, not per 100k.
+    const perSomething = unit.unit.dimensions.some(({ power }) => power < 0)
+    if (unit.unit.decoration.kind === 'percent' || (name?.length === 0 && perSomething)) {
+        return [...written, { type: 'atom', value: ' [as a fraction]' }]
+    }
+    if (name === undefined || name.length === 0) return written
+    return [...written, { type: 'atom', value: ' [in ' }, ...name, { type: 'atom', value: ']' }]
 }
 
 function formatNumber(number: number, unit?: StoredUnit): HumanReadableElement[] {

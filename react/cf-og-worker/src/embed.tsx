@@ -16,7 +16,7 @@ import { Inset } from '../../src/urban-stats-script/constants/insets'
 import { mixWithBackground } from '../../src/utils/color'
 import { computeAspectRatioForInsets } from '../../src/utils/coordinates'
 import { HumanReadableName } from '../../src/utils/human-readable-element'
-import { nameOfUnit, reifyString } from '../../src/utils/human-readable-name'
+import { reifyString } from '../../src/utils/human-readable-name'
 import { UnitSettings, StoredUnit, writeQuantity } from '../../src/utils/quantity'
 import { trimTrailingZeros } from '../../src/utils/text'
 import { unitForStatistic, unitTypeToStoredUnit } from '../../src/utils/unit'
@@ -202,8 +202,6 @@ function humanReadable(name: HumanReadableName, fontSize: number, units: Units):
                 const { renderedValue, unitName } = writeQuantity(element.value, element.unit, readerOf(units), {})
                 return [narrowSpaces(trimTrailingZeros(renderedValue)), ...humanReadable(unitName, fontSize, units)]
             }
-            case 'unitName':
-                return humanReadable(nameOfUnit(element.unit, readerOf(units)), fontSize, units)
         }
     })
 }

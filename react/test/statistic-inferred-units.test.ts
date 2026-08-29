@@ -77,6 +77,20 @@ test('what a regression did not expect is a difference of shares', async (t) => 
     await t.expect(await rows()).eql(['+9.92 %', '+3.26 %', '+3.21 %'])
 })
 
+urbanstatsFixture('a logarithm of a quantity', tableOf('ln(high_temp)'))
+
+test('a logarithm names what its argument was read in', async (t) => {
+    await waitForLoading()
+    await t.expect(Selector('[data-test-id="statistic-link"]').innerText).eql('ln(Mean high temp [in °F])')
+})
+
+test('and keeps naming it that to a reader in Celsius, the logarithm being of the Fahrenheit number', async (t) => {
+    await waitForLoading()
+    const temperatures = Selector('[data-test-id=temperature_select]')
+    await t.click(temperatures).click(temperatures.find('option').withText(/C/))
+    await t.expect(Selector('[data-test-id="statistic-link"]').innerText).eql('ln(Mean high temp [in °F])')
+})
+
 urbanstatsFixture('a column named after what it is measured against', tableOf('maximum(high_temp, 80)'))
 
 const columnName = Selector('[data-test-id="statistic-link"]')

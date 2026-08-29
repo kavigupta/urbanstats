@@ -43,18 +43,8 @@ export function reifyReact(elements: HumanReadableElement[] | string, settings: 
                 )
             case 'quantity':
                 return <React.Fragment key={index}>{writtenQuantity(element.value, element.unit, settings)}</React.Fragment>
-            case 'unitName':
-                return <React.Fragment key={index}>{reifyReact(nameOfUnit(element.unit, settings), settings)}</React.Fragment>
         }
     })
-}
-
-/**
- * What a unit is called to whoever is reading, taken off a quantity of one of it, since which of
- * several units a quantity is written in depends on how large it is.
- */
-export function nameOfUnit(unit: StoredUnit, settings: UnitSettings): HumanReadableElement[] {
-    return writeQuantity(1, unit, settings, {}).unitName
 }
 
 /** One run of text, so that the unit cannot be rasterized a pixel off the number it belongs to. */
@@ -86,8 +76,6 @@ export function reifyString(elements: HumanReadableElement[] | string, settings:
                 return `(${reifyString(element.value, settings)})`
             case 'quantity':
                 return writtenPlainly(element.value, element.unit, settings)
-            case 'unitName':
-                return reifyString(nameOfUnit(element.unit, settings), settings)
         }
     }).join('')
 }

@@ -68,6 +68,19 @@ function scaledBy(written: Written[]): (value: number) => number {
 }
 
 /**
+ * The way of writing these dimensions in which one of the unit is exactly one -- the unit a stored
+ * value is counted in, rather than whichever unit its magnitude reads best in.
+ */
+export function writtenAsCounted(scales: Dimension[], pool: NamedUnit[], oneInBaseUnits: number): Written[] | undefined {
+    for (const written of coverings(exponentsOf(scales), pool)) {
+        if (Math.abs(scaledBy(written)(oneInBaseUnits) - 1) < 1e-9) {
+            return written
+        }
+    }
+    return undefined
+}
+
+/**
  * The cheapest way of writing a value of these dimensions
  */
 export function chooseUnits(
