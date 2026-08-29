@@ -59,6 +59,8 @@ for (const [condition, expected] of [
     // and a share is stored as the fraction it is, whatever percentage it is written as
     ['ln(commute_bike) > 0', 'ln(Commute Bike % [as a fraction]) > 0'],
     ['ln(pres_2020_margin) > 0', 'ln(2020 Presidential Election [as a fraction]) > 0'],
+    // as is a count of one thing per another: these are stored per person, not per 100k
+    ['ln(ped_cyclist_fatalities_per_capita) > 0', 'ln(Pedestrian/Cyclist Fatalities Per Capita Per Year [as a fraction]) > 0'],
     // a root of a count is in no unit at all, so there is nothing to say it is in
     ['ln(population ** 0.5) > 0', 'ln(Population^{0.5}) > 0'],
     // a number written the long way is written as the number, in the unit it is read in

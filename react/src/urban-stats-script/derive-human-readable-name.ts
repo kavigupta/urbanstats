@@ -321,11 +321,13 @@ export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, 
  */
 function inUnitWritten(written: HumanReadableElement[], unit: StoredUnit | undefined): HumanReadableElement[] {
     if (unit === undefined) return written
-    // a share is stored as the fraction it is, whatever percentage it is written as
-    if (unit.unit.decoration.kind === 'percent') {
+    const name = nameOfStoredUnit(unit)
+    // A share is stored as the fraction it is, whatever percentage it is written as, and so is a
+    // count of one thing per another: fatalities per capita are stored per person, not per 100k.
+    const perSomething = unit.unit.dimensions.some(({ power }) => power < 0)
+    if (unit.unit.decoration.kind === 'percent' || (name?.length === 0 && perSomething)) {
         return [...written, { type: 'atom', value: ' [as a fraction]' }]
     }
-    const name = nameOfStoredUnit(unit)
     if (name === undefined || name.length === 0) return written
     return [...written, { type: 'atom', value: ' [in ' }, ...name, { type: 'atom', value: ']' }]
 }
