@@ -130,8 +130,12 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
                 // toNumber("1000") is the number 1000 written the long way, so it is written as one
                 if (readNumber.value !== undefined) return formatNumber(readNumber.value, unit)
                 // and toNumber of anything else is that thing, read as a number in some unit
-                const inner = humanReadableElements(readNumber.read, typeEnvironment, units)
-                if (inner === undefined) return
+                const written = humanReadableElements(readNumber.read, typeEnvironment, units)
+                if (written === undefined) return
+                // Whatever encloses this sees a call, so it leaves an operator here unbracketed:
+                // -toNumber(a + b) would read -a + b.
+                const isOperator = readNumber.read.type === 'binaryOperator' || readNumber.read.type === 'unaryOperator'
+                const inner: HumanReadableElement[] = isOperator ? [{ type: 'parens', value: written }] : written
                 // A count has no name in any units, being named by the statistic counting it.
                 if (unit === undefined || nameOfUnit(unit, {}).length === 0) return inner
                 return [...inner, { type: 'atom', value: ' [in ' }, { type: 'unitName', unit }, { type: 'atom', value: ']' }]

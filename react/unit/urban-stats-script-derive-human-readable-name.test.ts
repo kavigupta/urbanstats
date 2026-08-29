@@ -56,6 +56,8 @@ for (const [condition, expected] of [
     // and one that cannot be read off the script says what it would be read in, where that has a name
     ['density_pw_1km > toNumber(geoName)', 'PW Density (r=1km) > Default Universe Geography Names [in /km^{2}]'],
     ['population > toNumber(geoName)', 'Population > Default Universe Geography Names'],
+    // brackets it, whatever encloses the call seeing a call rather than the operator written here
+    ['density_pw_1km > -toNumber(geoName + geoName)', 'PW Density (r=1km) > -(Default Universe Geography Names + Default Universe Geography Names) [in /km^{2}]'],
     // a lead is written as whose it is, and a change from one year to another as a change
     ['pres_2020_margin > 0.1', '2020 Presidential Election > D+10%'],
     ['population_change_2000_2020 > 0.05', 'Population Change (2000-2020) > +5%'],
