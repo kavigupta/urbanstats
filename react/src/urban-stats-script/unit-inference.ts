@@ -219,11 +219,7 @@ const toNumberOfOneThing = l.call({
 
 const primitive = l.union<USSPrimitiveRawValue>([l.number(), l.string(), l.boolean()])
 
-/**
- * A call to toNumber, which a caption writes as the number it works out to where it works out to
- * one, and as its argument where it does not. Either way the number written is read in a unit,
- * which the backward pass records at the call.
- */
+/** A call to toNumber, carrying the number its argument is when the argument is a literal. */
 export function readAsANumber(ast: UrbanStatsASTExpression, scope: Scope): { value?: number, read: UrbanStatsASTExpression } | undefined {
     // a script that binds the name itself is calling something else
     if (scope.named.has('toNumber')) return undefined
@@ -278,7 +274,7 @@ function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expecte
         }
         case 'call': {
             const propagation = propagationOf(ast.fn, scope)
-            // a call a caption writes as a number, or names the unit of, is read in one
+            // a caption writes a number where this call is, so record its unit as for a literal
             if (readAsANumber(ast, scope) !== undefined) {
                 const unit = unitToWriteIn(expected)
                 if (unit !== undefined && writableDimensions(unit.unit)) {
