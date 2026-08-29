@@ -22,3 +22,11 @@ export function deriveMapUnit(uss: MapUSS, typeEnvironment: TypeEnvironment): St
 export function deriveTableColumnUnit(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): StoredUnit | undefined {
     return unitOf(tableColumnExpression(uss, typeEnvironment, columnIndex), uss, typeEnvironment)
 }
+
+/**
+ * What to tell someone whose map or column is drawn in no units at all, naming the argument that
+ * would say so. The caller adds the function it goes to, which differs between the maps.
+ */
+export function unitCouldNotBeDerived(what: string): string {
+    return `Unit could not be derived for ${what}, please pass unit=<a unit, such as unitNumber>`
+}

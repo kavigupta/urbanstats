@@ -370,6 +370,16 @@ mapper(() => test)('convert mapper to table and back preserves fields', { code: 
     await t.expect(code).eql(expectedCode)
 })
 
+mapper(() => test)('warns about a map whose values are in no unit it can work out', { code: 'pMap(data=population ** 0.5, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    await waitForLoading()
+    await t.expect(getErrors()).eql(['Unit could not be derived for map, please pass unit=<a unit, such as unitNumber> to pMap(...)'])
+})
+
+mapper(() => test)('and says nothing where it can work one out', { code: 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    await waitForLoading()
+    await t.expect(getErrors()).eql([])
+})
+
 mapper(() => test)('deprecation warning for deprecated transportation statistic', { code: 'pMap(data=commute_walk_incl_wfh, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
     const warning = 'Deprecated: Use commute_walk (Commute Walk %) instead, which excludes work-from-home from the denominator and is more accurate for comparisons'
     await waitForLoading()
