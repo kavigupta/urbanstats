@@ -385,6 +385,12 @@ mapper(() => test)('deprecation warning for deprecated weather statistic', { cod
     await t.expect(getErrors()).eql([warning])
 })
 
+mapper(() => test)('deprecation warning is placed in the editor when a custom script is loaded from a link', { code: 'customNode("pMap(data=high_temp_fall, scale=linearScale(), ramp=rampUridis)")' }, async (t) => {
+    const warning = 'Deprecated: Use high_temp_son (Mean high temperature in Sep/Oct/Nov) instead, which uses month-based seasons instead and is valid in the southern hemisphere'
+    await waitForLoading()
+    await t.expect(getErrors()).eql([`${warning} at 1:11-24`])
+})
+
 mapper(() => test)('warning when map label cannot be derived', { code: 'cMap(data=[1], scale=linearScale(), ramp=rampUridis)' }, async (t) => {
     const warning = 'Label could not be derived for map, please pass label="<your label here>" to cMap(...)'
     await waitForLoading()
