@@ -45,7 +45,7 @@ for (const [condition, expected] of [
     ['high_temp > -10', 'Mean high temp > -10°F'],
     ['-high_temp > -80', '-Mean high temp > -80'],
     // a root of a count is in no unit any pool holds, and writing one threw
-    ['population ** 0.5 > 100', 'Population^{0.5} > 100people^{0.5}'],
+    ['population ** 0.5 > 100', 'Population^{0.5} > 100\u00a0people^{0.5}'],
     // however many people there are they are still people, where the size of a reading is nothing
     ['sum(population) > 1000000', 'sum(Population) > 1m'],
     ['abs(high_temp) > 5', 'abs(Mean high temp) > 5'],

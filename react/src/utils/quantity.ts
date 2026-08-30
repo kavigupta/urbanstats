@@ -62,7 +62,10 @@ export interface StoredUnit {
 
 /** Whether a unit is rendered by itself or against the number it belongs to. */
 export interface UnitPlacement {
+    /** In a column of its own, where a leading solidus reads as a dangling slash. */
     alone?: boolean
+    /** Straight after the number, where a word wants a space off it and km^{2} does not. */
+    afterNumber?: boolean
 }
 
 export interface UnitSettings {
@@ -362,16 +365,19 @@ export function nameOfStoredUnit(stored: StoredUnit): HumanReadableElement[] | u
  * Set `alone` when the unit is rendered by itself, as in a table's unit column. A leading solidus
  * then takes a space, so that it reads as "per square kilometre" rather than as a dangling slash.
  */
-export function nameOf(written: Written[], { alone = false }: UnitPlacement = {}): HumanReadableElement[] {
+export function nameOf(written: Written[], { alone = false, afterNumber = false }: UnitPlacement = {}): HumanReadableElement[] {
     // a count is named by the statistic counting it, but only where there is one of it: a square
     // of people is not people, and says so
     const named = written.filter(({ unit, power }) => unit.name !== '' || power !== 1)
     const over = named.filter(({ power }) => power > 0)
     const under = named.filter(({ power }) => power < 0)
+    // a word takes a space off the number it follows, where km^{2} and % do not
+    const spaced = afterNumber && over.length > 0 && over[0].unit.name === ''
+    const start = spaced ? atom('\u00a0') : []
     if (under.length === 0) {
-        return merged(product(over))
+        return merged([...start, ...product(over)])
     }
-    return merged([...product(over), ...atom(over.length === 0 && alone ? '/\u00a0' : '/'), ...product(under)])
+    return merged([...start, ...product(over), ...atom(over.length === 0 && alone ? '/\u00a0' : '/'), ...product(under)])
 }
 
 /**
