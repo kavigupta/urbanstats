@@ -24,7 +24,7 @@ import { TextBox } from '../urban-stats-script/constants/text-box'
 import { deriveMapLabel } from '../urban-stats-script/derive-human-readable-name'
 import { deriveMapUnit, unitOrNothing } from '../urban-stats-script/derive-unit'
 import { EditorError } from '../urban-stats-script/editor-utils'
-import { noLocation } from '../urban-stats-script/location'
+import { LocInfo, noLocation } from '../urban-stats-script/location'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
 import { loadImage } from '../utils/Image'
@@ -156,8 +156,8 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         cache,
         label,
         derivedUnit: unitOrNothing(derived),
-        whyNoUnit: 'unit' in derived ? undefined : derived.problem,
-        warn: (message) => { execResult.error.push({ type: 'error', kind: 'warning', value: message, location: noLocation }) },
+        noUnit: 'unit' in derived ? undefined : derived,
+        warn: (message, location) => { execResult.error.push({ type: 'error', kind: 'warning', value: message, location }) },
     })
 
     function MapComponent({ props, exportImageRef }: { props: MapUIProps<{ loading: boolean }>, exportImageRef: (fn: () => Promise<HTMLCanvasElement>) => void }): ReactNode {
@@ -425,7 +425,7 @@ type MapComponentCreator = (
     clickable: boolean,
 ) => ReactNode
 
-async function loadMapResult({ mapResultMain, universe, geographyKind, cache, label, derivedUnit, whyNoUnit, warn }:
+async function loadMapResult({ mapResultMain, universe, geographyKind, cache, label, derivedUnit, noUnit, warn }:
 {
     mapResultMain: MapResult
     universe: Universe
@@ -433,8 +433,8 @@ async function loadMapResult({ mapResultMain, universe, geographyKind, cache, la
     cache: MapCache
     label: HumanReadableName
     derivedUnit: StoredUnit | undefined
-    whyNoUnit: string | undefined
-    warn: (message: string) => void
+    noUnit: { problem: string, location: LocInfo } | undefined
+    warn: (message: string, location: LocInfo) => void
 }): Promise<{ features: GeoJSON.Feature[], mapComponentCreator: MapComponentCreator, ramp: RampToDisplay }> {
     const { opaqueType, value } = mapResultMain
     const visuals = mapVisuals(mapResultMain)
@@ -443,7 +443,7 @@ async function loadMapResult({ mapResultMain, universe, geographyKind, cache, la
     const clusterRampBins = visuals.bins ?? []
     const ramp: RampToDisplay = opaqueType === 'cMapRGB'
         ? { type: 'label', value: value.label }
-        : computeRampToDisplay(value, label, derivedUnit, visuals.ramp!, () => { warn(`Unit could not be derived for map: ${whyNoUnit!}. Please pass unit=<a unit, such as unitNumber> to ${opaqueType}(...)`) })
+        : computeRampToDisplay(value, label, derivedUnit, visuals.ramp!, () => { warn(noUnit!.problem, noUnit!.location) })
 
     let features: GeoJSON.Feature[]
     let mapChildren: (fs: GeoJSON.Feature[], clickable: boolean) => ReactNode

@@ -372,7 +372,7 @@ mapper(() => test)('convert mapper to table and back preserves fields', { code: 
 
 mapper(() => test)('warns about a map whose values are in no unit it can work out', { code: 'pMap(data=population + area, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
     await waitForLoading()
-    await t.expect(getErrors()).eql(['Unit could not be derived for map: cannot add people and m^2, in population + area. Please pass unit=<a unit, such as unitNumber> to pMap(...)'])
+    await t.expect(getErrors()).eql(['Could not compute units for population + area: cannot add people and m^2 at 1:11-27'])
 })
 
 mapper(() => test)('and says nothing where it can work one out', { code: 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {

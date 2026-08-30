@@ -82,7 +82,7 @@ urbanstatsFixture('a column in no unit at all', `${target}/statistic.html?uss=${
 test('a column whose unit cannot be worked out says so, where the script is being written', async (t) => {
     await waitForLoading()
     await t.expect(Selector('#test-editor-result').innerText)
-        .contains('Unit could not be derived for column 0: people·m^2 has no name of its own, in population * area. Please pass unit=<a unit, such as unitNumber> to column(...)')
+        .contains('Could not compute units for population * area: people·m^2 has no name of its own')
 })
 
 urbanstatsFixture('a logarithm of a quantity', tableOf('ln(high_temp)'))

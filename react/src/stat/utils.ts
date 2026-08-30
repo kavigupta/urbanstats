@@ -9,6 +9,7 @@ import { Universe } from '../universe'
 import { orderNonNan, Table, tableType } from '../urban-stats-script/constants/table'
 import { deriveTableColumnLabel, deriveTableLabel, tableLabel } from '../urban-stats-script/derive-human-readable-name'
 import { deriveTableColumnUnit } from '../urban-stats-script/derive-unit'
+import { LocInfo } from '../urban-stats-script/location'
 import { unparse } from '../urban-stats-script/parser'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
@@ -77,12 +78,15 @@ function computeOrdinals(values: number[]): number[] {
     return ordinals
 }
 
-function derivedUnit(mapUSS: MapUSS, typeEnvironment: TypeEnvironment, index: number, warn: (message: string) => void): StoredUnit | undefined {
+/** Reports something the panel wants said about the script, at the place in it that says so. */
+export type Warn = (message: string, location?: LocInfo) => void
+
+function derivedUnit(mapUSS: MapUSS, typeEnvironment: TypeEnvironment, index: number, warn: Warn): StoredUnit | undefined {
     const derived = deriveTableColumnUnit(mapUSS, typeEnvironment, index)
     if ('unit' in derived) {
         return derived.unit
     }
-    warn(`Unit could not be derived for column ${index}: ${derived.problem}. Please pass unit=<a unit, such as unitNumber> to column(...)`)
+    warn(derived.problem, derived.location)
     return undefined
 }
 
@@ -96,7 +100,7 @@ export function statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn }
     stat: Statistic
     mapUSS: MapUSS
     typeEnvironment: TypeEnvironment
-    warn: (message: string) => void
+    warn: Warn
 }): StatData {
     const columns = table.columns.map((column, index) => {
         let name = column.name ?? deriveTableColumnLabel(mapUSS, typeEnvironment, index)
