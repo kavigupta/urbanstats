@@ -6,29 +6,29 @@ import { TypeEnvironment } from './types-values'
 import { unitToWriteIn } from './unit-algebra'
 import { inferBindings, inferUnit } from './unit-inference'
 
-/** A unit read off the script, or what stopped it being read. */
+/** A unit read off the script, or why it could not be. */
 export type DerivedUnit = { unit: StoredUnit } | { problem: string }
 
 /** Read against the whole script, so that a name the script assigned is followed. */
 function unitOf(values: UrbanStatsASTExpression | undefined, uss: MapUSS, typeEnvironment: TypeEnvironment): DerivedUnit {
     if (values === undefined) {
-        return { problem: 'its values are not written as an expression the units can be read from' }
+        return { problem: 'its values are not an expression a unit can be read from' }
     }
     const known = inferUnit(values, typeEnvironment, inferBindings(uss, typeEnvironment))
     if (known.kind === 'any') {
-        return { problem: 'nothing in the script says what its values are measured in' }
+        return { problem: 'no unit is known for its values' }
     }
     if (known.kind === 'none') {
-        return { problem: 'its values put together quantities that are not in the same unit' }
+        return { problem: 'its values combine different units' }
     }
     if (unitToWriteIn(known) === undefined) {
-        return { problem: 'its values are neither readings nor differences of readings, so a scale with no zero of its own cannot be written' }
+        return { problem: 'its values are neither readings nor differences of readings' }
     }
     if (!writableDimensions(known.unit.unit)) {
         return {
             problem: known.unit.unit.dimensions.some(({ power }) => !Number.isInteger(power))
-                ? 'a fractional power of a unit is in no units anybody writes'
-                : 'a count of one thing times another has no name of its own',
+                ? 'its unit has a fractional power'
+                : 'its unit is a count times another unit',
         }
     }
     return { unit: known.unit }
@@ -42,7 +42,7 @@ export function deriveTableColumnUnit(uss: MapUSS, typeEnvironment: TypeEnvironm
     return unitOf(tableColumnExpression(uss, typeEnvironment, columnIndex), uss, typeEnvironment)
 }
 
-/** The unit where one was read, for a caller with nothing to say about why there is none. */
+/** The unit, for a caller that does not report why there is none. */
 export function unitOrNothing(derived: DerivedUnit): StoredUnit | undefined {
     return 'unit' in derived ? derived.unit : undefined
 }
