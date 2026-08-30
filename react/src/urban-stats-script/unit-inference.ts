@@ -397,8 +397,9 @@ function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expecte
  * changes what the script computes, so the caption writes these out.
  */
 export interface SuppliedFactor {
-    /** What the expression is read as multiplied by, where any factor does what is wanted: a
-     * temperature read as a plain number is read from no zero a factor could undo. */
+    /** The unit of the one that is multiplied in, so that "× 1 000" is one of a unit stored a
+     * thousand to the base. Nothing where no factor can be written: a temperature is read as a
+     * plain number from a zero no factor moves. */
     factor: StoredUnit | undefined
     /** The unit of what it multiplies. */
     of: StoredUnit
