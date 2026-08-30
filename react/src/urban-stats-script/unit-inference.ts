@@ -1,4 +1,4 @@
-import { dimensionless, sameDimensions, StoredUnit, writableDimensions } from '../utils/quantity'
+import { describeDimensions, dimensionless, sameDimensions, StoredUnit, writableDimensions } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
@@ -11,6 +11,8 @@ import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit,
 const anything = { kind: 'any' } satisfies AbstractInterpValue
 
 /** A script has objects in it as well as quantities, a regression's result being one. */
+type UrbanStatsASTNode = UrbanStatsASTExpression | UrbanStatsASTStatement
+
 type Inferred = AbstractInterpValue | { kind: 'fields', fields: Map<string, AbstractInterpValue> }
 
 function quantity(value: Inferred): AbstractInterpValue {
@@ -332,6 +334,66 @@ export function inferConstantUnits(program: UrbanStatsASTStatement | UrbanStatsA
     const into: ConstantUnits = new Map()
     readBack(program, anything, scope, into)
     return into
+}
+
+const verbs: Partial<Record<string, string>> = { '+': 'add', '-': 'subtract', '*': 'multiply', '/': 'divide' }
+
+function partsOf(ast: UrbanStatsASTNode): UrbanStatsASTNode[] {
+    switch (ast.type) {
+        case 'binaryOperator':
+            return [ast.left, ast.right]
+        case 'unaryOperator':
+        case 'customNode':
+        case 'autoUXNode':
+            return [ast.expr]
+        case 'call':
+            return ast.args.map(arg => arg.value)
+        case 'vectorLiteral':
+            return ast.elements
+        case 'attribute':
+            return [ast.expr]
+        default:
+            return []
+    }
+}
+
+function whatWentWrong(ast: UrbanStatsASTNode, scope: Scope): string {
+    if (ast.type === 'binaryOperator') {
+        const left = quantity(infer(ast.left, scope))
+        const right = quantity(infer(ast.right, scope))
+        if (left.kind === 'in' && right.kind === 'in') {
+            const verb = verbs[ast.operator.node] ?? 'compare'
+            return `cannot ${verb} ${describeDimensions(left.unit.unit)} and ${describeDimensions(right.unit.unit)}`
+        }
+    }
+    return 'its values combine different units'
+}
+
+const nothingKnown = 'no unit is known for it'
+
+/** The smallest part of an expression whose units do not work out, and what does not work. */
+export function whyNoUnit(ast: UrbanStatsASTNode, scope: Scope): { at: UrbanStatsASTNode, problem: string } | undefined {
+    const value = quantity(infer(ast, scope))
+    if (value.kind === 'in' && unitToWriteIn(value) !== undefined && writableDimensions(value.unit.unit)) {
+        return undefined
+    }
+    for (const part of partsOf(ast)) {
+        const inner = whyNoUnit(part, scope)
+        // an unknown part says no more than this whole expression does, so keep looking
+        if (inner !== undefined && inner.problem !== nothingKnown) {
+            return inner
+        }
+    }
+    if (value.kind === 'any') {
+        return { at: ast, problem: nothingKnown }
+    }
+    if (value.kind === 'none') {
+        return { at: ast, problem: whatWentWrong(ast, scope) }
+    }
+    if (unitToWriteIn(value) === undefined) {
+        return { at: ast, problem: 'it is neither a reading nor a difference of readings' }
+    }
+    return { at: ast, problem: `${describeDimensions(value.unit.unit)} has no name of its own` }
 }
 
 /** The unit an expression works out to, where reading it determines one. */

@@ -50,8 +50,11 @@ function coverings(needed: Exponents, pool: NamedUnit[], settled: BaseUnit[] = [
     assert(power !== undefined, 'we filtered out undefined powers')
     return pool.flatMap((unit) => {
         const covers = exponentsOf(unit.dimensions)[baseUnit] ?? 0
+        // A unit of one that goes unnamed can be taken to any power at all, contributing neither a
+        // name nor a scale: half of a person is what a root of a count is counted in.
+        const anyPowerWillDo = unit.name === '' && unit.size === 1
         // it has to take this base unit's exponent to exactly zero, and leave the settled ones be
-        if (covers === 0 || power % covers !== 0 || unit.dimensions.some(dimension => settled.includes(dimension.baseUnit))) {
+        if (covers === 0 || (power % covers !== 0 && !anyPowerWillDo) || unit.dimensions.some(dimension => settled.includes(dimension.baseUnit))) {
             return []
         }
         const times = power / covers

@@ -77,12 +77,12 @@ test('what a regression did not expect is a difference of shares', async (t) => 
     await t.expect(await rows()).eql(['+9.92 %', '+3.26 %', '+3.21 %'])
 })
 
-urbanstatsFixture('a column in no unit at all', `${target}/statistic.html?uss=${encodeURIComponent('customNode(""); condition (true); table(columns=[column(values=population ** 0.5)])')}&article_type=Judicial+Circuit&start=1&amount=3&order=descending&universe=USA&edit=true`)
+urbanstatsFixture('a column in no unit at all', `${target}/statistic.html?uss=${encodeURIComponent('customNode(""); condition (true); table(columns=[column(values=population * area)])')}&article_type=Judicial+Circuit&start=1&amount=3&order=descending&universe=USA&edit=true`)
 
 test('a column whose unit cannot be worked out says so, where the script is being written', async (t) => {
     await waitForLoading()
     await t.expect(Selector('#test-editor-result').innerText)
-        .contains('Unit could not be derived for column 0: its unit has a fractional power. Please pass unit=<a unit, such as unitNumber> to column(...)')
+        .contains('Unit could not be derived for column 0: people·m^2 has no name of its own, in population * area. Please pass unit=<a unit, such as unitNumber> to column(...)')
 })
 
 urbanstatsFixture('a logarithm of a quantity', tableOf('ln(high_temp)'))
@@ -140,7 +140,7 @@ test('every column of a filtered table is named and written in what the script w
     await t.expect(names).eql(['Population ÷ Area', 'Mean high temp − Mean low temp', 'max(Commute Bike %, 5%)', 'Population0.5'])
     await t.expect(await rows()).eql([
         '3\u202f897 /\u00a0km2', '+16.8 °F', '5.00 %', '830',
-        '163 /\u00a0km2', '+15.9 °F', '5.00 %', '4\u202f830',
+        '163 /\u00a0km2', '+15.9 °F', '5.00 %', '4\u202f825',
     ])
 })
 
@@ -149,5 +149,5 @@ urbanstatsFixture('a quantity with no writing', tableOf('population ** 0.5'))
 test('a root of a count is written plainly rather than failing', async (t) => {
     await waitForLoading()
     // to three figures, as anything in no known unit is, rather than whole as a count of people is
-    await t.expect(await rows()).eql(['8\u202f180', '6\u202f110', '6\u202f060'])
+    await t.expect(await rows()).eql(['8\u202f176', '6\u202f105', '6\u202f063'])
 })

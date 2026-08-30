@@ -204,13 +204,25 @@ function allUnits(settings: UnitSettings): NamedUnit[] {
 
 const counted: BaseUnit[] = ['person', 'usd', 'fatality']
 
+const baseUnitWords: Record<BaseUnit, string> = {
+    person: 'people', usd: 'dollars', fatality: 'fatalities', m: 'm', g: 'g', s: 's', F: '°F',
+}
+
+/** The base units a quantity is in, for saying why two of them cannot be put together. */
+export function describeDimensions(unit: Unit): string {
+    const parts = unit.dimensions.map(({ baseUnit, power }) =>
+        power === 1 ? baseUnitWords[baseUnit] : `${baseUnitWords[baseUnit]}^${power}`)
+    return parts.length === 0 ? 'a plain number' : parts.join('·')
+}
+
 /**
  * A count goes unnamed, so it can only be the one thing counted: people times square kilometres
  * would be written `km²` and read as an area. A fractional power is in no pool at all. A statistic
  * that says which units it is written in has named them, counted things and all.
  */
 export function writableDimensions(unit: Unit): boolean {
-    if (!unit.dimensions.every(({ power }) => Number.isInteger(power))) {
+    // a fractional power of a count is written as nothing, the count having no name to raise
+    if (!unit.dimensions.every(({ baseUnit, power }) => Number.isInteger(power) || counted.includes(baseUnit))) {
         return false
     }
     if (unit.decoration.kind === 'writtenIn') {
@@ -221,7 +233,8 @@ export function writableDimensions(unit: Unit): boolean {
         return true
     }
     const above = unit.dimensions.filter(({ power }) => power > 0)
-    return counts.length === 1 && counts[0].power === 1 && above.length === 1
+    // the count may be taken to any power, a root of one being counted in roots of the thing
+    return counts.length === 1 && counts[0].power > 0 && above.length === 1
 }
 
 type DimensionKey = string

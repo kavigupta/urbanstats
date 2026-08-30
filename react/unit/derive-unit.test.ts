@@ -102,8 +102,8 @@ void test('a difference of two leads is written as the lead it is, and not twice
 })
 
 void test('a quantity with no writing is left to whatever its name is taken for', () => {
-    // a root of a count is in no unit any pool holds, and asking for one threw
-    assert.equal(mapUnit('population ** 0.5'), 'nothing')
+    // a root of a count is written as the plain number it is, the count having no name to raise
+    assert.equal(mapUnit('population ** 0.5'), '1\u202f000')
     // a count goes unnamed, so it can only be the one thing counted: people times an area would
     // be written km^{2} and read as an area, and an area over people as an area too
     assert.equal(mapUnit('population * area'), 'nothing')

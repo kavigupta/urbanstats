@@ -1,10 +1,11 @@
 import { mapDataExpression, MapUSS, tableColumnExpression } from '../mapper/settings/map-uss'
-import { StoredUnit, writableDimensions } from '../utils/quantity'
+import { StoredUnit } from '../utils/quantity'
 
 import { UrbanStatsASTExpression } from './ast'
+import { unparse } from './parser'
 import { TypeEnvironment } from './types-values'
 import { unitToWriteIn } from './unit-algebra'
-import { inferBindings, inferUnit } from './unit-inference'
+import { inferBindings, whyNoUnit, inferUnit } from './unit-inference'
 
 /** A unit read off the script, or why it could not be. */
 export type DerivedUnit = { unit: StoredUnit } | { problem: string }
@@ -14,24 +15,12 @@ function unitOf(values: UrbanStatsASTExpression | undefined, uss: MapUSS, typeEn
     if (values === undefined) {
         return { problem: 'its values are not an expression a unit can be read from' }
     }
-    const known = inferUnit(values, typeEnvironment, inferBindings(uss, typeEnvironment))
-    if (known.kind === 'any') {
-        return { problem: 'no unit is known for its values' }
+    const scope = { typeEnvironment, named: inferBindings(uss, typeEnvironment) }
+    const wrong = whyNoUnit(values, scope)
+    if (wrong === undefined) {
+        return { unit: unitToWriteIn(inferUnit(values, typeEnvironment, scope.named))! }
     }
-    if (known.kind === 'none') {
-        return { problem: 'its values combine different units' }
-    }
-    if (unitToWriteIn(known) === undefined) {
-        return { problem: 'its values are neither readings nor differences of readings' }
-    }
-    if (!writableDimensions(known.unit.unit)) {
-        return {
-            problem: known.unit.unit.dimensions.some(({ power }) => !Number.isInteger(power))
-                ? 'its unit has a fractional power'
-                : 'its unit is a count times another unit',
-        }
-    }
-    return { unit: known.unit }
+    return { problem: `${wrong.problem}, in ${unparse(wrong.at, { inline: true, expressionalContext: true })}` }
 }
 
 export function deriveMapUnit(uss: MapUSS, typeEnvironment: TypeEnvironment): DerivedUnit {
