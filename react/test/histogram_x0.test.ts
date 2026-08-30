@@ -97,16 +97,16 @@ test('histogram-monthly-comparison-mismatched-pair-validity', async (t) => {
 })
 
 // Tooltip regression coverage: paired series (Rain/Snow, High/Low) for the same region
-// should be stacked onto one tooltip line ("Canada: 4.8cm / 4.2cm") rather than two
-// separate lines that both just say "Canada: <value>". A region with no valid partner
-// data (Singapore has no snowfall) should keep its single unstacked value.
+// should be stacked onto one tooltip line rather than two separate lines that both just
+// say "Canada: <value>". Singapore has no valid snowfall, so the regions carry different
+// subseries and the values name their own rather than sharing a header line.
 test('histogram-monthly-tooltip-stacks-rain-snow', async (t) => {
     await checkTextboxes(t, ['Weather'])
     await t.click(Selector('[aria-label="Expand Rainfall"]'))
     await t.hover(Selector('g[aria-label="dot"] circle').nth(0))
     const tip = Selector('g[aria-label="tip"] tspan')
-    await t.expect(tip.withText(/^.?Canada: [-\d.]+cm \/ [-\d.]+cm$/).exists).ok('Canada should stack Rain / Snow onto one line')
-    await t.expect(tip.withText(/^.?Singapore: [-\d.]+cm$/).exists).ok('Singapore should show a single unstacked value')
+    await t.expect(tip.withText(/^.?Canada: [-\d.]+cm \(Rain\) \/ [-\d.]+cm \(Snow\)$/).exists).ok('Canada should stack Rain / Snow onto one line')
+    await t.expect(tip.withText(/^.?Singapore: [-\d.]+cm \(Rain\)$/).exists).ok('Singapore should show a single value, named as Rain')
 })
 
 // Same mismatched validity, but with a third (also-valid) region in the mix.
@@ -159,11 +159,13 @@ test('histogram-monthly-comparison-temperature-pair', async (t) => {
 })
 
 // Same tooltip-stacking check as the rain/snow case, but for the High/Low temperature pair.
+// Both regions carry both subseries, so one header line names the order for all of them.
 test('histogram-monthly-tooltip-stacks-high-low', async (t) => {
     await checkTextboxes(t, ['Weather'])
     await t.click(Selector('[aria-label="Expand Mean high temp"]'))
     await t.hover(Selector('g[aria-label="dot"] circle').nth(0))
     const tip = Selector('g[aria-label="tip"] tspan')
+    await t.expect(tip.withText(/^.?High \/ Low$/).exists).ok('the tooltip should name the subseries the stacked values are in')
     await t.expect(tip.withText(/^.?USA: [-\d.]+°F \/ [-\d.]+°F$/).exists).ok('USA should stack High / Low onto one line')
     await t.expect(tip.withText(/^.?Canada: [-\d.]+°F \/ [-\d.]+°F$/).exists).ok('Canada should stack High / Low onto one line')
 })
