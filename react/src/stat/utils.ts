@@ -8,7 +8,7 @@ import { StatName } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 import { orderNonNan, Table, tableType } from '../urban-stats-script/constants/table'
 import { deriveTableColumnLabel, deriveTableLabel, tableLabel } from '../urban-stats-script/derive-human-readable-name'
-import { conditionUnitProblem, deriveTableColumnUnit } from '../urban-stats-script/derive-unit'
+import { scriptUnitProblem, deriveTableColumnUnit } from '../urban-stats-script/derive-unit'
 import { LocInfo } from '../urban-stats-script/location'
 import { unparse } from '../urban-stats-script/parser'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
@@ -102,9 +102,16 @@ export function statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn }
     typeEnvironment: TypeEnvironment
     warn: Warn
 }): StatData {
-    const conditionProblem = conditionUnitProblem(mapUSS, typeEnvironment)
-    if (conditionProblem !== undefined) {
-        warn(conditionProblem.problem, conditionProblem.location)
+    const scriptProblem = scriptUnitProblem(mapUSS, typeEnvironment)
+    const said = new Set<string>()
+    const warnOnce: Warn = (message, location) => {
+        if (!said.has(message)) {
+            said.add(message)
+            warn(message, location)
+        }
+    }
+    if (scriptProblem !== undefined) {
+        warnOnce(scriptProblem.problem, scriptProblem.location)
     }
     const columns = table.columns.map((column, index) => {
         let name = column.name ?? deriveTableColumnLabel(mapUSS, typeEnvironment, index)
@@ -118,7 +125,7 @@ export function statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn }
             ordinal: computeOrdinals(column.values),
             name,
             unit: column.unit === undefined
-                ? derivedUnit(mapUSS, typeEnvironment, index, warn)
+                ? derivedUnit(mapUSS, typeEnvironment, index, warnOnce)
                 : unitTypeToStoredUnit(column.unit),
         }
     })

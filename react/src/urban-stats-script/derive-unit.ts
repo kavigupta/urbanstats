@@ -33,15 +33,12 @@ function describeProblem(wrong: { at: UrbanStatsASTExpression | UrbanStatsASTSta
 }
 
 /**
- * What the units of a script's condition do not work out to. A condition has no unit of its own,
- * being a comparison, so only the parts that do not go together are reported.
+ * What in a script does not go together, wherever it is written: a condition comparing a number
+ * against a time says nothing about what anything is measured in, so nothing else would report it.
  */
-export function conditionUnitProblem(uss: MapUSS, typeEnvironment: TypeEnvironment): { problem: string, location: LocInfo } | undefined {
-    if (uss.type !== 'statements') {
-        return undefined
-    }
+export function scriptUnitProblem(uss: MapUSS, typeEnvironment: TypeEnvironment): { problem: string, location: LocInfo } | undefined {
     const scope = { typeEnvironment, named: inferBindings(uss, typeEnvironment) }
-    const wrong = whyUnitsClash(uss.result[1].condition, scope)
+    const wrong = whyUnitsClash(uss, scope)
     return wrong === undefined ? undefined : describeProblem(wrong)
 }
 

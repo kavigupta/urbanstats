@@ -347,6 +347,7 @@ function partsOf(ast: UrbanStatsASTNode): UrbanStatsASTNode[] {
         case 'autoUXNode':
             return [ast.expr]
         case 'expression':
+        case 'assignment':
             return [ast.value]
         case 'call':
             return ast.args.map(arg => arg.value)
@@ -354,6 +355,12 @@ function partsOf(ast: UrbanStatsASTNode): UrbanStatsASTNode[] {
             return ast.elements
         case 'attribute':
             return [ast.expr]
+        case 'statements':
+            return [...ast.result]
+        case 'do':
+            return [...ast.statements]
+        case 'condition':
+            return [ast.condition, ...ast.rest]
         default:
             return []
     }

@@ -3,7 +3,7 @@ import test from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { mapUSSFromString } from '../src/mapper/settings/map-uss'
-import { conditionUnitProblem, deriveMapUnit, deriveTableColumnUnit, unitOrNothing } from '../src/urban-stats-script/derive-unit'
+import { scriptUnitProblem, deriveMapUnit, deriveTableColumnUnit, unitOrNothing } from '../src/urban-stats-script/derive-unit'
 import { reifyString } from '../src/utils/human-readable-name'
 import { UnitSettings, StoredUnit, writeQuantity } from '../src/utils/quantity'
 
@@ -39,7 +39,7 @@ void test('a map is written in the units of what it maps', () => {
 
 function conditionProblem(condition: string): string {
     const uss = mapUSSFromString(`customNode("");\ncondition (${condition})\nclusterMap(data=area, scale=linearScale(), ramp=rampUridis)`)
-    return conditionUnitProblem(uss, defaultTypeEnvironment('USA'))?.problem ?? 'nothing to say'
+    return scriptUnitProblem(uss, defaultTypeEnvironment('USA'))?.problem ?? 'nothing to say'
 }
 
 void test('a condition compares things that go together, or says they do not', () => {
