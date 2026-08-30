@@ -1,0 +1,44 @@
+// Aliased over `react` by rspack.config.js, so every element passes through here.
+// React only checks keys in its development build.
+const React = require('../node_modules/react/index.js') // By path, since `react` resolves back to this file
+
+const elementType = Symbol.for('react.element')
+
+// One report per list, so a long list can't flood the console on every render
+function checkKeys(children) {
+    const seen = new Set()
+    let reported = false
+    for (const child of children) {
+        if (Array.isArray(child)) {
+            // React keys a nested array by its position, so its keys are a separate scope
+            checkKeys(child)
+            continue
+        }
+        if (reported || child?.$$typeof !== elementType) {
+            continue
+        }
+        const name = typeof child.type === 'string' ? child.type : (child.type?.displayName ?? child.type?.name ?? 'component')
+        if (child.key === null) {
+            console.error(`[failtest] Each child in a list should have a unique "key" prop, but a <${name}> has none\n${new Error().stack}`)
+            reported = true
+        }
+        else if (seen.has(child.key)) {
+            console.error(`[failtest] Encountered two children with the same key, \`${child.key}\`\n${new Error().stack}`)
+            reported = true
+        }
+        seen.add(child.key)
+    }
+}
+
+module.exports = {
+    ...React,
+    createElement(type, props, ...children) {
+        // Without positional children, React renders props.children instead
+        for (const child of children.length > 0 ? children : [props?.children]) {
+            if (Array.isArray(child)) {
+                checkKeys(child)
+            }
+        }
+        return React.createElement(type, props, ...children)
+    },
+}
