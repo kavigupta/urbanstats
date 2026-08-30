@@ -585,6 +585,10 @@ function collapse(rows: ArticleRow[][], groupYearName: string): ArticleRow[] {
     if (rows.length === 1) {
         return rows[0]
     }
+    const sources = Array.from(new Set(
+        rows.filter(rowsForStat => rowsForStat.some(row => !isNoValue(row.statval)))
+            .map(rowsForStat => statParents.get(rowsForStat[0].statpath)!.source.name),
+    ))
     const rowsByArticle = rows[0].map((_, i) => rows.map(row => row[i]))
     return rowsByArticle.map((rowsForArticle) => {
         const rowsWithValues = rowsForArticle.filter(row => !isNoValue(row.statval))
@@ -597,7 +601,7 @@ function collapse(rows: ArticleRow[][], groupYearName: string): ArticleRow[] {
             // If we can't find any rows with values, just use the first one
             ...rowToUse,
             renderedStatname: groupYearName,
-            disclaimer: 'heterogenous-sources',
+            disclaimer: { kind: 'heterogenous-sources', sources },
         }
     })
 }

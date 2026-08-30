@@ -112,7 +112,7 @@ function byStatArticle(dataByArticleStat: ArticleRow[][]): ArticleRow[][] {
 
 /** A statistic has an ordinal only if every region reports it from the same source. */
 function validOrdinals(dataByStatArticle: ArticleRow[][]): boolean[] {
-    return dataByStatArticle.map(statData => statData.every(value => value.kind !== 'metadata' && value.disclaimer !== 'heterogenous-sources'))
+    return dataByStatArticle.map(statData => statData.every(value => value.kind !== 'metadata' && value.disclaimer?.kind !== 'heterogenous-sources'))
 }
 
 /** Ordinals are also only meaningful between regions of the same type. */

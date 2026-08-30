@@ -13,9 +13,10 @@ urbanstatsFixture(
 test('heterogenous-sources disclaimer shows when comparing different sources', async (t) => {
     await t.resizeWindow(1400, 800)
     await t.expect(Selector('.disclaimer-toggle').count).eql(1, 'one disclaimer when sources differ')
+    await t.expect(Selector('[data-test-id=statistic-link]').withExactText('Population').exists).ok('no single source can label the collapsed row')
     await t.click(Selector('.disclaimer-toggle').nth(0))
     await t.expect(
-        Selector('div').withExactText('This statistic is based on data from multiple sources, which may not be consistent with each other.').visible,
+        Selector('div').withExactText('This statistic is based on data from multiple sources (US Census, GHSL), which may not be consistent with each other.').visible,
     ).ok('heterogenous-sources disclaimer text visible after click')
     await screencap(t)
 })
