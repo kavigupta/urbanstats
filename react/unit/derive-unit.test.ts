@@ -37,6 +37,24 @@ void test('a map is written in the units of what it maps', () => {
     assert.equal(mapUnit('high_temp - low_temp'), '+1\u202f000.0°F')
 })
 
+void test('two quantities add only where they are stored the same way', () => {
+    // the values added are the ones the statistics are stored as: kilometres and metres are both
+    // lengths, and adding the numbers adds nothing
+    assert.equal(mapUnit('hospital_mean_dist + elevation'), 'nothing')
+    // an area over a count of people is an area, and one made of a rainfall and a length of time
+    // is an area too, in units nothing else is stored in
+    assert.equal(mapUnit('population * area / population - (2 * rainfall * sunny_hours) ** 2'), 'nothing')
+    assert.equal(mapUnit('area + area'), '1\u202f000km^{2}')
+})
+
+void test('a literal is read in whatever unit makes the rest of the expression work', () => {
+    // people are no area, but a number multiplying them may be an area over each of them
+    assert.equal(mapUnit('area + population * 1'), '1\u202f000km^{2}')
+    assert.equal(mapUnit('area + population'), 'nothing')
+    // and where nothing can be read into it, as inside a logarithm, which makes a number of anything
+    assert.equal(mapUnit('area + ln(population * 1)'), 'nothing')
+})
+
 void test('a map of what no unit can be read off says nothing', () => {
     assert.equal(mapUnit('population + area'), 'nothing')
     assert.equal(mapUnit('high_temp + low_temp'), 'nothing')
