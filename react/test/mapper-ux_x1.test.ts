@@ -395,7 +395,7 @@ clusterMap(
 
 mapper(() => test)('warns about a condition comparing things that do not go together', {
     code: `customNode("");
-condition (population > area)
+condition (ln(compactness * 100) > sunny_hours)
 clusterMap(
     data=area,
     scale=linearScale(),
@@ -403,9 +403,11 @@ clusterMap(
 )`,
 }, async (t) => {
     await waitForLoading()
-    // the map itself is an area, and it is the condition that compares people against an area
+    // the map itself is an area, and it is the condition that compares a number against a time.
+    // It keeps every geography out, so the map is not drawn and the warning is all there is.
     await t.expect(getErrors()).eql([
-        'Could not compute units for population > area: cannot compare people and m^2',
+        '- USS expression did not return a cMap, cMapRGB, pMap, or clusterMap type, got: null at 1:1-0\n'
+        + '- Could not compute units for (ln(compactness * 100)) > sunny_hours: cannot compare a plain number and s at 1:1-0',
     ])
 })
 

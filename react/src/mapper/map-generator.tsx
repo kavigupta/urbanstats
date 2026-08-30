@@ -107,6 +107,13 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
 
     const execResult = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: mapSettings.geographyKind, universe: mapSettings.universe }, stmts })
 
+    // said before the map is drawn, since a condition comparing the wrong things often keeps every
+    // geography out and leaves nothing to draw
+    const conditionProblem = conditionUnitProblem(mapSettings.script.uss, typeEnvironment)
+    if (conditionProblem !== undefined) {
+        execResult.error.push({ type: 'error', kind: 'warning', value: conditionProblem.problem, location: conditionProblem.location })
+    }
+
     if (execResult.resultingValue === undefined) {
         const prev = await previousGenerator()
         return {
@@ -148,10 +155,6 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
     }
 
     const derived = deriveMapUnit(mapSettings.script.uss, typeEnvironment)
-    const conditionProblem = conditionUnitProblem(mapSettings.script.uss, typeEnvironment)
-    if (conditionProblem !== undefined) {
-        execResult.error.push({ type: 'error', kind: 'warning', value: conditionProblem.problem, location: conditionProblem.location })
-    }
 
     const { features, mapComponentCreator, ramp } = await loadMapResult({
         mapResultMain,

@@ -26,7 +26,8 @@ function unitOf(values: UrbanStatsASTExpression | undefined, uss: MapUSS, typeEn
 
 function describeProblem(wrong: { at: UrbanStatsASTExpression | UrbanStatsASTStatement, problem: string }): { problem: string, location: LocInfo } {
     return {
-        problem: `Could not compute units for ${unparse(wrong.at, { inline: true, expressionalContext: true })}: ${wrong.problem}`,
+        // simplified, so that what the editor wrapped in a customNode reads as what was written
+        problem: `Could not compute units for ${unparse(wrong.at, { inline: true, expressionalContext: true, simplify: 'auto-ux' })}: ${wrong.problem}`,
         location: locationOf(wrong.at),
     }
 }
