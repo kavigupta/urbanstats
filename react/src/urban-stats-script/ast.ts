@@ -8,42 +8,46 @@ import { BinaryOperatorSymbol, UnaryOperatorSymbol } from './operators'
 import { Decorated, ParseError } from './parser'
 import { USSType } from './types-values'
 
-export type UrbanStatsASTArg = (
-    { type: 'unnamed', value: UrbanStatsASTExpression } |
-    { type: 'named', name: Decorated<string>, value: UrbanStatsASTExpression })
+/**
+ * A tree carries whatever a reader of it hangs on the nodes, and nothing by default: reading a
+ * script for its units hangs on each number what it is a number of.
+ */
+export type UrbanStatsASTArg<M = unknown> = (
+    { type: 'unnamed', value: UrbanStatsASTExpression<M> } |
+    { type: 'named', name: Decorated<string>, value: UrbanStatsASTExpression<M> }) & M
 
-export type UrbanStatsASTLHS = (
+export type UrbanStatsASTLHS<M = unknown> = (
     { type: 'identifier', name: Decorated<string> } |
-    { type: 'attribute', expr: UrbanStatsASTExpression, name: Decorated<string> })
+    { type: 'attribute', expr: UrbanStatsASTExpression<M>, name: Decorated<string> }) & M
 
 export type UrbanStatsASTConstant = (
     { type: 'number', value: number } |
     { type: 'string', value: string } |
     { type: 'humanReadableElements', value: HumanReadableElement[] })
 
-export type UrbanStatsASTExpression = (
-    UrbanStatsASTLHS |
-    { type: 'constant', value: Decorated<UrbanStatsASTConstant> } |
-    { type: 'call', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[], entireLoc: LocInfo } |
-    { type: 'binaryOperator', operator: Decorated<BinaryOperatorSymbol>, left: UrbanStatsASTExpression, right: UrbanStatsASTExpression } |
-    { type: 'unaryOperator', operator: Decorated<UnaryOperatorSymbol>, expr: UrbanStatsASTExpression } |
-    { type: 'objectLiteral', entireLoc: LocInfo, properties: [string, UrbanStatsASTExpression][] } |
-    { type: 'vectorLiteral', entireLoc: LocInfo, elements: UrbanStatsASTExpression[] } |
-    { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement } |
-    { type: 'do', entireLoc: LocInfo, statements: UrbanStatsASTStatement[] } |
+export type UrbanStatsASTExpression<M = unknown> = (
+    UrbanStatsASTLHS<M> |
+    ({ type: 'constant', value: Decorated<UrbanStatsASTConstant> } |
+    { type: 'call', fn: UrbanStatsASTExpression<M>, args: UrbanStatsASTArg<M>[], entireLoc: LocInfo } |
+    { type: 'binaryOperator', operator: Decorated<BinaryOperatorSymbol>, left: UrbanStatsASTExpression<M>, right: UrbanStatsASTExpression<M> } |
+    { type: 'unaryOperator', operator: Decorated<UnaryOperatorSymbol>, expr: UrbanStatsASTExpression<M> } |
+    { type: 'objectLiteral', entireLoc: LocInfo, properties: [string, UrbanStatsASTExpression<M>][] } |
+    { type: 'vectorLiteral', entireLoc: LocInfo, elements: UrbanStatsASTExpression<M>[] } |
+    { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression<M>, then: UrbanStatsASTStatement<M>, else?: UrbanStatsASTStatement<M> } |
+    { type: 'do', entireLoc: LocInfo, statements: UrbanStatsASTStatement<M>[] } |
     // for internal purposes only
-    { type: 'customNode', entireLoc: LocInfo, expr: UrbanStatsASTStatement, originalCode: string, expectedType?: USSType[] } |
-    { type: 'autoUXNode', entireLoc: LocInfo, expr: UrbanStatsASTExpression, metadata: AutoUXNodeMetadata }
+    { type: 'customNode', entireLoc: LocInfo, expr: UrbanStatsASTStatement<M>, originalCode: string, expectedType?: USSType[] } |
+    { type: 'autoUXNode', entireLoc: LocInfo, expr: UrbanStatsASTExpression<M>, metadata: AutoUXNodeMetadata }) & M
 )
 
-export type UrbanStatsASTStatement = (
-    { type: 'assignment', lhs: UrbanStatsASTLHS, value: UrbanStatsASTExpression } |
-    { type: 'expression', value: UrbanStatsASTExpression } |
-    { type: 'statements', entireLoc: LocInfo, result: UrbanStatsASTStatement[] } |
-    { type: 'condition', entireLoc: LocInfo, condition: UrbanStatsASTExpression, rest: UrbanStatsASTStatement[] } |
-    { type: 'parseError', originalCode: string, errors: ParseError[] })
+export type UrbanStatsASTStatement<M = unknown> = (
+    { type: 'assignment', lhs: UrbanStatsASTLHS<M>, value: UrbanStatsASTExpression<M> } |
+    { type: 'expression', value: UrbanStatsASTExpression<M> } |
+    { type: 'statements', entireLoc: LocInfo, result: UrbanStatsASTStatement<M>[] } |
+    { type: 'condition', entireLoc: LocInfo, condition: UrbanStatsASTExpression<M>, rest: UrbanStatsASTStatement<M>[] } |
+    { type: 'parseError', originalCode: string, errors: ParseError[] }) & M
 
-export type UrbanStatsAST = UrbanStatsASTArg | UrbanStatsASTExpression | UrbanStatsASTStatement
+export type UrbanStatsAST<M = unknown> = UrbanStatsASTArg<M> | UrbanStatsASTExpression<M> | UrbanStatsASTStatement<M>
 
 export function unify(...locations: LocInfo[]): LocInfo {
     assert(locations.length > 0, 'At least one location must be provided for unification')
