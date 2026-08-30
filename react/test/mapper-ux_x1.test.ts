@@ -379,14 +379,15 @@ mapper(() => test)('warns about values put together out of quantities stored dif
     code: `customNode("");
 condition (density_pw_1km > (toNumber("1000")))
 clusterMap(
-    data=customNode("population * area / population - (2 * rainfall * sunny_hours) ** 2\\n"),
+    data=customNode("population * area / population - (2 * rainfall * sunny_hours) ** 2 + 2\\n"),
     scale=linearScale(),
     ramp=rampUridis
 )`,
 }, async (t) => {
     await waitForLoading()
     // an area over a count of people, less an area made of a rainfall and a length of time: both
-    // areas, one stored in square kilometres and the other in nothing anybody writes
+    // areas, one stored in square kilometres and the other in nothing anybody writes. The location
+    // is of the subtraction, which stops short of the + 2 the whole expression ends with.
     await t.expect(getErrors()).eql([
         'Could not compute units for population * area / population - (2 * rainfall * sunny_hours) ** 2: cannot subtract km^{2} and 1.30e-8 m^2: the same kind of units, but different storage quantities at 1:1-66',
     ])
