@@ -1,6 +1,7 @@
 import assert from 'assert'
 
 import { HumanReadableElement } from '../utils/human-readable-element'
+import { StoredUnit } from '../utils/quantity'
 
 import { AutoUXNodeMetadata } from './autoux-node-metadata'
 import { LocInfo } from './location'
@@ -17,14 +18,15 @@ export type UrbanStatsASTLHS = (
     { type: 'attribute', expr: UrbanStatsASTExpression, name: Decorated<string> })
 
 export type UrbanStatsASTConstant = (
-    { type: 'number', value: number } |
+    /** The unit is what reading the script made of the number, where it made anything of it. */
+    { type: 'number', value: number, unit?: StoredUnit } |
     { type: 'string', value: string } |
     { type: 'humanReadableElements', value: HumanReadableElement[] })
 
 export type UrbanStatsASTExpression = (
     UrbanStatsASTLHS |
     { type: 'constant', value: Decorated<UrbanStatsASTConstant> } |
-    { type: 'call', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[], entireLoc: LocInfo } |
+    { type: 'call', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[], entireLoc: LocInfo, readIn?: StoredUnit } |
     { type: 'binaryOperator', operator: Decorated<BinaryOperatorSymbol>, left: UrbanStatsASTExpression, right: UrbanStatsASTExpression } |
     { type: 'unaryOperator', operator: Decorated<UnaryOperatorSymbol>, expr: UrbanStatsASTExpression } |
     { type: 'objectLiteral', entireLoc: LocInfo, properties: [string, UrbanStatsASTExpression][] } |

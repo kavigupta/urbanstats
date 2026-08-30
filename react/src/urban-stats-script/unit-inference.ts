@@ -4,7 +4,6 @@ import { unitTypeToStoredUnit } from '../utils/unit'
 import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import { asNumber } from './constants/convert'
 import * as l from './literal-parser'
-import { LocInfo } from './location'
 import { TypeEnvironment, UnitPropagation, USSPrimitiveRawValue } from './types-values'
 import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, unitToWriteIn } from './unit-algebra'
 
@@ -23,8 +22,6 @@ export type Bindings = Map<string, Inferred>
 interface Scope {
     typeEnvironment: TypeEnvironment
     named: Bindings
-    /** The unit of each number a caption writes: the ones a script writes, and the ones this pass does. */
-    literals: ConstantUnits
 }
 
 /** An expression as the units want it read, and what it is worth once it is. */
@@ -72,28 +69,16 @@ function propagationOf(fn: UrbanStatsASTExpression, scope: Scope): UnitPropagati
 }
 
 /**
- * A place of its own for what this pass writes into a script, since a caption reads the unit of a
- * number by where it is written, and these are written nowhere.
- */
-function beside(ast: UrbanStatsASTExpression): LocInfo {
-    const location = locationOf(ast)
-    const block = location.start.block
-    const at = { ...location.start, block: { type: 'single' as const, ident: `${block.type === 'single' ? block.ident : ''}_written_in_${location.start.charIdx}` } }
-    return { start: at, end: at }
-}
-
-/**
  * The expression times a one of whatever unit makes it go where it is: people added to an area are
- * multiplied by so many square kilometres each. The one is written in, so the caption says it.
+ * multiplied by so many square kilometres each. The one carries the unit, so the caption says it.
  */
-function timesAFactor(ast: UrbanStatsASTExpression, factor: StoredUnit, scope: Scope): UrbanStatsASTExpression {
-    const location = beside(ast)
-    scope.literals.set(whereWritten(location), factor)
+function timesAFactor(ast: UrbanStatsASTExpression, factor: StoredUnit): UrbanStatsASTExpression {
+    const location = locationOf(ast)
     return {
         type: 'binaryOperator',
         operator: { node: '*', location },
         left: ast,
-        right: { type: 'constant', value: { node: { type: 'number', value: 1 }, location } },
+        right: { type: 'constant', value: { node: { type: 'number', value: 1, unit: factor }, location } },
     }
 }
 
@@ -101,14 +86,14 @@ function timesAFactor(ast: UrbanStatsASTExpression, factor: StoredUnit, scope: S
  * The expression read as the plain number it is counted as, which the caption writes "[in °F]".
  * This is what a temperature gets, no factor dividing a reading that has no zero to divide from.
  */
-function readAsANumberOf(ast: UrbanStatsASTExpression, unit: StoredUnit, scope: Scope): UrbanStatsASTExpression {
-    const location = beside(ast)
-    scope.literals.set(whereWritten(location), unit)
+function readAsANumberOf(ast: UrbanStatsASTExpression, unit: StoredUnit): UrbanStatsASTExpression {
+    const location = locationOf(ast)
     return {
         type: 'call',
         fn: { type: 'identifier', name: { node: 'toNumber', location } },
         args: [{ type: 'unnamed', value: ast }],
         entireLoc: location,
+        readIn: unit,
     }
 }
 
@@ -141,7 +126,7 @@ function checkOperation(ast: UrbanStatsASTExpression & { type: 'binaryOperator' 
     // worth what it is once the factor is written in, so that reading it again says the same
     const factored = forward('*', under, inUnit(factor))
     return {
-        ast: { ...ast, left: reread.ast, right: timesAFactor(right.ast, factor, scope) },
+        ast: { ...ast, left: reread.ast, right: timesAFactor(right.ast, factor) },
         value: forward(operator, over, factored),
     }
 }
@@ -208,11 +193,8 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
 
 function checkCall(ast: UrbanStatsASTExpression & { type: 'call' }, scope: Scope, expected: Expected): Checked<UrbanStatsASTExpression> {
     const propagation = propagationOf(ast.fn, scope)
-    // a caption writes a number where a toNumber is, so what it is a number of is read as a literal
-    const asALiteral = readAsANumber(ast, scope) === undefined ? undefined : unitToWriteIn(expected)
-    if (asALiteral !== undefined) {
-        scope.literals.set(whereWritten(locationOf(ast)), asALiteral)
-    }
+    // a caption writes a number where a toNumber is, so it carries what it is a number of
+    const readIn = readAsANumber(ast, scope) === undefined ? undefined : unitToWriteIn(expected) ?? ast.readIn
     const checked: { arg: UrbanStatsASTArg, value: Inferred }[] = []
     for (const [index, arg] of ast.args.entries()) {
         const before = checked.filter(({ arg: each }) => each.type === 'unnamed').map(({ value }) => quantity(value))
@@ -224,7 +206,7 @@ function checkCall(ast: UrbanStatsASTExpression & { type: 'call' }, scope: Scope
         for (const each of checked) {
             const unit = unitToWriteIn(quantity(each.value))
             if (unit !== undefined) {
-                each.arg = { ...each.arg, value: readAsANumberOf(each.arg.value, unit, scope) }
+                each.arg = { ...each.arg, value: readAsANumberOf(each.arg.value, unit) }
             }
         }
     }
@@ -233,11 +215,11 @@ function checkCall(ast: UrbanStatsASTExpression & { type: 'call' }, scope: Scope
         const [first, second] = checked
         const factor = factorBetween(quantity(first.value), quantity(second.value))
         if (factor !== undefined && forward('-', quantity(first.value), quantity(second.value)).kind === 'none') {
-            second.arg = { ...second.arg, value: timesAFactor(second.arg.value, factor, scope) }
+            second.arg = { ...second.arg, value: timesAFactor(second.arg.value, factor) }
             second.value = forward('*', quantity(second.value), inUnit(factor))
         }
     }
-    const rewritten = { ...ast, args: checked.map(({ arg }) => arg) }
+    const rewritten = { ...ast, args: checked.map(({ arg }) => arg), ...readIn === undefined ? {} : { readIn } }
     if (propagation === undefined) {
         return { ast: rewritten, value: anything }
     }
@@ -262,12 +244,12 @@ function checkExpression(ast: UrbanStatsASTExpression, scope: Scope, expected: E
                 return { ast, value: anything }
             }
             // the 0.1 of commute_bike < 0.1 is a share, and is written 10%
-            const unit = unitToWriteIn(expected)
+            const unit = unitToWriteIn(expected) ?? ast.value.node.unit
             if (unit === undefined) {
                 return { ast, value: constant(ast.value.node.value) }
             }
-            scope.literals.set(whereWritten(ast.value.location), unit)
-            return { ast, value: inUnit(unit) }
+            const written = { ...ast.value.node, unit }
+            return { ast: { ...ast, value: { ...ast.value, node: written } }, value: inUnit(unit) }
         }
         case 'attribute': {
             const object = checkExpression(ast.expr, scope, anything)
@@ -373,15 +355,6 @@ function expectation(value: AbstractInterpValue): Expected {
     }
 }
 
-/** The unit each numeric literal is written in, keyed by where in the source it was written. */
-export type ConstantUnits = Map<string, StoredUnit>
-
-/** We index by location to avoid depending on object identity: editing or reparsing makes new nodes. */
-export function whereWritten(location: LocInfo): string {
-    const where = location.start.block
-    return `${where.type === 'single' ? where.ident : ''}:${location.start.charIdx}-${location.end.charIdx}`
-}
-
 const toNumberOfOneThing = l.call({
     fn: l.identifier('toNumber'),
     unnamedArgs: [l.passthrough()],
@@ -401,29 +374,27 @@ export function readAsANumber(ast: UrbanStatsASTExpression, scope: Scope): { val
 }
 
 /**
- * A script read for its units, with whatever the units want written into it. The unit is what the
- * whole thing works out to, and the literals are what each number in it is a number of, which a
- * caption reads by where each one is written.
+ * A script read for its units, with whatever the units want written into it: the numbers it carries
+ * say what they are numbers of, and the unit is what the whole thing works out to.
  */
 export interface UnitCheck<T> {
     ast: T
     unit: StoredUnit | undefined
-    literals: ConstantUnits
     named: Bindings
 }
 
 export function unitCheck<T extends UrbanStatsASTExpression | UrbanStatsASTStatement>(program: T, typeEnvironment: TypeEnvironment, expected?: StoredUnit): UnitCheck<T> {
-    const scope: Scope = { typeEnvironment, named: new Map(), literals: new Map() }
+    const scope: Scope = { typeEnvironment, named: new Map() }
     const wanted: Expected = expected === undefined ? anything : { kind: 'in', unit: expected }
     const checked = isExpression(program)
         ? checkExpression(program, scope, wanted)
         : checkStatement(program, scope, wanted)
-    return { ast: checked.ast as T, unit: unitToWriteIn(quantity(checked.value)), literals: scope.literals, named: scope.named }
+    return { ast: checked.ast as T, unit: unitToWriteIn(quantity(checked.value)), named: scope.named }
 }
 
 /** What an expression of a script works out to, read against what the whole script made of it. */
-export function unitWithin(ast: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment, named: Bindings, literals: ConstantUnits): AbstractInterpValue {
-    return quantity(checkExpression(ast, { typeEnvironment, named: new Map(named), literals: new Map(literals) }, anything).value)
+export function unitWithin(ast: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment, named: Bindings): AbstractInterpValue {
+    return quantity(checkExpression(ast, { typeEnvironment, named: new Map(named) }, anything).value)
 }
 
 function isExpression(ast: UrbanStatsASTExpression | UrbanStatsASTStatement): ast is UrbanStatsASTExpression {

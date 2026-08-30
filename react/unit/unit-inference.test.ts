@@ -26,7 +26,7 @@ function of(code: string): AbstractInterpValue {
     const program = parseNoError(code, 'test')
     const typeEnvironment = defaultTypeEnvironment('USA')
     const checked = unitCheck(program, typeEnvironment)
-    return unitWithin({ type: 'customNode', entireLoc: noLocation, expr: checked.ast, originalCode: code }, typeEnvironment, checked.named, checked.literals)
+    return unitWithin({ type: 'customNode', entireLoc: noLocation, expr: checked.ast, originalCode: code }, typeEnvironment, checked.named)
 }
 
 function inferred(code: string): string {
