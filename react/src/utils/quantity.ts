@@ -211,6 +211,22 @@ const baseUnitWords: Record<BaseUnit, string> = {
     person: 'people', usd: 'dollars', fatality: 'fatalities', m: 'm', g: 'g', s: 's', F: '°F',
 }
 
+function plainly(elements: HumanReadableElement[]): string {
+    return elements.map(element => element.type === 'superscript' ? `^{${plainly(element.value)}}` : (element.type === 'atom' ? element.value : '')).join('')
+}
+
+/**
+ * What a quantity is stored in, for saying why two of them cannot be put together: two areas add
+ * only where they are stored the same way, one in square kilometres and the other in square metres
+ * being no more addable than people and an area.
+ */
+export function describeStoredUnit(stored: StoredUnit): string {
+    const name = nameOfStoredUnit(stored)
+    return name === undefined || name.length === 0
+        ? `${describeDimensions(stored.unit)} of another size`
+        : plainly(name)
+}
+
 /** The base units a quantity is in, for saying why two of them cannot be put together. */
 export function describeDimensions(unit: Unit): string {
     const parts = unit.dimensions.map(({ baseUnit, power }) =>

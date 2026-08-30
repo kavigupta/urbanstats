@@ -37,6 +37,16 @@ void test('a map is written in the units of what it maps', () => {
     assert.equal(mapUnit('high_temp - low_temp'), '+1\u202f000.0°F')
 })
 
+void test('two quantities add only where they are stored the same way', () => {
+    // the values added are the ones the statistics are stored as: kilometres and metres are both
+    // lengths, and adding the numbers adds nothing
+    assert.equal(mapUnit('hospital_mean_dist + elevation'), 'nothing')
+    // an area over a count of people is an area, and one made of a rainfall and a length of time
+    // is an area too, in units nothing else is stored in
+    assert.equal(mapUnit('population * area / population - (2 * rainfall * sunny_hours) ** 2'), 'nothing')
+    assert.equal(mapUnit('area + area'), '1\u202f000km^{2}')
+})
+
 void test('a map of what no unit can be read off says nothing', () => {
     assert.equal(mapUnit('population + area'), 'nothing')
     assert.equal(mapUnit('high_temp + low_temp'), 'nothing')

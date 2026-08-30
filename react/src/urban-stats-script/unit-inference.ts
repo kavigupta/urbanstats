@@ -1,4 +1,4 @@
-import { describeDimensions, dimensionless, sameDimensions, StoredUnit, writableDimensions } from '../utils/quantity'
+import { describeDimensions, describeStoredUnit, dimensionless, sameDimensions, StoredUnit, writableDimensions } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
@@ -365,7 +365,11 @@ function whatWentWrong(ast: UrbanStatsASTNode, scope: Scope): string {
         const right = quantity(infer(ast.right, scope))
         if (left.kind === 'in' && right.kind === 'in') {
             const verb = verbs[ast.operator.node] ?? 'compare'
-            return `cannot ${verb} ${describeDimensions(left.unit.unit)} and ${describeDimensions(right.unit.unit)}`
+            // two of the same dimensions that will not go together are stored differently, so say
+            // what each is stored in rather than saying m^2 and m^2
+            return sameDimensions(left.unit, right.unit)
+                ? `cannot ${verb} ${describeStoredUnit(left.unit)} and ${describeStoredUnit(right.unit)}`
+                : `cannot ${verb} ${describeDimensions(left.unit.unit)} and ${describeDimensions(right.unit.unit)}`
         }
     }
     return 'its values combine different units'
