@@ -116,6 +116,32 @@ void test('a count is written as nothing, whatever else it is multiplied by', ()
     assert.equal(written(unitOfMap('population * population'), 1e12), '1\u202f000\u202f000\u202f000\u202f000people^{2}')
 })
 
+void test('dollars and fatalities are counted the way people are', () => {
+    assert.equal(mapUnit('median_household_income_usd ** 0.5'), '1\u202f000dollars^{0.5}')
+    assert.equal(mapUnit('median_household_income_usd * median_household_income_usd'), '1\u202f000dollars^{2}')
+    assert.equal(mapUnit('area / median_household_income_usd'), '1\u202f000km^{2}/dollar')
+    assert.equal(mapUnit('traffic_fatalities ** 0.5'), '1\u202f000fatalities^{0.5}')
+    assert.equal(mapUnit('traffic_fatalities * traffic_fatalities'), '1\u202f000fatalities^{2}')
+    assert.equal(mapUnit('area / traffic_fatalities'), '1\u202f000km^{2}/fatality')
+    // one of a count goes unsaid above the solidus and is said under it, however many are counted
+    assert.equal(mapUnit('traffic_fatalities / population'), '1\u202f000/person')
+    assert.equal(mapUnit('median_household_income_usd / population'), '1\u202f000/person')
+    assert.equal(mapUnit('traffic_fatalities / (population * area)'), '1\u202f000/km^{2}·person')
+    assert.equal(mapUnit('population / traffic_fatalities ** 2'), '1\u202f000/fatality^{2}')
+})
+
+void test('a word is spaced off the number it follows, and a symbol is not', () => {
+    const inline = (data: string): string => {
+        const unit = unitOfMap(data)
+        assert.ok(unit)
+        const quantity = writeQuantity(1000, unit, {}, { afterNumber: true })
+        return `${quantity.renderedValue}${reifyString(quantity.unitName, {})}`
+    }
+    assert.equal(inline('traffic_fatalities ** 0.5'), '1\u202f000\u00a0fatalities^{0.5}')
+    assert.equal(inline('area / traffic_fatalities'), '1\u202f000km^{2}/fatality')
+    assert.equal(inline('area'), '1\u202f000km^{2}')
+})
+
 void test('a reader in Celsius reads a difference of two temperatures as one', () => {
     const asRead = (data: string, temperatureUnit: string): string => written(unitOfMap(data), 22.3, { temperatureUnit })
     // twenty-two Fahrenheit degrees between the day's high and its low is twelve Celsius degrees,
