@@ -368,7 +368,7 @@ function whatWentWrong(ast: UrbanStatsASTNode, scope: Scope): string {
             // two of the same dimensions that will not go together are stored differently, so say
             // what each is stored in rather than saying m^2 and m^2
             return sameDimensions(left.unit, right.unit)
-                ? `cannot ${verb} ${describeStoredUnit(left.unit)} and ${describeStoredUnit(right.unit)}`
+                ? `cannot ${verb} ${describeStoredUnit(left.unit)} and ${describeStoredUnit(right.unit)}: the same kind of units, but different storage quantities`
                 : `cannot ${verb} ${describeDimensions(left.unit.unit)} and ${describeDimensions(right.unit.unit)}`
         }
     }
