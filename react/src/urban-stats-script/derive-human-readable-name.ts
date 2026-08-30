@@ -11,14 +11,16 @@ import * as l from './literal-parser'
 import { noLocation } from './location'
 import { expressionOperatorMap } from './operators'
 import { TypeEnvironment } from './types-values'
-import { readAsANumber, unitCheck } from './unit-inference'
+import { ReadInUnits, readAsANumber, unitCheck } from './unit-inference'
+
+type Expression = UrbanStatsASTExpression<ReadInUnits>
 
 /** What is written where an expression is: a toNumber writes its argument, brackets and all. */
-function reads(ast: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression {
+function reads(ast: Expression, typeEnvironment: TypeEnvironment): Expression {
     return readAsANumber(ast, { typeEnvironment, named: new Map() })?.read ?? ast
 }
 
-function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, bracketOperators = false): HumanReadableElement[] | undefined {
+function humanReadableElements(ast: Expression | UrbanStatsASTStatement<ReadInUnits>, typeEnvironment: TypeEnvironment, bracketOperators = false): HumanReadableElement[] | undefined {
     switch (ast.type) {
         case 'assignment':
             return humanReadableElements(ast.value, typeEnvironment)
@@ -104,7 +106,7 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
                 case 'humanReadableElements':
                     return ast.value.node.value
                 case 'number':
-                    return formatNumber(ast.value.node.value, ast.value.node.unit)
+                    return formatNumber(ast.value.node.value, ast.readIn)
                 case 'string':
                     return [{ type: 'atom', value: ast.value.node.value }]
             }
