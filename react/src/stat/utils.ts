@@ -8,7 +8,7 @@ import { StatName } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 import { orderNonNan, Table, tableType } from '../urban-stats-script/constants/table'
 import { deriveTableColumnLabel, deriveTableLabel, tableLabel } from '../urban-stats-script/derive-human-readable-name'
-import { deriveTableColumnUnit } from '../urban-stats-script/derive-unit'
+import { conditionUnitProblem, deriveTableColumnUnit } from '../urban-stats-script/derive-unit'
 import { LocInfo } from '../urban-stats-script/location'
 import { unparse } from '../urban-stats-script/parser'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
@@ -102,6 +102,10 @@ export function statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn }
     typeEnvironment: TypeEnvironment
     warn: Warn
 }): StatData {
+    const conditionProblem = conditionUnitProblem(mapUSS, typeEnvironment)
+    if (conditionProblem !== undefined) {
+        warn(conditionProblem.problem, conditionProblem.location)
+    }
     const columns = table.columns.map((column, index) => {
         let name = column.name ?? deriveTableColumnLabel(mapUSS, typeEnvironment, index)
         if (name === undefined) {

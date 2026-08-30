@@ -393,6 +393,22 @@ clusterMap(
     ])
 })
 
+mapper(() => test)('warns about a condition comparing things that do not go together', {
+    code: `customNode("");
+condition (population > area)
+clusterMap(
+    data=area,
+    scale=linearScale(),
+    ramp=rampUridis
+)`,
+}, async (t) => {
+    await waitForLoading()
+    // the map itself is an area, and it is the condition that compares people against an area
+    await t.expect(getErrors()).eql([
+        'Could not compute units for population > area: cannot compare people and m^2',
+    ])
+})
+
 mapper(() => test)('and says nothing where it can work one out', { code: 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
     await waitForLoading()
     await t.expect(getErrors()).eql([])

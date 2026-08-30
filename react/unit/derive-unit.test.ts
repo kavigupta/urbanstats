@@ -3,7 +3,7 @@ import test from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { mapUSSFromString } from '../src/mapper/settings/map-uss'
-import { deriveMapUnit, deriveTableColumnUnit, unitOrNothing } from '../src/urban-stats-script/derive-unit'
+import { conditionUnitProblem, deriveMapUnit, deriveTableColumnUnit, unitOrNothing } from '../src/urban-stats-script/derive-unit'
 import { reifyString } from '../src/utils/human-readable-name'
 import { UnitSettings, StoredUnit, writeQuantity } from '../src/utils/quantity'
 
@@ -35,6 +35,27 @@ void test('a map is written in the units of what it maps', () => {
     assert.equal(mapUnit('high_temp'), '1\u202f000.0°F')
     // a difference of two temperatures is degrees, and written from no zero of its own
     assert.equal(mapUnit('high_temp - low_temp'), '+1\u202f000.0°F')
+})
+
+function conditionProblem(condition: string): string {
+    const uss = mapUSSFromString(`customNode("");\ncondition (${condition})\nclusterMap(data=area, scale=linearScale(), ramp=rampUridis)`)
+    return conditionUnitProblem(uss, defaultTypeEnvironment('USA'))?.problem ?? 'nothing to say'
+}
+
+void test('a condition compares things that go together, or says they do not', () => {
+    // a comparison keeps no unit, so nothing downstream would say its operands did not go together
+    assert.equal(conditionProblem('-ln(compactness) > sunny_hours'),
+        'Could not compute units for (-(ln(compactness))) > sunny_hours: cannot compare a plain number and s')
+    assert.equal(conditionProblem('population > area'),
+        'Could not compute units for population > area: cannot compare people and m^2')
+    assert.equal(conditionProblem('hospital_mean_dist > elevation'),
+        'Could not compute units for hospital_mean_dist > elevation: cannot compare km and m: the same kind of units, but different storage quantities')
+    // the smallest part that fails, out of a condition that puts two comparisons together
+    assert.equal(conditionProblem('commute_bike > 0.1 & high_temp > area'),
+        'Could not compute units for high_temp > area: cannot compare °F and m^2')
+    // a bare number is compared against anything, being read as whatever it is compared to
+    assert.equal(conditionProblem('high_temp > 80'), 'nothing to say')
+    assert.equal(conditionProblem('true'), 'nothing to say')
 })
 
 void test('two quantities add only where they are stored the same way', () => {

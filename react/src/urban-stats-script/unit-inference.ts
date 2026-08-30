@@ -6,7 +6,7 @@ import { asNumber } from './constants/convert'
 import * as l from './literal-parser'
 import { LocInfo } from './location'
 import { TypeEnvironment, UnitPropagation, USSPrimitiveRawValue } from './types-values'
-import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, unitToWriteIn } from './unit-algebra'
+import { AbstractInterpValue, backward, comparable, comparesUnits, constant, forward, forwardUnary, inUnit, join, manyOf, unitToWriteIn } from './unit-algebra'
 
 const anything = { kind: 'any' } satisfies AbstractInterpValue
 
@@ -377,8 +377,31 @@ function whatWentWrong(ast: UrbanStatsASTNode, scope: Scope): string {
 
 const nothingKnown = 'no unit is known for it'
 
+/**
+ * The smallest part whose units do not go together, in an expression that need not have a unit of
+ * its own: a condition is a comparison, and says nothing about what it is measured in.
+ */
+export function whyUnitsClash(ast: UrbanStatsASTNode, scope: Scope): { at: UrbanStatsASTNode, problem: string } | undefined {
+    for (const part of partsOf(ast)) {
+        const inner = whyUnitsClash(part, scope)
+        if (inner !== undefined) {
+            return inner
+        }
+    }
+    // a comparison keeps no unit, so nothing downstream would say its operands did not go together
+    if (ast.type === 'binaryOperator' && comparesUnits(ast.operator.node)
+        && !comparable(quantity(infer(ast.left, scope)), quantity(infer(ast.right, scope)))) {
+        return { at: ast, problem: whatWentWrong(ast, scope) }
+    }
+    return quantity(infer(ast, scope)).kind === 'none' ? { at: ast, problem: whatWentWrong(ast, scope) } : undefined
+}
+
 /** The smallest part of an expression whose units do not work out, and what does not work. */
 export function whyNoUnit(ast: UrbanStatsASTNode, scope: Scope): { at: UrbanStatsASTNode, problem: string } | undefined {
+    const clash = whyUnitsClash(ast, scope)
+    if (clash !== undefined) {
+        return clash
+    }
     const value = quantity(infer(ast, scope))
     if (value.kind === 'in' && unitToWriteIn(value) !== undefined) {
         return undefined
@@ -390,13 +413,7 @@ export function whyNoUnit(ast: UrbanStatsASTNode, scope: Scope): { at: UrbanStat
             return inner
         }
     }
-    if (value.kind === 'any') {
-        return { at: ast, problem: nothingKnown }
-    }
-    if (value.kind === 'none') {
-        return { at: ast, problem: whatWentWrong(ast, scope) }
-    }
-    return { at: ast, problem: 'it is neither a reading nor a difference of readings' }
+    return { at: ast, problem: value.kind === 'any' ? nothingKnown : 'it is neither a reading nor a difference of readings' }
 }
 
 /** The unit an expression works out to, where reading it determines one. */

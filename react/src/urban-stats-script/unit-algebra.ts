@@ -200,6 +200,20 @@ function productForward(rightPower: 1 | -1, left: KnownAIV, right: KnownAIV): Ab
     return product === undefined ? { kind: 'none' } : written(product, times)
 }
 
+/** Whether the operator asks its operands to be alike, as a comparison does and a product does not. */
+export function comparesUnits(operator: BinaryOperatorSymbol): boolean {
+    const form = forms[operator]
+    return form.kind === 'sameUnit' && !form.keepsUnit
+}
+
+/**
+ * Whether the two can be compared, which is whether one can be taken from the other: a comparison
+ * keeps no unit of its own, so nothing downstream says that its operands did not go together.
+ */
+export function comparable(left: AbstractInterpValue, right: AbstractInterpValue): boolean {
+    return forward('-', left, right).kind !== 'none'
+}
+
 export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue {
     // nothing computed from what cannot be, can be
     if (left.kind === 'none' || right.kind === 'none') {

@@ -22,7 +22,7 @@ import { CommonMap } from '../urban-stats-script/constants/map'
 import { ScaleInstance } from '../urban-stats-script/constants/scale'
 import { TextBox } from '../urban-stats-script/constants/text-box'
 import { deriveMapLabel } from '../urban-stats-script/derive-human-readable-name'
-import { deriveMapUnit, unitOrNothing } from '../urban-stats-script/derive-unit'
+import { conditionUnitProblem, deriveMapUnit, unitOrNothing } from '../urban-stats-script/derive-unit'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { LocInfo, noLocation } from '../urban-stats-script/location'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
@@ -148,6 +148,10 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
     }
 
     const derived = deriveMapUnit(mapSettings.script.uss, typeEnvironment)
+    const conditionProblem = conditionUnitProblem(mapSettings.script.uss, typeEnvironment)
+    if (conditionProblem !== undefined) {
+        execResult.error.push({ type: 'error', kind: 'warning', value: conditionProblem.problem, location: conditionProblem.location })
+    }
 
     const { features, mapComponentCreator, ramp } = await loadMapResult({
         mapResultMain,
