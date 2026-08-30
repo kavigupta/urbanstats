@@ -367,6 +367,9 @@ test('histogram-article-multiple-years-tooltip', async (t) => {
     const tip = Selector('g[aria-label="tip"] tspan')
     await t.expect(tip.withText(/^.?2020 \/ 2010 \/ 2000$/).exists).ok('the tooltip should name the years its stacked values are in')
     await t.expect(tip.withText(/^.?Pasadena CCD: [\d.]+% \/ [\d.]+% \/ [\d.]+%$/).exists).ok('one line per region, one value per year')
+
+    // fullPage would hover the corner of the page first, which would take the tooltip away with it
+    await screencap(t, { fullPage: false, selector: Selector('.histogram-svg-panel') })
 })
 
 urbanstatsFixture('histogram comparison multiple years', comparisonPage([pasadena, upperSGV]))
