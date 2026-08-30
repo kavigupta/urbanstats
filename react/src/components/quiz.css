@@ -33,44 +33,63 @@
   color: #000;
 }
 
-.quiz_results_question {
-  text-align: center;
-  display: table;
+/* One grid for every question, so that the columns line up down the whole list */
+.quiz_results {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto minmax(0, 1fr);
+  row-gap: 0.15em;
   margin: 0 auto;
   font-size: 1.25em;
 }
 
-.quiz_result_name_left {
-  width: 35%;
-  text-align: right;
-  vertical-align: middle;
+.quiz_results > a {
+  display: contents;
 }
 
-.quiz_result_value_left {
-  width: 10%;
-  text-align: right;
-  font-weight: 500;
-  vertical-align: middle;
-}
-
-.quiz_result_symbol {
-  width: 5%;
+.quiz_results_question {
+  grid-column: 1 / -1;
+  margin-top: 0.6em;
   text-align: center;
-  font-weight: 500;
-  vertical-align: middle;
 }
 
-.quiz_result_value_right {
-  width: 10%;
-  text-align: left;
-  font-weight: 500;
-  vertical-align: middle;
+.quiz_result_cell {
+  display: flex;
+  align-items: center;
+  padding: 0.4em min(0.75em, 2vw);
+}
+
+/* Without this the inner div shrinks to its text and text-align does nothing */
+.quiz_result_cell > div {
+  width: 100%;
+}
+
+.quiz_result_name_left {
+  padding-left: min(1em, 2.7vw);
+  border-radius: 0.5em 0 0 0.5em;
+  text-align: right;
 }
 
 .quiz_result_name_right {
-  width: 35%;
+  padding-right: min(1em, 2.7vw);
+  border-radius: 0 0.5em 0.5em 0;
   text-align: left;
-  vertical-align: middle;
+}
+
+/* Nowrap keeps a number and its unit on the same line */
+.quiz_result_value_left {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.quiz_result_value_right {
+  text-align: left;
+  white-space: nowrap;
+}
+
+.quiz_result_symbol {
+  text-align: center;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .quiz_summary {

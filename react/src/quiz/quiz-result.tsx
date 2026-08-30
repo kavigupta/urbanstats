@@ -13,6 +13,8 @@ import { Settings, useSetting } from '../page_template/settings'
 import { getVector, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { allGroups, allYears, statParents, StatPath, StatName } from '../page_template/statistic-tree'
 import { withButtonRole } from '../utils/a11y'
+import { mixWithBackground } from '../utils/color'
+import { useMobileLayout } from '../utils/responsive'
 import { unitForStatistic, unitTypeToStoredUnit } from '../utils/unit'
 import { persistentClient } from '../utils/urbanstats-persistent-client'
 
@@ -81,6 +83,8 @@ export function QuizResult(props: QuizResultProps): ReactNode {
 
     const colors = useColors()
 
+    const mobileLayout = useMobileLayout()
+
     return (
         <div>
             <Header quiz={props.quizDescriptor} />
@@ -142,17 +146,18 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             <div className="gap"></div>
             <span className="serif quiz_summary">Details (spoilers, don&apos;t share!)</span>
             <div className="gap_small"></div>
-            {props.quiz.map(
-                (quiz, index) => (
-                    <QuizResultRow
-                        question={quiz}
-                        key={index}
-                        index={index}
-                        choice={props.history.choices[index]}
-                        correct={correctPattern[index]}
-                    />
-                ),
-            )}
+            <div className="quiz_results" style={{ width: mobileLayout ? '100%' : '80%' }}>
+                {props.quiz.map(
+                    (quiz, index) => (
+                        <QuizResultRow
+                            question={quiz}
+                            key={index}
+                            choice={props.history.choices[index]}
+                            correct={correctPattern[index]}
+                        />
+                    ),
+                )}
+            </div>
             <div className="gap_small"></div>
             {
                 // TODO stats for infinite quiz
@@ -471,7 +476,6 @@ interface QuizResultRowProps {
     question: QuizQuestion
     choice: 'A' | 'B'
     correct: boolean | 0 | 1
-    index: number
 }
 
 interface GenericQuizResultRowProps extends QuizResultRowProps {
@@ -483,61 +487,30 @@ interface GenericQuizResultRowProps extends QuizResultRowProps {
 function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
-    const comparison = aCorrect(props.question)
-        ? (<span>&gt;</span>)
-        : (<span>&lt;</span>)
-    let firstStyle: React.CSSProperties = {}
-    let secondStyle: React.CSSProperties = {}
-
-    if (props.choice === 'A') {
-        firstStyle = { backgroundColor: colors.selectedButton, color: colors.selectedButtonText }
-    }
-    else {
-        secondStyle = { backgroundColor: colors.selectedButton, color: colors.selectedButtonText }
-    }
-    const result = props.correct ? juxtaColors.correctEmoji : juxtaColors.incorrectEmoji
+    const comparison = aCorrect(props.question) ? '>' : '<'
+    const result = props.correct ? juxtaColors.correct : juxtaColors.incorrect
+    const rowStyle = { backgroundColor: mixWithBackground(result, 0.88, colors.background) }
+    const chosenStyle = { backgroundColor: mixWithBackground(result, 0.55, colors.background) }
 
     return (
-        <div key={props.index}>
+        <>
             {props.getLabel()}
-            <table
-                className="stats_table"
-                style={{
-                    width: '80%',
-                    marginLeft: '10%',
-                    marginRight: '10%',
-                    borderCollapse: 'separate',
-                    borderSpacing: '0.1em',
-                    fontSize: '1.25em',
-                    backgroundColor: colors.unselectedButton,
-                }}
-            >
-                <tbody style={{ color: colors.textMain }}>
-                    <tr>
-                        <td className="serif quiz_result_name_left" style={firstStyle}>
-                            {props.getOption('a')}
-                        </td>
-                        <td style={{ fontWeight: 400 }} className="serif quiz_result_value_left">
-                            {props.getStat('a')}
-                        </td>
-                        <td className="serif quiz_result_symbol quiz_result_comparison_symbol">
-                            {comparison}
-                        </td>
-                        <td style={{ fontWeight: 400 }} className="serif quiz_result_value_right">
-                            {props.getStat('b')}
-                        </td>
-                        <td className="serif quiz_result_name_right" style={secondStyle}>
-                            {props.getOption('b')}
-                        </td>
-                        <td className="serif quiz_result_symbol">
-                            {result}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <div className="gap_small" />
-        </div>
-
+            <div className="serif quiz_result_cell quiz_result_name_left" style={props.choice === 'A' ? chosenStyle : rowStyle}>
+                <div>{props.getOption('a')}</div>
+            </div>
+            <div className="serif quiz_result_cell quiz_result_value_left" style={rowStyle}>
+                <div>{props.getStat('a')}</div>
+            </div>
+            <div className="serif quiz_result_cell quiz_result_symbol quiz_result_comparison_symbol" style={rowStyle}>
+                <div>{comparison}</div>
+            </div>
+            <div className="serif quiz_result_cell quiz_result_value_right" style={rowStyle}>
+                <div>{props.getStat('b')}</div>
+            </div>
+            <div className="serif quiz_result_cell quiz_result_name_right" style={props.choice === 'B' ? chosenStyle : rowStyle}>
+                <div>{props.getOption('b')}</div>
+            </div>
+        </>
     )
 }
 
