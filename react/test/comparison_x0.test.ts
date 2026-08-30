@@ -146,7 +146,7 @@ test('comparison-2-non-overlapping-population-stats', async (t) => {
     // heterogenous-sources disclaimer: multiple data sources (US Census vs GHSL)
     await t.expect(Selector('.disclaimer-toggle').count).gte(1, 'at least one disclaimer toggle when sources differ')
     await t.click(Selector('.disclaimer-toggle').nth(0))
-    await t.expect(Selector('div').withExactText('This statistic is based on data from multiple sources, which may not be consistent with each other.').visible).ok('heterogenous-sources disclaimer text visible after click')
+    await t.expect(Selector('div').withExactText('This statistic is based on data from multiple sources (US Census, GHSL), which may not be consistent with each other.').visible).ok('heterogenous-sources disclaimer text visible after click')
     await screencap(t)
 })
 
