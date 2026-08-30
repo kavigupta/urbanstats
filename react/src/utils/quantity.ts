@@ -215,10 +215,16 @@ function plainly(elements: HumanReadableElement[]): string {
     return elements.map(element => element.type === 'superscript' ? `^{${plainly(element.value)}}` : (element.type === 'atom' ? element.value : '')).join('')
 }
 
-/** What a quantity is stored in, falling back to its dimensions where no unit is exactly it. */
+/**
+ * What a quantity is stored in: the unit that is exactly it, or how much of the base units one of
+ * it is worth. Two quantities of the same dimensions are told apart by that number, an area stored
+ * in square kilometres being 1e6 where one stored in square metres is 1.
+ */
 export function describeStoredUnit(stored: StoredUnit): string {
     const name = nameOfStoredUnit(stored)
-    return name === undefined || name.length === 0 ? describeDimensions(stored.unit) : plainly(name)
+    return name === undefined || name.length === 0
+        ? `${stored.toBaseUnits.toPrecision(3)} ${describeDimensions(stored.unit)}`
+        : plainly(name)
 }
 
 /** The base units a quantity is in, for saying why two of them cannot be put together. */
