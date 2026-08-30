@@ -39,7 +39,7 @@
   grid-template-columns: minmax(0, 1fr) auto auto auto minmax(0, 1fr);
   row-gap: 0.15em;
   margin: 0 auto;
-  font-size: 1.25em;
+  font-size: min(1.25em, 4vw);
 }
 
 .quiz_results > a {
@@ -56,6 +56,7 @@
   display: flex;
   align-items: center;
   padding: 0.4em min(0.75em, 2vw);
+  min-width: 0;
 }
 
 /* Without this the inner div shrinks to its text and text-align does nothing */
@@ -67,12 +68,14 @@
   padding-left: min(1em, 2.7vw);
   border-radius: 0.5em 0 0 0.5em;
   text-align: right;
+  overflow-wrap: break-word;
 }
 
 .quiz_result_name_right {
   padding-right: min(1em, 2.7vw);
   border-radius: 0 0.5em 0.5em 0;
   text-align: left;
+  overflow-wrap: break-word;
 }
 
 /* Nowrap keeps a number and its unit on the same line */
