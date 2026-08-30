@@ -39,7 +39,7 @@
   grid-template-columns: minmax(0, 1fr) auto auto auto minmax(0, 1fr);
   row-gap: 0.15em;
   margin: 0 auto;
-  font-size: min(1.25em, 4vw);
+  font-size: min(1.25em, 3vw);
 }
 
 .quiz_results > a {
