@@ -77,16 +77,21 @@
 
 /* Nowrap keeps a number and its unit on the same line */
 .quiz_result_value_left {
+  padding-right: 0;
   text-align: right;
   white-space: nowrap;
 }
 
 .quiz_result_value_right {
+  padding-left: 0;
   text-align: left;
   white-space: nowrap;
 }
 
+/* Tight against the numbers, so the row's width goes to the names instead */
 .quiz_result_symbol {
+  padding-right: 0.4em;
+  padding-left: 0.4em;
   text-align: center;
   font-weight: 500;
   white-space: nowrap;
