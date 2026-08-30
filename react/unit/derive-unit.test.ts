@@ -12,7 +12,7 @@ function written(unit: StoredUnit | undefined, value = 1000, settings: UnitSetti
     if (unit === undefined) {
         return 'nothing'
     }
-    const quantity = writeQuantity(value, unit, settings, {})
+    const quantity = writeQuantity(value, unit, settings, 'byItself')
     return `${quantity.renderedValue}${reifyString(quantity.unitName, {})}`
 }
 
@@ -128,13 +128,18 @@ void test('dollars and fatalities are counted the way people are', () => {
     assert.equal(mapUnit('median_household_income_usd / population'), '1\u202f000/person')
     assert.equal(mapUnit('traffic_fatalities / (population * area)'), '1\u202f000/km^{2}·person')
     assert.equal(mapUnit('population / traffic_fatalities ** 2'), '1\u202f000/fatality^{2}')
+    // and a root of one under the solidus is written the way a square of one is
+    assert.equal(mapUnit('area / population ** 0.5'), '1\u202f000km^{2}/person^{0.5}')
+    assert.equal(mapUnit('area / traffic_fatalities ** 0.5'), '1\u202f000km^{2}/fatality^{0.5}')
+    assert.equal(mapUnit('population ** -0.5'), '1\u202f000/person^{0.5}')
+    assert.equal(mapUnit('population ** 1.5'), '1\u202f000people^{1.5}')
 })
 
 void test('a word is spaced off the number it follows, and a symbol is not', () => {
     const inline = (data: string): string => {
         const unit = unitOfMap(data)
         assert.ok(unit)
-        const quantity = writeQuantity(1000, unit, {}, { afterNumber: true })
+        const quantity = writeQuantity(1000, unit, {}, 'afterNumber')
         return `${quantity.renderedValue}${reifyString(quantity.unitName, {})}`
     }
     assert.equal(inline('traffic_fatalities ** 0.5'), '1\u202f000\u00a0fatalities^{0.5}')

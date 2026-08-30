@@ -60,13 +60,14 @@ export interface StoredUnit {
     toBaseUnits: number
 }
 
-/** Whether a unit is rendered by itself or against the number it belongs to. */
-export interface UnitPlacement {
-    /** In a column of its own, where a leading solidus reads as a dangling slash. */
-    alone?: boolean
-    /** Straight after the number, where a word wants a space off it and km^{2} does not. */
-    afterNumber?: boolean
-}
+/** Where a unit is written, which the spacing around it depends on. */
+export type UnitPlacement =
+    /** In a column of its own, as a table writes it */
+    | 'inColumn'
+    /** Immediately after a number */
+    | 'afterNumber'
+    /** In a run of text, with no number before it */
+    | 'byItself'
 
 export interface UnitSettings {
     useImperial?: boolean
@@ -207,7 +208,7 @@ function allUnits(settings: UnitSettings): NamedUnit[] {
 
 const counted: BaseUnit[] = ['person', 'usd', 'fatality']
 
-/** What a count is called, one of it and several: an area over people is over each of them. */
+/** The two forms a count's name takes: people^{2} above the solidus, km^{2}/person below it. */
 const baseUnitWords: Record<BaseUnit, { one: string, many: string }> = {
     person: { one: 'person', many: 'people' },
     usd: { one: 'dollar', many: 'dollars' },
@@ -283,18 +284,17 @@ function raisedTo(power: number): HumanReadableElement[] {
 }
 
 /** The units multiplied together, e.g., km^2, or people per km^2 for a quantity with a denominator. */
-function product(written: Written[], each = false): HumanReadableElement[] {
+function product(written: Written[], singular = false): HumanReadableElement[] {
     return written.flatMap(({ unit, power }, index) => [
         ...index === 0 ? [] : atom('\u00b7'),
-        ...atom(unit.name === '' ? wordFor(unit, each) : unit.name),
+        ...atom(unit.name === '' ? wordFor(unit, singular) : unit.name),
         ...raisedTo(power),
     ])
 }
 
-/** Under the solidus it is one of them at a time: fatalities per person, not per people. */
-function wordFor(unit: NamedUnit, each: boolean): string {
+function wordFor(unit: NamedUnit, singular: boolean): string {
     const words = baseUnitWords[unit.dimensions[0].baseUnit]
-    return each ? words.one : words.many
+    return singular ? words.one : words.many
 }
 
 function computedUnit(dimensions: Dimension[], toBaseUnits: number): StoredUnit {
@@ -364,26 +364,28 @@ export function nameOfStoredUnit(stored: StoredUnit): HumanReadableElement[] | u
     // abbreviations, which shorten a number rather than saying what it is counted in
     const pool = [...allUnits({}), ...lengthUnits.imperial, celsius].filter(({ abbreviation }) => !abbreviation)
     const written = writtenAsCounted(stored.unit.dimensions, pool, stored.toBaseUnits)
-    return written === undefined ? undefined : nameOf(written, {})
+    return written === undefined ? undefined : nameOf(written, 'byItself')
 }
 
 /**
  * Set `alone` when the unit is rendered by itself, as in a table's unit column. A leading solidus
  * then takes a space, so that it reads as "per square kilometre" rather than as a dangling slash.
  */
-export function nameOf(written: Written[], { alone = false, afterNumber = false }: UnitPlacement = {}): HumanReadableElement[] {
+export function nameOf(written: Written[], placement: UnitPlacement = 'byItself'): HumanReadableElement[] {
     // a count is named by the statistic counting it, but only where there is one of it: a square
     // of people is not people, and says so
     const named = written.filter(({ unit, power }) => unit.name !== '' || power !== 1)
     const over = named.filter(({ power }) => power > 0)
     const under = named.filter(({ power }) => power < 0)
     // a word takes a space off the number it follows, where km^{2} and % do not
-    const spaced = afterNumber && over.length > 0 && over[0].unit.name === ''
+    const spaced = placement === 'afterNumber' && over.length > 0 && over[0].unit.name === ''
     const start = spaced ? atom('\u00a0') : []
     if (under.length === 0) {
         return merged([...start, ...product(over)])
     }
-    return merged([...start, ...product(over), ...atom(over.length === 0 && alone ? '/\u00a0' : '/'), ...product(under, true)])
+    // a solidus with nothing in front of it reads as a dangling slash in a column of its own
+    const solidus = over.length === 0 && placement === 'inColumn' ? '/\u00a0' : '/'
+    return merged([...start, ...product(over), ...atom(solidus), ...product(under, true)])
 }
 
 /**

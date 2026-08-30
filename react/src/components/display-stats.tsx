@@ -6,7 +6,7 @@ import { StoredUnit } from '../utils/quantity'
 import { renderQuantity } from './unit-display'
 
 export function Statistic(props: { style?: React.CSSProperties, value: number, isUnit: boolean, unit: StoredUnit, unitAlone?: boolean }): ReactNode {
-    const { value, unit } = renderQuantity(props.value, props.unit, useUnitSettings(), { alone: props.unitAlone })
+    const { value, unit } = renderQuantity(props.value, props.unit, useUnitSettings(), props.unitAlone === true ? 'inColumn' : 'byItself')
 
     return (
         <span style={props.style}>
