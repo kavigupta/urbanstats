@@ -206,8 +206,6 @@ function allUnits(settings: UnitSettings): NamedUnit[] {
     ]
 }
 
-const counted: BaseUnit[] = ['person', 'usd', 'fatality']
-
 /** The two forms a count's name takes: people^{2} above the solidus, km^{2}/person below it. */
 const baseUnitWords: Record<BaseUnit, { one: string, many: string }> = {
     person: { one: 'person', many: 'people' },
@@ -217,14 +215,6 @@ const baseUnitWords: Record<BaseUnit, { one: string, many: string }> = {
     g: { one: 'g', many: 'g' },
     s: { one: 's', many: 's' },
     F: { one: '°F', many: '°F' },
-}
-
-/**
- * Whether the dimensions have names to write. A fractional power is in no pool, so a root of a
- * length cannot be written; a root of a count can, the count having no name to raise.
- */
-export function writableDimensions(unit: Unit): boolean {
-    return unit.dimensions.every(({ baseUnit, power }) => Number.isInteger(power) || counted.includes(baseUnit))
 }
 
 type DimensionKey = string

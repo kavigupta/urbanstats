@@ -130,6 +130,12 @@ void test('dollars and fatalities are counted the way people are', () => {
     assert.equal(mapUnit('population / traffic_fatalities ** 2'), '1\u202f000/fatality^{2}')
     // and a root of one under the solidus is written the way a square of one is
     assert.equal(mapUnit('area / population ** 0.5'), '1\u202f000km^{2}/person^{0.5}')
+    // a root of anything else is written the same way, in roots of the unit it is measured in
+    assert.equal(mapUnit('area ** 0.25'), '1\u202f000km^{0.5}')
+    assert.equal(written(unitOfMap('area ** 0.25'), 1000, { useImperial: true }), '788mi^{0.5}')
+    // where a whole power of a unit will do, it is taken: a root of an area is a length, and a
+    // length is written in miles rather than in roots of an acre
+    assert.equal(written(unitOfMap('area ** 0.5'), 1000, { useImperial: true }), '621mi')
     assert.equal(mapUnit('area / traffic_fatalities ** 0.5'), '1\u202f000km^{2}/fatality^{0.5}')
     assert.equal(mapUnit('population ** -0.5'), '1\u202f000/person^{0.5}')
     assert.equal(mapUnit('population ** 1.5'), '1\u202f000people^{1.5}')

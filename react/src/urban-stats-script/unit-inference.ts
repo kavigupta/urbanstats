@@ -1,4 +1,4 @@
-import { dimensionless, sameDimensions, StoredUnit, writableDimensions } from '../utils/quantity'
+import { dimensionless, sameDimensions, StoredUnit } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
@@ -257,7 +257,7 @@ function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expecte
     switch (ast.type) {
         case 'constant': {
             const unit = unitToWriteIn(expected)
-            if (ast.value.node.type === 'number' && unit !== undefined && writableDimensions(unit.unit)) {
+            if (ast.value.node.type === 'number' && unit !== undefined) {
                 into.set(whereWritten(ast.value.location), unit)
             }
             return
@@ -286,7 +286,7 @@ function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expecte
             // a caption writes a number where this call is, so record its unit as for a literal
             if (readAsANumber(ast, scope) !== undefined) {
                 const unit = unitToWriteIn(expected)
-                if (unit !== undefined && writableDimensions(unit.unit)) {
+                if (unit !== undefined) {
                     into.set(whereWritten(locationOf(ast)), unit)
                 }
             }
