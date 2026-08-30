@@ -52,7 +52,7 @@ export function renderQuantity(value: number, stored: StoredUnit, settings: Unit
  */
 export function QuantityTogether({ value, stored }: { value: number, stored: StoredUnit }): ReactNode {
     const settings = useUnitSettings()
-    const { renderedValue, unitName, hue } = writeQuantity(value, stored, settings, {})
+    const { renderedValue, unitName, hue } = writeQuantity(value, stored, settings, 'afterNumber')
     const colors = useColors()
     return (
         <span style={hue === undefined ? undefined : { color: colors.hueColors[hue] }}>

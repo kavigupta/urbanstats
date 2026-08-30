@@ -131,8 +131,8 @@ test('every column of a filtered table is named and written in what the script w
     }
     await t.expect(names).eql(['Population ÷ Area', 'Mean high temp − Mean low temp', 'max(Commute Bike %, 5%)', 'Population0.5'])
     await t.expect(await rows()).eql([
-        '3\u202f897 /\u00a0km2', '+16.8 °F', '5.00 %', '830',
-        '163 /\u00a0km2', '+15.9 °F', '5.00 %', '4\u202f830',
+        '3\u202f897 /\u00a0km2', '+16.8 °F', '5.00 %', '830 people0.5',
+        '163 /\u00a0km2', '+15.9 °F', '5.00 %', '4\u202f825 people0.5',
     ])
 })
 
@@ -141,5 +141,5 @@ urbanstatsFixture('a quantity with no writing', tableOf('population ** 0.5'))
 test('a root of a count is written plainly rather than failing', async (t) => {
     await waitForLoading()
     // to three figures, as anything in no known unit is, rather than whole as a count of people is
-    await t.expect(await rows()).eql(['8\u202f180', '6\u202f110', '6\u202f060'])
+    await t.expect(await rows()).eql(['8\u202f176 people0.5', '6\u202f105 people0.5', '6\u202f063 people0.5'])
 })

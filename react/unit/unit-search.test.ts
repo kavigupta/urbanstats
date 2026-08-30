@@ -110,7 +110,7 @@ void test('a fixed number of places is a decision that rounding away is precise 
 // The name the chosen units are written under, which is what goes in the unit column
 void test('a bare solidus takes a space where the name stands by itself', () => {
     const perArea = [{ unit: people, power: 1 }, { unit: unit('km', { person: 1 }, 1e3), power: -2 }]
-    assert.equal(reifyString(nameOf([...perArea], { alone: true }), {}), '/\u00a0km^{2}')
+    assert.equal(reifyString(nameOf([...perArea], 'inColumn'), {}), '/\u00a0km^{2}')
     assert.equal(reifyString(nameOf([...perArea]), {}), '/km^{2}')
 })
 

@@ -1,5 +1,5 @@
 import { mapDataExpression, MapUSS, tableColumnExpression } from '../mapper/settings/map-uss'
-import { StoredUnit, writableDimensions } from '../utils/quantity'
+import { StoredUnit } from '../utils/quantity'
 
 import { UrbanStatsASTExpression } from './ast'
 import { TypeEnvironment } from './types-values'
@@ -11,8 +11,7 @@ function unitOf(values: UrbanStatsASTExpression | undefined, uss: MapUSS, typeEn
     if (values === undefined) {
         return undefined
     }
-    const unit = unitToWriteIn(inferUnit(values, typeEnvironment, inferBindings(uss, typeEnvironment)))
-    return unit !== undefined && writableDimensions(unit.unit) ? unit : undefined
+    return unitToWriteIn(inferUnit(values, typeEnvironment, inferBindings(uss, typeEnvironment)))
 }
 
 export function deriveMapUnit(uss: MapUSS, typeEnvironment: TypeEnvironment): StoredUnit | undefined {
