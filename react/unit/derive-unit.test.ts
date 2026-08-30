@@ -37,26 +37,24 @@ void test('a map is written in the units of what it maps', () => {
     assert.equal(mapUnit('high_temp - low_temp'), '+1\u202f000.0°F')
 })
 
-void test('two quantities add only where they are stored the same way', () => {
-    // the values added are the ones the statistics are stored as: kilometres and metres are both
-    // lengths, and adding the numbers adds nothing
-    assert.equal(mapUnit('hospital_mean_dist + elevation'), 'nothing')
-    // an area over a count of people is an area, and one made of a rainfall and a length of time
-    // is an area too, in units nothing else is stored in
-    assert.equal(mapUnit('population * area / population - (2 * rainfall * sunny_hours) ** 2'), 'nothing')
+void test('two quantities add in the units of the left, whatever the right is stored in', () => {
+    // the values added are the ones the statistics are stored as, so metres added to kilometres are
+    // read as a thousand of them each, which is a factor the caption writes out
+    assert.equal(mapUnit('hospital_mean_dist + elevation'), '1\u202f000km')
+    assert.equal(mapUnit('elevation + hospital_mean_dist'), '1\u202f000m')
     assert.equal(mapUnit('area + area'), '1\u202f000km^{2}')
 })
 
 void test('a literal is read in whatever unit makes the rest of the expression work', () => {
     // people are no area, but a number multiplying them may be an area over each of them
     assert.equal(mapUnit('area + population * 1'), '1\u202f000km^{2}')
-    assert.equal(mapUnit('area + population'), 'nothing')
-    // and where nothing can be read into it, as inside a logarithm, which makes a number of anything
-    assert.equal(mapUnit('area + ln(population * 1)'), 'nothing')
+    // and where no literal is written, the script is read as supplying one
+    assert.equal(mapUnit('area + population'), '1\u202f000km^{2}')
+    assert.equal(mapUnit('area + ln(population * 1)'), '1\u202f000km^{2}')
 })
 
 void test('a map of what no unit can be read off says nothing', () => {
-    assert.equal(mapUnit('population + area'), 'nothing')
+    // no factor makes a sum of two readings one reading, there being no zero to add from
     assert.equal(mapUnit('high_temp + low_temp'), 'nothing')
     assert.equal(mapUnit('someFunctionOrOther(population)'), 'nothing')
 })
@@ -94,9 +92,10 @@ for (const [data, expected] of [
     ['area / area', '1\u202f230'],
     ['population ** 0', '1\u202f230'],
     ['inverseQuantile(area, area)', '1\u202f230'],
-    // a reading over a reading has no zero to divide from, and two lengths held apart do not meet
+    // a reading over a reading has no zero to divide from
     ['high_temp / high_temp', 'nothing'],
-    ['minimum(elevation, hospital_mean_dist)', 'nothing'],
+    // two lengths stored apart meet where one of them is read as so many of the other
+    ['minimum(elevation, hospital_mean_dist)', '1.23km'],
     // an empty vector is of every kind and so of none
     ['[]', 'nothing'],
     // the ways a script has of saying the same thing

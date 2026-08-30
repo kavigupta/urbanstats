@@ -69,9 +69,10 @@ void test('a power raises what an expression worked out to', () => {
     assert.equal(inferred('(high_temp * 2) ** 0.5'), 'inconsistent')
 })
 
-void test('nothing is the sum of two unlike kinds', () => {
-    assert.equal(inferred('population + area'), 'inconsistent')
-    assert.equal(inferred('(population + area) / area'), 'inconsistent')
+void test('a sum of two unlike kinds is read as supplying the factor between them', () => {
+    // people and an area add where the area is so many people, which is a factor the caption writes
+    assert.equal(inferred('population + area'), 'person^1 times=2 x1')
+    assert.equal(inferred('(population + area) / area'), 'm^-2 person^1 times=2 x0.000001')
 })
 
 void test('a name is worth what it was assigned', () => {
@@ -122,8 +123,8 @@ for (const [code, expected] of [
     ['quantile(population, 0.5)', 'person^1 times=1 x1'],
     ['percentile(area, 90)', 'm^2 times=1 x1000000'],
     ['maximum(population, population)', 'person^1 times=1 x1'],
-    // nothing is the larger of a population and an area
-    ['maximum(population, area)', 'inconsistent'],
+    // the larger of a population and an area is a population, the area being read as so many people
+    ['maximum(population, area)', 'person^1 times=1 x1'],
     ['inverseQuantile(population, population)', 'dimensionless times=1 x1'],
     ['sign(population)', 'dimensionless times=1 x1'],
     // a function that states no rule says any quantity at all, rather than none
@@ -150,8 +151,8 @@ void test('the size of a reading is no reading, where the size of a difference i
 void test('a rank is of two of one kind, and is a number of none', () => {
     assert.equal(inferred('inverseQuantile(population, population)'), 'dimensionless times=1 x1')
     assert.equal(inferred('inversePercentile(high_temp, low_temp)'), 'dimensionless times=1 x1')
-    // nothing is the rank of a population among areas
-    assert.equal(inferred('inverseQuantile(population, area)'), 'inconsistent')
+    // and a population ranks among areas read as populations, as it adds to one
+    assert.equal(inferred('inverseQuantile(population, area)'), 'dimensionless times=1 x1')
 })
 
 void test('a larger of a quantity and a bare number is that quantity', () => {
@@ -161,9 +162,9 @@ void test('a larger of a quantity and a bare number is that quantity', () => {
     assert.equal(inferred('maximum(0.05, commute_bike)'), 'dimensionless times=1 x1')
     // two bare numbers stay bare, no unit being known of either
     assert.equal(inferred('maximum(1, 2)'), 'unknown')
-    // and nothing is the larger of a population and an area, as nothing is their sum
-    assert.equal(inferred('maximum(population, area)'), 'inconsistent')
-    assert.equal(inferred('maximum(population + area, population)'), 'inconsistent')
+    // and the larger of a population and an area is a population, as their sum is
+    assert.equal(inferred('maximum(population, area)'), 'person^1 times=1 x1')
+    assert.equal(inferred('maximum(population + area, population)'), 'person^1 times=unknown x1')
 })
 
 void test('a total is as many of them as there were, which is not a number anyone knows', () => {

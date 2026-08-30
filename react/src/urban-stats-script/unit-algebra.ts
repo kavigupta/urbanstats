@@ -70,7 +70,7 @@ function written(unit: StoredUnit, times: Coefficient, decoration = unit.unit.de
 }
 
 /** A hair apart after arithmetic is the same size: a square root squared does not come back exact. */
-function sameSize(left: number, right: number): boolean {
+export function sameSize(left: number, right: number): boolean {
     return Math.abs(left - right) <= 1e-9 * Math.max(Math.abs(left), Math.abs(right))
 }
 

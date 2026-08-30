@@ -1,4 +1,4 @@
-import { dimensionless, sameDimensions, StoredUnit } from '../utils/quantity'
+import { dimensionless, sameDimensions, StoredUnit, unitPower, unitProduct } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
@@ -6,7 +6,7 @@ import { asNumber } from './constants/convert'
 import * as l from './literal-parser'
 import { LocInfo } from './location'
 import { TypeEnvironment, UnitPropagation, USSPrimitiveRawValue } from './types-values'
-import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, unitToWriteIn } from './unit-algebra'
+import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, sameSize, unitToWriteIn } from './unit-algebra'
 
 const anything = { kind: 'any' } satisfies AbstractInterpValue
 
@@ -25,6 +25,8 @@ interface Scope {
     named: Bindings
     /** What the backward pass made of each literal, where it has run and a caller wants it read. */
     constants?: ConstantUnits
+    /** Where a factor has to be supplied for the units to work out, and what unit it is in. */
+    factors?: SuppliedFactors
 }
 
 /** A block is worth as much as its last statement, and an empty one as much as nothing said. */
@@ -92,9 +94,42 @@ function argument(args: UrbanStatsASTArg[], index: number, scope: Scope): Abstra
     return arg === undefined ? anything : quantity(infer(arg, scope))
 }
 
+/** What a quantity is divided by to be a plain number, which is one of whatever it is counted in. */
+function readAsPlain(ast: UrbanStatsASTExpression, scope: Scope): void {
+    const of = unitToWriteIn(quantity(infer(ast, scope)))
+    if (of !== undefined) {
+        scope.factors?.set(whereWritten(locationOf(ast)), { factor: unitPower(of, -1), of })
+    }
+}
+
+/**
+ * What an argument that has to be of the same kind as another is worth, once the factor that makes
+ * it so is written down: the 1 000 of maximum(hospital_mean_dist, elevation).
+ */
+function madeAlike(value: AbstractInterpValue, args: UrbanStatsASTArg[], index: number, scope: Scope): AbstractInterpValue {
+    const other = argument(args, index, scope)
+    const operand = positional(args, index)
+    if (value.kind !== 'in' || other.kind !== 'in' || operand === undefined) {
+        return other
+    }
+    if (sameDimensions(value.unit, other.unit) && sameSize(value.unit.toBaseUnits, other.unit.toBaseUnits)) {
+        return other
+    }
+    const factor = unitProduct(value.unit, other.unit, -1)
+    if (factor === undefined) {
+        return other
+    }
+    scope.factors?.set(whereWritten(locationOf(operand)), { factor, of: other.unit })
+    return inUnit(value.unit)
+}
+
 function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' }>, value: AbstractInterpValue, args: UrbanStatsASTArg[], scope: Scope): AbstractInterpValue {
     switch (propagation.kind) {
         case 'number':
+            // ln of a density is a number, which is the density divided by what it is counted in
+            for (const arg of args) {
+                readAsPlain(arg.value, scope)
+            }
             return inUnit(dimensionless)
         case 'unchanged': {
             const isDifference = value.kind === 'in' && value.unit.unit.times === 0
@@ -103,7 +138,7 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
         case 'power':
             return forward('**', value, constant(propagation.exponent))
         case 'either': {
-            const other = argument(args, 1, scope)
+            const other = madeAlike(value, args, 1, scope)
             // Two known units must match, and the result is one of them, not their sum.
             if (value.kind === 'in' && other.kind === 'in') {
                 return sameDimensions(value.unit, other.unit) ? join(value, other) : { kind: 'none' }
@@ -113,7 +148,7 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
         }
         case 'rank': {
             // both arguments are in one unit, so there is no ranking a population among areas
-            const alike = forward('-', value, argument(args, 1, scope))
+            const alike = forward('-', value, madeAlike(value, args, 1, scope))
             return alike.kind === 'none' ? alike : inUnit(dimensionless)
         }
     }
@@ -131,6 +166,24 @@ function propagationOf(fn: UrbanStatsASTExpression, scope: Scope): UnitPropagati
         return undefined
     }
     return scope.typeEnvironment.get(fn.name.node)?.documentation?.unitPropagation
+}
+
+/**
+ * What an operation whose sides do not go together works out to, given the factor the right side
+ * would have to be multiplied by for them to: people and an area go together where one of them is
+ * so many square kilometres per person, and the factor says how many.
+ */
+function reconciled(ast: UrbanStatsASTExpression & { type: 'binaryOperator' }, left: AbstractInterpValue, right: AbstractInterpValue, scope: Scope): AbstractInterpValue {
+    if (left.kind !== 'in' || right.kind !== 'in') {
+        return { kind: 'none' }
+    }
+    const factor = unitProduct(left.unit, right.unit, -1)
+    if (factor === undefined) {
+        return { kind: 'none' }
+    }
+    scope.factors?.set(whereWritten(locationOf(ast.right)), { factor, of: right.unit })
+    // the sides now go together, so the operation is worth what it would have been
+    return forward(ast.operator.node, left, inUnit(left.unit))
 }
 
 function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Scope): Inferred {
@@ -151,8 +204,10 @@ function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Sco
             return block(ast.statements, scope)
         case 'statements':
             return block(ast.result, scope)
-        // which regions are kept says nothing about what is measured of them
         case 'condition':
+            // which regions are kept says nothing about what is measured of them, though what the
+            // condition reads is still read
+            infer(ast.condition, scope)
             return block(ast.rest, scope)
         case 'identifier':
             return identifier(ast.name.node, scope)
@@ -167,8 +222,12 @@ function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Sco
         }
         case 'unaryOperator':
             return forwardUnary(ast.operator.node, quantity(infer(ast.expr, scope)))
-        case 'binaryOperator':
-            return forward(ast.operator.node, quantity(infer(ast.left, scope)), quantity(infer(ast.right, scope)))
+        case 'binaryOperator': {
+            const left = quantity(infer(ast.left, scope))
+            const right = quantity(infer(ast.right, scope))
+            const value = forward(ast.operator.node, left, right)
+            return value.kind === 'none' ? reconciled(ast, left, right, scope) : value
+        }
         case 'vectorLiteral':
             return ast.elements.reduce<AbstractInterpValue>((soFar, element) => join(soFar, quantity(infer(element, scope))), { kind: 'none' })
         case 'objectLiteral':
@@ -179,7 +238,14 @@ function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Sco
         }
         case 'call': {
             const propagation = propagationOf(ast.fn, scope)
-            return propagation === undefined ? anything : propagated(propagation, ast.args, scope)
+            if (propagation !== undefined) {
+                return propagated(propagation, ast.args, scope)
+            }
+            // what a map is drawn from is worth reading, though drawing it says nothing of units
+            for (const arg of ast.args) {
+                infer(arg.value, scope)
+            }
+            return anything
         }
         case 'if': {
             const consequent = branch(ast.then, scope)
@@ -236,15 +302,6 @@ export function readAsANumber(ast: UrbanStatsASTExpression, scope: Scope): { val
     if (read === undefined) return undefined
     const literal = l.tryParse(primitive, read, scope.typeEnvironment)
     return { value: literal === undefined ? undefined : asNumber(literal), read }
-}
-
-/**
- * The unit each argument of a call is in, where the call reads a quantity and gives back a plain
- * number: a logarithm of a density is a number, and the caption has to say of what.
- */
-export function unitsReadAndDropped(ast: UrbanStatsASTExpression, scope: Scope): (StoredUnit | undefined)[] | undefined {
-    if (ast.type !== 'call' || propagationOf(ast.fn, scope)?.kind !== 'number') return undefined
-    return ast.args.map(arg => unitToWriteIn(quantity(infer(arg.value, scope))))
 }
 
 function pushedInto(propagation: UnitPropagation | undefined, expected: Expected, args: UrbanStatsASTArg[], index: number, scope: Scope): Expected {
@@ -334,6 +391,21 @@ function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expecte
     }
 }
 
+/**
+ * The factor each expression has to be multiplied by for the units around it to work out. A script
+ * adding people to an area is read as supplying so many square kilometres per person; nothing here
+ * changes what the script computes, so the caption writes these out.
+ */
+export interface SuppliedFactor {
+    /** What the expression is read as multiplied by, where any factor does what is wanted: a
+     * temperature read as a plain number is read from no zero a factor could undo. */
+    factor: StoredUnit | undefined
+    /** The unit of what it multiplies. */
+    of: StoredUnit
+}
+
+export type SuppliedFactors = Map<string, SuppliedFactor>
+
 /** The unit of each numeric literal in a script, where the script determines one. */
 export function inferConstantUnits(program: UrbanStatsASTStatement | UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): ConstantUnits {
     const scope = { typeEnvironment, named: new Map() }
@@ -341,6 +413,19 @@ export function inferConstantUnits(program: UrbanStatsASTStatement | UrbanStatsA
     const into: ConstantUnits = new Map()
     readBack(program, anything, scope, into)
     return into
+}
+
+/** What a script's numbers are read as: the unit of each literal it writes, and the factors it does not. */
+export interface NumbersRead {
+    literals: ConstantUnits
+    supplied: SuppliedFactors
+}
+
+export function inferNumbersRead(program: UrbanStatsASTStatement | UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): NumbersRead {
+    const literals = inferConstantUnits(program, typeEnvironment)
+    const supplied: SuppliedFactors = new Map()
+    infer(program, { typeEnvironment, named: new Map(), constants: literals, factors: supplied })
+    return { literals, supplied }
 }
 
 /** The unit an expression works out to, where reading it determines one. */

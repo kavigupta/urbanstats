@@ -3,17 +3,60 @@ import { assert } from '../utils/defensive'
 import { HumanReadableElement, HumanReadableName } from '../utils/human-readable-element'
 import { joinHumanReadableNames } from '../utils/human-readable-name'
 import { parseHumanReadableTemplate } from '../utils/human-readable-template'
-import { nameOfStoredUnit, StoredUnit } from '../utils/quantity'
+import { nameOfStoredUnit, StoredUnit, unitProduct } from '../utils/quantity'
 import { abbreviate, formatToSignificantFigures, separateNumber, trimTrailingZeros } from '../utils/text'
 
 import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import * as l from './literal-parser'
 import { noLocation } from './location'
-import { expressionOperatorMap } from './operators'
+import { BinaryOperatorSymbol, expressionOperatorMap } from './operators'
 import { TypeEnvironment } from './types-values'
-import { ConstantUnits, inferConstantUnits, readAsANumber, unitsReadAndDropped, whereWritten } from './unit-inference'
+import { sameSize } from './unit-algebra'
+import { inferNumbersRead, NumbersRead, readAsANumber, SuppliedFactor, whereWritten } from './unit-inference'
 
-function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, units: ConstantUnits): HumanReadableElement[] | undefined {
+const wraps = new Set(['assignment', 'autoUXNode', 'customNode', 'expression'])
+
+/** The factor written after an expression, where the script is read as supplying one there. */
+function suppliedAt(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, units: NumbersRead): SuppliedFactor | undefined {
+    // a node that only wraps another shares its place, and would write the factor a second time
+    return wraps.has(ast.type) ? undefined : units.supplied.get(whereWritten(locationOf(ast)))
+}
+
+/** Whether multiplying by the factor leaves a plain number, one of the unit undoing the other. */
+function undoes(factor: StoredUnit, of: StoredUnit): boolean {
+    const undone = unitProduct(of, factor, 1)
+    return undone?.unit.dimensions.length === 0 && sameSize(undone.toBaseUnits, 1)
+}
+
+/** How an operand reads to what encloses it: a factor written after it makes it a product. */
+function readsAs(ast: UrbanStatsASTExpression, units: NumbersRead): typeof expressionOperatorMap[BinaryOperatorSymbol] | undefined {
+    if (suppliedAt(ast, units) !== undefined) {
+        return expressionOperatorMap['*']
+    }
+    return ast.type === 'binaryOperator' ? expressionOperatorMap[ast.operator.node] : undefined
+}
+
+/**
+ * A script adding people to an area is read as multiplying the people by so many square kilometres
+ * each. The factor is no part of what the script computes, so the name says it out loud.
+ */
+function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, units: NumbersRead): HumanReadableElement[] | undefined {
+    const written = writtenPlainly(ast, typeEnvironment, units)
+    const supplied = suppliedAt(ast, units)
+    if (written === undefined || supplied === undefined) {
+        return written
+    }
+    // a factor that is exactly what the expression is counted in, undone, says what it was read in
+    if (supplied.factor === undefined || undoes(supplied.factor, supplied.of)) {
+        return inUnitWritten(written, supplied.of)
+    }
+    const operand = ast.type === 'binaryOperator' && expressionOperatorMap[ast.operator.node].precedence < expressionOperatorMap['*'].precedence
+        ? [{ type: 'parens', value: written } satisfies HumanReadableElement]
+        : written
+    return [...operand, { type: 'atom', value: ' × ' }, ...formatNumber(1, supplied.factor)]
+}
+
+function writtenPlainly(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, units: NumbersRead): HumanReadableElement[] | undefined {
     switch (ast.type) {
         case 'assignment':
             return humanReadableElements(ast.value, typeEnvironment, units)
@@ -27,21 +70,17 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
              */
             let lhs = humanReadableElements(ast.left, typeEnvironment, units)
             if (lhs === undefined) return
-            if (ast.left.type === 'binaryOperator') {
-                const leftOp = expressionOperatorMap[ast.left.operator.node]
-                if (!(leftOp.precedence > centerOp.precedence
-                    || leftOp === centerOp)) {
-                    lhs = [{ type: 'parens', value: lhs }]
-                }
+            const leftOp = readsAs(ast.left, units)
+            if (leftOp !== undefined && !(leftOp.precedence > centerOp.precedence
+                || leftOp === centerOp)) {
+                lhs = [{ type: 'parens', value: lhs }]
             }
 
             let rhs = humanReadableElements(ast.right, typeEnvironment, units)
             if (rhs === undefined) return
-            if (ast.right.type === 'binaryOperator') {
-                const rightOp = expressionOperatorMap[ast.right.operator.node]
-                if (!(rightOp.precedence > centerOp.precedence || (centerOp === rightOp && centerOp.isAssociative))) {
-                    rhs = [{ type: 'parens', value: rhs }]
-                }
+            const rightOp = readsAs(ast.right, units)
+            if (rightOp !== undefined && !(rightOp.precedence > centerOp.precedence || (centerOp === rightOp && centerOp.isAssociative))) {
+                rhs = [{ type: 'parens', value: rhs }]
             }
 
             let humanReadableOperator: string
@@ -98,7 +137,7 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
                 case 'humanReadableElements':
                     return ast.value.node.value
                 case 'number':
-                    return formatNumber(ast.value.node.value, units.get(whereWritten(ast.value.location)))
+                    return formatNumber(ast.value.node.value, units.literals.get(whereWritten(ast.value.location)))
                 case 'string':
                     return [{ type: 'atom', value: ast.value.node.value }]
             }
@@ -127,7 +166,7 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
             const readNumber = readAsANumber(ast, { typeEnvironment, named: new Map() })
             if (readNumber !== undefined) {
                 // toNumber says its argument is read as a number, which writing a number says
-                const unit = units.get(whereWritten(locationOf(ast)))
+                const unit = units.literals.get(whereWritten(locationOf(ast)))
                 if (readNumber.value !== undefined) return formatNumber(readNumber.value, unit)
                 const written = humanReadableElements(readNumber.read, typeEnvironment, units)
                 if (written === undefined) return
@@ -138,13 +177,10 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
             }
             const fn = humanReadableElements(ast.fn, typeEnvironment, units)
             if (fn === undefined) return
-            // ln of a density is a number, so the caption says what the density was read in
-            const dropped = unitsReadAndDropped(ast, { typeEnvironment, named: new Map() })
             const args: HumanReadableElement[][] = []
-            for (const [index, arg] of ast.args.entries()) {
-                const written = humanReadableElements(arg.value, typeEnvironment, units)
-                if (written === undefined) return
-                const humanArg = inUnitWritten(written, dropped?.[index])
+            for (const arg of ast.args) {
+                const humanArg = humanReadableElements(arg.value, typeEnvironment, units)
+                if (humanArg === undefined) return
                 switch (arg.type) {
                     case 'named':
                         args.push([{ type: 'atom', value: `${arg.name.node} = ` }, ...humanArg])
@@ -209,7 +245,7 @@ function statedMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanRea
 }
 
 export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
-    const units = inferConstantUnits(uss, typeEnvironment)
+    const units = inferNumbersRead(uss, typeEnvironment)
     const result = read(editableMapData, uss, typeEnvironment)
     if (result?.currentValue.namedArgs.data === undefined) return
     const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment, units)
@@ -253,7 +289,7 @@ const statedColumnNames = mapUssParser(l.call({
 }), 'dont-reparse')
 
 function tableColumnLabels(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName[] | undefined {
-    const units = inferConstantUnits(uss, typeEnvironment)
+    const units = inferNumbersRead(uss, typeEnvironment)
     const columns = read(statedColumnNames, uss, typeEnvironment)?.namedArgs.columns
     if (columns === undefined) {
         return undefined
@@ -272,7 +308,7 @@ export function deriveConditionLabel(uss: MapUSS, typeEnvironment: TypeEnvironme
     if (uss.type !== 'statements') {
         return undefined
     }
-    const units = inferConstantUnits(uss, typeEnvironment)
+    const units = inferNumbersRead(uss, typeEnvironment)
     const condition = humanReadableElements(uss.result[1].condition, typeEnvironment, units)
     if (condition?.length === 1 && condition[0].type === 'atom' && condition[0].value === 'true') {
         return undefined
@@ -291,7 +327,7 @@ export function tableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): Human
 }
 
 export function deriveTableColumnLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): HumanReadableName | undefined {
-    const units = inferConstantUnits(uss, typeEnvironment)
+    const units = inferNumbersRead(uss, typeEnvironment)
     const values = tableColumnExpression(uss, typeEnvironment, columnIndex)
     return values === undefined ? undefined : humanReadableElements(values, typeEnvironment, units)
 }
@@ -303,7 +339,7 @@ const editableTableCall = mapUssParser(l.edit(l.call({
 })), 'dont-reparse')
 
 export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnNames: HumanReadableName[]): HumanReadableName | undefined {
-    const units = inferConstantUnits(uss, typeEnvironment)
+    const units = inferNumbersRead(uss, typeEnvironment)
     const result = read(editableTableCall, uss, typeEnvironment)
     if (result === undefined) {
         return undefined
