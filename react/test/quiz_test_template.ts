@@ -729,10 +729,10 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
 
     test('quiz results go to compare pages', async (t) => {
         // only using the image tests because the links are not stable across versions
-        await t.click(Selector('a').withText(/Colorado, USA/))
+        await t.click(Selector('.quiz_result_cell').withText(/Colorado, USA/))
         await screencap(t)
         await ClientFunction(() => { history.back() })()
-        await t.click(Selector('a').withText(/Toronto CDR, Ontario, Canada/))
+        await t.click(Selector('.quiz_result_cell').withText(/Toronto CDR, Ontario, Canada/))
         await screencap(t)
     })
 
