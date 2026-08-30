@@ -107,8 +107,8 @@ void test('a count is written as nothing, whatever else it is multiplied by', ()
     // people times an area is written km^{2}, one of a count being named by the statistic counting
     // it; an area over people says the people, there being no one of them to leave unsaid
     assert.equal(mapUnit('population * area'), '1\u202f000km^{2}')
-    assert.equal(mapUnit('area / population'), '1\u202f000km^{2}/people')
-    assert.equal(mapUnit('traffic_fatalities / population'), '1\u202f000/people')
+    assert.equal(mapUnit('area / population'), '1\u202f000km^{2}/person')
+    assert.equal(mapUnit('traffic_fatalities / population'), '1\u202f000/person')
     assert.equal(mapUnit('traffic_fatalities / area'), '1\u202f000/km^{2}')
     // a count is shortened only where it is the whole of what is written: a square of one is not
     // written in squares of millions

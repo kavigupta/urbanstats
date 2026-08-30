@@ -207,8 +207,15 @@ function allUnits(settings: UnitSettings): NamedUnit[] {
 
 const counted: BaseUnit[] = ['person', 'usd', 'fatality']
 
-const baseUnitWords: Record<BaseUnit, string> = {
-    person: 'people', usd: 'dollars', fatality: 'fatalities', m: 'm', g: 'g', s: 's', F: '°F',
+/** What a count is called, one of it and several: an area over people is over each of them. */
+const baseUnitWords: Record<BaseUnit, { one: string, many: string }> = {
+    person: { one: 'person', many: 'people' },
+    usd: { one: 'dollar', many: 'dollars' },
+    fatality: { one: 'fatality', many: 'fatalities' },
+    m: { one: 'm', many: 'm' },
+    g: { one: 'g', many: 'g' },
+    s: { one: 's', many: 's' },
+    F: { one: '°F', many: '°F' },
 }
 
 /**
@@ -276,12 +283,18 @@ function raisedTo(power: number): HumanReadableElement[] {
 }
 
 /** The units multiplied together, e.g., km^2, or people per km^2 for a quantity with a denominator. */
-function product(written: Written[]): HumanReadableElement[] {
+function product(written: Written[], each = false): HumanReadableElement[] {
     return written.flatMap(({ unit, power }, index) => [
         ...index === 0 ? [] : atom('\u00b7'),
-        ...atom(unit.name === '' ? baseUnitWords[unit.dimensions[0].baseUnit] : unit.name),
+        ...atom(unit.name === '' ? wordFor(unit, each) : unit.name),
         ...raisedTo(power),
     ])
+}
+
+/** Under the solidus it is one of them at a time: fatalities per person, not per people. */
+function wordFor(unit: NamedUnit, each: boolean): string {
+    const words = baseUnitWords[unit.dimensions[0].baseUnit]
+    return each ? words.one : words.many
 }
 
 function computedUnit(dimensions: Dimension[], toBaseUnits: number): StoredUnit {
@@ -370,7 +383,7 @@ export function nameOf(written: Written[], { alone = false, afterNumber = false 
     if (under.length === 0) {
         return merged([...start, ...product(over)])
     }
-    return merged([...start, ...product(over), ...atom(over.length === 0 && alone ? '/\u00a0' : '/'), ...product(under)])
+    return merged([...start, ...product(over), ...atom(over.length === 0 && alone ? '/\u00a0' : '/'), ...product(under, true)])
 }
 
 /**
