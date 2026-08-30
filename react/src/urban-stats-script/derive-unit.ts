@@ -4,25 +4,25 @@ import { StoredUnit } from '../utils/quantity'
 import { UrbanStatsASTExpression } from './ast'
 import { TypeEnvironment } from './types-values'
 import { unitToWriteIn } from './unit-algebra'
-import { inferBindings, inferConstantUnits, inferUnit } from './unit-inference'
+import { unitCheck, unitWithin } from './unit-inference'
 
 /**
- * Read against the whole script, so that a name the script assigned is followed, and against what
- * the backward pass made of its literals, so that a * 1 is read in whatever unit makes the rest
- * work, as the caption writes it.
+ * Read against the whole script, so that a name the script assigned is followed and a factor the
+ * units wanted is written in, and then read again for the one expression the map or column draws.
  */
-function unitOf(values: UrbanStatsASTExpression | undefined, uss: MapUSS, typeEnvironment: TypeEnvironment): StoredUnit | undefined {
+function unitOf(of: (checked: MapUSS) => UrbanStatsASTExpression | undefined, uss: MapUSS, typeEnvironment: TypeEnvironment): StoredUnit | undefined {
+    const checked = unitCheck(uss, typeEnvironment)
+    const values = of(checked.ast)
     if (values === undefined) {
         return undefined
     }
-    const named = inferBindings(uss, typeEnvironment)
-    return unitToWriteIn(inferUnit(values, typeEnvironment, named, inferConstantUnits(uss, typeEnvironment)))
+    return unitToWriteIn(unitWithin(values, typeEnvironment, checked.named, checked.literals))
 }
 
 export function deriveMapUnit(uss: MapUSS, typeEnvironment: TypeEnvironment): StoredUnit | undefined {
-    return unitOf(mapDataExpression(uss, typeEnvironment), uss, typeEnvironment)
+    return unitOf(checked => mapDataExpression(checked, typeEnvironment), uss, typeEnvironment)
 }
 
 export function deriveTableColumnUnit(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): StoredUnit | undefined {
-    return unitOf(tableColumnExpression(uss, typeEnvironment, columnIndex), uss, typeEnvironment)
+    return unitOf(checked => tableColumnExpression(checked, typeEnvironment, columnIndex), uss, typeEnvironment)
 }

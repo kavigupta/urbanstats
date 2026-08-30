@@ -2,9 +2,10 @@ import assert from 'assert/strict'
 import test from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
+import { noLocation } from '../src/urban-stats-script/location'
 import { parseNoError } from '../src/urban-stats-script/parser'
 import { AbstractInterpValue, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
-import { inferUnit } from '../src/urban-stats-script/unit-inference'
+import { unitCheck, unitWithin } from '../src/urban-stats-script/unit-inference'
 
 /** What is known, as a string: the dimensions, how many of itself it is, and its scale. */
 function shape(known: AbstractInterpValue): string {
@@ -22,7 +23,10 @@ function shape(known: AbstractInterpValue): string {
 }
 
 function of(code: string): AbstractInterpValue {
-    return inferUnit(parseNoError(code, 'test'), defaultTypeEnvironment('USA'))
+    const program = parseNoError(code, 'test')
+    const typeEnvironment = defaultTypeEnvironment('USA')
+    const checked = unitCheck(program, typeEnvironment)
+    return unitWithin({ type: 'customNode', entireLoc: noLocation, expr: checked.ast, originalCode: code }, typeEnvironment, checked.named, checked.literals)
 }
 
 function inferred(code: string): string {
@@ -69,10 +73,11 @@ void test('a power raises what an expression worked out to', () => {
     assert.equal(inferred('(high_temp * 2) ** 0.5'), 'inconsistent')
 })
 
-void test('a sum of two unlike kinds is read as supplying the factor between them', () => {
-    // people and an area add where the area is so many people, which is a factor the caption writes
-    assert.equal(inferred('population + area'), 'person^1 times=2 x1')
-    assert.equal(inferred('(population + area) / area'), 'm^-2 person^1 times=2 x0.000001')
+void test('a sum of two unlike kinds is read with the factor between them written in', () => {
+    // people and an area add where the area is so many people each, and how many of itself the sum
+    // is cannot be said, one side of it being a product
+    assert.equal(inferred('population + area'), 'person^1 times=unknown x1')
+    assert.equal(inferred('(population + area) / area'), 'm^-2 person^1 times=unknown x0.000001')
 })
 
 void test('a name is worth what it was assigned', () => {
