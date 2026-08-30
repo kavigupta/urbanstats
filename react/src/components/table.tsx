@@ -1,7 +1,7 @@
 import { closestCenter, DndContext, DragEndEvent, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { horizontalListSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import React, { CSSProperties, ReactNode, useContext, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 
 import { ArticleOrderingListInternal, loadOrdering, loadStatisticsPage } from '../load_json'
 import './table.css'
@@ -554,7 +554,6 @@ export function StatisticRowCells(props: {
                             <Statistic
                                 value={statisticRow.statval}
                                 isUnit={true}
-                                unitAlone={true}
                                 unit={statisticRow.unit}
                             />
                         </span>
@@ -1106,6 +1105,21 @@ export function computeDisclaimerFootnotes(specs: CellSpec[]): { getSymbol: (d: 
 function StatisticNameDisclaimer(props: { disclaimer: Disclaimer, footnoteSymbol?: string }): ReactNode {
     const colors = useColors()
     const [show, setShow] = useState(false)
+    const container = useRef<HTMLSpanElement>(null)
+
+    useEffect(() => {
+        if (!show) {
+            return
+        }
+        const closeIfOutside = (event: MouseEvent): void => {
+            if (!container.current?.contains(event.target as Node)) {
+                setShow(false)
+            }
+        }
+        document.addEventListener('click', closeIfOutside)
+        return () => { document.removeEventListener('click', closeIfOutside) }
+    }, [show])
+
     if (props.footnoteSymbol !== undefined) {
         return (
             <sup style={{ fontSize: '0.85em' }}>
@@ -1116,6 +1130,10 @@ function StatisticNameDisclaimer(props: { disclaimer: Disclaimer, footnoteSymbol
     // little disclaimer icon that pops up a tooltip when clicked
     const tooltipStyle: React.CSSProperties = {
         position: 'absolute',
+        top: 'calc(100% + 0.25em)',
+        left: 0,
+        width: 'max-content',
+        maxWidth: 'min(25em, 60vw)',
         backgroundColor: colors.slightlyDifferentBackgroundFocused,
         color: colors.textMain,
         padding: '0.5em',
@@ -1125,7 +1143,7 @@ function StatisticNameDisclaimer(props: { disclaimer: Disclaimer, footnoteSymbol
         display: show ? 'block' : 'none',
     }
     return (
-        <span style={{ display: 'inline-flex', alignItems: 'center', position: 'relative' }}>
+        <span ref={container} style={{ display: 'inline-flex', alignItems: 'center', position: 'relative' }}>
             <span
                 className="disclaimer-toggle"
                 style={{ ...articleStatnameButtonStyle(colors), display: 'inline-block' }}

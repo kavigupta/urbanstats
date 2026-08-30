@@ -170,6 +170,9 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
             .map(inset => ({ inset, insetFeatures: filterOverlaps(inset, features) }))
             .filter(({ insetFeatures }) => insetFeatures.length > 0)
 
+        // Don't change the aspect ratio while editing, otherwise things get nasty
+        const aspectRatio = computeAspectRatioForInsets(acceptedInsets.map(({ inset }) => inset))
+
         const maybeEditingInsets = props.mode === 'insets'
             ? props.editInsets.edited.map(inset => ({ inset, insetFeatures: filterOverlaps(inset, features) }))
             : acceptedInsets
@@ -220,8 +223,8 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
             debugLog('exportImage: all maps prepared for export, entering screenshot mode')
 
             const image = await withScreenshotMode(screenshotContext.current, async () => {
-                debugLog('exportImage: screenshot mode active, capturing element canvas at', canonicalWidth * exportPixelRatio, 'px wide')
-                const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, { mapBorderRadius: 0, testing: false })
+                debugLog('exportImage: screenshot mode active, capturing element canvas at', canonicalWidth(aspectRatio) * exportPixelRatio, 'px wide')
+                const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth(aspectRatio) * exportPixelRatio, { mapBorderRadius: 0, testing: false })
                 debugLog('exportImage: screencapElement returned', elementCanvas.width, 'x', elementCanvas.height, 'canvas, compositing banner')
                 return mapImageExport(elementCanvas, mapResultMain.value.basemap, colors)
             })
@@ -256,8 +259,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
                     maps={insetMaps}
                     loading={props.loading}
                     colorbar={colorbar}
-                    // Don't change the aspect ratio while editing, otherwise things get nasty
-                    aspectRatio={computeAspectRatioForInsets(acceptedInsets.map(({ inset }) => inset))}
+                    aspectRatio={aspectRatio}
                     mapsContainerRef={mapsContainerRef}
                     wholeRenderRef={wholeRenderRef}
                     textBoxes={textBoxes}
@@ -352,7 +354,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, who
     wholeRenderRef?: React.Ref<HTMLDivElement>
 }): ReactNode {
     return (
-        <TransformConstantWidth>
+        <TransformConstantWidth width={canonicalWidth(aspectRatio)}>
             <div
                 ref={wholeRenderRef}
                 style={{
@@ -570,7 +572,7 @@ function computeRampToDisplay(value: CommonMap, label: HumanReadableName, derive
 
 export const transformContext = createContext({ selfDetermineHeight: false })
 
-function TransformConstantWidth({ children }: { children: ReactNode }): ReactNode {
+function TransformConstantWidth({ children, width }: { children: ReactNode, width: number }): ReactNode {
     const [layout, setLayout] = useState({ scale: 1, top: 0, left: 0, selfDeterminedHeight: 0 })
     const ref = useRef<HTMLDivElement>(null)
     const childRef = useRef<HTMLDivElement>(null)
@@ -581,7 +583,7 @@ function TransformConstantWidth({ children }: { children: ReactNode }): ReactNod
                 return
             }
             const scale = Math.min(...[
-                ref.current.offsetWidth / canonicalWidth,
+                ref.current.offsetWidth / width,
                 ...(ref.current.offsetHeight > 0 ? [ref.current.offsetHeight / childRef.current.offsetHeight] : []),
             ])
             setLayout({
@@ -599,7 +601,7 @@ function TransformConstantWidth({ children }: { children: ReactNode }): ReactNod
         return () => {
             observer.disconnect()
         }
-    }, [])
+    }, [width])
 
     return (
         <div ref={ref} style={{ ...(useContext(transformContext).selfDetermineHeight ? { height: layout.selfDeterminedHeight } : { position: 'absolute' }), inset: 0 }}>
@@ -608,7 +610,7 @@ function TransformConstantWidth({ children }: { children: ReactNode }): ReactNod
                 style={{
                     transform: `scale(${layout.scale})`,
                     transformOrigin: 'top left',
-                    width: `${canonicalWidth}px`,
+                    width: `${width}px`,
                     position: 'relative',
                     top: `${layout.top}px`,
                     left: `${layout.left}px`,

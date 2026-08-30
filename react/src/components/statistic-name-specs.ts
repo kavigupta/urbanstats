@@ -27,7 +27,12 @@ function aggregateByGroup(nameSpecs: NameSpec[]): Map<string | undefined, GroupA
             aggregates.set(statParent?.group.id, aggregate)
         }
         aggregate.size++
-        if (statParent !== undefined) {
+        if (spec.row.disclaimer?.kind === 'heterogenous-sources') {
+            for (const source of spec.row.disclaimer.sources) {
+                aggregate.sourceNames.add(source)
+            }
+        }
+        else if (statParent !== undefined) {
             aggregate.sourceNames.add(statParent.source.name)
         }
     }
@@ -43,7 +48,8 @@ function getGroupAndDisplayNames(nameSpec: NameSpec, aggregates: Map<string | un
     const groupSize = aggregate.size
     const groupHasMultipleSources = aggregate.sourceNames.size > 1
 
-    const sourceName = statParent?.source.name
+    // A collapsed row's values come from several sources, so no single one can label it.
+    const sourceName = nameSpec.row.disclaimer?.kind === 'heterogenous-sources' ? undefined : statParent?.source.name
     let displayName = groupSize > 1 ? (statParent?.indentedName ?? nameSpec.renderedStatname) : nameSpec.renderedStatname
     if (groupHasMultipleSources && sourceName) {
         displayName = [...joinHumanReadableNames([displayName]), { type: 'atom', value: ` [${sourceName}]` }]

@@ -199,7 +199,7 @@ function humanReadable(name: HumanReadableName, fontSize: number, units: Units):
             case 'quantity': {
                 // writeQuantity rather than writtenPlainly, which would flatten mi^{2} into those
                 // literal characters instead of leaving the exponent for the superscript case below
-                const { renderedValue, unitName } = writeQuantity(element.value, element.unit, readerOf(units), { afterNumber: true })
+                const { renderedValue, unitName } = writeQuantity(element.value, element.unit, readerOf(units), 'afterNumber')
                 return [narrowSpaces(trimTrailingZeros(renderedValue)), ...humanReadable(unitName, fontSize, units)]
             }
         }
@@ -211,7 +211,7 @@ function readerOf(units: Units): UnitSettings {
 }
 
 function formatValue(value: number, unit: StoredUnit, units: Units, fontSize: number): ReactNode[] {
-    const rendered = renderQuantity(value, unit, readerOf(units), { alone: true })
+    const rendered = renderQuantity(value, unit, readerOf(units), 'inColumn')
     // An array rather than a fragment, which satori does not have.
     return [
         keyed(styleBareTags(rendered.value, fontSize), 'value'),
@@ -381,7 +381,7 @@ export async function mapEmbedCard(map: MapCard, { width, height }: { width: num
         : { width: boxWidth, height: boxWidth / aspectRatio }
 
     // The page lays its map out at a fixed width and scales the result; radii are in those pixels.
-    const scale = container.width / canonicalWidth
+    const scale = container.width / canonicalWidth(aspectRatio)
     const boxes = map.insets.map((inset) => {
         const box = insetBox(inset, container.width, container.height)
         return { inset, box, layout: fitBounds(inset.coordBox, box.width, box.height) }

@@ -1,4 +1,4 @@
-import { describeDimensions, describeStoredUnit, dimensionless, sameDimensions, StoredUnit, writableDimensions } from '../utils/quantity'
+import { describeDimensions, describeStoredUnit, dimensionless, sameDimensions, StoredUnit } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
@@ -259,7 +259,7 @@ function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expecte
     switch (ast.type) {
         case 'constant': {
             const unit = unitToWriteIn(expected)
-            if (ast.value.node.type === 'number' && unit !== undefined && writableDimensions(unit.unit)) {
+            if (ast.value.node.type === 'number' && unit !== undefined) {
                 into.set(whereWritten(ast.value.location), unit)
             }
             return
@@ -288,7 +288,7 @@ function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expecte
             // a caption writes a number where this call is, so record its unit as for a literal
             if (readAsANumber(ast, scope) !== undefined) {
                 const unit = unitToWriteIn(expected)
-                if (unit !== undefined && writableDimensions(unit.unit)) {
+                if (unit !== undefined) {
                     into.set(whereWritten(locationOf(ast)), unit)
                 }
             }
@@ -380,7 +380,7 @@ const nothingKnown = 'no unit is known for it'
 /** The smallest part of an expression whose units do not work out, and what does not work. */
 export function whyNoUnit(ast: UrbanStatsASTNode, scope: Scope): { at: UrbanStatsASTNode, problem: string } | undefined {
     const value = quantity(infer(ast, scope))
-    if (value.kind === 'in' && unitToWriteIn(value) !== undefined && writableDimensions(value.unit.unit)) {
+    if (value.kind === 'in' && unitToWriteIn(value) !== undefined) {
         return undefined
     }
     for (const part of partsOf(ast)) {
@@ -396,10 +396,7 @@ export function whyNoUnit(ast: UrbanStatsASTNode, scope: Scope): { at: UrbanStat
     if (value.kind === 'none') {
         return { at: ast, problem: whatWentWrong(ast, scope) }
     }
-    if (unitToWriteIn(value) === undefined) {
-        return { at: ast, problem: 'it is neither a reading nor a difference of readings' }
-    }
-    return { at: ast, problem: `${describeDimensions(value.unit.unit)} has no name of its own` }
+    return { at: ast, problem: 'it is neither a reading nor a difference of readings' }
 }
 
 /** The unit an expression works out to, where reading it determines one. */

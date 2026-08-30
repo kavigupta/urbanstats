@@ -1,7 +1,9 @@
 import type maplibregl from 'maplibre-gl'
+import type { ReactElement } from 'react'
 
 import { keptByNoBasemap } from '../components/map-common-utils'
 
+import { elementsWithBadKeys } from './bad-keys'
 import { makeDebugLogger } from './debug-logging'
 
 /**
@@ -99,6 +101,11 @@ export class TestUtils {
                 await new Promise(resolve => requestAnimationFrame(resolve))
             } while (!map._removed && !map.loaded() && Date.now() < deadline)
         }))
+    }
+
+    /** Only the bundled build routes `react` through the key checking, so an e2e test triggers it here */
+    createElementsWithBadKeys(): ReactElement[] {
+        return elementsWithBadKeys()
     }
 
     disableBasemapLayers(): void {

@@ -60,13 +60,14 @@ export interface StoredUnit {
     toBaseUnits: number
 }
 
-/** Whether a unit is rendered by itself or against the number it belongs to. */
-export interface UnitPlacement {
-    /** In a column of its own, where a leading solidus reads as a dangling slash. */
-    alone?: boolean
-    /** Straight after the number, where a word wants a space off it and km^{2} does not. */
-    afterNumber?: boolean
-}
+/** Where a unit is written, which the spacing around it depends on. */
+export type UnitPlacement =
+    /** In a column of its own, as a table writes it */
+    | 'inColumn'
+    /** Immediately after a number */
+    | 'afterNumber'
+    /** In a run of text, with no number before it */
+    | 'byItself'
 
 export interface UnitSettings {
     useImperial?: boolean
@@ -205,43 +206,15 @@ function allUnits(settings: UnitSettings): NamedUnit[] {
     ]
 }
 
-const counted: BaseUnit[] = ['person', 'usd', 'fatality']
-
-const baseUnitWords: Record<BaseUnit, string> = {
-    person: 'people', usd: 'dollars', fatality: 'fatalities', m: 'm', g: 'g', s: 's', F: '°F',
-}
-
-function plainly(elements: HumanReadableElement[]): string {
-    return elements.map(element => element.type === 'superscript' ? `^{${plainly(element.value)}}` : (element.type === 'atom' ? element.value : '')).join('')
-}
-
-/**
- * What a quantity is stored in: the unit that is exactly it, or how much of the base units one of
- * it is worth. Two quantities of the same dimensions are told apart by that number, an area stored
- * in square kilometres being 1e6 where one stored in square metres is 1.
- */
-export function describeStoredUnit(stored: StoredUnit): string {
-    const name = nameOfStoredUnit(stored)
-    return name === undefined || name.length === 0
-        ? `${stored.toBaseUnits.toPrecision(3)} ${describeDimensions(stored.unit)}`
-        : plainly(name)
-}
-
-/** The base units a quantity is in, for saying why two of them cannot be put together. */
-export function describeDimensions(unit: Unit): string {
-    const parts = unit.dimensions.map(({ baseUnit, power }) =>
-        power === 1 ? baseUnitWords[baseUnit] : `${baseUnitWords[baseUnit]}^${power}`)
-    return parts.length === 0 ? 'a plain number' : parts.join('·')
-}
-
-/**
- * A count goes unnamed, so it can only be the one thing counted: people times square kilometres
- * would be written `km²` and read as an area. A fractional power is in no pool at all. A statistic
- * that says which units it is written in has named them, counted things and all.
- */
-export function writableDimensions(unit: Unit): boolean {
-    // a fractional power of a count is written as nothing, the count having no name to raise
-    return unit.dimensions.every(({ baseUnit, power }) => Number.isInteger(power) || counted.includes(baseUnit))
+/** The two forms a count's name takes: people^{2} above the solidus, km^{2}/person below it. */
+const baseUnitWords: Record<BaseUnit, { one: string, many: string }> = {
+    person: { one: 'person', many: 'people' },
+    usd: { one: 'dollar', many: 'dollars' },
+    fatality: { one: 'fatality', many: 'fatalities' },
+    m: { one: 'm', many: 'm' },
+    g: { one: 'g', many: 'g' },
+    s: { one: 's', many: 's' },
+    F: { one: '°F', many: '°F' },
 }
 
 type DimensionKey = string
@@ -299,12 +272,17 @@ function raisedTo(power: number): HumanReadableElement[] {
 }
 
 /** The units multiplied together, e.g., km^2, or people per km^2 for a quantity with a denominator. */
-function product(written: Written[]): HumanReadableElement[] {
+function product(written: Written[], singular = false): HumanReadableElement[] {
     return written.flatMap(({ unit, power }, index) => [
         ...index === 0 ? [] : atom('\u00b7'),
-        ...atom(unit.name === '' ? baseUnitWords[unit.dimensions[0].baseUnit] : unit.name),
+        ...atom(unit.name === '' ? wordFor(unit, singular) : unit.name),
         ...raisedTo(power),
     ])
+}
+
+function wordFor(unit: NamedUnit, singular: boolean): string {
+    const words = baseUnitWords[unit.dimensions[0].baseUnit]
+    return singular ? words.one : words.many
 }
 
 function computedUnit(dimensions: Dimension[], toBaseUnits: number): StoredUnit {
@@ -363,6 +341,29 @@ export function unitPower(stored: StoredUnit, exponent: number): StoredUnit | un
     return computedUnit(gathered(raised), Math.pow(stored.toBaseUnits, exponent))
 }
 
+function plainly(elements: HumanReadableElement[]): string {
+    return elements.map(element => element.type === 'superscript' ? `^{${plainly(element.value)}}` : (element.type === 'atom' ? element.value : '')).join('')
+}
+
+/**
+ * What a quantity is stored in: the unit that is exactly it, or how much of the base units one of
+ * it is worth. Two quantities of the same dimensions are told apart by that number, an area stored
+ * in square kilometres being 1e6 where one stored in square metres is 1.
+ */
+export function describeStoredUnit(stored: StoredUnit): string {
+    const name = nameOfStoredUnit(stored)
+    return name === undefined || name.length === 0
+        ? `${stored.toBaseUnits.toPrecision(3)} ${describeDimensions(stored.unit)}`
+        : plainly(name)
+}
+
+/** The base units a quantity is in, for saying why two of them cannot be put together. */
+export function describeDimensions(unit: Unit): string {
+    const parts = unit.dimensions.map(({ baseUnit, power }) =>
+        power === 1 ? baseUnitWords[baseUnit].many : `${baseUnitWords[baseUnit].many}^${power}`)
+    return parts.length === 0 ? 'a plain number' : parts.join('·')
+}
+
 /**
  * What the numbers a statistic is stored as are counted in, which is what a script computes with:
  * rainfall is stored per metre though it is read per centimetre, and a share is stored as a
@@ -374,26 +375,29 @@ export function nameOfStoredUnit(stored: StoredUnit): HumanReadableElement[] | u
     // abbreviations, which shorten a number rather than saying what it is counted in
     const pool = [...allUnits({}), ...lengthUnits.imperial, celsius].filter(({ abbreviation }) => !abbreviation)
     const written = writtenAsCounted(stored.unit.dimensions, pool, stored.toBaseUnits)
-    return written === undefined ? undefined : nameOf(written, {})
+    return written === undefined ? undefined : nameOf(written, 'byItself')
 }
 
 /**
- * Set `alone` when the unit is rendered by itself, as in a table's unit column. A leading solidus
- * then takes a space, so that it reads as "per square kilometre" rather than as a dangling slash.
+ * What a unit is called, spaced for where it is written: a leading solidus takes a space in a
+ * column of its own, so that it reads as "per square kilometre" rather than as a dangling slash,
+ * and a name that is a word takes one off the number it follows, where km^{2} and % do not.
  */
-export function nameOf(written: Written[], { alone = false, afterNumber = false }: UnitPlacement = {}): HumanReadableElement[] {
+export function nameOf(written: Written[], placement: UnitPlacement = 'byItself'): HumanReadableElement[] {
     // a count is named by the statistic counting it, but only where there is one of it: a square
     // of people is not people, and says so
     const named = written.filter(({ unit, power }) => unit.name !== '' || power !== 1)
     const over = named.filter(({ power }) => power > 0)
     const under = named.filter(({ power }) => power < 0)
     // a word takes a space off the number it follows, where km^{2} and % do not
-    const spaced = afterNumber && over.length > 0 && over[0].unit.name === ''
+    const spaced = placement === 'afterNumber' && over.length > 0 && over[0].unit.name === ''
     const start = spaced ? atom('\u00a0') : []
     if (under.length === 0) {
         return merged([...start, ...product(over)])
     }
-    return merged([...start, ...product(over), ...atom(over.length === 0 && alone ? '/\u00a0' : '/'), ...product(under)])
+    // a solidus with nothing in front of it reads as a dangling slash in a column of its own
+    const solidus = over.length === 0 && placement === 'inColumn' ? '/\u00a0' : '/'
+    return merged([...start, ...product(over), ...atom(solidus), ...product(under, true)])
 }
 
 /**

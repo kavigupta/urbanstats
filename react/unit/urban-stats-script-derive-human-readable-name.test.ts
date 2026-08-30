@@ -60,7 +60,7 @@ for (const [condition, expected] of [
     ['ln(commute_bike) > 0', 'ln(Commute Bike % [as a fraction]) > 0'],
     ['ln(pres_2020_margin) > 0', 'ln(2020 Presidential Election [as a fraction]) > 0'],
     // as is a count of one thing per another: these are stored per person, not per 100k
-    ['ln(ped_cyclist_fatalities_per_capita) > 0', 'ln(Pedestrian/Cyclist Fatalities Per Capita Per Year [in /people]) > 0'],
+    ['ln(ped_cyclist_fatalities_per_capita) > 0', 'ln(Pedestrian/Cyclist Fatalities Per Capita Per Year [in /person]) > 0'],
     // a root of a count is in no unit at all, so there is nothing to say it is in
     ['ln(population ** 0.5) > 0', 'ln(Population^{0.5} [in people^{0.5}]) > 0'],
     // a number written the long way is written as the number, in the unit it is read in
@@ -96,9 +96,9 @@ cMap(
     scale=linearScale(),
     ramp=rampUridis
 )`,
-    // per person to the fourth per km to the fourth, the people dropping out of the name as they
-    // do in a density
-    'sin^{-1}((PW Density (r=1km) ÷ Population^{3})^{2} [in /km^{4}·people^{4}]) where Population (2000) > 1m and Population > 1m',
+    // per person to the fourth per km to the fourth: the people are written, there not being one
+    // of them to leave to the statistic's own name
+    'sin^{-1}((PW Density (r=1km) ÷ Population^{3})^{2} [in /km^{4}·person^{4}]) where Population (2000) > 1m and Population > 1m',
 )
 
 testMapLabel(test,
