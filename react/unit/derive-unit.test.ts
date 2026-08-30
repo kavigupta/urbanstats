@@ -53,8 +53,13 @@ void test('a condition compares things that go together, or says they do not', (
     // the smallest part that fails, out of a condition that puts two comparisons together
     assert.equal(conditionProblem('commute_bike > 0.1 & high_temp > area'),
         'Could not compute units for high_temp > area: cannot compare °F and m^2')
-    // a bare number is compared against anything, being read as whatever it is compared to
+    // a bare number is compared against anything, being read as whatever it is compared to, and a
+    // literal in a product is read as whatever unit makes the rest of the expression work
     assert.equal(conditionProblem('high_temp > 80'), 'nothing to say')
+    assert.equal(conditionProblem('hospital_mean_dist > elevation * 1'), 'nothing to say')
+    // where nothing can be read into it, as inside a logarithm, which makes a number of anything
+    assert.equal(conditionProblem('ln(compactness * 10000) > sunny_hours'),
+        'Could not compute units for (ln(compactness * 10000)) > sunny_hours: cannot compare a plain number and s')
     assert.equal(conditionProblem('true'), 'nothing to say')
 })
 

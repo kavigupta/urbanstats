@@ -25,6 +25,8 @@ export type Bindings = Map<string, Inferred>
 interface Scope {
     typeEnvironment: TypeEnvironment
     named: Bindings
+    /** What the backward pass made of each literal, where it has run and a caller wants it read. */
+    constants?: ConstantUnits
 }
 
 /** A block is worth as much as its last statement, and an empty one as much as nothing said. */
@@ -156,8 +158,15 @@ function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Sco
             return block(ast.rest, scope)
         case 'identifier':
             return identifier(ast.name.node, scope)
-        case 'constant':
-            return ast.value.node.type === 'number' ? constant(ast.value.node.value) : anything
+        case 'constant': {
+            if (ast.value.node.type !== 'number') {
+                return anything
+            }
+            // a literal is in whatever unit the script reads it in, where the backward pass has
+            // said: the 1 of area + population * 1 is a number of square kilometres per person
+            const unit = scope.constants?.get(whereWritten(ast.value.location))
+            return unit === undefined ? constant(ast.value.node.value) : inUnit(unit)
+        }
         case 'unaryOperator':
             return forwardUnary(ast.operator.node, quantity(infer(ast.expr, scope)))
         case 'binaryOperator':
@@ -424,8 +433,8 @@ export function whyNoUnit(ast: UrbanStatsASTNode, scope: Scope): { at: UrbanStat
 }
 
 /** The unit an expression works out to, where reading it determines one. */
-export function inferUnit(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, named: Bindings = new Map()): AbstractInterpValue {
-    return quantity(infer(ast, { typeEnvironment, named }))
+export function inferUnit(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, named: Bindings = new Map(), constants?: ConstantUnits): AbstractInterpValue {
+    return quantity(infer(ast, { typeEnvironment, named, constants }))
 }
 
 export function inferBindings(program: UrbanStatsASTStatement | UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): Bindings {

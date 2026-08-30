@@ -6,7 +6,7 @@ import { LocInfo, noLocation } from './location'
 import { unparse } from './parser'
 import { TypeEnvironment } from './types-values'
 import { unitToWriteIn } from './unit-algebra'
-import { inferBindings, inferUnit, whyNoUnit, whyUnitsClash } from './unit-inference'
+import { Bindings, ConstantUnits, inferBindings, inferConstantUnits, inferUnit, whyNoUnit, whyUnitsClash } from './unit-inference'
 
 /** A unit read off the script, or what to say about there being none, and where to say it. */
 export type DerivedUnit = { unit: StoredUnit } | { problem: string, location: LocInfo }
@@ -16,12 +16,24 @@ function unitOf(values: UrbanStatsASTExpression | undefined, uss: MapUSS, typeEn
     if (values === undefined) {
         return { problem: 'Could not compute units: the values are not an expression a unit can be read from', location: noLocation }
     }
-    const scope = { typeEnvironment, named: inferBindings(uss, typeEnvironment) }
+    const scope = scopeOf(uss, typeEnvironment)
     const wrong = whyNoUnit(values, scope)
     if (wrong === undefined) {
-        return { unit: unitToWriteIn(inferUnit(values, typeEnvironment, scope.named))! }
+        return { unit: unitToWriteIn(inferUnit(values, typeEnvironment, scope.named, scope.constants))! }
     }
     return describeProblem(wrong)
+}
+
+/**
+ * Read against what the backward pass made of the script's literals, so that a * 1 is allowed to
+ * be whatever unit makes the rest work, as the caption writes it.
+ */
+function scopeOf(uss: MapUSS, typeEnvironment: TypeEnvironment): { typeEnvironment: TypeEnvironment, named: Bindings, constants: ConstantUnits } {
+    return {
+        typeEnvironment,
+        named: inferBindings(uss, typeEnvironment),
+        constants: inferConstantUnits(uss, typeEnvironment),
+    }
 }
 
 function describeProblem(wrong: { at: UrbanStatsASTExpression | UrbanStatsASTStatement, problem: string }): { problem: string, location: LocInfo } {
@@ -37,8 +49,7 @@ function describeProblem(wrong: { at: UrbanStatsASTExpression | UrbanStatsASTSta
  * against a time says nothing about what anything is measured in, so nothing else would report it.
  */
 export function scriptUnitProblem(uss: MapUSS, typeEnvironment: TypeEnvironment): { problem: string, location: LocInfo } | undefined {
-    const scope = { typeEnvironment, named: inferBindings(uss, typeEnvironment) }
-    const wrong = whyUnitsClash(uss, scope)
+    const wrong = whyUnitsClash(uss, scopeOf(uss, typeEnvironment))
     return wrong === undefined ? undefined : describeProblem(wrong)
 }
 
