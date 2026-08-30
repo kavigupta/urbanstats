@@ -346,6 +346,8 @@ function partsOf(ast: UrbanStatsASTNode): UrbanStatsASTNode[] {
         case 'customNode':
         case 'autoUXNode':
             return [ast.expr]
+        case 'expression':
+            return [ast.value]
         case 'call':
             return ast.args.map(arg => arg.value)
         case 'vectorLiteral':

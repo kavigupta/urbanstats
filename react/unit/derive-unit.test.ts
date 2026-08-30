@@ -101,16 +101,19 @@ void test('a difference of two leads is written as the lead it is, and not twice
     assert.equal(written(unitOfMap('commute_bike - commute_transit'), 0.045), '+4.50%')
 })
 
-void test('a quantity with no writing is left to whatever its name is taken for', () => {
+void test('a count is written as nothing, whatever else it is multiplied by', () => {
     // a root of a count is written as the plain number it is, the count having no name to raise
-    assert.equal(mapUnit('population ** 0.5'), '1\u202f000')
-    // a count goes unnamed, so it can only be the one thing counted: people times an area would
-    // be written km^{2} and read as an area, and an area over people as an area too
-    assert.equal(mapUnit('population * area'), 'nothing')
-    assert.equal(mapUnit('area / population'), 'nothing')
-    assert.equal(mapUnit('traffic_fatalities / population'), 'nothing')
-    // where a count over something measured is written the way a density is
+    assert.equal(mapUnit('population ** 0.5'), '1\u202f000people^{0.5}')
+    // people times an area is written km^{2}, one of a count being named by the statistic counting
+    // it; an area over people says the people, there being no one of them to leave unsaid
+    assert.equal(mapUnit('population * area'), '1\u202f000km^{2}')
+    assert.equal(mapUnit('area / population'), '1\u202f000km^{2}/people')
+    assert.equal(mapUnit('traffic_fatalities / population'), '1\u202f000/people')
     assert.equal(mapUnit('traffic_fatalities / area'), '1\u202f000/km^{2}')
+    // a count is shortened only where it is the whole of what is written: a square of one is not
+    // written in squares of millions
+    assert.equal(written(unitOfMap('population'), 1.234e6), '1.23m')
+    assert.equal(written(unitOfMap('population * population'), 1e12), '1\u202f000\u202f000\u202f000\u202f000people^{2}')
 })
 
 void test('a reader in Celsius reads a difference of two temperatures as one', () => {

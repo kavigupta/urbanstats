@@ -222,19 +222,7 @@ export function describeDimensions(unit: Unit): string {
  */
 export function writableDimensions(unit: Unit): boolean {
     // a fractional power of a count is written as nothing, the count having no name to raise
-    if (!unit.dimensions.every(({ baseUnit, power }) => Number.isInteger(power) || counted.includes(baseUnit))) {
-        return false
-    }
-    if (unit.decoration.kind === 'writtenIn') {
-        return true
-    }
-    const counts = unit.dimensions.filter(({ baseUnit }) => counted.includes(baseUnit))
-    if (counts.length === 0) {
-        return true
-    }
-    const above = unit.dimensions.filter(({ power }) => power > 0)
-    // the count may be taken to any power, a root of one being counted in roots of the thing
-    return counts.length === 1 && counts[0].power > 0 && above.length === 1
+    return unit.dimensions.every(({ baseUnit, power }) => Number.isInteger(power) || counted.includes(baseUnit))
 }
 
 type DimensionKey = string
@@ -295,7 +283,7 @@ function raisedTo(power: number): HumanReadableElement[] {
 function product(written: Written[]): HumanReadableElement[] {
     return written.flatMap(({ unit, power }, index) => [
         ...index === 0 ? [] : atom('\u00b7'),
-        ...atom(unit.name),
+        ...atom(unit.name === '' ? baseUnitWords[unit.dimensions[0].baseUnit] : unit.name),
         ...raisedTo(power),
     ])
 }
@@ -375,7 +363,9 @@ export function nameOfStoredUnit(stored: StoredUnit): HumanReadableElement[] | u
  * then takes a space, so that it reads as "per square kilometre" rather than as a dangling slash.
  */
 export function nameOf(written: Written[], { alone = false }: UnitPlacement = {}): HumanReadableElement[] {
-    const named = written.filter(({ unit }) => unit.name !== '')
+    // a count is named by the statistic counting it, but only where there is one of it: a square
+    // of people is not people, and says so
+    const named = written.filter(({ unit, power }) => unit.name !== '' || power !== 1)
     const over = named.filter(({ power }) => power > 0)
     const under = named.filter(({ power }) => power < 0)
     if (under.length === 0) {
@@ -400,7 +390,12 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: UnitSettin
     const convention = conventions[renderAsKey(unit.dimensions)]
     // a statistic written in units of its own leaves the search nothing to choose between
     const writtenIn = unit.decoration.kind === 'writtenIn' ? unit.decoration.in : undefined
-    const pool = writtenIn === undefined ? allUnits(settings) : Object.values(writtenIn.units[systemOf(settings)])
+    // An abbreviation shortens a count: thousands of people are people. It has no business scaling
+    // anything else, so people times an area is not written in billions of square metres.
+    const shortenable = unit.dimensions.length === 0 || (unit.dimensions.length === 1 && unit.dimensions[0].power === 1)
+    const pool = writtenIn === undefined
+        ? allUnits(settings).filter(({ abbreviation }) => shortenable || !abbreviation)
+        : Object.values(writtenIn.units[systemOf(settings)])
     const { written, scale, format } = chooseUnits(inBaseUnits, unit.dimensions, pool,
         chosen => writtenIn?.style ?? styleFor(convention, chosen))
     const zero = offsetOf(written, unit.times)
