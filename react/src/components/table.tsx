@@ -554,7 +554,6 @@ export function StatisticRowCells(props: {
                             <Statistic
                                 value={statisticRow.statval}
                                 isUnit={true}
-                                unitAlone={true}
                                 unit={statisticRow.unit}
                             />
                         </span>

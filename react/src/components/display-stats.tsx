@@ -5,8 +5,9 @@ import { StoredUnit } from '../utils/quantity'
 
 import { renderQuantity } from './unit-display'
 
-export function Statistic(props: { style?: React.CSSProperties, value: number, isUnit: boolean, unit: StoredUnit, unitAlone?: boolean }): ReactNode {
-    const { value, unit } = renderQuantity(props.value, props.unit, useUnitSettings(), props.unitAlone === true ? 'inColumn' : 'byItself')
+/** A table's value and its unit, which are drawn in columns of their own. */
+export function Statistic(props: { style?: React.CSSProperties, value: number, isUnit: boolean, unit: StoredUnit }): ReactNode {
+    const { value, unit } = renderQuantity(props.value, props.unit, useUnitSettings(), 'inColumn')
 
     return (
         <span style={props.style}>

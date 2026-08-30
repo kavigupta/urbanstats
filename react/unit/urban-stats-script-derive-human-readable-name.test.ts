@@ -96,8 +96,8 @@ cMap(
     scale=linearScale(),
     ramp=rampUridis
 )`,
-    // per person to the fourth per km to the fourth, the people dropping out of the name as they
-    // do in a density
+    // per person to the fourth per km to the fourth: the people are written, there not being one
+    // of them to leave to the statistic's own name
     'sin^{-1}((PW Density (r=1km) ÷ Population^{3})^{2} [in /km^{4}·person^{4}]) where Population (2000) > 1m and Population > 1m',
 )
 

@@ -220,12 +220,10 @@ const baseUnitWords: Record<BaseUnit, { one: string, many: string }> = {
 }
 
 /**
- * A count goes unnamed, so it can only be the one thing counted: people times square kilometres
- * would be written `km²` and read as an area. A fractional power is in no pool at all. A statistic
- * that says which units it is written in has named them, counted things and all.
+ * Whether the dimensions have names to write. A fractional power is in no pool, so a root of a
+ * length cannot be written; a root of a count can, the count having no name to raise.
  */
 export function writableDimensions(unit: Unit): boolean {
-    // a fractional power of a count is written as nothing, the count having no name to raise
     return unit.dimensions.every(({ baseUnit, power }) => Number.isInteger(power) || counted.includes(baseUnit))
 }
 
