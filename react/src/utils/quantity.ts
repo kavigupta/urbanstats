@@ -356,8 +356,9 @@ export function nameOfStoredUnit(stored: StoredUnit): HumanReadableElement[] | u
 }
 
 /**
- * Set `alone` when the unit is rendered by itself, as in a table's unit column. A leading solidus
- * then takes a space, so that it reads as "per square kilometre" rather than as a dangling slash.
+ * What a unit is called, spaced for where it is written: a leading solidus takes a space in a
+ * column of its own, so that it reads as "per square kilometre" rather than as a dangling slash,
+ * and a name that is a word takes one off the number it follows, where km^{2} and % do not.
  */
 export function nameOf(written: Written[], placement: UnitPlacement = 'byItself'): HumanReadableElement[] {
     // a count is named by the statistic counting it, but only where there is one of it: a square
