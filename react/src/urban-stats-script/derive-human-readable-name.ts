@@ -1,4 +1,4 @@
-import { editableMapData, MapUSS, mapUssParser, read, tableColumnExpression } from '../mapper/settings/map-uss'
+import { editableMapData, MapUSS, mapUssParser, ofTheSameTree, read, tableColumnExpression } from '../mapper/settings/map-uss'
 import { assert } from '../utils/defensive'
 import { HumanReadableElement, HumanReadableName } from '../utils/human-readable-element'
 import { joinHumanReadableNames } from '../utils/human-readable-name'
@@ -17,7 +17,7 @@ type Expression = UrbanStatsASTExpression<ReadInUnits>
 
 /** What is written where an expression is: a toNumber writes its argument, brackets and all. */
 function reads(ast: Expression, typeEnvironment: TypeEnvironment): Expression {
-    return readAsANumber(ast, { typeEnvironment, named: new Map() })?.read ?? ast
+    return readAsANumber<ReadInUnits>(ast, { typeEnvironment, named: new Map() })?.read ?? ast
 }
 
 function humanReadableElements(ast: Expression | UrbanStatsASTStatement<ReadInUnits>, typeEnvironment: TypeEnvironment, bracketOperators = false): HumanReadableElement[] | undefined {
@@ -132,7 +132,7 @@ function humanReadableElements(ast: Expression | UrbanStatsASTStatement<ReadInUn
         case 'expression':
             return humanReadableElements(ast.value, typeEnvironment)
         case 'call': {
-            const readNumber = readAsANumber(ast, { typeEnvironment, named: new Map() })
+            const readNumber = readAsANumber<ReadInUnits>(ast, { typeEnvironment, named: new Map() })
             if (readNumber !== undefined) {
                 // toNumber says its argument is read as a number, which writing a number says
                 const unit = ast.readIn
@@ -218,12 +218,12 @@ export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): H
     const { ast: factored } = unitCheck(uss, typeEnvironment)
     const result = read(editableMapData, factored, typeEnvironment)
     if (result?.currentValue.namedArgs.data === undefined) return
-    const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment)
+    const dataLabel = humanReadableElements(ofTheSameTree<ReadInUnits>(result.currentValue.namedArgs.data), typeEnvironment)
     if (dataLabel === undefined) return
     // Replace the map call with just the data description to simplify the label (we know it's a map)
     const withMapCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: dataLabel }, location: noLocation } })
     assert(withMapCallReplacedByDataLabel !== undefined, 'should not happen')
-    return humanReadableElements(withMapCallReplacedByDataLabel, typeEnvironment)
+    return humanReadableElements(ofTheSameTree<ReadInUnits>(withMapCallReplacedByDataLabel), typeEnvironment)
 }
 
 export function mapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
@@ -268,17 +268,17 @@ function tableColumnLabels(uss: MapUSS, typeEnvironment: TypeEnvironment): Human
         if (column.namedArgs.name !== undefined) {
             return parseHumanReadableTemplate(column.namedArgs.name)
         }
-        return column.namedArgs.values === undefined ? undefined : humanReadableElements(column.namedArgs.values, typeEnvironment)
+        return column.namedArgs.values === undefined ? undefined : humanReadableElements(ofTheSameTree<ReadInUnits>(column.namedArgs.values), typeEnvironment)
     })
     return labels.every(label => label !== undefined) ? labels : undefined
 }
 
 /** The filter a script applies, or undefined for the `condition (true)` that filters nothing. */
 export function deriveConditionLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
-    if (uss.type !== 'statements') {
+    const { ast: factored } = unitCheck(uss, typeEnvironment)
+    if (factored.type !== 'statements') {
         return undefined
     }
-    const { ast: factored } = unitCheck(uss, typeEnvironment)
     const condition = humanReadableElements(factored.result[1].condition, typeEnvironment)
     if (condition?.length === 1 && condition[0].type === 'atom' && condition[0].value === 'true') {
         return undefined
@@ -317,7 +317,7 @@ export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, 
     // Replace the table call with just the column to simplify the label (we know it's a table)
     const withTableCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: joinHumanReadableNames(columnNames) }, location: noLocation } })
     assert(withTableCallReplacedByDataLabel !== undefined, 'should not happen')
-    return humanReadableElements(withTableCallReplacedByDataLabel, typeEnvironment)
+    return humanReadableElements(ofTheSameTree<ReadInUnits>(withTableCallReplacedByDataLabel), typeEnvironment)
 }
 
 /**

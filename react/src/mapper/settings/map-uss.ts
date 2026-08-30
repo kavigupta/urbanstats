@@ -14,17 +14,18 @@ export const idPreamble = `${rootBlockIdent}p`
 export const idCondition = `${rootBlockIdent}c`
 export const idOutput = `${rootBlockIdent}o`
 
-export type PreambleCustomNode = UrbanStatsASTExpression & { type: 'customNode' }
-export type PreambleAutoUXNode = UrbanStatsASTExpression & { type: 'autoUXNode', expr: PreambleCustomNode, metadata: AutoUXNodeMetadata }
-export type PreambleNode = PreambleCustomNode | PreambleAutoUXNode
+export type PreambleCustomNode<M = unknown> = UrbanStatsASTExpression<M> & { type: 'customNode' }
+export type PreambleAutoUXNode<M = unknown> = UrbanStatsASTExpression<M> & { type: 'autoUXNode', expr: PreambleCustomNode<M>, metadata: AutoUXNodeMetadata }
+export type PreambleNode<M = unknown> = PreambleCustomNode<M> | PreambleAutoUXNode<M>
 
-export type MapUSS = UrbanStatsASTExpression & { type: 'customNode' } |
-    (UrbanStatsASTStatement &
+/** Carries what its nodes carry, so that a script read for its units gives a map read for them. */
+export type MapUSS<M = unknown> = UrbanStatsASTExpression<M> & { type: 'customNode' } |
+    (UrbanStatsASTStatement<M> &
     {
         type: 'statements'
         result: [
-                UrbanStatsASTStatement & { type: 'expression', value: PreambleNode },
-                UrbanStatsASTStatement & { type: 'condition', rest: [UrbanStatsASTStatement & { type: 'expression' }] },
+                UrbanStatsASTStatement<M> & { type: 'expression', value: PreambleNode<M> },
+                UrbanStatsASTStatement<M> & { type: 'condition', rest: [UrbanStatsASTStatement<M> & { type: 'expression' }] },
         ]
     })
 
@@ -178,8 +179,9 @@ const mapData = mapUssParser(mapDataCall, 'dont-reparse')
 
 export const editableMapData = mapUssParser(l.edit(mapDataCall), 'dont-reparse')
 
-export function mapDataExpression(uss: MapUSS, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression | undefined {
-    return read(mapData, uss, typeEnvironment)?.namedArgs.data
+export function mapDataExpression<M>(uss: MapUSS<M>, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression<M> | undefined {
+    const data = read(mapData, uss, typeEnvironment)?.namedArgs.data
+    return data === undefined ? undefined : ofTheSameTree<M>(data)
 }
 
 const tableColumns = mapUssParser(l.call({
@@ -194,7 +196,19 @@ const tableColumns = mapUssParser(l.call({
     unnamedArgs: [],
 }), 'dont-reparse')
 
-export function tableColumnExpression(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): UrbanStatsASTExpression | undefined {
+export function tableColumnExpression<M>(uss: MapUSS<M>, typeEnvironment: TypeEnvironment, columnIndex: number): UrbanStatsASTExpression<M> | undefined {
     const columns = read(tableColumns, uss, typeEnvironment)?.namedArgs.columns
-    return columns === undefined || columnIndex >= columns.length ? undefined : columns[columnIndex].namedArgs.values
+    const values = columns === undefined || columnIndex >= columns.length ? undefined : columns[columnIndex].namedArgs.values
+    return values === undefined ? undefined : ofTheSameTree<M>(values)
+}
+
+/**
+ * What a parser hands back is a piece of the tree it was given, so it carries whatever that tree's
+ * nodes carry. The parsers say nothing of that, being written for the shapes they match.
+ */
+export function ofTheSameTree<M>(ast: UrbanStatsASTExpression): UrbanStatsASTExpression<M>
+export function ofTheSameTree<M>(ast: UrbanStatsASTStatement): UrbanStatsASTStatement<M>
+export function ofTheSameTree<M>(ast: UrbanStatsASTExpression | UrbanStatsASTStatement): UrbanStatsASTExpression<M> | UrbanStatsASTStatement<M>
+export function ofTheSameTree<M>(ast: UrbanStatsASTExpression | UrbanStatsASTStatement): UrbanStatsASTExpression<M> | UrbanStatsASTStatement<M> {
+    return ast
 }
