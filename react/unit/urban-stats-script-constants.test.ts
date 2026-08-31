@@ -138,13 +138,12 @@ void test('constant listing', (): void => {
                 'isDisjoint',
                 'setEquals',
             ],
-            '(string, string; ) -> boolean': [
+            '(string, string; normalize: boolean = true) -> boolean': [
                 'startsWith',
                 'endsWith',
                 'includes',
-                'matchesRegex',
             ],
-            '(string, string; ) -> number': [
+            '(string, string; normalize: boolean = true) -> number': [
                 'firstIndexOf',
                 'lastIndexOf',
             ],
@@ -154,15 +153,20 @@ void test('constant listing', (): void => {
             '(string; ) -> number': [
                 'stringLength',
             ],
-            '(string, string, string; ) -> string': [
+            '(string, string, string; normalize: boolean = true) -> string': [
                 'replace',
-                'replaceRegex',
             ],
             '(string; ) -> string': [
                 'trim',
                 'lower',
                 'upper',
                 'normalizeString',
+            ],
+            '(string, string; ) -> boolean': [
+                'matchesRegex',
+            ],
+            '(string, string, string; ) -> string': [
+                'replaceRegex',
             ],
 
             '(any; ) -> number': [

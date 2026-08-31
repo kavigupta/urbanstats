@@ -818,11 +818,16 @@ function getCategoryDescription(category: ConstantCategory): ReactNode {
                             , which take a regular expression in the JavaScript flavor.
                         </li>
                         <li>
-                            Comparisons are case-sensitive, so wrap both sides in
+                            Comparing and searching normalizes both sides the way the site&apos;s search does, so case,
+                            accents and punctuation are ignored. Pass
                             {' '}
-                            <code style={codeStyle}>lower</code>
+                            <code style={codeStyle}>normalize=false</code>
                             {' '}
-                            to ignore case.
+                            to compare the strings as written, or call
+                            {' '}
+                            <code style={codeStyle}>normalizeString</code>
+                            {' '}
+                            yourself to see what a comparison sees.
                         </li>
                         <li>
                             Positions and lengths count graphemes — what a reader would call a character — from 0, so an

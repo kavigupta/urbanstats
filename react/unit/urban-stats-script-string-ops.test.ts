@@ -13,86 +13,6 @@ function evaluateExpr(input: string): ReturnType<typeof evaluate> {
     return evaluate(parseExpr(input), emptyContext())
 }
 
-void test('the predicates test a prefix, a suffix, and anywhere', (): void => {
-    assert.deepStrictEqual(evaluateExpr('startsWith("San Diego, CA", "San ")'), undocValue(true, boolType))
-    assert.deepStrictEqual(evaluateExpr('startsWith("San Diego, CA", "Diego")'), undocValue(false, boolType))
-    assert.deepStrictEqual(evaluateExpr('endsWith("San Diego, CA", ", CA")'), undocValue(true, boolType))
-    assert.deepStrictEqual(evaluateExpr('endsWith("San Diego, CA", ", NV")'), undocValue(false, boolType))
-    assert.deepStrictEqual(evaluateExpr('includes("San Diego, CA", "Diego")'), undocValue(true, boolType))
-    assert.deepStrictEqual(evaluateExpr('includes("San Diego, CA", "Reno")'), undocValue(false, boolType))
-})
-
-void test('the predicates are case-sensitive, and lower makes them not', (): void => {
-    assert.deepStrictEqual(evaluateExpr('startsWith("San Diego", "san")'), undocValue(false, boolType))
-    assert.deepStrictEqual(evaluateExpr('startsWith(lower("San Diego"), lower("SAN"))'), undocValue(true, boolType))
-    assert.deepStrictEqual(evaluateExpr('lower("San Diego")'), undocValue('san diego', stringType))
-    assert.deepStrictEqual(evaluateExpr('upper("San Diego")'), undocValue('SAN DIEGO', stringType))
-})
-
-void test('firstIndexOf and lastIndexOf pick different occurrences', (): void => {
-    assert.deepStrictEqual(evaluateExpr('firstIndexOf("Washington, DC, USA", ", ")'), undocValue(10, numType))
-    assert.deepStrictEqual(evaluateExpr('lastIndexOf("Washington, DC, USA", ", ")'), undocValue(14, numType))
-    assert.deepStrictEqual(evaluateExpr('firstIndexOf("San Diego", ", ")'), undocValue(-1, numType))
-    assert.deepStrictEqual(evaluateExpr('lastIndexOf("San Diego", ", ")'), undocValue(-1, numType))
-})
-
-void test('stringLength and substring extract part of a string', (): void => {
-    assert.deepStrictEqual(evaluateExpr('stringLength("San Diego")'), undocValue(9, numType))
-    assert.deepStrictEqual(evaluateExpr('substring("San Diego, CA", 0, 3)'), undocValue('San', stringType))
-    assert.deepStrictEqual(
-        evaluateExpr('substring("San Diego, CA", firstIndexOf("San Diego, CA", ", ") + 2, stringLength("San Diego, CA"))'),
-        undocValue('CA', stringType),
-    )
-})
-
-void test('substring counts a negative position from the end, and clamps rather than failing', (): void => {
-    assert.deepStrictEqual(evaluateExpr('substring("San Diego, CA", -2, 13)'), undocValue('CA', stringType))
-    assert.deepStrictEqual(evaluateExpr('substring("abc", -5, 100)'), undocValue('abc', stringType))
-    assert.deepStrictEqual(evaluateExpr('substring("abc", 2, 1)'), undocValue('', stringType))
-})
-
-void test('replace and trim', (): void => {
-    assert.deepStrictEqual(evaluateExpr('replace("a-b-c", "-", "+")'), undocValue('a+b+c', stringType))
-    // the target is literal, so regex syntax matches nothing
-    assert.deepStrictEqual(evaluateExpr('replace("a-b-c", "[a-z]", "!")'), undocValue('a-b-c', stringType))
-    // and so is the replacement, in which $& would otherwise stand for the match
-    assert.deepStrictEqual(evaluateExpr('replace("a-b", "-", "$&")'), undocValue('a$&b', stringType))
-    assert.deepStrictEqual(evaluateExpr('replace("a-b", "-", "$$")'), undocValue('a$$b', stringType))
-    assert.deepStrictEqual(evaluateExpr('trim("  San Diego \\t")'), undocValue('San Diego', stringType))
-})
-
-void test('positions and lengths count graphemes, not UTF-16 units', (): void => {
-    // a family emoji is one grapheme made of seven code points
-    const family = 'a\\uD83D\\uDC68\\u200D\\uD83D\\uDC69\\u200D\\uD83D\\uDC67b'
-    assert.deepStrictEqual(evaluateExpr(`stringLength("${family}")`), undocValue(3, numType))
-    assert.deepStrictEqual(evaluateExpr(`substring("${family}", 1, 2)`), undocValue('\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}', stringType))
-    assert.deepStrictEqual(evaluateExpr(`firstIndexOf("${family}", "b")`), undocValue(2, numType))
-    // a decomposed e-acute is one grapheme, so nothing matches half of it
-    assert.deepStrictEqual(evaluateExpr('stringLength("cafe\\u0301")'), undocValue(4, numType))
-    assert.deepStrictEqual(evaluateExpr('endsWith("cafe\\u0301", "e")'), undocValue(false, boolType))
-    assert.deepStrictEqual(evaluateExpr('includes("cafe\\u0301", "e")'), undocValue(false, boolType))
-})
-
-void test('normalizeString folds a name the way search does', (): void => {
-    assert.deepStrictEqual(evaluateExpr('normalizeString("Saint-Denis, \\u00CEle-de-France")'), undocValue('saint denis ile de france', stringType))
-    assert.deepStrictEqual(evaluateExpr('normalizeString("Washington [DC] (USA)")'), undocValue('washington dc usa', stringType))
-})
-
-void test('string operations broadcast over a vector of strings', (): void => {
-    assert.deepStrictEqual(
-        evaluateExpr('endsWith(["San Diego, CA", "Reno, NV"], ", CA")'),
-        undocValue([true, false], boolVectorType),
-    )
-    assert.deepStrictEqual(evaluateExpr('upper(["a", "b"])'), undocValue(['A', 'B'], stringVectorType))
-})
-
-void test('the Regex functions take patterns where the others take literals', (): void => {
-    assert.deepStrictEqual(evaluateExpr('matchesRegex("San Diego, CA", "^San .*, (CA|NV)$")'), undocValue(true, boolType))
-    assert.deepStrictEqual(evaluateExpr('matchesRegex("San Diego, CA", "^Diego")'), undocValue(false, boolType))
-    assert.deepStrictEqual(evaluateExpr('replaceRegex("a1b22c", "[0-9]+", "-")'), undocValue('a-b-c', stringType))
-    assert.deepStrictEqual(evaluateExpr('replaceRegex("San Diego, CA", "^(.*), (.*)$", "$2")'), undocValue('CA', stringType))
-})
-
 function expectError(input: string, message: string): void {
     assert.throws(
         () => evaluateExpr(input),
@@ -104,9 +24,105 @@ function expectError(input: string, message: string): void {
     )
 }
 
+void test('the predicates test a prefix, a suffix, and anywhere', (): void => {
+    assert.deepStrictEqual(evaluateExpr('startsWith("San Diego, CA", "San ")'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('startsWith("San Diego, CA", "Diego")'), undocValue(false, boolType))
+    assert.deepStrictEqual(evaluateExpr('endsWith("San Diego, CA", ", CA")'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('endsWith("San Diego, CA", ", NV")'), undocValue(false, boolType))
+    assert.deepStrictEqual(evaluateExpr('includes("San Diego, CA", "Diego")'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('includes("San Diego, CA", "Reno")'), undocValue(false, boolType))
+})
+
+void test('comparisons normalize both sides, and normalize=false compares as written', (): void => {
+    assert.deepStrictEqual(evaluateExpr('startsWith("San Diego", "san")'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('startsWith("San Diego", "san", normalize=false)'), undocValue(false, boolType))
+    // punctuation and accents fold away too
+    assert.deepStrictEqual(evaluateExpr('endsWith("Saint-Denis, Île-de-France", "ile de france")'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('includes("Washington, DC", "washington dc")'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('includes("Washington, DC", "washington dc", normalize=false)'), undocValue(false, boolType))
+})
+
+void test('an index refers to the string as written, not to its normalized form', (): void => {
+    const name = 'Saint-Denis, Île-de-France'
+    assert.deepStrictEqual(evaluateExpr(`firstIndexOf("${name}", "ile")`), undocValue(13, numType))
+    assert.deepStrictEqual(evaluateExpr(`substring("${name}", 13, 16)`), undocValue('Île', stringType))
+})
+
+void test('firstIndexOf and lastIndexOf pick different occurrences', (): void => {
+    assert.deepStrictEqual(evaluateExpr('firstIndexOf("Washington, DC, USA", ", ", normalize=false)'), undocValue(10, numType))
+    assert.deepStrictEqual(evaluateExpr('lastIndexOf("Washington, DC, USA", ", ", normalize=false)'), undocValue(14, numType))
+    assert.deepStrictEqual(evaluateExpr('firstIndexOf("San Diego", ", ", normalize=false)'), undocValue(-1, numType))
+    assert.deepStrictEqual(evaluateExpr('lastIndexOf("San Diego", ", ", normalize=false)'), undocValue(-1, numType))
+})
+
+void test('stringLength and substring extract part of a string', (): void => {
+    assert.deepStrictEqual(evaluateExpr('stringLength("San Diego")'), undocValue(9, numType))
+    assert.deepStrictEqual(evaluateExpr('substring("San Diego, CA", 0, 3)'), undocValue('San', stringType))
+    assert.deepStrictEqual(
+        evaluateExpr('substring("San Diego, CA", firstIndexOf("San Diego, CA", ", ", normalize=false) + 2, stringLength("San Diego, CA"))'),
+        undocValue('CA', stringType),
+    )
+})
+
+void test('substring counts a negative position from the end, and clamps rather than failing', (): void => {
+    assert.deepStrictEqual(evaluateExpr('substring("San Diego, CA", -2, 13)'), undocValue('CA', stringType))
+    assert.deepStrictEqual(evaluateExpr('substring("abc", -5, 100)'), undocValue('abc', stringType))
+    assert.deepStrictEqual(evaluateExpr('substring("abc", 2, 1)'), undocValue('', stringType))
+})
+
+void test('positions and lengths count graphemes, not UTF-16 units', (): void => {
+    // a family emoji is one grapheme made of seven code points
+    const family = 'a\\uD83D\\uDC68\\u200D\\uD83D\\uDC69\\u200D\\uD83D\\uDC67b'
+    assert.deepStrictEqual(evaluateExpr(`stringLength("${family}")`), undocValue(3, numType))
+    assert.deepStrictEqual(evaluateExpr(`substring("${family}", 1, 2)`), undocValue('\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}', stringType))
+    assert.deepStrictEqual(evaluateExpr(`firstIndexOf("${family}", "b")`), undocValue(2, numType))
+    // a decomposed e-acute is one grapheme, so nothing matches half of it
+    assert.deepStrictEqual(evaluateExpr('stringLength("cafe\\u0301")'), undocValue(4, numType))
+    assert.deepStrictEqual(evaluateExpr('endsWith("cafe\\u0301", "e", normalize=false)'), undocValue(false, boolType))
+    assert.deepStrictEqual(evaluateExpr('includes("cafe\\u0301", "e", normalize=false)'), undocValue(false, boolType))
+})
+
+void test('normalizeString folds a name the way search does', (): void => {
+    assert.deepStrictEqual(evaluateExpr('normalizeString("Saint-Denis, \\u00CEle-de-France")'), undocValue('saint denis ile de france', stringType))
+    assert.deepStrictEqual(evaluateExpr('normalizeString("Washington [DC] (USA)")'), undocValue('washington dc usa', stringType))
+})
+
+void test('replace matches normalized but keeps what it does not replace as written', (): void => {
+    assert.deepStrictEqual(evaluateExpr('replace("Saint-Denis, \\u00CEle-de-France", "ile", "Ile")'), undocValue('Saint-Denis, Ile-de-France', stringType))
+    assert.deepStrictEqual(evaluateExpr('replace("a-b-c", "-", "+")'), undocValue('a+b+c', stringType))
+    // the target is literal, so regex syntax matches nothing
+    assert.deepStrictEqual(evaluateExpr('replace("a-b-c", "[a-z]", "!")'), undocValue('a-b-c', stringType))
+    // and so is the replacement, in which $& would otherwise stand for the match
+    assert.deepStrictEqual(evaluateExpr('replace("a-b", "-", "$&")'), undocValue('a$&b', stringType))
+    assert.deepStrictEqual(evaluateExpr('replace("a-b", "-", "$$")'), undocValue('a$$b', stringType))
+})
+
+void test('trim, lower and upper', (): void => {
+    assert.deepStrictEqual(evaluateExpr('trim("  San Diego \\t")'), undocValue('San Diego', stringType))
+    assert.deepStrictEqual(evaluateExpr('lower("San Diego")'), undocValue('san diego', stringType))
+    assert.deepStrictEqual(evaluateExpr('upper("San Diego")'), undocValue('SAN DIEGO', stringType))
+})
+
+void test('string operations broadcast over a vector of strings', (): void => {
+    assert.deepStrictEqual(
+        evaluateExpr('endsWith(["San Diego, CA", "Reno, NV"], ", CA")'),
+        undocValue([true, false], boolVectorType),
+    )
+    assert.deepStrictEqual(evaluateExpr('upper(["a", "b"])'), undocValue(['A', 'B'], stringVectorType))
+})
+
+void test('the Regex functions take patterns, and normalize neither side', (): void => {
+    assert.deepStrictEqual(evaluateExpr('matchesRegex("San Diego, CA", "^San .*, (CA|NV)$")'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('matchesRegex("San Diego, CA", "^san ")'), undocValue(false, boolType))
+    assert.deepStrictEqual(evaluateExpr('matchesRegex(normalizeString("San Diego, CA"), "^san ")'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('replaceRegex("a1b22c", "[0-9]+", "-")'), undocValue('a-b-c', stringType))
+    assert.deepStrictEqual(evaluateExpr('replaceRegex("San Diego, CA", "^(.*), (.*)$", "$2")'), undocValue('CA', stringType))
+})
+
 void test('an invalid pattern is an error, and only the Regex functions have patterns', (): void => {
     expectError('matchesRegex("abc", "(")', 'Invalid regular expression: /(/: Unterminated group at 1:1-24')
-    assert.deepStrictEqual(evaluateExpr('includes("abc", "(")'), undocValue(false, boolType))
+    assert.deepStrictEqual(evaluateExpr('includes("abc", "(")'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('includes("abc", "(", normalize=false)'), undocValue(false, boolType))
 })
 
 void test('a non-string argument is an error', (): void => {

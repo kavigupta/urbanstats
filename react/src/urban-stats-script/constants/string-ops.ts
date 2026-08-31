@@ -2,25 +2,27 @@ import { HumanReadableName } from '../../utils/human-readable-element'
 import { hre } from '../../utils/human-readable-template'
 import { normalize } from '../../utils/normalize-string'
 import { Context } from '../context'
-import { USSRawValue, USSValue } from '../types-values'
+import { createConstantExpression, USSRawValue, USSValue } from '../types-values'
 
 function documented(
     name: string,
     argTypes: ('string' | 'number')[],
     returnType: 'string' | 'number' | 'boolean',
-    fn: (args: USSRawValue[]) => USSRawValue,
+    fn: (args: USSRawValue[], shouldNormalize: boolean) => USSRawValue,
     humanReadableName: HumanReadableName,
     longDescription: HumanReadableName,
+    normalizeArgument: 'normalize' | 'none' = 'none',
 ): [string, USSValue] {
     return [name, {
         type: {
             type: 'function',
             posArgs: argTypes.map(type => ({ type: 'concrete', value: { type } })),
-            namedArgs: {},
+            namedArgs: normalizeArgument === 'none'
+                ? {}
+                : { normalize: { type: { type: 'concrete', value: { type: 'boolean' } }, defaultValue: createConstantExpression(true) } },
             returnType: { type: 'concrete', value: { type: returnType } },
         },
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for the function signature
-        value: (ctx: Context, args: USSRawValue[], namedArgs: Record<string, USSRawValue>) => fn(args),
+        value: (ctx: Context, args: USSRawValue[], namedArgs: Record<string, USSRawValue>) => fn(args, namedArgs.normalize !== false),
         documentation: {
             humanReadableName,
             category: 'string',
@@ -32,27 +34,60 @@ function documented(
 /** Constructed on first use, so that a browser needing the polyfill can install it first. */
 let segmenter: Intl.Segmenter | undefined
 
-/** Code-unit offsets where each grapheme begins, ending with the string's length. */
-function graphemeStarts(value: string): number[] {
-    segmenter ??= new Intl.Segmenter(undefined, { granularity: 'grapheme' })
-    const starts: number[] = []
-    for (const { index } of segmenter.segment(value)) {
-        starts.push(index)
-    }
-    starts.push(value.length)
-    return starts
+interface Analysis {
+    /** The string's graphemes. */
+    raw: string[]
+    /** Each grapheme as it is compared, which normalizing can leave empty. */
+    comparable: string[]
 }
 
-/** A match counts only where it begins and ends on a grapheme boundary. */
-function graphemeIndexOf(value: string, needle: string, last: boolean): number {
-    const starts = graphemeStarts(value)
-    if (needle === '') {
-        return last ? starts.length - 1 : 0
+/** Broadcasting analyses a whole vector of names, and a filter usually looks at each twice. */
+const analysisCache = new Map<string, Analysis>()
+
+function analyze(value: string, shouldNormalize: boolean): Analysis {
+    const key = `${shouldNormalize ? 'n' : 'r'}${value}`
+    let analysis = analysisCache.get(key)
+    if (analysis === undefined) {
+        segmenter ??= new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+        const raw = Array.from(segmenter.segment(value), segment => segment.segment)
+        analysis = { raw, comparable: shouldNormalize ? raw.map(grapheme => normalize(grapheme)) : raw }
+        if (analysisCache.size > 10000) {
+            analysisCache.clear()
+        }
+        analysisCache.set(key, analysis)
     }
-    const boundaries = new Set(starts)
+    return analysis
+}
+
+function comparableText(value: string, shouldNormalize: boolean): string {
+    return analyze(value, shouldNormalize).comparable.join('')
+}
+
+/** How many graphemes starting at i spell the needle, or undefined where they do not. */
+function matchLength(parts: string[], i: number, needle: string): number | undefined {
+    let accumulated = ''
+    for (let j = i; ; j++) {
+        if (accumulated === needle) {
+            return j - i
+        }
+        if (j >= parts.length || !needle.startsWith(accumulated + parts[j])) {
+            return undefined
+        }
+        accumulated += parts[j]
+    }
+}
+
+function findGrapheme(parts: string[], needle: string, last: boolean): number {
+    if (needle === '') {
+        return last ? parts.length : 0
+    }
     let found = -1
-    for (let i = 0; i < starts.length - 1; i++) {
-        if (value.startsWith(needle, starts[i]) && boundaries.has(starts[i] + needle.length)) {
+    for (let i = 0; i < parts.length; i++) {
+        // starting on a grapheme that normalized away would report the punctuation's position
+        if (parts[i] === '') {
+            continue
+        }
+        if (matchLength(parts, i, needle) !== undefined) {
             if (!last) {
                 return i
             }
@@ -60,14 +95,6 @@ function graphemeIndexOf(value: string, needle: string, last: boolean): number {
         }
     }
     return found
-}
-
-function graphemeIndex(position: number, count: number): number {
-    const index = Math.trunc(position)
-    if (Number.isNaN(index)) {
-        return 0
-    }
-    return Math.min(Math.max(index < 0 ? count + index : index, 0), count)
 }
 
 /** Broadcasting calls the function once per element, almost always with the same pattern. */
@@ -86,60 +113,91 @@ function compilePattern(pattern: string, flags: string): RegExp {
     return regex
 }
 
+function graphemeIndex(position: number, count: number): number {
+    const index = Math.trunc(position)
+    if (Number.isNaN(index)) {
+        return 0
+    }
+    return Math.min(Math.max(index < 0 ? count + index : index, 0), count)
+}
+
+const ignoresCase = hre`By default both sides are normalized the way the site\'s search normalizes a name, so the comparison ignores case, accents and punctuation; pass \`normalize=false\` to compare the strings as written.`
+
 export const stringConstants: [string, USSValue][] = [
-    documented('startsWith', ['string', 'string'], 'boolean', (posArgs) => {
-        const value = posArgs[0] as string
-        const prefix = posArgs[1] as string
-        return value.startsWith(prefix) && new Set(graphemeStarts(value)).has(prefix.length)
-    }, 'starts with', hre`Returns true if the string begins with the given prefix. The comparison is case-sensitive; wrap both sides in \`lower\` to ignore case.`),
-    documented('endsWith', ['string', 'string'], 'boolean', (posArgs) => {
-        const value = posArgs[0] as string
-        const suffix = posArgs[1] as string
-        return value.endsWith(suffix) && new Set(graphemeStarts(value)).has(value.length - suffix.length)
-    }, 'ends with', hre`Returns true if the string ends with the given suffix. The comparison is case-sensitive; wrap both sides in \`lower\` to ignore case.`),
-    documented('includes', ['string', 'string'], 'boolean', (posArgs) => {
-        const value = posArgs[0] as string
-        const needle = posArgs[1] as string
-        return value.includes(needle) && graphemeIndexOf(value, needle, false) >= 0
-    }, 'includes', hre`Returns true if the substring occurs anywhere in the string. The comparison is case-sensitive; wrap both sides in \`lower\` to ignore case.`),
-    documented('firstIndexOf', ['string', 'string'], 'number', (posArgs) => {
-        return graphemeIndexOf(posArgs[0] as string, posArgs[1] as string, false)
-    }, 'first index of', 'Returns the position of the first occurrence of the substring, counting graphemes from 0, or -1 if it does not occur. A match that would begin or end part-way through a grapheme does not count.'),
-    documented('lastIndexOf', ['string', 'string'], 'number', (posArgs) => {
-        return graphemeIndexOf(posArgs[0] as string, posArgs[1] as string, true)
-    }, 'last index of', 'Returns the position of the last occurrence of the substring, counting graphemes from 0, or -1 if it does not occur. A match that would begin or end part-way through a grapheme does not count.'),
+    documented('startsWith', ['string', 'string'], 'boolean', (posArgs, shouldNormalize) => {
+        const parts = analyze(posArgs[0] as string, shouldNormalize).comparable
+        return matchLength(parts, 0, comparableText(posArgs[1] as string, shouldNormalize)) !== undefined
+    }, 'starts with', hre`Returns true if the string begins with the given prefix. ${ignoresCase}`, 'normalize'),
+    documented('endsWith', ['string', 'string'], 'boolean', (posArgs, shouldNormalize) => {
+        const parts = analyze(posArgs[0] as string, shouldNormalize).comparable
+        const needle = comparableText(posArgs[1] as string, shouldNormalize)
+        for (let i = 0; i <= parts.length; i++) {
+            const length = matchLength(parts, i, needle)
+            if (length !== undefined && parts.slice(i + length).every(part => part === '')) {
+                return true
+            }
+        }
+        return false
+    }, 'ends with', hre`Returns true if the string ends with the given suffix. ${ignoresCase}`, 'normalize'),
+    documented('includes', ['string', 'string'], 'boolean', (posArgs, shouldNormalize) => {
+        const parts = analyze(posArgs[0] as string, shouldNormalize).comparable
+        return findGrapheme(parts, comparableText(posArgs[1] as string, shouldNormalize), false) >= 0
+    }, 'includes', hre`Returns true if the substring occurs anywhere in the string. ${ignoresCase}`, 'normalize'),
+    documented('firstIndexOf', ['string', 'string'], 'number', (posArgs, shouldNormalize) => {
+        const parts = analyze(posArgs[0] as string, shouldNormalize).comparable
+        return findGrapheme(parts, comparableText(posArgs[1] as string, shouldNormalize), false)
+    }, 'first index of', hre`Returns the position of the first occurrence of the substring, counting graphemes of the string as written from 0, or -1 if it does not occur. ${ignoresCase}`, 'normalize'),
+    documented('lastIndexOf', ['string', 'string'], 'number', (posArgs, shouldNormalize) => {
+        const parts = analyze(posArgs[0] as string, shouldNormalize).comparable
+        return findGrapheme(parts, comparableText(posArgs[1] as string, shouldNormalize), true)
+    }, 'last index of', hre`Returns the position of the last occurrence of the substring, counting graphemes of the string as written from 0, or -1 if it does not occur. ${ignoresCase}`, 'normalize'),
     documented('substring', ['string', 'number', 'number'], 'string', (posArgs) => {
-        const value = posArgs[0] as string
-        const starts = graphemeStarts(value)
-        const count = starts.length - 1
-        const from = graphemeIndex(posArgs[1] as number, count)
-        const to = graphemeIndex(posArgs[2] as number, count)
-        return to <= from ? '' : value.slice(starts[from], starts[to])
+        const raw = analyze(posArgs[0] as string, false).raw
+        const from = graphemeIndex(posArgs[1] as number, raw.length)
+        const to = graphemeIndex(posArgs[2] as number, raw.length)
+        return to <= from ? '' : raw.slice(from, to).join('')
     }, 'substring', 'Returns the part of the string from the start position up to but not including the end position, counting graphemes from 0. A negative position counts back from the end of the string, a position beyond either end is clamped to it, and an end at or before the start gives an empty string.'),
     documented('stringLength', ['string'], 'number', (posArgs) => {
-        return graphemeStarts(posArgs[0] as string).length - 1
+        return analyze(posArgs[0] as string, false).raw.length
     }, 'string length', 'Returns the number of graphemes in the string, so an emoji built out of several code points counts once.'),
-    documented('replace', ['string', 'string', 'string'], 'string', (posArgs) => {
-        // replaceAll reads $& and friends in the replacement even when searching for a literal
-        const replacement = (posArgs[2] as string).replaceAll('$', '$$$$')
-        return (posArgs[0] as string).replaceAll(posArgs[1] as string, replacement)
-    }, 'replace', 'Replaces every occurrence of the target with the replacement, leaving the string alone if the target does not occur. Both are literal strings.'),
+    documented('replace', ['string', 'string', 'string'], 'string', (posArgs, shouldNormalize) => {
+        const { raw, comparable } = analyze(posArgs[0] as string, shouldNormalize)
+        const target = comparableText(posArgs[1] as string, shouldNormalize)
+        const replacement = posArgs[2] as string
+        if (target === '') {
+            return posArgs[0]
+        }
+        let result = ''
+        let i = 0
+        while (i < raw.length) {
+            const length = comparable[i] === '' ? undefined : matchLength(comparable, i, target)
+            if (length === undefined || length === 0) {
+                result += raw[i]
+                i++
+            }
+            else {
+                result += replacement
+                i += length
+            }
+        }
+        return result
+    }, 'replace', hre`Replaces every occurrence of the target with the replacement, leaving the string alone if the target does not occur. Both are literal strings, and what is not replaced keeps the characters it was written with. ${ignoresCase}`, 'normalize'),
     documented('trim', ['string'], 'string', (posArgs) => {
         return (posArgs[0] as string).trim()
     }, 'trim', 'Removes whitespace from both ends of the string.'),
     documented('lower', ['string'], 'string', (posArgs) => {
         return (posArgs[0] as string).toLowerCase()
-    }, 'lowercase', 'Converts the string to lowercase. Applying it to both sides of a comparison or a predicate makes that test case-insensitive.'),
+    }, 'lowercase', 'Converts the string to lowercase.'),
     documented('upper', ['string'], 'string', (posArgs) => {
         return (posArgs[0] as string).toUpperCase()
     }, 'uppercase', 'Converts the string to uppercase.'),
     documented('normalizeString', ['string'], 'string', (posArgs) => {
         return normalize(posArgs[0] as string)
-    }, 'normalize', hre`Folds a string the way the site\'s search does, so that a comparison ignores what search ignores: it lowercases, strips accents from letters, removes \`,\`, \`(\`, \`)\`, \`[\` and \`]\`, and turns \`-\` into a space.`),
+    }, 'normalize', hre`Folds a string the way the site\'s search does, so that a comparison ignores what search ignores: it lowercases, strips accents from letters, removes \`,\`, \`(\`, \`)\`, \`[\` and \`]\`, and turns \`-\` into a space. The comparing functions do this to their arguments already.`),
     documented('matchesRegex', ['string', 'string'], 'boolean', (posArgs) => {
         return compilePattern(posArgs[1] as string, '').test(posArgs[0] as string)
-    }, 'matches regex', hre`Returns true if the regular expression matches anywhere in the string. Anchor the pattern with \`^\` or \`$\` to test a prefix or a suffix. A backslash must be written twice, as in \`"\\\\d"\`.`),
+    }, 'matches regex', hre`Returns true if the regular expression matches anywhere in the string. Anchor the pattern with \`^\` or \`$\` to test a prefix or a suffix. A backslash must be written twice, as in \`"\\\\d"\`. Neither side is normalized, since normalizing would rewrite the pattern\'s own syntax; call \`normalizeString\` on the string yourself and write the pattern to match the result.`),
     documented('replaceRegex', ['string', 'string', 'string'], 'string', (posArgs) => {
         return (posArgs[0] as string).replaceAll(compilePattern(posArgs[1] as string, 'g'), posArgs[2] as string)
-    }, 'replace regex', hre`Replaces every match of the regular expression with the replacement, in which \`$1\`, \`$2\`, ... stand for the pattern's capture groups and \`$&\` for the whole match.`),
+    }, 'replace regex', hre`Replaces every match of the regular expression with the replacement, in which \`$1\`, \`$2\`, ... stand for the pattern\'s capture groups and \`$&\` for the whole match. Neither side is normalized, for the same reason as \`matchesRegex\`.`),
 ]
