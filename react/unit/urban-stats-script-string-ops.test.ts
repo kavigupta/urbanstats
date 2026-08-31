@@ -61,6 +61,23 @@ void test('replace and trim', (): void => {
     assert.deepStrictEqual(evaluateExpr('trim("  San Diego \\t")'), undocValue('San Diego', stringType))
 })
 
+void test('positions and lengths count graphemes, not UTF-16 units', (): void => {
+    // a family emoji is one grapheme made of seven code points
+    const family = 'a\\uD83D\\uDC68\\u200D\\uD83D\\uDC69\\u200D\\uD83D\\uDC67b'
+    assert.deepStrictEqual(evaluateExpr(`stringLength("${family}")`), undocValue(3, numType))
+    assert.deepStrictEqual(evaluateExpr(`substring("${family}", 1, 2)`), undocValue('\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}', stringType))
+    assert.deepStrictEqual(evaluateExpr(`firstIndexOf("${family}", "b")`), undocValue(2, numType))
+    // a decomposed e-acute is one grapheme, so nothing matches half of it
+    assert.deepStrictEqual(evaluateExpr('stringLength("cafe\\u0301")'), undocValue(4, numType))
+    assert.deepStrictEqual(evaluateExpr('endsWith("cafe\\u0301", "e")'), undocValue(false, boolType))
+    assert.deepStrictEqual(evaluateExpr('includes("cafe\\u0301", "e")'), undocValue(false, boolType))
+})
+
+void test('normalizeString folds a name the way search does', (): void => {
+    assert.deepStrictEqual(evaluateExpr('normalizeString("Saint-Denis, \\u00CEle-de-France")'), undocValue('saint denis ile de france', stringType))
+    assert.deepStrictEqual(evaluateExpr('normalizeString("Washington [DC] (USA)")'), undocValue('washington dc usa', stringType))
+})
+
 void test('string operations broadcast over a vector of strings', (): void => {
     assert.deepStrictEqual(
         evaluateExpr('endsWith(["San Diego, CA", "Reno, NV"], ", CA")'),

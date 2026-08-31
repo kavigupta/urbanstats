@@ -3,8 +3,8 @@ import syau_suffixes from '../data/syau_suffixes'
 import { loadProtobuf, loadStatisticsPage } from '../load_json'
 import { centroidsPath } from '../navigation/links'
 import { DataStatistic, Statistic, allGroups } from '../page_template/statistic-tree'
-import { normalize } from '../search'
 import { Universe } from '../universe'
+import { normalize } from '../utils/normalize-string'
 import { ICoordinate } from '../utils/protos'
 
 const populationStatcols: DataStatistic[] = allGroups

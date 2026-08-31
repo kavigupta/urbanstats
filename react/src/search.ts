@@ -8,6 +8,7 @@ import { DefaultMap } from './utils/DefaultMap'
 import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSignature } from './utils/bitap'
 import { makeDebugLogger } from './utils/debug-logging'
 import { assert } from './utils/defensive'
+import { normalize } from './utils/normalize-string'
 import { ISearchIndexMetadata } from './utils/protos'
 import { isAllowedToBeShown, ShowGeographySettings } from './utils/restricted-types'
 import { concatenate } from './utils/typed-array-concat'
@@ -24,17 +25,6 @@ const debug = makeDebugLogger('search')
 const debugPerformance = makeDebugLogger('searchPerformance')
 
 export const simulateSlowSearchDelayMs: number | undefined = undefined
-
-export function normalize(a: string, handlePunctuation = true): string {
-    a = a.toLowerCase()
-    a = a.normalize('NFD')
-    a = a.replace(/[\u0300-\u036f]/g, '')
-    if (handlePunctuation) {
-        a = a.replace(/[,\(\)\[\]]/g, '')
-        a = a.replaceAll('-', ' ')
-    }
-    return a
-}
 
 type Entry = {
     priority: number

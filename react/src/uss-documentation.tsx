@@ -824,7 +824,10 @@ function getCategoryDescription(category: ConstantCategory): ReactNode {
                             {' '}
                             to ignore case.
                         </li>
-                        <li>Positions count from 0.</li>
+                        <li>
+                            Positions and lengths count graphemes — what a reader would call a character — from 0, so an
+                            emoji or an accented letter counts once however many code points it takes.
+                        </li>
                         <li>
                             A backslash in a regex pattern must be written twice, as in
                             {' '}

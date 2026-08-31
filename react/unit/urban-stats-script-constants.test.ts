@@ -162,6 +162,7 @@ void test('constant listing', (): void => {
                 'trim',
                 'lower',
                 'upper',
+                'normalizeString',
             ],
 
             '(any; ) -> number': [
