@@ -51,6 +51,24 @@ void test('a match never begins or ends part-way through a grapheme', (): void =
     assert.deepStrictEqual(evaluateExpr(`includes("${family}", "\\uD83D\\uDC68\\u200D\\uD83D\\uDC69\\u200D\\uD83D\\uDC67")`), undocValue(true, boolType))
 })
 
+void test('fuzzyMatch tolerates a few edits, up to maxErrors', (): void => {
+    assert.deepStrictEqual(evaluateExpr('fuzzyMatch("Pittsburgh, PA", "pittsburg")'), undocValue(true, boolType))
+    // a dropped t is one edit, which maxErrors=0 does not allow
+    assert.deepStrictEqual(evaluateExpr('fuzzyMatch("Pittsburgh, PA", "pitsburg")'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('fuzzyMatch("Pittsburgh, PA", "pitsburg", maxErrors=0)'), undocValue(false, boolType))
+    assert.deepStrictEqual(evaluateExpr('fuzzyMatch("Pittsburgh, PA", "philadelphia")'), undocValue(false, boolType))
+    // it normalizes like the other predicates, so an exact spelling needs no errors at all
+    assert.deepStrictEqual(evaluateExpr('fuzzyMatch("San Jos\u00E9", "san jose", maxErrors=0)'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('fuzzyMatch("San Jos\u00E9", "san jose", maxErrors=0, normalize=false)'), undocValue(false, boolType))
+})
+
+void test('fuzzyMatch rejects a needle longer than bitap can hold', (): void => {
+    expectError(
+        'fuzzyMatch("abc", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")',
+        'fuzzyMatch can look for at most 31 characters, but was given 34 at 1:1-55',
+    )
+})
+
 void test('normalizeString folds a name the way search does', (): void => {
     assert.deepStrictEqual(evaluateExpr('normalizeString("Saint-Denis, \\u00CEle-de-France")'), undocValue('saint denis ile de france', stringType))
     assert.deepStrictEqual(evaluateExpr('normalizeString("Washington [DC] (USA)")'), undocValue('washington dc usa', stringType))

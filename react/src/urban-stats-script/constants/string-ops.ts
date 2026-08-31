@@ -1,28 +1,37 @@
+import { bitapAlphabet } from '../../utils/bitap'
+import { bitap } from '../../utils/bitap-selector'
 import { HumanReadableName } from '../../utils/human-readable-element'
 import { hre } from '../../utils/human-readable-template'
 import { normalize } from '../../utils/normalize-string'
 import { Context } from '../context'
-import { createConstantExpression, USSRawValue, USSValue } from '../types-values'
+import { createConstantExpression, USSFunctionType, USSRawValue, USSValue } from '../types-values'
+
+const normalizeArg = {
+    normalize: { type: { type: 'concrete', value: { type: 'boolean' } }, defaultValue: createConstantExpression(true) },
+} satisfies USSFunctionType['namedArgs']
+
+const fuzzyArgs = {
+    maxErrors: { type: { type: 'concrete', value: { type: 'number' } }, defaultValue: createConstantExpression(2) },
+    ...normalizeArg,
+} satisfies USSFunctionType['namedArgs']
 
 function documented(
     name: string,
     argCount: 1 | 2,
     returnType: 'string' | 'boolean',
-    fn: (args: USSRawValue[], shouldNormalize: boolean) => USSRawValue,
+    fn: (args: USSRawValue[], namedArgs: Record<string, USSRawValue>) => USSRawValue,
     humanReadableName: HumanReadableName,
     longDescription: HumanReadableName,
-    normalizeArgument: 'normalize' | 'none' = 'none',
+    namedArgs: USSFunctionType['namedArgs'] = {},
 ): [string, USSValue] {
     return [name, {
         type: {
             type: 'function',
             posArgs: Array.from({ length: argCount }, () => ({ type: 'concrete', value: { type: 'string' } })),
-            namedArgs: normalizeArgument === 'none'
-                ? {}
-                : { normalize: { type: { type: 'concrete', value: { type: 'boolean' } }, defaultValue: createConstantExpression(true) } },
+            namedArgs,
             returnType: { type: 'concrete', value: { type: returnType } },
         },
-        value: (ctx: Context, args: USSRawValue[], namedArgs: Record<string, USSRawValue>) => fn(args, namedArgs.normalize !== false),
+        value: (ctx: Context, args: USSRawValue[], kwargs: Record<string, USSRawValue>) => fn(args, kwargs),
         documentation: {
             humanReadableName,
             category: 'string',
@@ -66,6 +75,32 @@ function matchLength(parts: string[], i: number, needle: string): number | undef
     }
 }
 
+/** bitapAlphabet allocates a table per needle, and broadcasting reuses the same needle throughout. */
+const needleCache = new Map<string, { alphabet: Uint32Array, length: number }>()
+
+function toBitapNeedle(token: string): { alphabet: Uint32Array, length: number } {
+    let needle = needleCache.get(token)
+    if (needle === undefined) {
+        needle = { alphabet: bitapAlphabet(token), length: token.length }
+        if (needleCache.size > 100) {
+            needleCache.clear()
+        }
+        needleCache.set(token, needle)
+    }
+    return needle
+}
+
+/** bitap fills these in, so they only have to be big enough, and they grow to the largest ask. */
+let scratch: Uint32Array[] = []
+
+function scratchBuffers(rows: number, width: number): Uint32Array[] {
+    if (scratch.length < rows || scratch[0].length < width) {
+        const size = Math.max(width, scratch[0]?.length ?? 0)
+        scratch = Array.from({ length: Math.max(rows, scratch.length) }, () => new Uint32Array(size))
+    }
+    return scratch
+}
+
 /** Broadcasting calls the function once per element, almost always with the same pattern. */
 const regexCache = new Map<string, RegExp>()
 
@@ -84,12 +119,14 @@ function compilePattern(pattern: string): RegExp {
 const ignoresCase = hre`By default both sides are normalized the way the site\'s search normalizes a name, so the comparison ignores case, accents and punctuation; pass \`normalize=false\` to compare the strings as written. A match never begins or ends part-way through a grapheme.`
 
 export const stringConstants: [string, USSValue][] = [
-    documented('startsWith', 2, 'boolean', (posArgs, shouldNormalize) => {
+    documented('startsWith', 2, 'boolean', (posArgs, namedArgs) => {
+        const shouldNormalize = namedArgs.normalize !== false
         const parts = comparableGraphemes(posArgs[0] as string, shouldNormalize)
         const needle = comparableGraphemes(posArgs[1] as string, shouldNormalize).join('')
         return matchLength(parts, 0, needle) !== undefined
-    }, 'starts with', hre`Returns true if the first string begins with the second. ${ignoresCase}`, 'normalize'),
-    documented('endsWith', 2, 'boolean', (posArgs, shouldNormalize) => {
+    }, 'starts with', hre`Returns true if the first string begins with the second. ${ignoresCase}`, normalizeArg),
+    documented('endsWith', 2, 'boolean', (posArgs, namedArgs) => {
+        const shouldNormalize = namedArgs.normalize !== false
         const parts = comparableGraphemes(posArgs[0] as string, shouldNormalize)
         const needle = comparableGraphemes(posArgs[1] as string, shouldNormalize).join('')
         for (let i = 0; i <= parts.length; i++) {
@@ -99,8 +136,9 @@ export const stringConstants: [string, USSValue][] = [
             }
         }
         return false
-    }, 'ends with', hre`Returns true if the first string ends with the second. ${ignoresCase}`, 'normalize'),
-    documented('includes', 2, 'boolean', (posArgs, shouldNormalize) => {
+    }, 'ends with', hre`Returns true if the first string ends with the second. ${ignoresCase}`, normalizeArg),
+    documented('includes', 2, 'boolean', (posArgs, namedArgs) => {
+        const shouldNormalize = namedArgs.normalize !== false
         const parts = comparableGraphemes(posArgs[0] as string, shouldNormalize)
         const needle = comparableGraphemes(posArgs[1] as string, shouldNormalize).join('')
         for (let i = 0; i <= parts.length; i++) {
@@ -109,7 +147,21 @@ export const stringConstants: [string, USSValue][] = [
             }
         }
         return false
-    }, 'includes', hre`Returns true if the second string occurs anywhere in the first. ${ignoresCase}`, 'normalize'),
+    }, 'includes', hre`Returns true if the second string occurs anywhere in the first. ${ignoresCase}`, normalizeArg),
+    documented('fuzzyMatch', 2, 'boolean', (posArgs, namedArgs) => {
+        const shouldNormalize = namedArgs.normalize !== false
+        const value = shouldNormalize ? normalize(posArgs[0] as string) : posArgs[0] as string
+        const token = shouldNormalize ? normalize(posArgs[1] as string) : posArgs[1] as string
+        const maxErrors = Math.max(Math.trunc(namedArgs.maxErrors as number), 0)
+        if (token === '') {
+            return true
+        }
+        if (token.length > 31) {
+            throw new Error(`fuzzyMatch can look for at most 31 characters, but was given ${token.length}`)
+        }
+        const buffers = scratchBuffers(maxErrors + 1, token.length + value.length + 1)
+        return bitap(value, toBitapNeedle(token), maxErrors, buffers) <= maxErrors
+    }, 'fuzzy match', hre`Returns true if the second string occurs in the first allowing up to \`maxErrors\` single-character insertions, deletions or substitutions — so \`fuzzyMatch(geoName, "pittsburg")\` finds Pittsburgh. The string looked for is limited to 31 characters. ${ignoresCase}`, fuzzyArgs),
     documented('normalizeString', 1, 'string', (posArgs) => {
         return normalize(posArgs[0] as string)
     }, 'normalize', hre`Folds a string the way the site\'s search does, so that a comparison ignores what search ignores: it lowercases, strips accents from letters, removes \`,\`, \`(\`, \`)\`, \`[\` and \`]\`, and turns \`-\` into a space. The comparing functions do this to their arguments already; this is for seeing what they see, or for feeding \`matchesRegex\`.`),

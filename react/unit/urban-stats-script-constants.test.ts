@@ -143,6 +143,9 @@ void test('constant listing', (): void => {
                 'endsWith',
                 'includes',
             ],
+            '(string, string; maxErrors: number = 2, normalize: boolean = true) -> boolean': [
+                'fuzzyMatch',
+            ],
             '(string; ) -> string': [
                 'normalizeString',
             ],
