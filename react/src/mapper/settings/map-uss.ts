@@ -14,17 +14,17 @@ export const idPreamble = `${rootBlockIdent}p`
 export const idCondition = `${rootBlockIdent}c`
 export const idOutput = `${rootBlockIdent}o`
 
-export type PreambleCustomNode = UrbanStatsASTExpression & { type: 'customNode' }
-export type PreambleAutoUXNode = UrbanStatsASTExpression & { type: 'autoUXNode', expr: PreambleCustomNode, metadata: AutoUXNodeMetadata }
-export type PreambleNode = PreambleCustomNode | PreambleAutoUXNode
+export type PreambleCustomNode<M = unknown> = UrbanStatsASTExpression<M> & { type: 'customNode' }
+export type PreambleAutoUXNode<M = unknown> = UrbanStatsASTExpression<M> & { type: 'autoUXNode', expr: PreambleCustomNode<M>, metadata: AutoUXNodeMetadata }
+export type PreambleNode<M = unknown> = PreambleCustomNode<M> | PreambleAutoUXNode<M>
 
-export type MapUSS = UrbanStatsASTExpression & { type: 'customNode' } |
-    (UrbanStatsASTStatement &
+export type MapUSS<M = unknown> = UrbanStatsASTExpression<M> & { type: 'customNode' } |
+    (UrbanStatsASTStatement<M> &
     {
         type: 'statements'
         result: [
-                UrbanStatsASTStatement & { type: 'expression', value: PreambleNode },
-                UrbanStatsASTStatement & { type: 'condition', rest: [UrbanStatsASTStatement & { type: 'expression' }] },
+                UrbanStatsASTStatement<M> & { type: 'expression', value: PreambleNode<M> },
+                UrbanStatsASTStatement<M> & { type: 'condition', rest: [UrbanStatsASTStatement<M> & { type: 'expression' }] },
         ]
     })
 
@@ -148,16 +148,16 @@ export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, ty
 }
 
 // Exclude types to not reparse. When the USS is being stored, should always reparse
-export function mapUssParser<T>(lastExpr: l.LiteralExprParser<T>, types: USSType[] | 'dont-reparse') {
+export function mapUssParser<T, M = unknown>(lastExpr: l.LiteralExprParser<T>, types: USSType[] | 'dont-reparse') {
     const statementsSchema = l.lastExpression(types !== 'dont-reparse' ? l.reparse(idOutput, types, lastExpr) : lastExpr)
     const customNodeLastExpr = l.customNode(l.lastExpression(lastExpr))
     const customNodeSchema = types !== 'dont-reparse' ? l.reparse(rootBlockIdent, types, customNodeLastExpr) : customNodeLastExpr
-    return (uss: MapUSS, typeEnvironment: TypeEnvironment): T => {
+    return (uss: MapUSS<M>, typeEnvironment: TypeEnvironment): T => {
         return uss.type === 'statements' ? statementsSchema.parse(uss, typeEnvironment) : customNodeSchema.parse(uss, typeEnvironment)
     }
 }
 
-export function read<T>(schema: (uss: MapUSS, typeEnvironment: TypeEnvironment) => T, uss: MapUSS, typeEnvironment: TypeEnvironment): T | undefined {
+export function read<T, M = unknown>(schema: (uss: MapUSS<M>, typeEnvironment: TypeEnvironment) => T, uss: MapUSS<M>, typeEnvironment: TypeEnvironment): T | undefined {
     try {
         return schema(uss, typeEnvironment)
     }
@@ -169,33 +169,37 @@ export function read<T>(schema: (uss: MapUSS, typeEnvironment: TypeEnvironment) 
     }
 }
 
-const mapDataCall = l.call({
-    fn: l.ignore(),
-    namedArgs: { data: l.passthrough() },
-    unnamedArgs: [],
-})
-
-const mapData = mapUssParser(mapDataCall, 'dont-reparse')
-
-export const editableMapData = mapUssParser(l.edit(mapDataCall), 'dont-reparse')
-
-export function mapDataExpression(uss: MapUSS, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression | undefined {
-    return read(mapData, uss, typeEnvironment)?.namedArgs.data
+function mapDataCall<M>(): l.LiteralExprParser<{ namedArgs: { data: UrbanStatsASTExpression<M> | undefined } }> {
+    return l.call({
+        fn: l.ignore(),
+        namedArgs: { data: l.passthrough<M>() },
+        unnamedArgs: [],
+    })
 }
 
-const tableColumns = mapUssParser(l.call({
-    fn: l.ignore(),
-    namedArgs: {
-        columns: l.vector(l.call({
-            fn: l.ignore(),
-            namedArgs: { values: l.passthrough() },
-            unnamedArgs: [],
-        })),
-    },
-    unnamedArgs: [],
-}), 'dont-reparse')
+export function editableMapData<M>(): (uss: MapUSS<M>, typeEnvironment: TypeEnvironment) => l.Edited<{ namedArgs: { data: UrbanStatsASTExpression<M> | undefined } }, M> {
+    return mapUssParser<l.Edited<{ namedArgs: { data: UrbanStatsASTExpression<M> | undefined } }, M>, M>(l.edit(mapDataCall<M>()), 'dont-reparse')
+}
 
-export function tableColumnExpression(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): UrbanStatsASTExpression | undefined {
-    const columns = read(tableColumns, uss, typeEnvironment)?.namedArgs.columns
+export function mapDataExpression<M>(uss: MapUSS<M>, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression<M> | undefined {
+    return read(mapUssParser<{ namedArgs: { data: UrbanStatsASTExpression<M> | undefined } }, M>(mapDataCall<M>(), 'dont-reparse'), uss, typeEnvironment)?.namedArgs.data
+}
+
+function tableColumns<M>(): (uss: MapUSS<M>, typeEnvironment: TypeEnvironment) => { namedArgs: { columns: { namedArgs: { values: UrbanStatsASTExpression<M> | undefined } }[] } } {
+    return mapUssParser<{ namedArgs: { columns: { namedArgs: { values: UrbanStatsASTExpression<M> | undefined } }[] } }, M>(l.call({
+        fn: l.ignore(),
+        namedArgs: {
+            columns: l.vector(l.call({
+                fn: l.ignore(),
+                namedArgs: { values: l.passthrough<M>() },
+                unnamedArgs: [],
+            })),
+        },
+        unnamedArgs: [],
+    }), 'dont-reparse')
+}
+
+export function tableColumnExpression<M>(uss: MapUSS<M>, typeEnvironment: TypeEnvironment, columnIndex: number): UrbanStatsASTExpression<M> | undefined {
+    const columns = read(tableColumns<M>(), uss, typeEnvironment)?.namedArgs.columns
     return columns === undefined || columnIndex >= columns.length ? undefined : columns[columnIndex].namedArgs.values
 }

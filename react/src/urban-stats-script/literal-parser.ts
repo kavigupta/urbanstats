@@ -257,13 +257,9 @@ export function deconstruct<T>(schema: LiteralExprParser<T>): LiteralExprParser<
 /**
  * Enables selectively editing an AST (does a shallow copy)
  */
-export function edit<T>(
+export function edit<T, M = unknown>(
     schema: LiteralExprParser<T>,
-): LiteralExprParser<{
-        currentValue: T
-        edit: (newExpr: UrbanStatsASTExpression | undefined) => UrbanStatsASTExpression | UrbanStatsASTStatement | undefined
-        expr: UrbanStatsASTExpression | undefined
-    }> {
+): LiteralExprParser<Edited<T, M>> {
     return {
         parse(expr, env, doEdit = e => e) {
             return {
@@ -273,6 +269,12 @@ export function edit<T>(
             }
         },
     }
+}
+
+export interface Edited<T, M = unknown> {
+    currentValue: T
+    edit: (newExpr: UrbanStatsASTExpression<M> | undefined) => UrbanStatsASTExpression<M> | UrbanStatsASTStatement<M> | undefined
+    expr: UrbanStatsASTExpression<M> | undefined
 }
 
 /**
@@ -349,7 +351,7 @@ export function ignore(): LiteralStmtParser<undefined> & LiteralExprParser<undef
     }
 }
 
-export function passthrough(): LiteralExprParser<UrbanStatsASTExpression | undefined> {
+export function passthrough<M = unknown>(): LiteralExprParser<UrbanStatsASTExpression<M> | undefined> {
     return {
         parse(expr) {
             return expr

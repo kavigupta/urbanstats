@@ -210,7 +210,7 @@ function statedMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanRea
 
 export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
     const units = inferConstantUnits(uss, typeEnvironment)
-    const result = read(editableMapData, uss, typeEnvironment)
+    const result = read(editableMapData(), uss, typeEnvironment)
     if (result?.currentValue.namedArgs.data === undefined) return
     const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment, units)
     if (dataLabel === undefined) return
