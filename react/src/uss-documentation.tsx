@@ -773,6 +773,8 @@ function getCategoryTitle(category: ConstantCategory): string {
             return 'Statistical Analysis'
         case 'set':
             return 'Set Operations'
+        case 'string':
+            return 'String Operations'
         case 'basic':
             return 'Basic Functions'
         case 'mapper':
@@ -804,6 +806,23 @@ function getCategoryDescription(category: ConstantCategory): ReactNode {
             return 'Statistical analysis functions for linear regression.'
         case 'set':
             return 'Functions that treat vectors as sets, ignoring order and duplicates. Results are deduplicated and sorted in ascending order. Both arguments of a two-vector operation must have the same element type.'
+        case 'string':
+            return (
+                <>
+                    Functions for testing a string, for filtering. Comparing and searching normalizes both sides the way
+                    the site&apos;s search does, so case, accents and punctuation are ignored; pass
+                    {' '}
+                    <code style={codeStyle}>normalize=false</code>
+                    {' '}
+                    to compare the strings as written, or call
+                    {' '}
+                    <code style={codeStyle}>normalizeString</code>
+                    {' '}
+                    yourself to see what a comparison sees. A match never begins or ends part-way through a grapheme,
+                    what a reader would call a character, so it cannot land inside an emoji or between a letter and its
+                    accent.
+                </>
+            )
         case 'basic':
             return 'Basic utility functions for type conversion and common operations.'
         case 'mapper':
