@@ -161,7 +161,7 @@ export const stringConstants: [string, USSValue][] = [
         }
         const buffers = scratchBuffers(maxErrors + 1, token.length + value.length + 1)
         return bitap(value, toBitapNeedle(token), maxErrors, buffers) <= maxErrors
-    }, 'fuzzy match', hre`Returns true if the second string occurs in the first allowing up to \`maxErrors\` single-character insertions, deletions or substitutions — so \`fuzzyMatch(geoName, "pittsburg")\` finds Pittsburgh. The string looked for is limited to 31 characters. ${ignoresCase}`, fuzzyArgs),
+    }, 'fuzzy match', hre`Returns true if the second string occurs in the first allowing up to \`maxErrors\` single-character insertions, deletions or substitutions, so that \`fuzzyMatch(geoName, "pittsburg")\` finds Pittsburgh. The string looked for is limited to 31 characters. ${ignoresCase}`, fuzzyArgs),
     documented('normalizeString', 1, 'string', (posArgs) => {
         return normalize(posArgs[0] as string)
     }, 'normalize', hre`Folds a string the way the site\'s search does, so that a comparison ignores what search ignores: it lowercases, strips accents from letters, removes \`,\`, \`(\`, \`)\`, \`[\` and \`]\`, and turns \`-\` into a space. The comparing functions do this to their arguments already; this is for seeing what they see, or for feeding \`matchesRegex\`.`),

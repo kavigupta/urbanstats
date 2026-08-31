@@ -818,8 +818,8 @@ function getCategoryDescription(category: ConstantCategory): ReactNode {
                     {' '}
                     <code style={codeStyle}>normalizeString</code>
                     {' '}
-                    yourself to see what a comparison sees. A match never begins or ends part-way through a grapheme —
-                    what a reader would call a character — so it cannot land inside an emoji or between a letter and its
+                    yourself to see what a comparison sees. A match never begins or ends part-way through a grapheme,
+                    what a reader would call a character, so it cannot land inside an emoji or between a letter and its
                     accent.
                 </>
             )
