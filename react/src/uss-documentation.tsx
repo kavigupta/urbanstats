@@ -647,7 +647,7 @@ function DocumentationForCategory(props: { category: ConstantCategory, constants
 
     return (
         <>
-            <div style={{ marginTop: '1em', marginBottom: '1em', marginLeft: '20px' }}>{getCategoryDescription(props.category)}</div>
+            <p style={{ marginLeft: '20px' }}>{getCategoryDescription(props.category)}</p>
             {withoutTable.map(([name, value]) => (
                 <LongFormDocumentation key={name} name={name} value={value} />
             ))}
@@ -809,37 +809,18 @@ function getCategoryDescription(category: ConstantCategory): ReactNode {
         case 'string':
             return (
                 <>
-                    Functions for testing and transforming strings, mostly for filtering.
-                    <ul>
-                        <li>
-                            Arguments are literal strings rather than regex patterns, except in the functions whose names end in
-                            {' '}
-                            <code style={codeStyle}>Regex</code>
-                            , which take a regular expression in the JavaScript flavor.
-                        </li>
-                        <li>
-                            Comparing and searching normalizes both sides the way the site&apos;s search does, so case,
-                            accents and punctuation are ignored. Pass
-                            {' '}
-                            <code style={codeStyle}>normalize=false</code>
-                            {' '}
-                            to compare the strings as written, or call
-                            {' '}
-                            <code style={codeStyle}>normalizeString</code>
-                            {' '}
-                            yourself to see what a comparison sees.
-                        </li>
-                        <li>
-                            Positions and lengths count graphemes — what a reader would call a character — from 0, so an
-                            emoji or an accented letter counts once however many code points it takes.
-                        </li>
-                        <li>
-                            A backslash in a regex pattern must be written twice, as in
-                            {' '}
-                            <code style={codeStyle}>{'"\\\\d"'}</code>
-                            , because a string literal reads a pair of backslashes as one.
-                        </li>
-                    </ul>
+                    Functions for testing a string, for filtering. Comparing and searching normalizes both sides the way
+                    the site&apos;s search does, so case, accents and punctuation are ignored; pass
+                    {' '}
+                    <code style={codeStyle}>normalize=false</code>
+                    {' '}
+                    to compare the strings as written, or call
+                    {' '}
+                    <code style={codeStyle}>normalizeString</code>
+                    {' '}
+                    yourself to see what a comparison sees. A match never begins or ends part-way through a grapheme —
+                    what a reader would call a character — so it cannot land inside an emoji or between a letter and its
+                    accent.
                 </>
             )
         case 'basic':

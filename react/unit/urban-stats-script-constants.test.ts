@@ -143,30 +143,11 @@ void test('constant listing', (): void => {
                 'endsWith',
                 'includes',
             ],
-            '(string, string; normalize: boolean = true) -> number': [
-                'firstIndexOf',
-                'lastIndexOf',
-            ],
-            '(string, number, number; ) -> string': [
-                'substring',
-            ],
-            '(string; ) -> number': [
-                'stringLength',
-            ],
-            '(string, string, string; normalize: boolean = true) -> string': [
-                'replace',
-            ],
             '(string; ) -> string': [
-                'trim',
-                'lower',
-                'upper',
                 'normalizeString',
             ],
             '(string, string; ) -> boolean': [
                 'matchesRegex',
-            ],
-            '(string, string, string; ) -> string': [
-                'replaceRegex',
             ],
 
             '(any; ) -> number': [
