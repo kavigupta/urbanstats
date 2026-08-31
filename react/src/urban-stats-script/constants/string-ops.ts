@@ -141,13 +141,13 @@ export const stringConstants: [string, USSValue][] = [
         const shouldNormalize = namedArgs.normalize !== false
         const value = shouldNormalize ? normalize(posArgs[0] as string) : posArgs[0] as string
         const token = shouldNormalize ? normalize(posArgs[1] as string) : posArgs[1] as string
-        const maxErrors = Math.max(Math.trunc(namedArgs.maxErrors as number), 0)
         if (token === '') {
             return true
         }
         if (token.length > 31) {
             throw new Error(`fuzzyMatch can look for at most 31 characters, but was given ${token.length}`)
         }
+        const maxErrors = Math.max(Math.trunc(namedArgs.maxErrors as number), 0)
         return bitap(value, toBitapNeedle(token), maxErrors) <= maxErrors
     }, 'fuzzy match', hre`Returns true if the second string occurs in the first allowing up to \`maxErrors\` single-character insertions, deletions or substitutions, so that \`fuzzyMatch(geoName, "pittsburg")\` finds Pittsburgh. The string looked for is limited to 31 characters. ${ignoresCase}`, fuzzyArgs),
     documented('normalizeString', 1, 'string', (posArgs) => {

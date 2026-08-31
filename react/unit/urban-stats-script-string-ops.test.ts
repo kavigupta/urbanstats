@@ -69,6 +69,10 @@ void test('fuzzyMatch rejects a needle longer than bitap can hold', (): void => 
     )
 })
 
+void test('fuzzyMatch clamps maxErrors to the needle, rather than working through the number given', (): void => {
+    assert.deepStrictEqual(evaluateExpr('fuzzyMatch("Pittsburgh, PA", "philadelphia", maxErrors=1000000)'), undocValue(true, boolType))
+})
+
 void test('normalizeString folds a name the way search does', (): void => {
     assert.deepStrictEqual(evaluateExpr('normalizeString("Saint-Denis, \\u00CEle-de-France")'), undocValue('saint denis ile de france', stringType))
     assert.deepStrictEqual(evaluateExpr('normalizeString("Washington [DC] (USA)")'), undocValue('washington dc usa', stringType))
