@@ -67,7 +67,9 @@ export const stringConstants: [string, USSValue][] = [
         return (posArgs[0] as string).length
     }, 'string length', 'Returns the number of characters in the string.'),
     documented('replace', ['string', 'string', 'string'], 'string', (posArgs) => {
-        return (posArgs[0] as string).replaceAll(posArgs[1] as string, posArgs[2] as string)
+        // replaceAll reads $& and friends in the replacement even when searching for a literal
+        const replacement = (posArgs[2] as string).replaceAll('$', '$$$$')
+        return (posArgs[0] as string).replaceAll(posArgs[1] as string, replacement)
     }, 'replace', 'Replaces every occurrence of the target with the replacement, leaving the string alone if the target does not occur. Both are literal strings.'),
     documented('trim', ['string'], 'string', (posArgs) => {
         return (posArgs[0] as string).trim()

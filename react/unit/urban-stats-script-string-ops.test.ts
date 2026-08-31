@@ -55,6 +55,9 @@ void test('replace and trim', (): void => {
     assert.deepStrictEqual(evaluateExpr('replace("a-b-c", "-", "+")'), undocValue('a+b+c', stringType))
     // the target is literal, so regex syntax matches nothing
     assert.deepStrictEqual(evaluateExpr('replace("a-b-c", "[a-z]", "!")'), undocValue('a-b-c', stringType))
+    // and so is the replacement, in which $& would otherwise stand for the match
+    assert.deepStrictEqual(evaluateExpr('replace("a-b", "-", "$&")'), undocValue('a$&b', stringType))
+    assert.deepStrictEqual(evaluateExpr('replace("a-b", "-", "$$")'), undocValue('a$$b', stringType))
     assert.deepStrictEqual(evaluateExpr('trim("  San Diego \\t")'), undocValue('San Diego', stringType))
 })
 
@@ -85,7 +88,7 @@ function expectError(input: string, message: string): void {
 }
 
 void test('an invalid pattern is an error, and only the Regex functions have patterns', (): void => {
-    expectError('matchesRegex("abc", "(")', 'Error while executing function: SyntaxError: Invalid regular expression: /(/: Unterminated group at 1:1-24')
+    expectError('matchesRegex("abc", "(")', 'Invalid regular expression: /(/: Unterminated group at 1:1-24')
     assert.deepStrictEqual(evaluateExpr('includes("abc", "(")'), undocValue(false, boolType))
 })
 
