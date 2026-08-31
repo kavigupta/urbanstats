@@ -204,8 +204,10 @@ export function tableColumnExpression<M>(uss: MapUSS<M>, typeEnvironment: TypeEn
 }
 
 /**
- * What a parser hands back is a piece of the tree it was given, so it carries whatever that tree's
- * nodes carry. The parsers say nothing of that, being written for the shapes they match.
+ * Puts back what the parsers drop: they are written for the shapes they match, so a node they hand
+ * back is typed as a bare tree, though it is a piece of the one they were given and carries what
+ * that carries. Nothing checks the M asked for here, an unresolved one being assignable from
+ * anything, so ask for the tree's own.
  */
 function ofTheSameTree<M>(ast: UrbanStatsASTExpression): UrbanStatsASTExpression<M>
 function ofTheSameTree<M>(ast: UrbanStatsASTStatement): UrbanStatsASTStatement<M>
