@@ -104,22 +104,32 @@ export function categoricalAxisMarks(tickIdxs: number[], transpose: boolean, tic
 }
 
 // entries sharing a name (a region's multiple years, or its High/Low pair) stack onto one line in
-// the order given; a lone entry drops the name (or uses singleLabel, e.g. Histogram's "Frequency")
-export function groupedTipTitle(prefix: string, entries: { name: string, value: number }[], formatValue: (v: number) => string, singleLabel?: string): string {
-    const groups = new Map<string, number[]>()
+// the order given, headed by the subseries names; a lone entry drops the name (or uses singleLabel,
+// e.g. Histogram's "Frequency")
+export function groupedTipTitle(prefix: string, entries: { name: string, subseriesName: string, value: number }[], formatValue: (v: number) => string, singleLabel?: string): string {
+    const groups = new Map<string, { subseriesName: string, value: number }[]>()
     const nameOrder: string[] = []
     for (const entry of entries) {
         if (!groups.has(entry.name)) {
             groups.set(entry.name, [])
             nameOrder.push(entry.name)
         }
-        groups.get(entry.name)!.push(entry.value)
+        groups.get(entry.name)!.push(entry)
     }
     if (nameOrder.length === 1 && groups.get(nameOrder[0])!.length === 1) {
-        const value = groups.get(nameOrder[0])![0]
+        const { value } = groups.get(nameOrder[0])![0]
         return singleLabel !== undefined ? `${prefix}\n${singleLabel}: ${formatValue(value)}` : `${prefix}\n${formatValue(value)}`
     }
-    const lines = nameOrder.map(name => `${name}: ${groups.get(name)!.map(formatValue).join(' / ')}`)
+    const sequences = nameOrder.map(name => groups.get(name)!.map(entry => entry.subseriesName))
+    const labelSubseries = new Set(entries.map(entry => entry.subseriesName)).size > 1
+    // one header only lines up if every name carries the same subseries in the same order
+    const sharedHeader = labelSubseries && sequences.every(sequence => sequence.join('\u0000') === sequences[0].join('\u0000'))
+    const lines = nameOrder.map(name => `${name}: ${groups.get(name)!.map(entry =>
+        labelSubseries && !sharedHeader ? `${formatValue(entry.value)} (${entry.subseriesName})` : formatValue(entry.value),
+    ).join(' / ')}`)
+    if (sharedHeader) {
+        lines.unshift(sequences[0].join(' / '))
+    }
     return `${prefix}\n${lines.join('\n')}`
 }
 
@@ -198,7 +208,7 @@ export function seriesTip(
     const tipData = idxs.map(i => ({
         x: xFor(i),
         prefix: prefixFor(i),
-        entries: seriesData.map(s => ({ name: s.series.shortname, value: s.values[i] })),
+        entries: seriesData.map(s => ({ name: s.series.shortname, subseriesName: s.series.subseriesName, value: s.values[i] })),
     }))
     return transposeAwareTip(
         tipData,

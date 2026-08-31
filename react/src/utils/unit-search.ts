@@ -9,6 +9,9 @@ export interface Written {
 
 const artificialZeroCost = 100
 
+/** What a unit taken to a power that is not whole costs, in digits, against one that is. */
+const rootCost = 10
+
 /**
  * We charge 1 for every digit as printed, with two adjustments:
  * - a number rounded away to 0 is heavily penalized, unless in fixed point
@@ -50,8 +53,10 @@ function coverings(needed: Exponents, pool: NamedUnit[], settled: BaseUnit[] = [
     assert(power !== undefined, 'we filtered out undefined powers')
     return pool.flatMap((unit) => {
         const covers = exponentsOf(unit.dimensions)[baseUnit] ?? 0
-        // it has to take this base unit's exponent to exactly zero, and leave the settled ones be
-        if (covers === 0 || power % covers !== 0 || unit.dimensions.some(dimension => settled.includes(dimension.baseUnit))) {
+        // it has to take this base unit's exponent to exactly zero, and leave the settled ones be.
+        // A unit may be taken to any power, whole or not: a root of an area is written in roots of
+        // a square kilometre, one of which is a thousand roots of a square metre.
+        if (covers === 0 || unit.dimensions.some(dimension => settled.includes(dimension.baseUnit))) {
             return []
         }
         const times = power / covers
@@ -96,6 +101,8 @@ export function chooseUnits(
         const scale = scaledBy(written)
         const cost = written.reduce((total, { power, unit }) => total + unit.cost * Math.abs(power), 0)
             + Math.max(0, digitCost(scale(inBaseUnits), format) - 3)
+            // a length is written in feet rather than in roots of an acre, where feet will do
+            + written.filter(({ power }) => !Number.isInteger(power)).length * rootCost
         if (cost < bestCost) {
             best = { written, scale, format }
             bestCost = cost

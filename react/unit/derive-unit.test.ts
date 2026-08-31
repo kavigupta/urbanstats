@@ -12,7 +12,7 @@ function written(unit: StoredUnit | undefined, value = 1000, settings: UnitSetti
     if (unit === undefined) {
         return 'nothing'
     }
-    const quantity = writeQuantity(value, unit, settings, {})
+    const quantity = writeQuantity(value, unit, settings, 'byItself')
     return `${quantity.renderedValue}${reifyString(quantity.unitName, {})}`
 }
 
@@ -101,16 +101,56 @@ void test('a difference of two leads is written as the lead it is, and not twice
     assert.equal(written(unitOfMap('commute_bike - commute_transit'), 0.045), '+4.50%')
 })
 
-void test('a quantity with no writing is left to whatever its name is taken for', () => {
-    // a root of a count is in no unit any pool holds, and asking for one threw
-    assert.equal(mapUnit('population ** 0.5'), 'nothing')
-    // a count goes unnamed, so it can only be the one thing counted: people times an area would
-    // be written km^{2} and read as an area, and an area over people as an area too
-    assert.equal(mapUnit('population * area'), 'nothing')
-    assert.equal(mapUnit('area / population'), 'nothing')
-    assert.equal(mapUnit('traffic_fatalities / population'), 'nothing')
-    // where a count over something measured is written the way a density is
+void test('a count is written as nothing, whatever else it is multiplied by', () => {
+    // a root of a count is written as the plain number it is, the count having no name to raise
+    assert.equal(mapUnit('population ** 0.5'), '1\u202f000people^{0.5}')
+    // people times an area is written km^{2}, one of a count being named by the statistic counting
+    // it; an area over people says the people, there being no one of them to leave unsaid
+    assert.equal(mapUnit('population * area'), '1\u202f000km^{2}')
+    assert.equal(mapUnit('area / population'), '1\u202f000km^{2}/person')
+    assert.equal(mapUnit('traffic_fatalities / population'), '1\u202f000/person')
     assert.equal(mapUnit('traffic_fatalities / area'), '1\u202f000/km^{2}')
+    // a count is shortened only where it is the whole of what is written: a square of one is not
+    // written in squares of millions
+    assert.equal(written(unitOfMap('population'), 1.234e6), '1.23m')
+    assert.equal(written(unitOfMap('population * population'), 1e12), '1\u202f000\u202f000\u202f000\u202f000people^{2}')
+})
+
+void test('dollars and fatalities are counted the way people are', () => {
+    assert.equal(mapUnit('median_household_income_usd ** 0.5'), '1\u202f000dollars^{0.5}')
+    assert.equal(mapUnit('median_household_income_usd * median_household_income_usd'), '1\u202f000dollars^{2}')
+    assert.equal(mapUnit('area / median_household_income_usd'), '1\u202f000km^{2}/dollar')
+    assert.equal(mapUnit('traffic_fatalities ** 0.5'), '1\u202f000fatalities^{0.5}')
+    assert.equal(mapUnit('traffic_fatalities * traffic_fatalities'), '1\u202f000fatalities^{2}')
+    assert.equal(mapUnit('area / traffic_fatalities'), '1\u202f000km^{2}/fatality')
+    // one of a count goes unsaid above the solidus and is said under it, however many are counted
+    assert.equal(mapUnit('traffic_fatalities / population'), '1\u202f000/person')
+    assert.equal(mapUnit('median_household_income_usd / population'), '1\u202f000/person')
+    assert.equal(mapUnit('traffic_fatalities / (population * area)'), '1\u202f000/km^{2}·person')
+    assert.equal(mapUnit('population / traffic_fatalities ** 2'), '1\u202f000/fatality^{2}')
+    // and a root of one under the solidus is written the way a square of one is
+    assert.equal(mapUnit('area / population ** 0.5'), '1\u202f000km^{2}/person^{0.5}')
+    // a root of anything else is written the same way, in roots of the unit it is measured in
+    assert.equal(mapUnit('area ** 0.25'), '1\u202f000km^{0.5}')
+    assert.equal(written(unitOfMap('area ** 0.25'), 1000, { useImperial: true }), '788mi^{0.5}')
+    // where a whole power of a unit will do, it is taken: a root of an area is a length, and a
+    // length is written in miles rather than in roots of an acre
+    assert.equal(written(unitOfMap('area ** 0.5'), 1000, { useImperial: true }), '621mi')
+    assert.equal(mapUnit('area / traffic_fatalities ** 0.5'), '1\u202f000km^{2}/fatality^{0.5}')
+    assert.equal(mapUnit('population ** -0.5'), '1\u202f000/person^{0.5}')
+    assert.equal(mapUnit('population ** 1.5'), '1\u202f000people^{1.5}')
+})
+
+void test('a word is spaced off the number it follows, and a symbol is not', () => {
+    const inline = (data: string): string => {
+        const unit = unitOfMap(data)
+        assert.ok(unit)
+        const quantity = writeQuantity(1000, unit, {}, 'afterNumber')
+        return `${quantity.renderedValue}${reifyString(quantity.unitName, {})}`
+    }
+    assert.equal(inline('traffic_fatalities ** 0.5'), '1\u202f000\u00a0fatalities^{0.5}')
+    assert.equal(inline('area / traffic_fatalities'), '1\u202f000km^{2}/fatality')
+    assert.equal(inline('area'), '1\u202f000km^{2}')
 })
 
 void test('a reader in Celsius reads a difference of two temperatures as one', () => {

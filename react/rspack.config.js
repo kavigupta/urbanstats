@@ -32,6 +32,9 @@ export default env => ({
         clean: true,
     },
     resolve: {
+        alias: {
+            react$: path.resolve(import.meta.dirname, 'src/react-duplicate-keys.cjs'),
+        },
         // Add '.ts' and '.tsx' as resolvable extensions.
         extensions: ['', '.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
         extensionAlias: {

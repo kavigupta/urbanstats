@@ -1,4 +1,7 @@
-export type Disclaimer = 'heterogenous-sources' | 'election-small-region' | 'election-swing-small-region'
+export type Disclaimer =
+    | { kind: 'heterogenous-sources', sources: string[] }
+    | { kind: 'election-small-region' }
+    | { kind: 'election-swing-small-region' }
 
 /**
  * Returns election disclaimer when appropriate: election-small-region for Presidential Election-margin when population < 5000,
@@ -9,18 +12,18 @@ export function electionDisclaimerForRow(statpath: string | undefined, populatio
         return undefined
     }
     if (statpath.includes('Presidential Election-margin') && population < 5000) {
-        return 'election-small-region'
+        return { kind: 'election-small-region' }
     }
     if (statpath.includes('Swing-margin') && population < 10000) {
-        return 'election-swing-small-region'
+        return { kind: 'election-swing-small-region' }
     }
     return undefined
 }
 
 export function computeDisclaimerText(disclaimer: Disclaimer): string {
-    switch (disclaimer) {
+    switch (disclaimer.kind) {
         case 'heterogenous-sources':
-            return 'This statistic is based on data from multiple sources, which may not be consistent with each other.'
+            return `This statistic is based on data from multiple sources (${disclaimer.sources.join(', ')}), which may not be consistent with each other.`
         case 'election-small-region':
             return 'Election results based on disaggregation from precincts, might have inaccuracies for small regions'
         case 'election-swing-small-region':

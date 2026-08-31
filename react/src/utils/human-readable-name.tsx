@@ -10,7 +10,7 @@ import { trimTrailingZeros } from './text'
  * units they read in. On a page `reifyReact` asks, and writes it in those.
  */
 export function writtenPlainly(value: number, unit: StoredUnit, settings: UnitSettings): string {
-    const written = writeQuantity(value, unit, settings, {})
+    const written = writeQuantity(value, unit, settings, 'afterNumber')
     return `${trimTrailingZeros(written.renderedValue)}${reifyString(written.unitName, settings)}`
 }
 
@@ -49,7 +49,7 @@ export function reifyReact(elements: HumanReadableElement[] | string, settings: 
 
 /** One run of text, so that the unit cannot be rasterized a pixel off the number it belongs to. */
 function writtenQuantity(value: number, unit: StoredUnit, settings: UnitSettings): ReactNode {
-    const { renderedValue, unitName } = writeQuantity(value, unit, settings, {})
+    const { renderedValue, unitName } = writeQuantity(value, unit, settings, 'afterNumber')
     return (
         <>
             {trimTrailingZeros(renderedValue)}

@@ -13,10 +13,17 @@ urbanstatsFixture(
 test('heterogenous-sources disclaimer shows when comparing different sources', async (t) => {
     await t.resizeWindow(1400, 800)
     await t.expect(Selector('.disclaimer-toggle').count).eql(1, 'one disclaimer when sources differ')
-    await t.click(Selector('.disclaimer-toggle').nth(0))
-    await t.expect(
-        Selector('div').withExactText('This statistic is based on data from multiple sources, which may not be consistent with each other.').visible,
-    ).ok('heterogenous-sources disclaimer text visible after click')
+    await t.expect(Selector('[data-test-id=statistic-link]').withExactText('Population').exists).ok('no single source can label the collapsed row')
+    const toggle = Selector('.disclaimer-toggle').nth(0)
+    const popover = Selector('div').withExactText('This statistic is based on data from multiple sources (US Census, GHSL), which may not be consistent with each other.')
+    await t.click(toggle)
+    await t.expect(popover.visible).ok('heterogenous-sources disclaimer text visible after click')
+    const toggleBox = await toggle.boundingClientRect
+    const popoverBox = await popover.boundingClientRect
+    await t.expect(popoverBox.top).gte(toggleBox.bottom, 'popover sits below the button rather than over it')
+    await t.expect(popoverBox.width).gt(toggleBox.width * 4, 'popover is wide enough to read')
+    await t.click(Selector('.headertext'))
+    await t.expect(popover.visible).notOk('popover closes when clicking away')
     await screencap(t)
 })
 
