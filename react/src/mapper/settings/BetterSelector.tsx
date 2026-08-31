@@ -76,22 +76,30 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
         setSearchValue(selectedRendered.text)
     }, [selectedRendered.text])
 
-    const options = useMemo(() => {
-        return possibleValues.map((choice, index) => ({ renderedChoice: renderValue(choice), index }))
+    const { bitapBuffers, options } = useMemo(() => {
+        const optionsResult = possibleValues.map((choice, index) => ({ renderedChoice: renderValue(choice), index }))
+
+        const longestSelectionPossibility = optionsResult.reduce((acc, poss) => Math.max(acc, poss.renderedChoice.text.toLowerCase().length), 0)
+        const bitapBuffersResult = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(31 + longestSelectionPossibility + 1))
+
+        return {
+            options: optionsResult,
+            bitapBuffers: bitapBuffersResult,
+        }
     }, [possibleValues, renderValue])
 
     const sortedOptions = useMemo(() => {
         const needle = toNeedle(searchValue.toLowerCase().slice(0, 31))
 
         return options.sort((a, b) => {
-            const aScore = bitap(a.renderedChoice.text.toLowerCase(), needle, maxErrors)
-            const bScore = bitap(b.renderedChoice.text.toLowerCase(), needle, maxErrors)
+            const aScore = bitap(a.renderedChoice.text.toLowerCase(), needle, maxErrors, bitapBuffers)
+            const bScore = bitap(b.renderedChoice.text.toLowerCase(), needle, maxErrors, bitapBuffers)
             if (aScore === bScore) {
                 return a.renderedChoice.text.length - b.renderedChoice.text.length
             }
             return aScore - bScore
         })
-    }, [searchValue, options])
+    }, [bitapBuffers, searchValue, options])
 
     const handleOptionSelect = (option: typeof sortedOptions[number]): void => {
         const newValue = possibleValues[option.index]
