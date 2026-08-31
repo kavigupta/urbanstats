@@ -23,20 +23,31 @@ export function bitapAlphabet(token: string): Uint32Array {
     return alphabet
 }
 
+const encoder = new TextEncoder()
+
+// A needle longer than this doesn't fit in the bitap state word. Cutting bytes rather than
+// characters can split a character in half, which only makes a long non-ascii query looser.
+const maxNeedleBytes = 31
+
 export function toNeedle(token: string): Needle {
-    return { alphabet: bitapAlphabet(token), length: token.length, signature: toSignature(token) }
+    const bytes = encoder.encode(token).subarray(0, maxNeedleBytes)
+    const alphabet = new Uint32Array(256)
+    for (let i = 0; i < bytes.length; i++) {
+        alphabet[bytes[i]] = alphabet[bytes[i]] | (1 << i)
+    }
+    return { alphabet, length: bytes.length, signature: toSignature(token) }
 }
 
 export interface Haystack {
-    haystack: string
+    bytes: Uint8Array
+    start: number
+    end: number
     signature: number
 }
 
 export function toHaystack(token: string): Haystack {
-    return {
-        haystack: token,
-        signature: toSignature(token),
-    }
+    const bytes = encoder.encode(token)
+    return { bytes, start: 0, end: bytes.length, signature: toSignature(token) }
 }
 
 const alphabetStart = 'a'.charCodeAt(0)
@@ -98,11 +109,12 @@ export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scr
     }
 
     const matchMask = 1 << (needle.length - 1)
+    const haystackLength = haystack.end - haystack.start
 
     for (let j = 1; j <= (needle.length + maxErrors); j++) {
         let charMatch: number
-        if (j - 1 < haystack.haystack.length) {
-            charMatch = needle.alphabet[haystack.haystack.charCodeAt(j - 1)]
+        if (j - 1 < haystackLength) {
+            charMatch = needle.alphabet[haystack.bytes[haystack.start + j - 1]]
         }
         else {
             charMatch = 0
