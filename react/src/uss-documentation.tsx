@@ -18,6 +18,7 @@ import { DocumentationTable, renderType, USSDocumentedType } from './urban-stats
 import { constantsDocumentationData } from './uss-documentation-routing'
 import { codeStyle } from './utils/code-style'
 import { assert } from './utils/defensive'
+import { HumanReadableName } from './utils/human-readable-element'
 import { reifyReact } from './utils/human-readable-name'
 import { useHeaderTextClass } from './utils/responsive'
 
@@ -628,6 +629,7 @@ function ConstantsCategoryPageView(props: {
 }
 
 function DocumentationForCategory(props: { category: ConstantCategory, constants: [string, USSDocumentedType][] }): ReactNode {
+    const unitSettings = useUnitSettings()
     const withoutTable: [string, USSDocumentedType][] = []
     const categoryTables = new Map<DocumentationTable, [string, USSDocumentedType][]>()
     for (const [name, value] of props.constants) {
@@ -647,7 +649,7 @@ function DocumentationForCategory(props: { category: ConstantCategory, constants
 
     return (
         <>
-            <p style={{ marginLeft: '20px' }}>{getCategoryDescription(props.category)}</p>
+            <p style={{ marginLeft: '20px' }}>{reifyReact(getCategoryDescription(props.category), unitSettings)}</p>
             {withoutTable.map(([name, value]) => (
                 <LongFormDocumentation key={name} name={name} value={value} />
             ))}
@@ -782,7 +784,7 @@ function getCategoryTitle(category: ConstantCategory): string {
     }
 }
 
-function getCategoryDescription(category: ConstantCategory): string {
+function getCategoryDescription(category: ConstantCategory): HumanReadableName {
     switch (category) {
         case 'logic':
             return 'Boolean values and control flow constants.'
