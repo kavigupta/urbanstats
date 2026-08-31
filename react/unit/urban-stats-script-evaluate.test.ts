@@ -677,7 +677,7 @@ void test('more if expressions', (): void => {
                 ['f', undocValue(testFn1, testFnType)],
             ]))),
             (err: Error): boolean => {
-                return err instanceof InterpretationError && err.message === 'Error while executing function: Error: no default value for function type (number; a: number) -> number at 5:9-17'
+                return err instanceof InterpretationError && err.message === 'no default value for function type (number; a: number) -> number at 5:9-17'
             },
         )
     }
@@ -1276,7 +1276,7 @@ void test('colors', (): void => {
     assert.throws(
         () => evaluate(parseExpr('rgb(2, 0, 0)'), emptyContext()),
         (err: Error): boolean => {
-            return err instanceof Error && err.message === 'Error while executing function: Error: RGB values must be between 0 and 1, got (2, 0, 0, 1) at 1:1-12'
+            return err instanceof Error && err.message === 'RGB values must be between 0 and 1, got (2, 0, 0, 1) at 1:1-12'
         },
     )
     assert.deepStrictEqual(
@@ -1290,7 +1290,7 @@ void test('colors', (): void => {
     assert.throws(
         () => evaluate(parseExpr('hsv(400, 1, 0.5)'), emptyContext()),
         (err: Error): boolean => {
-            return err instanceof Error && err.message === 'Error while executing function: Error: HSV values must be (hue: 0-360, saturation: 0-1, value: 0-1, alpha: 0-1), got (400, 1, 0.5, 1) at 1:1-16'
+            return err instanceof Error && err.message === 'HSV values must be (hue: 0-360, saturation: 0-1, value: 0-1, alpha: 0-1), got (400, 1, 0.5, 1) at 1:1-16'
         },
     )
     assert.throws(
@@ -1330,7 +1330,7 @@ void test('ramps', (): void => {
     assert.throws(
         () => evaluate(parseExpr('constructRamp([{value: 0.1, color: rgb(0, 0, 0)}, {value: 1, color: rgb(1, 1, 1)}])'), emptyContext()),
         (err: Error): boolean => {
-            return err instanceof InterpretationError && err.message === 'Error while executing function: Error: Ramp must start at 0 and end at 1 at 1:1-83'
+            return err instanceof InterpretationError && err.message === 'Ramp must start at 0 and end at 1 at 1:1-83'
         },
     )
 
@@ -1338,7 +1338,7 @@ void test('ramps', (): void => {
     assert.throws(
         () => evaluate(parseExpr('constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 0.9, color: rgb(1, 1, 1)}])'), emptyContext()),
         (err: Error): boolean => {
-            return err instanceof Error && err.message === 'Error while executing function: Error: Ramp must start at 0 and end at 1 at 1:1-83'
+            return err instanceof Error && err.message === 'Ramp must start at 0 and end at 1 at 1:1-83'
         },
     )
 
@@ -1346,7 +1346,7 @@ void test('ramps', (): void => {
     assert.throws(
         () => evaluate(parseExpr('constructRamp([{value: 0, color: rgb(0, 0, 0)}, {value: 0.8, color: rgb(0.5, 0.5, 0.5)}, {value: 0.6, color: rgb(1, 1, 1)}, {value: 1.0, color: rgb(1, 1, 1)}])'), emptyContext()),
         (err: Error): boolean => {
-            return err instanceof Error && err.message === 'Error while executing function: Error: Ramp values must be strictly increasing, found 0.8 >= 0.6 at index 1 at 1:1-159'
+            return err instanceof Error && err.message === 'Ramp values must be strictly increasing, found 0.8 >= 0.6 at index 1 at 1:1-159'
         },
     )
 
@@ -1552,7 +1552,7 @@ void test('error map with different geo and data lengths', () => {
     assert.throws(
         () => evaluate(parseExpr('cMap(geo=geo, data=[1], scale=linearScale(), ramp=rampBone)'), ctx),
         (err: Error): boolean => {
-            return err.message === 'Error while executing function: Error: geo and data must have the same length: 2 and 1 at 1:1-59'
+            return err.message === 'geo and data must have the same length: 2 and 1 at 1:1-59'
         },
     )
 })

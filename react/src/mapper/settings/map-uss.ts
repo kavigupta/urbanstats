@@ -51,7 +51,8 @@ function parsePreambleCustomNodeAsMapUSS(stmt: UrbanStatsASTStatement): Preamble
 
 export function convertToMapUss(uss: UrbanStatsASTStatement): MapUSS {
     if (uss.type === 'expression' && uss.value.type === 'customNode') {
-        return uss.value
+        // Reparse so the code inside customNode("...") is located in the editor's block, not the enclosing one
+        return parseNoErrorAsCustomNode(uss.value.originalCode, rootBlockIdent)
     }
     if (uss.type === 'statements'
         && uss.result.length === 2
