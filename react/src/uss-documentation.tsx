@@ -647,7 +647,7 @@ function DocumentationForCategory(props: { category: ConstantCategory, constants
 
     return (
         <>
-            <p style={{ marginLeft: '20px' }}>{getCategoryDescription(props.category)}</p>
+            <div style={{ marginTop: '1em', marginBottom: '1em', marginLeft: '20px' }}>{getCategoryDescription(props.category)}</div>
             {withoutTable.map(([name, value]) => (
                 <LongFormDocumentation key={name} name={name} value={value} />
             ))}
@@ -773,6 +773,8 @@ function getCategoryTitle(category: ConstantCategory): string {
             return 'Statistical Analysis'
         case 'set':
             return 'Set Operations'
+        case 'string':
+            return 'String Operations'
         case 'basic':
             return 'Basic Functions'
         case 'mapper':
@@ -804,6 +806,34 @@ function getCategoryDescription(category: ConstantCategory): ReactNode {
             return 'Statistical analysis functions for linear regression.'
         case 'set':
             return 'Functions that treat vectors as sets, ignoring order and duplicates. Results are deduplicated and sorted in ascending order. Both arguments of a two-vector operation must have the same element type.'
+        case 'string':
+            return (
+                <>
+                    Functions for testing and transforming strings, mostly for filtering.
+                    <ul>
+                        <li>
+                            Arguments are literal strings rather than regex patterns, except in the functions whose names end in
+                            {' '}
+                            <code style={codeStyle}>Regex</code>
+                            , which take a regular expression in the JavaScript flavor.
+                        </li>
+                        <li>
+                            Comparisons are case-sensitive, so wrap both sides in
+                            {' '}
+                            <code style={codeStyle}>lower</code>
+                            {' '}
+                            to ignore case.
+                        </li>
+                        <li>Positions count from 0.</li>
+                        <li>
+                            A backslash in a regex pattern must be written twice, as in
+                            {' '}
+                            <code style={codeStyle}>{'"\\\\d"'}</code>
+                            , because a string literal reads a pair of backslashes as one.
+                        </li>
+                    </ul>
+                </>
+            )
         case 'basic':
             return 'Basic utility functions for type conversion and common operations.'
         case 'mapper':
