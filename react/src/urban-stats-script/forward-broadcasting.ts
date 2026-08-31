@@ -297,7 +297,7 @@ function mapSeveral(
             if (e instanceof InterpretationError) {
                 throw e
             }
-            throw ctx.error(`Error while executing function: ${e}`, locInfo)
+            throw ctx.error(e instanceof Error ? e.message : String(e), locInfo)
         }
     }
     assert(Array.isArray(fn), `Expected an array of functions, but got ${typeof fn}`)
