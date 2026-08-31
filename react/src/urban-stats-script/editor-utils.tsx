@@ -176,7 +176,7 @@ function getContainerOffset(node: Node, position: number): [Node, number] {
     return [node, position - offset]
 }
 
-function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseError, content: (Node | string)[]) => HTMLSpanElement {
+function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | EditorError, content: (Node | string)[]) => HTMLSpanElement {
     const brackets = new DefaultMap<string, number>(() => 0)
 
     const basicConstants = ['true', 'false', 'null']
@@ -229,7 +229,7 @@ function spanFactory(colors: Colors): (token: AnnotatedToken['token'] | ParseErr
                 break
             case 'error':
                 // Safari doesn't support the shorthand 🙄
-                style['text-decoration-color'] = colors.hueColors.red
+                style['text-decoration-color'] = 'kind' in token && token.kind === 'warning' ? colors.hueColors.orange : colors.hueColors.red
                 style['text-decoration-style'] = 'wavy'
                 style['text-decoration-line'] = 'underline'
                 style['text-decoration-skip-ink'] = 'none'

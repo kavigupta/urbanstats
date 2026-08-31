@@ -12,6 +12,7 @@
     "unused-exports": "knip --include exports",
     "test:e2e": "tsx test/scripts/run-e2e-tests.ts",
     "test:unit": "tsx --experimental-test-module-mocks unit/scripts/run-unit-tests.ts",
+    "bench:search": "tsx unit/scripts/search-bench.ts",
     "test:unit:coverage": "c8 --reporter=text --reporter=clover tsx --experimental-test-module-mocks unit/scripts/run-unit-tests.ts",
     "og-preview": "./cf-og-worker/preview.sh"
   },
@@ -84,6 +85,7 @@
     "@dnd-kit/core": "^6.0.6",
     "@dnd-kit/sortable": "^7.0.1",
     "@fontsource/inconsolata": "^5.2.6",
+    "@formatjs/intl-segmenter": "^12.2.13",
     "@mapbox/geojson-extent": "^1.0.1",
     "@mapbox/vector-tile": "^1.3.1",
     "@observablehq/plot": "^0.6.16",

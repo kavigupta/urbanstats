@@ -4,7 +4,7 @@ import React, { ReactNode, useState, useEffect, useRef, useMemo, CSSProperties, 
 import { useColors } from '../../page_template/colors'
 import { IFrameInput } from '../../utils/IFrameInput'
 import { TestUtils } from '../../utils/TestUtils'
-import { toNeedle } from '../../utils/bitap'
+import { bitapAlphabet } from '../../utils/bitap'
 import { bitap } from '../../utils/bitap-selector'
 import { zIndex } from '../../utils/zIndex'
 
@@ -76,30 +76,24 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
         setSearchValue(selectedRendered.text)
     }, [selectedRendered.text])
 
-    const { bitapBuffers, options } = useMemo(() => {
-        const optionsResult = possibleValues.map((choice, index) => ({ renderedChoice: renderValue(choice), index }))
-
-        const longestSelectionPossibility = optionsResult.reduce((acc, poss) => Math.max(acc, poss.renderedChoice.text.toLowerCase().length), 0)
-        const bitapBuffersResult = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(31 + longestSelectionPossibility + 1))
-
-        return {
-            options: optionsResult,
-            bitapBuffers: bitapBuffersResult,
-        }
-    }, [possibleValues, renderValue])
+    const options = useMemo(
+        () => possibleValues.map((choice, index) => ({ renderedChoice: renderValue(choice), index })),
+        [possibleValues, renderValue],
+    )
 
     const sortedOptions = useMemo(() => {
-        const needle = toNeedle(searchValue.toLowerCase().slice(0, 31))
+        const text = searchValue.toLowerCase().slice(0, 31)
+        const needle = { alphabet: bitapAlphabet(text), length: text.length }
 
         return options.sort((a, b) => {
-            const aScore = bitap(a.renderedChoice.text.toLowerCase(), needle, maxErrors, bitapBuffers)
-            const bScore = bitap(b.renderedChoice.text.toLowerCase(), needle, maxErrors, bitapBuffers)
+            const aScore = bitap(a.renderedChoice.text.toLowerCase(), needle, maxErrors)
+            const bScore = bitap(b.renderedChoice.text.toLowerCase(), needle, maxErrors)
             if (aScore === bScore) {
                 return a.renderedChoice.text.length - b.renderedChoice.text.length
             }
             return aScore - bScore
         })
-    }, [bitapBuffers, searchValue, options])
+    }, [searchValue, options])
 
     const handleOptionSelect = (option: typeof sortedOptions[number]): void => {
         const newValue = possibleValues[option.index]

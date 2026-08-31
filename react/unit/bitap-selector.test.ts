@@ -6,8 +6,7 @@ import { bitap } from '../src/utils/bitap-selector'
 
 const errors = (testFn: (name: string, testBlock: () => void) => void) => (haystack: string, needle: string, maxErrors: number, result: number): void => {
     testFn(`Number of errors looking for ${needle} in ${haystack} with maxErrors=${maxErrors} is ${result}`, () => {
-        const bitapBuffers = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(needle.length + haystack.length + 1))
-        assert.deepEqual(bitap(haystack, { alphabet: bitapAlphabet(needle), length: needle.length }, maxErrors, bitapBuffers), result)
+        assert.deepEqual(bitap(haystack, { alphabet: bitapAlphabet(needle), length: needle.length }, maxErrors), result)
     })
 }
 
@@ -21,3 +20,5 @@ errors(test)('true', 'str', 1, 1)
 errors(test)('abc', 'def', 1, 2)
 errors(test)('def', 'ab def', 31, 3)
 errors(test)('Population Change (2010-2020)', 'PW Density (r=1km)', 31, 14)
+errors(test)('abcd', '', 31, 0)
+errors(test)('abcd', 'abcd', 1000, 0) // more errors than the needle has characters

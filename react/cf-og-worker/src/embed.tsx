@@ -221,6 +221,9 @@ function formatValue(value: number, unit: StoredUnit, units: Units, fontSize: nu
     ]
 }
 
+const articleNameSize = 24
+const articleValueSize = 26
+
 function row(stat: ArticleCard['stats'][number], index: number, units: Units): ReactElement {
     return (
         <div
@@ -228,12 +231,12 @@ function row(stat: ArticleCard['stats'][number], index: number, units: Units): R
             style={{
                 display: 'flex',
                 alignItems: 'center',
-                padding: '10px 0',
+                padding: `${rowPadding}px 0`,
                 borderTop: index === 0 ? `2px solid ${colors.text}` : `1px solid ${colors.rule}`,
             }}
         >
-            <div style={{ flex: 1, fontSize: 24 }}>{stat.name}</div>
-            <div style={{ width: 170, fontSize: 26, justifyContent: 'flex-end', display: 'flex' }}>{formatValue(stat.value, unitTypeToStoredUnit(unitForStatistic(stat.name)), units, 26)}</div>
+            <div style={{ flex: 1, fontSize: articleNameSize }}>{stat.name}</div>
+            <div style={{ width: 170, fontSize: articleValueSize, justifyContent: 'flex-end', display: 'flex' }}>{formatValue(stat.value, unitTypeToStoredUnit(unitForStatistic(stat.name)), units, articleValueSize)}</div>
             <div style={{ width: 60, fontSize: 20, color: colors.muted, justifyContent: 'flex-end', display: 'flex' }}>
                 {`${stat.percentile}${percentileSuffix(stat.percentile)}`}
             </div>
@@ -241,16 +244,19 @@ function row(stat: ArticleCard['stats'][number], index: number, units: Units): R
     )
 }
 
-/** Sized the way the header's flag is: a fixed height, with the site's cap on a wide flag. */
+/** A fixed height, with the site's cap on a wide flag, the way the header sizes one. */
+function flagWidth(universe: string, image: string | undefined): number {
+    return image === undefined ? 0 : 76 * Math.min(flagDimensions[universe], 1.8)
+}
+
 function flag(universe: string, image: string | undefined): ReactElement {
     if (image === undefined) {
         return <div style={{ display: 'flex' }}></div>
     }
-    const aspectRatio = flagDimensions[universe]
-    const width = 76 * Math.min(aspectRatio, 1.8)
+    const width = flagWidth(universe, image)
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-            <img src={image} width={width} height={width / aspectRatio} />
+            <img src={image} width={width} height={width / flagDimensions[universe]} />
             <div style={{ display: 'flex', fontSize: 16, color: colors.muted, marginTop: 6 }}>UNIVERSE</div>
         </div>
     )
@@ -427,6 +433,34 @@ export async function mapEmbedCard(map: MapCard, { width, height }: { width: num
 export async function embedCard(article: ArticleCard, rings: Ring[], { width, height }: { width: number, height: number }, tileOrigin: string): Promise<ReactElement> {
     installHooks()
     const mapSize = { width: 380, height: 340 }
+    const padding = { x: 48, y: 36 }
+    const mapGap = 32
+    const headerGap = 16
+    const titleGap = 24
+    const subtitleSize = 26
+    const content = width - padding.x * 2
+
+    // Shrunk rather than wrapped: a second line of the title costs the table two of its rows.
+    const titleWidth = content - titleGap - flagWidth(article.universe, article.flag)
+    const titleSize = sizeToFit([article.shortname], titleWidth, 1, 60, 40, boldCharacterWidth)
+    const titleLines = linesTaken(article.shortname, titleWidth, titleSize, boldCharacterWidth)
+
+    // What a row's name cell is left once the map, the value and the ordinal have taken theirs.
+    const nameColumn = content - (rings.length === 0 ? 0 : mapSize.width) - mapGap - 170 - 60
+    let budget = height - padding.y * 2 - (titleLines * titleSize + subtitleSize) * jostLineHeight
+        - headerGap - footerSize * logoHeight
+    const stats: ArticleCard['stats'] = []
+    for (const stat of article.stats) {
+        const name = linesTaken(stat.name, nameColumn, articleNameSize) * articleNameSize
+        // Plus the rule above the row, which is thicker over the first of them.
+        const takes = rowPadding * 2 + Math.max(name, articleValueSize) * jostLineHeight + (stats.length === 0 ? 2 : 1)
+        if (takes > budget) {
+            break
+        }
+        budget -= takes
+        stats.push(stat)
+    }
+
     return (
         <div
             style={{
@@ -437,24 +471,24 @@ export async function embedCard(article: ArticleCard, rings: Ring[], { width, he
                 backgroundColor: colors.background,
                 color: colors.text,
                 fontFamily: 'Jost',
-                padding: '36px 48px',
+                padding: `${padding.y}px ${padding.x}px`,
             }}
         >
-            <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 16 }}>
-                <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingRight: 24, overflow: 'hidden' }}>
-                    <div style={{ fontSize: 60, fontWeight: 600 }}>{article.shortname}</div>
-                    <div style={{ fontSize: 26, color: colors.muted }}>{article.longname}</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: headerGap }}>
+                <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingRight: titleGap, overflow: 'hidden' }}>
+                    <div style={{ fontSize: titleSize, fontWeight: 600 }}>{article.shortname}</div>
+                    <div style={{ fontSize: subtitleSize, color: colors.muted }}>{article.longname}</div>
                 </div>
                 {flag(article.universe, article.flag)}
             </div>
             <div style={{ display: 'flex', flex: 1, alignItems: 'flex-start' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingRight: 32 }}>
-                    {article.stats.map((stat, index) => row(stat, index, article.units))}
+                <div style={{ display: 'flex', flexDirection: 'column', flex: 1, paddingRight: mapGap }}>
+                    {stats.map((stat, index) => row(stat, index, article.units))}
                 </div>
                 {rings.length === 0 ? <div style={{ display: 'flex' }}></div> : await mapPanel([{ rings, color: colors.shape }], mapSize, tileOrigin)}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 24, color: colors.muted, alignItems: 'center' }}>
-                {wordmark(24)}
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: footerSize, color: colors.muted, alignItems: 'center' }}>
+                {wordmark(footerSize)}
                 <div style={{ display: 'flex', fontSize: 18 }}>{rings.length === 0 ? '' : tileAttribution}</div>
             </div>
         </div>
@@ -483,7 +517,10 @@ function qualifier(shortname: string, longname: string): string {
 const characterWidth = 0.5
 // The regions' names are set semibold, whose average character is wider.
 const boldCharacterWidth = 0.56
+// What the tables set on their rows and work their heights out from.
 const lineHeight = 1.3
+// Jost's own, which text that sets none is laid out at.
+const jostLineHeight = 1.445
 
 function linesTaken(text: string, columnWidth: number, fontSize: number, charWidth = characterWidth): number {
     const perLine = Math.max(1, Math.floor(columnWidth / (fontSize * charWidth)))

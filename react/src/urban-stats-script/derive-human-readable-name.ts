@@ -1,4 +1,4 @@
-import { editableMapData, MapUSS, mapUssParser, ofTheSameTree, read, tableColumnExpression } from '../mapper/settings/map-uss'
+import { editableMapData, MapUSS, mapUssParser, read, tableColumnExpression } from '../mapper/settings/map-uss'
 import { assert } from '../utils/defensive'
 import { HumanReadableElement, HumanReadableName } from '../utils/human-readable-element'
 import { joinHumanReadableNames } from '../utils/human-readable-name'
@@ -216,14 +216,14 @@ function statedMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanRea
 
 export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
     const { ast: factored } = unitCheck(uss, typeEnvironment)
-    const result = read(editableMapData, factored, typeEnvironment)
+    const result = read(editableMapData<ReadInUnits>(), factored, typeEnvironment)
     if (result?.currentValue.namedArgs.data === undefined) return
-    const dataLabel = humanReadableElements(ofTheSameTree<ReadInUnits>(result.currentValue.namedArgs.data), typeEnvironment)
+    const dataLabel = humanReadableElements((result.currentValue.namedArgs.data), typeEnvironment)
     if (dataLabel === undefined) return
     // Replace the map call with just the data description to simplify the label (we know it's a map)
     const withMapCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: dataLabel }, location: noLocation } })
     assert(withMapCallReplacedByDataLabel !== undefined, 'should not happen')
-    return humanReadableElements(ofTheSameTree<ReadInUnits>(withMapCallReplacedByDataLabel), typeEnvironment)
+    return humanReadableElements((withMapCallReplacedByDataLabel), typeEnvironment)
 }
 
 export function mapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
@@ -243,13 +243,13 @@ function statedTableTitle(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanR
 }
 
 /** Every column's name, stated or derived. Undefined if any one of them cannot be read. */
-const statedColumnNames = mapUssParser(l.call({
+const statedColumnNames = mapUssParser<{ namedArgs: { columns: { namedArgs: { values: Expression | undefined, name: string | undefined } }[] } }, ReadInUnits>(l.call({
     fn: l.ignore(),
     namedArgs: {
         columns: l.vector(l.call({
             fn: l.ignore(),
             namedArgs: {
-                values: l.passthrough(),
+                values: l.passthrough<ReadInUnits>(),
                 name: l.optional(l.string()),
             },
             unnamedArgs: [],
@@ -268,7 +268,7 @@ function tableColumnLabels(uss: MapUSS, typeEnvironment: TypeEnvironment): Human
         if (column.namedArgs.name !== undefined) {
             return parseHumanReadableTemplate(column.namedArgs.name)
         }
-        return column.namedArgs.values === undefined ? undefined : humanReadableElements(ofTheSameTree<ReadInUnits>(column.namedArgs.values), typeEnvironment)
+        return column.namedArgs.values === undefined ? undefined : humanReadableElements((column.namedArgs.values), typeEnvironment)
     })
     return labels.every(label => label !== undefined) ? labels : undefined
 }
@@ -317,7 +317,7 @@ export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, 
     // Replace the table call with just the column to simplify the label (we know it's a table)
     const withTableCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: joinHumanReadableNames(columnNames) }, location: noLocation } })
     assert(withTableCallReplacedByDataLabel !== undefined, 'should not happen')
-    return humanReadableElements(ofTheSameTree<ReadInUnits>(withTableCallReplacedByDataLabel), typeEnvironment)
+    return humanReadableElements((withTableCallReplacedByDataLabel), typeEnvironment)
 }
 
 /**

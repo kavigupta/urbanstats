@@ -59,6 +59,7 @@ nthResult(test)(0, 'dalas', 'Dallas city, Texas, USA') // Correct for misspellin
 nthResult(test)(0, 'ventura city', 'San Buenaventura (Ventura) city, California, USA') // handles alias
 nthResult(test)(0, 'france-germany', 'Saarbrücken Metropolitan Cluster, Germany-France') // reach test, should find something in both
 nthResult(test)(0, 'united states of america', 'United States of America') // symlink
+nthResult(test)(0, '龙港市', '龙港市 Urban Center, China') // haystacks are utf8 bytes, so non-latin names must survive
 
 nthResult(test)(0, 'san jose', 'San Jose city, California, USA', 'City')
 nthResult(test)(0, 'london', 'London Population Center, ON, Canada', 'CA Population Center')

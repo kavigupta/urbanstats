@@ -358,6 +358,20 @@ test('histogram-article-multiple-years', async (t) => {
     await downloadOrCheckHistogram(t, 'histogram-article-multiple-years')
 })
 
+// The years used to go unnamed in the tooltip, which just repeated the region name once per year.
+test('histogram-article-multiple-years-tooltip', async (t) => {
+    await t.resizeWindow(1400, 800)
+    await checkTextboxes(t, ['2010', '2000'])
+    await t.click(Selector('.expand-toggle'))
+    await t.hover(Selector('.histogram-svg-panel'), { offsetX: 500, offsetY: 200 })
+    const tip = Selector('g[aria-label="tip"] tspan')
+    await t.expect(tip.withText(/^.?2020 \/ 2010 \/ 2000$/).exists).ok('the tooltip should name the years its stacked values are in')
+    await t.expect(tip.withText(/^.?Pasadena CCD: [\d.]+% \/ [\d.]+% \/ [\d.]+%$/).exists).ok('one line per region, one value per year')
+
+    // fullPage would hover the corner of the page first, which would take the tooltip away with it
+    await screencap(t, { fullPage: false, selector: Selector('.histogram-svg-panel') })
+})
+
 urbanstatsFixture('histogram comparison multiple years', comparisonPage([pasadena, upperSGV]))
 
 test('histogram-comparison-multiple-years', async (t) => {

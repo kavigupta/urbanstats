@@ -138,6 +138,20 @@ void test('constant listing', (): void => {
                 'isDisjoint',
                 'setEquals',
             ],
+            '(string, string; normalize: boolean = true) -> boolean': [
+                'startsWith',
+                'endsWith',
+                'includes',
+            ],
+            '(string, string; maxErrors: number = 2, normalize: boolean = true) -> boolean': [
+                'fuzzyMatch',
+            ],
+            '(string; ) -> string': [
+                'normalizeString',
+            ],
+            '(string, string; ) -> boolean': [
+                'matchesRegex',
+            ],
 
             '(any; ) -> number': [
                 'toNumber',
