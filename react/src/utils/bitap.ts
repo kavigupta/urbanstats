@@ -82,15 +82,25 @@ export const bitapPerformance = {
     numBitapSignatureSkips: 0,
 }
 
+// A run only ever reads the column before the one it writes, so two columns of one word per error
+// count are enough. Shared and grown to the largest ask, since only one run happens at a time.
+let previousColumn = new Uint32Array(0)
+let currentColumn = new Uint32Array(0)
+
+export function bitapColumns(rows: number): [Uint32Array, Uint32Array] {
+    if (previousColumn.length < rows) {
+        previousColumn = new Uint32Array(rows)
+        currentColumn = new Uint32Array(rows)
+    }
+    return [previousColumn, currentColumn]
+}
+
 /**
  * Finds the minimum number of edits between `haystack` and `needle` (assuming they have the same start position)
  *
  * Returns [0, maxErrors + 1], where maxErrors + 1 means a match was not found with lte maxErrors errors
- *
- * Takes scratch buffers, which must be an array of at least length maxErrors + 1 length, filled with Uint32Arrays of at least (needle.length + maxErrors + 1) length
- *
  */
-export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scratchBuffers: Uint32Array[]): number {
+export function bitap(haystack: Haystack, needle: Needle, maxErrors: number): number {
     let bestMatch = maxErrors + 1
 
     if (maxErrors < 0) {
@@ -103,9 +113,9 @@ export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scr
         return bestMatch // The letters in the haystack and needle are too different to possibly match
     }
 
+    let [previous, current] = bitapColumns(maxErrors + 1)
     for (let errors = 0; errors <= maxErrors; errors++) {
-        scratchBuffers[errors].fill(0)
-        scratchBuffers[errors][0] = (1 << errors) - 1
+        previous[errors] = (1 << errors) - 1
     }
 
     const matchMask = 1 << (needle.length - 1)
@@ -122,13 +132,13 @@ export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scr
 
         for (let errors = 0; errors <= maxErrors; errors++) {
             if (errors === 0) {
-                scratchBuffers[0][j] = ((scratchBuffers[0][j - 1] << 1) | 1) & charMatch
+                current[0] = ((previous[0] << 1) | 1) & charMatch
             }
             else {
-                scratchBuffers[errors][j] = (((scratchBuffers[errors][j - 1] << 1) | 1) & charMatch) | (((scratchBuffers[errors - 1][j - 1] | scratchBuffers[errors - 1][j]) << 1) | 1) | scratchBuffers[errors - 1][j - 1]
+                current[errors] = (((previous[errors] << 1) | 1) & charMatch) | (((previous[errors - 1] | current[errors - 1]) << 1) | 1) | previous[errors - 1]
             }
 
-            if ((scratchBuffers[errors][j] & matchMask) !== 0) {
+            if ((current[errors] & matchMask) !== 0) {
                 bestMatch = Math.min(bestMatch, Math.max(Math.abs(j - needle.length), errors))
                 maxErrors = Math.min(maxErrors, errors)
                 if (bestMatch === 0) {
@@ -136,6 +146,10 @@ export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scr
                 }
             }
         }
+
+        const finished = previous
+        previous = current
+        current = finished
     }
     return bestMatch
 }
