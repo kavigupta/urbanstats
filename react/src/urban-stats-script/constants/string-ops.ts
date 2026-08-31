@@ -29,10 +29,12 @@ function documented(
     }] satisfies [string, USSValue]
 }
 
-const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+/** Constructed on first use, so that a browser needing the polyfill can install it first. */
+let segmenter: Intl.Segmenter | undefined
 
 /** Code-unit offsets where each grapheme begins, ending with the string's length. */
 function graphemeStarts(value: string): number[] {
+    segmenter ??= new Intl.Segmenter(undefined, { granularity: 'grapheme' })
     const starts: number[] = []
     for (const { index } of segmenter.segment(value)) {
         starts.push(index)
