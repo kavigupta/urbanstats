@@ -7,6 +7,7 @@ import { mapperContext, defaultTypeEnvironment, loadInsets } from '../mapper/con
 import { indexLink } from '../navigation/links'
 import { Universe } from '../universe'
 import { assert } from '../utils/defensive'
+import { installSegmenterPolyfill } from '../utils/segmenter'
 
 import { locationOfLastExpression } from './ast'
 import { Context } from './context'
@@ -39,6 +40,7 @@ async function executeRequest(request: USSExecutionRequest, cache: ExecutorCache
     let context, getWarnings
     try {
         ([context, getWarnings] = await contextForRequest(request, cache))
+        await installSegmenterPolyfill()
         const result = execute(request.stmts, context)
 
         switch (request.descriptor.kind) {
