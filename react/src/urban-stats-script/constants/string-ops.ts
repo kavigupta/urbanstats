@@ -90,17 +90,6 @@ function toBitapNeedle(token: string): { alphabet: Uint32Array, length: number }
     return needle
 }
 
-/** bitap fills these in, so they only have to be big enough, and they grow to the largest ask. */
-let scratch: Uint32Array[] = []
-
-function scratchBuffers(rows: number, width: number): Uint32Array[] {
-    if (scratch.length < rows || scratch[0].length < width) {
-        const size = Math.max(width, scratch[0]?.length ?? 0)
-        scratch = Array.from({ length: Math.max(rows, scratch.length) }, () => new Uint32Array(size))
-    }
-    return scratch
-}
-
 /** Broadcasting calls the function once per element, almost always with the same pattern. */
 const regexCache = new Map<string, RegExp>()
 
@@ -158,10 +147,8 @@ export const stringConstants: [string, USSValue][] = [
         if (token.length > 31) {
             throw new Error(`fuzzyMatch can look for at most 31 characters, but was given ${token.length}`)
         }
-        // Past token.length every string matches, so a huge maxErrors only costs work.
-        const maxErrors = Math.min(Math.max(Math.trunc(namedArgs.maxErrors as number), 0), token.length)
-        const buffers = scratchBuffers(maxErrors + 1, token.length + value.length + 1)
-        return bitap(value, toBitapNeedle(token), maxErrors, buffers) <= maxErrors
+        const maxErrors = Math.max(Math.trunc(namedArgs.maxErrors as number), 0)
+        return bitap(value, toBitapNeedle(token), maxErrors) <= maxErrors
     }, 'fuzzy match', hre`Returns true if the second string occurs in the first allowing up to \`maxErrors\` single-character insertions, deletions or substitutions, so that \`fuzzyMatch(geoName, "pittsburg")\` finds Pittsburgh. The string looked for is limited to 31 characters. ${ignoresCase}`, fuzzyArgs),
     documented('normalizeString', 1, 'string', (posArgs) => {
         return normalize(posArgs[0] as string)

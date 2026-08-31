@@ -278,20 +278,13 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
         return []
     }
 
-    let longestPatternToken = 0
-    const patternTokens = tokenize(pattern).map((token) => {
-        const needle = toNeedle(token)
-        longestPatternToken = Math.max(longestPatternToken, needle.length)
-        return needle
-    })
+    const patternTokens = tokenize(pattern).map(toNeedle)
 
     const results: Result[] = []
 
     const maxErrors = 2
     const maxMatchScore = patternTokens.length * (maxErrors + 1)
     const maxPositionScore = patternTokens.length * Math.max(patternTokens.length, searchIndex.lengthOfLongestToken)
-
-    const bitapBuffers = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(longestPatternToken + maxErrors + 1))
 
     const haystack: Haystack = { bytes: searchIndex.tokenBytes, start: 0, end: 0, signature: 0 }
 
@@ -352,7 +345,7 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
                 haystack.start = searchIndex.tokenOffsets[tokenId]
                 haystack.end = searchIndex.tokenOffsets[tokenId + 1]
                 haystack.signature = searchIndex.tokenSignatures[tokenId]
-                const searchResult = bitap(haystack, needle, maxErrors, bitapBuffers)
+                const searchResult = bitap(haystack, needle, maxErrors)
                 const positionResult = Math.abs(patternTokenIndex - entryTokenIndex)
                 const incompleteMatchResult = Math.abs((haystack.end - haystack.start) - needle.length) - searchResult !== 0
                 if (searchResult < tokenMatchScore || (searchResult <= tokenMatchScore && positionResult < tokenPositionScore) || (searchResult <= tokenMatchScore && positionResult <= tokenPositionScore && incompleteMatchResult < tokenIncompleteMatch)) {

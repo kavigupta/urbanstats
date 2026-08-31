@@ -5,8 +5,7 @@ import { bitap, toHaystack, toNeedle, toSignature } from '../src/utils/bitap'
 
 const errors = (testFn: (name: string, testBlock: () => void) => void) => (haystack: string, needle: string, maxErrors: number, result: number): void => {
     testFn(`Number of errors looking for ${needle} in ${haystack} with maxErrors=${maxErrors} is ${result}`, () => {
-        const bitapBuffers = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(needle.length + maxErrors + 1))
-        assert.equal(bitap(toHaystack(haystack), toNeedle(needle), maxErrors, bitapBuffers), result)
+        assert.equal(bitap(toHaystack(haystack), toNeedle(needle), maxErrors), result)
     })
 }
 
