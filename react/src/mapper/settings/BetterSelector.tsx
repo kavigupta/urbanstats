@@ -4,7 +4,7 @@ import React, { ReactNode, useState, useEffect, useRef, useMemo, CSSProperties, 
 import { useColors } from '../../page_template/colors'
 import { IFrameInput } from '../../utils/IFrameInput'
 import { TestUtils } from '../../utils/TestUtils'
-import { toNeedle } from '../../utils/bitap'
+import { bitapAlphabet } from '../../utils/bitap'
 import { bitap } from '../../utils/bitap-selector'
 import { zIndex } from '../../utils/zIndex'
 
@@ -89,7 +89,8 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
     }, [possibleValues, renderValue])
 
     const sortedOptions = useMemo(() => {
-        const needle = toNeedle(searchValue.toLowerCase().slice(0, 31))
+        const text = searchValue.toLowerCase().slice(0, 31)
+        const needle = { alphabet: bitapAlphabet(text), length: text.length }
 
         return options.sort((a, b) => {
             const aScore = bitap(a.renderedChoice.text.toLowerCase(), needle, maxErrors, bitapBuffers)
