@@ -140,10 +140,6 @@ export function bitap(haystack: Haystack, needle: Needle, maxErrors: number): nu
 
             if ((current[errors] & matchMask) !== 0) {
                 bestMatch = Math.min(bestMatch, Math.max(Math.abs(j - needle.length), errors))
-                maxErrors = Math.min(maxErrors, errors)
-                if (bestMatch === 0) {
-                    return bestMatch // We've found the best match we possibly can
-                }
             }
         }
 
