@@ -39,24 +39,31 @@ export function toHaystack(token: string): Haystack {
     }
 }
 
+const alphabetStart = 'a'.charCodeAt(0)
+const alphabetEnd = 'z'.charCodeAt(0)
+
+// A signature has one bit per letter, plus six spare bits for second occurences. Those go to the
+// letters that are most often repeated within a name.
+const secondOccurenceBits = new Uint32Array(alphabetEnd - alphabetStart + 1)
+for (const [i, letter] of ['a', 'e', 'i', 'o', 'r', 's'].entries()) {
+    secondOccurenceBits[letter.charCodeAt(0) - alphabetStart] = 1 << (26 + i)
+}
+
 export function toSignature(str: string): number {
-    const alphabetStart = 'a'.charCodeAt(0)
-    const alphabetEnd = 'z'.charCodeAt(0)
-    // 0 < alphabetEnd - alphabetStart < 26   because of javascript integer size
     let result = 0
     for (let i = 0; i < str.length; i++) {
         const charCode = str.charCodeAt(i)
         if (charCode >= alphabetStart && charCode <= alphabetEnd) {
-            const firstOccurence = (1 << ((charCode - alphabetStart) * 2))
+            const firstOccurence = (1 << (charCode - alphabetStart))
             if ((result & firstOccurence) !== 0) {
-                result |= (firstOccurence << 1) // second occurence
+                result |= secondOccurenceBits[charCode - alphabetStart]
             }
             else {
                 result |= firstOccurence
             }
         }
     }
-    return result
+    return result >>> 0
 }
 
 export const bitapPerformance = {
@@ -121,15 +128,10 @@ export function bitap(haystack: Haystack, needle: Needle, maxErrors: number, scr
     return bestMatch
 }
 
-export function bitCount(x: number): number {
-    return bitCount32(x) + bitCount32(Math.floor(x / 0x1_0000_0000))
-}
-
 // https://stackoverflow.com/a/109025
-function bitCount32(i: number): number {
-    i = i - ((i >> 1) & 0x55555555) // add pairs of bits
-    i = (i & 0x33333333) + ((i >> 2) & 0x33333333) // quads
-    i = (i + (i >> 4)) & 0x0F0F0F0F // groups of 8
-    i *= 0x01010101 // horizontal sum of bytes
-    return i >> 24
+export function bitCount(i: number): number {
+    i = i - ((i >>> 1) & 0x55555555) // add pairs of bits
+    i = (i & 0x33333333) + ((i >>> 2) & 0x33333333) // quads
+    i = (i + (i >>> 4)) & 0x0F0F0F0F // groups of 8
+    return Math.imul(i, 0x01010101) >>> 24 // horizontal sum of bytes
 }
