@@ -28,6 +28,14 @@ const longNamedStatistic = filteredStatistic.replaceAll('order=descending', 'ord
 const lateSortedStatistic = `/statistic.html?uss=${encodeURIComponent('customNode(""); condition (true); table(columns=[column(values=density_pw_1km), column(values=population), column(values=area, name="Area"), column(values=elevation)])')}&article_type=City&start=1&amount=20&order=descending&universe=USA&sort_column=3`
 // A link that carries several statistic categories, which the article shows more of than fit.
 const manyStats = `${article}&s=29ZqGgHgeNSXMA9`
+// Statistic categories one of whose names is too long for a line of the table.
+const wrappingStats = 's=4p35PVcBRRMpKmQoVviY4dY'
+// A name too long for one line of the title, which shrinks to fit rather than wrapping and
+// pushing the table off the card.
+const longNamedArticle = `/article.html?longname=Taipei-Taoyuan Metropolitan Cluster, China&${wrappingStats}`
+// The same rows under a title with no shrinking left to do, where the wrapped one costs the table
+// its last row rather than running off the card.
+const droppedRow = `${article}&${wrappingStats}`
 // A shape crossing the antimeridian, stored as 178.3E to 180.4E rather than wrapping to -179.7.
 const antimeridian = '/article.html?longname=Northern, Fiji'
 // The default map, which is over the USA's five insets. Guam's is narrower than one tile of the
@@ -91,6 +99,14 @@ test('embed-worker-card-cut-off', async (t) => {
     await t.navigateTo(manyStats)
     await t.expect(Selector('[data-test-id=statistic-link]').count).gt(6)
     await snapshotCard(t, manyStats)
+})
+
+test('embed-worker-long-named-article-card', async (t) => {
+    await snapshotCard(t, longNamedArticle)
+})
+
+test('embed-worker-dropped-row-card', async (t) => {
+    await snapshotCard(t, droppedRow)
 })
 
 // Unwrapped longitudes are what keep the fit tight here: rewrapping them into [-180, 180] would
