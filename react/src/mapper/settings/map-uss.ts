@@ -149,16 +149,16 @@ export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, ty
 }
 
 // Exclude types to not reparse. When the USS is being stored, should always reparse
-export function mapUssParser<T>(lastExpr: l.LiteralExprParser<T>, types: USSType[] | 'dont-reparse') {
+export function mapUssParser<T, M = unknown>(lastExpr: l.LiteralExprParser<T>, types: USSType[] | 'dont-reparse') {
     const statementsSchema = l.lastExpression(types !== 'dont-reparse' ? l.reparse(idOutput, types, lastExpr) : lastExpr)
     const customNodeLastExpr = l.customNode(l.lastExpression(lastExpr))
     const customNodeSchema = types !== 'dont-reparse' ? l.reparse(rootBlockIdent, types, customNodeLastExpr) : customNodeLastExpr
-    return (uss: MapUSS, typeEnvironment: TypeEnvironment): T => {
+    return (uss: MapUSS<M>, typeEnvironment: TypeEnvironment): T => {
         return uss.type === 'statements' ? statementsSchema.parse(uss, typeEnvironment) : customNodeSchema.parse(uss, typeEnvironment)
     }
 }
 
-export function read<T>(schema: (uss: MapUSS, typeEnvironment: TypeEnvironment) => T, uss: MapUSS, typeEnvironment: TypeEnvironment): T | undefined {
+export function read<T, M = unknown>(schema: (uss: MapUSS<M>, typeEnvironment: TypeEnvironment) => T, uss: MapUSS<M>, typeEnvironment: TypeEnvironment): T | undefined {
     try {
         return schema(uss, typeEnvironment)
     }
@@ -170,48 +170,38 @@ export function read<T>(schema: (uss: MapUSS, typeEnvironment: TypeEnvironment) 
     }
 }
 
-const mapDataCall = l.call({
-    fn: l.ignore(),
-    namedArgs: { data: l.passthrough() },
-    unnamedArgs: [],
-})
+// M is what the nodes of the script being read carry, which the data expression carries too
+function mapDataCall<M>(): l.LiteralExprParser<{ namedArgs: { data: UrbanStatsASTExpression<M> | undefined } }> {
+    return l.call({
+        fn: l.ignore(),
+        namedArgs: { data: l.passthrough<M>() },
+        unnamedArgs: [],
+    })
+}
 
-const mapData = mapUssParser(mapDataCall, 'dont-reparse')
-
-export const editableMapData = mapUssParser(l.edit(mapDataCall), 'dont-reparse')
+export function editableMapData<M>(): (uss: MapUSS<M>, typeEnvironment: TypeEnvironment) => l.Edited<{ namedArgs: { data: UrbanStatsASTExpression<M> | undefined } }, M> {
+    return mapUssParser<l.Edited<{ namedArgs: { data: UrbanStatsASTExpression<M> | undefined } }, M>, M>(l.edit(mapDataCall<M>()), 'dont-reparse')
+}
 
 export function mapDataExpression<M>(uss: MapUSS<M>, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression<M> | undefined {
-    const data = read(mapData, uss, typeEnvironment)?.namedArgs.data
-    return data === undefined ? undefined : ofTheSameTree<M>(data)
+    return read(mapUssParser<{ namedArgs: { data: UrbanStatsASTExpression<M> | undefined } }, M>(mapDataCall<M>(), 'dont-reparse'), uss, typeEnvironment)?.namedArgs.data
 }
 
-const tableColumns = mapUssParser(l.call({
-    fn: l.ignore(),
-    namedArgs: {
-        columns: l.vector(l.call({
-            fn: l.ignore(),
-            namedArgs: { values: l.passthrough() },
-            unnamedArgs: [],
-        })),
-    },
-    unnamedArgs: [],
-}), 'dont-reparse')
+function tableColumns<M>(): (uss: MapUSS<M>, typeEnvironment: TypeEnvironment) => { namedArgs: { columns: { namedArgs: { values: UrbanStatsASTExpression<M> | undefined } }[] } } {
+    return mapUssParser<{ namedArgs: { columns: { namedArgs: { values: UrbanStatsASTExpression<M> | undefined } }[] } }, M>(l.call({
+        fn: l.ignore(),
+        namedArgs: {
+            columns: l.vector(l.call({
+                fn: l.ignore(),
+                namedArgs: { values: l.passthrough<M>() },
+                unnamedArgs: [],
+            })),
+        },
+        unnamedArgs: [],
+    }), 'dont-reparse')
+}
 
 export function tableColumnExpression<M>(uss: MapUSS<M>, typeEnvironment: TypeEnvironment, columnIndex: number): UrbanStatsASTExpression<M> | undefined {
-    const columns = read(tableColumns, uss, typeEnvironment)?.namedArgs.columns
-    const values = columns === undefined || columnIndex >= columns.length ? undefined : columns[columnIndex].namedArgs.values
-    return values === undefined ? undefined : ofTheSameTree<M>(values)
-}
-
-/**
- * Puts back what the parsers drop: they are written for the shapes they match, so a node they hand
- * back is typed as a bare tree, though it is a piece of the one they were given and carries what
- * that carries. Nothing checks the M asked for here, an unresolved one being assignable from
- * anything, so ask for the tree's own.
- */
-function ofTheSameTree<M>(ast: UrbanStatsASTExpression): UrbanStatsASTExpression<M>
-function ofTheSameTree<M>(ast: UrbanStatsASTStatement): UrbanStatsASTStatement<M>
-function ofTheSameTree<M>(ast: UrbanStatsASTExpression | UrbanStatsASTStatement): UrbanStatsASTExpression<M> | UrbanStatsASTStatement<M>
-function ofTheSameTree<M>(ast: UrbanStatsASTExpression | UrbanStatsASTStatement): UrbanStatsASTExpression<M> | UrbanStatsASTStatement<M> {
-    return ast
+    const columns = read(tableColumns<M>(), uss, typeEnvironment)?.namedArgs.columns
+    return columns === undefined || columnIndex >= columns.length ? undefined : columns[columnIndex].namedArgs.values
 }
