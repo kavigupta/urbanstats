@@ -1,4 +1,18 @@
 /**
+ * Grown to the largest ask and reused: a caller runs one needle over many haystacks, and each row
+ * is zeroed before use anyway.
+ */
+let buffers: Uint32Array[] = []
+
+function scratch(rows: number, width: number): Uint32Array[] {
+    if (buffers.length < rows || buffers[0].length < width) {
+        const size = Math.max(width, buffers[0]?.length ?? 0)
+        buffers = Array.from({ length: Math.max(rows, buffers.length) }, () => new Uint32Array(size))
+    }
+    return buffers
+}
+
+/**
  * Finds the minimum number of edits between `haystack` and some `needle` in `haystack`
  *
  * Use `bitapAlphabet` to prepare needly
@@ -6,10 +20,10 @@
  * Differs from bitap for search in that it doesn't expect needly to be at the beginning of haystack
  *
  * Returns [0, maxErrors + 1], where maxErrors + 1 means a match was not found with lte maxErrors errors
- *
- * Takes scratch buffers, which must be an array of at least length maxErrors + 1 length, filled with Uint32Arrays of at least (needle.length + haystack.length + 1) length
  */
-export function bitap(haystack: string, needle: { alphabet: Uint32Array, length: number }, maxErrors: number, sb: Uint32Array[]): number {
+export function bitap(haystack: string, needle: { alphabet: Uint32Array, length: number }, maxErrors: number): number {
+    const sb = scratch(maxErrors + 1, needle.length + haystack.length + 1)
+
     for (let errors = 0; errors <= maxErrors; errors++) {
         sb[errors].fill(0)
         sb[errors][0] = (1 << errors) - 1
