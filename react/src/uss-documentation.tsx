@@ -782,7 +782,7 @@ function getCategoryTitle(category: ConstantCategory): string {
     }
 }
 
-function getCategoryDescription(category: ConstantCategory): string {
+function getCategoryDescription(category: ConstantCategory): ReactNode {
     switch (category) {
         case 'logic':
             return 'Boolean values and control flow constants.'
