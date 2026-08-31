@@ -18,7 +18,6 @@ export type PreambleCustomNode<M = unknown> = UrbanStatsASTExpression<M> & { typ
 export type PreambleAutoUXNode<M = unknown> = UrbanStatsASTExpression<M> & { type: 'autoUXNode', expr: PreambleCustomNode<M>, metadata: AutoUXNodeMetadata }
 export type PreambleNode<M = unknown> = PreambleCustomNode<M> | PreambleAutoUXNode<M>
 
-/** Carries what its nodes carry, so that a script read for something gives a map read for it. */
 export type MapUSS<M = unknown> = UrbanStatsASTExpression<M> & { type: 'customNode' } |
     (UrbanStatsASTStatement<M> &
     {
@@ -170,7 +169,6 @@ export function read<T, M = unknown>(schema: (uss: MapUSS<M>, typeEnvironment: T
     }
 }
 
-// M is what the nodes of the script being read carry, which the data expression carries too
 function mapDataCall<M>(): l.LiteralExprParser<{ namedArgs: { data: UrbanStatsASTExpression<M> | undefined } }> {
     return l.call({
         fn: l.ignore(),

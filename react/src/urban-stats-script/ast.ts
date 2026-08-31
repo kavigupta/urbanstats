@@ -9,8 +9,8 @@ import { Decorated, ParseError } from './parser'
 import { USSType } from './types-values'
 
 /**
- * A tree carries whatever a reader of it hangs on the nodes, and nothing by default: reading a
- * script for its units hangs on each number what it is a number of.
+ * M is metadata, unknown (empty) by default, but can be set to any object whose keys don't overlap
+ * with the AST's own.
  */
 export type UrbanStatsASTArg<M = unknown> = (
     { type: 'unnamed', value: UrbanStatsASTExpression<M> } |

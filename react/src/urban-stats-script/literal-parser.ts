@@ -271,7 +271,6 @@ export function edit<T, M = unknown>(
     }
 }
 
-/** M is what the nodes of the tree being parsed carry, which an edited copy of it carries too. */
 export interface Edited<T, M = unknown> {
     currentValue: T
     edit: (newExpr: UrbanStatsASTExpression<M> | undefined) => UrbanStatsASTExpression<M> | UrbanStatsASTStatement<M> | undefined
@@ -352,10 +351,6 @@ export function ignore(): LiteralStmtParser<undefined> & LiteralExprParser<undef
     }
 }
 
-/**
- * Hands back the expression it was given, which is a node of the tree being parsed and carries
- * what that tree's nodes carry. Say what that is where the caller knows it.
- */
 export function passthrough<M = unknown>(): LiteralExprParser<UrbanStatsASTExpression<M> | undefined> {
     return {
         parse(expr) {
