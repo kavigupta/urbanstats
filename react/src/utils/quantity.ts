@@ -317,7 +317,7 @@ export function sameDimensions(left: StoredUnit, right: StoredUnit): boolean {
  * Nothing scales a temperature, 0°C being no more nothing than 0°F is. A difference of two is
  * another matter: no degrees is no degrees on either scale, so it multiplies like anything else.
  */
-function multiplies(unit: Unit): boolean {
+export function multiplies(unit: Unit): boolean {
     return unit.baseIsScalar || unit.times === 0
 }
 
