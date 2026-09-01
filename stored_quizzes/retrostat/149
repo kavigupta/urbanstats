@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2021GE 2-Coalition Margin",
+      "stat_path": "2021GE-coalition_margin",
+      "question": "!FULL Which voted more for the left-of-center parties in the 2021 Canadian general election?!TOOLTIP By 2-Coalition Margin, which is calculated as (Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation.",
+      "longname_a": "Longueuil Ville, Longueuil Territory, Quebec, Canada",
+      "longname_b": "Mississauga City, Peel Regional municipality, Ontario, Canada",
+      "stat_a": 0.40130310851374007,
+      "stat_b": 0.2568946221207266
+    },
+    "b": {
+      "stat_column": "Fair or poor self-rated health status %",
+      "stat_path": "GHLTH_cdc_2",
+      "question": "higher % of adults with a fair or poor self-rated health status",
+      "longname_a": "Oakland County, Michigan, USA",
+      "longname_b": "Webb County, Texas, USA",
+      "stat_a": 0.12123014724259687,
+      "stat_b": 0.2970591189706483
+    },
+    "a_ease": 0.3650273224043716,
+    "b_ease": 0.7651072124756335
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Citizen by Naturalization %",
+      "stat_path": "citizenship_citizen_by_naturalization",
+      "question": "higher % of residents who are citizens by naturalization",
+      "longname_a": "La Crosse-Eau Claire WI Media Market, USA",
+      "longname_b": "Syracuse NY Media Market, USA",
+      "stat_a": 0.014833626954251325,
+      "stat_b": 0.03127281313778041
+    },
+    "b": {
+      "stat_column": "LIM-AT %",
+      "stat_path": "lim_at_canada",
+      "question": "higher % of people who are low income based on the Low-income measure, after tax (LIM-AT)",
+      "longname_a": "Edmonton City, Division No. 11, Alberta, Canada",
+      "longname_b": "Vancouver City, Greater Vancouver Regional district, British Columbia, Canada",
+      "stat_a": 0.09941573715759941,
+      "stat_b": 0.13205424564647916
+    },
+    "a_ease": 0.7781420765027323,
+    "b_ease": 0.3255360623781676
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Firefighting and prevention, and other protective service workers including supervisors %",
+      "stat_path": "occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors",
+      "question": "higher % of workers employed as firefighting and prevention, and other protective service workers including supervisors!TOOLTIP firefighters, fire inspectors, correctional officers, bailiffs, etc. (effectively, all protective service workers except police officers)",
+      "longname_a": "WA-04 (2023), USA",
+      "longname_b": "NY-12 (2025), USA",
+      "stat_a": 0.012934730689066063,
+      "stat_b": 0.004723485109581273
+    },
+    "b": {
+      "stat_column": "Rent/Income > 40%",
+      "stat_path": "rent_burden_over_40",
+      "question": "higher % of people whose rent is greater than 40% of their income",
+      "longname_a": "Bell County, Texas, USA",
+      "longname_b": "Union County, New Jersey, USA",
+      "stat_a": 0.3103757810437383,
+      "stat_b": 0.3469777049584672
+    },
+    "a_ease": 0.5224043715846994,
+    "b_ease": 0.9334428923582581
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Current asthma %",
+      "stat_path": "CASTHMA_cdc_2",
+      "question": "higher % of adults with asthma",
+      "longname_a": "OH-05 (2023), USA",
+      "longname_b": "MO-03 (2023), USA",
+      "stat_a": 0.10522898460135126,
+      "stat_b": 0.09657649005437818
+    },
+    "b": {
+      "stat_column": "2020 Presidential Election",
+      "stat_path": "2020 Presidential Election-margin",
+      "question": "!FULL Which voted more for Biden in the 2020 presidential election?",
+      "longname_a": "AL-05 (2025), USA",
+      "longname_b": "CT-05 (2023), USA",
+      "stat_a": -0.2702031086587253,
+      "stat_b": 0.10744064881253934
+    },
+    "a_ease": 0.5376162299239222,
+    "b_ease": 0.9527207850133809
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad %",
+      "stat_path": "education_ugrad",
+      "question": "higher % of people who have at least an undergrad degree",
+      "longname_a": "NV-03 (2023), USA",
+      "longname_b": "CT-04 (2023), USA",
+      "stat_a": 0.3152885241212731,
+      "stat_b": 0.5127657089284048
+    },
+    "b": {
+      "stat_column": "Pedestrian/Cyclist Fatalities Per Capita Per Year",
+      "stat_path": "traffic_fatalities_ped_last_decade_per_capita",
+      "question": "higher pedestrian/cyclist fatalities per capita between 2013 and 2022!TOOLTIP pedestrian and cyclist fatalities in the region, divided by the population of the region",
+      "longname_a": "Medford-Klamath Falls OR Media Market, USA",
+      "longname_b": "Lincoln & Hastings-Kearney NE Media Market, USA",
+      "stat_a": 2.5413851425366533e-05,
+      "stat_b": 8.86040432978425e-06
+    },
+    "a_ease": 0.9668615984405458,
+    "b_ease": 0.5604026845637584
+  }
+]
