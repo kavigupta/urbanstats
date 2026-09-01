@@ -102,8 +102,8 @@ async function makeStatGenerator({ stat, typeEnvironment, previousGenerator }: {
             stat,
             mapUSS,
             typeEnvironment,
-            warn: (message) => {
-                execErrors.push({ type: 'error', kind: 'warning', value: message, location: noLocation })
+            warn: (message, location) => {
+                execErrors.push({ type: 'error', kind: 'warning', value: message, location: location ?? noLocation })
             },
         })
 

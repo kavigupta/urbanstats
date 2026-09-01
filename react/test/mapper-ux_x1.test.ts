@@ -370,6 +370,46 @@ mapper(() => test)('convert mapper to table and back preserves fields', { code: 
     await t.expect(code).eql(expectedCode)
 })
 
+mapper(() => test)('warns about a map whose values are in no unit it can work out', { code: 'pMap(data=population + area, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    await waitForLoading()
+    await t.expect(getErrors()).eql(['Could not compute units for population + area: cannot add people and m^2 at 1:11-27'])
+})
+
+mapper(() => test)('warns about values put together out of quantities stored differently', {
+    code: `customNode("");
+condition (density_pw_1km > (toNumber("1000")))
+clusterMap(
+    data=customNode("population * area / population - (2 * rainfall * sunny_hours) ** 2 + 2\\n"),
+    scale=linearScale(),
+    ramp=rampUridis
+)`,
+}, async (t) => {
+    await waitForLoading()
+    // an area over a count of people, less an area made of a rainfall and a length of time: both
+    // areas, one stored in square kilometres and the other in nothing anybody writes. The location
+    // is of the subtraction, which stops short of the + 2 the whole expression ends with.
+    await t.expect(getErrors()).eql([
+        'Could not compute units for population * area / population - (2 * rainfall * sunny_hours) ** 2: cannot subtract km^{2} and 1.30e-8 m^2: the same kind of units, but different storage quantities at 1:1-66',
+    ])
+})
+
+mapper(() => test)('warns about a condition comparing things that do not go together', {
+    code: `customNode("condition (ln(compactness * 100) > sunny_hours)\\ncMap(\\n    data=area,\\n    scale=linearScale(),\\n    ramp=rampUridis\\n)\\n")`,
+}, async (t) => {
+    await waitForLoading()
+    // the map itself is an area, and it is the condition that compares a number against a time.
+    // It keeps every geography out, so the map is not drawn and the warning is all there is.
+    await t.expect(getErrors()).eql([
+        '- USS expression did not return a cMap, cMapRGB, pMap, or clusterMap type, got: null\n'
+        + '- Could not compute units for (ln(compactness * 100)) > sunny_hours: cannot compare a plain number and s',
+    ])
+})
+
+mapper(() => test)('and says nothing where it can work one out', { code: 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    await waitForLoading()
+    await t.expect(getErrors()).eql([])
+})
+
 mapper(() => test)('deprecation warning for deprecated transportation statistic', { code: 'pMap(data=commute_walk_incl_wfh, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
     const warning = 'Deprecated: Use commute_walk (Commute Walk %) instead, which excludes work-from-home from the denominator and is more accurate for comparisons'
     await waitForLoading()

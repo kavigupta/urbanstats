@@ -341,6 +341,29 @@ export function unitPower(stored: StoredUnit, exponent: number): StoredUnit | un
     return computedUnit(gathered(raised), Math.pow(stored.toBaseUnits, exponent))
 }
 
+function plainly(elements: HumanReadableElement[]): string {
+    return elements.map(element => element.type === 'superscript' ? `^{${plainly(element.value)}}` : (element.type === 'atom' ? element.value : '')).join('')
+}
+
+/**
+ * What a quantity is stored in: the unit that is exactly it, or how much of the base units one of
+ * it is worth. Two quantities of the same dimensions are told apart by that number, an area stored
+ * in square kilometres being 1e6 where one stored in square metres is 1.
+ */
+export function describeStoredUnit(stored: StoredUnit): string {
+    const name = nameOfStoredUnit(stored)
+    return name === undefined || name.length === 0
+        ? `${stored.toBaseUnits.toPrecision(3)} ${describeDimensions(stored.unit)}`
+        : plainly(name)
+}
+
+/** The base units a quantity is in, for saying why two of them cannot be put together. */
+export function describeDimensions(unit: Unit): string {
+    const parts = unit.dimensions.map(({ baseUnit, power }) =>
+        power === 1 ? baseUnitWords[baseUnit].many : `${baseUnitWords[baseUnit].many}^${power}`)
+    return parts.length === 0 ? 'a plain number' : parts.join('·')
+}
+
 /**
  * What the numbers a statistic is stored as are counted in, which is what a script computes with:
  * rainfall is stored per metre though it is read per centimetre, and a share is stored as a

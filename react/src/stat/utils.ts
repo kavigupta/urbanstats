@@ -8,12 +8,13 @@ import { StatName } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 import { orderNonNan, Table, tableType } from '../urban-stats-script/constants/table'
 import { deriveTableColumnLabel, deriveTableLabel, tableLabel } from '../urban-stats-script/derive-human-readable-name'
-import { deriveTableColumnUnit } from '../urban-stats-script/derive-unit'
+import { scriptUnitProblem, deriveTableColumnUnit } from '../urban-stats-script/derive-unit'
+import { LocInfo } from '../urban-stats-script/location'
 import { unparse } from '../urban-stats-script/parser'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { reifyString } from '../utils/human-readable-name'
-import { UnitSettings } from '../utils/quantity'
+import { StoredUnit, UnitSettings } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { StatData, Statistic, StatSettings, View } from './types'
@@ -77,18 +78,41 @@ function computeOrdinals(values: number[]): number[] {
     return ordinals
 }
 
+/** Reports something the panel wants said about the script, at the place in it that says so. */
+export type Warn = (message: string, location?: LocInfo) => void
+
+function derivedUnit(mapUSS: MapUSS, typeEnvironment: TypeEnvironment, index: number, warn: Warn): StoredUnit | undefined {
+    const derived = deriveTableColumnUnit(mapUSS, typeEnvironment, index)
+    if ('unit' in derived) {
+        return derived.unit
+    }
+    warn(derived.problem, derived.location)
+    return undefined
+}
+
 /**
  * What the panel draws, out of the table its script produced. The names and units a column or the
- * table does not state are derived from the script, and a name that cannot be derived is reported
- * through `warn`; a unit that cannot be is simply not written.
+ * table does not state are derived from the script, and either that cannot be derived is reported
+ * through `warn`.
  */
 export function statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn }: {
     table: Table
     stat: Statistic
     mapUSS: MapUSS
     typeEnvironment: TypeEnvironment
-    warn: (message: string) => void
+    warn: Warn
 }): StatData {
+    const scriptProblem = scriptUnitProblem(mapUSS, typeEnvironment)
+    const said = new Set<string>()
+    const warnOnce: Warn = (message, location) => {
+        if (!said.has(message)) {
+            said.add(message)
+            warn(message, location)
+        }
+    }
+    if (scriptProblem !== undefined) {
+        warnOnce(scriptProblem.problem, scriptProblem.location)
+    }
     const columns = table.columns.map((column, index) => {
         let name = column.name ?? deriveTableColumnLabel(mapUSS, typeEnvironment, index)
         if (name === undefined) {
@@ -101,7 +125,7 @@ export function statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn }
             ordinal: computeOrdinals(column.values),
             name,
             unit: column.unit === undefined
-                ? deriveTableColumnUnit(mapUSS, typeEnvironment, index)
+                ? derivedUnit(mapUSS, typeEnvironment, index, warnOnce)
                 : unitTypeToStoredUnit(column.unit),
         }
     })

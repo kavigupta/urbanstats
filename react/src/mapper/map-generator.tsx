@@ -22,9 +22,9 @@ import { CommonMap } from '../urban-stats-script/constants/map'
 import { ScaleInstance } from '../urban-stats-script/constants/scale'
 import { TextBox } from '../urban-stats-script/constants/text-box'
 import { deriveMapLabel } from '../urban-stats-script/derive-human-readable-name'
-import { deriveMapUnit } from '../urban-stats-script/derive-unit'
+import { scriptUnitProblem, deriveMapUnit, unitOrNothing } from '../urban-stats-script/derive-unit'
 import { EditorError } from '../urban-stats-script/editor-utils'
-import { noLocation } from '../urban-stats-script/location'
+import { LocInfo, noLocation } from '../urban-stats-script/location'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
 import { loadImage } from '../utils/Image'
@@ -107,6 +107,21 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
 
     const execResult = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: mapSettings.geographyKind, universe: mapSettings.universe }, stmts })
 
+    // said before the map is drawn, since a condition comparing the wrong things often keeps every
+    // geography out and leaves nothing to draw
+    const scriptProblem = scriptUnitProblem(mapSettings.script.uss, typeEnvironment)
+    const said = new Set<string>()
+    const warnOnce = (message: string, location: LocInfo): void => {
+        if (said.has(message)) {
+            return
+        }
+        said.add(message)
+        execResult.error.push({ type: 'error', kind: 'warning', value: message, location })
+    }
+    if (scriptProblem !== undefined) {
+        warnOnce(scriptProblem.problem, scriptProblem.location)
+    }
+
     if (execResult.resultingValue === undefined) {
         const prev = await previousGenerator()
         return {
@@ -147,9 +162,18 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         }
     }
 
-    const derivedUnit = deriveMapUnit(mapSettings.script.uss, typeEnvironment)
+    const derived = deriveMapUnit(mapSettings.script.uss, typeEnvironment)
 
-    const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind, cache, label, derivedUnit })
+    const { features, mapComponentCreator, ramp } = await loadMapResult({
+        mapResultMain,
+        universe: mapSettings.universe,
+        geographyKind: mapSettings.geographyKind,
+        cache,
+        label,
+        derivedUnit: unitOrNothing(derived),
+        noUnit: 'unit' in derived ? undefined : derived,
+        warn: warnOnce,
+    })
 
     function MapComponent({ props, exportImageRef }: { props: MapUIProps<{ loading: boolean }>, exportImageRef: (fn: () => Promise<HTMLCanvasElement>) => void }): ReactNode {
         const mapsRef: (MapRef | null)[] = []
@@ -418,7 +442,7 @@ type MapComponentCreator = (
     clickable: boolean,
 ) => ReactNode
 
-async function loadMapResult({ mapResultMain, universe, geographyKind, cache, label, derivedUnit }:
+async function loadMapResult({ mapResultMain, universe, geographyKind, cache, label, derivedUnit, noUnit, warn }:
 {
     mapResultMain: MapResult
     universe: Universe
@@ -426,6 +450,8 @@ async function loadMapResult({ mapResultMain, universe, geographyKind, cache, la
     cache: MapCache
     label: HumanReadableName
     derivedUnit: StoredUnit | undefined
+    noUnit: { problem: string, location: LocInfo } | undefined
+    warn: (message: string, location: LocInfo) => void
 }): Promise<{ features: GeoJSON.Feature[], mapComponentCreator: MapComponentCreator, ramp: RampToDisplay }> {
     const { opaqueType, value } = mapResultMain
     const visuals = mapVisuals(mapResultMain)
@@ -434,7 +460,7 @@ async function loadMapResult({ mapResultMain, universe, geographyKind, cache, la
     const clusterRampBins = visuals.bins ?? []
     const ramp: RampToDisplay = opaqueType === 'cMapRGB'
         ? { type: 'label', value: value.label }
-        : computeRampToDisplay(value, label, derivedUnit, visuals.ramp!)
+        : computeRampToDisplay(value, label, derivedUnit, visuals.ramp!, () => { warn(noUnit!.problem, noUnit!.location) })
 
     let features: GeoJSON.Feature[]
     let mapChildren: (fs: GeoJSON.Feature[], clickable: boolean) => ReactNode
@@ -549,9 +575,12 @@ async function loadMapResult({ mapResultMain, universe, geographyKind, cache, la
     }
 }
 
-function computeRampToDisplay(value: CommonMap, label: HumanReadableName, derivedUnit: StoredUnit | undefined, { scale, ticks }: { scale: ScaleInstance, ticks: number[] }): RampToDisplay & { type: 'ramp' } {
+function computeRampToDisplay(value: CommonMap, label: HumanReadableName, derivedUnit: StoredUnit | undefined, { scale, ticks }: { scale: ScaleInstance, ticks: number[] }, warn: () => void): RampToDisplay & { type: 'ramp' } {
     const hasValuesClampedToStart = value.data.some(val => scale.forward(val) < 0)
     const hasValuesClampedToEnd = value.data.some(val => scale.forward(val) > 1)
+    if (value.unit === undefined && derivedUnit === undefined) {
+        warn()
+    }
     const unit = value.unit === undefined ? derivedUnit ?? plainNumber : unitTypeToStoredUnit(value.unit)
     return { type: 'ramp', value: { ramp: value.ramp, interpolations: ticks, scale, label, unit, hasValuesClampedToStart, hasValuesClampedToEnd } }
 }

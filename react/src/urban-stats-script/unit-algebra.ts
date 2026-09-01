@@ -165,6 +165,11 @@ function addedForward(form: { combine: (left: number, right: number) => number }
     if (!sameDimensions(left.unit, right.unit)) {
         return { kind: 'none' }
     }
+    // the values added are the ones the statistics are stored as, so two areas add only where they
+    // are stored the same way: square kilometres and square metres are areas both, and do not add
+    if (!sameSize(left.unit.toBaseUnits, right.unit.toBaseUnits)) {
+        return { kind: 'none' }
+    }
     return written(
         left.unit,
         combined(left.unit.unit.times, right.unit.unit.times, form.combine),
@@ -193,6 +198,20 @@ function productForward(rightPower: 1 | -1, left: KnownAIV, right: KnownAIV): Ab
     const product = unitProduct(left.unit, right.unit, rightPower)
     const times = combined(left.unit.unit.times, right.unit.unit.times, (over, under) => rightPower === 1 ? over * under : over / under)
     return product === undefined ? { kind: 'none' } : written(product, times)
+}
+
+/** Whether the operator asks its operands to be alike, as a comparison does and a product does not. */
+export function comparesUnits(operator: BinaryOperatorSymbol): boolean {
+    const form = forms[operator]
+    return form.kind === 'sameUnit' && !form.keepsUnit
+}
+
+/**
+ * Whether the two can be compared, which is whether one can be taken from the other: a comparison
+ * keeps no unit of its own, so nothing downstream says that its operands did not go together.
+ */
+export function comparable(left: AbstractInterpValue, right: AbstractInterpValue): boolean {
+    return forward('-', left, right).kind !== 'none'
 }
 
 export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue {

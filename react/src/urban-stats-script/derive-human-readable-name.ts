@@ -317,17 +317,16 @@ export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, 
 /**
  * The elements followed by what the numbers behind them are counted in, as in "[in /km^{2}]". The
  * reader's units are not it: a logarithm is of the number a script computed with, whatever units
- * the reader has the same number written to them in. A count gets nothing, having no name.
+ * the reader has the same number written to them in. One of a count gets nothing, that being what
+ * the statistic counting it is named for.
  */
 function inUnitWritten(written: HumanReadableElement[], unit: StoredUnit | undefined): HumanReadableElement[] {
     if (unit === undefined) return written
-    const name = nameOfStoredUnit(unit)
-    // A share is stored as the fraction it is, whatever percentage it is written as, and so is a
-    // count of one thing per another: fatalities per capita are stored per person, not per 100k.
-    const perSomething = unit.unit.dimensions.some(({ power }) => power < 0)
-    if (unit.unit.decoration.kind === 'percent' || (name?.length === 0 && perSomething)) {
+    // a share is stored as the fraction it is, whatever percentage it is written as
+    if (unit.unit.decoration.kind === 'percent') {
         return [...written, { type: 'atom', value: ' [as a fraction]' }]
     }
+    const name = nameOfStoredUnit(unit)
     if (name === undefined || name.length === 0) return written
     return [...written, { type: 'atom', value: ' [in ' }, ...name, { type: 'atom', value: ']' }]
 }

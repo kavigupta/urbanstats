@@ -1,4 +1,4 @@
-import { dimensionless, sameDimensions, StoredUnit } from '../utils/quantity'
+import { describeDimensions, describeStoredUnit, dimensionless, sameDimensions, StoredUnit } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
@@ -6,11 +6,13 @@ import { asNumber } from './constants/convert'
 import * as l from './literal-parser'
 import { LocInfo } from './location'
 import { TypeEnvironment, UnitPropagation, USSPrimitiveRawValue } from './types-values'
-import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, unitToWriteIn } from './unit-algebra'
+import { AbstractInterpValue, backward, comparable, comparesUnits, constant, forward, forwardUnary, inUnit, join, manyOf, unitToWriteIn } from './unit-algebra'
 
 const anything = { kind: 'any' } satisfies AbstractInterpValue
 
 /** A script has objects in it as well as quantities, a regression's result being one. */
+type UrbanStatsASTNode = UrbanStatsASTExpression | UrbanStatsASTStatement
+
 type Inferred = AbstractInterpValue | { kind: 'fields', fields: Map<string, AbstractInterpValue> }
 
 function quantity(value: Inferred): AbstractInterpValue {
@@ -23,6 +25,8 @@ export type Bindings = Map<string, Inferred>
 interface Scope {
     typeEnvironment: TypeEnvironment
     named: Bindings
+    /** What the backward pass made of each literal, where it has run and a caller wants it read. */
+    constants?: ConstantUnits
 }
 
 /** A block is worth as much as its last statement, and an empty one as much as nothing said. */
@@ -154,8 +158,15 @@ function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Sco
             return block(ast.rest, scope)
         case 'identifier':
             return identifier(ast.name.node, scope)
-        case 'constant':
-            return ast.value.node.type === 'number' ? constant(ast.value.node.value) : anything
+        case 'constant': {
+            if (ast.value.node.type !== 'number') {
+                return anything
+            }
+            // a literal is in whatever unit the script reads it in, where the backward pass has
+            // said: the 1 of area + population * 1 is a number of square kilometres per person
+            const unit = scope.constants?.get(whereWritten(ast.value.location))
+            return unit === undefined ? constant(ast.value.node.value) : inUnit(unit)
+        }
         case 'unaryOperator':
             return forwardUnary(ast.operator.node, quantity(infer(ast.expr, scope)))
         case 'binaryOperator':
@@ -334,9 +345,96 @@ export function inferConstantUnits(program: UrbanStatsASTStatement | UrbanStatsA
     return into
 }
 
+const verbs: Partial<Record<string, string>> = { '+': 'add', '-': 'subtract', '*': 'multiply', '/': 'divide' }
+
+function partsOf(ast: UrbanStatsASTNode): UrbanStatsASTNode[] {
+    switch (ast.type) {
+        case 'binaryOperator':
+            return [ast.left, ast.right]
+        case 'unaryOperator':
+        case 'customNode':
+        case 'autoUXNode':
+            return [ast.expr]
+        case 'expression':
+        case 'assignment':
+            return [ast.value]
+        case 'call':
+            return ast.args.map(arg => arg.value)
+        case 'vectorLiteral':
+            return ast.elements
+        case 'attribute':
+            return [ast.expr]
+        case 'statements':
+            return [...ast.result]
+        case 'do':
+            return [...ast.statements]
+        case 'condition':
+            return [ast.condition, ...ast.rest]
+        default:
+            return []
+    }
+}
+
+function whatWentWrong(ast: UrbanStatsASTNode, scope: Scope): string {
+    if (ast.type === 'binaryOperator') {
+        const left = quantity(infer(ast.left, scope))
+        const right = quantity(infer(ast.right, scope))
+        if (left.kind === 'in' && right.kind === 'in') {
+            const verb = verbs[ast.operator.node] ?? 'compare'
+            // two of the same dimensions that will not go together are stored differently, so say
+            // what each is stored in rather than saying m^2 and m^2
+            return sameDimensions(left.unit, right.unit)
+                ? `cannot ${verb} ${describeStoredUnit(left.unit)} and ${describeStoredUnit(right.unit)}: the same kind of units, but different storage quantities`
+                : `cannot ${verb} ${describeDimensions(left.unit.unit)} and ${describeDimensions(right.unit.unit)}`
+        }
+    }
+    return 'its values combine different units'
+}
+
+const nothingKnown = 'no unit is known for it'
+
+/**
+ * The smallest part whose units do not go together, in an expression that need not have a unit of
+ * its own: a condition is a comparison, and says nothing about what it is measured in.
+ */
+export function whyUnitsClash(ast: UrbanStatsASTNode, scope: Scope): { at: UrbanStatsASTNode, problem: string } | undefined {
+    for (const part of partsOf(ast)) {
+        const inner = whyUnitsClash(part, scope)
+        if (inner !== undefined) {
+            return inner
+        }
+    }
+    // a comparison keeps no unit, so nothing downstream would say its operands did not go together
+    if (ast.type === 'binaryOperator' && comparesUnits(ast.operator.node)
+        && !comparable(quantity(infer(ast.left, scope)), quantity(infer(ast.right, scope)))) {
+        return { at: ast, problem: whatWentWrong(ast, scope) }
+    }
+    return quantity(infer(ast, scope)).kind === 'none' ? { at: ast, problem: whatWentWrong(ast, scope) } : undefined
+}
+
+/** The smallest part of an expression whose units do not work out, and what does not work. */
+export function whyNoUnit(ast: UrbanStatsASTNode, scope: Scope): { at: UrbanStatsASTNode, problem: string } | undefined {
+    const clash = whyUnitsClash(ast, scope)
+    if (clash !== undefined) {
+        return clash
+    }
+    const value = quantity(infer(ast, scope))
+    if (value.kind === 'in' && unitToWriteIn(value) !== undefined) {
+        return undefined
+    }
+    for (const part of partsOf(ast)) {
+        const inner = whyNoUnit(part, scope)
+        // an unknown part says no more than this whole expression does, so keep looking
+        if (inner !== undefined && inner.problem !== nothingKnown) {
+            return inner
+        }
+    }
+    return { at: ast, problem: value.kind === 'any' ? nothingKnown : 'it is neither a reading nor a difference of readings' }
+}
+
 /** The unit an expression works out to, where reading it determines one. */
-export function inferUnit(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, named: Bindings = new Map()): AbstractInterpValue {
-    return quantity(infer(ast, { typeEnvironment, named }))
+export function inferUnit(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, named: Bindings = new Map(), constants?: ConstantUnits): AbstractInterpValue {
+    return quantity(infer(ast, { typeEnvironment, named, constants }))
 }
 
 export function inferBindings(program: UrbanStatsASTStatement | UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): Bindings {

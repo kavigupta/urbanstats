@@ -3,7 +3,7 @@ import test from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { mapUSSFromString } from '../src/mapper/settings/map-uss'
-import { deriveMapUnit, deriveTableColumnUnit } from '../src/urban-stats-script/derive-unit'
+import { scriptUnitProblem, deriveMapUnit, deriveTableColumnUnit, unitOrNothing } from '../src/urban-stats-script/derive-unit'
 import { reifyString } from '../src/utils/human-readable-name'
 import { UnitSettings, StoredUnit, writeQuantity } from '../src/utils/quantity'
 
@@ -17,7 +17,7 @@ function written(unit: StoredUnit | undefined, value = 1000, settings: UnitSetti
 }
 
 function unitOfMap(data: string): StoredUnit | undefined {
-    return deriveMapUnit(mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), defaultTypeEnvironment('USA'))
+    return unitOrNothing(deriveMapUnit(mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), defaultTypeEnvironment('USA')))
 }
 
 function mapUnit(data: string): string {
@@ -25,7 +25,7 @@ function mapUnit(data: string): string {
 }
 
 function columnUnit(values: string, columnIndex = 0): string {
-    return written(deriveTableColumnUnit(mapUSSFromString(`table(columns=[${values}])`), defaultTypeEnvironment('USA'), columnIndex))
+    return written(unitOrNothing(deriveTableColumnUnit(mapUSSFromString(`table(columns=[${values}])`), defaultTypeEnvironment('USA'), columnIndex)))
 }
 
 void test('a map is written in the units of what it maps', () => {
@@ -37,6 +37,42 @@ void test('a map is written in the units of what it maps', () => {
     assert.equal(mapUnit('high_temp - low_temp'), '+1\u202f000.0°F')
 })
 
+function conditionProblem(condition: string): string {
+    const uss = mapUSSFromString(`customNode("");\ncondition (${condition})\nclusterMap(data=area, scale=linearScale(), ramp=rampUridis)`)
+    return scriptUnitProblem(uss, defaultTypeEnvironment('USA'))?.problem ?? 'nothing to say'
+}
+
+void test('a condition compares things that go together, or says they do not', () => {
+    // a comparison keeps no unit, so nothing downstream would say its operands did not go together
+    assert.equal(conditionProblem('-ln(compactness) > sunny_hours'),
+        'Could not compute units for (-(ln(compactness))) > sunny_hours: cannot compare a plain number and s')
+    assert.equal(conditionProblem('population > area'),
+        'Could not compute units for population > area: cannot compare people and m^2')
+    assert.equal(conditionProblem('hospital_mean_dist > elevation'),
+        'Could not compute units for hospital_mean_dist > elevation: cannot compare km and m: the same kind of units, but different storage quantities')
+    // the smallest part that fails, out of a condition that puts two comparisons together
+    assert.equal(conditionProblem('commute_bike > 0.1 & high_temp > area'),
+        'Could not compute units for high_temp > area: cannot compare °F and m^2')
+    // a bare number is compared against anything, being read as whatever it is compared to, and a
+    // literal in a product is read as whatever unit makes the rest of the expression work
+    assert.equal(conditionProblem('high_temp > 80'), 'nothing to say')
+    assert.equal(conditionProblem('hospital_mean_dist > elevation * 1'), 'nothing to say')
+    // where nothing can be read into it, as inside a logarithm, which makes a number of anything
+    assert.equal(conditionProblem('ln(compactness * 10000) > sunny_hours'),
+        'Could not compute units for (ln(compactness * 10000)) > sunny_hours: cannot compare a plain number and s')
+    assert.equal(conditionProblem('true'), 'nothing to say')
+})
+
+void test('two quantities add only where they are stored the same way', () => {
+    // the values added are the ones the statistics are stored as: kilometres and metres are both
+    // lengths, and adding the numbers adds nothing
+    assert.equal(mapUnit('hospital_mean_dist + elevation'), 'nothing')
+    // an area over a count of people is an area, and one made of a rainfall and a length of time
+    // is an area too, in units nothing else is stored in
+    assert.equal(mapUnit('population * area / population - (2 * rainfall * sunny_hours) ** 2'), 'nothing')
+    assert.equal(mapUnit('area + area'), '1\u202f000km^{2}')
+})
+
 void test('a map of what no unit can be read off says nothing', () => {
     assert.equal(mapUnit('population + area'), 'nothing')
     assert.equal(mapUnit('high_temp + low_temp'), 'nothing')
@@ -45,7 +81,7 @@ void test('a map of what no unit can be read off says nothing', () => {
 
 void test('a map of a regression is written in the units of what was regressed', () => {
     const map = (preamble: string, data: string): StoredUnit | undefined =>
-        deriveMapUnit(mapUSSFromString(`${preamble}\ncondition (true)\ncMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), defaultTypeEnvironment('USA'))
+        unitOrNothing(deriveMapUnit(mapUSSFromString(`${preamble}\ncondition (true)\ncMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), defaultTypeEnvironment('USA')))
     const shares = 'regr = regression(y=commute_transit, x1=ln(density_pw_1km), weight=population)'
     // what a share was above what the regression expected of it, which is a difference of two shares
     assert.equal(written(map(shares, 'do { x = regr.residuals; x }'), 0.05), '+5.00%')
@@ -60,7 +96,7 @@ void test('a map of a regression is written in the units of what was regressed',
 
 void test('a statistic that names its own units is written in them, counted things and all', () => {
     // fatalities over people, both of them counted, which the statistic names as fatalities per 100k
-    const perCapita = deriveTableColumnUnit(mapUSSFromString('table(columns=[column(values=ped_cyclist_fatalities_per_capita)])'), defaultTypeEnvironment('USA'), 0)
+    const perCapita = unitOrNothing(deriveTableColumnUnit(mapUSSFromString('table(columns=[column(values=ped_cyclist_fatalities_per_capita)])'), defaultTypeEnvironment('USA'), 0))
     assert.equal(written(perCapita, 1e-5), '1.00/100k')
     assert.equal(written(unitOfMap('traffic_fatalities_per_capita'), 1e-5), '1.00/100k')
 })
@@ -171,7 +207,7 @@ void test('a difference of two is written as one', () => {
 
 void test('a script is read as a whole, so a map of what it named is in those units', () => {
     const uss = mapUSSFromString('x = population / area\ncondition (true)\ncMap(data=x, scale=linearScale(), ramp=rampUridis)')
-    assert.equal(written(deriveMapUnit(uss, defaultTypeEnvironment('USA'))), '1\u202f000/km^{2}')
+    assert.equal(written(unitOrNothing(deriveMapUnit(uss, defaultTypeEnvironment('USA')))), '1\u202f000/km^{2}')
 })
 
 void test('a column is written in the units of its values', () => {

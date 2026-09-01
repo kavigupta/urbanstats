@@ -77,6 +77,14 @@ test('what a regression did not expect is a difference of shares', async (t) => 
     await t.expect(await rows()).eql(['+9.92 %', '+3.26 %', '+3.21 %'])
 })
 
+urbanstatsFixture('a column in no unit at all', `${target}/statistic.html?uss=${encodeURIComponent('customNode(""); condition (true); table(columns=[column(values=population + area)])')}&article_type=Judicial+Circuit&start=1&amount=3&order=descending&universe=USA&edit=true`)
+
+test('a column whose unit cannot be worked out says so, where the script is being written', async (t) => {
+    await waitForLoading()
+    await t.expect(Selector('#test-editor-result').innerText)
+        .contains('Could not compute units for population + area: cannot add people and m^2')
+})
+
 urbanstatsFixture('a logarithm of a quantity', tableOf('ln(high_temp)'))
 
 test('a logarithm names what its argument was read in', async (t) => {
