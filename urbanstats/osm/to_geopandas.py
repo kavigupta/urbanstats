@@ -1,14 +1,15 @@
 import geopandas as gpd
 import overpy
 from shapely import difference, unary_union
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Point, Polygon, LineString
+from shapely.ops import polygonize, linemerge
 
 
 def merge_ring(a, b):
     if a[0].id == b[-1].id:
         return b[:-1] + a
     if a[-1].id == b[0].id:
-        return a + b[:1]
+        return a + b[1:]
     if a[0].id == b[0].id:
         return b[::-1] + a[1:]
     if a[-1].id == b[-1].id:
@@ -41,9 +42,28 @@ def polygon_for_way(way):
     return polygon_for_nodes(way.get_nodes(resolve_missing=True))
 
 
+def polygon_for_ring_category(category):
+    # https://gis.stackexchange.com/a/328608
+    lss = []  # convert ways to linstrings
+
+    for _, way in enumerate(category):
+        # way = way.resolve()
+        ls_coords = []
+
+        for node in way.get_nodes(resolve_missing=True):
+            ls_coords.append((node.lon, node.lat))  # create a list of node coordinates
+
+        lss.append(LineString(ls_coords))  # create a LineString from coords
+
+    merged = linemerge([*lss])  # merge LineStrings
+    borders = unary_union(merged)  # linestrings to a MultiLineString
+    polygons = list(polygonize(borders))
+    return unary_union(polygons)
+
+
 def polygon_for_relation(relation):
     members = {"inner": [], "outer": []}
-    queue = relation.members
+    queue = relation.members[:]
     while queue:
         way = queue.pop()
         role = way.role
@@ -55,17 +75,10 @@ def polygon_for_relation(relation):
         if isinstance(way, overpy.Relation):
             queue += way.members
         else:
-            members[role].append(way.get_nodes(resolve_missing=True))
+            members[role].append(way)
 
     members = {
-        k: unary_union(
-            [
-                polygon_for_nodes(ring)
-                for ring in consolidate_rings_single(members_k)
-                if len(ring) >= 3
-            ]
-        )
-        for k, members_k in members.items()
+        k: polygon_for_ring_category(members_k) for k, members_k in members.items()
     }
     return difference(members["outer"], members["inner"])
 
