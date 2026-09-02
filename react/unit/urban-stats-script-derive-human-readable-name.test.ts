@@ -208,6 +208,14 @@ testTableColumnLabel(test,
     undefined,
 )
 
+// A map's data filters what it reports, so its label carries a where that is not the map's
+testMapLabel(test,
+    `condition (density_pw_1km > 0)
+cMap(data=do { condition (low_temp < 50)
+population }, scale=linearScale(), ramp=rampUridis)`,
+    '(Population where Mean low temp < 50°F) where PW Density (r=1km) > 0/km^{2}',
+)
+
 let tableLabelIdx = 0
 
 function testTableLabel(testFn: typeof test, code: string, columnNames: HumanReadableName[], expectedLabel: string | undefined): void {
@@ -238,4 +246,36 @@ testTableLabel(test,
 table(columns=[column(values=population)])`,
     ['Population'],
     'Population where Population > 1m',
+)
+testTableLabel(test,
+    `condition(population > 1m)
+condition(area > 5)
+table(columns=[column(values=population)])`,
+    ['Population'],
+    'Population where Area > 5km^{2} and Population > 1m',
+)
+// The columns are joined with commas, so a filter after them would read as one more of them
+testTableLabel(test,
+    `condition(population > 1m)
+table(columns=[column(values=population), column(values=area)])`,
+    ['Population', 'Area'],
+    '(Population, Area) where Population > 1m',
+)
+
+// A column that filters what it reports carries a where of its own, which is not the table's
+const coldWhereCold: HumanReadableName = [
+    { type: 'atom', value: 'Population' },
+    { type: 'where', value: [{ type: 'atom', value: 'Mean low temp < 50°F' }] },
+]
+const columnWithOwnCondition = 'column(values=do { condition (low_temp < 50)\npopulation })'
+testTableLabel(test,
+    `condition (density_pw_1km > 0)
+table(columns=[${columnWithOwnCondition}])`,
+    [coldWhereCold],
+    '(Population where Mean low temp < 50°F) where PW Density (r=1km) > 0/km^{2}',
+)
+testTableLabel(test,
+    `table(columns=[${columnWithOwnCondition}])`,
+    [coldWhereCold],
+    'Population where Mean low temp < 50°F',
 )
