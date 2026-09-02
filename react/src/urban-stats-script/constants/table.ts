@@ -67,7 +67,10 @@ export const column: USSValue = {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>, originalArgs: OriginalFunctionArgs): USSRawValue => {
         const namePassedIn = namedArgs.name as string | null
-        const values = namedArgs.values as TableColumnValues
+        const values = namedArgs.values as (number | string | boolean | null)[]
+        if (values[0] === null) {
+            throw new Error('Column values must be numbers, strings, or booleans')
+        }
         const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'Unit', value: { unit: string } } | null
         const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
 
@@ -76,7 +79,7 @@ export const column: USSValue = {
         return {
             type: 'opaque',
             opaqueType: 'column',
-            value: { name, values, unit } satisfies TableColumn,
+            value: { name, values: values as TableColumnValues, unit } satisfies TableColumn,
         }
     },
     documentation: {

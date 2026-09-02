@@ -2454,6 +2454,14 @@ void test('test table with string and boolean columns', () => {
     assert.deepStrictEqual(effects, [])
 })
 
+void test('test column of nulls is rejected', () => {
+    const ctx = emptyContextWithInsets([])
+    assert.throws(
+        () => evaluate(parseExpr('column(values=[null, null])'), ctx),
+        (err: unknown) => err instanceof InterpretationError && err.message.includes('Column values must be numbers, strings, or booleans'),
+    )
+})
+
 void test('test column name and table title with subscript syntax are parsed as hre', () => {
     const effects: Effect[] = []
     const ctx = emptyContextWithInsets(effects)
