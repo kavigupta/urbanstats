@@ -1,4 +1,6 @@
-import { USSType, USSValue, createConstantExpression } from '../types-values'
+import { Context } from '../context'
+import { extendBlockIdKwarg, LocInfo } from '../location'
+import { OriginalFunctionArgs, undocValue, USSType, USSValue, createConstantExpression } from '../types-values'
 
 // Functions can't be send over the worker boundary, so instead we must send descriptors
 export interface LinearScaleDescriptor { kind: 'linear', min: number, max: number, center?: number }
@@ -67,6 +69,18 @@ export function instantiate(descriptor: ScaleDescriptor): ScaleInstance {
                 forward: (value: number) => forward(Math.log(value)),
                 inverse: (value: number) => Math.exp(inverse(value)),
             }
+    }
+}
+
+// So that the editor can show the bounds the scale settled on for the arguments it wasn't given
+function recordBounds(ctx: Context, callLocation: LocInfo, descriptor: ScaleDescriptor): void {
+    const block = callLocation.start.block
+    if (block.type !== 'single') {
+        return
+    }
+    const { inverse } = instantiate(descriptor)
+    for (const [key, position] of [['min', 0], ['center', 0.5], ['max', 1]] as const) {
+        ctx.recordBlockValue(extendBlockIdKwarg(block.ident, key), undocValue(inverse(position), { type: 'number' }))
     }
 }
 
@@ -153,7 +167,7 @@ export const linearScaleValue: USSValue = {
         },
         returnType: { type: 'concrete', value: scaleType },
     },
-    value: (ctx, posArgs, namedArgs) => {
+    value: (ctx, posArgs, namedArgs, originalArgs: OriginalFunctionArgs) => {
         const min = namedArgs.min as number | null | undefined
         const max = namedArgs.max as number | null | undefined
         const center = namedArgs.center as number | null | undefined
@@ -161,7 +175,11 @@ export const linearScaleValue: USSValue = {
         return {
             type: 'opaque',
             opaqueType: 'scale',
-            value: (values: number[]) => linearScale(values, min ?? undefined, max ?? undefined, center ?? undefined),
+            value: (values: number[]) => {
+                const descriptor = linearScale(values, min ?? undefined, max ?? undefined, center ?? undefined)
+                recordBounds(ctx, originalArgs.callLocation, descriptor)
+                return descriptor
+            },
         }
     },
     documentation: {
@@ -193,7 +211,7 @@ export const logScaleValue: USSValue = {
         },
         returnType: { type: 'concrete', value: scaleType },
     },
-    value: (ctx, posArgs, namedArgs) => {
+    value: (ctx, posArgs, namedArgs, originalArgs: OriginalFunctionArgs) => {
         const min = namedArgs.min as number | null | undefined
         const max = namedArgs.max as number | null | undefined
         const center = namedArgs.center as number | null | undefined
@@ -201,7 +219,11 @@ export const logScaleValue: USSValue = {
         return {
             type: 'opaque',
             opaqueType: 'scale',
-            value: (values: number[]) => logScale(values, min ?? undefined, max ?? undefined, center ?? undefined),
+            value: (values: number[]) => {
+                const descriptor = logScale(values, min ?? undefined, max ?? undefined, center ?? undefined)
+                recordBounds(ctx, originalArgs.callLocation, descriptor)
+                return descriptor
+            },
         }
     },
     documentation: {

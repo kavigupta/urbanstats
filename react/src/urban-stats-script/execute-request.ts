@@ -86,7 +86,10 @@ function assignments(context: Context | undefined): AssignmentsResult {
     if (context === undefined) {
         return new Map()
     }
-    return new Map(Array.from(context.constantEntries()).concat(Array.from(context.variableEntries())).map(([k, v]) => [k, { ...v, value: removeFunctions(v.value) }]))
+    const entries = Array.from(context.constantEntries())
+        .concat(Array.from(context.variableEntries()))
+        .concat(Array.from(context.blockValueEntries()))
+    return new Map(entries.map(([k, v]) => [k, { ...v, value: removeFunctions(v.value) }]))
 }
 
 async function contextForRequest(request: USSExecutionRequest, cache: ExecutorCache): Promise<[Context, () => EditorError[]]> {
