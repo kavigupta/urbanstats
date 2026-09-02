@@ -10,6 +10,7 @@ import { instantiate, ScaleDescriptor, Scale } from '../src/urban-stats-script/c
 import { Table, TableColumn } from '../src/urban-stats-script/constants/table'
 import { Context } from '../src/urban-stats-script/context'
 import { Effect, evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
+import { noLocation } from '../src/urban-stats-script/location'
 import { parseNoErrorAsCustomNode } from '../src/urban-stats-script/parser'
 import { renderType, USSRawValue, USSType, USSValue, renderValue, undocValue, OriginalFunctionArgs, canUnifyTo } from '../src/urban-stats-script/types-values'
 
@@ -659,7 +660,7 @@ void test('more if expressions', (): void => {
                     emptyContext(),
                     [],
                     {},
-                    { posArgs: [], namedArgs: {} },
+                    { posArgs: [], namedArgs: {}, callLocation: noLocation },
                 )
             },
             (err: Error): boolean => {
@@ -1440,6 +1441,21 @@ void test('test map label with subscript syntax is parsed as hre', () => {
         { type: 'atom', value: '(x)' },
     ])
     assert.deepStrictEqual(effects, [])
+})
+
+function recordedBounds(ctx: Context): number[] {
+    const recorded = new Map(ctx.blockValueEntries())
+    return ['test_min', 'test_center', 'test_max'].map(key => recorded.get(key)!.value as number)
+}
+
+void test('test scale records the bounds it settled on', () => {
+    const linearCtx = emptyContextWithInsets()
+    evaluate(parseExpr('cMap(geo=geo, data=[1, 2, 4], scale=linearScale(), ramp=rampBone)'), linearCtx)
+    assert.strict(close(recordedBounds(linearCtx), [1, 2.5, 4]))
+
+    const logCtx = emptyContextWithInsets()
+    evaluate(parseExpr('cMap(geo=geo, data=[1, 2, 4], scale=logScale(min=1), ramp=rampBone)'), logCtx)
+    assert.strict(close(recordedBounds(logCtx), [1, 2, 4]))
 })
 
 void test('test basic map with geometric', () => {

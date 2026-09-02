@@ -83,10 +83,15 @@ async function executeRequest(request: USSExecutionRequest, cache: ExecutorCache
 }
 
 function assignments(context: Context | undefined): AssignmentsResult {
+    const withoutFunctions = (entries: Iterable<[string, USSValue]>): Map<string, USSValue> =>
+        new Map(Array.from(entries).map(([k, v]) => [k, { ...v, value: removeFunctions(v.value) }]))
     if (context === undefined) {
-        return new Map()
+        return { variables: new Map(), blockValues: new Map() }
     }
-    return new Map(Array.from(context.constantEntries()).concat(Array.from(context.variableEntries())).map(([k, v]) => [k, { ...v, value: removeFunctions(v.value) }]))
+    return {
+        variables: withoutFunctions(Array.from(context.constantEntries()).concat(Array.from(context.variableEntries()))),
+        blockValues: withoutFunctions(context.blockValueEntries()),
+    }
 }
 
 async function contextForRequest(request: USSExecutionRequest, cache: ExecutorCache): Promise<[Context, () => EditorError[]]> {
