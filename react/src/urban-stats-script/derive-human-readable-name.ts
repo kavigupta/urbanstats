@@ -215,9 +215,10 @@ export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): H
     const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment, units)
     if (dataLabel === undefined) return
     // Replace the map call with just the data description to simplify the label (we know it's a map)
-    const withMapCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: dataLabel }, location: noLocation } })
+    const withMapCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: grouped(dataLabel) }, location: noLocation } })
     assert(withMapCallReplacedByDataLabel !== undefined, 'should not happen')
-    return humanReadableElements(withMapCallReplacedByDataLabel, typeEnvironment, units)
+    const label = humanReadableElements(withMapCallReplacedByDataLabel, typeEnvironment, units)
+    return label === undefined ? undefined : ungroupUnlessWorthwhile(label, dataLabel, 1)
 }
 
 export function mapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
@@ -308,10 +309,32 @@ export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, 
     if (result === undefined) {
         return undefined
     }
+    const columns = joinHumanReadableNames(columnNames)
     // Replace the table call with just the column to simplify the label (we know it's a table)
-    const withTableCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: joinHumanReadableNames(columnNames) }, location: noLocation } })
+    const withTableCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: grouped(columns) }, location: noLocation } })
     assert(withTableCallReplacedByDataLabel !== undefined, 'should not happen')
-    return humanReadableElements(withTableCallReplacedByDataLabel, typeEnvironment, units)
+    const label = humanReadableElements(withTableCallReplacedByDataLabel, typeEnvironment, units)
+    return label === undefined ? undefined : ungroupUnlessWorthwhile(label, columns, columnNames.length)
+}
+
+/**
+ * A label is substituted into the script inside parens, so that a filter the label itself carries
+ * is not at the end for the script's own filter to consolidate with.
+ */
+function grouped(label: HumanReadableElement[]): HumanReadableElement[] {
+    return [{ type: 'parens', value: label }]
+}
+
+/**
+ * The parentheses are worth their noise only where something follows the label, and either it is a
+ * list or it carries a filter that what follows would otherwise run into.
+ */
+function ungroupUnlessWorthwhile(label: HumanReadableElement[], substituted: HumanReadableElement[], parts: number): HumanReadableElement[] {
+    const worthwhile = label.length > 1 && (parts > 1 || substituted.some(element => element.type === 'where'))
+    if (worthwhile || label[0]?.type !== 'parens') {
+        return label
+    }
+    return [...label[0].value, ...label.slice(1)]
 }
 
 /**
