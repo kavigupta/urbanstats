@@ -9,7 +9,11 @@ export type USSExecutionDescriptor = { kind: 'generic' } | { kind: 'mapper', geo
 export interface USSExecutionRequest { descriptor: USSExecutionDescriptor, stmts: UrbanStatsASTStatement }
 export type AsyncInterpretationError = EditorError[]
 
-export type AssignmentsResult = Map<string, USSValue>
+export interface AssignmentsResult {
+    variables: Map<string, USSValue>
+    // Values functions recorded for the expressions they came from, keyed by block ident
+    blockValues: Map<string, USSValue>
+}
 
 export interface USSExecutionResult<Value extends USSValue = USSValue> {
     resultingValue?: Value
