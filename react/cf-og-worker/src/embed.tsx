@@ -13,6 +13,7 @@ import { colorThemes } from '../../src/page_template/color-themes'
 import { colorFromCycle } from '../../src/page_template/colors'
 import { pieSlicePath, pieSlices } from '../../src/syau/cluster-geometry'
 import { Inset } from '../../src/urban-stats-script/constants/insets'
+import { TableCellValue } from '../../src/urban-stats-script/constants/table'
 import { mixWithBackground } from '../../src/utils/color'
 import { computeAspectRatioForInsets } from '../../src/utils/coordinates'
 import { HumanReadableName } from '../../src/utils/human-readable-element'
@@ -572,7 +573,7 @@ function rowHeight(stat: ComparisonCard['stats'][number], layout: TableLayout): 
     return rowPadding * 2 + Math.max(name, layout.valueSize) * lineHeight + 2
 }
 
-function cellValue(value: number | string | boolean, unit: StoredUnit, units: Units, fontSize: number): ReactNode[] {
+function cellValue(value: TableCellValue, unit: StoredUnit, units: Units, fontSize: number): ReactNode[] {
     if (typeof value === 'boolean') {
         return [value ? '\u2705' : '\u274c']
     }

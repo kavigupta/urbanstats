@@ -6,6 +6,7 @@ import React, { ReactNode, useCallback, useContext } from 'react'
 
 import { Settings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
+import { TableCellValue, TableColumnValues } from '../urban-stats-script/constants/table'
 import { USSOpaqueValue, USSValue } from '../urban-stats-script/types-values'
 import { HumanReadableName } from '../utils/human-readable-element'
 import { reifyString } from '../utils/human-readable-name'
@@ -183,7 +184,7 @@ export function generateMapperCSVData(
 
 export function generateStatisticsPanelCSVData(
     articleNames: string[],
-    data: { name: HumanReadableName, value: number[] | string[] | boolean[], ordinal?: number[], populationPercentile?: number[] }[],
+    data: { name: HumanReadableName, value: TableColumnValues, ordinal?: number[], populationPercentile?: number[] }[],
     hideOrdinalsPercentiles: boolean,
     settings: UnitSettings,
 ): string[][] {
@@ -192,7 +193,7 @@ export function generateStatisticsPanelCSVData(
 
     for (const col of data) {
         headerRow.push(reifyString(col.name, settings))
-        if (!hideOrdinalsPercentiles && col.ordinal !== undefined) {
+        if (!hideOrdinalsPercentiles && col.ordinal !== undefined && col.populationPercentile !== undefined) {
             headerRow.push(`${reifyString(col.name, settings)} Ord`, `${reifyString(col.name, settings)} percentile`)
         }
     }
@@ -223,6 +224,6 @@ function formatNumberForCSV(value: number): string {
     return value.toLocaleString(undefined, { maximumFractionDigits: 10 })
 }
 
-function formatCellForCSV(value: number | string | boolean): string {
+function formatCellForCSV(value: TableCellValue): string {
     return typeof value === 'number' ? formatNumberForCSV(value) : String(value)
 }

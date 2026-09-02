@@ -4,10 +4,16 @@ import { hre, parseHumanReadableTemplate } from '../../utils/human-readable-temp
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
 import { noLocation } from '../location'
-import { USSType, USSValue, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation, createConstantExpression } from '../types-values'
+import { USSType, USSValue, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation, createConstantExpression, USSPrimitiveRawValue } from '../types-values'
 
-/** Homogeneous, as any USS vector is. */
+/** A column's cells: the USS primitives less null, homogeneous as any USS vector is. */
 export type TableColumnValues = number[] | string[] | boolean[]
+
+/** What one of those cells holds. */
+export type TableCellValue = TableColumnValues[number]
+
+/** The cells of a column with no scale to place a row on, which are shown as they read. */
+export type TableTextValues = Exclude<TableColumnValues, number[]>
 
 export interface TableColumn {
     name?: HumanReadableName
@@ -67,7 +73,7 @@ export const column: USSValue = {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>, originalArgs: OriginalFunctionArgs): USSRawValue => {
         const namePassedIn = namedArgs.name as string | null
-        const values = namedArgs.values as (number | string | boolean | null)[]
+        const values = namedArgs.values as USSPrimitiveRawValue[]
         if (values[0] === null) {
             throw new Error('Column values must be numbers, strings, or booleans')
         }
@@ -204,10 +210,14 @@ export function orderNonNan(a: number, b: number): number {
     return a - b
 }
 
+// Pinned rather than left to the reader's locale, which would order the same table two ways on
+// two devices, and the embed card's server-side ordering a third.
+const cellCollator = new Intl.Collator('en')
+
 /** How a column sorts, whichever of the three kinds of value it holds. */
-export function orderCells(a: number | string | boolean, b: number | string | boolean): number {
+export function orderCells(a: TableCellValue, b: TableCellValue): number {
     if (typeof a === 'string' && typeof b === 'string') {
-        return a.localeCompare(b)
+        return cellCollator.compare(a, b)
     }
     return orderNonNan(Number(a), Number(b))
 }

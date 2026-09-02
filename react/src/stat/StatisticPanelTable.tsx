@@ -8,6 +8,7 @@ import { ColumnIdentifier, valueOnlyColumns } from '../components/table'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { useDefinedUniverse } from '../universe'
+import { TableTextValues } from '../urban-stats-script/constants/table'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { reifyString } from '../utils/human-readable-name'
 import { sanitize } from '../utils/paths'
@@ -159,7 +160,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
     )
 }
 
-function renderTextCell(value: string | boolean): string {
+function renderTextCell(value: TableTextValues[number]): string {
     if (typeof value === 'boolean') {
         return value ? '\u2705' : '\u274c'
     }

@@ -21,7 +21,7 @@ import { toStatement } from '../../src/urban-stats-script/ast'
 import { doRender } from '../../src/urban-stats-script/constants/color-utils'
 import { Inset } from '../../src/urban-stats-script/constants/insets'
 import { ClusterMap, CMap, CMapRGB, PMap } from '../../src/urban-stats-script/constants/map'
-import { Table } from '../../src/urban-stats-script/constants/table'
+import { Table, TableCellValue } from '../../src/urban-stats-script/constants/table'
 import { deriveConditionLabel, deriveMapLabel } from '../../src/urban-stats-script/derive-human-readable-name'
 import { createRequestExecutor } from '../../src/urban-stats-script/execute-request'
 import { geometry } from '../../src/utils/geometry'
@@ -164,7 +164,7 @@ export interface StatisticCard {
     /** The condition the script filters the geographies by, absent when it filters none. */
     filter: HumanReadableName | undefined
     /** One per row of the page, in the order the page sorts them. */
-    rows: { longname: string, ordinal: number | undefined, values: (number | string | boolean)[] }[]
+    rows: { longname: string, ordinal: number | undefined, values: TableCellValue[] }[]
     universe: string
     /** The flag as a data URI, or undefined if it could not be read. */
     flag: string | undefined

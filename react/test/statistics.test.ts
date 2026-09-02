@@ -1319,7 +1319,9 @@ test('string and boolean columns render as text', async (t) => {
     const values = await dataValues()
     const rows = [0, 1, 2].map(row => values.slice(row * 3, row * 3 + 3))
     const names = rows.map(row => row[0])
-    await t.expect(names).eql([...names].sort((a, b) => b.localeCompare(a)))
+    // The same collator the table pins, rather than this runner's locale.
+    const collator = new Intl.Collator('en')
+    await t.expect(names).eql([...names].sort((a, b) => collator.compare(b, a)))
     for (const [name, startsWithA] of rows) {
         await t.expect(startsWithA).eql(name.toLowerCase().startsWith('a') ? '\u2705' : '\u274c')
     }
