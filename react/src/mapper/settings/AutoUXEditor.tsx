@@ -156,9 +156,7 @@ function ArgumentEditor(props: {
                             )
                         : <span>{humanReadableName}</span>}
                     {EditButton && <EditButton />}
-                </div>
-                {computedValue?.type.type === 'number' && (
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '0.25em 0' }}>
+                    {computedValue?.type.type === 'number' && (
                         <input
                             type="text"
                             disabled
@@ -167,8 +165,8 @@ function ArgumentEditor(props: {
                             value={Number((computedValue.value as number).toPrecision(6))}
                             style={{ width: '200px', minWidth: '4em', flexShrink: 2, fontSize: '14px', padding: '4px 8px' }}
                         />
-                    </div>
-                )}
+                    )}
+                </div>
                 {
                     isEnabled && (collapsable
                         ? (
