@@ -27,9 +27,17 @@ export interface StatSettings {
     view: View
 }
 
+export type StatColumn = {
+    name: HumanReadableName
+    unit?: StoredUnit
+} & (
+    { value: number[], populationPercentile: number[], ordinal: number[] } |
+    { value: string[] | boolean[], populationPercentile?: undefined, ordinal?: undefined }
+)
+
 export interface StatData {
     // One entry per column
-    table: { value: number[], populationPercentile: number[], ordinal: number[], name: HumanReadableName, unit?: StoredUnit }[]
+    table: StatColumn[]
     articleNames: string[]
     renderedStatname: HumanReadableName
     statcol?: StatCol

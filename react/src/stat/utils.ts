@@ -6,7 +6,7 @@ import { attemptParseAsTopLevel, MapUSS, mapUSSFromString } from '../mapper/sett
 import type { PageDescriptor } from '../navigation/PageDescriptor'
 import { StatName } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
-import { orderNonNan, Table, tableType } from '../urban-stats-script/constants/table'
+import { numberColumnValues, orderCells, orderNonNan, Table, tableType } from '../urban-stats-script/constants/table'
 import { deriveTableColumnLabel, deriveTableLabel, tableLabel } from '../urban-stats-script/derive-human-readable-name'
 import { deriveTableColumnUnit } from '../urban-stats-script/derive-unit'
 import { unparse } from '../urban-stats-script/parser'
@@ -16,7 +16,7 @@ import { reifyString } from '../utils/human-readable-name'
 import { UnitSettings } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
-import { StatData, Statistic, StatSettings, View } from './types'
+import { StatColumn, StatData, Statistic, StatSettings, View } from './types'
 
 export function pageDescriptor({ stat, view }: StatSettings): PageDescriptor & { kind: 'statistic' } {
     return {
@@ -89,20 +89,25 @@ export function statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn }
     typeEnvironment: TypeEnvironment
     warn: (message: string) => void
 }): StatData {
-    const columns = table.columns.map((column, index) => {
+    const columns = table.columns.map((column, index): StatColumn => {
         let name = column.name ?? deriveTableColumnLabel(mapUSS, typeEnvironment, index)
         if (name === undefined) {
             warn(`Name could not be derived for column ${index}, please pass name="<your name here>" to column(...)`)
             name = '[Unnamed Column]'
         }
+        const unit = column.unit === undefined
+            ? deriveTableColumnUnit(mapUSS, typeEnvironment, index)
+            : unitTypeToStoredUnit(column.unit)
+        const numbers = numberColumnValues(column.values)
+        if (numbers === undefined || column.populationPercentiles === undefined) {
+            return { value: column.values as string[] | boolean[], name, unit }
+        }
         return {
-            value: column.values,
+            value: numbers,
             populationPercentile: column.populationPercentiles,
-            ordinal: computeOrdinals(column.values),
+            ordinal: computeOrdinals(numbers),
             name,
-            unit: column.unit === undefined
-                ? deriveTableColumnUnit(mapUSS, typeEnvironment, index)
-                : unitTypeToStoredUnit(column.unit),
+            unit,
         }
     })
 
@@ -130,11 +135,11 @@ export function sortedRowIndices(data: StatData, sortColumn: View['sortColumn'],
     if (data.table.length === 0) {
         return []
     }
-    const sortBy = data.table[Math.max(0, Math.min(sortColumn, data.table.length - 1))]
-    const indices = sortBy.value.map((_, i) => i).filter(i => !Number.isNaN(sortBy.value[i]))
+    const values: (number | string | boolean)[] = data.table[Math.max(0, Math.min(sortColumn, data.table.length - 1))].value
+    const indices = values.map((_, i) => i).filter(i => !Number.isNaN(values[i]))
     indices.sort((a, b) => order === 'ascending'
-        ? orderNonNan(sortBy.value[a], sortBy.value[b])
-        : orderNonNan(sortBy.value[b], sortBy.value[a]))
+        ? orderCells(values[a], values[b])
+        : orderCells(values[b], values[a]))
     return indices
 }
 

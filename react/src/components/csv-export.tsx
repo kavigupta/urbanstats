@@ -183,7 +183,7 @@ export function generateMapperCSVData(
 
 export function generateStatisticsPanelCSVData(
     articleNames: string[],
-    data: { name: HumanReadableName, value: number[], ordinal: number[], populationPercentile: number[] }[],
+    data: { name: HumanReadableName, value: number[] | string[] | boolean[], ordinal?: number[], populationPercentile?: number[] }[],
     hideOrdinalsPercentiles: boolean,
     settings: UnitSettings,
 ): string[][] {
@@ -192,7 +192,7 @@ export function generateStatisticsPanelCSVData(
 
     for (const col of data) {
         headerRow.push(reifyString(col.name, settings))
-        if (!hideOrdinalsPercentiles) {
+        if (!hideOrdinalsPercentiles && col.ordinal !== undefined) {
             headerRow.push(`${reifyString(col.name, settings)} Ord`, `${reifyString(col.name, settings)} percentile`)
         }
     }
@@ -204,16 +204,12 @@ export function generateStatisticsPanelCSVData(
         const row: string[] = [name]
 
         for (const col of data) {
-            const value = col.value[i]
-            const formattedValue = formatNumberForCSV(value)
-            row.push(formattedValue)
+            row.push(formatCellForCSV(col.value[i]))
 
-            if (!hideOrdinalsPercentiles) {
-                const ordinal = col.ordinal[i]
-                const percentile = col.populationPercentile[i]
+            if (!hideOrdinalsPercentiles && col.ordinal !== undefined && col.populationPercentile !== undefined) {
                 row.push(
-                    ordinal.toString(),
-                    percentile.toFixed(1),
+                    col.ordinal[i].toString(),
+                    col.populationPercentile[i].toFixed(1),
                 )
             }
         }
@@ -225,4 +221,8 @@ export function generateStatisticsPanelCSVData(
 
 function formatNumberForCSV(value: number): string {
     return value.toLocaleString(undefined, { maximumFractionDigits: 10 })
+}
+
+function formatCellForCSV(value: number | string | boolean): string {
+    return typeof value === 'number' ? formatNumberForCSV(value) : String(value)
 }

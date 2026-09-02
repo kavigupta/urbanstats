@@ -572,7 +572,13 @@ function rowHeight(stat: ComparisonCard['stats'][number], layout: TableLayout): 
     return rowPadding * 2 + Math.max(name, layout.valueSize) * lineHeight + 2
 }
 
-function cellValue(value: number, unit: StoredUnit, units: Units, fontSize: number): ReactNode[] {
+function cellValue(value: number | string | boolean, unit: StoredUnit, units: Units, fontSize: number): ReactNode[] {
+    if (typeof value === 'boolean') {
+        return [value ? '\u2705' : '\u274c']
+    }
+    if (typeof value === 'string') {
+        return [value]
+    }
     // A geography the statistic has no value for, which the site's tables leave blank.
     return Number.isNaN(value) ? ['—'] : formatValue(value, unit, units, fontSize)
 }
@@ -855,7 +861,7 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
                         }}
                     >
                         <div style={{ display: 'flex', width: rankColumn, fontSize: nameSize, color: colors.muted, justifyContent: 'flex-end', paddingRight: cellPadding * 2 }}>
-                            {entry.ordinal}
+                            {entry.ordinal ?? ''}
                         </div>
                         <div style={{ display: 'flex', flex: 1, fontSize: nameSize, overflow: 'hidden' }}>{narrowSpaces(entry.longname)}</div>
                         {statistic.columns.map((column, index2) => (
