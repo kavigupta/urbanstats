@@ -95,12 +95,21 @@ export class TestUtils {
      */
     async waitForMapsToRender(): Promise<void> {
         const deadline = Date.now() + mapRenderTimeoutMs
-        await Promise.all(Array.from(this.maps.values()).map(async (map) => {
+        let settledFrames = 0
+        while (settledFrames < mapSettledFrames) {
             // A frame first: right after a commit, `loaded()` can still be true from before the map noticed the new work.
-            do {
-                await new Promise(resolve => requestAnimationFrame(resolve))
-            } while (!map._removed && !map.loaded() && Date.now() < deadline)
-        }))
+            await new Promise(resolve => requestAnimationFrame(resolve))
+            // Read the maps afresh each frame, since one can mount, or remount under a new id, while we wait.
+            const pending = Array.from(this.maps.entries()).filter(([, map]) => !map._removed && !map.loaded())
+            if (pending.length === 0) {
+                settledFrames++
+                continue
+            }
+            settledFrames = 0
+            if (Date.now() > deadline) {
+                throw new Error(`Maps did not finish rendering within ${mapRenderTimeoutMs}ms: ${pending.map(([id]) => id).join(', ')}`)
+            }
+        }
     }
 
     /** Only the bundled build routes `react` through the key checking, so an e2e test triggers it here */
@@ -130,4 +139,7 @@ export interface TestWindow {
 
 const debugWait = makeDebugLogger('waitForLoading')
 
-const mapRenderTimeoutMs = 5000
+const mapRenderTimeoutMs = 30000
+
+/** maplibre learns about a pending resize after the frame that caused it, so one settled frame isn't enough. */
+const mapSettledFrames = 3
