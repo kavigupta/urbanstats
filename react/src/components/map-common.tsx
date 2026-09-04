@@ -19,7 +19,7 @@ import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { ScreenshotAwareLayer } from './ScreenshotAwareLayer'
-import { keptByNoBasemap } from './map-common-utils'
+import { keptByNoBasemap, urbanStatsLayerPrefix } from './map-common-utils'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotCallback, useScreenshotMode } from './screenshot'
 
 const debugLog = makeDebugLogger('mapExport')
@@ -157,9 +157,6 @@ export interface Polygon {
 
     [meta: string]: unknown
 }
-
-// Probably useful to make sure we don't collide with premade layers
-export const urbanStatsLayerPrefix = 'urban-stats'
 
 function polygonsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
     return `${urbanStatsLayerPrefix}-polygons-${kind}-${id}`

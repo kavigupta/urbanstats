@@ -1,7 +1,7 @@
 import type maplibregl from 'maplibre-gl'
 import type { ReactElement } from 'react'
 
-import { keptByNoBasemap } from '../components/map-common-utils'
+import { keptByNoBasemap, urbanStatsLayerPrefix } from '../components/map-common-utils'
 
 import { elementsWithBadKeys } from './bad-keys'
 import { makeDebugLogger } from './debug-logging'
@@ -89,18 +89,21 @@ export class TestUtils {
         }
     }
 
-    /**
-     * A screenshot taken while the map is still loading catches polygon edges a pixel or two off,
-     * which is enough to fail the near-exact screenshot comparison.
-     */
+    /** A map drawing a fallback tile looks finished but draws coarser outlines than the settled one. */
     async waitForMapsToRender(): Promise<void> {
         const deadline = Date.now() + mapRenderTimeoutMs
-        await Promise.all(Array.from(this.maps.values()).map(async (map) => {
+        while (true) {
             // A frame first: right after a commit, `loaded()` can still be true from before the map noticed the new work.
-            do {
-                await new Promise(resolve => requestAnimationFrame(resolve))
-            } while (!map._removed && !map.loaded() && Date.now() < deadline)
-        }))
+            await new Promise(resolve => requestAnimationFrame(resolve))
+            // Read the maps afresh each frame, since one can mount, or remount under a new id, while we wait.
+            const pending = Array.from(this.maps.entries()).flatMap(([id, map]) => map._removed ? [] : unsettled(id, map))
+            if (pending.length === 0) {
+                return
+            }
+            if (Date.now() > deadline) {
+                throw new Error(`Maps did not finish rendering within ${mapRenderTimeoutMs}ms: ${pending.join(', ')}`)
+            }
+        }
     }
 
     /** Only the bundled build routes `react` through the key checking, so an e2e test triggers it here */
@@ -130,4 +133,26 @@ export interface TestWindow {
 
 const debugWait = makeDebugLogger('waitForLoading')
 
-const mapRenderTimeoutMs = 5000
+const mapRenderTimeoutMs = 30000
+
+/**
+ * A source drawing a fallback tile is a complete picture that `loaded()` calls done, but its
+ * outlines carry the simplification geojson-vt baked into that tile rather than the ideal one's.
+ */
+function unsettled(mapId: string, map: maplibregl.Map): string[] {
+    if (!map.loaded()) {
+        return [`${mapId} (loading)`]
+    }
+    const idealZoom = map.transform.tileZoom
+    return Object.entries(map.style.sourceCaches).flatMap(([sourceId, cache]) => {
+        if (!sourceId.startsWith(urbanStatsLayerPrefix)) {
+            return []
+        }
+        const zooms = cache.getRenderableIds().map(tileId => cache.getTileByID(tileId).tileID.overscaledZ)
+        if (zooms.length === 0) {
+            return [`${mapId}/${sourceId} (no tiles yet)`]
+        }
+        const fallbacks = zooms.filter(zoom => zoom !== idealZoom)
+        return fallbacks.length === 0 ? [] : [`${mapId}/${sourceId} (drawing z${fallbacks.join(',')} where z${idealZoom} is due)`]
+    })
+}
