@@ -89,10 +89,7 @@ export class TestUtils {
         }
     }
 
-    /**
-     * A screenshot taken while the map is still loading catches polygon edges a pixel or two off,
-     * which is enough to fail the near-exact screenshot comparison.
-     */
+    /** A map drawing a fallback tile looks finished but draws coarser outlines than the settled one. */
     async waitForMapsToRender(): Promise<void> {
         const deadline = Date.now() + mapRenderTimeoutMs
         while (true) {
