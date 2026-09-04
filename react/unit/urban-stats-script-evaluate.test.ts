@@ -2453,6 +2453,31 @@ void test('test basic table', () => {
     assert.deepStrictEqual(effects, [])
 })
 
+void test('test table with string and boolean columns', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+    ctx.assignVariable('population', {
+        type: { type: 'vector', elementType: numType },
+        value: [100, 200, 300],
+        documentation: { humanReadableName: 'Population' },
+    })
+    const resultTable = evaluate(parseExpr('table(columns=[column(values=["a", "b", "c"], name="Col1"), column(values=[true, false, true], name="Col2")])'), ctx)
+    const resultTableRaw = (resultTable.value as { type: 'opaque', value: Table }).value
+    assert.deepStrictEqual(resultTableRaw.columns[0].values, ['a', 'b', 'c'])
+    assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, undefined)
+    assert.deepStrictEqual(resultTableRaw.columns[1].values, [true, false, true])
+    assert.deepStrictEqual(resultTableRaw.columns[1].populationPercentiles, undefined)
+    assert.deepStrictEqual(effects, [])
+})
+
+void test('test column of nulls is rejected', () => {
+    const ctx = emptyContextWithInsets([])
+    assert.throws(
+        () => evaluate(parseExpr('column(values=[null, null])'), ctx),
+        (err: unknown) => err instanceof InterpretationError && err.message.includes('Column values must be numbers, strings, or booleans'),
+    )
+})
+
 void test('test column name and table title with subscript syntax are parsed as hre', () => {
     const effects: Effect[] = []
     const ctx = emptyContextWithInsets(effects)

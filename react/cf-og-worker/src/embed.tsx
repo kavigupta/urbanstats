@@ -13,6 +13,7 @@ import { colorThemes } from '../../src/page_template/color-themes'
 import { colorFromCycle } from '../../src/page_template/colors'
 import { pieSlicePath, pieSlices } from '../../src/syau/cluster-geometry'
 import { Inset } from '../../src/urban-stats-script/constants/insets'
+import { TableCellValue } from '../../src/urban-stats-script/constants/table'
 import { mixWithBackground } from '../../src/utils/color'
 import { computeAspectRatioForInsets } from '../../src/utils/coordinates'
 import { HumanReadableName } from '../../src/utils/human-readable-element'
@@ -572,7 +573,13 @@ function rowHeight(stat: ComparisonCard['stats'][number], layout: TableLayout): 
     return rowPadding * 2 + Math.max(name, layout.valueSize) * lineHeight + 2
 }
 
-function cellValue(value: number, unit: StoredUnit, units: Units, fontSize: number): ReactNode[] {
+function cellValue(value: TableCellValue, unit: StoredUnit, units: Units, fontSize: number): ReactNode[] {
+    if (typeof value === 'boolean') {
+        return [value ? '\u2705' : '\u274c']
+    }
+    if (typeof value === 'string') {
+        return [value]
+    }
     // A geography the statistic has no value for, which the site's tables leave blank.
     return Number.isNaN(value) ? ['—'] : formatValue(value, unit, units, fontSize)
 }
@@ -855,7 +862,7 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
                         }}
                     >
                         <div style={{ display: 'flex', width: rankColumn, fontSize: nameSize, color: colors.muted, justifyContent: 'flex-end', paddingRight: cellPadding * 2 }}>
-                            {entry.ordinal}
+                            {entry.ordinal ?? ''}
                         </div>
                         <div style={{ display: 'flex', flex: 1, fontSize: nameSize, overflow: 'hidden' }}>{narrowSpaces(entry.longname)}</div>
                         {statistic.columns.map((column, index2) => (

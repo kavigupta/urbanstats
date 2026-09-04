@@ -4,16 +4,31 @@ import { hre, parseHumanReadableTemplate } from '../../utils/human-readable-temp
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
 import { noLocation } from '../location'
-import { USSType, USSValue, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation, createConstantExpression } from '../types-values'
+import { USSType, USSValue, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation, createConstantExpression, USSPrimitiveRawValue } from '../types-values'
+
+/** A column's cells: the USS primitives less null, homogeneous as any USS vector is. */
+export type TableColumnValues = number[] | string[] | boolean[]
+
+/** What one of those cells holds. */
+export type TableCellValue = TableColumnValues[number]
+
+/** The cells of a column with no scale to place a row on, which are shown as they read. */
+export type TableTextValues = Exclude<TableColumnValues, number[]>
 
 export interface TableColumn {
     name?: HumanReadableName
-    values: number[]
+    values: TableColumnValues
     unit?: UnitType
 }
 
 export type TableColumnWithPopulationPercentiles = TableColumn & {
-    populationPercentiles: number[]
+    // Absent on string and boolean columns, which have no scale to place a row on.
+    populationPercentiles?: number[]
+}
+
+/** The first cell tells the whole column; an empty column counts as numeric. */
+export function numberColumnValues(values: TableColumnValues): number[] | undefined {
+    return values.length === 0 || typeof values[0] === 'number' ? values as number[] : undefined
 }
 
 export interface Table {
@@ -42,7 +57,7 @@ export const column: USSValue = {
         posArgs: [],
         namedArgs: {
             values: {
-                type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } },
+                type: { type: 'anyPrimitiveVector' },
             },
             name: {
                 type: { type: 'concrete', value: { type: 'string' } },
@@ -58,7 +73,10 @@ export const column: USSValue = {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>, originalArgs: OriginalFunctionArgs): USSRawValue => {
         const namePassedIn = namedArgs.name as string | null
-        const values = namedArgs.values as number[]
+        const values = namedArgs.values as USSPrimitiveRawValue[]
+        if (values[0] === null) {
+            throw new Error('Column values must be numbers, strings, or booleans')
+        }
         const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'Unit', value: { unit: string } } | null
         const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
 
@@ -67,7 +85,7 @@ export const column: USSValue = {
         return {
             type: 'opaque',
             opaqueType: 'column',
-            value: { name, values, unit } satisfies TableColumn,
+            value: { name, values: values as TableColumnValues, unit } satisfies TableColumn,
         }
     },
     documentation: {
@@ -79,7 +97,7 @@ export const column: USSValue = {
             values: 'Values',
             unit: 'Unit',
         },
-        longDescription: hre`Creates a column with a name and a list of cell values. The name can be automatically derived from the values argument if not provided. Optionally specify a unit type. ${nameSyntaxDescription}`,
+        longDescription: hre`Creates a column with a name and a list of cell values, which can be numbers, strings, or booleans (rendered as ✅/❌). The name can be automatically derived from the values argument if not provided. Optionally specify a unit type. ${nameSyntaxDescription}`,
     },
 } satisfies USSValue
 
@@ -173,7 +191,7 @@ export const table: USSValue = {
             hideOrdinalsPercentiles: 'Hide Ordinals/Percentiles',
             title: 'Title',
         },
-        longDescription: hre`Creates a table with named columns, where each column contains a list of numbers. All columns must have the same length. Optionally hide ordinals and percentiles (default: false, i.e., show them). Optionally specify a title for the table. ${titleSyntaxDescription}`,
+        longDescription: hre`Creates a table with named columns, where each column contains a list of numbers, strings, or booleans. All columns must have the same length. Optionally hide ordinals and percentiles (default: false, i.e., show them). Optionally specify a title for the table. ${titleSyntaxDescription}`,
     },
 } satisfies USSValue
 
@@ -192,8 +210,24 @@ export function orderNonNan(a: number, b: number): number {
     return a - b
 }
 
+// Pinned rather than left to the reader's locale, which would order the same table two ways on
+// two devices, and the embed card's server-side ordering a third.
+const cellCollator = new Intl.Collator('en')
+
+/** How a column sorts, whichever of the three kinds of value it holds. */
+export function orderCells(a: TableCellValue, b: TableCellValue): number {
+    if (typeof a === 'string' && typeof b === 'string') {
+        return cellCollator.compare(a, b)
+    }
+    return orderNonNan(Number(a), Number(b))
+}
+
 function attachPopulationPercentilesToColumn(col: TableColumn, population: number[]): TableColumnWithPopulationPercentiles {
-    const sortedIdxs = col.values
+    const numbers = numberColumnValues(col.values)
+    if (numbers === undefined) {
+        return col
+    }
+    const sortedIdxs = numbers
         .map((v, idx) => ({ v, idx }))
         .sort((a, b) => orderNonNan(a.v, b.v))
         .map(({ idx }) => idx)
@@ -206,7 +240,7 @@ function attachPopulationPercentilesToColumn(col: TableColumn, population: numbe
     }
     const totalPopulation = cumulativeSum
 
-    const populationPercentiles: number[] = col.values.map((_, idx) => {
+    const populationPercentiles: number[] = numbers.map((_, idx) => {
         const cumPop = cumulativePopulations[idx]
         return totalPopulation === 0 ? 0 : Math.floor((cumPop / totalPopulation) * 100)
     })

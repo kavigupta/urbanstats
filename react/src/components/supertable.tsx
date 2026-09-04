@@ -13,7 +13,7 @@ import { EditModeButton, EditModeHeader, TableEditButton } from './edit-mode-hea
 import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
 import { useScreenshotMode } from './screenshot'
-import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeDisclaimerFootnotes, maxLayoutInformation, CommonLayoutInformation } from './table'
+import { ColumnIdentifier, MainHeaderRow, valueOnlyColumns, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeDisclaimerFootnotes, maxLayoutInformation, CommonLayoutInformation } from './table'
 
 export interface PlotSpec {
     statDescription: string
@@ -47,6 +47,7 @@ export interface TableLayout {
 export interface MeasuredTableLayout extends TableLayout {
     columnWidthsInfo: (CommonLayoutInformation | undefined)[]
     extraSpaceRight: number[]
+    onlyColumnsEach: ColumnIdentifier[][]
 }
 
 /**
@@ -62,11 +63,12 @@ export function measureColumns(columnRows: StatisticCellRenderingInfo[][], unive
  * `extraSpaceRight` is asked for per column rather than passed as an array, so it can't
  * disagree with the measurements about the column count.
  */
-export function measuredLayout(layout: TableLayout, columnWidthsInfo: (CommonLayoutInformation | undefined)[], extraSpaceRight: (columnIndex: number) => number): MeasuredTableLayout {
+export function measuredLayout(layout: TableLayout, columnWidthsInfo: (CommonLayoutInformation | undefined)[], extraSpaceRight: (columnIndex: number) => number, onlyColumnsEach?: ColumnIdentifier[][]): MeasuredTableLayout {
     return {
         ...layout,
         columnWidthsInfo,
         extraSpaceRight: columnWidthsInfo.map((_, columnIndex) => extraSpaceRight(columnIndex)),
+        onlyColumnsEach: onlyColumnsEach ?? columnWidthsInfo.map(() => layout.onlyColumns),
     }
 }
 
@@ -128,6 +130,8 @@ export function TableContents(props: TableContentsProps): ReactNode {
         props.layout,
         measureColumns(columnRows, universe, simpleOrdinals),
         colIndex => props.verticalPlotSpecs[colIndex] === undefined ? 0 : columnWidth,
+        // A column of text has no ordinal or percentile for its header to promise.
+        columnRows.map(rows => rows.length > 0 && rows.every(row => row.kind !== 'statistic') ? valueOnlyColumns : props.layout.onlyColumns),
     )
     const fullWidths = columnFullWidths(layout)
 
@@ -230,7 +234,7 @@ export function TableFrame(props: {
     minHeight?: string
     children: ReactNode
 }): ReactNode {
-    const { widthLeftHeader, columnWidth, onlyColumns, simpleOrdinals, columnWidthsInfo, extraSpaceRight } = props.layout
+    const { widthLeftHeader, columnWidth, onlyColumnsEach, simpleOrdinals, columnWidthsInfo, extraSpaceRight } = props.layout
     return (
         <>
             {props.superHeaderSpec !== undefined && (
@@ -247,7 +251,7 @@ export function TableFrame(props: {
                         columnWidth={columnWidth}
                         topLeftSpec={props.topLeftSpec}
                         topLeftWidth={widthLeftHeader}
-                        onlyColumns={onlyColumns}
+                        onlyColumnsEach={onlyColumnsEach}
                         extraSpaceRight={extraSpaceRight}
                         simpleOrdinals={simpleOrdinals}
                         columnWidthsInfo={columnWidthsInfo}

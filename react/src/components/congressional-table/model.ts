@@ -19,7 +19,7 @@ export interface CongressionalColumnData {
 
 /** Takes the row structurally so it works with both ArticleRow and StatisticCellRenderingInfo. */
 export function congressionalDataForRow(
-    row: { kind: 'statistic' } | { kind: 'metadata', statval: MetadataStatValue },
+    row: { kind: 'statistic' | 'text' } | { kind: 'metadata', statval: MetadataStatValue },
     longname: string,
 ): CongressionalColumnData | undefined {
     if (row.kind !== 'metadata' || typeof row.statval === 'string') {
