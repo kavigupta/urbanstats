@@ -15,28 +15,9 @@ import { ReadInUnits, readAsANumber, unitCheck } from './unit-inference'
 
 type Expression = UrbanStatsASTExpression<ReadInUnits>
 
-/** The expression a caption writes here. A toNumber or a `- 0` writes its operand instead. */
+/** The expression a caption writes here. A toNumber writes its argument instead. */
 function reads(ast: Expression, typeEnvironment: TypeEnvironment): Expression {
-    const zero = countedFromNothing(ast)
-    if (zero !== undefined) {
-        return reads(zero.of, typeEnvironment)
-    }
     return readAsANumber<ReadInUnits>(ast, { typeEnvironment, named: new Map() })?.read ?? ast
-}
-
-/**
- * Matches the `x - 0` the pass writes to make a reading scale, giving back x and the unit of the 0.
- * A caption writes it as "x [in °F]" instead of showing the subtraction.
- */
-function countedFromNothing(ast: Expression): { of: Expression, unit: StoredUnit } | undefined {
-    if (ast.type !== 'binaryOperator' || ast.operator.node !== '-') {
-        return undefined
-    }
-    const { right } = ast
-    if (right.type !== 'constant' || right.value.node.type !== 'number' || right.value.node.value !== 0 || right.readIn === undefined) {
-        return undefined
-    }
-    return { of: ast.left, unit: right.readIn }
 }
 
 function humanReadableElements(ast: Expression | UrbanStatsASTStatement<ReadInUnits>, typeEnvironment: TypeEnvironment, bracketOperators = false): HumanReadableElement[] | undefined {
@@ -46,11 +27,6 @@ function humanReadableElements(ast: Expression | UrbanStatsASTStatement<ReadInUn
         case 'autoUXNode':
             return humanReadableElements(ast.expr, typeEnvironment)
         case 'binaryOperator': {
-            const zero = countedFromNothing(ast)
-            if (zero !== undefined) {
-                const of = humanReadableElements(zero.of, typeEnvironment, bracketOperators)
-                return of === undefined ? undefined : inUnitWritten(of, zero.unit)
-            }
             const centerOp = expressionOperatorMap[ast.operator.node]
             /*
              * (A op1 B) op2 C => A op1 B op2 C iff prec(op1) > prec(op2) or op1 = op2

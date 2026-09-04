@@ -97,15 +97,15 @@ for (const [data, expected] of [
     // an argument that has to share a unit with another is rewritten the same way
     ['maximum(area, population)', 'max(Area, Population × 1km^{2}/person)'],
     ['inverseQuantile(population, area)', 'quantile^{-1}(Population, Area × 1/km^{2})'],
-    // a temperature does not scale, so the caption writes the number of degrees it is
-    ['high_temp * area', 'Mean high temp [in °F] × Area'],
-    ['high_temp ** 2 * area', 'Mean high temp [in °F]^{2} × Area'],
-    ['sqrt(high_temp)', 'sqrt(Mean high temp [in °F])'],
-    ['high_temp / high_temp', 'Mean high temp [in °F] ÷ Mean high temp [in °F]'],
-    // a count has no unit name to write, so the zero is invisible here
-    ['high_temp + population', 'Mean high temp + Population × 1°F/person'],
-    ['population + high_temp', 'Population + Mean high temp [in °F] × 1/°F'],
-    ['high_temp - low_temp + population', '(Mean high temp − Mean low temp) + Population × 1°F/person'],
+    // a temperature does not scale, so the caption writes what is left once its zero is taken off
+    ['high_temp * area', '(Mean high temp − 0°F) × Area'],
+    ['high_temp ** 2 * area', '(Mean high temp − 0°F)^{2} × Area'],
+    ['sqrt(high_temp)', 'sqrt(Mean high temp − 0°F)'],
+    ['high_temp / high_temp', '(Mean high temp − 0°F) ÷ (Mean high temp − 0°F)'],
+    // a count has no unit name, so the zero it is taken from is written as a bare 0
+    ['high_temp + population', 'Mean high temp + (Population − 0) × 1°F/person'],
+    ['population + high_temp', 'Population + (Mean high temp − 0°F) × 1/°F'],
+    ['high_temp - low_temp + population', '(Mean high temp − Mean low temp) + (Population − 0) × 1°F/person'],
     // and nothing is written where the two sides already go together
     ['population + population', 'Population + Population'],
     ['area / area', 'Area ÷ Area'],
