@@ -60,7 +60,7 @@ export function useMapGenerator({ mapSettings, typeEnvironment }: { mapSettings:
             initial: {
                 ui: ({ loading }) => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
                 errors: [],
-                assignments: new Map(),
+                assignments: { variables: new Map(), blockValues: new Map() },
             },
             ui: (generator, loading) => ({
                 ...generator,
@@ -90,7 +90,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         return {
             ui: ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
             errors: [{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }],
-            assignments: new Map(),
+            assignments: { variables: new Map(), blockValues: new Map() },
         }
     }
 
@@ -111,7 +111,8 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         const prev = await previousGenerator()
         return {
             ...prev,
-            assignments: execResult.assignments,
+            // A failed run stops partway, so its block values are missing everything after the error
+            assignments: { variables: execResult.assignments.variables, blockValues: prev.assignments.blockValues },
             errors: execResult.error,
         }
     }
@@ -139,7 +140,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
     }
 
     const csvExportCallback: CSVExportData = () => {
-        const csvData = generateMapperCSVData(mapResultMain, execResult.assignments)
+        const csvData = generateMapperCSVData(mapResultMain, execResult.assignments.variables)
         const csvFilename = `${mapSettings.geographyKind}-${mapSettings.universe}-data.csv`
         return {
             csvData,

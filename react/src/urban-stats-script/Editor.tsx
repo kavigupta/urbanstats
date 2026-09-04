@@ -318,7 +318,7 @@ export function Editor(
                 if (token?.token.type === 'identifier') {
                     const name = token.token.value
                     const documentation = typeEnvironment.get(name)
-                    const value = assignments.get(name)
+                    const value = assignments.variables.get(name)
                     if (documentation !== undefined || value !== undefined) {
                         // Keep the same object while we're on the same token, so we don't restart the delay
                         const next = { token, elemOffset: totalOffset(elem).left, opts: { location: token.location, name, documentation, value } }

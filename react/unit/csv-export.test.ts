@@ -30,4 +30,11 @@ void describe('the statistics panel CSV', () => {
         assert.deepEqual(header({}), ['Name', 'Counties where Mean high temp > 80°F'])
         assert.deepEqual(header({ temperatureUnit: 'celsius' }), ['Name', 'Counties where Mean high temp > 26.7°C'])
     })
+
+    void test('writes a text column plainly, with no ordinal or percentile beside it', () => {
+        const textColumn = { name: [{ type: 'atom' as const, value: 'Coastal' }], value: [true] }
+        const rows = generateStatisticsPanelCSVData(['Alameda County, California, USA'], [column, textColumn], false, {})
+        assert.deepEqual(rows[0], ['Name', 'Counties where Mean high temp > 80°F', 'Counties where Mean high temp > 80°F Ord', 'Counties where Mean high temp > 80°F percentile', 'Coastal'])
+        assert.deepEqual(rows[1], ['Alameda County, California, USA', '1', '1', '50.0', 'true'])
+    })
 })

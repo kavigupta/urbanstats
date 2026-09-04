@@ -162,7 +162,7 @@ void test('constant listing', (): void => {
             '(; screenBounds: {east: number, north: number, south: number, west: number}, text: richTextDocument, backgroundColor: color = rgb(1, 0.973, 0.941), borderColor: color = rgb(0.2, 0.2, 0.2), borderWidth: number = 1) -> textBox': [
                 'textBox',
             ],
-            '(; values: [number], name: string = null, unit: Unit = null) -> column': [
+            '(; values: [any], name: string = null, unit: Unit = null) -> column': [
                 'column',
             ],
             '(; geo: [geoFeatureHandle] = geo, population: [number] = population, columns: [column], hideOrdinalsPercentiles: boolean = false, title: string = null) -> table': [

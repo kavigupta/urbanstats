@@ -19,7 +19,7 @@ import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { ScreenshotAwareLayer } from './ScreenshotAwareLayer'
-import { keptByNoBasemap } from './map-common-utils'
+import { keptByNoBasemap, urbanStatsLayerPrefix } from './map-common-utils'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotCallback, useScreenshotMode } from './screenshot'
 
 const debugLog = makeDebugLogger('mapExport')
@@ -99,18 +99,6 @@ function SynchronizeMapWithScreenshots(): ReactNode {
                     }
                 } while (!map.loaded())
                 debugLog('SynchronizeMapWithScreenshots: map is loaded after', frames, 'frame(s), signaling ready')
-                const layersOrder = map.getLayersOrder()
-                debugLog('SynchronizeMapWithScreenshots: layers count=', layersOrder.length)
-                for (const layerId of layersOrder) {
-                    if (!layerId.startsWith(urbanStatsLayerPrefix)) {
-                        continue
-                    }
-                    const layer = map.getLayer(layerId)
-                    const sourceId = layer && 'source' in layer ? layer.source : undefined
-                    const source = typeof sourceId === 'string' ? map.getSource(sourceId) : undefined
-                    const tolerance = source && 'workerOptions' in source ? (source as unknown as { workerOptions?: { geojsonVtOptions?: { tolerance?: number } } }).workerOptions?.geojsonVtOptions?.tolerance : undefined
-                    debugLog('SynchronizeMapWithScreenshots: layer', layerId, 'type=', layer?.type, 'source=', sourceId, 'tolerance=', tolerance)
-                }
             })().then(() => {
                 screenshotCallback()
             })
@@ -157,9 +145,6 @@ export interface Polygon {
 
     [meta: string]: unknown
 }
-
-// Probably useful to make sure we don't collide with premade layers
-export const urbanStatsLayerPrefix = 'urban-stats'
 
 function polygonsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
     return `${urbanStatsLayerPrefix}-polygons-${kind}-${id}`

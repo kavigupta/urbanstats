@@ -134,7 +134,13 @@ interface StatisticCellRenderingInfoMetadata extends StatisticCellRenderingInfoC
     statpath: StatPath
 }
 
-export type StatisticCellRenderingInfo = StatisticCellRenderingInfoStatistic | StatisticCellRenderingInfoMetadata
+/** A cell that is only ever text, as a string or boolean table column's cells are. */
+interface StatisticCellRenderingInfoText extends StatisticCellRenderingInfoCommon {
+    kind: 'text'
+    statval: string
+}
+
+export type StatisticCellRenderingInfo = StatisticCellRenderingInfoStatistic | StatisticCellRenderingInfoMetadata | StatisticCellRenderingInfoText
 
 // statParents is built in statistic-tree order (via statParentsList),
 // so filtering preserves the desired UI ordering.

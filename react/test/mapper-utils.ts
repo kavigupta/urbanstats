@@ -19,7 +19,7 @@ async function checkGeojson(t: TestController, path: string): Promise<void> {
 export async function downloadPNG(t: TestController): Promise<void> {
     await waitForLoading()
     const download = Selector('button:not(:disabled)').withExactText('Export as PNG')
-    await grabDownload(t, download, '.png') // wait for 6 seconds to ensure the download completes
+    await grabDownload(t, download, '.png')
 }
 
 export function checkSelector(label: RegExp): Selector {
@@ -62,6 +62,10 @@ export function getErrors(): Promise<string[]> {
     return ClientFunction(() =>
         Array.from(document.querySelectorAll('#test-editor-result:not([inert] *)')).map(element => element.textContent!),
     )()
+}
+
+export function computedValue(name: string): Selector {
+    return Selector('input[data-test="computed-value"]:not([inert] *)').withAttribute('data-test-name', name)
 }
 
 export function getInput(original: string | RegExp, nth = 0): Selector {

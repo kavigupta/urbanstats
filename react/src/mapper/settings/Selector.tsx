@@ -45,17 +45,11 @@ export function Selector(props: {
     const unitSettings = useUnitSettings()
     const selected = classifyExpr(props.uss)
 
-    const selectionPossibilities = useMemo(() => {
-        // Combine possibilities from all types
-        const allPossibilities = new Set<Selection>()
-        props.type.forEach((type) => {
-            const typePossibilities = possibilities([type], props.typeEnvironment)
-            typePossibilities.forEach(possibility => allPossibilities.add(possibility))
-        })
-
-        return Array.from(allPossibilities)
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- props.type keeps the same deep value but changes reference. It's simpler to stringify it here than track it down everywhere
-    }, [stableStringify(props.type), props.typeEnvironment])
+    const selectionPossibilities = useMemo(
+        () => possibilities(props.type, props.typeEnvironment),
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- props.type keeps the same deep value but changes reference. It's simpler to stringify it here than track it down everywhere
+        [stableStringify(props.type), props.typeEnvironment],
+    )
 
     const hasCustomConstructor = useMemo(() => {
         return selectionPossibilities.some(possibility => isCustomConstructor(possibility, props.typeEnvironment)) && !isCustomConstructor(selected, props.typeEnvironment)

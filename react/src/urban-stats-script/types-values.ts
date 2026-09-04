@@ -14,7 +14,7 @@ import { Table, TableColumn } from './constants/table'
 import { TextBox } from './constants/text-box'
 import { Context } from './context'
 import { ConstantCategory } from './documentation-category'
-import { noLocation } from './location'
+import { LocInfo, noLocation } from './location'
 import { unparse } from './parser'
 
 // Define Inset and Insets types locally to avoid import issues
@@ -119,6 +119,7 @@ export type USSPrimitiveRawValue = (
 export interface OriginalFunctionArgs {
     posArgs: USSValue[]
     namedArgs: Record<string, USSValue>
+    callLocation: LocInfo
 }
 
 export type USSRawValue = (
@@ -261,6 +262,19 @@ export function createConstantExpression(value: number | string | boolean | null
 
 function isPrimitiveType(type: USSType): boolean {
     return type.type === 'number' || type.type === 'string' || type.type === 'boolean' || type.type === 'null'
+}
+
+/** The concrete types an editor can offer for an argument. The first is what it defaults to. */
+export function argTypeOptions(param: USSFunctionArgType): USSType[] {
+    const primitives: USSType[] = [{ type: 'number' }, { type: 'string' }, { type: 'boolean' }]
+    switch (param.type) {
+        case 'concrete':
+            return [param.value]
+        case 'anyPrimitive':
+            return primitives
+        case 'anyPrimitiveVector':
+            return primitives.map(elementType => ({ type: 'vector', elementType }))
+    }
 }
 
 export function unifyFunctionType(param: USSFunctionArgType, arg: USSType): boolean {

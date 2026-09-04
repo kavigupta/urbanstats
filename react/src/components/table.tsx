@@ -293,7 +293,7 @@ export function MainHeaderRow(props: {
     topLeftSpec: TopLeftCellSpec
     topLeftWidth: number
     columnWidth: number
-    onlyColumns: ColumnIdentifier[]
+    onlyColumnsEach: ColumnIdentifier[][]
     statNameOverride?: string
     extraSpaceRight: number[]
     simpleOrdinals: boolean
@@ -314,7 +314,7 @@ export function MainHeaderRow(props: {
                     : (
                             <StatisticHeaderCells
                                 key={`headerCells_${columnIndex}`}
-                                onlyColumns={props.onlyColumns}
+                                onlyColumns={props.onlyColumnsEach[columnIndex]}
                                 simpleOrdinals={props.simpleOrdinals}
                                 totalWidth={props.columnWidth}
                                 extraSpaceRight={props.extraSpaceRight[columnIndex] ?? 0}
@@ -512,13 +512,13 @@ export function StatisticRowCells(props: {
 
     const cells: ColumnLayoutProps['cells'] = []
 
-    if (props.row.kind === 'metadata') {
-        const metadataRow = props.row
+    if (props.row.kind !== 'statistic') {
+        const textRow = props.row
         cells.push({
             widthPercentage: 25,
             columnIdentifier: 'statval',
             content: () => {
-                const statval = metadataRow.statval
+                const statval = textRow.statval
                 if (typeof statval === 'string') {
                     return <span className="serif value testing-statistic-value">{statval}</span>
                 }

@@ -21,7 +21,7 @@ import { toStatement } from '../../src/urban-stats-script/ast'
 import { doRender } from '../../src/urban-stats-script/constants/color-utils'
 import { Inset } from '../../src/urban-stats-script/constants/insets'
 import { ClusterMap, CMap, CMapRGB, PMap } from '../../src/urban-stats-script/constants/map'
-import { Table } from '../../src/urban-stats-script/constants/table'
+import { Table, TableCellValue } from '../../src/urban-stats-script/constants/table'
 import { deriveConditionLabel, deriveMapLabel } from '../../src/urban-stats-script/derive-human-readable-name'
 import { createRequestExecutor } from '../../src/urban-stats-script/execute-request'
 import { geometry } from '../../src/utils/geometry'
@@ -164,7 +164,7 @@ export interface StatisticCard {
     /** The condition the script filters the geographies by, absent when it filters none. */
     filter: HumanReadableName | undefined
     /** One per row of the page, in the order the page sorts them. */
-    rows: { longname: string, ordinal: number, values: number[] }[]
+    rows: { longname: string, ordinal: number | undefined, values: TableCellValue[] }[]
     universe: string
     /** The flag as a data URI, or undefined if it could not be read. */
     flag: string | undefined
@@ -216,7 +216,7 @@ export async function statisticCard(origin: string, pageData: Extract<PageData, 
         rows: page.slice(0, maxStatisticRows).map(index => ({
             longname: data.articleNames[index],
             // Only the sorted column's, the card having one number per row rather than one per cell.
-            ordinal: data.table[sortColumn].ordinal[index],
+            ordinal: data.table[sortColumn].ordinal?.[index],
             values: columns.map(column => column.value[index]),
         })),
         universe: stat.universe,

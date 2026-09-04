@@ -1303,3 +1303,27 @@ test('warning', async (t) => {
     await t.expect(await getErrors()).eql([])
     await screencap(t)
 })
+
+const textColumnTable = `table(
+    columns=[
+        column(values=geoName, name="Name"),
+        column(values=startsWith(geoName, "A"), name="Starts with A"),
+        column(values=density_pw_1km, name="Density", unit=unitDensity)
+    ]
+)`
+
+urbanstatsFixture('table with string and boolean columns', createUSSStatisticsPage(textColumnTable, 1, 3))
+
+test('string and boolean columns render as text', async (t) => {
+    await waitForLoading()
+    const values = await dataValues()
+    const rows = [0, 1, 2].map(row => values.slice(row * 3, row * 3 + 3))
+    const names = rows.map(row => row[0])
+    // The same collator the table pins, rather than this runner's locale.
+    const collator = new Intl.Collator('en')
+    await t.expect(names).eql([...names].sort((a, b) => collator.compare(b, a)))
+    for (const [name, startsWithA] of rows) {
+        await t.expect(startsWithA).eql(name.toLowerCase().startsWith('a') ? '\u2705' : '\u274c')
+    }
+    await screencap(t)
+})

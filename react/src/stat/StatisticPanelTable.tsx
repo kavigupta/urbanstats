@@ -8,6 +8,7 @@ import { ColumnIdentifier, valueOnlyColumns } from '../components/table'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { useDefinedUniverse } from '../universe'
+import { TableTextValues } from '../urban-stats-script/constants/table'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { reifyString } from '../utils/human-readable-name'
 import { sanitize } from '../utils/paths'
@@ -46,20 +47,28 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
     const onlyColumns: ColumnIdentifier[] = data.hideOrdinalsPercentiles ? valueOnlyColumns : ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
 
     const allColumnRows: StatisticCellRenderingInfo[][] = data.table.map((col) => {
-        return pageIndices.map((actualRowIdx) => {
-            return {
-                kind: 'statistic',
-                statval: col.value[actualRowIdx],
-                ordinal: col.ordinal[actualRowIdx],
-                percentileByPopulation: col.populationPercentile[actualRowIdx],
+        if (col.ordinal === undefined) {
+            const values = col.value
+            return pageIndices.map(actualRowIdx => ({
+                kind: 'text',
+                statval: renderTextCell(values[actualRowIdx]),
                 statname: col.name,
                 articleType: stat.articleType,
-                totalCountInClass: data.totalCountInClass,
-                totalCountOverall: data.totalCountOverall,
-                overallFirstLast: { isFirst: false, isLast: false },
-                unit: col.unit ?? plainNumber,
-            } satisfies StatisticCellRenderingInfo
-        })
+            } satisfies StatisticCellRenderingInfo))
+        }
+        const { value, ordinal, populationPercentile } = col
+        return pageIndices.map(actualRowIdx => ({
+            kind: 'statistic',
+            statval: value[actualRowIdx],
+            ordinal: ordinal[actualRowIdx],
+            percentileByPopulation: populationPercentile[actualRowIdx],
+            statname: col.name,
+            articleType: stat.articleType,
+            totalCountInClass: data.totalCountInClass,
+            totalCountOverall: data.totalCountOverall,
+            overallFirstLast: { isFirst: false, isLast: false },
+            unit: col.unit ?? plainNumber,
+        } satisfies StatisticCellRenderingInfo))
     })
 
     const leftHeaderSpecs: CellSpec[] = pageIndices.map((actualRowIdx) => {
@@ -149,6 +158,13 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
             />
         </div>
     )
+}
+
+function renderTextCell(value: TableTextValues[number]): string {
+    if (typeof value === 'boolean') {
+        return value ? '\u2705' : '\u274c'
+    }
+    return value
 }
 
 function Pagination({ set, view, count, data }: { set: StatSetter, view: View, count: number, data: StatData }): ReactNode {
