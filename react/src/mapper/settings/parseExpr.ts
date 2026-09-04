@@ -14,7 +14,7 @@ import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStats
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement, LocInfo } from '../../urban-stats-script/location'
 import { Decorated, ParseError, parseNoErrorAsCustomNode, unparse } from '../../urban-stats-script/parser'
-import { renderType, TypeEnvironment, USSFunctionType, USSObjectType, USSType } from '../../urban-stats-script/types-values'
+import { argTypeOptions, renderType, TypeEnvironment, USSFunctionArgType, USSFunctionType, USSObjectType, USSType } from '../../urban-stats-script/types-values'
 import { assert } from '../../utils/defensive'
 
 import { parseToNumber, Selection, toNumberAST } from './selector-classifier'
@@ -184,20 +184,14 @@ function attemptParseExpr(
             if (needed.some(([name]) => !names.has(name))) {
                 return undefined
             }
-            if (fnType.posArgs.some(a => a.type !== 'concrete')) {
-                return undefined
-            }
             positionals = positionals.map((a, i) => ({
                 type: 'unnamed',
-                value: parseExpr(a.value, extendBlockIdPositionalArg(blockIdent, i), [(fnType.posArgs[i] as { type: 'concrete', value: USSType }).value], typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes),
+                value: parseExpr(a.value, extendBlockIdPositionalArg(blockIdent, i), argTypeOptions(fnType.posArgs[i]), typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes),
             }))
-            if (Object.values(fnType.namedArgs).some(a => a.type.type !== 'concrete')) {
-                return undefined
-            }
             nameds = nameds.map(a => ({
                 type: 'named',
                 name: { node: a.name.node, location: emptyLocation(blockIdent) },
-                value: parseExpr(a.value, extendBlockIdKwarg(blockIdent, a.name.node), [(fnType.namedArgs[a.name.node].type as { type: 'concrete', value: USSType }).value], typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes),
+                value: parseExpr(a.value, extendBlockIdKwarg(blockIdent, a.name.node), argTypeOptions(fnType.namedArgs[a.name.node].type), typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes),
             }))
             return {
                 type: 'call',
@@ -490,10 +484,11 @@ function extractCompatiblePreviousArgs(expr: UrbanStatsASTExpression, typeEnviro
     if (expr.type === 'call' && expr.fn.type === 'identifier' && (type = typeEnvironment.get(expr.fn.name.node)) && type.type.type === 'function') {
         const foundType: USSFunctionType = type.type
         return (arg, targetType) => {
-            if (typeof arg === 'number' && arg < foundType.posArgs.length && foundType.posArgs[arg].type === 'concrete' && renderType(targetType) === renderType(foundType.posArgs[arg].value)) {
+            const accepts = (param: USSFunctionArgType): boolean => argTypeOptions(param).some(t => renderType(t) === renderType(targetType))
+            if (typeof arg === 'number' && arg < foundType.posArgs.length && accepts(foundType.posArgs[arg])) {
                 return expr.args.filter(a => a.type === 'unnamed')[arg]?.value
             }
-            if (typeof arg === 'string' && arg in foundType.namedArgs && foundType.namedArgs[arg].type.type === 'concrete' && renderType(targetType) === renderType(foundType.namedArgs[arg].type.value)) {
+            if (typeof arg === 'string' && arg in foundType.namedArgs && accepts(foundType.namedArgs[arg].type)) {
                 return expr.args.find(a => a.type === 'named' && a.name.node === arg)?.value
             }
             return undefined
@@ -509,22 +504,20 @@ export function getDefaultFunction(selection: Selection & { type: 'function' }, 
     const args: UrbanStatsASTArg[] = []
     // Only include positional arguments by default, not named arguments with defaults, unless there's an existing value for the named argument
     for (let i = 0; i < fn.type.posArgs.length; i++) {
-        const arg = fn.type.posArgs[i]
-        assert(arg.type === 'concrete', `Positional argument must be concrete`)
+        const argType = argTypeOptions(fn.type.posArgs[i])[0]
         args.push({
             type: 'unnamed',
-            value: compatiblePreviousArg?.(i, arg.value) ?? createDefaultExpression(arg.value, extendBlockIdPositionalArg(blockIdent, i), typeEnvironment),
+            value: compatiblePreviousArg?.(i, argType) ?? createDefaultExpression(argType, extendBlockIdPositionalArg(blockIdent, i), typeEnvironment),
         })
     }
     for (const [name, argWDefault] of Object.entries(fn.type.namedArgs)) {
-        const arg = argWDefault.type
-        assert(arg.type === 'concrete', `Named argument ${name} must be concrete`)
-        const prev = compatiblePreviousArg?.(name, arg.value)
+        const argType = argTypeOptions(argWDefault.type)[0]
+        const prev = compatiblePreviousArg?.(name, argType)
         if (prev || argWDefault.defaultValue === undefined) {
             args.push({
                 type: 'named',
                 name: { node: name, location: emptyLocation(blockIdent) },
-                value: prev ?? createDefaultExpression(arg.value, extendBlockIdKwarg(blockIdent, name), typeEnvironment),
+                value: prev ?? createDefaultExpression(argType, extendBlockIdKwarg(blockIdent, name), typeEnvironment),
             })
         }
     }

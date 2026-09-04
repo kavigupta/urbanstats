@@ -13,7 +13,7 @@ import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement, noLocation } from '../../urban-stats-script/location'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
-import { USSType, USSFunctionArgType, TypeEnvironment } from '../../urban-stats-script/types-values'
+import { USSType, USSFunctionArgType, TypeEnvironment, argTypeOptions } from '../../urban-stats-script/types-values'
 import { AssignmentsResult } from '../../urban-stats-script/workerManager'
 import { DefaultMap } from '../../utils/DefaultMap'
 import { Property } from '../../utils/Property'
@@ -39,8 +39,7 @@ function ArgumentEditor(props: {
     blockIdent: string
     assignments: AssignmentsResult
 }): ReactNode {
-    const arg = props.argWDefault.type
-    assert(arg.type === 'concrete', `Named argument ${props.name} must be concrete`)
+    const argTypes = argTypeOptions(props.argWDefault.type)
 
     const functionUss = props.uss
     const argValue = functionUss.args.find(a => a.type === 'named' && a.name.node === props.name)
@@ -71,7 +70,7 @@ function ArgumentEditor(props: {
             typeEnvironment={props.typeEnvironment}
             errors={props.errors}
             blockIdent={subident}
-            type={[arg.value]}
+            type={argTypes}
             margin={!collapsed}
             assignments={props.assignments}
         />
@@ -120,7 +119,7 @@ function ArgumentEditor(props: {
                                             const defaultExpr = props.argWDefault.defaultValue
                                             let exprToUse: UrbanStatsASTExpression
                                             if (defaultExpr === undefined || (defaultExpr.type === 'identifier' && defaultExpr.name.node === 'null')) {
-                                                exprToUse = createDefaultExpression(arg.value, subident, props.typeEnvironment)
+                                                exprToUse = createDefaultExpression(argTypes[0], subident, props.typeEnvironment)
                                             }
                                             else if (defaultExpr.type === 'identifier' && defaultExpr.name.node === 'false') {
                                                 exprToUse = {
@@ -134,7 +133,7 @@ function ArgumentEditor(props: {
                                             else {
                                                 exprToUse = defaultExpr
                                             }
-                                            exprToUse = deconstruct(exprToUse, props.typeEnvironment, subident, [arg.value]) ?? parseExpr(exprToUse, subident, [arg.value], props.typeEnvironment, () => {
+                                            exprToUse = deconstruct(exprToUse, props.typeEnvironment, subident, argTypes) ?? parseExpr(exprToUse, subident, argTypes, props.typeEnvironment, () => {
                                                 throw new Error('Should not happen')
                                             }, true)
                                             // Add the argument with default value
@@ -448,7 +447,6 @@ export function AutoUXEditor(props: {
             assert(type.type === 'function', `Function ${uss.fn.name.node} must be a function type`)
             const subselectors: ReactNode[] = []
             type.posArgs.forEach((arg, i) => {
-                assert(arg.type === 'concrete', `Positional argument must be concrete`)
                 subselectors.push(
                     <AutoUXEditor
                         key={`pos-${i}`}
@@ -461,7 +459,7 @@ export function AutoUXEditor(props: {
                         typeEnvironment={props.typeEnvironment}
                         errors={props.errors}
                         blockIdent={extendBlockIdPositionalArg(props.blockIdent, i)}
-                        type={[arg.value]}
+                        type={argTypeOptions(arg)}
                         assignments={props.assignments}
                     />,
                 )
