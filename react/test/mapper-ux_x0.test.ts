@@ -63,6 +63,16 @@ mapper(() => test)('scale shows the bounds it computed', { code: 'cMap(data=dens
     await t.expect(computedValue('max').exists).notOk()
 })
 
+mapper(() => test)('computed bounds outlive a failed run', { code: 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    await toggleCustomScript(t)
+    await t.expect(computedValue('min').exists).ok()
+    await checkBox(t, /^max/)
+    await replaceInput(t, 'Constant', 'Custom Expression')
+    await typeInEditor(t, 0, 'unknownFunction()', true)
+    await t.expect(getErrors()).eql(['Undefined variable: unknownFunction at 1:1-15'])
+    await t.expect(computedValue('min').exists).ok()
+})
+
 const errorInSubfield = (testFn: () => TestFn) => (category: string, errorCausingCode: string, error: string): void => {
     mapper(testFn)(`${category} error in subfield`, { code: 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
         await toggleCustomScript(t)
