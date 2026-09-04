@@ -266,6 +266,15 @@ export function backward(operator: BinaryOperatorSymbol, result: AbstractInterpV
     }
 }
 
+/**
+ * Whether an operand of this has to scale, which a reading does not: an area of so many degrees is
+ * an area of a difference of two temperatures, there being no scaling one temperature.
+ */
+export function scalesOperands(operator: BinaryOperatorSymbol): boolean {
+    const form = forms[operator]
+    return form.kind === 'product' || form.kind === 'power'
+}
+
 /** Each of these undoes itself: negating twice, or leaving alone twice, is what was there. */
 export function backwardUnary(operator: UnaryOperatorSymbol, result: AbstractInterpValue): AbstractInterpValue {
     return forwardUnary(operator, result)

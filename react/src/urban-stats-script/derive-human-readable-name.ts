@@ -17,7 +17,26 @@ type Expression = UrbanStatsASTExpression<ReadInUnits>
 
 /** What is written where an expression is: a toNumber writes its argument, brackets and all. */
 function reads(ast: Expression, typeEnvironment: TypeEnvironment): Expression {
+    const zero = countedFromNothing(ast)
+    if (zero !== undefined) {
+        return reads(zero.of, typeEnvironment)
+    }
     return readAsANumber<ReadInUnits>(ast, { typeEnvironment, named: new Map() })?.read ?? ast
+}
+
+/**
+ * An expression less a zero of what it is counted in, which the pass writes where a reading has to
+ * scale. Saying it is counted in that says the same and reads better than the zero does.
+ */
+function countedFromNothing(ast: Expression): { of: Expression, unit: StoredUnit } | undefined {
+    if (ast.type !== 'binaryOperator' || ast.operator.node !== '-') {
+        return undefined
+    }
+    const { right } = ast
+    if (right.type !== 'constant' || right.value.node.type !== 'number' || right.value.node.value !== 0 || right.readIn === undefined) {
+        return undefined
+    }
+    return { of: ast.left, unit: right.readIn }
 }
 
 function humanReadableElements(ast: Expression | UrbanStatsASTStatement<ReadInUnits>, typeEnvironment: TypeEnvironment, bracketOperators = false): HumanReadableElement[] | undefined {
@@ -27,6 +46,11 @@ function humanReadableElements(ast: Expression | UrbanStatsASTStatement<ReadInUn
         case 'autoUXNode':
             return humanReadableElements(ast.expr, typeEnvironment)
         case 'binaryOperator': {
+            const zero = countedFromNothing(ast)
+            if (zero !== undefined) {
+                const of = humanReadableElements(zero.of, typeEnvironment, bracketOperators)
+                return of === undefined ? undefined : inUnitWritten(of, zero.unit)
+            }
             const centerOp = expressionOperatorMap[ast.operator.node]
             /*
              * (A op1 B) op2 C => A op1 B op2 C iff prec(op1) > prec(op2) or op1 = op2

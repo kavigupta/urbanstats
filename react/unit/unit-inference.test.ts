@@ -79,8 +79,8 @@ void test('a power raises what an expression worked out to', () => {
     assert.equal(inferred('(area * 2) ** 0.5'), '(area * 2) ** 0.5 : m^1 times=1.4142135623730951 x1000')
     assert.equal(inferred('(area ** 0.5) ** 2'), 'area ** 0.5 ** 2 : m^2 times=1 x1000000')
     assert.equal(inferred('(population / area) ** 0.5 * area ** 0.5'), '(population / area) ** 0.5 * area ** 0.5 : person^0.5 times=1 x1')
-    // where a temperature has no scale to raise, since twice as far above freezing is not twice as warm
-    assert.equal(inferred('(high_temp * 2) ** 0.5'), '(high_temp * 2) ** 0.5 : inconsistent')
+    // and a temperature is raised from the zero it is counted from, that being what comes out first
+    assert.equal(inferred('(high_temp * 2) ** 0.5'), '(high_temp * 2 - 0) ** 0.5 : F^0.5 times=0 x1')
 })
 
 void test('a sum of two unlike kinds is read with the factor between them written in', () => {
@@ -276,6 +276,19 @@ void test('the arms of an if and the elements of a vector are made to be of one 
         'if (population > 0) { population * 1 } else { area * 1 } : m^-2 person^1 times=1 x0.000001')
 })
 
+void test('a zero comes off a reading so that what wants to scale it can', () => {
+    // an area of so many degrees is an area of a difference of two temperatures
+    assert.equal(inferred('high_temp * area'), '(high_temp - 0) * area : F^1 m^2 times=0 x1000000')
+    assert.equal(inferred('area * high_temp'), 'area * (high_temp - 0) : F^1 m^2 times=0 x1000000')
+    assert.equal(inferred('high_temp / area'), '(high_temp - 0) / area : F^1 m^-2 times=0 x0.000001')
+    assert.equal(inferred('high_temp ** 2'), '(high_temp - 0) ** 2 : F^2 times=0 x1')
+    assert.equal(inferred('high_temp ** 2 * area'), '(high_temp - 0) ** 2 * area : F^2 m^2 times=0 x1000000')
+    assert.equal(inferred('sqrt(high_temp)'), 'sqrt(high_temp - 0) : F^0.5 times=0 x1')
+    // where a bare number scales the reading itself, there being a zero to count the two of it from
+    assert.equal(inferred('high_temp * 2'), 'high_temp * 2 : F^1 times=2 x1')
+    assert.equal(inferred('(high_temp + low_temp) / 2'), '(high_temp + low_temp) / 2 : F^1 times=1 x1')
+})
+
 void test('a zero comes off a reading so that a factor has something to scale', () => {
     // a temperature is counted from a zero of its own, and nothing scales that; what is left once
     // the zero is out is a number of degrees, which scales like anything else
@@ -287,6 +300,34 @@ void test('a zero comes off a reading so that a factor has something to scale', 
     assert.equal(inferred('if (population > 0) { high_temp } else { area }'),
         'if (population > 0) { high_temp } else { (area - 0) * 1 + 0 } : F^1 times=1 x1')
 })
+
+// What a script works out to, where a caller expects a unit of it. Whatever the script says is
+// made to be of that unit, by writing in what says so.
+for (const [code, expected, reads] of [
+    ['population + area', 'rainfall', 'population * 1 + (area - 0) * 1 : m^1 s^-1 times=1 x3.168808781402895e-8'],
+    ['population + area', 'sunny_hours', 'population * 1 + (area - 0) * 1 : s^1 times=1 x3600'],
+    ['population + area', 'density_pw_1km', 'population * 1 + (area - 0) * 1 : m^-2 person^1 times=1 x0.000001'],
+    // a share is a number of nothing, which is what a plain number is, so the sum is read as one
+    ['population + area', 'commute_bike', 'population * 1 + (toNumber(area)) : dimensionless times=1 x1'],
+    // and a temperature is counted from a zero of its own, which goes on what is made into one
+    ['population + area', 'high_temp', '(population - 0) * 1 + 0 + (area - 0) * 1 : F^1 times=1 x1'],
+    // one statistic is made to be of another's unit the same way
+    ['population', 'rainfall', 'population * 1 : m^1 s^-1 times=1 x3.168808781402895e-8'],
+    ['population', 'high_temp', '(population - 0) * 1 + 0 : F^1 times=1 x1'],
+    ['population / area', 'density_pw_1km', 'population / area : m^-2 person^1 times=1 x0.000001'],
+    ['population / area', 'sunny_hours', 'population / (area * 1) : s^1 times=1 x3600'],
+    // a logarithm is a number of nothing, which any unit at all is a factor away from
+    ['ln(population)', 'rainfall', '(ln(toNumber(population))) * 1 : m^1 s^-1 times=1 x3.168808781402895e-8'],
+    ['ln(population)', 'commute_bike', 'ln(toNumber(population)) : dimensionless times=1 x1'],
+    // and a bare number is read as the unit itself, there being nothing else to read it as
+    ['100', 'rainfall', '100 : m^1 s^-1 times=1 x3.168808781402895e-8'],
+    ['100', 'high_temp', '100 : F^1 times=1 x1'],
+    ['100', 'density_pw_1km', '100 : m^-2 person^1 times=1 x0.000001'],
+] as const) {
+    void test(`${code} as ${expected}`, () => {
+        assert.equal(inferred(code, unitOf(expected)), reads)
+    })
+}
 
 void test('a unit expected of the whole script is what its bare numbers are read as', () => {
     // there is nothing else to read them from, where a script is a number and nothing more

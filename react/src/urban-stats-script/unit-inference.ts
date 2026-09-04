@@ -6,7 +6,7 @@ import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTSta
 import { asNumber } from './constants/convert'
 import * as l from './literal-parser'
 import { TypeEnvironment, UnitPropagation, USSPrimitiveRawValue } from './types-values'
-import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, sameSize, unitToWriteIn } from './unit-algebra'
+import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, sameSize, scalesOperands, unitToWriteIn } from './unit-algebra'
 
 /**
  * What reading a script for its units hangs on its nodes: what the number written where the node is
@@ -137,6 +137,11 @@ function withAZero(operator: '+' | '-', ast: Expression, unit: StoredUnit): Expr
     }
 }
 
+/** The expression counted from nothing rather than from a zero of its own, which is what scales. */
+function withoutItsZero(checked: Checked<Expression>, got: AbstractInterpValue & { kind: 'in' }): Checked<Expression> {
+    return { ast: lessAZero(checked.ast, got.unit), value: forward('-', got, inUnit(got.unit)) }
+}
+
 /** The same unit, counted from nothing rather than from a zero of its own. */
 function asADifference(unit: StoredUnit): StoredUnit {
     return { ...unit, unit: { ...unit.unit, times: 0 } }
@@ -156,6 +161,9 @@ function isPlainNumber(unit: StoredUnit): boolean {
  */
 function reconciled(checked: Checked<Expression>, expected: Expected): Checked<Expression> {
     const got = quantity(checked.value)
+    if (expected.kind === 'scales') {
+        return scaling(checked)
+    }
     if (expected.kind !== 'in' || got.kind !== 'in') {
         return checked
     }
@@ -190,23 +198,46 @@ function reconciled(checked: Checked<Expression>, expected: Expected): Checked<E
     return { ast, value }
 }
 
+/** What is expected, as a value: scaling is no unit in particular, so it says nothing. */
+function knownOf(expected: Expected): AbstractInterpValue {
+    return expected.kind === 'scales' ? anything : expected
+}
+
 function checkOperation(ast: UrbanStatsASTExpression<ReadInUnits> & { type: 'binaryOperator' }, scope: Scope, expected: Expected): Checked<Expression> {
     const operator = ast.operator.node
-    const left = checkExpression(ast.left, scope, expectation(backward(operator, expected, anything, 'left')))
-    const right = checkExpression(ast.right, scope, expectation(backward(operator, expected, quantity(left.value), 'right')))
+    const left = checkExpression(ast.left, scope, expectation(backward(operator, knownOf(expected), anything, 'left')))
+    const right = checkExpression(ast.right, scope, expectation(backward(operator, knownOf(expected), quantity(left.value), 'right')))
     // a literal on the left is read from what the right came to, 80 < high_temp being a temperature
     const reread = quantity(left.value).kind === 'any' && quantity(right.value).kind === 'in'
-        ? checkExpression(ast.left, scope, expectation(backward(operator, expected, quantity(right.value), 'left')))
+        ? checkExpression(ast.left, scope, expectation(backward(operator, knownOf(expected), quantity(right.value), 'left')))
         : left
     // each side has been made what the other wanted of it, so what they come to is what they are
     const value = forward(operator, quantity(reread.value), quantity(right.value))
-    return { ast: ({ ...ast, left: reread.ast, right: right.ast }), value }
+    if (value.kind !== 'none' || !scalesOperands(operator)) {
+        return { ast: ({ ...ast, left: reread.ast, right: right.ast }), value }
+    }
+    // and where they do not scale together, the zero a reading is counted from comes out: an area
+    // of so many degrees is an area of a difference of two temperatures
+    const [over, under] = [scaling(reread), scaling(right)]
+    return {
+        ast: ({ ...ast, left: over.ast, right: under.ast }),
+        value: forward(operator, quantity(over.value), quantity(under.value)),
+    }
+}
+
+function scaling(checked: Checked<Expression>): Checked<Expression> {
+    const got = quantity(checked.value)
+    return got.kind === 'in' && !multiplies(got.unit.unit) ? withoutItsZero(checked, got) : checked
 }
 
 /** What each argument is expected to be in, which is what the call makes of the ones before it. */
 function expectedOfArgument(propagation: UnitPropagation | undefined, expected: Expected, index: number, before: AbstractInterpValue[]): Expected {
     if (propagation?.kind === 'unchanged') {
         return expected
+    }
+    // a root of a temperature is a root of a difference of two, there being no scaling a reading
+    if (propagation?.kind === 'power') {
+        return { kind: 'scales' }
     }
     // max and min take both arguments in one unit, so each is expected in the one before it
     if (propagation?.kind !== 'either' && propagation?.kind !== 'rank') {
@@ -266,7 +297,7 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
 function checkCall(ast: UrbanStatsASTExpression<ReadInUnits> & { type: 'call' }, scope: Scope, expected: Expected): Checked<Expression> {
     const propagation = propagationOf(ast.fn, scope)
     // a caption writes a number where a toNumber is, so it carries what it is a number of
-    const readIn = readAsANumber(ast, scope) === undefined ? undefined : unitToWriteIn(expected) ?? ast.readIn
+    const readIn = readAsANumber(ast, scope) === undefined ? undefined : unitToWriteIn(knownOf(expected)) ?? ast.readIn
     const checked: { arg: UrbanStatsASTArg<ReadInUnits>, value: Inferred }[] = []
     for (const [index, arg] of ast.args.entries()) {
         const before = checked.filter(({ arg: each }) => each.type === 'unnamed').map(({ value }) => quantity(value))
@@ -322,7 +353,7 @@ function checkWithin(ast: UrbanStatsASTExpression<ReadInUnits>, scope: Scope, ex
             // the 0.1 of commute_bike < 0.1 is a share, and is written 10%
             // what a number was already read as stands, so that reading a script twice says the
             // same: the 0 of (area - 0) is an area, where a sum of unknowns says only its dimensions
-            const unit = ast.readIn ?? unitToWriteIn(expected)
+            const unit = ast.readIn ?? unitToWriteIn(knownOf(expected))
             if (unit === undefined) {
                 return { ast, value: constant(ast.value.node.value) }
             }
@@ -423,7 +454,7 @@ function checkStatement(ast: UrbanStatsASTStatement<ReadInUnits>, scope: Scope, 
  * two ways: as dimensionless where it scales something (x * 2), and as the other side's unit where
  * it is compared against one (x > 100). A value here would get the first reading in both places.
  */
-type Expected = { kind: 'any' } | { kind: 'none' } | { kind: 'in', unit: StoredUnit }
+type Expected = { kind: 'any' } | { kind: 'none' } | { kind: 'in', unit: StoredUnit } | { kind: 'scales' }
 
 function expectation(value: AbstractInterpValue): Expected {
     switch (value.kind) {

@@ -112,8 +112,8 @@ for (const [data, expected] of [
     ['area / area', 'area / area : 1\u202f230'],
     ['population ** 0', 'population ** 0 : 1\u202f230'],
     ['inverseQuantile(area, area)', 'inverseQuantile(area, area) : 1\u202f230'],
-    // a reading over a reading has no zero to divide from
-    ['high_temp / high_temp', 'high_temp / high_temp : nothing'],
+    // a reading over a reading is what is left of each once the zero it is counted from is out
+    ['high_temp / high_temp', '(high_temp - 0) / (high_temp - 0) : 1\u202f230'],
     // two lengths stored apart meet where one of them is read as so many of the other
     ['minimum(elevation, hospital_mean_dist)', 'minimum(elevation, hospital_mean_dist * 1) : 1.23km'],
     // an empty vector is of every kind and so of none
