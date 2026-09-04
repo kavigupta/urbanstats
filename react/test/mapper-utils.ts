@@ -19,7 +19,7 @@ async function checkGeojson(t: TestController, path: string): Promise<void> {
 export async function downloadPNG(t: TestController): Promise<void> {
     await waitForLoading()
     const download = Selector('button:not(:disabled)').withExactText('Export as PNG')
-    await grabDownload(t, download, '.png') // wait for 6 seconds to ensure the download completes
+    await grabDownload(t, download, '.png')
 }
 
 export function checkSelector(label: RegExp): Selector {
