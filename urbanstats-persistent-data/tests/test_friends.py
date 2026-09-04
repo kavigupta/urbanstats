@@ -1,6 +1,7 @@
 from .utils import (
     associate_email,
     check_infinite_results,
+    check_summary_stats,
     check_todays_score_for,
     create_identity,
     dissociate_email,
@@ -397,6 +398,34 @@ def test_friends_infinite_across_associated_devices(client):
                 "maxScore": 3,
                 "maxScoreSeed": "abc",
                 "maxScoreVersion": 1,
+            }
+        ]
+    }
+
+
+def test_friends_summary_stats_across_associated_devices(client):
+    # a + b are the same person on two devices
+    associate_email(client, identity_a, "email@gmail.com")
+    associate_email(client, identity_b, "email@gmail.com")
+
+    send_friend_request(client, identity_c, "a")
+    send_friend_request(client, identity_b, "c")
+
+    for day in (1, 2, 3):
+        store_juxtastat_stats(client, identity_a, day, [True, True, True, False, False])
+    # Day 2 replayed on the other device, badly
+    store_juxtastat_stats(client, identity_b, 2, [True, False, False, False, False])
+
+    # Day 2 counts once, at its lowest score, so it breaks the streak
+    result = check_summary_stats(client, identity_c, ["a"], "juxtastat")
+    assert result == {
+        "results": [
+            {
+                "friends": True,
+                "meanScore": 2.33,
+                "numPlays": 3,
+                "currentStreak": 1,
+                "maxStreak": 1,
             }
         ]
     }

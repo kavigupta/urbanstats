@@ -31,7 +31,7 @@ export function useStatGenerator({ stat, typeEnvironment }: { stat: Statistic, t
                 data: undefined,
                 errors: [],
                 universesFiltered: universes_ordered,
-                assignments: new Map(),
+                assignments: { variables: new Map(), blockValues: new Map() },
             },
             ui: (generator, loading) => ({
                 ...generator,
@@ -121,7 +121,7 @@ async function makeStatGenerator({ stat, typeEnvironment, previousGenerator }: {
     }
     catch (e) {
         const error: EditorError = { type: 'error', value: e instanceof Error ? e.message : 'Unknown error', location: noLocation, kind: 'error' }
-        return errorResult([error], new Map())
+        return errorResult([error], { variables: new Map(), blockValues: new Map() })
     }
 }
 

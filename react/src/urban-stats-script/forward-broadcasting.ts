@@ -385,7 +385,7 @@ export function broadcastApply(
         posArgsLocated.map(x => x[2]),
         kwArgs.map(x => x[0]),
         kwArgsLocated.map(x => x[2]),
-        { posArgs, namedArgs: Object.fromEntries(kwArgs) },
+        { posArgs, namedArgs: Object.fromEntries(kwArgs), callLocation: locInfo },
         depth,
         ctx,
         locInfo,
