@@ -1,7 +1,7 @@
 import type maplibregl from 'maplibre-gl'
 import type { ReactElement } from 'react'
 
-import { keptByNoBasemap } from '../components/map-common-utils'
+import { keptByNoBasemap, urbanStatsLayerPrefix } from '../components/map-common-utils'
 
 import { elementsWithBadKeys } from './bad-keys'
 import { makeDebugLogger } from './debug-logging'
@@ -95,19 +95,16 @@ export class TestUtils {
      */
     async waitForMapsToRender(): Promise<void> {
         const deadline = Date.now() + mapRenderTimeoutMs
-        let settledFrames = 0
-        while (settledFrames < mapSettledFrames) {
+        while (true) {
             // A frame first: right after a commit, `loaded()` can still be true from before the map noticed the new work.
             await new Promise(resolve => requestAnimationFrame(resolve))
             // Read the maps afresh each frame, since one can mount, or remount under a new id, while we wait.
-            const pending = Array.from(this.maps.entries()).filter(([, map]) => !map._removed && !map.loaded())
+            const pending = Array.from(this.maps.entries()).flatMap(([id, map]) => map._removed ? [] : unsettled(id, map))
             if (pending.length === 0) {
-                settledFrames++
-                continue
+                return
             }
-            settledFrames = 0
             if (Date.now() > deadline) {
-                throw new Error(`Maps did not finish rendering within ${mapRenderTimeoutMs}ms: ${pending.map(([id]) => id).join(', ')}`)
+                throw new Error(`Maps did not finish rendering within ${mapRenderTimeoutMs}ms: ${pending.join(', ')}`)
             }
         }
     }
@@ -141,5 +138,24 @@ const debugWait = makeDebugLogger('waitForLoading')
 
 const mapRenderTimeoutMs = 30000
 
-/** maplibre learns about a pending resize after the frame that caused it, so one settled frame isn't enough. */
-const mapSettledFrames = 3
+/**
+ * A source drawing a fallback tile is a complete picture that `loaded()` calls done, but its
+ * outlines carry the simplification geojson-vt baked into that tile rather than the ideal one's.
+ */
+function unsettled(mapId: string, map: maplibregl.Map): string[] {
+    if (!map.loaded()) {
+        return [`${mapId} (loading)`]
+    }
+    const idealZoom = map.transform.tileZoom
+    return Object.entries(map.style.sourceCaches).flatMap(([sourceId, cache]) => {
+        if (!sourceId.startsWith(urbanStatsLayerPrefix)) {
+            return []
+        }
+        const zooms = cache.getRenderableIds().map(tileId => cache.getTileByID(tileId).tileID.overscaledZ)
+        if (zooms.length === 0) {
+            return [`${mapId}/${sourceId} (no tiles yet)`]
+        }
+        const fallbacks = zooms.filter(zoom => zoom !== idealZoom)
+        return fallbacks.length === 0 ? [] : [`${mapId}/${sourceId} (drawing z${fallbacks.join(',')} where z${idealZoom} is due)`]
+    })
+}
