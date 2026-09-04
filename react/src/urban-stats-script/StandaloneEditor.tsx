@@ -58,7 +58,7 @@ export function useStandaloneEditorState<Selection>({ ident, getCode, onChange, 
         assignments: AssignmentsResult
     } {
     const [results, setResults] = useState<EditorResult[]>([])
-    const [assignments, setAssignments] = useState<AssignmentsResult>(new Map())
+    const [assignments, setAssignments] = useState<AssignmentsResult>({ variables: new Map(), blockValues: new Map() })
 
     const [uss, setUss] = useState(getCode)
     const ussVersion = useRef(0)

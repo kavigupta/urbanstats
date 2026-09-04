@@ -200,3 +200,16 @@ def get_retro_per_question_stats(client, week: str):
     )
     assert response.status_code == 200
     return response.json()
+
+
+def check_summary_stats(
+    client, identity: dict[str, str], requesters: list[str], quiz_kind: str
+):
+    """Check friend summary stats for requesters and return the response."""
+    response = client.post(
+        "/juxtastat/friend_summary_stats",
+        headers=identity,
+        json={"requesters": requesters, "quiz_kind": quiz_kind},
+    )
+    assert response.status_code == 200
+    return response.json()
