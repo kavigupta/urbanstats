@@ -165,13 +165,11 @@ function addedForward(form: { combine: (left: number, right: number) => number }
     if (!sameDimensions(left.unit, right.unit)) {
         return { kind: 'none' }
     }
-    // the values added are the ones the statistics are stored as, so two areas add only where they
-    // are stored the same way: square kilometres and square metres are areas both, and do not add
+    // a script computes with stored values, so km^2 and m^2 do not add though both are areas
     if (!sameSize(left.unit.toBaseUnits, right.unit.toBaseUnits)) {
         return { kind: 'none' }
     }
-    // a difference added to a reading is a reading, counted from the zero the reading is counted
-    // from: so many degrees added to a temperature is a temperature, not so many degrees
+    // degrees added to a temperature give a temperature, so the reading's zero is what counts
     const of = left.unit.unit.baseIsScalar ? right.unit : left.unit
     return written(
         of,
@@ -266,10 +264,7 @@ export function backward(operator: BinaryOperatorSymbol, result: AbstractInterpV
     }
 }
 
-/**
- * Whether an operand of this has to scale, which a reading does not: an area of so many degrees is
- * an area of a difference of two temperatures, there being no scaling one temperature.
- */
+/** Whether the operands have to scale. A temperature reading does not; a difference of two does. */
 export function scalesOperands(operator: BinaryOperatorSymbol): boolean {
     const form = forms[operator]
     return form.kind === 'product' || form.kind === 'power'

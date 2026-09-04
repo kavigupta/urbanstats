@@ -80,33 +80,33 @@ for (const [condition, expected] of [
     testMapLabel(test, `condition (${condition})\ncMap(data=population, scale=linearScale(), ramp=rampUridis)`, `Population where ${expected}`)
 }
 
-// What a script is read as multiplying by, where what it says does not go together as written. The
-// factor is no part of what the script computes, so the caption says what it is.
+// What a script is read as multiplying by when its sides do not go together. The factor is no
+// part of what the script computes, so the caption says what it is.
 for (const [data, expected] of [
     ['population + area', 'Population + Area × 1/km^{2}'],
     ['area + population', 'Area + Population × 1km^{2}/person'],
     ['population - area', 'Population − Area × 1/km^{2}'],
     ['population < area', 'Population < Area × 1/km^{2}'],
-    // a literal already written is read for what it must be, rather than one being written beside it
+    // a literal already written is read for what it must be, rather than one being added
     ['population + area * 2', 'Population + Area × 2/km^{2}'],
     ['population + area / 2', 'Population + Area ÷ 2km^{2}/person'],
     ['population + sqrt(area)', 'Population + sqrt(Area) × 1/km'],
-    // as many as the script wants, and inside whatever it is written inside
+    // as many as the script needs, at whatever depth
     ['population + area + area', 'Population + Area × 1/km^{2} + Area × 1/km^{2}'],
     ['(population + area) * 2', '(Population + Area × 1/km^{2}) × 2'],
-    // an argument that has to be of a kind with another is written the same way
+    // an argument that has to share a unit with another is rewritten the same way
     ['maximum(area, population)', 'max(Area, Population × 1km^{2}/person)'],
     ['inverseQuantile(population, area)', 'quantile^{-1}(Population, Area × 1/km^{2})'],
-    // nothing scales a temperature, so what is written is the number of degrees it is
+    // a temperature does not scale, so the caption writes the number of degrees it is
     ['high_temp * area', 'Mean high temp [in °F] × Area'],
     ['high_temp ** 2 * area', 'Mean high temp [in °F]^{2} × Area'],
     ['sqrt(high_temp)', 'sqrt(Mean high temp [in °F])'],
     ['high_temp / high_temp', 'Mean high temp [in °F] ÷ Mean high temp [in °F]'],
-    // a count is a number of people, which has no name of its own to write
+    // a count has no unit name to write, so the zero is invisible here
     ['high_temp + population', 'Mean high temp + Population × 1°F/person'],
     ['population + high_temp', 'Population + Mean high temp [in °F] × 1/°F'],
     ['high_temp - low_temp + population', '(Mean high temp − Mean low temp) + Population × 1°F/person'],
-    // and where the two sides go together as written, there is nothing to say
+    // and nothing is written where the two sides already go together
     ['population + population', 'Population + Population'],
     ['area / area', 'Area ÷ Area'],
 ] as const) {

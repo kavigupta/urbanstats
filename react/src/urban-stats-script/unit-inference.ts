@@ -8,10 +8,7 @@ import * as l from './literal-parser'
 import { TypeEnvironment, UnitPropagation, USSPrimitiveRawValue } from './types-values'
 import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, sameSize, scalesOperands, unitToWriteIn } from './unit-algebra'
 
-/**
- * What reading a script for its units hangs on its nodes: what the number written where the node is
- * is a number of. A literal has one where the script says what it counts, and so does a toNumber.
- */
+/** The unit of the number a caption writes at this node. Set on literals and on toNumber calls. */
 export interface ReadInUnits {
     readIn?: StoredUnit
 }
@@ -36,7 +33,7 @@ interface Scope {
     named: Bindings
 }
 
-/** An expression as the units want it read, and what it is worth once it is. */
+/** A rewritten expression and the unit it works out to. */
 interface Checked<T> {
     ast: T
     value: Inferred
@@ -72,7 +69,7 @@ function identifier(name: string, scope: Scope): Inferred {
 
 const parameterName = /^x(\d+)$/
 
-/** Nothing, where the script bound the name itself and the function of that name is not what is called. */
+/** How the function propagates units, or nothing if the script bound that name itself. */
 function propagationOf(fn: Expression, scope: Scope): UnitPropagation | undefined {
     if (fn.type !== 'identifier' || scope.named.has(fn.name.node)) {
         return undefined
@@ -80,10 +77,7 @@ function propagationOf(fn: Expression, scope: Scope): UnitPropagation | undefine
     return scope.typeEnvironment.get(fn.name.node)?.documentation?.unitPropagation
 }
 
-/**
- * The expression times a one of whatever unit makes it go where it is: people added to an area are
- * multiplied by so many square kilometres each. The one carries the unit, so the caption says it.
- */
+/** The expression times a 1 in `factor`. The 1 carries the unit, so a caption can write it. */
 function timesAFactor(ast: Expression, factor: StoredUnit): Expression {
     const location = locationOf(ast)
     return ({
@@ -94,10 +88,7 @@ function timesAFactor(ast: Expression, factor: StoredUnit): Expression {
     })
 }
 
-/**
- * The expression read as the plain number it is counted as, which the caption writes "[in °F]".
- * This is what a temperature gets, no factor dividing a reading that has no zero to divide from.
- */
+/** The expression wrapped in toNumber, which a caption writes as "[in °F]". */
 function readAsANumberOf(ast: Expression, unit: StoredUnit): Expression {
     const location = locationOf(ast)
     return ({
@@ -109,20 +100,17 @@ function readAsANumberOf(ast: Expression, unit: StoredUnit): Expression {
     })
 }
 
-/** Whether a value of one unit goes where the other is wanted, without anything written in. */
+/** Whether a value in `got` can be used where `want` is expected, with nothing written in. */
 function goesWhere(want: StoredUnit, got: StoredUnit): boolean {
     return sameDimensions(want, got) && sameSize(want.toBaseUnits, got.toBaseUnits)
 }
 
-/**
- * The expression less a zero of what it is counted in, which is the same number and no longer read
- * from that zero: a temperature so many degrees above freezing is so many degrees.
- */
+/** The expression minus a 0 in its own unit: the same number, read as a difference. */
 function lessAZero(ast: Expression, unit: StoredUnit): Expression {
     return withAZero('-', ast, unit)
 }
 
-/** The expression plus a zero of what is expected, which reads it from that zero. */
+/** The expression plus a 0 in `unit`: the same number, read as a reading. */
 function plusAZero(ast: Expression, unit: StoredUnit): Expression {
     return withAZero('+', ast, unit)
 }
@@ -137,17 +125,17 @@ function withAZero(operator: '+' | '-', ast: Expression, unit: StoredUnit): Expr
     }
 }
 
-/** The expression counted from nothing rather than from a zero of its own, which is what scales. */
+/** `lessAZero`, applied to an expression that has already been checked. */
 function withoutItsZero(checked: Checked<Expression>, got: AbstractInterpValue & { kind: 'in' }): Checked<Expression> {
     return { ast: lessAZero(checked.ast, got.unit), value: forward('-', got, inUnit(got.unit)) }
 }
 
-/** The same unit, counted from nothing rather than from a zero of its own. */
+/** The same unit with times 0: a difference rather than a reading. */
 function asADifference(unit: StoredUnit): StoredUnit {
     return { ...unit, unit: { ...unit.unit, times: 0 } }
 }
 
-/** A number of nothing, which is what a share is not: a share is a number of a hundredth. */
+/** Dimensionless and undecorated. A share is not this: it carries a percent decoration. */
 const plainNumber = { kind: 'in', unit: dimensionless } satisfies Expected
 
 function isPlainNumber(unit: StoredUnit): boolean {
@@ -155,9 +143,8 @@ function isPlainNumber(unit: StoredUnit): boolean {
 }
 
 /**
- * An expression made to be what is expected of it, by writing in whatever says so: a plain number
- * is what a quantity is counted as, which is what toNumber says, and anything else is a factor.
- * Neither changes what the script computes, a factor being a one.
+ * Rewrites an expression to be what is expected of it: a toNumber where a plain number is wanted,
+ * a factor otherwise. Neither changes what the script computes.
  */
 function reconciled(checked: Checked<Expression>, expected: Expected): Checked<Expression> {
     const got = quantity(checked.value)
@@ -173,8 +160,7 @@ function reconciled(checked: Checked<Expression>, expected: Expected): Checked<E
     if (goesWhere(expected.unit, got.unit)) {
         return checked
     }
-    // nothing scales a reading, which is counted from a zero of its own, so the zero comes off
-    // what there is, leaving a difference, and goes back on where a reading is what is wanted
+    // a reading does not scale, so its zero comes off first and goes back on if one is wanted
     const wanted = multiplies(expected.unit.unit) ? expected.unit : asADifference(expected.unit)
     const takeTheZeroOut = !multiplies(got.unit.unit) || (wanted.unit.times === 0 && got.unit.unit.times !== 0)
     const from = takeTheZeroOut ? forward('-', got, inUnit(got.unit)) : got
@@ -191,14 +177,14 @@ function reconciled(checked: Checked<Expression>, expected: Expected): Checked<E
         ast = timesAFactor(ast, factor)
         value = forward('*', from, inUnit(factor))
     }
-    // a reading is what is wanted only where the unit says so: one of itself, from a zero of its own
+    // times 1 on a unit with a zero of its own means a reading rather than a difference
     if (expected.unit.unit.times === 1 && !expected.unit.unit.baseIsScalar) {
         return { ast: plusAZero(ast, expected.unit), value: forward('+', value, inUnit(expected.unit)) }
     }
     return { ast, value }
 }
 
-/** What is expected, as a value: scaling is no unit in particular, so it says nothing. */
+/** The expectation as a value. 'scales' names no unit, so it says nothing. */
 function knownOf(expected: Expected): AbstractInterpValue {
     return expected.kind === 'scales' ? anything : expected
 }
@@ -207,17 +193,15 @@ function checkOperation(ast: UrbanStatsASTExpression<ReadInUnits> & { type: 'bin
     const operator = ast.operator.node
     const left = checkExpression(ast.left, scope, expectation(backward(operator, knownOf(expected), anything, 'left')))
     const right = checkExpression(ast.right, scope, expectation(backward(operator, knownOf(expected), quantity(left.value), 'right')))
-    // a literal on the left is read from what the right came to, 80 < high_temp being a temperature
+    // re-read the left now the right is known, so the 80 of 80 < high_temp is a temperature
     const reread = quantity(left.value).kind === 'any' && quantity(right.value).kind === 'in'
         ? checkExpression(ast.left, scope, expectation(backward(operator, knownOf(expected), quantity(right.value), 'left')))
         : left
-    // each side has been made what the other wanted of it, so what they come to is what they are
     const value = forward(operator, quantity(reread.value), quantity(right.value))
     if (value.kind !== 'none' || !scalesOperands(operator)) {
         return { ast: ({ ...ast, left: reread.ast, right: right.ast }), value }
     }
-    // and where they do not scale together, the zero a reading is counted from comes out: an area
-    // of so many degrees is an area of a difference of two temperatures
+    // they do not scale together, so a reading gives up its zero: temp * area is (temp - 0) * area
     const [over, under] = [scaling(reread), scaling(right)]
     return {
         ast: ({ ...ast, left: over.ast, right: under.ast }),
@@ -230,12 +214,12 @@ function scaling(checked: Checked<Expression>): Checked<Expression> {
     return got.kind === 'in' && !multiplies(got.unit.unit) ? withoutItsZero(checked, got) : checked
 }
 
-/** What each argument is expected to be in, which is what the call makes of the ones before it. */
+/** What an argument is expected to be in, given the arguments before it. */
 function expectedOfArgument(propagation: UnitPropagation | undefined, expected: Expected, index: number, before: AbstractInterpValue[]): Expected {
     if (propagation?.kind === 'unchanged') {
         return expected
     }
-    // a root of a temperature is a root of a difference of two, there being no scaling a reading
+    // a root of a temperature is a root of a difference: sqrt(high_temp - 0)
     if (propagation?.kind === 'power') {
         return { kind: 'scales' }
     }
@@ -296,7 +280,7 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
 
 function checkCall(ast: UrbanStatsASTExpression<ReadInUnits> & { type: 'call' }, scope: Scope, expected: Expected): Checked<Expression> {
     const propagation = propagationOf(ast.fn, scope)
-    // a caption writes a number where a toNumber is, so it carries what it is a number of
+    // a caption writes a number here, so the call carries the unit that number is in
     const readIn = readAsANumber(ast, scope) === undefined ? undefined : unitToWriteIn(knownOf(expected)) ?? ast.readIn
     const checked: { arg: UrbanStatsASTArg<ReadInUnits>, value: Inferred }[] = []
     for (const [index, arg] of ast.args.entries()) {
@@ -323,13 +307,12 @@ function checkCall(ast: UrbanStatsASTExpression<ReadInUnits> & { type: 'call' },
 }
 
 /**
- * Reads an expression for the unit it works out to, writing into it whatever the units want that
- * the script does not say: a factor where two sides do not go together, and what a number that has
- * had its units read off was read from. What it computes is untouched, a factor being a one.
+ * Reads an expression for its unit, writing in the factors and toNumbers the units need. What the
+ * script computes is untouched: a factor is a 1, and a toNumber changes no value.
  */
 /**
- * What is expected of one of several things that are all of a kind: what is expected of the whole,
- * where anything is, and otherwise what the first of them turned out to be.
+ * What to expect of each of several things that have to share a unit: what the caller expects, or
+ * failing that what the first of them turned out to be.
  */
 function alsoOf(expected: Expected, first: Inferred | undefined): Expected {
     if (expected.kind === 'in' || first === undefined) {
@@ -351,8 +334,8 @@ function checkWithin(ast: UrbanStatsASTExpression<ReadInUnits>, scope: Scope, ex
                 return { ast, value: anything }
             }
             // the 0.1 of commute_bike < 0.1 is a share, and is written 10%
-            // what a number was already read as stands, so that reading a script twice says the
-            // same: the 0 of (area - 0) is an area, where a sum of unknowns says only its dimensions
+            // keep what a number was already read as, so re-reading a checked script agrees: read
+            // afresh, the 0 of (area - 0) says only its dimensions
             const unit = ast.readIn ?? unitToWriteIn(knownOf(expected))
             if (unit === undefined) {
                 return { ast, value: constant(ast.value.node.value) }
@@ -374,7 +357,7 @@ function checkWithin(ast: UrbanStatsASTExpression<ReadInUnits>, scope: Scope, ex
         case 'call':
             return checkCall(ast, scope, expected)
         case 'vectorLiteral': {
-            // the first element says what kind the rest are of, where nothing else does
+            // the first element sets the unit for the rest
             const elements: Checked<Expression>[] = []
             for (const element of ast.elements) {
                 elements.push(checkExpression(element, scope, alsoOf(expected, elements[0]?.value)))
@@ -438,8 +421,7 @@ function checkStatement(ast: UrbanStatsASTStatement<ReadInUnits>, scope: Scope, 
             return { ast: ({ ...ast, result: statements.ast }), value: statements.value }
         }
         case 'condition': {
-            // which regions are kept says nothing about what is measured of them, though the
-            // condition is read all the same, for the caption that is written of it
+            // a filter says nothing about the units of what it keeps, but a caption renders it
             const condition = checkExpression(ast.condition, scope, anything)
             const rest = checkBlock(ast.rest, scope, expected)
             return { ast: ({ ...ast, condition: condition.ast, rest: rest.ast }), value: rest.value }
@@ -482,14 +464,11 @@ export function readAsANumber<M>(ast: UrbanStatsASTExpression<M>, scope: Scope):
     const read = l.tryParse(toNumberOfOneThing, ast, scope.typeEnvironment)?.unnamedArgs[0]
     if (read === undefined) return undefined
     const literal = l.tryParse(primitive, read, scope.typeEnvironment)
-    // what the parser matched is the argument of the call it was given, and carries what it carries
+    // the parser gives back the argument of the call it was given, which carries the same metadata
     return { value: literal === undefined ? undefined : asNumber(literal), read: read as UrbanStatsASTExpression<M> }
 }
 
-/**
- * A script read for its units, with whatever the units want written into it: the numbers it carries
- * say what they are numbers of, and the unit is what the whole thing works out to.
- */
+/** A checked script: the rewritten AST, the unit it works out to, and the names it bound. */
 export interface UnitCheck<T> {
     ast: T
     unit: StoredUnit | undefined
@@ -508,7 +487,7 @@ export function unitCheck(program: UrbanStatsASTExpression<ReadInUnits> | UrbanS
     return { ast: checked.ast, unit: unitToWriteIn(quantity(checked.value)), named: scope.named }
 }
 
-/** What an expression of a script works out to, read against what the whole script made of it. */
+/** The unit an expression works out to, given the names the whole script bound. */
 export function unitWithin(ast: Expression, typeEnvironment: TypeEnvironment, named: Bindings, expected?: StoredUnit): AbstractInterpValue {
     return quantity(checkExpression(ast, { typeEnvironment, named: new Map(named) }, wanting(expected)).value)
 }

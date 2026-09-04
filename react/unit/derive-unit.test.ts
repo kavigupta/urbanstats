@@ -58,23 +58,23 @@ void test('a map is written in the units of what it maps', () => {
 })
 
 void test('two quantities add in the units of the left, whatever the right is stored in', () => {
-    // the values added are the ones the statistics are stored as, so metres added to kilometres are
-    // read as a thousand of them each, which is a factor the caption writes out
+    // a script computes with stored values, so metres added to kilometres are read as a thousand
+    // of them each, and the caption writes that factor out
     assert.equal(mapUnit('hospital_mean_dist + elevation'), 'hospital_mean_dist + elevation * 1 : 1\u202f000km')
     assert.equal(mapUnit('elevation + hospital_mean_dist'), 'elevation + hospital_mean_dist * 1 : 1\u202f000m')
     assert.equal(mapUnit('area + area'), 'area + area : 1\u202f000km^{2}')
 })
 
 void test('a literal is read in whatever unit makes the rest of the expression work', () => {
-    // people are no area, but a number multiplying them may be an area over each of them
+    // people are no area, but a number multiplying them can be an area per person
     assert.equal(mapUnit('area + population * 1'), 'area + population * 1 : 1\u202f000km^{2}')
-    // and where no literal is written, the script is read as supplying one
+    // and one is written in where the script has no literal to read
     assert.equal(mapUnit('area + population'), 'area + population * 1 : 1\u202f000km^{2}')
     assert.equal(mapUnit('area + ln(population * 1)'), 'area + (ln(toNumber(population * 1))) * 1 : 1\u202f000km^{2}')
 })
 
 void test('a map of what no unit can be read off says nothing', () => {
-    // no factor makes a sum of two readings one reading, there being no zero to add from
+    // no factor makes a sum of two readings into one reading
     assert.equal(mapUnit('high_temp + low_temp'), 'high_temp + low_temp : nothing')
     assert.equal(mapUnit('someFunctionOrOther(population)'), 'someFunctionOrOther(population) : nothing')
 })
@@ -112,9 +112,9 @@ for (const [data, expected] of [
     ['area / area', 'area / area : 1\u202f230'],
     ['population ** 0', 'population ** 0 : 1\u202f230'],
     ['inverseQuantile(area, area)', 'inverseQuantile(area, area) : 1\u202f230'],
-    // a reading over a reading is what is left of each once the zero it is counted from is out
+    // a reading over a reading divides what is left of each once its zero is out
     ['high_temp / high_temp', '(high_temp - 0) / (high_temp - 0) : 1\u202f230'],
-    // two lengths stored apart meet where one of them is read as so many of the other
+    // two lengths stored differently meet when one is read as so many of the other
     ['minimum(elevation, hospital_mean_dist)', 'minimum(elevation, hospital_mean_dist * 1) : 1.23km'],
     // an empty vector is of every kind and so of none
     ['[]', '[] : nothing'],

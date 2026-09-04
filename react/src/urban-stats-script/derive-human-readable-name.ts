@@ -15,7 +15,7 @@ import { ReadInUnits, readAsANumber, unitCheck } from './unit-inference'
 
 type Expression = UrbanStatsASTExpression<ReadInUnits>
 
-/** What is written where an expression is: a toNumber writes its argument, brackets and all. */
+/** The expression a caption writes here. A toNumber or a `- 0` writes its operand instead. */
 function reads(ast: Expression, typeEnvironment: TypeEnvironment): Expression {
     const zero = countedFromNothing(ast)
     if (zero !== undefined) {
@@ -25,8 +25,8 @@ function reads(ast: Expression, typeEnvironment: TypeEnvironment): Expression {
 }
 
 /**
- * An expression less a zero of what it is counted in, which the pass writes where a reading has to
- * scale. Saying it is counted in that says the same and reads better than the zero does.
+ * Matches the `x - 0` the pass writes to make a reading scale, giving back x and the unit of the 0.
+ * A caption writes it as "x [in °F]" instead of showing the subtraction.
  */
 function countedFromNothing(ast: Expression): { of: Expression, unit: StoredUnit } | undefined {
     if (ast.type !== 'binaryOperator' || ast.operator.node !== '-') {
@@ -163,7 +163,7 @@ function humanReadableElements(ast: Expression | UrbanStatsASTStatement<ReadInUn
                 if (readNumber.value !== undefined) return formatNumber(readNumber.value, unit)
                 const written = humanReadableElements(readNumber.read, typeEnvironment)
                 if (written === undefined) return
-                // a sign is written outside what follows it, so -toNumber(a + b) would read -a + b
+                // without these, -toNumber(a + b) would read as -a + b
                 const inner: HumanReadableElement[] = bracketOperators && readNumber.read.type === 'binaryOperator'
                     ? [{ type: 'parens', value: written }]
                     : written
