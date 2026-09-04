@@ -214,7 +214,7 @@ def _compute_summary_stats(
         )
 
     # Convert to scores (number of correct answers) and track problem identifiers
-    scores, problem_ids = extract_scores_and_problem_ids(quiz_kind, rows)
+    scores, problem_ids = extract_scores_and_problem_ids(rows)
 
     # Calculate statistics
     num_plays = len(scores)
@@ -249,21 +249,19 @@ def compute_streaks(scores: list[int], problem_ids: list[int]) -> tuple[int, int
 
 
 def extract_scores_and_problem_ids(
-    quiz_kind: QuizKind, rows: list[tuple[int, int]]
+    rows: list[tuple[int, int]]
 ) -> tuple[list[int], list[int]]:
-    scores = []
-    problem_ids = []
+    # A user can have several ids, so the same problem can show up more than once.
+    # Keep the lowest score for it, so a duplicate can't inflate a streak.
+    lowest_score: dict[int, int] = {}
     for row in rows:
         problem_id = row[0]
         assert isinstance(problem_id, int)
         corrects = stats.bitvector_to_corrects(row[1])
         score = sum(1 for c in corrects if c)
-        scores.append(score)
-        if quiz_kind == "juxtastat":
-            problem_ids.append(problem_id)
-        else:
-            assert quiz_kind == "retrostat"
-            problem_ids.append(problem_id)
+        if problem_id in lowest_score:
+            score = min(score, lowest_score[problem_id])
+        lowest_score[problem_id] = score
 
-    problem_ids, scores = zip(*sorted(zip(problem_ids, scores)))  # type: ignore
-    return scores, problem_ids
+    problem_ids = sorted(lowest_score)
+    return [lowest_score[p] for p in problem_ids], problem_ids
