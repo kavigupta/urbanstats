@@ -64,6 +64,10 @@ export function getErrors(): Promise<string[]> {
     )()
 }
 
+export function computedValue(name: string): Selector {
+    return Selector('input[data-test="computed-value"]:not([inert] *)').withAttribute('data-test-name', name)
+}
+
 export function getInput(original: string | RegExp, nth = 0): Selector {
     return Selector('input:not([inert] *)').withAttribute('value', original).nth(nth)
 }

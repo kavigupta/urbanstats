@@ -58,6 +58,9 @@ function ArgumentEditor(props: {
     // eslint-disable-next-line no-restricted-syntax -- Must be capital for JSX
     const EditButton = argDoc?.editButton && ArgEditButtons[argDoc.editButton]
 
+    // What the map settled on for this argument, to show while the user hasn't set it
+    const computedValue = isEnabled ? undefined : props.assignments.blockValues.get(subident)
+
     const editor = isEnabled && (
         <AutoUXEditor
             uss={argValue.value}
@@ -153,6 +156,16 @@ function ArgumentEditor(props: {
                             )
                         : <span>{humanReadableName}</span>}
                     {EditButton && <EditButton />}
+                    {computedValue?.type.type === 'number' && (
+                        <input
+                            type="text"
+                            disabled
+                            data-test="computed-value"
+                            data-test-name={props.name}
+                            value={Number((computedValue.value as number).toPrecision(6))}
+                            style={{ width: '200px', minWidth: '4em', flexShrink: 2, fontSize: '14px', padding: '4px 8px' }}
+                        />
+                    )}
                 </div>
                 {
                     isEnabled && (collapsable
