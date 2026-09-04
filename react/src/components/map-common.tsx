@@ -99,18 +99,6 @@ function SynchronizeMapWithScreenshots(): ReactNode {
                     }
                 } while (!map.loaded())
                 debugLog('SynchronizeMapWithScreenshots: map is loaded after', frames, 'frame(s), signaling ready')
-                const layersOrder = map.getLayersOrder()
-                debugLog('SynchronizeMapWithScreenshots: layers count=', layersOrder.length)
-                for (const layerId of layersOrder) {
-                    if (!layerId.startsWith(urbanStatsLayerPrefix)) {
-                        continue
-                    }
-                    const layer = map.getLayer(layerId)
-                    const sourceId = layer && 'source' in layer ? layer.source : undefined
-                    const source = typeof sourceId === 'string' ? map.getSource(sourceId) : undefined
-                    const tolerance = source && 'workerOptions' in source ? (source as unknown as { workerOptions?: { geojsonVtOptions?: { tolerance?: number } } }).workerOptions?.geojsonVtOptions?.tolerance : undefined
-                    debugLog('SynchronizeMapWithScreenshots: layer', layerId, 'type=', layer?.type, 'source=', sourceId, 'tolerance=', tolerance)
-                }
             })().then(() => {
                 screenshotCallback()
             })
