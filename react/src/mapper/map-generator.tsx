@@ -111,7 +111,8 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         const prev = await previousGenerator()
         return {
             ...prev,
-            assignments: execResult.assignments,
+            // A failed run stops partway, so its block values are missing everything after the error
+            assignments: { variables: execResult.assignments.variables, blockValues: prev.assignments.blockValues },
             errors: execResult.error,
         }
     }
