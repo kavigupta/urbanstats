@@ -1,5 +1,5 @@
 import { assert } from '../utils/defensive'
-import { Coefficient, Decoration, dimensionless, Party, sameDimensions, snapToWhole, StoredUnit, unitPower, unitProduct } from '../utils/quantity'
+import { Coefficient, Decoration, dimensionless, Party, sameDimensions, sameSize, snapToWhole, StoredUnit, unitPower, unitProduct } from '../utils/quantity'
 
 import { BinaryOperatorSymbol, UnaryOperatorSymbol } from './operators'
 
@@ -67,11 +67,6 @@ function sharedDecoration(left: Decoration, right: Decoration): Decoration {
 
 function written(unit: StoredUnit, times: Coefficient, decoration = unit.unit.decoration): AbstractInterpValue {
     return { kind: 'in', unit: { ...unit, unit: { ...unit.unit, decoration, times } } }
-}
-
-/** A hair apart after arithmetic is the same size: a square root squared does not come back exact. */
-export function sameSize(left: number, right: number): boolean {
-    return Math.abs(left - right) <= 1e-9 * Math.max(Math.abs(left), Math.abs(right))
 }
 
 /** Arithmetic on coefficients, where anything but a number of them leaves how many there are unknown. */

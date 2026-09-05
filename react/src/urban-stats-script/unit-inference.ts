@@ -1,12 +1,12 @@
 import { MapUSS } from '../mapper/settings/map-uss'
-import { dimensionless, multiplies, sameDimensions, StoredUnit } from '../utils/quantity'
+import { asADifference, dimensionless, isPlainNumber, multiplies, sameDimensions, sameSize, StoredUnit } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import { asNumber } from './constants/convert'
 import * as l from './literal-parser'
 import { TypeEnvironment, UnitPropagation, USSPrimitiveRawValue } from './types-values'
-import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, sameSize, scalesOperands, unitToWriteIn } from './unit-algebra'
+import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, scalesOperands, unitToWriteIn } from './unit-algebra'
 
 /**
  * A node whose own unit is not the one the script needs of it there. The value the script computes
@@ -95,17 +95,8 @@ function goesWhere(want: StoredUnit, got: StoredUnit): boolean {
         && want.unit.decoration.kind === got.unit.decoration.kind
 }
 
-/** The same unit with times 0: a difference rather than a reading. */
-function asADifference(unit: StoredUnit): StoredUnit {
-    return { ...unit, unit: { ...unit.unit, times: 0 } }
-}
-
-/** Dimensionless and undecorated. A share is not this: it carries a percent decoration. */
+/** What a call that gives a plain number back expects of its arguments. */
 const plainNumber = { kind: 'in', unit: dimensionless } satisfies Expected
-
-function isPlainNumber(unit: StoredUnit): boolean {
-    return unit.unit.dimensions.length === 0 && sameSize(unit.toBaseUnits, 1) && unit.unit.decoration.kind === 'none'
-}
 
 /**
  * The expression as what is expected of it, which it is by being read as converted where its own
@@ -430,7 +421,7 @@ const toNumberOfOneThing = l.call({
 const primitive = l.union<USSPrimitiveRawValue>([l.number(), l.string(), l.boolean()])
 
 /** A call to toNumber, carrying the number its argument is when the argument is a literal. */
-export function readAsANumber<M>(ast: UrbanStatsASTExpression<M>, scope: Scope): { value?: number, read: UrbanStatsASTExpression<M> } | undefined {
+function readAsANumber<M>(ast: UrbanStatsASTExpression<M>, scope: Scope): { value?: number, read: UrbanStatsASTExpression<M> } | undefined {
     // a script that binds the name itself is calling something else
     if (scope.named.has('toNumber')) return undefined
     const read = l.tryParse(toNumberOfOneThing, ast, scope.typeEnvironment)?.unnamedArgs[0]
@@ -478,7 +469,7 @@ function isExpression(ast: UrbanStatsASTExpression<UnitsRead> | UrbanStatsASTSta
  * A script with the toNumbers a reader wrote taken out, each leaving behind the note that what it
  * held is read as a plain number. Reading the script for its units then says which unit that was.
  */
-export function withoutToNumbers<T extends UrbanStatsASTExpression<UnitsRead> | UrbanStatsASTStatement<UnitsRead>>(program: T, typeEnvironment: TypeEnvironment): T {
+function withoutToNumbers<T extends UrbanStatsASTExpression<UnitsRead> | UrbanStatsASTStatement<UnitsRead>>(program: T, typeEnvironment: TypeEnvironment): T {
     const stripped = isExpression(program)
         ? strippedExpression(program, typeEnvironment)
         : strippedStatement(program, typeEnvironment)

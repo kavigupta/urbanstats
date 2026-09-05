@@ -3,7 +3,7 @@ import { assert } from '../utils/defensive'
 import { HumanReadableElement, HumanReadableName } from '../utils/human-readable-element'
 import { joinHumanReadableNames } from '../utils/human-readable-name'
 import { parseHumanReadableTemplate } from '../utils/human-readable-template'
-import { multiplies, nameOfStoredUnit, sameDimensions, StoredUnit, unitProduct } from '../utils/quantity'
+import { asADifference, isPlainNumber, multiplies, nameOfStoredUnit, sameDimensions, sameSize, StoredUnit, unitProduct } from '../utils/quantity'
 import { abbreviate, formatToSignificantFigures, separateNumber, trimTrailingZeros } from '../utils/text'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
@@ -11,7 +11,6 @@ import * as l from './literal-parser'
 import { noLocation } from './location'
 import { BinaryOperatorSymbol, expressionOperatorMap } from './operators'
 import { TypeEnvironment } from './types-values'
-import { sameSize } from './unit-algebra'
 import { UnitConversion, UnitsRead, unitCheck } from './unit-inference'
 
 type Expression = UrbanStatsASTExpression<UnitsRead>
@@ -410,14 +409,6 @@ function conversionRunsAs(conversion: UnitConversion): BinaryOperatorSymbol | un
 
 function alike(left: StoredUnit, right: StoredUnit): boolean {
     return sameDimensions(left, right) && sameSize(left.toBaseUnits, right.toBaseUnits)
-}
-
-function asADifference(unit: StoredUnit): StoredUnit {
-    return { ...unit, unit: { ...unit.unit, times: 0 } }
-}
-
-function isPlainNumber(unit: StoredUnit): boolean {
-    return unit.unit.dimensions.length === 0 && unit.unit.decoration.kind === 'none' && sameSize(unit.toBaseUnits, 1)
 }
 
 /**
