@@ -40,11 +40,11 @@ function rampTicks(scale: ScaleInstance): number[] {
 
 /** What a map with no colour of its own paints a missing value: nothing, so the basemap shows through. */
 // eslint-disable-next-line no-restricted-syntax -- not a theme colour; it is the absence of one
-export const hiddenColor = '#00000000'
+const hiddenColor = '#00000000'
 
 /** An RGB map has no ramp to be furthest from, so a shown missing value gets a fixed colour. */
 // eslint-disable-next-line no-restricted-syntax -- the conventional no-data magenta
-export const rgbMissingColor = '#ff00ff'
+const rgbMissingColor = '#ff00ff'
 
 /**
  * Returns a function rather than colouring a list, so the ramp's expensive contrast colour is

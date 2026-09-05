@@ -42,6 +42,27 @@ mapper(() => test)('a hidden region is still clickable', { code, geo: 'Subnation
     await t.expect(getLocation()).contains('longname=Austurland%2C+Iceland')
 })
 
+// A cluster map bins its data rather than colouring it directly, so a missing value needs a bin of
+// its own; without one it has no category and its share of the pie goes missing entirely.
+const clusterCode = `customNode("");
+condition (true)
+clusterMap(
+    data=if (population > (median(population))) { density_pw_1km },
+    scale=linearScale(),
+    ramp=rampUridis,
+    label="Density",
+    basemap=noBasemap()
+)`
+
+mapper(() => test)('missing values on a cluster map', { code: clusterCode, geo: 'Subnational Region', universe: 'Iceland' }, async (t) => {
+    await t.expect(getErrors()).eql([])
+    await screencap(t, { removeEntireMap: false })
+
+    await checkBox(t, /^Show Missing Data/)
+    await t.expect(getErrors()).eql([])
+    await screencap(t, { removeEntireMap: false })
+})
+
 // The same four regions on an RGB map, whose NaN channels used to render as the literal
 // string #NaNNaNNaN.
 const rgbCode = `customNode("");
@@ -62,4 +83,16 @@ mapper(() => test)('missing values on an RGB map', { code: rgbCode, geo: 'Subnat
     await checkBox(t, /^Show Missing Data/)
     await t.expect(getErrors()).eql([])
     await screencap(t, { removeEntireMap: false })
+
+    await checkBox(t, /^Color/)
+    await t.expect(getErrors()).eql([])
+    await screencap(t, { removeEntireMap: false, scrollPaneTo: checkSelector(/^Show Missing Data/) })
+})
+
+mapper(() => test)('a hidden region on an RGB map is still clickable', { code: rgbCode, geo: 'Subnational Region', universe: 'Iceland' }, async (t) => {
+    await waitForMapsToRender()
+    const canvas = Selector(`${map(0)} canvas`)
+    const { width, height } = await canvas.boundingClientRect
+    await t.click(canvas, { offsetX: Math.round(width * 0.82), offsetY: Math.round(height * 0.57) })
+    await t.expect(getLocation()).contains('longname=Austurland%2C+Iceland')
 })

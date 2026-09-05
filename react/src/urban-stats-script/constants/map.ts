@@ -142,8 +142,7 @@ export const constructMissingData = {
         },
         returnType: { type: 'concrete', value: missingDataType },
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
-    value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>, _originalArgs: OriginalFunctionArgs): USSRawValue => {
+    value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         const color = (namedArgs.color as { type: 'opaque', opaqueType: 'color', value: Color } | null)?.value
         return { type: 'opaque', opaqueType: 'missingData', value: { color } }
     },
@@ -154,7 +153,7 @@ export const constructMissingData = {
         namedArgs: {
             color: 'Color',
         },
-        longDescription: 'Draws the geographies a map has no value for, which are otherwise left blank. Without a color, they take the one furthest from the colors the map itself uses.',
+        longDescription: 'Draws the geographies whose data is missing. Without this, they are not drawn at all. If no color is given, one that contrasts with the rest of the map is picked automatically.',
     },
 } satisfies USSValue
 
