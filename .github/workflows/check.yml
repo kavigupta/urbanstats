@@ -172,7 +172,7 @@ jobs:
       - *checkout
       - run: git fetch origin ${{ github.base_ref }} --depth=1 # needed so test runner can diff tests against base ref
         if: ${{ github.base_ref != '' }}
-      # No python_environment here: the image carries what check_images.py needs, and the
+      # No python_environment here: the image carries what check_assets.py needs, and the
       # full venv is a 484MB restore that every shard would pay for.
       - uses: ./.github/actions/node_modules
       - uses: actions/download-artifact@v4
@@ -202,7 +202,7 @@ jobs:
           echo "name=${name:0:200}" >> $GITHUB_OUTPUT
       # A re-run keeps the artifacts the earlier attempt uploaded, so these names carry the
       # attempt. Re-running only the failed jobs loses nothing, because only a failing shard
-      # writes screenshots, and a failing shard is exactly what gets re-run.
+      # writes changed assets, and a failing shard is exactly what gets re-run.
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
@@ -211,15 +211,15 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
-          name: changed_screenshots-${{ github.run_attempt }}-${{ steps.artifact-name.outputs.name }}
-          path: react/changed_screenshots
+          name: changed_assets-${{ github.run_attempt }}-${{ steps.artifact-name.outputs.name }}
+          path: react/changed_assets
       # Both TestCafe's take-on-fail shots and the ones `flaky` takes per attempt land here, and
       # a run that passes deletes them, so this only ever carries pictures of something going wrong.
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
           name: error_screenshots-${{ github.run_attempt }}-${{ steps.artifact-name.outputs.name }}
-          path: react/screenshots/**/*.error.png
+          path: react/test_assets/**/*.error.png
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
@@ -228,7 +228,7 @@ jobs:
           path: react/test_histories
           overwrite: true
 
-  merge-screenshots:
+  merge-assets:
     runs-on: ubuntu-22.04
     needs: [e2e]
     if: "!cancelled()"
@@ -242,8 +242,8 @@ jobs:
           merge-multiple: true
       - uses: actions/download-artifact@v4
         with:
-          pattern: "changed_screenshots-${{ github.run_attempt }}-*"
-          path: combined/changed_screenshots
+          pattern: "changed_assets-${{ github.run_attempt }}-*"
+          path: combined/changed_assets
           merge-multiple: true
       - id: upload-combined
         uses: actions/upload-artifact@v4

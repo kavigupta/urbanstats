@@ -5,15 +5,14 @@ import chalkTemplate from 'chalk-template'
 import * as diff from 'diff'
 import { ClientFunction, Selector } from 'testcafe'
 
-import { target, downloadOrCheckString, waitForDownload, grabDownload, waitForLoading, urbanstatsFixture, safeReload, screencap } from './test_utils'
+import { target, saveString, waitForDownload, grabDownload, waitForLoading, urbanstatsFixture, safeReload, screencap } from './test_utils'
 
-async function checkGeojson(t: TestController, path: string): Promise<void> {
+async function saveGeojson(t: TestController, path: string): Promise<void> {
     const laterThan = new Date().getTime()
     // download the geojson by clicking the button
     await t.click(Selector('button').withExactText('Export as GeoJSON'))
     const mrdp = await waitForDownload(t, laterThan, '.geojson')
-    const mostRecentDownload = fs.readFileSync(mrdp, 'utf8')
-    await downloadOrCheckString(t, mostRecentDownload, path, 'json')
+    saveString(t, fs.readFileSync(mrdp, 'utf8'), path, 'json')
 }
 
 export async function downloadPNG(t: TestController): Promise<void> {
@@ -134,7 +133,7 @@ export function testCode(testFn: () => TestFn, geographyKind: string, universe: 
         await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
         await screencap(t, { removeEntireMap: false })
         if (includeGeojson) {
-            await checkGeojson(t, `mapping-geojson-${name}`)
+            await saveGeojson(t, `mapping-geojson-${name}`)
         }
         await downloadPNG(t)
     })

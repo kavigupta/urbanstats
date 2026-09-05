@@ -177,7 +177,7 @@ async function runTest(test: string): Promise<TestResult> {
         ].join(' ')}`])
         // Explicitly interpolate test here so we don't add the error to the directory
         // Pattern is only used for take on fail, we make our own pattern otherwise
-        .screenshots(`screenshots/${test}`, true, `\${BROWSER}/\${TEST}.error.png`)
+        .screenshots(`test_assets/${test}`, true, `\${BROWSER}/\${TEST}.error.png`)
 
     if (options.video) {
         runner = runner.video(`videos/${test}`, {
@@ -186,7 +186,7 @@ async function runTest(test: string): Promise<TestResult> {
     }
 
     // Remove artifacts for test
-    await Promise.all(globSync(`{screenshots,delta,videos,changed_screenshots}/${test}/**`, { nodir: true }).map(file => fs.rm(file)))
+    await Promise.all(globSync(`{test_assets,delta,videos,changed_assets}/${test}/**`, { nodir: true }).map(file => fs.rm(file)))
 
     // Reset TOTP wait
     await setTOTPWait(test, 0)
@@ -205,19 +205,19 @@ async function runTest(test: string): Promise<TestResult> {
 
     const result = await withTimeout(runningTests, async () => timeLimitSeconds + await getTOTPWait(test))
 
-    const screenshotsPassed = await maybeCompare(test, result.status === 'ran' && result.assertionsPassed)
+    const assetsPassed = await maybeCompare(test, result.status === 'ran' && result.assertionsPassed)
 
     if (result.status === 'timeout') {
         return { ...result, timeLimitSeconds }
     }
 
-    // A test that fails stops early, so its screenshots aren't comparable
+    // A test that fails stops early, so its assets aren't comparable
     if (!result.assertionsPassed) {
         return { status: 'failure', duration: result.duration, reason: 'assertions' }
     }
 
-    if (!screenshotsPassed) {
-        return { status: 'failure', duration: result.duration, reason: 'screenshots' }
+    if (!assetsPassed) {
+        return { status: 'failure', duration: result.duration, reason: 'assets' }
     }
 
     return { status: 'success', duration: result.duration }
@@ -227,16 +227,16 @@ async function maybeCompare(test: string, success: boolean): Promise<boolean> {
     if (options.compare) {
         // If there were no failures, delete any generated .error.png so they don't set off the comparison
         if (success) {
-            await Promise.all(globSync(`screenshots/${test}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
+            await Promise.all(globSync(`test_assets/${test}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
         }
 
-        const screenshotComparison = await execa('python', ['tests/check_images.py', `--test=${test}`], {
+        const assetComparison = await execa('python', ['tests/check_assets.py', `--test=${test}`], {
             cwd: '..',
             stdio: 'inherit',
             reject: false,
         })
 
-        if (screenshotComparison.failed) {
+        if (assetComparison.failed) {
             return false
         }
     }

@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { gzipSync, gunzipSync } from 'zlib'
+import { gzipSync } from 'zlib'
 
 import chalkTemplate from 'chalk-template'
 import type { Protocol } from 'devtools-protocol'
@@ -10,7 +10,6 @@ import xmlFormat from 'xml-formatter'
 
 import { port } from '../port'
 import type { TestWindow } from '../src/utils/TestUtils'
-import { checkString } from '../src/utils/checkString'
 
 import { collapseAnimationMs, editCheckbox, editCheckboxPrefixes, withEditMode } from './edit_mode_test_utils'
 import { urlFromCode } from './mapper-utils'
@@ -292,14 +291,18 @@ export async function waitForDownload(t: TestController, laterThan: number, suff
     }
 }
 
-/** Puts an image the browser never drew in front of the screenshot comparison. */
-export function saveImage(t: TestController, image: Buffer): void {
+/** Puts a file the browser never wrote in front of the asset comparison. */
+function saveAsset(t: TestController, relativePath: string, contents: Buffer | string): void {
     // @ts-expect-error -- TestCafe doesn't have a public API for the screenshots folder
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- TestCafe doesn't have a public API for the screenshots folder
-    const screenshotsFolder: string = t.testRun.opts.screenshots.path ?? (() => { throw new Error() })()
-    const dest = path.join(screenshotsFolder, screenshotPath(t))
+    const assetsFolder: string = t.testRun.opts.screenshots.path ?? (() => { throw new Error() })()
+    const dest = path.join(assetsFolder, relativePath)
     fs.mkdirSync(path.dirname(dest), { recursive: true })
-    fs.writeFileSync(dest, image)
+    fs.writeFileSync(dest, contents)
+}
+
+export function saveImage(t: TestController, image: Buffer): void {
+    saveAsset(t, screenshotPath(t), image)
 }
 
 async function copyMostRecentFile(t: TestController, laterThan: number, suffix: string): Promise<void> {
@@ -307,9 +310,8 @@ async function copyMostRecentFile(t: TestController, laterThan: number, suffix: 
     saveImage(t, fs.readFileSync(mrdp))
 }
 
-export async function downloadOrCheckString(t: TestController, string: string, name: string, format: 'json' | 'xml' | 'txt' | 'csv', gzip = true): Promise<void> {
-    const pathToFile = path.join(__dirname, '..', '..', 'tests', 'reference_strings', `${name}.${format}${gzip ? '.gz' : ''}`)
-
+/** Compared against the reference of the same name by `tests/check_assets.py`. */
+export function saveString(t: TestController, string: string, name: string, format: 'json' | 'xml' | 'txt' | 'csv', gzip = true): void {
     switch (format) {
         case 'json':
             string = JSON.stringify(JSON.parse(string), null, 2)
@@ -318,30 +320,11 @@ export async function downloadOrCheckString(t: TestController, string: string, n
             string = xmlFormat(string)
             break
         case 'txt':
+        case 'csv':
             break
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We might want to change this variable
-    if (checkString) {
-        let expectedBuf: Buffer = fs.readFileSync(pathToFile)
-        if (gzip) {
-            expectedBuf = gunzipSync(expectedBuf)
-        }
-        const expected = expectedBuf.toString('utf-8')
-        if (string !== expected) {
-            if (gzip) {
-                // Using this because these strings are massive and the diff generation times out
-                await t.expect(false).ok(`String does not match expected value`)
-            }
-            else {
-                await t.expect(string).eql(expected)
-            }
-        }
-    }
-    else {
-        fs.writeFileSync(pathToFile, gzip ? gzipSync(string) : string)
-        fs.utimesSync(pathToFile, 0, 0)
-    }
+    saveAsset(t, `${t.browser.name}/${name}.${format}${gzip ? '.gz' : ''}`, gzip ? gzipSync(string) : string)
 }
 
 export async function safeClearLocalStorage(t: TestController): Promise<void> {

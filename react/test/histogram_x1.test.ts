@@ -1,16 +1,16 @@
 import { ClientFunction, Selector } from 'testcafe'
 
-import { target, checkTextboxes, comparisonPage, downloadHistogram, downloadImage, downloadOrCheckString, screencap, urbanstatsFixture, waitForLoading, waitForSelectedSearchResult, getLocationWithoutSettings } from './test_utils'
+import { target, checkTextboxes, comparisonPage, downloadHistogram, downloadImage, saveString, screencap, urbanstatsFixture, waitForLoading, waitForSelectedSearchResult, getLocationWithoutSettings } from './test_utils'
 
 const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
 const swSGV = 'Southwest San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 
-async function downloadOrCheckHistogram(t: TestController, name: string, nth = 0): Promise<void> {
+async function saveHistogram(t: TestController, name: string, nth = 0): Promise<void> {
     const output = await t.eval(() => {
         return document.getElementsByClassName('histogram-svg-panel')[nth].innerHTML
     }, { dependencies: { nth } }) as string
-    await downloadOrCheckString(t, output, name, 'xml')
+    saveString(t, output, name, 'xml')
 }
 
 // Clicking a point pins its tooltip: unlike the hover tooltip, a pinned one survives the mouse
@@ -219,7 +219,7 @@ test('histogram-ordering', async (t) => {
     await t.expect(Selector('.expand-toggle').count).eql(2)
     await t.click(Selector('.expand-toggle').nth(1))
     await screencap(t)
-    await downloadOrCheckHistogram(t, 'histogram-ordering')
+    await saveHistogram(t, 'histogram-ordering')
 })
 
 urbanstatsFixture('bar histogram test', `${target}/article.html?longname=Santa+Clarita+city%2C+California%2C+USA&s=6TunChoK92PzC9tD`)
@@ -355,7 +355,7 @@ test('histogram-article-multiple-years', async (t) => {
     await checkTextboxes(t, ['2020', '2010', '2000'])
     await t.click(Selector('.expand-toggle'))
     await screencap(t)
-    await downloadOrCheckHistogram(t, 'histogram-article-multiple-years')
+    await saveHistogram(t, 'histogram-article-multiple-years')
 })
 
 // The years used to go unnamed in the tooltip, which just repeated the region name once per year.
@@ -383,7 +383,7 @@ test('histogram-comparison-multiple-years', async (t) => {
     await screencap(t)
     await checkTextboxes(t, ['2010', '2000'])
     await screencap(t)
-    await downloadOrCheckHistogram(t, 'histogram-comparison-multiple-years')
+    await saveHistogram(t, 'histogram-comparison-multiple-years')
 })
 
 urbanstatsFixture('histogram comparison with country with only one year', comparisonPage([pasadena, upperSGV, 'Canada', 'Germany']))
@@ -392,5 +392,5 @@ test('histogram-comparison-multiple-years-and-nan', async (t) => {
     await checkTextboxes(t, ['2000', '2010'])
     await t.click(Selector('.expand-toggle'))
     await screencap(t)
-    await downloadOrCheckHistogram(t, 'histogram-comparison-multiple-years-and-nan')
+    await saveHistogram(t, 'histogram-comparison-multiple-years-and-nan')
 })

@@ -1,4 +1,4 @@
-import { Data64URIWriter, FileEntry, Reader, ZipReader } from '@zip.js/zip.js'
+import { Data64URIWriter, FileEntry, Reader, TextWriter, Uint8ArrayWriter, ZipReader } from '@zip.js/zip.js'
 import React, { ReactNode, useContext, useEffect, useMemo } from 'react'
 import { z } from 'zod'
 
@@ -7,7 +7,7 @@ import { LongLoad } from '../navigation/loading'
 import { DefaultMap } from '../utils/DefaultMap'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
-export function ScreenshotDiffViewerPanel({ hash, artifactId, index }: { hash: string, artifactId: string, index: number }): ReactNode {
+export function AssetDiffViewerPanel({ hash, artifactId, index }: { hash: string, artifactId: string, index: number }): ReactNode {
     const entriesPromise = useMemo(async () => {
         const allEntries = await (zipReader(artifactId)).getEntries()
         const fileEntries = allEntries.filter(e => !e.directory)
@@ -75,24 +75,36 @@ export function ScreenshotDiffViewerPanel({ hash, artifactId, index }: { hash: s
         max-height: 90vh;
     }
 }
+
+pre.asset-text {
+    margin: 0;
+    overflow: auto;
+    max-height: 80vh;
+}
+
+.diff-added { color: green; }
+.diff-removed { color: red; }
+.diff-hunk { color: blue; }
 `}
             </style>
-            <LazyNode node={entriesPromise.then(entries => <Entires hash={hash} entries={entries} index={index} artifactId={artifactId} />)} />
+            <LazyNode node={entriesPromise.then(entries => <Entries hash={hash} entries={entries} index={index} artifactId={artifactId} />)} />
         </>
     )
 }
 
-function Entires({ hash, entries, index, artifactId }: { hash: string, entries: FileEntry[], index: number, artifactId: string }): ReactNode {
+function Entries({ hash, entries, index, artifactId }: { hash: string, entries: FileEntry[], index: number, artifactId: string }): ReactNode {
     const changed = useMemo(() => entries
-        .map(entry => ({ entry, match: /changed_screenshots\/([^\/]+)\/[^\/]+\/(.+)\.png$/.exec(entry.filename) }))
+        .map(entry => ({ entry, match: /changed_assets\/([^\/]+)\/([^\/]+)\/(.+)$/.exec(entry.filename) }))
         .filter((item): item is { entry: FileEntry, match: RegExpExecArray } => item.match !== null)
         .sort((a, b) => a.entry.filename.localeCompare(b.entry.filename))
-        .map(({ entry, match: [, test, file] }) => {
-            const delta = entries.find(e => e.filename === deltaPath(test, file))
+        .map(({ entry, match: [, test, browser, file] }) => {
+            const delta = entries.find(e => e.filename === `delta/${test}/${browser}/${deltaName(file)}`)
             return {
-                changed: imageFromEntry(entry),
-                delta: delta ? imageFromEntry(delta) : undefined,
+                // A changed text asset says nothing its diff doesn't, and can run to tens of megabytes
+                changed: isImage(file) || delta === undefined ? nodeFromEntry(entry) : undefined,
+                delta: delta ? nodeFromEntry(delta) : undefined,
                 test,
+                browser,
                 file,
             }
         }), [entries])
@@ -103,12 +115,12 @@ function Entires({ hash, entries, index, artifactId }: { hash: string, entries: 
         const handleKeyDown = (event: KeyboardEvent): void => {
             if (event.key === 'ArrowLeft') {
                 if (index > 0) {
-                    void navigator.navigate({ kind: 'screenshotDiffViewer', hash, artifactId, index: index - 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
+                    void navigator.navigate({ kind: 'assetDiffViewer', hash, artifactId, index: index - 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
                 }
             }
             else if (event.key === 'ArrowRight') {
                 if (index < changed.length - 1) {
-                    void navigator.navigate({ kind: 'screenshotDiffViewer', hash, artifactId, index: index + 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
+                    void navigator.navigate({ kind: 'assetDiffViewer', hash, artifactId, index: index + 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
                 }
             }
         }
@@ -120,7 +132,7 @@ function Entires({ hash, entries, index, artifactId }: { hash: string, entries: 
     useEffect(() => {
         const range = 2
         changed.slice(Math.max(0, index - range), Math.min(changed.length, index + range + 1)).forEach((item) => {
-            item.changed.load()
+            item.changed?.load()
             item.delta?.load()
         })
     }, [changed, index])
@@ -148,19 +160,19 @@ function Entires({ hash, entries, index, artifactId }: { hash: string, entries: 
     return <Diff {...changed[index]} hash={hash} index={index} total={changed.length} navigator={navigator} artifactId={artifactId} />
 }
 
-function Diff({ test, file, hash, delta, changed, index, total, navigator, artifactId }: { test: string, file: string, hash: string, changed: Delayed, delta?: Delayed, index: number, total: number, navigator: Navigator, artifactId: string }): ReactNode {
+function Diff({ test, browser, file, hash, delta, changed, index, total, navigator, artifactId }: { test: string, browser: string, file: string, hash: string, changed?: Delayed, delta?: Delayed, index: number, total: number, navigator: Navigator, artifactId: string }): ReactNode {
     const canGoBack = index > 0
     const canGoForward = index < total - 1
 
     const handleBack = (): void => {
         if (canGoBack) {
-            void navigator.navigate({ kind: 'screenshotDiffViewer', hash, artifactId, index: index - 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
+            void navigator.navigate({ kind: 'assetDiffViewer', hash, artifactId, index: index - 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
         }
     }
 
     const handleForward = (): void => {
         if (canGoForward) {
-            void navigator.navigate({ kind: 'screenshotDiffViewer', hash, artifactId, index: index + 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
+            void navigator.navigate({ kind: 'assetDiffViewer', hash, artifactId, index: index + 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
         }
     }
 
@@ -194,7 +206,9 @@ function Diff({ test, file, hash, delta, changed, index, total, navigator, artif
                     ? (
                             <>
                                 <div>
-                                    <img src={githubImageUrl(hash, test, file)} />
+                                    {isImage(file)
+                                        ? <img src={referenceUrl(hash, test, browser, file)} />
+                                        : <a href={referenceUrl(hash, test, browser, file)}>Reference</a>}
                                 </div>
                                 <div>
                                     <LazyNode node={delta.get} />
@@ -208,9 +222,13 @@ function Diff({ test, file, hash, delta, changed, index, total, navigator, artif
                                 </h1>
                             </div>
                         )}
-                <div>
-                    <LazyNode node={changed.get} />
-                </div>
+                {changed
+                    ? (
+                            <div>
+                                <LazyNode node={changed.get} />
+                            </div>
+                        )
+                    : undefined}
             </div>
         </div>
     )
@@ -309,17 +327,21 @@ class CustomReader extends Reader<void> {
     }
 }
 
-function deltaPath(test: string, file: string): string {
-    return `delta/${test}/Chrome/${file}.png`
+function isImage(file: string): boolean {
+    return file.endsWith('.png')
 }
 
-function githubImageUrl(hash: string, test: string, file: string): string {
-    return encodeURI(`https://raw.githubusercontent.com/kavigupta/urbanstats/${hash}/reference_test_screenshots/${test}/Chrome/${file}.png`)
+function deltaName(file: string): string {
+    return isImage(file) ? file : `${file}.diff`
+}
+
+function referenceUrl(hash: string, test: string, browser: string, file: string): string {
+    return encodeURI(`https://raw.githubusercontent.com/kavigupta/urbanstats/${hash}/reference_test_assets/${test}/${browser}/${file}`)
 }
 
 interface Delayed { load: () => void, get: Promise<ReactNode> }
 
-function imageFromEntry(entry: FileEntry): Delayed {
+function nodeFromEntry(entry: FileEntry): Delayed {
     let resolve: () => void
     return {
         load: () => {
@@ -329,10 +351,54 @@ function imageFromEntry(entry: FileEntry): Delayed {
             await new Promise<void>((r) => {
                 resolve = r
             })
-            const writer = new Data64URIWriter('image/png')
-            await entry.getData(writer)
-            const imageStr = await writer.getData()
-            return <img src={imageStr} />
+            if (isImage(entry.filename)) {
+                const writer = new Data64URIWriter('image/png')
+                await entry.getData(writer)
+                return <img src={await writer.getData()} />
+            }
+            return textNode(await textFromEntry(entry), entry.filename.endsWith('.diff'))
         })(),
+    }
+}
+
+async function textFromEntry(entry: FileEntry): Promise<string> {
+    if (entry.filename.endsWith('.gz')) {
+        const writer = new Uint8ArrayWriter()
+        await entry.getData(writer)
+        const decompressed = new Blob([await writer.getData()]).stream().pipeThrough(new DecompressionStream('gzip'))
+        return await new Response(decompressed).text()
+    }
+    const writer = new TextWriter()
+    await entry.getData(writer)
+    return await writer.getData()
+}
+
+const maxTextLines = 1000
+
+function textNode(text: string, colorize: boolean): ReactNode {
+    const lines = text.split('\n')
+    const shown = lines.slice(0, maxTextLines)
+    return (
+        <pre className="asset-text">
+            {shown.map((line, lineNumber) => (
+                <div key={lineNumber} className={colorize ? diffLineClass(line) : undefined}>
+                    {line === '' ? ' ' : line}
+                </div>
+            ))}
+            {lines.length > shown.length ? <div>{`... ${lines.length - shown.length} more lines`}</div> : undefined}
+        </pre>
+    )
+}
+
+function diffLineClass(line: string): string | undefined {
+    switch (line[0]) {
+        case '+':
+            return 'diff-added'
+        case '-':
+            return 'diff-removed'
+        case '@':
+            return 'diff-hunk'
+        default:
+            return undefined
     }
 }

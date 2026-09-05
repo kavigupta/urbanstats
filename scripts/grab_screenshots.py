@@ -21,9 +21,7 @@ def main():
     os.makedirs(delta_location)
 
     unzip_artifact(artifacts["artifacts"], "delta", delta_location)
-    unzip_artifact(
-        artifacts["artifacts"], "changed_screenshots", "reference_test_screenshots"
-    )
+    unzip_artifact(artifacts["artifacts"], "changed_assets", "reference_test_assets")
 
     # print the location of the delta as a link
     print(f"file://{delta_location}")

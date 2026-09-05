@@ -2,7 +2,7 @@ import { ClientFunction, Selector } from 'testcafe'
 
 import { nthEditor, typeInEditor } from './editor_test_utils'
 import { checkSelector, getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { checkTextboxesDirect, downloadCSV, downloadImage, downloadOrCheckString, dragHandle, getLocation, mapper, screencap, target, urbanstatsFixture, waitForLoading, withHamburgerMenu } from './test_utils'
+import { checkTextboxesDirect, downloadCSV, downloadImage, saveString, dragHandle, getLocation, mapper, screencap, target, urbanstatsFixture, waitForLoading, withHamburgerMenu } from './test_utils'
 
 urbanstatsFixture('mapper default', `${target}/mapper.html`)
 
@@ -440,7 +440,7 @@ urbanstatsFixture('mapper-csv-export', urlFromCode('County', 'USA', 'condition(p
 
 test('mapper-csv-export', async (t) => {
     const csvContent = await downloadCSV(t)
-    await downloadOrCheckString(t, csvContent, 'csv-export-mapper', 'csv', false)
+    saveString(t, csvContent, 'csv-export-mapper', 'csv', false)
 })
 
 const clusterMapPopulationFilterBase = `

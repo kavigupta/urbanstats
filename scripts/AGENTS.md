@@ -45,5 +45,5 @@ but break once the branch below it changes, and CI will only tell you that one b
 time.
 
 Screenshot tests are a separate matter: a visual change low in the stack invalidates the
-reference screenshots for every branch above it. Regenerate them through CI's
-`!updateScreenshots` command rather than locally.
+reference assets for every branch above it. Regenerate them through CI's
+`!updateAssets` command rather than locally.

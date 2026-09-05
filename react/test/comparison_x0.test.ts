@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { editCheckbox, sourceCheckbox, withEditMode } from './edit_mode_test_utils'
-import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues, createComparison, downloadOrCheckString, downloadCSV } from './test_utils'
+import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues, createComparison, saveString, downloadCSV } from './test_utils'
 
 export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -27,7 +27,7 @@ test('comparison-heterogenous-search', async (t) => {
 
 test('comparison-heterogenous-csv-export', async (t) => {
     const csvContent = await downloadCSV(t)
-    await downloadOrCheckString(t, csvContent, 'csv-export-heterogenous-comparison', 'txt', false)
+    saveString(t, csvContent, 'csv-export-heterogenous-comparison', 'txt', false)
 })
 
 urbanstatsFixture('comparison test homogenous (2)', comparisonPage([upperSGV, swSGV]))
