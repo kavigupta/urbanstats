@@ -46,13 +46,13 @@ function writable(code: string): boolean {
     return unitToWriteIn(of(code)) !== undefined
 }
 
-void test('a statistic is of the kind its column is', () => {
+void test('statistics have units', () => {
     assert.equal(inferred('population'), 'person^1 times=1 x1')
     assert.equal(inferred('area'), 'm^2 times=1 x1000000')
     assert.equal(inferred('high_temp'), 'F^1 times=1 x1')
 })
 
-void test('arithmetic on statistics carries their kinds through', () => {
+void test('arithmetic combines units', () => {
     assert.equal(inferred('population / area'), 'm^-2 person^1 times=1 x0.000001')
     assert.equal(inferred('area ** 0.5'), 'm^1 times=1 x1000')
     assert.equal(inferred('population * 2'), 'person^1 times=2 x1')
@@ -60,7 +60,7 @@ void test('arithmetic on statistics carries their kinds through', () => {
     assert.equal(inferred('(high_temp + low_temp) / 2'), 'F^1 times=1 x1')
 })
 
-void test('a chain of temperatures is one of them, where its coefficients come back to one', () => {
+void test('temperature arithmetic tracks the coefficient', () => {
     assert.equal(inferred('high_temp - low_temp + high_temp_djf'), 'F^1 times=1 x1')
     assert.equal(inferred('high_temp * 2 - high_temp'), 'F^1 times=1 x1')
     assert.equal(inferred('(high_temp + low_temp + high_temp_djf) / 3'), 'F^1 times=1 x1')
@@ -73,7 +73,7 @@ void test('a chain of temperatures is one of them, where its coefficients come b
     assert.ok(!writable('5 - high_temp'))
 })
 
-void test('a power raises what an expression worked out to', () => {
+void test('powers raise units', () => {
     // in kilometres, of which it is root two, since the coefficient is raised along with the area
     assert.equal(inferred('(area * 2) ** 0.5'), 'm^1 times=1.4142135623730951 x1000')
     assert.equal(inferred('(area ** 0.5) ** 2'), 'm^2 times=1 x1000000')
@@ -82,30 +82,30 @@ void test('a power raises what an expression worked out to', () => {
     assert.equal(inferred('(high_temp * 2) ** 0.5'), 'F^0.5 times=0 x1')
 })
 
-void test('a sum of two unlike kinds is read with the factor between them written in', () => {
+void test('a sum of unlike units', () => {
     // people and an area add when the area is read as so many people, making the sum two of them
     assert.equal(inferred('population + area'), 'person^1 times=2 x1')
     assert.equal(inferred('(population + area) / area'), 'm^-2 person^1 times=2 x0.000001')
 })
 
-void test('a name is worth what it was assigned', () => {
+void test('a name takes the unit it was assigned', () => {
     assert.equal(inferred('x = population / area\nx * 2'), 'm^-2 person^1 times=2 x0.000001')
     // and what a name was assigned last, since the statements are read in order
     assert.equal(inferred('x = population\nx = area\nx'), 'm^2 times=1 x1000000')
 })
 
-void test('a filter says nothing about what is measured of what it keeps', () => {
+void test('a filter does not change units', () => {
     assert.equal(inferred('condition(population > 1000)\npopulation / area'), 'm^-2 person^1 times=1 x0.000001')
 })
 
-void test('an if runs both of its arms over the column, so a value is either of theirs', () => {
+void test('an if joins both of its arms', () => {
     assert.equal(inferred('if (population > 0) { high_temp } else { low_temp }'), 'F^1 times=1 x1')
     assert.equal(inferred('if (population > 0) { population } else { area }'), 'person^1 times=1 x1')
     // an arm with no counterpart writes where its mask holds and nothing where it does not
     assert.equal(inferred('if (population > 0) { high_temp }'), 'F^1 times=1 x1')
 })
 
-void test('a name an arm binds is bound outside it', () => {
+void test('an arm of an if can bind a name', () => {
     assert.equal(inferred('if (population > 0) { x = area }\nx'), 'm^2 times=1 x1000000')
     assert.equal(inferred('if (population > 0) { x = area } else { x = population }\nx'), 'm^2 times=1 x1000000')
     // where the arm that did not run left it as it was
@@ -113,7 +113,7 @@ void test('a name an arm binds is bound outside it', () => {
     assert.equal(inferred('x = area\nif (population > 0) { x = area / 2 }\nx'), 'm^2 times=unknown x1000000')
 })
 
-void test('a vector is of the kind of what is in it', () => {
+void test('a vector takes the unit of its elements', () => {
     assert.equal(inferred('[high_temp, low_temp]'), 'F^1 times=1 x1')
     assert.equal(inferred('[population, area]'), 'person^1 times=1 x1')
     // two temperatures are not one, so either of them and one of them is neither, and unwritable
@@ -150,7 +150,7 @@ for (const [code, expected] of [
     })
 }
 
-void test('the size of a reading is no reading, where the size of a difference is a difference', () => {
+void test('abs keeps a difference but not a reading', () => {
     // ten degrees below freezing is one number in Fahrenheit and another in Celsius
     assert.equal(inferred('abs(high_temp)'), 'F^1 times=unknown x1')
     assert.ok(!writable('abs(high_temp)'))
@@ -161,14 +161,14 @@ void test('the size of a reading is no reading, where the size of a difference i
     assert.equal(inferred('nanTo0(high_temp - low_temp)'), 'F^1 times=0 x1')
 })
 
-void test('a rank is of two of one kind, and is a number of none', () => {
+void test('a rank is a plain number', () => {
     assert.equal(inferred('inverseQuantile(population, population)'), 'dimensionless times=1 x1')
     assert.equal(inferred('inversePercentile(high_temp, low_temp)'), 'dimensionless times=1 x1')
     // and a population ranks among areas the same way
     assert.equal(inferred('inverseQuantile(population, area)'), 'dimensionless times=1 x1')
 })
 
-void test('a larger of a quantity and a bare number is that quantity', () => {
+void test('max takes the unit of its arguments', () => {
     // as a sum of one and the other is, only alike things being comparable in the first place
     assert.equal(inferred('maximum(high_temp, 80)'), 'F^1 times=1 x1')
     assert.equal(inferred('minimum(area, 100)'), 'm^2 times=1 x1000000')
@@ -180,7 +180,7 @@ void test('a larger of a quantity and a bare number is that quantity', () => {
     assert.equal(inferred('maximum(population + area, population)'), 'person^1 times=unknown x1')
 })
 
-void test('a total is as many of them as there were, which is not a number anyone knows', () => {
+void test('a total has an unknown coefficient', () => {
     assert.equal(inferred('sum(population)'), 'person^1 times=unknown x1')
     // so many people are people all the same, where so many temperatures are no temperature
     assert.ok(writable('sum(population)'))
@@ -191,7 +191,7 @@ void test('a total is as many of them as there were, which is not a number anyon
     assert.equal(inferred('sum(high_temp - low_temp)'), 'F^1 times=0 x1')
 })
 
-void test('a logarithm takes whatever it is given and gives a number of no kind', () => {
+void test('a logarithm gives a plain number', () => {
     assert.equal(inferred('ln(density_pw_1km)'), 'dimensionless times=1 x1')
     assert.equal(inferred('log10(area)'), 'dimensionless times=1 x1')
     assert.equal(inferred('sin(population)'), 'dimensionless times=1 x1')
@@ -199,7 +199,7 @@ void test('a logarithm takes whatever it is given and gives a number of no kind'
     assert.equal(inferred('ln(population) * area'), 'm^2 times=1 x1000000')
 })
 
-void test('a name the script bound is that name, not the built-in it hides', () => {
+void test('a script can shadow a built-in', () => {
     assert.equal(inferred('sqrt = population\nsqrt'), 'person^1 times=1 x1')
 })
 
@@ -218,14 +218,14 @@ void test('a regression is read field by field', () => {
     assert.equal(inferred(`${people}regr.nonesuch`), 'unknown')
 })
 
-void test('a regression says nothing of a parameter it cannot read', () => {
+void test('a regression of what has no unit', () => {
     // a parameter nothing is known of leaves the coefficient unknown
     assert.equal(inferred('regr = regression(y=commute_bike, x1=rgb(0, 0, 0))\nregr.m1'), 'unknown')
     // and one of no dependent variable is a regression in name only
     assert.equal(inferred('regr = regression(x1=area)\nregr.b'), 'unknown')
 })
 
-void test('a factor is written beside the right of an operation, and beside no other side', () => {
+void test('a factor goes on the right', () => {
     assert.equal(inferred('population + area'), 'person^1 times=2 x1')
     assert.equal(inferred('area + population'), 'm^2 times=2 x1000000')
     // a difference of two is a difference; a comparison has no unit of its own
@@ -234,7 +234,7 @@ void test('a factor is written beside the right of an operation, and beside no o
     assert.equal(inferred('area >= population'), 'unknown')
 })
 
-void test('a literal already written is read for what it must be, rather than one being added', () => {
+void test('a literal already there takes the unit', () => {
     // the 2 of area * 2 is read as two people per square kilometre, which makes the sum work
     assert.equal(inferred('population + area * 2'), 'person^1 times=unknown x1')
     assert.equal(inferred('population + area / 2'), 'person^1 times=unknown x1')
@@ -244,7 +244,7 @@ void test('a literal already written is read for what it must be, rather than on
     assert.equal(inferred('commute_bike + population'), 'dimensionless times=2 x1')
 })
 
-void test('a factor is written wherever an operation wants one, however many that is', () => {
+void test('several factors in one expression', () => {
     assert.equal(inferred('population + area + area'), 'person^1 times=3 x1')
     assert.equal(inferred('population * 2 + area'), 'person^1 times=3 x1')
     assert.equal(inferred('(population + area) * 2'), 'person^1 times=4 x1')
@@ -252,19 +252,19 @@ void test('a factor is written wherever an operation wants one, however many tha
     assert.equal(inferred('x = area\npopulation + x'), 'person^1 times=2 x1')
 })
 
-void test('an argument that has to be of a kind with another is made to be', () => {
+void test('arguments of a call are made alike', () => {
     assert.equal(inferred('maximum(area, population)'), 'm^2 times=1 x1000000')
     assert.equal(inferred('minimum(population, area)'), 'person^1 times=1 x1')
     assert.equal(inferred('inverseQuantile(population, area)'), 'dimensionless times=1 x1')
 })
 
-void test('nothing is written in where the two sides already go together', () => {
+void test('matching units need no factor', () => {
     assert.equal(inferred('population + population'), 'person^1 times=2 x1')
     assert.equal(inferred('area / area'), 'dimensionless times=1 x1')
     assert.equal(inferred('high_temp + low_temp'), 'F^1 times=2 x1')
 })
 
-void test('the arms of an if and the elements of a vector are made to be of one kind', () => {
+void test('if arms and vector elements are made alike', () => {
     // the first of them sets the unit when nothing else does
     assert.equal(inferred('[population, area, sunny_hours]'),
         'person^1 times=1 x1')
@@ -275,7 +275,7 @@ void test('the arms of an if and the elements of a vector are made to be of one 
         'm^-2 person^1 times=1 x0.000001')
 })
 
-void test('a zero comes off a reading so that what wants to scale it can', () => {
+void test('a product takes the zero off a reading', () => {
     // an area of so many degrees is an area of a temperature difference
     assert.equal(inferred('high_temp * area'), 'F^1 m^2 times=0 x1000000')
     assert.equal(inferred('area * high_temp'), 'F^1 m^2 times=0 x1000000')
@@ -288,7 +288,7 @@ void test('a zero comes off a reading so that what wants to scale it can', () =>
     assert.equal(inferred('(high_temp + low_temp) / 2'), 'F^1 times=1 x1')
 })
 
-void test('a zero comes off a reading so that a factor has something to scale', () => {
+void test('a sum takes the zero off a reading', () => {
     // a temperature is counted from its own zero, which does not scale; what is left once the
     // zero is out is a number of degrees, which does
     assert.equal(inferred('high_temp + population'), 'F^1 times=1 x1')
@@ -328,7 +328,7 @@ for (const [code, expected, reads] of [
     })
 }
 
-void test('a unit expected of the whole script is what its bare numbers are read as', () => {
+void test('an expected unit reaches bare numbers', () => {
     // a script that is nothing but a number has nothing else to read it from
     assert.equal(inferred('100', unitOf('area')), 'm^2 times=1 x1000000')
     assert.equal(inferred('100', unitOf('high_temp')), 'F^1 times=1 x1')
@@ -340,7 +340,7 @@ void test('a unit expected of the whole script is what its bare numbers are read
         'm^2 times=1 x1000000')
 })
 
-void test('a unit expected of the whole script is what the script is made to be', () => {
+void test('an expected unit converts the script', () => {
     // a factor is written in wherever the script does not say what is expected
     assert.equal(inferred('population', unitOf('area')), 'm^2 times=1 x1000000')
     assert.equal(inferred('ln(100)', unitOf('area')), 'm^2 times=1 x1000000')
@@ -352,7 +352,7 @@ void test('a unit expected of the whole script is what the script is made to be'
     assert.equal(inferred('high_temp', unitOf('area')), 'm^2 times=0 x1000000')
 })
 
-void test('what cannot be read comes back as anything, rather than throwing', () => {
+void test('a script with nothing to read', () => {
     assert.equal(inferred('someFunctionOrOther(population)'), 'unknown')
     assert.equal(inferred('"a string"'), 'unknown')
     assert.equal(inferred('rampUridis'), 'unknown')
