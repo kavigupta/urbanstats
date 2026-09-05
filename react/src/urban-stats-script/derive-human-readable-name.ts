@@ -11,7 +11,7 @@ import * as l from './literal-parser'
 import { noLocation } from './location'
 import { BinaryOperatorSymbol, expressionOperatorMap } from './operators'
 import { TypeEnvironment } from './types-values'
-import { UnitConversion, UnitsRead, unitCheck } from './unit-inference'
+import { UnitConversion, UnitsRead, unitCheck, unitWithin } from './unit-inference'
 
 type Expression = UrbanStatsASTExpression<UnitsRead>
 
@@ -24,10 +24,16 @@ function humanReadableElements(ast: Expression | UrbanStatsASTStatement<UnitsRea
     if (ast.converted === undefined || ast.type === 'constant') {
         return written
     }
-    // the conversion is of the whole expression, so "(A + B) [in U]" needs the brackets. A power is
-    // written as a superscript, which already reads as one thing: "A^{2} [in U]".
-    const runsOn = ast.type === 'binaryOperator' && ast.operator.node !== '**'
-    return howConverted(runsOn ? [{ type: 'parens', value: written }] : written, ast.converted)
+    // the conversion is of the whole expression, so "(A + B) [in U]" needs the brackets
+    return howConverted(isAtomic(ast) ? written : [{ type: 'parens', value: written }], ast.converted)
+}
+
+/**
+ * Whether this renders as an unambiguous atom, needing no parentheses. Powers are unique among the
+ * operators in that they render as superscripts.
+ */
+function isAtomic(ast: Expression | UrbanStatsASTStatement<UnitsRead>): boolean {
+    return ast.type !== 'binaryOperator' || ast.operator.node === '**'
 }
 
 /** The operator an expression prints as. One that says what unit it is in prints bracketed. */
@@ -36,7 +42,10 @@ function printsAsOperation(ast: Expression): typeof expressionOperatorMap[Binary
         const runsAs = conversionRunsAs(ast.converted)
         return runsAs === undefined ? undefined : expressionOperatorMap[runsAs]
     }
-    return ast.type === 'binaryOperator' ? expressionOperatorMap[ast.operator.node] : undefined
+    if (ast.type !== 'binaryOperator' || isAtomic(ast)) {
+        return undefined
+    }
+    return expressionOperatorMap[ast.operator.node]
 }
 
 function describe(ast: Expression | UrbanStatsASTStatement<UnitsRead>, typeEnvironment: TypeEnvironment): HumanReadableElement[] | undefined {
@@ -303,10 +312,14 @@ export function tableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): Human
     return columns === undefined ? undefined : deriveTableLabel(uss, typeEnvironment, columns)
 }
 
-export function deriveTableColumnLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): HumanReadableName | undefined {
-    const { ast: factored } = unitCheck(uss, typeEnvironment)
-    const values = tableColumnExpression(factored, typeEnvironment, columnIndex)
-    return values === undefined ? undefined : humanReadableElements(values, typeEnvironment)
+/** `expected` is the unit the column states, which the script is read as being converted into. */
+export function deriveTableColumnLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number, expected?: StoredUnit): HumanReadableName | undefined {
+    const checked = unitCheck(uss, typeEnvironment)
+    const values = tableColumnExpression(checked.ast, typeEnvironment, columnIndex)
+    if (values === undefined) {
+        return undefined
+    }
+    return humanReadableElements(unitWithin(values, typeEnvironment, checked.named, expected).ast, typeEnvironment)
 }
 
 const editableTableCall = mapUssParser(l.edit(l.call({
@@ -393,7 +406,11 @@ function conversionParts({ internalUnit, expectedUnit }: UnitConversion): { zero
     const scales = multiplies(internalUnit.unit)
     const from = scales ? internalUnit : asADifference(internalUnit)
     const to = multiplies(expectedUnit.unit) ? expectedUnit : asADifference(expectedUnit)
-    const factor = alike(to, from) ? undefined : unitProduct(to, from, -1)
+    // a factor between scales is a difference of them: one degree per person is not one degree,
+    // which is a reading and would be written from the zero of whatever scale it is read on
+    const between = unitProduct(to, from, -1)
+    const spansAZero = !internalUnit.unit.baseIsScalar || !expectedUnit.unit.baseIsScalar
+    const factor = alike(to, from) || between === undefined ? undefined : (spansAZero ? asADifference(between) : between)
     return {
         ...scales ? {} : { zeroOff: internalUnit },
         ...factor === undefined ? {} : { factor },

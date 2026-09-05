@@ -27,7 +27,7 @@ function of(code: string, expected?: StoredUnit): AbstractInterpValue {
     const typeEnvironment = defaultTypeEnvironment('USA')
     const checked = unitCheck(parseNoError(code, 'test'), typeEnvironment, expected)
     // read again, since what the pass wrote in has to give the same answer
-    return unitWithin({ type: 'customNode', entireLoc: noLocation, expr: checked.ast, originalCode: code }, typeEnvironment, checked.named, expected)
+    return unitWithin({ type: 'customNode', entireLoc: noLocation, expr: checked.ast, originalCode: code }, typeEnvironment, checked.named, expected).unit
 }
 
 /** What the script works out to. How it was converted to get there is a caption's business. */

@@ -4,7 +4,9 @@ import test from 'node:test'
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { mapUSSFromString } from '../src/mapper/settings/map-uss'
 import { deriveMapLabel, deriveTableColumnLabel, deriveTableLabel } from '../src/urban-stats-script/derive-human-readable-name'
+import { parseNoError } from '../src/urban-stats-script/parser'
 import { TypeEnvironment } from '../src/urban-stats-script/types-values'
+import { unitCheck } from '../src/urban-stats-script/unit-inference'
 import { HumanReadableName } from '../src/utils/human-readable-element'
 import { reifyString } from '../src/utils/human-readable-name'
 
@@ -116,15 +118,64 @@ for (const [data, expected] of [
     ['high_temp ** 2 * area', '(Mean high temp − 0°F)^{2} × Area'],
     ['sqrt(high_temp)', 'sqrt(Mean high temp − 0°F)'],
     ['high_temp / high_temp', '(Mean high temp − 0°F) ÷ (Mean high temp − 0°F)'],
-    // a count is counted from nothing already, so no zero comes off it
-    ['high_temp + population', 'Mean high temp + Population × 1°F/person'],
-    ['population + high_temp', 'Population + (Mean high temp − 0°F) × 1/°F'],
-    ['high_temp - low_temp + population', '(Mean high temp − Mean low temp) + Population × 1°F/person'],
+    // a count is counted from nothing already, so no zero comes off it, and a factor between two
+    // scales is a difference of them: so many degrees per person, not a temperature per person
+    ['high_temp + population', 'Mean high temp + Population × +1°F/person'],
+    ['population + high_temp', 'Population + (Mean high temp − 0°F) × +1/°F'],
+    ['high_temp - low_temp + population', '(Mean high temp − Mean low temp) + Population × +1°F/person'],
     // and nothing is written where the two sides already go together
     ['population + population', 'Population + Population'],
     ['area / area', 'Area ÷ Area'],
 ] as const) {
     testMapLabel(test, `cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`, expected)
+}
+
+// What a conversion is written as to a reader of other units. The factor is a quantity like any
+// other, so it is written in whatever units they read; what a number was counted in is not, that
+// being what the script computed with rather than anything a reader chose.
+for (const [data, settings, expected] of [
+    ['population + area', { useImperial: true }, 'Population + Area × 2.59/mi^{2}'],
+    ['area + population', { useImperial: true }, 'Area + Population × 247acres/person'],
+    ['population + sqrt(area)', { useImperial: true }, 'Population + sqrt(Area) × 1.61/mi'],
+    // a factor between two scales is a difference of them, so it converts as one: a degree
+    // Fahrenheit per person is five ninths of a degree Celsius per person, not -17.2 of them
+    ['high_temp + population', { temperatureUnit: 'celsius' }, 'Mean high temp + Population × +0.556°C/person'],
+    ['population + high_temp', { temperatureUnit: 'celsius' }, 'Population + (Mean high temp − -17.8°C) × +1.8/°C'],
+    // the zero a reading gives up is a reading, so it is written from the zero of whatever scale
+    ['high_temp * area', { temperatureUnit: 'celsius' }, '(Mean high temp − -17.8°C) × Area'],
+    ['high_temp * area', { useImperial: true }, '(Mean high temp − 0°F) × Area'],
+    // and what a number was read as counted in stays what the script counted it in
+    ['ln(area)', { useImperial: true }, 'ln(Area [in km^{2}])'],
+    ['ln(high_temp)', { temperatureUnit: 'celsius' }, 'ln(Mean high temp [in °F])'],
+] as const) {
+    void test(`${data} to a reader of ${JSON.stringify(settings)}`, () => {
+        const label = deriveMapLabel(mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), getTypeEnvironment())
+        assert.ok(label)
+        assert.equal(reifyString(label, settings), expected)
+    })
+}
+
+// What a column that states its unit is named. The script is read as being converted into that
+// unit, so the name says how, and a column whose script says that unit already says nothing.
+for (const [values, stated, expected] of [
+    ['population', 'area', 'Population × 1km^{2}/person'],
+    ['ln(population)', 'area', 'ln(Population) × 1km^{2}'],
+    ['population / area', 'density_pw_1km', 'Population ÷ Area'],
+    // a reading gives up its zero to be scaled, and takes one on to be one
+    ['high_temp', 'area', '(Mean high temp − 0°F) × +1km^{2}/°F'],
+    ['population', 'high_temp', 'Population × +1°F/person + 0°F'],
+    // and nothing is said where the script already says that unit
+    ['area', 'area', 'Area'],
+] as const) {
+    void test(`a column of ${values} stated in ${stated}`, () => {
+        const typeEnvironment = getTypeEnvironment()
+        const unit = unitCheck(parseNoError(stated, 'test'), typeEnvironment).unit
+        assert.ok(unit)
+        const uss = mapUSSFromString(`table(columns=[column(values=${values})])`)
+        const label = deriveTableColumnLabel(uss, typeEnvironment, 0, unit)
+        assert.ok(label)
+        assert.equal(reifyString(label, {}), expected)
+    })
 }
 
 void test('a label reads in the units of whoever is reading it', () => {

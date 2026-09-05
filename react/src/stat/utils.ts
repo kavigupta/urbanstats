@@ -90,14 +90,15 @@ export function statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn }
     warn: (message: string) => void
 }): StatData {
     const columns = table.columns.map((column, index): StatColumn => {
-        let name = column.name ?? deriveTableColumnLabel(mapUSS, typeEnvironment, index)
+        // a column that states its unit says what the script is to be read as converted into, so
+        // the name it is given says how, and the unit it is written in is that one
+        const stated = column.unit === undefined ? undefined : unitTypeToStoredUnit(column.unit)
+        let name = column.name ?? deriveTableColumnLabel(mapUSS, typeEnvironment, index, stated)
         if (name === undefined) {
             warn(`Name could not be derived for column ${index}, please pass name="<your name here>" to column(...)`)
             name = '[Unnamed Column]'
         }
-        const unit = column.unit === undefined
-            ? deriveTableColumnUnit(mapUSS, typeEnvironment, index)
-            : unitTypeToStoredUnit(column.unit)
+        const unit = stated ?? deriveTableColumnUnit(mapUSS, typeEnvironment, index)
         const numbers = numberColumnValues(column.values)
         if (numbers === undefined || column.populationPercentiles === undefined) {
             return { value: column.values as string[] | boolean[], name, unit }

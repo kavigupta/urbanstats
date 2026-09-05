@@ -90,9 +90,12 @@ function propagationOf(fn: Expression, scope: Scope): UnitPropagation | undefine
 
 /** Whether a value in `got` can be used where `want` is expected, unconverted. */
 function goesWhere(want: StoredUnit, got: StoredUnit): boolean {
+    // a share is dressed as a percentage and is a fraction underneath, so reading it as a plain
+    // number is worth saying. Any other dressing is only how a statistic names its own writing.
+    const dressedApart = [want, got].some(({ unit }) => unit.decoration.kind === 'percent')
+        && want.unit.decoration.kind !== got.unit.decoration.kind
     return sameDimensions(want, got) && sameSize(want.toBaseUnits, got.toBaseUnits)
-        && want.unit.baseIsScalar === got.unit.baseIsScalar
-        && want.unit.decoration.kind === got.unit.decoration.kind
+        && want.unit.baseIsScalar === got.unit.baseIsScalar && !dressedApart
 }
 
 /** What a call that gives a plain number back expects of its arguments. */
@@ -453,8 +456,13 @@ export function unitCheck(program: UrbanStatsASTExpression<UnitsRead> | UrbanSta
 }
 
 /** The unit an expression works out to, given the names the whole script bound. */
-export function unitWithin(ast: Expression, typeEnvironment: TypeEnvironment, named: Bindings, expected?: StoredUnit): AbstractInterpValue {
-    return quantity(checkExpression(ast, { typeEnvironment, named: new Map(named) }, wanting(expected)).value)
+/**
+ * One expression of a script read against what the rest of it made of the names it binds, and
+ * against a unit expected of that expression alone.
+ */
+export function unitWithin(ast: Expression, typeEnvironment: TypeEnvironment, named: Bindings, expected?: StoredUnit): { ast: Expression, unit: AbstractInterpValue } {
+    const checked = checkExpression(ast, { typeEnvironment, named: new Map(named) }, wanting(expected))
+    return { ast: checked.ast, unit: quantity(checked.value) }
 }
 
 function wanting(expected: StoredUnit | undefined): Expected {
