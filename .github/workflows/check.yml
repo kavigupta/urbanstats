@@ -30,7 +30,8 @@ jobs:
       - name: Cancel this branch's older runs
         run: |
           gh api --paginate "repos/$GITHUB_REPOSITORY/actions/workflows/check.yml/runs?event=pull_request&per_page=100" \
-            --jq ".workflow_runs[] | select(.head_branch == \"$BRANCH\" and .status != \"completed\" and .id < $GITHUB_RUN_ID) | .id" \
+            | jq -r --arg branch "$BRANCH" --arg repo "$GITHUB_REPOSITORY" --argjson id "$GITHUB_RUN_ID" \
+              '.workflow_runs[] | select(.head_branch == $branch and .head_repository.full_name == $repo and .status != "completed" and .id < $id) | .id' \
             | xargs -r -I{} gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/{}/cancel"
         env:
           BRANCH: ${{ github.head_ref }}
