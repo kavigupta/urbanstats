@@ -92,9 +92,9 @@ export function mapVisuals(result: MapResult): MapVisuals {
     const map = result.value
     const scale = instantiate(map.scale)
     const ticks = rampTicks(scale)
-    const missing = map.showMissingData
-        ? (map.missingDataColor === undefined ? undefined : doRender(map.missingDataColor))
-        : hiddenColor
+    const missing = map.missingData === undefined
+        ? hiddenColor
+        : (map.missingData.color === undefined ? undefined : doRender(map.missingData.color))
     const colorer = rampColorer(map.ramp, scale, missing)
     const ramp = { scale, ticks, colors: ticks.map(colorer) }
     if (result.opaqueType === 'clusterMap') {

@@ -18,8 +18,7 @@ function commonMap(overrides: Partial<CMap>): CMap {
         basemap: { type: 'osm', noLabels: false },
         insets: [],
         textBoxes: [],
-        showMissingData: false,
-        missingDataColor: undefined,
+        missingData: undefined,
         outline: { color: { r: 0, g: 0, b: 0, a: 1 }, weight: 0 },
         ...overrides,
     }
@@ -33,16 +32,16 @@ void test('a missing value is hidden by default', () => {
     assert.deepStrictEqual(mapVisuals(cMap({})).colors, ['#000000', hiddenColor, '#ffffff'])
 })
 
-void test('showMissingData brings back the colour furthest from the ramp', () => {
-    const colors = mapVisuals(cMap({ showMissingData: true })).colors
+void test('a missingData without a colour brings back the one furthest from the ramp', () => {
+    const colors = mapVisuals(cMap({ missingData: { color: undefined } })).colors
     assert.deepStrictEqual([colors[0], colors[2]], ['#000000', '#ffffff'])
     // A black-to-white ramp is furthest from something saturated, which is the point of the default.
     assert.notEqual(colors[1], hiddenColor)
     assert.match(colors[1], /^#[0-9a-f]{6}$/)
 })
 
-void test('missingDataColor overrides it', () => {
-    const colors = mapVisuals(cMap({ showMissingData: true, missingDataColor: { r: 1, g: 0, b: 0, a: 1 } })).colors
+void test('a missingData colour overrides it', () => {
+    const colors = mapVisuals(cMap({ missingData: { color: { r: 1, g: 0, b: 0, a: 1 } } })).colors
     assert.equal(colors[1], '#ff0000')
 })
 

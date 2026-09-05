@@ -6,7 +6,7 @@ import { UnitType } from '../utils/unit'
 
 import { UrbanStatsASTExpression } from './ast'
 import { Color, deconstructColor, hexToColor } from './constants/color-utils'
-import { CMap, CMapRGB, ClusterMap, Outline, PMap } from './constants/map'
+import { CMap, CMapRGB, ClusterMap, MissingData, Outline, PMap } from './constants/map'
 import { RampT } from './constants/ramp'
 import { RichTextAttributes, RichTextDocument, RichTextSegment } from './constants/rich-text'
 import { Scale } from './constants/scale'
@@ -34,6 +34,7 @@ export type USSOpaqueValue =
     | { type: 'opaque', opaqueType: 'table', value: Table }
     | { type: 'opaque', opaqueType: 'column', value: TableColumn }
     | { type: 'opaque', opaqueType: 'outline', value: Outline }
+    | { type: 'opaque', opaqueType: 'missingData', value: MissingData }
     | { type: 'opaque', opaqueType: 'unit', value: { unit: string } }
     | { type: 'opaque', opaqueType: 'ramp', value: RampT }
     | { type: 'opaque', opaqueType: 'basemap', value: Basemap }
@@ -472,6 +473,9 @@ export function renderValue(input: USSValue): string {
                     case 'outline':
                         const outline = opaqueValue.value
                         return `constructOutline(color=${deconstructColor(outline.color)}, weight=${outline.weight})`
+                    case 'missingData':
+                        const missingDataColor = opaqueValue.value.color
+                        return `constructMissingData(${missingDataColor === undefined ? '' : `color=${deconstructColor(missingDataColor)}`})`
                     case 'ramp':
                         const ramp = opaqueValue.value
                         const rampValue = ramp.map(
