@@ -20,6 +20,16 @@ export interface Outline {
     weight: number
 }
 
+export interface MissingData {
+    /** Undefined means the colour furthest from the map's own. */
+    color: Color | undefined
+}
+
+const missingDataType = {
+    type: 'opaque',
+    name: 'missingData',
+} satisfies USSType
+
 export interface CommonMap {
     geo: string[]
     data: number[]
@@ -31,6 +41,8 @@ export interface CommonMap {
     insets: Inset[]
     unit?: UnitType
     textBoxes: TextBox[]
+    /** Undefined where a geography with no value is not drawn at all. */
+    missingData: MissingData | undefined
 }
 
 export interface CMap extends CommonMap {
@@ -117,6 +129,33 @@ export const constructOutline = {
     },
 } satisfies USSValue
 
+export const constructMissingData = {
+    type: {
+        type: 'function',
+        posArgs: [],
+        namedArgs: {
+            color: {
+                type: { type: 'concrete', value: { type: 'opaque', name: 'color' } },
+                defaultValue: createConstantExpression(null),
+            },
+        },
+        returnType: { type: 'concrete', value: missingDataType },
+    },
+    value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
+        const color = (namedArgs.color as { type: 'opaque', opaqueType: 'color', value: Color } | null)?.value
+        return { type: 'opaque', opaqueType: 'missingData', value: { color } }
+    },
+    documentation: {
+        humanReadableName: 'Missing Data',
+        category: 'map',
+        isDefault: true,
+        namedArgs: {
+            color: 'Color',
+        },
+        longDescription: 'Draws the geographies whose data is missing. Without this, they are not drawn at all. If no color is given, one that contrasts with the rest of the map is picked automatically.',
+    },
+} satisfies USSValue
+
 function mapConstructorArguments(
     isPmap: boolean,
     isRGB: boolean,
@@ -129,6 +168,10 @@ function mapConstructorArguments(
                 data: dataType,
                 scale: { type: { type: 'concrete', value: { type: 'opaque', name: 'scale' } } },
                 ramp: { type: { type: 'concrete', value: { type: 'opaque', name: 'ramp' } } },
+                missingData: {
+                    type: { type: 'concrete', value: missingDataType },
+                    defaultValue: createConstantExpression(null),
+                },
             }
     return {
         ...dataArgs,
@@ -211,6 +254,7 @@ function computeCommonMap(
     }
     const textBoxes = (namedArgs.textBoxes as { value: TextBox }[] | null ?? []).map(({ value }) => value)
     const opacity = Math.max(0, Math.min(1, namedArgs.opacity as number))
+    const missingData = (namedArgs.missingData as { type: 'opaque', opaqueType: 'missingData', value: MissingData } | null)?.value
 
     if (geo.length !== data.length) {
         throw new Error(`geo and data must have the same length: ${geo.length} and ${data.length}`)
@@ -218,7 +262,7 @@ function computeCommonMap(
 
     const scaleInstance = scale(data)
 
-    return { geo, data, scale: scaleInstance, ramp, opacity, label: labelPassedIn !== null ? parseHumanReadableTemplate(labelPassedIn) : undefined, basemap, insets, unit, textBoxes }
+    return { geo, data, scale: scaleInstance, ramp, opacity, label: labelPassedIn !== null ? parseHumanReadableTemplate(labelPassedIn) : undefined, basemap, insets, unit, textBoxes, missingData }
 }
 
 const labelSyntaxDescription = hre`The label argument supports subscript with \`_{...}\` and superscript with \`^{...}\`, e.g. \`label="log_{10}(Density)^{2}"\`.`
@@ -227,6 +271,7 @@ const namedArgDocumentation = {
     data: 'Data',
     scale: 'Scale',
     ramp: 'Ramp',
+    missingData: 'Show Missing Data',
     opacity: 'Opacity',
     label: 'Label',
     geo: 'Geography',
