@@ -321,7 +321,7 @@ function createHistogramMarks(
                 const strokeDasharray = dashPatterns.size > 1 ? dashPatterns.get(s.subseriesName)?.pattern : undefined
                 return Plot.line(s.values, {
                     x: transpose ? 'y' : 'xidx', y: transpose ? 'xidx' : 'y', stroke: s.color,
-                    strokeWidth: strokeDasharray !== undefined ? 2 : 4,
+                    strokeWidth: strokeDasharray !== undefined ? 2 : 5,
                     strokeDasharray,
                 })
             }),
