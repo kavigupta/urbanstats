@@ -7,7 +7,8 @@ import { loadProtobuf } from '../load_json'
 import { indexLink } from '../navigation/links'
 import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
-import { Color, doRender } from '../urban-stats-script/constants/color-utils'
+import { doRender } from '../urban-stats-script/constants/color-utils'
+import { MissingData } from '../urban-stats-script/constants/map'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { USSOpaqueValue } from '../urban-stats-script/types-values'
 import { furthestColor, interpolateColor } from '../utils/color'
@@ -88,18 +89,18 @@ export interface MapVisuals {
     categoryColors?: string[]
 }
 
-/** What a missing value is painted: nothing unless shown, then the map's own colour or `shown`. */
-function missingFill<T extends string | undefined>(map: { showMissingData: boolean, missingDataColor: Color | undefined }, shown: T): string | T {
-    if (!map.showMissingData) {
+/** What a missing value is painted: nothing unless drawn, then its own colour or `automatic`. */
+function missingFill<T extends string | undefined>(missingData: MissingData | undefined, automatic: T): string | T {
+    if (missingData === undefined) {
         return hiddenColor
     }
-    return map.missingDataColor === undefined ? shown : doRender(map.missingDataColor)
+    return missingData.color === undefined ? automatic : doRender(missingData.color)
 }
 
 export function mapVisuals(result: MapResult): MapVisuals {
     if (result.opaqueType === 'cMapRGB') {
         const rgb = result.value
-        const missing = missingFill(rgb, rgbMissingColor)
+        const missing = missingFill(rgb.missingData, rgbMissingColor)
         return {
             colors: rgb.dataR.map((r, i) => {
                 const [g, b, a] = [rgb.dataG[i], rgb.dataB[i], rgb.dataA[i]]
@@ -110,7 +111,7 @@ export function mapVisuals(result: MapResult): MapVisuals {
     const map = result.value
     const scale = instantiate(map.scale)
     const ticks = rampTicks(scale)
-    const colorer = rampColorer(map.ramp, scale, missingFill(map, undefined))
+    const colorer = rampColorer(map.ramp, scale, missingFill(map.missingData, undefined))
     const ramp = { scale, ticks, colors: ticks.map(colorer) }
     if (result.opaqueType === 'clusterMap') {
         // Discretized so a cluster's slices are counted in the same bins the colourbar shows.

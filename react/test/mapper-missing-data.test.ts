@@ -24,13 +24,12 @@ mapper(() => test)('missing values', { code, geo: 'Subnational Region', universe
     await t.expect(getErrors()).eql([])
     await screencap(t, { removeEntireMap: false })
 
-    await checkBox(t, /^Missing Data Color/)
+    await checkBox(t, /^Color/)
     await t.expect(getErrors()).eql([])
     await screencap(t, { removeEntireMap: false, scrollPaneTo: checkSelector(/^Show Missing Data/) })
 
     await toggleCustomScript(t)
-    await t.expect(getCodeFromMainField()).contains('showMissingData=true')
-    await t.expect(getCodeFromMainField()).contains('missingDataColor=rgb(0, 0, 0)')
+    await t.expect(getCodeFromMainField()).contains('missingData=constructMissingData(color=rgb(0, 0, 0))')
 })
 
 // Hiding a value only takes away its fill, so the region is still there to be clicked. Austurland,
