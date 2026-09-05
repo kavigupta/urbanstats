@@ -103,8 +103,14 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
                     return [{ type: 'atom', value: ast.value.node.value }]
             }
         case 'unaryOperator': {
-            const operand = humanReadableElements(ast.expr, typeEnvironment, units)
-            if (operand === undefined) return
+            const written = humanReadableElements(ast.expr, typeEnvironment, units)
+            if (written === undefined) return
+            // a sign binds tighter than adding, so -(a + b) would otherwise read as -a + b, which
+            // is a different number. It binds looser than multiplying, which needs no brackets.
+            const inner = ast.expr.type === 'binaryOperator' ? expressionOperatorMap[ast.expr.operator.node] : undefined
+            const operand: HumanReadableElement[] = inner !== undefined && inner.precedence < expressionOperatorMap['*'].precedence
+                ? [{ type: 'parens', value: written }]
+                : written
             let operator: HumanReadableElement[]
             switch (ast.operator.node) {
                 case '!':
