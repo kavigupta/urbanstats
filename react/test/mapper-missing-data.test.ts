@@ -61,6 +61,10 @@ mapper(() => test)('missing values on a cluster map', { code: clusterCode, geo: 
     await checkBox(t, /^Show Missing Data/)
     await t.expect(getErrors()).eql([])
     await screencap(t, { removeEntireMap: false })
+
+    await checkBox(t, /^Color/)
+    await t.expect(getErrors()).eql([])
+    await screencap(t, { removeEntireMap: false, scrollPaneTo: checkSelector(/^Show Missing Data/) })
 })
 
 // The same four regions on an RGB map, whose NaN channels used to render as the literal
