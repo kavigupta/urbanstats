@@ -114,8 +114,7 @@ def unzip_artifact(artifacts, key, path):
     """
     artifacts = [a for a in artifacts if a["name"] == key]
     if not artifacts:
-        print(f"Artifact {key} not found")
-        return
+        raise RuntimeError(f"Artifact {key} not found")
     artifact = artifacts[0]
     url = artifact["archive_download_url"]
     with NamedTemporaryFile(suffix=".zip") as f:
