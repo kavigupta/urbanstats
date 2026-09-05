@@ -39,7 +39,7 @@ function rampTicks(scale: ScaleInstance): number[] {
 
 /** What a map with no colour of its own paints a missing value: nothing, so the basemap shows through. */
 // eslint-disable-next-line no-restricted-syntax -- not a theme colour; it is the absence of one
-export const hiddenColor = '#00000000'
+const hiddenColor = '#00000000'
 
 /**
  * Returns a function rather than colouring a list, so the ramp's expensive contrast colour is
