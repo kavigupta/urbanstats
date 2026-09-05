@@ -17,15 +17,20 @@ type Expression = UrbanStatsASTExpression<ReadInUnits>
 
 function humanReadableElements(ast: Expression | UrbanStatsASTStatement<ReadInUnits>, typeEnvironment: TypeEnvironment): HumanReadableElement[] | undefined {
     const written = describe(ast, typeEnvironment)
-    // a number says what it is a number of by how it is written; anything else has to say it
-    if (written === undefined || ast.type === 'constant' || ast.readIn === undefined) {
+    if (written === undefined) {
+        return undefined
+    }
+    // a constant writes its unit into the number itself, as "1 000/km^2"; anything else has the
+    // unit written after it
+    const counted = ast.type === 'constant' ? undefined : ast.readIn
+    if (counted === undefined && ast.readAs === undefined) {
         return written
     }
-    // the unit is of the whole expression, so a run of operators is bracketed before it is said of
-    // it. A power is written as a superscript, which the unit follows without brackets.
+    // the unit applies to the whole expression, so "(A + B) [in U]" needs the brackets. A power is
+    // written as a superscript, which already reads as one thing: "A^{2} [in U]".
     const runsOn = ast.type === 'binaryOperator' && ast.operator.node !== '**'
     const of = runsOn ? [{ type: 'parens' as const, value: written }] : written
-    return inUnitWritten(of, ast.readIn)
+    return counted === undefined ? inUnitWritten(of, ast.readAs, 'as') : inUnitWritten(of, counted)
 }
 
 /** The operator an expression prints as. One that says what it was read in prints bracketed. */
@@ -352,7 +357,11 @@ function ungroupUnlessWorthwhile(label: HumanReadableElement[], substituted: Hum
  * reader's units are not it: a logarithm is of the number a script computed with, whatever units
  * the reader has the same number written to them in. A count gets nothing, having no name.
  */
-function inUnitWritten(written: HumanReadableElement[], unit: StoredUnit | undefined): HumanReadableElement[] {
+/**
+ * "[in km^2]" of a quantity read as the number of them it is, and "[as km^2]" of a number with no
+ * unit of its own that the script reads as that many.
+ */
+function inUnitWritten(written: HumanReadableElement[], unit: StoredUnit | undefined, preposition: 'in' | 'as' = 'in'): HumanReadableElement[] {
     if (unit === undefined) return written
     const name = nameOfStoredUnit(unit)
     // A share is stored as the fraction it is, whatever percentage it is written as, and so is a
@@ -362,7 +371,7 @@ function inUnitWritten(written: HumanReadableElement[], unit: StoredUnit | undef
         return [...written, { type: 'atom', value: ' [as a fraction]' }]
     }
     if (name === undefined || name.length === 0) return written
-    return [...written, { type: 'atom', value: ' [in ' }, ...name, { type: 'atom', value: ']' }]
+    return [...written, { type: 'atom', value: ` [${preposition} ` }, ...name, { type: 'atom', value: ']' }]
 }
 
 function formatNumber(number: number, unit?: StoredUnit): HumanReadableElement[] {

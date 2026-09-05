@@ -10,8 +10,10 @@ import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit,
 
 /** The unit of the number a caption writes at this node. Set on literals and on toNumber calls. */
 export interface ReadInUnits {
-    /** The unit of the number written here. */
+    /** The unit of the number written here: a literal is written in it, anything else counted in it. */
     readIn?: StoredUnit
+    /** The unit a number that has none of its own is taken to be in. */
+    readAs?: StoredUnit
 }
 
 type Expression = UrbanStatsASTExpression<ReadInUnits>
@@ -152,7 +154,7 @@ function reconciled(checked: Checked<Expression>, expected: Expected): Checked<E
         // nothing says what unit this is, so the script is read as reading it in the one wanted:
         // the geoName of density > toNumber(geoName) is read as a number of them per square km
         const opaque = got.kind === 'any' && got.constant === undefined && !isPlainNumber(expected.unit)
-        return opaque ? { ast: { ...checked.ast, readIn: expected.unit }, value: inUnit(expected.unit) } : checked
+        return opaque ? { ast: { ...checked.ast, readAs: expected.unit }, value: inUnit(expected.unit) } : checked
     }
     if (isPlainNumber(expected.unit) && !isPlainNumber(got.unit)) {
         return { ast: readAsANumberOf(checked.ast, got.unit), value: anything }
