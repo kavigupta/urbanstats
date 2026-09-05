@@ -126,10 +126,12 @@ function describe(ast: Expression | UrbanStatsASTStatement<UnitsRead>, typeEnvir
         case 'unaryOperator': {
             const written = humanReadableElements(ast.expr, typeEnvironment)
             if (written === undefined) return
-            // without these, -(a + b) would read as -a + b
-            const operand: HumanReadableElement[] = printsAsOperation(ast.expr) === undefined
-                ? written
-                : [{ type: 'parens', value: written }]
+            // a sign binds tighter than adding, so -(a + b) would otherwise read as -a + b, which
+            // is a different number. It binds looser than multiplying, which needs no brackets.
+            const inner = printsAsOperation(ast.expr)
+            const operand: HumanReadableElement[] = inner !== undefined && inner.precedence < expressionOperatorMap['*'].precedence
+                ? [{ type: 'parens', value: written }]
+                : written
             let operator: HumanReadableElement[]
             switch (ast.operator.node) {
                 case '!':

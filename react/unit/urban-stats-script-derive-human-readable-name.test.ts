@@ -80,41 +80,43 @@ for (const [condition, expected] of [
     testMapLabel(test, `condition (${condition})\ncMap(data=population, scale=linearScale(), ramp=rampUridis)`, `Population where ${expected}`)
 }
 
-// What a script is read as multiplying by when its sides do not go together. The factor is no
-// part of what the script computes, so the caption says what it is.
+// a sign binds tighter than adding and looser than multiplying, so only a sum needs the brackets
+testMapLabel(test, 'cMap(data=-(population + population), scale=linearScale(), ramp=rampUridis)', '-(Population + Population)')
+testMapLabel(test, 'cMap(data=-(high_temp - low_temp), scale=linearScale(), ramp=rampUridis)', '-(Mean high temp \u2212 Mean low temp)')
+testMapLabel(test, 'cMap(data=-(population * 2), scale=linearScale(), ramp=rampUridis)', '-Population \u00d7 2')
+testMapLabel(test, 'cMap(data=-(area ** 2), scale=linearScale(), ramp=rampUridis)', '-Area^{2}')
+testMapLabel(test, 'cMap(data=-population, scale=linearScale(), ramp=rampUridis)', '-Population')
+
+// How a script is read where what it says is not what a unit is wanted there. Nothing about what
+// it computes changes, so the caption says what the conversion was.
 for (const [data, expected] of [
     ['population + area', 'Population + Area × 1/km^{2}'],
     ['area + population', 'Area + Population × 1km^{2}/person'],
     ['population - area', 'Population − Area × 1/km^{2}'],
     ['population < area', 'Population < Area × 1/km^{2}'],
     ['area >= population', 'Area ≥ Population × 1km^{2}/person'],
-    ['population + area / 2', 'Population + Area ÷ 2km^{2}/person'],
-    ['population + sqrt(area)', 'Population + sqrt(Area) × 1/km'],
     // a share is a number of nothing and a count is people, so a factor separates them
     ['commute_bike + population', 'Commute Bike % + Population × 1/person'],
-    ['population * 2 + area', 'Population × 2 + Area × 1/km^{2}'],
-    ['minimum(population, area)', 'min(Population, Area × 1/km^{2})'],
-    ['inverseQuantile(population, area)', 'quantile^{-1}(Population, Area × 1/km^{2})'],
-    // a reading gives up its zero before it can scale, and a difference has none to give
-    ['high_temp / area', '(Mean high temp − 0°F) ÷ Area'],
-    ['high_temp ** 2', '(Mean high temp − 0°F)^{2}'],
-    ['area / area', 'Area ÷ Area'],
     // a literal already written is read for what it must be, rather than one being added
     ['population + area * 2', 'Population + Area × 2/km^{2}'],
     ['population + area / 2', 'Population + Area ÷ 2km^{2}/person'],
     ['population + sqrt(area)', 'Population + sqrt(Area) × 1/km'],
     // as many as the script needs, at whatever depth
     ['population + area + area', 'Population + Area × 1/km^{2} + Area × 1/km^{2}'],
+    ['population * 2 + area', 'Population × 2 + Area × 1/km^{2}'],
     ['(population + area) * 2', '(Population + Area × 1/km^{2}) × 2'],
-    // an argument that has to share a unit with another is rewritten the same way
+    // an argument that has to share a unit with another is read the same way
     ['maximum(area, population)', 'max(Area, Population × 1km^{2}/person)'],
+    ['minimum(population, area)', 'min(Population, Area × 1/km^{2})'],
     ['inverseQuantile(population, area)', 'quantile^{-1}(Population, Area × 1/km^{2})'],
-    // a temperature does not scale, so the caption writes what is left once its zero is taken off
+    // a temperature does not scale, so what is written is what is left once its zero is taken off
     ['high_temp * area', '(Mean high temp − 0°F) × Area'],
+    ['high_temp / area', '(Mean high temp − 0°F) ÷ Area'],
+    ['high_temp ** 2', '(Mean high temp − 0°F)^{2}'],
     ['high_temp ** 2 * area', '(Mean high temp − 0°F)^{2} × Area'],
     ['sqrt(high_temp)', 'sqrt(Mean high temp − 0°F)'],
     ['high_temp / high_temp', '(Mean high temp − 0°F) ÷ (Mean high temp − 0°F)'],
-    // a count has no unit name, so the zero it is taken from is written as a bare 0
+    // a count is counted from nothing already, so no zero comes off it
     ['high_temp + population', 'Mean high temp + Population × 1°F/person'],
     ['population + high_temp', 'Population + (Mean high temp − 0°F) × 1/°F'],
     ['high_temp - low_temp + population', '(Mean high temp − Mean low temp) + Population × 1°F/person'],
