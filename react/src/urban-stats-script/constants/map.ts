@@ -31,6 +31,9 @@ export interface CommonMap {
     insets: Inset[]
     unit?: UnitType
     textBoxes: TextBox[]
+    showMissingData: boolean
+    /** Undefined means the colour furthest from the ramp's own. */
+    missingDataColor: Color | undefined
 }
 
 export interface CMap extends CommonMap {
@@ -129,6 +132,14 @@ function mapConstructorArguments(
                 data: dataType,
                 scale: { type: { type: 'concrete', value: { type: 'opaque', name: 'scale' } } },
                 ramp: { type: { type: 'concrete', value: { type: 'opaque', name: 'ramp' } } },
+                showMissingData: {
+                    type: { type: 'concrete', value: { type: 'boolean' } },
+                    defaultValue: createConstantExpression(false),
+                },
+                missingDataColor: {
+                    type: { type: 'concrete', value: { type: 'opaque', name: 'color' } },
+                    defaultValue: createConstantExpression(null),
+                },
             }
     return {
         ...dataArgs,
@@ -211,6 +222,8 @@ function computeCommonMap(
     }
     const textBoxes = (namedArgs.textBoxes as { value: TextBox }[] | null ?? []).map(({ value }) => value)
     const opacity = Math.max(0, Math.min(1, namedArgs.opacity as number))
+    const showMissingData = namedArgs.showMissingData as boolean
+    const missingDataColor = (namedArgs.missingDataColor as { type: 'opaque', opaqueType: 'color', value: Color } | null)?.value
 
     if (geo.length !== data.length) {
         throw new Error(`geo and data must have the same length: ${geo.length} and ${data.length}`)
@@ -218,7 +231,7 @@ function computeCommonMap(
 
     const scaleInstance = scale(data)
 
-    return { geo, data, scale: scaleInstance, ramp, opacity, label: labelPassedIn !== null ? parseHumanReadableTemplate(labelPassedIn) : undefined, basemap, insets, unit, textBoxes }
+    return { geo, data, scale: scaleInstance, ramp, opacity, label: labelPassedIn !== null ? parseHumanReadableTemplate(labelPassedIn) : undefined, basemap, insets, unit, textBoxes, showMissingData, missingDataColor }
 }
 
 const labelSyntaxDescription = hre`The label argument supports subscript with \`_{...}\` and superscript with \`^{...}\`, e.g. \`label="log_{10}(Density)^{2}"\`.`
@@ -227,6 +240,8 @@ const namedArgDocumentation = {
     data: 'Data',
     scale: 'Scale',
     ramp: 'Ramp',
+    showMissingData: 'Show Missing Data',
+    missingDataColor: 'Missing Data Color',
     opacity: 'Opacity',
     label: 'Label',
     geo: 'Geography',
