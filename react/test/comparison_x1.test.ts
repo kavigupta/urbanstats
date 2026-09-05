@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, comparisonPage, downloadImage, screencap, urbanstatsFixture, waitForSelectedSearchResult, downloadOrCheckString, downloadCSV } from './test_utils'
+import { target, comparisonPage, downloadImage, screencap, urbanstatsFixture, waitForSelectedSearchResult, saveString, downloadCSV } from './test_utils'
 
 urbanstatsFixture('transpose comparision', `${target}/comparison.html?longnames=%5B%22China%22%2C%22USA%22%2C%22Japan%22%2C%22Indonesia%22%5D&s=6TunChiToWxwZeDP`)
 
@@ -14,7 +14,7 @@ test('transpose screencap', async (t) => {
 
 test('transpose csv export', async (t) => {
     const csvContent = await downloadCSV(t)
-    await downloadOrCheckString(t, csvContent, 'csv-export-transpose-comparison', 'csv', false)
+    saveString(t, csvContent, 'csv-export-transpose-comparison', 'csv', false)
 })
 
 urbanstatsFixture('scrolling transpose comparison', `${target}/comparison.html?longnames=%5B"Santa+Clarita+city%2C+California%2C+USA"%2C"Santa+Clara+city%2C+California%2C+USA"%2C"Boston+city%2C+Massachusetts%2C+USA"%2C"San+Francisco+city%2C+California%2C+USA"%2C"Denver+city%2C+Colorado%2C+USA"%5D&s=8gkGqBdgQkNpHJZ`)
@@ -25,7 +25,7 @@ test('renders scrolling transpose comparision', async (t) => {
 
 test('scrolling transpose csv export', async (t) => {
     const csvContent = await downloadCSV(t)
-    await downloadOrCheckString(t, csvContent, 'csv-export-scrolling-transpose-comparison', 'csv', false)
+    saveString(t, csvContent, 'csv-export-scrolling-transpose-comparison', 'csv', false)
 })
 
 urbanstatsFixture('mobile transpose', `${target}/comparison.html?longnames=%5B%22California%2C+USA%22%2C%22Texas%2C+USA%22%2C%22Florida%2C+USA%22%5D&s=2EoPvra9nrE8zYq`, async (t) => {

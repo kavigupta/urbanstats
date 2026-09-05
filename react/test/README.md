@@ -10,18 +10,21 @@
 
   Visit `chrome://inspect` in your local browser, and click "Inspect" to connect and interact.
 
-- Regenerate the reference screenshots, instead of commenting `!updateScreenshots` on a PR:
+- Regenerate the reference assets, instead of commenting `!updateAssets` on a PR:
 
   ```
   npm run test:e2e -- '--test=test/mapper-edit-text-boxes-desktop.test.ts' --docker --browser=chromium --compare=true
   rsync -a --exclude='*.error.png' \
-    changed_screenshots/mapper-edit-text-boxes-desktop/ \
-    ../reference_test_screenshots/mapper-edit-text-boxes-desktop/
+    changed_assets/mapper-edit-text-boxes-desktop/ \
+    ../reference_test_assets/mapper-edit-text-boxes-desktop/
   ```
 
-  Name the tests you just ran, rather than syncing `changed_screenshots/` whole. A run
+  Name the tests you just ran, rather than syncing `changed_assets/` whole. A run
   only clears that directory for its own test, so it accumulates output from every
-  earlier run — and those stale images would overwrite references the run never looked at.
+  earlier run — and those stale files would overwrite references the run never looked at.
+
+  Reference strings — the CSV, XML and GeoJSON a test saves with `saveString` — live in the
+  same tree and regenerate the same way. Nothing checks them without `--compare=true`.
 
 - Run the tests off-screen on a Mac, in a container built for the host's architecture:
 
@@ -39,7 +42,7 @@ Either container needs `--browser=chromium`, since it has Chromium rather than C
 
 `host-arch` avoids emulating `amd64`, but **can't do anything screenshot-related**: `arm64` Chromium
 antialiases a handful of pixels differently, well below what anyone would notice but well above
-`check_images.py`'s near-exact threshold. Use `ci` for `--compare` and for regenerating references.
+`check_assets.py`'s near-exact threshold. Use `ci` for `--compare` and for regenerating references.
 
 TestCafe ships no `arm64` build of the helper binaries behind `t.resizeWindow` and friends, so those
 run as `i386` binaries under emulation. Chromium and Node, where the time goes, run natively.

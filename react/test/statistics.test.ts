@@ -3,7 +3,7 @@ import { ClientFunction, Selector } from 'testcafe'
 
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor, typeTextWithKeys } from './editor_test_utils'
 import { getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript } from './mapper-utils'
-import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForLoading, dataValues, checkTextboxesDirect, downloadCSV, downloadImage, resizeForPlatform, searchField, waitForSelectedSearchResult, goBack, goForward } from './test_utils'
+import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, saveString, waitForLoading, dataValues, checkTextboxesDirect, downloadCSV, downloadImage, resizeForPlatform, searchField, waitForSelectedSearchResult, goBack, goForward } from './test_utils'
 
 // eslint-disable-next-line no-restricted-syntax -- Reading the title the router set, not setting one.
 const documentTitle = ClientFunction(() => document.title)
@@ -115,7 +115,7 @@ test('statistics-navigation-last-page', async (t) => {
 
 test('statistics-csv-export', async (t) => {
     const csvContent = await downloadCSV(t)
-    await downloadOrCheckString(t, csvContent, 'csv-export-population-statistics', 'csv', false)
+    saveString(t, csvContent, 'csv-export-population-statistics', 'csv', false)
 })
 
 urbanstatsFixture('statistic universe selector test', `${target}/statistic.html?statname=Population&article_type=City&start=3461&amount=20`)

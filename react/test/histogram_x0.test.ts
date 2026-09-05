@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, checkIndividualStat, checkSidebarTextboxes, checkTextboxes, comparisonPage, downloadHistogram, downloadImage, downloadOrCheckString, screencap, urbanstatsFixture, waitForLoading } from './test_utils'
+import { target, checkIndividualStat, checkSidebarTextboxes, checkTextboxes, comparisonPage, downloadHistogram, downloadImage, saveString, screencap, urbanstatsFixture, waitForLoading } from './test_utils'
 
 export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -8,11 +8,11 @@ export const swSGV = 'Southwest San Gabriel Valley CCD [CCD], Los Angeles County
 export const eastSGV = 'East San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const chicago = 'Chicago city [CCD], Cook County, Illinois, USA'
 
-async function downloadOrCheckHistogram(t: TestController, name: string, nth = 0): Promise<void> {
+async function saveHistogram(t: TestController, name: string, nth = 0): Promise<void> {
     const output = await t.eval(() => {
         return document.getElementsByClassName('histogram-svg-panel')[nth].innerHTML
     }, { dependencies: { nth } }) as string
-    await downloadOrCheckString(t, output, name, 'xml')
+    saveString(t, output, name, 'xml')
 }
 
 urbanstatsFixture('article check and uncheck test', `${target}/article.html?longname=New+York+Urban+Center%2C+USA&universe=world`)
@@ -33,7 +33,7 @@ test('histogram-basic-article', async (t) => {
     await t.resizeWindow(400, 800)
     await t.click(Selector('.expand-toggle'))
     await screencap(t)
-    await downloadOrCheckHistogram(t, 'histogram-basic-article')
+    await saveHistogram(t, 'histogram-basic-article')
 })
 
 test('histogram-basic-article-multi', async (t) => {
@@ -57,7 +57,7 @@ test('histogram-basic-comparison', async (t) => {
     await t.expect(Selector('.expand-toggle').count).eql(1)
     await t.click(Selector('.expand-toggle'))
     await screencap(t)
-    await downloadOrCheckHistogram(t, 'histogram-basic-comparison')
+    await saveHistogram(t, 'histogram-basic-comparison')
 })
 
 urbanstatsFixture('comparison test heterogenous with nan', comparisonPage(['India', 'China', pasadena]))
@@ -68,7 +68,7 @@ test('histogram-basic-comparison-nan', async (t) => {
     await t.expect(Selector('.expand-toggle').count).eql(1)
     await t.click(Selector('.expand-toggle').nth(0))
     await screencap(t)
-    await downloadOrCheckHistogram(t, 'histogram-basic-comparison-nan')
+    await saveHistogram(t, 'histogram-basic-comparison-nan')
 })
 
 urbanstatsFixture('comparison test heterogenous with nan in the middle', comparisonPage(['India', pasadena, 'China']))
@@ -79,7 +79,7 @@ test('histogram-basic-comparison-nan-middle', async (t) => {
     await t.expect(Selector('.expand-toggle').count).eql(1)
     await t.click(Selector('.expand-toggle').nth(0))
     await screencap(t)
-    await downloadOrCheckHistogram(t, 'histogram-basic-comparison-nan-middle')
+    await saveHistogram(t, 'histogram-basic-comparison-nan-middle')
 })
 
 // Regression tests for a bug where comparing a region with valid partner-stat data
