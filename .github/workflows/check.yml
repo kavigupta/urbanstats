@@ -4,13 +4,6 @@ on:
     branches:
       - main
   pull_request:
-concurrency:
-  # Grouping by PR means a push supersedes whatever that PR was already running. It also
-  # collapses the two identical runs a stacked push produces, since a PR above the bottom
-  # one gets a synchronize event for its base branch as well as for its own head.
-  group: check-${{ github.event.pull_request.number || github.sha }}
-  # Label a PR `keep-ci` to let its in-flight runs finish instead of being superseded.
-  cancel-in-progress: ${{ github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'keep-ci') }}
 env:
   # This is used in ci_proxy, do not remove. It is necessary so that
   # we can test against non-production data
@@ -22,6 +15,53 @@ env:
     !outputs/*
     /*
 jobs:
+  supersede-older-runs:
+    runs-on: ubuntu-22.04
+    # This replaces `concurrency: cancel-in-progress`. A stacked push gives a PR above the
+    # bottom one two identical pull_request events, and Github picked arbitrarily which of
+    # the resulting runs to cancel. Cancelling the newer one leaves a check suite that
+    # never reports tests-passed, which branch protection reads as a check still pending.
+    # Ordering by run id instead means the newest run always survives.
+    # Forks get a read-only token, so they can't cancel anything.
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && !contains(github.event.pull_request.labels.*.name, 'keep-ci') }}
+    permissions:
+      actions: write
+    steps:
+      - name: Cancel this branch's older runs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'check.yml',
+              event: 'pull_request',
+              branch: context.payload.pull_request.head.ref,
+              per_page: 100
+            });
+
+            // A fork's runs live in this repo too, and its branch can share our name.
+            const superseded = runs.filter(run =>
+              run.id < context.runId
+              && run.status !== 'completed'
+              && run.head_repository?.full_name === `${context.repo.owner}/${context.repo.repo}`
+            );
+
+            for (const run of superseded) {
+              try {
+                await github.rest.actions.cancelWorkflowRun({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  run_id: run.id
+                });
+              } catch (error) {
+                // The run finished between the listing and the cancel.
+                if (error.status !== 409) {
+                  throw error;
+                }
+              }
+            }
+
   build-and-push-common-image:
     runs-on: ubuntu-22.04
     outputs:
