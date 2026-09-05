@@ -1,4 +1,5 @@
 import fs from 'fs/promises'
+import path from 'path'
 
 import chalkTemplate from 'chalk-template'
 import { execa } from 'execa'
@@ -21,6 +22,8 @@ const options = argumentParser({
         headless: booleanArgument({ defaultValue: true }),
         video: booleanArgument({ defaultValue: false }),
         compare: booleanArgument({ defaultValue: false }),
+        // Overwrite the reference assets with what this run produced, for the tests that passed.
+        write: booleanArgument({ defaultValue: false }),
         timeLimitSeconds: z.optional(z.coerce.number().int()), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
         tries: z.optional(z.coerce.number().int()).default(1), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
         baseRef: z.optional(z.string()),
@@ -224,7 +227,7 @@ async function runTest(test: string): Promise<TestResult> {
 }
 
 async function maybeCompare(test: string, success: boolean): Promise<boolean> {
-    if (options.compare) {
+    if (options.compare || options.write) {
         // If there were no failures, delete any generated .error.png so they don't set off the comparison
         if (success) {
             await Promise.all(globSync(`test_assets/${test}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
@@ -236,12 +239,30 @@ async function maybeCompare(test: string, success: boolean): Promise<boolean> {
             reject: false,
         })
 
+        if (options.write) {
+            // A test that stopped early only produced some of its assets
+            if (success) {
+                await updateReferences(test)
+            }
+            return true
+        }
+
         if (assetComparison.failed) {
             return false
         }
     }
 
     return true
+}
+
+async function updateReferences(test: string): Promise<void> {
+    const changed = globSync(`changed_assets/${test}/**`, { nodir: true }).filter(file => !file.endsWith('.error.png'))
+    await Promise.all(changed.map(async (file) => {
+        const destination = path.join('..', 'reference_test_assets', path.relative('changed_assets', file))
+        await fs.mkdir(path.dirname(destination), { recursive: true })
+        await fs.copyFile(file, destination)
+    }))
+    console.warn(chalkTemplate`{green ${testFile(test)} updated ${changed.length} reference assets}`)
 }
 
 async function withTimeout<T>(promise: Promise<T>, getTimeoutSeconds: () => Promise<number>): Promise<T | { status: 'timeout' }> {
