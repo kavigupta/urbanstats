@@ -80,6 +80,11 @@ for (const [condition, expected] of [
     testMapLabel(test, `condition (${condition})\ncMap(data=population, scale=linearScale(), ramp=rampUridis)`, `Population where ${expected}`)
 }
 
+// a sign is written outside what follows it, so what follows is bracketed where it is an operation
+testMapLabel(test, 'cMap(data=-(population + population), scale=linearScale(), ramp=rampUridis)', '-(Population + Population)')
+testMapLabel(test, 'cMap(data=-(high_temp - low_temp), scale=linearScale(), ramp=rampUridis)', '-(Mean high temp \u2212 Mean low temp)')
+testMapLabel(test, 'cMap(data=-population, scale=linearScale(), ramp=rampUridis)', '-Population')
+
 void test('a label reads in the units of whoever is reading it', () => {
     const label = deriveMapLabel(mapUSSFromString('condition (high_temp > 80 & area > 100)\ncMap(data=population, scale=linearScale(), ramp=rampUridis)'), getTypeEnvironment())
     assert.ok(label)

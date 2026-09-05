@@ -103,8 +103,12 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
                     return [{ type: 'atom', value: ast.value.node.value }]
             }
         case 'unaryOperator': {
-            const operand = humanReadableElements(ast.expr, typeEnvironment, units)
-            if (operand === undefined) return
+            const written = humanReadableElements(ast.expr, typeEnvironment, units)
+            if (written === undefined) return
+            // without these, -(a + b) would read as -a + b, which is a different number
+            const operand: HumanReadableElement[] = ast.expr.type === 'binaryOperator'
+                ? [{ type: 'parens', value: written }]
+                : written
             let operator: HumanReadableElement[]
             switch (ast.operator.node) {
                 case '!':
