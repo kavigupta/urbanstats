@@ -447,7 +447,7 @@ function Export(props: { pngExport?: () => Promise<void>, geoJSONExport?: () => 
                 window.open(`?${params.toString()}`, '_blank')
             }}
             >
-                View as Zoomable Page
+                View
             </button>
             {tableExpression && (
                 <button
