@@ -21,6 +21,10 @@
   Reference strings — the CSV, XML and GeoJSON a test saves with `saveString` — live in the
   same tree and regenerate the same way. Nothing checks them without `--compare=true`.
 
+- Pull what CI's run for the current branch produced, rather than rerunning the tests
+  locally: `python -m scripts.grab_assets`. It updates the references in place and prints
+  a `file://` link to the deltas.
+
 - Run the tests off-screen on a Mac, in a container built for the host's architecture:
 
   `npm run test:e2e -- '--test=test/mapper-edit-text-boxes-desktop.test.ts' --docker=host-arch --browser=chromium`
