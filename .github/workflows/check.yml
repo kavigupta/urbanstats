@@ -28,11 +28,14 @@ jobs:
       actions: write
     steps:
       - name: Cancel this branch's older runs
+        # A run that finishes between the listing and the cancel returns 409, which is
+        # fine; anything else, a bad token above all, should still fail this job.
         run: |
           gh api --paginate "repos/$GITHUB_REPOSITORY/actions/workflows/check.yml/runs?event=pull_request&per_page=100" \
             | jq -r --arg branch "$BRANCH" --arg repo "$GITHUB_REPOSITORY" --argjson id "$GITHUB_RUN_ID" \
               '.workflow_runs[] | select(.head_branch == $branch and .head_repository.full_name == $repo and .status != "completed" and .id < $id) | .id' \
-            | xargs -r -I{} gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/{}/cancel"
+            | xargs -r -I{} sh -c 'gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/$1/cancel" \
+                || gh api "repos/$GITHUB_REPOSITORY/actions/runs/$1" --jq .status | grep -qx completed' _ {}
         env:
           BRANCH: ${{ github.head_ref }}
 
