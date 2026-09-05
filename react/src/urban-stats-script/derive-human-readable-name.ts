@@ -3,45 +3,66 @@ import { assert } from '../utils/defensive'
 import { HumanReadableElement, HumanReadableName } from '../utils/human-readable-element'
 import { joinHumanReadableNames } from '../utils/human-readable-name'
 import { parseHumanReadableTemplate } from '../utils/human-readable-template'
-import { nameOfStoredUnit, StoredUnit } from '../utils/quantity'
+import { asADifference, isPlainNumber, multiplies, nameOfStoredUnit, sameDimensions, sameSize, StoredUnit, unitProduct } from '../utils/quantity'
 import { abbreviate, formatToSignificantFigures, separateNumber, trimTrailingZeros } from '../utils/text'
 
-import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
+import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import * as l from './literal-parser'
 import { noLocation } from './location'
-import { expressionOperatorMap } from './operators'
+import { BinaryOperatorSymbol, expressionOperatorMap } from './operators'
 import { TypeEnvironment } from './types-values'
-import { ConstantUnits, inferConstantUnits, readAsANumber, unitsReadAndDropped, whereWritten } from './unit-inference'
+import { UnitConversion, UnitsRead, unitCheck } from './unit-inference'
 
-function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, units: ConstantUnits): HumanReadableElement[] | undefined {
+type Expression = UrbanStatsASTExpression<UnitsRead>
+
+function humanReadableElements(ast: Expression | UrbanStatsASTStatement<UnitsRead>, typeEnvironment: TypeEnvironment): HumanReadableElement[] | undefined {
+    const written = describe(ast, typeEnvironment)
+    if (written === undefined) {
+        return undefined
+    }
+    // a constant writes its unit into the number itself, as "1 000/km^2", so it says it there
+    if (ast.converted === undefined || ast.type === 'constant') {
+        return written
+    }
+    // the conversion is of the whole expression, so "(A + B) [in U]" needs the brackets. A power is
+    // written as a superscript, which already reads as one thing: "A^{2} [in U]".
+    const runsOn = ast.type === 'binaryOperator' && ast.operator.node !== '**'
+    return howConverted(runsOn ? [{ type: 'parens', value: written }] : written, ast.converted)
+}
+
+/** The operator an expression prints as. One that says what unit it is in prints bracketed. */
+function printsAsOperation(ast: Expression): typeof expressionOperatorMap[BinaryOperatorSymbol] | undefined {
+    if (ast.converted !== undefined) {
+        const runsAs = conversionRunsAs(ast.converted)
+        return runsAs === undefined ? undefined : expressionOperatorMap[runsAs]
+    }
+    return ast.type === 'binaryOperator' ? expressionOperatorMap[ast.operator.node] : undefined
+}
+
+function describe(ast: Expression | UrbanStatsASTStatement<UnitsRead>, typeEnvironment: TypeEnvironment): HumanReadableElement[] | undefined {
     switch (ast.type) {
         case 'assignment':
-            return humanReadableElements(ast.value, typeEnvironment, units)
+            return humanReadableElements(ast.value, typeEnvironment)
         case 'autoUXNode':
-            return humanReadableElements(ast.expr, typeEnvironment, units)
+            return humanReadableElements(ast.expr, typeEnvironment)
         case 'binaryOperator': {
             const centerOp = expressionOperatorMap[ast.operator.node]
             /*
              * (A op1 B) op2 C => A op1 B op2 C iff prec(op1) > prec(op2) or op1 = op2
              * A op1 (B op2 C) => A op1 B op2 C iff prec(op2) > prec(op1) or (op1 = op2 and is_assoc(op1))
              */
-            let lhs = humanReadableElements(ast.left, typeEnvironment, units)
+            let lhs = humanReadableElements(ast.left, typeEnvironment)
             if (lhs === undefined) return
-            if (ast.left.type === 'binaryOperator') {
-                const leftOp = expressionOperatorMap[ast.left.operator.node]
-                if (!(leftOp.precedence > centerOp.precedence
-                    || leftOp === centerOp)) {
-                    lhs = [{ type: 'parens', value: lhs }]
-                }
+            const leftOp = printsAsOperation(ast.left)
+            if (leftOp !== undefined && !(leftOp.precedence > centerOp.precedence || leftOp === centerOp)) {
+                lhs = [{ type: 'parens', value: lhs }]
             }
 
-            let rhs = humanReadableElements(ast.right, typeEnvironment, units)
+            let rhs = humanReadableElements(ast.right, typeEnvironment)
             if (rhs === undefined) return
-            if (ast.right.type === 'binaryOperator') {
-                const rightOp = expressionOperatorMap[ast.right.operator.node]
-                if (!(rightOp.precedence > centerOp.precedence || (centerOp === rightOp && centerOp.isAssociative))) {
-                    rhs = [{ type: 'parens', value: rhs }]
-                }
+            const rightOp = printsAsOperation(ast.right)
+            if (rightOp !== undefined && !(rightOp.precedence > centerOp.precedence || (centerOp === rightOp && centerOp.isAssociative))) {
+                rhs = [{ type: 'parens', value: rhs }]
             }
 
             let humanReadableOperator: string
@@ -98,16 +119,16 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
                 case 'humanReadableElements':
                     return ast.value.node.value
                 case 'number':
-                    return formatNumber(ast.value.node.value, units.get(whereWritten(ast.value.location)))
+                    return formatNumber(ast.value.node.value, ast.converted?.expectedUnit)
                 case 'string':
                     return [{ type: 'atom', value: ast.value.node.value }]
             }
         case 'unaryOperator': {
-            const written = humanReadableElements(ast.expr, typeEnvironment, units)
+            const written = humanReadableElements(ast.expr, typeEnvironment)
             if (written === undefined) return
             // a sign binds tighter than adding, so -(a + b) would otherwise read as -a + b, which
             // is a different number. It binds looser than multiplying, which needs no brackets.
-            const inner = ast.expr.type === 'binaryOperator' ? expressionOperatorMap[ast.expr.operator.node] : undefined
+            const inner = printsAsOperation(ast.expr)
             const operand: HumanReadableElement[] = inner !== undefined && inner.precedence < expressionOperatorMap['*'].precedence
                 ? [{ type: 'parens', value: written }]
                 : written
@@ -126,31 +147,16 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
             return [...operator, ...operand]
         }
         case 'customNode':
-            return humanReadableElements(ast.expr, typeEnvironment, units)
+            return humanReadableElements(ast.expr, typeEnvironment)
         case 'expression':
-            return humanReadableElements(ast.value, typeEnvironment, units)
+            return humanReadableElements(ast.value, typeEnvironment)
         case 'call': {
-            const readNumber = readAsANumber(ast, { typeEnvironment, named: new Map() })
-            if (readNumber !== undefined) {
-                // toNumber says its argument is read as a number, which writing a number says
-                const unit = units.get(whereWritten(locationOf(ast)))
-                if (readNumber.value !== undefined) return formatNumber(readNumber.value, unit)
-                const written = humanReadableElements(readNumber.read, typeEnvironment, units)
-                if (written === undefined) return
-                // whatever encloses this sees a call, so -toNumber(a + b) would read -a + b
-                const isOperator = readNumber.read.type === 'binaryOperator' || readNumber.read.type === 'unaryOperator'
-                const inner: HumanReadableElement[] = isOperator ? [{ type: 'parens', value: written }] : written
-                return inUnitWritten(inner, unit)
-            }
-            const fn = humanReadableElements(ast.fn, typeEnvironment, units)
+            const fn = humanReadableElements(ast.fn, typeEnvironment)
             if (fn === undefined) return
-            // ln of a density is a number, so the caption says what the density was read in
-            const dropped = unitsReadAndDropped(ast, { typeEnvironment, named: new Map() })
             const args: HumanReadableElement[][] = []
-            for (const [index, arg] of ast.args.entries()) {
-                const written = humanReadableElements(arg.value, typeEnvironment, units)
-                if (written === undefined) return
-                const humanArg = inUnitWritten(written, dropped?.[index])
+            for (const arg of ast.args) {
+                const humanArg = humanReadableElements(arg.value, typeEnvironment)
+                if (humanArg === undefined) return
                 switch (arg.type) {
                     case 'named':
                         args.push([{ type: 'atom', value: `${arg.name.node} = ` }, ...humanArg])
@@ -169,15 +175,15 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
         }
         case 'do':
             if (ast.statements.length === 0) return
-            return humanReadableElements(ast.statements[ast.statements.length - 1], typeEnvironment, units)
+            return humanReadableElements(ast.statements[ast.statements.length - 1], typeEnvironment)
         case 'statements':
             if (ast.result.length === 0) return
-            return humanReadableElements(ast.result[ast.result.length - 1], typeEnvironment, units)
+            return humanReadableElements(ast.result[ast.result.length - 1], typeEnvironment)
         case 'condition': {
             if (ast.rest.length === 0) return
-            const rest = humanReadableElements(ast.rest[ast.rest.length - 1], typeEnvironment, units)
+            const rest = humanReadableElements(ast.rest[ast.rest.length - 1], typeEnvironment)
             if (rest === undefined) return
-            const cond = humanReadableElements(ast.condition, typeEnvironment, units)
+            const cond = humanReadableElements(ast.condition, typeEnvironment)
             if (cond === undefined) return
 
             // Special Case: condition that is just "true" is not interesting
@@ -215,15 +221,15 @@ function statedMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanRea
 }
 
 export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
-    const units = inferConstantUnits(uss, typeEnvironment)
-    const result = read(editableMapData(), uss, typeEnvironment)
+    const { ast: factored } = unitCheck(uss, typeEnvironment)
+    const result = read(editableMapData<UnitsRead>(), factored, typeEnvironment)
     if (result?.currentValue.namedArgs.data === undefined) return
-    const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment, units)
+    const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment)
     if (dataLabel === undefined) return
     // Replace the map call with just the data description to simplify the label (we know it's a map)
     const withMapCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: grouped(dataLabel) }, location: noLocation } })
     assert(withMapCallReplacedByDataLabel !== undefined, 'should not happen')
-    const label = humanReadableElements(withMapCallReplacedByDataLabel, typeEnvironment, units)
+    const label = humanReadableElements(withMapCallReplacedByDataLabel, typeEnvironment)
     return label === undefined ? undefined : ungroupUnlessWorthwhile(label, dataLabel, 1)
 }
 
@@ -244,13 +250,13 @@ function statedTableTitle(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanR
 }
 
 /** Every column's name, stated or derived. Undefined if any one of them cannot be read. */
-const statedColumnNames = mapUssParser(l.call({
+const statedColumnNames = mapUssParser<{ namedArgs: { columns: { namedArgs: { values: Expression | undefined, name: string | undefined } }[] } }, UnitsRead>(l.call({
     fn: l.ignore(),
     namedArgs: {
         columns: l.vector(l.call({
             fn: l.ignore(),
             namedArgs: {
-                values: l.passthrough(),
+                values: l.passthrough<UnitsRead>(),
                 name: l.optional(l.string()),
             },
             unnamedArgs: [],
@@ -260,8 +266,8 @@ const statedColumnNames = mapUssParser(l.call({
 }), 'dont-reparse')
 
 function tableColumnLabels(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName[] | undefined {
-    const units = inferConstantUnits(uss, typeEnvironment)
-    const columns = read(statedColumnNames, uss, typeEnvironment)?.namedArgs.columns
+    const { ast: factored } = unitCheck(uss, typeEnvironment)
+    const columns = read(statedColumnNames, factored, typeEnvironment)?.namedArgs.columns
     if (columns === undefined) {
         return undefined
     }
@@ -269,18 +275,18 @@ function tableColumnLabels(uss: MapUSS, typeEnvironment: TypeEnvironment): Human
         if (column.namedArgs.name !== undefined) {
             return parseHumanReadableTemplate(column.namedArgs.name)
         }
-        return column.namedArgs.values === undefined ? undefined : humanReadableElements(column.namedArgs.values, typeEnvironment, units)
+        return column.namedArgs.values === undefined ? undefined : humanReadableElements(column.namedArgs.values, typeEnvironment)
     })
     return labels.every(label => label !== undefined) ? labels : undefined
 }
 
 /** The filter a script applies, or undefined for the `condition (true)` that filters nothing. */
 export function deriveConditionLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
-    if (uss.type !== 'statements') {
+    const { ast: factored } = unitCheck(uss, typeEnvironment)
+    if (factored.type !== 'statements') {
         return undefined
     }
-    const units = inferConstantUnits(uss, typeEnvironment)
-    const condition = humanReadableElements(uss.result[1].condition, typeEnvironment, units)
+    const condition = humanReadableElements(factored.result[1].condition, typeEnvironment)
     if (condition?.length === 1 && condition[0].type === 'atom' && condition[0].value === 'true') {
         return undefined
     }
@@ -298,9 +304,9 @@ export function tableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): Human
 }
 
 export function deriveTableColumnLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): HumanReadableName | undefined {
-    const units = inferConstantUnits(uss, typeEnvironment)
-    const values = tableColumnExpression(uss, typeEnvironment, columnIndex)
-    return values === undefined ? undefined : humanReadableElements(values, typeEnvironment, units)
+    const { ast: factored } = unitCheck(uss, typeEnvironment)
+    const values = tableColumnExpression(factored, typeEnvironment, columnIndex)
+    return values === undefined ? undefined : humanReadableElements(values, typeEnvironment)
 }
 
 const editableTableCall = mapUssParser(l.edit(l.call({
@@ -310,8 +316,8 @@ const editableTableCall = mapUssParser(l.edit(l.call({
 })), 'dont-reparse')
 
 export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnNames: HumanReadableName[]): HumanReadableName | undefined {
-    const units = inferConstantUnits(uss, typeEnvironment)
-    const result = read(editableTableCall, uss, typeEnvironment)
+    const { ast: factored } = unitCheck(uss, typeEnvironment)
+    const result = read(editableTableCall, factored, typeEnvironment)
     if (result === undefined) {
         return undefined
     }
@@ -319,7 +325,7 @@ export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, 
     // Replace the table call with just the column to simplify the label (we know it's a table)
     const withTableCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: grouped(columns) }, location: noLocation } })
     assert(withTableCallReplacedByDataLabel !== undefined, 'should not happen')
-    const label = humanReadableElements(withTableCallReplacedByDataLabel, typeEnvironment, units)
+    const label = humanReadableElements(withTableCallReplacedByDataLabel, typeEnvironment)
     return label === undefined ? undefined : ungroupUnlessWorthwhile(label, columns, columnNames.length)
 }
 
@@ -348,7 +354,70 @@ function ungroupUnlessWorthwhile(label: HumanReadableElement[], substituted: Hum
  * reader's units are not it: a logarithm is of the number a script computed with, whatever units
  * the reader has the same number written to them in. A count gets nothing, having no name.
  */
-function inUnitWritten(written: HumanReadableElement[], unit: StoredUnit | undefined): HumanReadableElement[] {
+/**
+ * How a conversion is written. A quantity read as a plain number is the number of them it is, so
+ * "[in km^2]"; a number with no unit of its own is read as that many, so "[as km^2]"; and one unit
+ * read as another is so many of the second for each of the first, so "x 1person/km^2". A reading
+ * has to give up the zero it is counted from before any of that, which is written "- 0".
+ */
+function howConverted(written: HumanReadableElement[], conversion: UnitConversion): HumanReadableElement[] {
+    const { internalUnit } = conversion
+    const parts = conversionParts(conversion)
+    if (internalUnit === undefined) {
+        return inUnitWritten(written, conversion.expectedUnit, 'as')
+    }
+    if (parts === undefined) {
+        return inUnitWritten(written, internalUnit)
+    }
+    // the zero is bracketed only where something follows it, so that x - 0 x 1F does not misread
+    const follows = parts.factor !== undefined || parts.zeroOn !== undefined
+    let of = written
+    if (parts.zeroOff !== undefined) {
+        const less = [...written, { type: 'atom' as const, value: ' \u2212 ' }, ...formatNumber(0, parts.zeroOff)]
+        of = follows ? [{ type: 'parens', value: less }] : less
+    }
+    if (parts.factor !== undefined) {
+        of = [...of, { type: 'atom', value: ' \u00d7 ' }, ...formatNumber(1, parts.factor)]
+    }
+    return parts.zeroOn === undefined ? of : [...of, { type: 'atom', value: ' + ' }, ...formatNumber(0, parts.zeroOn)]
+}
+
+/**
+ * What a conversion writes: the zero a reading gives up, the factor between what is left and what
+ * is wanted, and the zero a reading takes back on. Nothing where it is read as a plain number.
+ */
+function conversionParts({ internalUnit, expectedUnit }: UnitConversion): { zeroOff?: StoredUnit, factor?: StoredUnit, zeroOn?: StoredUnit } | undefined {
+    if (internalUnit === undefined || isPlainNumber(expectedUnit)) {
+        return undefined
+    }
+    const scales = multiplies(internalUnit.unit)
+    const from = scales ? internalUnit : asADifference(internalUnit)
+    const to = multiplies(expectedUnit.unit) ? expectedUnit : asADifference(expectedUnit)
+    const factor = alike(to, from) ? undefined : unitProduct(to, from, -1)
+    return {
+        ...scales ? {} : { zeroOff: internalUnit },
+        ...factor === undefined ? {} : { factor },
+        ...expectedUnit.unit.times === 1 && !expectedUnit.unit.baseIsScalar ? { zeroOn: expectedUnit } : {},
+    }
+}
+
+/** The operator a conversion's writing ends on, which is what encloses it has to reckon with. */
+function conversionRunsAs(conversion: UnitConversion): BinaryOperatorSymbol | undefined {
+    const parts = conversionParts(conversion)
+    if (parts?.zeroOn !== undefined) return '+'
+    if (parts?.factor !== undefined) return '*'
+    return parts?.zeroOff === undefined ? undefined : '-'
+}
+
+function alike(left: StoredUnit, right: StoredUnit): boolean {
+    return sameDimensions(left, right) && sameSize(left.toBaseUnits, right.toBaseUnits)
+}
+
+/**
+ * "[in km^2]" of a quantity read as the number of them it is, and "[as km^2]" of a number with no
+ * unit of its own that the script reads as that many.
+ */
+function inUnitWritten(written: HumanReadableElement[], unit: StoredUnit | undefined, preposition: 'in' | 'as' = 'in'): HumanReadableElement[] {
     if (unit === undefined) return written
     const name = nameOfStoredUnit(unit)
     // A share is stored as the fraction it is, whatever percentage it is written as, and so is a
@@ -358,7 +427,7 @@ function inUnitWritten(written: HumanReadableElement[], unit: StoredUnit | undef
         return [...written, { type: 'atom', value: ' [as a fraction]' }]
     }
     if (name === undefined || name.length === 0) return written
-    return [...written, { type: 'atom', value: ' [in ' }, ...name, { type: 'atom', value: ']' }]
+    return [...written, { type: 'atom', value: ` [${preposition} ` }, ...name, { type: 'atom', value: ']' }]
 }
 
 function formatNumber(number: number, unit?: StoredUnit): HumanReadableElement[] {

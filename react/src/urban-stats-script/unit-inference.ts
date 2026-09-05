@@ -1,12 +1,31 @@
-import { dimensionless, sameDimensions, StoredUnit } from '../utils/quantity'
+import { MapUSS } from '../mapper/settings/map-uss'
+import { asADifference, dimensionless, isPlainNumber, multiplies, sameDimensions, sameSize, StoredUnit } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import { asNumber } from './constants/convert'
 import * as l from './literal-parser'
-import { LocInfo } from './location'
 import { TypeEnvironment, UnitPropagation, USSPrimitiveRawValue } from './types-values'
-import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, unitToWriteIn } from './unit-algebra'
+import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, scalesOperands, unitToWriteIn } from './unit-algebra'
+
+/**
+ * A node whose own unit is not the one the script needs of it there. The value the script computes
+ * is the same either way; how the conversion is written is up to whoever writes it out.
+ */
+export interface UnitConversion {
+    /** What the value is counted in, or nothing where the script says. */
+    internalUnit?: StoredUnit
+    /** What it is needed as. */
+    expectedUnit: StoredUnit
+}
+
+/** What reading a script for its units leaves on a node. */
+export interface UnitsRead {
+    converted?: UnitConversion
+}
+
+type Expression = UrbanStatsASTExpression<UnitsRead>
+type Statement = UrbanStatsASTStatement<UnitsRead>
 
 const anything = { kind: 'any' } satisfies AbstractInterpValue
 
@@ -25,18 +44,21 @@ interface Scope {
     named: Bindings
 }
 
-/** A block is worth as much as its last statement, and an empty one as much as nothing said. */
-function block(statements: UrbanStatsASTStatement[], scope: Scope): Inferred {
-    let value: Inferred = anything
-    for (const statement of statements) {
-        value = infer(statement, scope)
-    }
-    return value
+/** A rewritten expression and the unit it works out to. */
+interface Checked<T> {
+    ast: T
+    value: Inferred
 }
 
-function branch(statement: UrbanStatsASTStatement, scope: Scope): { value: Inferred, named: Bindings } {
+/** A block is worth as much as its last statement, and an empty one as much as nothing said. */
+function checkBlock(statements: UrbanStatsASTStatement<UnitsRead>[], scope: Scope, expected: Expected): Checked<Statement[]> {
+    const checked = statements.map((statement, index) => checkStatement(statement, scope, index === statements.length - 1 ? expected : anything))
+    return { ast: checked.map(each => each.ast), value: checked[checked.length - 1]?.value ?? anything }
+}
+
+function checkBranch(statement: UrbanStatsASTStatement<UnitsRead>, scope: Scope, expected: Expected): Checked<Statement> & { named: Bindings } {
     const named = new Map(scope.named)
-    return { value: infer(statement, { ...scope, named }), named }
+    return { ...checkStatement(statement, { ...scope, named }, expected), named }
 }
 
 /** A name an arm bound is worth what that arm made it where its mask held, and what it was where it did not. */
@@ -58,39 +80,143 @@ function identifier(name: string, scope: Scope): Inferred {
 
 const parameterName = /^x(\d+)$/
 
-function positional(args: UrbanStatsASTArg[], index: number): UrbanStatsASTExpression | undefined {
-    return args.filter(arg => arg.type === 'unnamed')[index]?.value
+/** How the function propagates units, or nothing if the script bound that name itself. */
+function propagationOf(fn: Expression, scope: Scope): UnitPropagation | undefined {
+    if (fn.type !== 'identifier' || scope.named.has(fn.name.node)) {
+        return undefined
+    }
+    return scope.typeEnvironment.get(fn.name.node)?.documentation?.unitPropagation
 }
 
-function namedArgument(args: UrbanStatsASTArg[], name: string): UrbanStatsASTExpression | undefined {
-    return args.find(arg => arg.type === 'named' && arg.name.node === name)?.value
+/** Whether a value in `got` can be used where `want` is expected, unconverted. */
+function goesWhere(want: StoredUnit, got: StoredUnit): boolean {
+    return sameDimensions(want, got) && sameSize(want.toBaseUnits, got.toBaseUnits)
+        && want.unit.baseIsScalar === got.unit.baseIsScalar
+        && want.unit.decoration.kind === got.unit.decoration.kind
+}
+
+/** What a call that gives a plain number back expects of its arguments. */
+const plainNumber = { kind: 'in', unit: dimensionless } satisfies Expected
+
+/**
+ * The expression as what is expected of it, which it is by being read as converted where its own
+ * unit is not that. Nothing about what the script computes changes: only how it is read.
+ */
+function reconciled(checked: Checked<Expression>, expected: Expected): Checked<Expression> {
+    const got = quantity(checked.value)
+    if (expected.kind === 'scales') {
+        return scaling(checked)
+    }
+    if (expected.kind !== 'in') {
+        return checked
+    }
+    if (got.kind === 'none') {
+        return checked
+    }
+    // a number the script writes says what unit it is by being written in it, and a bare one that
+    // is not written anywhere says nothing to convert
+    if (got.kind === 'any') {
+        const opaque = got.constant === undefined && !isPlainNumber(expected.unit)
+        return opaque ? converted(checked, undefined, expected.unit) : checked
+    }
+    if (goesWhere(expected.unit, got.unit)) {
+        return checked
+    }
+    return converted(checked, got.unit, expected.unit)
+}
+
+function converted(checked: Checked<Expression>, internalUnit: StoredUnit | undefined, expectedUnit: StoredUnit): Checked<Expression> {
+    return {
+        ast: { ...checked.ast, converted: { internalUnit, expectedUnit } },
+        value: inUnit(comesTo(internalUnit, expectedUnit)),
+    }
+}
+
+/**
+ * What a conversion comes to. Converting a reading converts what is left of it once its zero is
+ * out, so it comes to a difference, unless a reading is what is wanted. Where what is wanted says
+ * only its dimensions, it is one of itself if it is counted from nothing and a difference if not.
+ */
+function comesTo(internalUnit: StoredUnit | undefined, expectedUnit: StoredUnit): StoredUnit {
+    const { times, baseIsScalar } = expectedUnit.unit
+    if (times === 1 && !baseIsScalar) {
+        return expectedUnit
+    }
+    if (internalUnit !== undefined && !multiplies(internalUnit.unit)) {
+        return asADifference(expectedUnit)
+    }
+    return times === 'unknown' ? { ...expectedUnit, unit: { ...expectedUnit.unit, times: baseIsScalar ? 1 : 0 } } : expectedUnit
+}
+
+/** The expectation as a value. 'scales' names no unit, so it says nothing. */
+function knownOf(expected: Expected): AbstractInterpValue {
+    return expected.kind === 'scales' ? anything : expected
+}
+
+function checkOperation(ast: UrbanStatsASTExpression<UnitsRead> & { type: 'binaryOperator' }, scope: Scope, expected: Expected): Checked<Expression> {
+    const operator = ast.operator.node
+    const left = checkExpression(ast.left, scope, expectation(backward(operator, knownOf(expected), anything, 'left')))
+    const right = checkExpression(ast.right, scope, expectation(backward(operator, knownOf(expected), quantity(left.value), 'right')))
+    // re-read the left now the right is known, so the 80 of 80 < high_temp is a temperature
+    const reread = quantity(left.value).kind === 'any' && quantity(right.value).kind === 'in'
+        ? checkExpression(ast.left, scope, expectation(backward(operator, knownOf(expected), quantity(right.value), 'left')))
+        : left
+    const value = forward(operator, quantity(reread.value), quantity(right.value))
+    if (value.kind !== 'none' || !scalesOperands(operator)) {
+        return { ast: ({ ...ast, left: reread.ast, right: right.ast }), value }
+    }
+    // they do not scale together, so a reading gives up its zero: temp * area is (temp - 0) * area
+    const [over, under] = [scaling(reread), scaling(right)]
+    return {
+        ast: ({ ...ast, left: over.ast, right: under.ast }),
+        value: forward(operator, quantity(over.value), quantity(under.value)),
+    }
+}
+
+/** A reading read as the difference above its own zero, which is what scales. */
+function scaling(checked: Checked<Expression>): Checked<Expression> {
+    const got = quantity(checked.value)
+    return got.kind === 'in' && !multiplies(got.unit.unit) ? converted(checked, got.unit, asADifference(got.unit)) : checked
+}
+
+/** What an argument is expected to be in, given the arguments before it. */
+function expectedOfArgument(propagation: UnitPropagation | undefined, expected: Expected, index: number, before: AbstractInterpValue[]): Expected {
+    if (propagation?.kind === 'unchanged') {
+        return expected
+    }
+    // a root of a temperature is a root of a difference: sqrt(high_temp - 0)
+    if (propagation?.kind === 'power') {
+        return { kind: 'scales' }
+    }
+    // max and min take both arguments in one unit, so each is expected in the one before it
+    if (propagation?.kind !== 'either' && propagation?.kind !== 'rank') {
+        return anything
+    }
+    return index === 0 && expected.kind === 'in' ? expected : expectation(before[0] ?? anything)
 }
 
 /**
  * The intercept is in the units of what was regressed, the residuals are a difference of those,
  * and each coefficient is that difference over a difference of the parameter it belongs to.
  */
-function regressionFields(args: UrbanStatsASTArg[], scope: Scope): Inferred {
-    const regressed = namedArgument(args, 'y')
-    const level = regressed === undefined ? anything : quantity(infer(regressed, scope))
+function regressionFields(args: { arg: UrbanStatsASTArg<UnitsRead>, value: Inferred }[]): Inferred {
+    const named = (name: string): AbstractInterpValue | undefined =>
+        args.filter(({ arg }) => arg.type === 'named' && arg.name.node === name).map(({ value }) => quantity(value))[0]
+    const level = named('y') ?? anything
     const change = forward('-', level, level)
     const fields = new Map<string, AbstractInterpValue>([['b', level], ['residuals', change], ['r2', inUnit(dimensionless)]])
-    for (const arg of args) {
+    for (const { arg, value } of args) {
         const parameter = arg.type === 'named' ? parameterName.exec(arg.name.node) : null
         if (parameter !== null) {
-            const of = quantity(infer(arg.value, scope))
+            const of = quantity(value)
             fields.set(`m${parameter[1]}`, forward('/', change, forward('-', of, of)))
         }
     }
     return { kind: 'fields', fields }
 }
 
-function argument(args: UrbanStatsASTArg[], index: number, scope: Scope): AbstractInterpValue {
-    const arg = positional(args, index)
-    return arg === undefined ? anything : quantity(infer(arg, scope))
-}
-
-function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' }>, value: AbstractInterpValue, args: UrbanStatsASTArg[], scope: Scope): AbstractInterpValue {
+function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' }>, positional: AbstractInterpValue[]): AbstractInterpValue {
+    const value = positional[0] ?? anything
     switch (propagation.kind) {
         case 'number':
             return inUnit(dimensionless)
@@ -101,7 +227,7 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
         case 'power':
             return forward('**', value, constant(propagation.exponent))
         case 'either': {
-            const other = argument(args, 1, scope)
+            const other = positional[1] ?? anything
             // Two known units must match, and the result is one of them, not their sum.
             if (value.kind === 'in' && other.kind === 'in') {
                 return sameDimensions(value.unit, other.unit) ? join(value, other) : { kind: 'none' }
@@ -111,76 +237,160 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
         }
         case 'rank': {
             // both arguments are in one unit, so there is no ranking a population among areas
-            const alike = forward('-', value, argument(args, 1, scope))
+            const alike = forward('-', value, positional[1] ?? anything)
             return alike.kind === 'none' ? alike : inUnit(dimensionless)
         }
     }
 }
 
-function propagated(propagation: UnitPropagation, args: UrbanStatsASTArg[], scope: Scope): Inferred {
-    return propagation.kind === 'regression'
-        ? regressionFields(args, scope)
-        : whatItGives(propagation, argument(args, 0, scope), args, scope)
-}
-
-/** Nothing, where the script bound the name itself and the function of that name is not what is called. */
-function propagationOf(fn: UrbanStatsASTExpression, scope: Scope): UnitPropagation | undefined {
-    if (fn.type !== 'identifier' || scope.named.has(fn.name.node)) {
-        return undefined
+function checkCall(ast: UrbanStatsASTExpression<UnitsRead> & { type: 'call' }, scope: Scope, expected: Expected): Checked<Expression> {
+    const propagation = propagationOf(ast.fn, scope)
+    const checked: { arg: UrbanStatsASTArg<UnitsRead>, value: Inferred }[] = []
+    for (const [index, arg] of ast.args.entries()) {
+        const before = checked.filter(({ arg: each }) => each.type === 'unnamed').map(({ value }) => quantity(value))
+        const each = checkExpression(arg.value, scope, expectedOfArgument(propagation, expected, index, before))
+        checked.push({ arg: ({ ...arg, value: each.ast }), value: each.value })
     }
-    return scope.typeEnvironment.get(fn.name.node)?.documentation?.unitPropagation
+    if (propagation?.kind === 'number') {
+        for (const each of checked) {
+            const asANumber = reconciled({ ast: each.arg.value, value: each.value }, plainNumber)
+            each.arg = { ...each.arg, value: asANumber.ast }
+            each.value = asANumber.value
+        }
+    }
+    const rewritten = { ...ast, args: checked.map(({ arg }) => arg) }
+    if (propagation === undefined) {
+        return { ast: rewritten, value: anything }
+    }
+    if (propagation.kind === 'regression') {
+        return { ast: rewritten, value: regressionFields(checked) }
+    }
+    const positional = checked.filter(({ arg }) => arg.type === 'unnamed').map(({ value }) => quantity(value))
+    return { ast: rewritten, value: whatItGives(propagation, positional) }
 }
 
-function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Scope): Inferred {
+/**
+ * Reads an expression for its unit, writing in the factors and toNumbers the units need. What the
+ * script computes is untouched: a factor is a 1, and a toNumber changes no value.
+ */
+/**
+ * What to expect of each of several things that have to share a unit: what the caller expects, or
+ * failing that what the first of them turned out to be.
+ */
+function alsoOf(expected: Expected, first: Inferred | undefined): Expected {
+    if (expected.kind === 'in' || first === undefined) {
+        return expected
+    }
+    return expectation(quantity(first))
+}
+
+function checkExpression(ast: UrbanStatsASTExpression<UnitsRead>, scope: Scope, expected: Expected): Checked<Expression> {
+    return reconciled(checkWithin(ast, scope, expected), expected)
+}
+
+function checkWithin(ast: UrbanStatsASTExpression<UnitsRead>, scope: Scope, expected: Expected): Checked<Expression> {
     switch (ast.type) {
-        case 'expression':
-            return infer(ast.value, scope)
-        case 'assignment': {
-            const value = infer(ast.value, scope)
-            if (ast.lhs.type === 'identifier') {
-                scope.named.set(ast.lhs.name.node, value)
-            }
-            return value
-        }
-        case 'autoUXNode':
-        case 'customNode':
-            return infer(ast.expr, scope)
-        case 'do':
-            return block(ast.statements, scope)
-        case 'statements':
-            return block(ast.result, scope)
-        // which regions are kept says nothing about what is measured of them
-        case 'condition':
-            return block(ast.rest, scope)
         case 'identifier':
-            return identifier(ast.name.node, scope)
-        case 'constant':
-            return ast.value.node.type === 'number' ? constant(ast.value.node.value) : anything
-        case 'unaryOperator':
-            return forwardUnary(ast.operator.node, quantity(infer(ast.expr, scope)))
-        case 'binaryOperator':
-            return forward(ast.operator.node, quantity(infer(ast.left, scope)), quantity(infer(ast.right, scope)))
-        case 'vectorLiteral':
-            return ast.elements.reduce<AbstractInterpValue>((soFar, element) => join(soFar, quantity(infer(element, scope))), { kind: 'none' })
-        case 'objectLiteral':
-            return { kind: 'fields', fields: new Map(ast.properties.map(([name, value]) => [name, quantity(infer(value, scope))])) }
-        case 'attribute': {
-            const object = infer(ast.expr, scope)
-            return object.kind === 'fields' ? object.fields.get(ast.name.node) ?? anything : anything
+            return { ast, value: identifier(ast.name.node, scope) }
+        case 'constant': {
+            if (ast.value.node.type !== 'number') {
+                return { ast, value: anything }
+            }
+            // the 0.1 of commute_bike < 0.1 is a share, and is written 10%
+            // keep what a number was already read as, so re-reading a checked script agrees: read
+            // afresh, the 0 of (area - 0) says only its dimensions
+            const unit = ast.converted?.expectedUnit ?? unitToWriteIn(knownOf(expected))
+            if (unit === undefined) {
+                return { ast, value: constant(ast.value.node.value) }
+            }
+            return { ast: ({ ...ast, converted: { expectedUnit: unit } }), value: inUnit(unit) }
         }
-        case 'call': {
-            const propagation = propagationOf(ast.fn, scope)
-            return propagation === undefined ? anything : propagated(propagation, ast.args, scope)
+        case 'attribute': {
+            const object = checkExpression(ast.expr, scope, anything)
+            const fields = object.value.kind === 'fields' ? object.value.fields : undefined
+            return { ast: ({ ...ast, expr: object.ast }), value: fields?.get(ast.name.node) ?? anything }
+        }
+        case 'unaryOperator': {
+            // the sign is rendered outside the number, so -10 keeps the unit and reads -10°F
+            const inner = checkExpression(ast.expr, scope, ast.operator.node === '!' ? anything : expected)
+            return { ast: ({ ...ast, expr: inner.ast }), value: forwardUnary(ast.operator.node, quantity(inner.value)) }
+        }
+        case 'binaryOperator':
+            return checkOperation(ast, scope, expected)
+        case 'call':
+            return checkCall(ast, scope, expected)
+        case 'vectorLiteral': {
+            // the first element sets the unit for the rest
+            const elements: Checked<Expression>[] = []
+            for (const element of ast.elements) {
+                elements.push(checkExpression(element, scope, alsoOf(expected, elements[0]?.value)))
+            }
+            const value = elements.reduce<AbstractInterpValue>((soFar, element) => join(soFar, quantity(element.value)), { kind: 'none' })
+            return { ast: ({ ...ast, elements: elements.map(each => each.ast) }), value }
+        }
+        case 'objectLiteral': {
+            const properties = ast.properties.map(([name, value]): [string, Checked<Expression>] => [name, checkExpression(value, scope, anything)])
+            return {
+                ast: ({ ...ast, properties: properties.map(([name, checked]): [string, Expression] => [name, checked.ast]) }),
+                value: { kind: 'fields', fields: new Map(properties.map(([name, checked]) => [name, quantity(checked.value)])) },
+            }
         }
         case 'if': {
-            const consequent = branch(ast.then, scope)
+            const condition = checkExpression(ast.condition, scope, anything)
+            const consequent = checkBranch(ast.then, scope, expected)
             // an arm that is not there leaves the value it would have written as it was
-            const alternative = ast.else === undefined ? undefined : branch(ast.else, scope)
+            const alternative = ast.else === undefined ? undefined : checkBranch(ast.else, scope, alsoOf(expected, consequent.value))
             bindArms(scope, consequent.named, alternative?.named ?? new Map(scope.named))
-            return alternative === undefined ? consequent.value : join(quantity(consequent.value), quantity(alternative.value))
+            return {
+                ast: ({
+                    ...ast,
+                    condition: condition.ast,
+                    then: consequent.ast,
+                    ...alternative === undefined ? {} : { else: alternative.ast },
+                }),
+                value: alternative === undefined ? consequent.value : join(quantity(consequent.value), quantity(alternative.value)),
+            }
+        }
+        case 'do': {
+            const statements = checkBlock(ast.statements, scope, expected)
+            return { ast: ({ ...ast, statements: statements.ast }), value: statements.value }
+        }
+        case 'autoUXNode': {
+            const inner = checkExpression(ast.expr, scope, expected)
+            return { ast: ({ ...ast, expr: inner.ast }), value: inner.value }
+        }
+        case 'customNode': {
+            const inner = checkStatement(ast.expr, scope, expected)
+            return { ast: ({ ...ast, expr: inner.ast }), value: inner.value }
+        }
+    }
+}
+
+function checkStatement(ast: UrbanStatsASTStatement<UnitsRead>, scope: Scope, expected: Expected): Checked<Statement> {
+    switch (ast.type) {
+        case 'expression': {
+            const inner = checkExpression(ast.value, scope, expected)
+            return { ast: ({ ...ast, value: inner.ast }), value: inner.value }
+        }
+        case 'assignment': {
+            const inner = checkExpression(ast.value, scope, expected)
+            if (ast.lhs.type === 'identifier') {
+                scope.named.set(ast.lhs.name.node, inner.value)
+            }
+            return { ast: ({ ...ast, value: inner.ast }), value: inner.value }
+        }
+        case 'statements': {
+            const statements = checkBlock(ast.result, scope, expected)
+            return { ast: ({ ...ast, result: statements.ast }), value: statements.value }
+        }
+        case 'condition': {
+            // a filter says nothing about the units of what it keeps, but a caption renders it
+            const condition = checkExpression(ast.condition, scope, anything)
+            const rest = checkBlock(ast.rest, scope, expected)
+            return { ast: ({ ...ast, condition: condition.ast, rest: rest.ast }), value: rest.value }
         }
         case 'parseError':
-            return anything
+            return { ast, value: anything }
     }
 }
 
@@ -189,7 +399,7 @@ function infer(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, scope: Sco
  * two ways: as dimensionless where it scales something (x * 2), and as the other side's unit where
  * it is compared against one (x > 100). A value here would get the first reading in both places.
  */
-type Expected = { kind: 'any' } | { kind: 'none' } | { kind: 'in', unit: StoredUnit }
+type Expected = { kind: 'any' } | { kind: 'none' } | { kind: 'in', unit: StoredUnit } | { kind: 'scales' }
 
 function expectation(value: AbstractInterpValue): Expected {
     switch (value.kind) {
@@ -202,15 +412,6 @@ function expectation(value: AbstractInterpValue): Expected {
     }
 }
 
-/** The unit each numeric literal is written in, keyed by where in the source it was written. */
-export type ConstantUnits = Map<string, StoredUnit>
-
-/** We index by location to avoid depending on object identity: editing or reparsing makes new nodes. */
-export function whereWritten(location: LocInfo): string {
-    const where = location.start.block
-    return `${where.type === 'single' ? where.ident : ''}:${location.start.charIdx}-${location.end.charIdx}`
-}
-
 const toNumberOfOneThing = l.call({
     fn: l.identifier('toNumber'),
     unnamedArgs: [l.passthrough()],
@@ -220,127 +421,121 @@ const toNumberOfOneThing = l.call({
 const primitive = l.union<USSPrimitiveRawValue>([l.number(), l.string(), l.boolean()])
 
 /** A call to toNumber, carrying the number its argument is when the argument is a literal. */
-export function readAsANumber(ast: UrbanStatsASTExpression, scope: Scope): { value?: number, read: UrbanStatsASTExpression } | undefined {
+function readAsANumber<M>(ast: UrbanStatsASTExpression<M>, scope: Scope): { value?: number, read: UrbanStatsASTExpression<M> } | undefined {
     // a script that binds the name itself is calling something else
     if (scope.named.has('toNumber')) return undefined
     const read = l.tryParse(toNumberOfOneThing, ast, scope.typeEnvironment)?.unnamedArgs[0]
     if (read === undefined) return undefined
     const literal = l.tryParse(primitive, read, scope.typeEnvironment)
-    return { value: literal === undefined ? undefined : asNumber(literal), read }
+    // the parser gives back the argument of the call it was given, which carries the same metadata
+    return { value: literal === undefined ? undefined : asNumber(literal), read: read as UrbanStatsASTExpression<M> }
+}
+
+/** A checked script: the rewritten AST, the unit it works out to, and the names it bound. */
+export interface UnitCheck<T> {
+    ast: T
+    unit: StoredUnit | undefined
+    named: Bindings
+}
+
+export function unitCheck<M>(program: MapUSS<M>, typeEnvironment: TypeEnvironment, expected?: StoredUnit): UnitCheck<MapUSS<M & UnitsRead>>
+export function unitCheck<M>(program: UrbanStatsASTStatement<M>, typeEnvironment: TypeEnvironment, expected?: StoredUnit): UnitCheck<Statement>
+export function unitCheck<M>(program: UrbanStatsASTExpression<M>, typeEnvironment: TypeEnvironment, expected?: StoredUnit): UnitCheck<Expression>
+export function unitCheck(program: UrbanStatsASTExpression<UnitsRead> | UrbanStatsASTStatement<UnitsRead>, typeEnvironment: TypeEnvironment, expected?: StoredUnit): UnitCheck<Expression | Statement> {
+    const scope: Scope = { typeEnvironment, named: new Map() }
+    const wanted = wanting(expected)
+    // the toNumbers come out first, so that what is read for its units is an ordinary script
+    const read = withoutToNumbers(program, typeEnvironment)
+    const checked = isExpression(read)
+        ? checkExpression(read, scope, wanted)
+        : checkStatement(read, scope, wanted)
+    return { ast: checked.ast, unit: unitToWriteIn(quantity(checked.value)), named: scope.named }
+}
+
+/** The unit an expression works out to, given the names the whole script bound. */
+export function unitWithin(ast: Expression, typeEnvironment: TypeEnvironment, named: Bindings, expected?: StoredUnit): AbstractInterpValue {
+    return quantity(checkExpression(ast, { typeEnvironment, named: new Map(named) }, wanting(expected)).value)
+}
+
+function wanting(expected: StoredUnit | undefined): Expected {
+    return expected === undefined ? anything : { kind: 'in', unit: expected }
+}
+
+function isExpression(ast: UrbanStatsASTExpression<UnitsRead> | UrbanStatsASTStatement<UnitsRead>): ast is UrbanStatsASTExpression<UnitsRead> {
+    return !['assignment', 'expression', 'statements', 'condition', 'parseError'].includes(ast.type)
 }
 
 /**
- * The unit each argument of a call is in, where the call reads a quantity and gives back a plain
- * number: a logarithm of a density is a number, and the caption has to say of what.
+ * A script with the toNumbers a reader wrote taken out, each leaving behind the note that what it
+ * held is read as a plain number. Reading the script for its units then says which unit that was.
  */
-export function unitsReadAndDropped(ast: UrbanStatsASTExpression, scope: Scope): (StoredUnit | undefined)[] | undefined {
-    if (ast.type !== 'call' || propagationOf(ast.fn, scope)?.kind !== 'number') return undefined
-    return ast.args.map(arg => unitToWriteIn(quantity(infer(arg.value, scope))))
+function withoutToNumbers<T extends UrbanStatsASTExpression<UnitsRead> | UrbanStatsASTStatement<UnitsRead>>(program: T, typeEnvironment: TypeEnvironment): T {
+    const stripped = isExpression(program)
+        ? strippedExpression(program, typeEnvironment)
+        : strippedStatement(program, typeEnvironment)
+    return stripped as T
 }
 
-function pushedInto(propagation: UnitPropagation | undefined, expected: Expected, args: UrbanStatsASTArg[], index: number, scope: Scope): Expected {
-    if (propagation?.kind === 'unchanged') {
-        return expected
+function strippedExpression(ast: UrbanStatsASTExpression<UnitsRead>, typeEnvironment: TypeEnvironment): Expression {
+    const within = strippedWithin(ast, typeEnvironment)
+    const toNumber = readAsANumber(within, { typeEnvironment, named: new Map() })
+    if (toNumber === undefined) {
+        return within
     }
-    // max and min take both arguments in one unit, so each is expected in the other's
-    if (propagation?.kind !== 'either') {
-        return anything
+    // what it held is a number already, where the script wrote one out the long way
+    if (toNumber.value !== undefined) {
+        return { type: 'constant', value: { node: { type: 'number', value: toNumber.value }, location: locationOf(within) } }
     }
-    return expected.kind === 'in' ? expected : expectation(argument(args, 1 - index, scope))
+    return toNumber.read
 }
 
-/**
- * Pushes the unit an expression works out to back down through it, recording what each literal is
- * expected to be in: the 0.1 of commute_bike < 0.1 is a share, and is written 10%.
- */
-function readBack(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, expected: Expected, scope: Scope, into: ConstantUnits): void {
+function strippedStatement(ast: UrbanStatsASTStatement<UnitsRead>, typeEnvironment: TypeEnvironment): Statement {
+    const of = (each: UrbanStatsASTExpression<UnitsRead>): Expression => strippedExpression(each, typeEnvironment)
+    const statements = (each: UrbanStatsASTStatement<UnitsRead>[]): Statement[] => each.map(one => strippedStatement(one, typeEnvironment))
     switch (ast.type) {
-        case 'constant': {
-            const unit = unitToWriteIn(expected)
-            if (ast.value.node.type === 'number' && unit !== undefined) {
-                into.set(whereWritten(ast.value.location), unit)
-            }
-            return
-        }
-        case 'expression':
-        case 'assignment':
-            readBack(ast.value, expected, scope, into)
-            return
-        case 'autoUXNode':
-        case 'customNode':
-            readBack(ast.expr, expected, scope, into)
-            return
-        case 'unaryOperator':
-            // the sign is rendered outside the number, so -10 keeps the unit and reads -10°F
-            readBack(ast.expr, ast.operator.node === '!' ? anything : expected, scope, into)
-            return
-        case 'binaryOperator': {
-            const left = quantity(infer(ast.left, scope))
-            const right = quantity(infer(ast.right, scope))
-            readBack(ast.left, expectation(backward(ast.operator.node, expected, right, 'left')), scope, into)
-            readBack(ast.right, expectation(backward(ast.operator.node, expected, left, 'right')), scope, into)
-            return
-        }
-        case 'call': {
-            const propagation = propagationOf(ast.fn, scope)
-            // a caption writes a number where this call is, so record its unit as for a literal
-            if (readAsANumber(ast, scope) !== undefined) {
-                const unit = unitToWriteIn(expected)
-                if (unit !== undefined) {
-                    into.set(whereWritten(locationOf(ast)), unit)
-                }
-            }
-            ast.args.forEach((arg, index) => { readBack(arg.value, pushedInto(propagation, expected, ast.args, index, scope), scope, into) })
-            return
-        }
-        case 'vectorLiteral':
-            ast.elements.forEach((element) => { readBack(element, expected, scope, into) })
-            return
-        case 'objectLiteral':
-            ast.properties.forEach(([, value]) => { readBack(value, anything, scope, into) })
-            return
-        case 'if':
-            readBack(ast.condition, anything, scope, into)
-            readBack(ast.then, expected, scope, into)
-            if (ast.else !== undefined) {
-                readBack(ast.else, expected, scope, into)
-            }
-            return
-        case 'do':
-        case 'statements':
-        case 'condition': {
-            // a block works out to its last statement; a condition works out to nothing itself
-            const statements = ast.type === 'do' ? ast.statements : (ast.type === 'statements' ? ast.result : ast.rest)
-            if (ast.type === 'condition') {
-                readBack(ast.condition, anything, scope, into)
-            }
-            statements.forEach((statement, index) => {
-                readBack(statement, index === statements.length - 1 ? expected : anything, scope, into)
-            })
-            return
-        }
-        case 'identifier':
-        case 'attribute':
         case 'parseError':
+            return ast
+        case 'assignment':
+            return { ...ast, value: of(ast.value) }
+        case 'expression':
+            return { ...ast, value: of(ast.value) }
+        case 'statements':
+            return { ...ast, result: statements(ast.result) }
+        case 'condition':
+            return { ...ast, condition: of(ast.condition), rest: statements(ast.rest) }
     }
 }
 
-/** The unit of each numeric literal in a script, where the script determines one. */
-export function inferConstantUnits(program: UrbanStatsASTStatement | UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): ConstantUnits {
-    const scope = { typeEnvironment, named: new Map() }
-    infer(program, scope)
-    const into: ConstantUnits = new Map()
-    readBack(program, anything, scope, into)
-    return into
-}
-
-/** The unit an expression works out to, where reading it determines one. */
-export function inferUnit(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, named: Bindings = new Map()): AbstractInterpValue {
-    return quantity(infer(ast, { typeEnvironment, named }))
-}
-
-export function inferBindings(program: UrbanStatsASTStatement | UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): Bindings {
-    const named: Bindings = new Map()
-    infer(program, { typeEnvironment, named })
-    return named
+function strippedWithin(ast: UrbanStatsASTExpression<UnitsRead>, typeEnvironment: TypeEnvironment): Expression {
+    const of = (each: UrbanStatsASTExpression<UnitsRead>): Expression => strippedExpression(each, typeEnvironment)
+    switch (ast.type) {
+        case 'identifier':
+        case 'constant':
+            return ast
+        case 'attribute':
+            return { ...ast, expr: of(ast.expr) }
+        case 'call':
+            return { ...ast, fn: of(ast.fn), args: ast.args.map(arg => ({ ...arg, value: of(arg.value) })) }
+        case 'binaryOperator':
+            return { ...ast, left: of(ast.left), right: of(ast.right) }
+        case 'unaryOperator':
+            return { ...ast, expr: of(ast.expr) }
+        case 'objectLiteral':
+            return { ...ast, properties: ast.properties.map(([name, value]): [string, Expression] => [name, of(value)]) }
+        case 'vectorLiteral':
+            return { ...ast, elements: ast.elements.map(of) }
+        case 'if':
+            return {
+                ...ast,
+                condition: of(ast.condition),
+                then: strippedStatement(ast.then, typeEnvironment),
+                ...ast.else === undefined ? {} : { else: strippedStatement(ast.else, typeEnvironment) },
+            }
+        case 'do':
+            return { ...ast, statements: ast.statements.map(each => strippedStatement(each, typeEnvironment)) }
+        case 'customNode':
+            return { ...ast, expr: strippedStatement(ast.expr, typeEnvironment) }
+        case 'autoUXNode':
+            return { ...ast, expr: of(ast.expr) }
+    }
 }

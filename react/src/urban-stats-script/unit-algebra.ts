@@ -1,5 +1,5 @@
 import { assert } from '../utils/defensive'
-import { Coefficient, Decoration, dimensionless, Party, sameDimensions, snapToWhole, StoredUnit, unitPower, unitProduct } from '../utils/quantity'
+import { Coefficient, Decoration, dimensionless, Party, sameDimensions, sameSize, snapToWhole, StoredUnit, unitPower, unitProduct } from '../utils/quantity'
 
 import { BinaryOperatorSymbol, UnaryOperatorSymbol } from './operators'
 
@@ -67,11 +67,6 @@ function sharedDecoration(left: Decoration, right: Decoration): Decoration {
 
 function written(unit: StoredUnit, times: Coefficient, decoration = unit.unit.decoration): AbstractInterpValue {
     return { kind: 'in', unit: { ...unit, unit: { ...unit.unit, decoration, times } } }
-}
-
-/** A hair apart after arithmetic is the same size: a square root squared does not come back exact. */
-function sameSize(left: number, right: number): boolean {
-    return Math.abs(left - right) <= 1e-9 * Math.max(Math.abs(left), Math.abs(right))
 }
 
 /** Arithmetic on coefficients, where anything but a number of them leaves how many there are unknown. */
@@ -165,8 +160,14 @@ function addedForward(form: { combine: (left: number, right: number) => number }
     if (!sameDimensions(left.unit, right.unit)) {
         return { kind: 'none' }
     }
+    // a script computes with stored values, so km^2 and m^2 do not add though both are areas
+    if (!sameSize(left.unit.toBaseUnits, right.unit.toBaseUnits)) {
+        return { kind: 'none' }
+    }
+    // degrees added to a temperature give a temperature, so the reading's zero is what counts
+    const of = left.unit.unit.baseIsScalar ? right.unit : left.unit
     return written(
-        left.unit,
+        of,
         combined(left.unit.unit.times, right.unit.unit.times, form.combine),
         sharedDecoration(left.unit.unit.decoration, right.unit.unit.decoration),
     )
@@ -256,6 +257,12 @@ export function backward(operator: BinaryOperatorSymbol, result: AbstractInterpV
             assert(operator === '*' || operator === '/', `${operator} is a product`)
             return undo(operator, result, known, side)
     }
+}
+
+/** Whether the operands have to scale. A temperature reading does not; a difference of two does. */
+export function scalesOperands(operator: BinaryOperatorSymbol): boolean {
+    const form = forms[operator]
+    return form.kind === 'product' || form.kind === 'power'
 }
 
 /** Each of these undoes itself: negating twice, or leaving alone twice, is what was there. */

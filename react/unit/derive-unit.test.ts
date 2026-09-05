@@ -2,7 +2,7 @@ import assert from 'assert/strict'
 import test from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
-import { mapUSSFromString } from '../src/mapper/settings/map-uss'
+import { MapUSS, mapUSSFromString } from '../src/mapper/settings/map-uss'
 import { deriveMapUnit, deriveTableColumnUnit } from '../src/urban-stats-script/derive-unit'
 import { reifyString } from '../src/utils/human-readable-name'
 import { UnitSettings, StoredUnit, writeQuantity } from '../src/utils/quantity'
@@ -16,8 +16,12 @@ function written(unit: StoredUnit | undefined, value = 1000, settings: UnitSetti
     return `${quantity.renderedValue}${reifyString(quantity.unitName, {})}`
 }
 
+function mapOf(data: string): MapUSS {
+    return mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`)
+}
+
 function unitOfMap(data: string): StoredUnit | undefined {
-    return deriveMapUnit(mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), defaultTypeEnvironment('USA'))
+    return deriveMapUnit(mapOf(data), defaultTypeEnvironment('USA'))
 }
 
 function mapUnit(data: string): string {
@@ -25,7 +29,8 @@ function mapUnit(data: string): string {
 }
 
 function columnUnit(values: string, columnIndex = 0): string {
-    return written(deriveTableColumnUnit(mapUSSFromString(`table(columns=[${values}])`), defaultTypeEnvironment('USA'), columnIndex))
+    const uss = mapUSSFromString(`table(columns=[${values}])`)
+    return written(deriveTableColumnUnit(uss, defaultTypeEnvironment('USA'), columnIndex))
 }
 
 void test('a map is written in the units of what it maps', () => {
@@ -37,8 +42,24 @@ void test('a map is written in the units of what it maps', () => {
     assert.equal(mapUnit('high_temp - low_temp'), '+1\u202f000.0°F')
 })
 
+void test('two quantities add in the units of the left, whatever the right is stored in', () => {
+    // a script computes with stored values, so metres added to kilometres are read as a thousand
+    // of them each, and the caption writes that factor out
+    assert.equal(mapUnit('hospital_mean_dist + elevation'), '1\u202f000km')
+    assert.equal(mapUnit('elevation + hospital_mean_dist'), '1\u202f000m')
+    assert.equal(mapUnit('area + area'), '1\u202f000km^{2}')
+})
+
+void test('a literal is read in whatever unit makes the rest of the expression work', () => {
+    // people are no area, but a number multiplying them can be an area per person
+    assert.equal(mapUnit('area + population * 1'), '1\u202f000km^{2}')
+    // and one is written in where the script has no literal to read
+    assert.equal(mapUnit('area + population'), '1\u202f000km^{2}')
+    assert.equal(mapUnit('area + ln(population * 1)'), '1\u202f000km^{2}')
+})
+
 void test('a map of what no unit can be read off says nothing', () => {
-    assert.equal(mapUnit('population + area'), 'nothing')
+    // no factor makes a sum of two readings into one reading
     assert.equal(mapUnit('high_temp + low_temp'), 'nothing')
     assert.equal(mapUnit('someFunctionOrOther(population)'), 'nothing')
 })
@@ -76,9 +97,10 @@ for (const [data, expected] of [
     ['area / area', '1\u202f230'],
     ['population ** 0', '1\u202f230'],
     ['inverseQuantile(area, area)', '1\u202f230'],
-    // a reading over a reading has no zero to divide from, and two lengths held apart do not meet
-    ['high_temp / high_temp', 'nothing'],
-    ['minimum(elevation, hospital_mean_dist)', 'nothing'],
+    // a reading over a reading divides what is left of each once its zero is out
+    ['high_temp / high_temp', '1\u202f230'],
+    // two lengths stored differently meet when one is read as so many of the other
+    ['minimum(elevation, hospital_mean_dist)', '1.23km'],
     // an empty vector is of every kind and so of none
     ['[]', 'nothing'],
     // the ways a script has of saying the same thing
@@ -88,7 +110,7 @@ for (const [data, expected] of [
     ['[area, area]', '1\u202f234km^{2}'],
     ['sum(area)', '1\u202f234km^{2}'],
 ] as const) {
-    void test(`a map of ${data} is written ${expected}`, () => {
+    void test(`a map of ${data}`, () => {
         assert.equal(written(unitOfMap(data), 1234), expected)
     })
 }
@@ -154,15 +176,15 @@ void test('a word is spaced off the number it follows, and a symbol is not', () 
 })
 
 void test('a reader in Celsius reads a difference of two temperatures as one', () => {
-    const asRead = (data: string, temperatureUnit: string): string => written(unitOfMap(data), 22.3, { temperatureUnit })
+    const toAReader = (data: string, temperatureUnit: string): string => written(unitOfMap(data), 22.3, { temperatureUnit })
     // twenty-two Fahrenheit degrees between the day's high and its low is twelve Celsius degrees,
     // where a reading of twenty-two Fahrenheit is a reading of five and a half below freezing
-    assert.equal(asRead('high_temp - low_temp', 'celsius'), '+12.4°C')
-    assert.equal(asRead('high_temp', 'celsius'), '-5.4°C')
+    assert.equal(toAReader('high_temp - low_temp', 'celsius'), '+12.4°C')
+    assert.equal(toAReader('high_temp', 'celsius'), '-5.4°C')
     // and the mean of two readings is a reading again, which the coefficient is what keeps track of
-    assert.equal(asRead('(high_temp + low_temp) / 2', 'celsius'), '-5.4°C')
-    assert.equal(asRead('high_temp - low_temp', 'fahrenheit'), '+22.3°F')
-    assert.equal(asRead('high_temp', 'fahrenheit'), '22.3°F')
+    assert.equal(toAReader('(high_temp + low_temp) / 2', 'celsius'), '-5.4°C')
+    assert.equal(toAReader('high_temp - low_temp', 'fahrenheit'), '+22.3°F')
+    assert.equal(toAReader('high_temp', 'fahrenheit'), '22.3°F')
 })
 
 void test('a difference of two is written as one', () => {

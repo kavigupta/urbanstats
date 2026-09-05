@@ -317,8 +317,23 @@ export function sameDimensions(left: StoredUnit, right: StoredUnit): boolean {
  * Nothing scales a temperature, 0°C being no more nothing than 0°F is. A difference of two is
  * another matter: no degrees is no degrees on either scale, so it multiplies like anything else.
  */
-function multiplies(unit: Unit): boolean {
+export function multiplies(unit: Unit): boolean {
     return unit.baseIsScalar || unit.times === 0
+}
+
+/** The same unit counted from nothing rather than from a zero of its own. */
+export function asADifference(unit: StoredUnit): StoredUnit {
+    return { ...unit, unit: { ...unit.unit, times: 0 } }
+}
+
+/** A number of nothing, which a share is not: a share is a number of a hundredth. */
+export function isPlainNumber(unit: StoredUnit): boolean {
+    return unit.unit.dimensions.length === 0 && unit.unit.decoration.kind === 'none' && sameSize(unit.toBaseUnits, 1)
+}
+
+/** A hair apart after arithmetic is the same size: a square root squared does not come back exact. */
+export function sameSize(left: number, right: number): boolean {
+    return Math.abs(left - right) <= 1e-9 * Math.max(Math.abs(left), Math.abs(right))
 }
 
 export function unitProduct(left: StoredUnit, right: StoredUnit, rightPower: 1 | -1): StoredUnit | undefined {
