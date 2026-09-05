@@ -10,6 +10,7 @@ import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit,
 
 /** The unit of the number a caption writes at this node. Set on literals and on toNumber calls. */
 export interface ReadInUnits {
+    /** The unit of the number written here. */
     readIn?: StoredUnit
 }
 
@@ -90,14 +91,7 @@ function timesAFactor(ast: Expression, factor: StoredUnit): Expression {
 
 /** The expression wrapped in toNumber, which a caption writes as "[in °F]". */
 function readAsANumberOf(ast: Expression, unit: StoredUnit): Expression {
-    const location = locationOf(ast)
-    return ({
-        type: 'call',
-        fn: ({ type: 'identifier', name: { node: 'toNumber', location } }),
-        args: [({ type: 'unnamed', value: ast })],
-        entireLoc: location,
-        readIn: unit,
-    })
+    return { ...ast, readIn: unit }
 }
 
 /** Whether a value in `got` can be used where `want` is expected, with nothing written in. */
@@ -151,11 +145,17 @@ function reconciled(checked: Checked<Expression>, expected: Expected): Checked<E
     if (expected.kind === 'scales') {
         return scaling(checked)
     }
-    if (expected.kind !== 'in' || got.kind !== 'in') {
+    if (expected.kind !== 'in') {
         return checked
     }
+    if (got.kind !== 'in') {
+        // nothing says what unit this is, so the script is read as reading it in the one wanted:
+        // the geoName of density > toNumber(geoName) is read as a number of them per square km
+        const opaque = got.kind === 'any' && got.constant === undefined && !isPlainNumber(expected.unit)
+        return opaque ? { ast: { ...checked.ast, readIn: expected.unit }, value: inUnit(expected.unit) } : checked
+    }
     if (isPlainNumber(expected.unit) && !isPlainNumber(got.unit)) {
-        return { ast: readAsANumberOf(checked.ast, got.unit), value: inUnit(dimensionless) }
+        return { ast: readAsANumberOf(checked.ast, got.unit), value: anything }
     }
     if (goesWhere(expected.unit, got.unit)) {
         return checked
@@ -481,9 +481,11 @@ export function unitCheck<M>(program: UrbanStatsASTExpression<M>, typeEnvironmen
 export function unitCheck(program: UrbanStatsASTExpression<ReadInUnits> | UrbanStatsASTStatement<ReadInUnits>, typeEnvironment: TypeEnvironment, expected?: StoredUnit): UnitCheck<Expression | Statement> {
     const scope: Scope = { typeEnvironment, named: new Map() }
     const wanted = wanting(expected)
-    const checked = isExpression(program)
-        ? checkExpression(program, scope, wanted)
-        : checkStatement(program, scope, wanted)
+    // the toNumbers come out first, so that what is read for its units is an ordinary script
+    const read = withoutToNumbers(program, typeEnvironment)
+    const checked = isExpression(read)
+        ? checkExpression(read, scope, wanted)
+        : checkStatement(read, scope, wanted)
     return { ast: checked.ast, unit: unitToWriteIn(quantity(checked.value)), named: scope.named }
 }
 
@@ -498,4 +500,79 @@ function wanting(expected: StoredUnit | undefined): Expected {
 
 function isExpression(ast: UrbanStatsASTExpression<ReadInUnits> | UrbanStatsASTStatement<ReadInUnits>): ast is UrbanStatsASTExpression<ReadInUnits> {
     return !['assignment', 'expression', 'statements', 'condition', 'parseError'].includes(ast.type)
+}
+
+/**
+ * A script with the toNumbers a reader wrote taken out, each leaving behind the note that what it
+ * held is read as a plain number. Reading the script for its units then says which unit that was.
+ */
+export function withoutToNumbers<T extends UrbanStatsASTExpression<ReadInUnits> | UrbanStatsASTStatement<ReadInUnits>>(program: T, typeEnvironment: TypeEnvironment): T {
+    const stripped = isExpression(program)
+        ? strippedExpression(program, typeEnvironment)
+        : strippedStatement(program, typeEnvironment)
+    return stripped as T
+}
+
+function strippedExpression(ast: UrbanStatsASTExpression<ReadInUnits>, typeEnvironment: TypeEnvironment): Expression {
+    const within = strippedWithin(ast, typeEnvironment)
+    const toNumber = readAsANumber(within, { typeEnvironment, named: new Map() })
+    if (toNumber === undefined) {
+        return within
+    }
+    // what it held is a number already, where the script wrote one out the long way
+    if (toNumber.value !== undefined) {
+        return { type: 'constant', value: { node: { type: 'number', value: toNumber.value }, location: locationOf(within) } }
+    }
+    return toNumber.read
+}
+
+function strippedStatement(ast: UrbanStatsASTStatement<ReadInUnits>, typeEnvironment: TypeEnvironment): Statement {
+    const of = (each: UrbanStatsASTExpression<ReadInUnits>): Expression => strippedExpression(each, typeEnvironment)
+    const statements = (each: UrbanStatsASTStatement<ReadInUnits>[]): Statement[] => each.map(one => strippedStatement(one, typeEnvironment))
+    switch (ast.type) {
+        case 'parseError':
+            return ast
+        case 'assignment':
+            return { ...ast, value: of(ast.value) }
+        case 'expression':
+            return { ...ast, value: of(ast.value) }
+        case 'statements':
+            return { ...ast, result: statements(ast.result) }
+        case 'condition':
+            return { ...ast, condition: of(ast.condition), rest: statements(ast.rest) }
+    }
+}
+
+function strippedWithin(ast: UrbanStatsASTExpression<ReadInUnits>, typeEnvironment: TypeEnvironment): Expression {
+    const of = (each: UrbanStatsASTExpression<ReadInUnits>): Expression => strippedExpression(each, typeEnvironment)
+    switch (ast.type) {
+        case 'identifier':
+        case 'constant':
+            return ast
+        case 'attribute':
+            return { ...ast, expr: of(ast.expr) }
+        case 'call':
+            return { ...ast, fn: of(ast.fn), args: ast.args.map(arg => ({ ...arg, value: of(arg.value) })) }
+        case 'binaryOperator':
+            return { ...ast, left: of(ast.left), right: of(ast.right) }
+        case 'unaryOperator':
+            return { ...ast, expr: of(ast.expr) }
+        case 'objectLiteral':
+            return { ...ast, properties: ast.properties.map(([name, value]): [string, Expression] => [name, of(value)]) }
+        case 'vectorLiteral':
+            return { ...ast, elements: ast.elements.map(of) }
+        case 'if':
+            return {
+                ...ast,
+                condition: of(ast.condition),
+                then: strippedStatement(ast.then, typeEnvironment),
+                ...ast.else === undefined ? {} : { else: strippedStatement(ast.else, typeEnvironment) },
+            }
+        case 'do':
+            return { ...ast, statements: ast.statements.map(each => strippedStatement(each, typeEnvironment)) }
+        case 'customNode':
+            return { ...ast, expr: strippedStatement(ast.expr, typeEnvironment) }
+        case 'autoUXNode':
+            return { ...ast, expr: of(ast.expr) }
+    }
 }

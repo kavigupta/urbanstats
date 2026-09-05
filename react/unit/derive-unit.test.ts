@@ -70,7 +70,7 @@ void test('a literal is read in whatever unit makes the rest of the expression w
     assert.equal(mapUnit('area + population * 1'), 'area + population * 1 : 1\u202f000km^{2}')
     // and one is written in where the script has no literal to read
     assert.equal(mapUnit('area + population'), 'area + population * 1 : 1\u202f000km^{2}')
-    assert.equal(mapUnit('area + ln(population * 1)'), 'area + (ln(toNumber(population * 1))) * 1 : 1\u202f000km^{2}')
+    assert.equal(mapUnit('area + ln(population * 1)'), 'area + (ln(population * 1)) * 1 : 1\u202f000km^{2}')
 })
 
 void test('a map of what no unit can be read off says nothing', () => {

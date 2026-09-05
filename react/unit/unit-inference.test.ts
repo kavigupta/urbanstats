@@ -140,11 +140,11 @@ for (const [code, expected] of [
     // the larger of a population and an area is a population: the area is read as so many people
     ['maximum(population, area)', 'maximum(population, area * 1) : person^1 times=1 x1'],
     ['inverseQuantile(population, population)', 'inverseQuantile(population, population) : dimensionless times=1 x1'],
-    ['sign(population)', 'sign(toNumber(population)) : dimensionless times=1 x1'],
+    ['sign(population)', 'sign(population) : dimensionless times=1 x1'],
     // a function that states no rule says any quantity at all, rather than none
     ['rgb(0.1, 0.2, 0.3)', 'rgb(0.1, 0.2, 0.3) : unknown'],
-    ['toNumber(population)', 'toNumber(population) : unknown'],
-    ['toNumber(population) + population', '(toNumber(population)) + population : person^1 times=1 x1'],
+    ['toNumber(population)', 'population : person^1 times=1 x1'],
+    ['toNumber(population) + population', 'population + population : person^1 times=2 x1'],
 ] as const) {
     void test(code, () => {
         assert.equal(inferred(code), expected)
@@ -193,11 +193,11 @@ void test('a total is as many of them as there were, which is not a number anyon
 })
 
 void test('a logarithm takes whatever it is given and gives a number of no kind', () => {
-    assert.equal(inferred('ln(density_pw_1km)'), 'ln(toNumber(density_pw_1km)) : dimensionless times=1 x1')
-    assert.equal(inferred('log10(area)'), 'log10(toNumber(area)) : dimensionless times=1 x1')
-    assert.equal(inferred('sin(population)'), 'sin(toNumber(population)) : dimensionless times=1 x1')
+    assert.equal(inferred('ln(density_pw_1km)'), 'ln(density_pw_1km) : dimensionless times=1 x1')
+    assert.equal(inferred('log10(area)'), 'log10(area) : dimensionless times=1 x1')
+    assert.equal(inferred('sin(population)'), 'sin(population) : dimensionless times=1 x1')
     // being of no kind, it scales what it multiplies rather than adding a dimension to it
-    assert.equal(inferred('ln(population) * area'), '(ln(toNumber(population))) * area : m^2 times=1 x1000000')
+    assert.equal(inferred('ln(population) * area'), '(ln(population)) * area : m^2 times=1 x1000000')
 })
 
 void test('a name the script bound is that name, not the built-in it hides', () => {
@@ -215,7 +215,7 @@ void test('a regression is read field by field', () => {
     // and of a temperature, degrees per square kilometre, a difference of them being what multiplies
     assert.equal(inferred('regr = regression(y=high_temp, x1=area)\nregr.m1'), 'regr = regression(y=high_temp, x1=area); regr.m1 : F^1 m^-2 times=unknown x0.000001')
     // and a share over a logarithm is dimensionless: neither is counted in anything
-    assert.equal(inferred('regr = regression(y=commute_bike, x1=ln(population))\nregr.m1'), 'regr = regression(y=commute_bike, x1=ln(toNumber(population))); regr.m1 : dimensionless times=unknown x1')
+    assert.equal(inferred('regr = regression(y=commute_bike, x1=ln(population))\nregr.m1'), 'regr = regression(y=commute_bike, x1=ln(population)); regr.m1 : dimensionless times=unknown x1')
     assert.equal(inferred(`${people}regr.nonesuch`), 'regr = regression(y=population, x1=area); regr.nonesuch : unknown')
 })
 
@@ -308,7 +308,7 @@ for (const [code, expected, reads] of [
     ['population + area', 'sunny_hours', 'population * 1 + (area - 0) * 1 : s^1 times=1 x3600'],
     ['population + area', 'density_pw_1km', 'population * 1 + (area - 0) * 1 : m^-2 person^1 times=1 x0.000001'],
     // a share is dimensionless, as a plain number is, so the sum is read as a plain number
-    ['population + area', 'commute_bike', 'population * 1 + (toNumber(area)) : dimensionless times=1 x1'],
+    ['population + area', 'commute_bike', 'population * 1 + area : dimensionless times=1 x1'],
     // a temperature is counted from its own zero, which goes back on at the end
     ['population + area', 'high_temp', '(population - 0) * 1 + 0 + (area - 0) * 1 : F^1 times=1 x1'],
     // one statistic is rewritten into another's unit the same way
@@ -317,8 +317,8 @@ for (const [code, expected, reads] of [
     ['population / area', 'density_pw_1km', 'population / area : m^-2 person^1 times=1 x0.000001'],
     ['population / area', 'sunny_hours', 'population / (area * 1) : s^1 times=1 x3600'],
     // a logarithm is dimensionless, so any unit at all is one factor away
-    ['ln(population)', 'rainfall', '(ln(toNumber(population))) * 1 : m^1 s^-1 times=1 x3.168808781402895e-8'],
-    ['ln(population)', 'commute_bike', 'ln(toNumber(population)) : dimensionless times=1 x1'],
+    ['ln(population)', 'rainfall', '(ln(population)) * 1 : m^1 s^-1 times=1 x3.168808781402895e-8'],
+    ['ln(population)', 'commute_bike', 'ln(population) : dimensionless times=1 x1'],
     // and a bare number is read as the unit itself
     ['100', 'rainfall', '100 : m^1 s^-1 times=1 x3.168808781402895e-8'],
     ['100', 'high_temp', '100 : F^1 times=1 x1'],
@@ -346,7 +346,7 @@ void test('a unit expected of the whole script is what the script is made to be'
     assert.equal(inferred('population', unitOf('area')), 'population * 1 : m^2 times=1 x1000000')
     assert.equal(inferred('ln(100)', unitOf('area')), '(ln(100)) * 1 : m^2 times=1 x1000000')
     assert.equal(inferred('ln(density_pw_1km)', unitOf('area')),
-        '(ln(toNumber(density_pw_1km))) * 1 : m^2 times=1 x1000000')
+        '(ln(density_pw_1km)) * 1 : m^2 times=1 x1000000')
     // a reading does not scale, so its zero comes out first and goes back on after, leaving two
     // things that do scale
     assert.equal(inferred('area / 2', unitOf('high_temp')), '(area / 2 - 0) * 1 + 0 : F^1 times=1 x1')

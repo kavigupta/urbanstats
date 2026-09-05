@@ -9,18 +9,31 @@ import { abbreviate, formatToSignificantFigures, separateNumber, trimTrailingZer
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import * as l from './literal-parser'
 import { noLocation } from './location'
-import { expressionOperatorMap } from './operators'
+import { BinaryOperatorSymbol, expressionOperatorMap } from './operators'
 import { TypeEnvironment } from './types-values'
-import { ReadInUnits, readAsANumber, unitCheck } from './unit-inference'
+import { ReadInUnits, unitCheck } from './unit-inference'
 
 type Expression = UrbanStatsASTExpression<ReadInUnits>
 
-/** The expression a caption writes here. A toNumber writes its argument instead. */
-function reads(ast: Expression, typeEnvironment: TypeEnvironment): Expression {
-    return readAsANumber<ReadInUnits>(ast, { typeEnvironment, named: new Map() })?.read ?? ast
+function humanReadableElements(ast: Expression | UrbanStatsASTStatement<ReadInUnits>, typeEnvironment: TypeEnvironment): HumanReadableElement[] | undefined {
+    const written = describe(ast, typeEnvironment)
+    // a number says what it is a number of by how it is written; anything else has to say it
+    if (written === undefined || ast.type === 'constant' || ast.readIn === undefined) {
+        return written
+    }
+    // the unit is of the whole expression, so a run of operators is bracketed before it is said of
+    // it. A power is written as a superscript, which the unit follows without brackets.
+    const runsOn = ast.type === 'binaryOperator' && ast.operator.node !== '**'
+    const of = runsOn ? [{ type: 'parens' as const, value: written }] : written
+    return inUnitWritten(of, ast.readIn)
 }
 
-function humanReadableElements(ast: Expression | UrbanStatsASTStatement<ReadInUnits>, typeEnvironment: TypeEnvironment, bracketOperators = false): HumanReadableElement[] | undefined {
+/** The operator an expression prints as. One that says what it was read in prints bracketed. */
+function printsAsOperation(ast: Expression): BinaryOperatorSymbol | undefined {
+    return ast.type === 'binaryOperator' && ast.readIn === undefined ? ast.operator.node : undefined
+}
+
+function describe(ast: Expression | UrbanStatsASTStatement<ReadInUnits>, typeEnvironment: TypeEnvironment): HumanReadableElement[] | undefined {
     switch (ast.type) {
         case 'assignment':
             return humanReadableElements(ast.value, typeEnvironment)
@@ -34,19 +47,19 @@ function humanReadableElements(ast: Expression | UrbanStatsASTStatement<ReadInUn
              */
             let lhs = humanReadableElements(ast.left, typeEnvironment)
             if (lhs === undefined) return
-            const written = { left: reads(ast.left, typeEnvironment), right: reads(ast.right, typeEnvironment) }
-            if (written.left.type === 'binaryOperator') {
-                const leftOp = expressionOperatorMap[written.left.operator.node]
-                if (!(leftOp.precedence > centerOp.precedence
-                    || leftOp === centerOp)) {
+            const leftPrints = printsAsOperation(ast.left)
+            if (leftPrints !== undefined) {
+                const leftOp = expressionOperatorMap[leftPrints]
+                if (!(leftOp.precedence > centerOp.precedence || leftOp === centerOp)) {
                     lhs = [{ type: 'parens', value: lhs }]
                 }
             }
 
             let rhs = humanReadableElements(ast.right, typeEnvironment)
             if (rhs === undefined) return
-            if (written.right.type === 'binaryOperator') {
-                const rightOp = expressionOperatorMap[written.right.operator.node]
+            const rightPrints = printsAsOperation(ast.right)
+            if (rightPrints !== undefined) {
+                const rightOp = expressionOperatorMap[rightPrints]
                 if (!(rightOp.precedence > centerOp.precedence || (centerOp === rightOp && centerOp.isAssociative))) {
                     rhs = [{ type: 'parens', value: rhs }]
                 }
@@ -111,8 +124,12 @@ function humanReadableElements(ast: Expression | UrbanStatsASTStatement<ReadInUn
                     return [{ type: 'atom', value: ast.value.node.value }]
             }
         case 'unaryOperator': {
-            const operand = humanReadableElements(ast.expr, typeEnvironment, true)
-            if (operand === undefined) return
+            const written = humanReadableElements(ast.expr, typeEnvironment)
+            if (written === undefined) return
+            // without these, -(a + b) would read as -a + b
+            const operand: HumanReadableElement[] = printsAsOperation(ast.expr) === undefined
+                ? written
+                : [{ type: 'parens', value: written }]
             let operator: HumanReadableElement[]
             switch (ast.operator.node) {
                 case '!':
@@ -132,19 +149,6 @@ function humanReadableElements(ast: Expression | UrbanStatsASTStatement<ReadInUn
         case 'expression':
             return humanReadableElements(ast.value, typeEnvironment)
         case 'call': {
-            const readNumber = readAsANumber<ReadInUnits>(ast, { typeEnvironment, named: new Map() })
-            if (readNumber !== undefined) {
-                // toNumber says its argument is read as a number, which writing a number says
-                const unit = ast.readIn
-                if (readNumber.value !== undefined) return formatNumber(readNumber.value, unit)
-                const written = humanReadableElements(readNumber.read, typeEnvironment)
-                if (written === undefined) return
-                // without these, -toNumber(a + b) would read as -a + b
-                const inner: HumanReadableElement[] = bracketOperators && readNumber.read.type === 'binaryOperator'
-                    ? [{ type: 'parens', value: written }]
-                    : written
-                return inUnitWritten(inner, unit)
-            }
             const fn = humanReadableElements(ast.fn, typeEnvironment)
             if (fn === undefined) return
             const args: HumanReadableElement[][] = []
