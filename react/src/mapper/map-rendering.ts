@@ -37,14 +37,23 @@ function rampTicks(scale: ScaleInstance): number[] {
     return [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
 }
 
-/** Returns a function rather than colouring a list, so the ramp's expensive contrast colour is computed once per map. */
-export function rampColorer(ramp: Keypoints, scale: ScaleInstance): (value: number) => string {
-    const furthest = furthestColor(ramp.map(([, color]) => color))
-    return value => interpolateColor(ramp, scale.forward(value), furthest)
+/** What a map with no colour of its own paints a missing value: nothing, so the basemap shows through. */
+// eslint-disable-next-line no-restricted-syntax -- not a theme colour; it is the absence of one
+const hiddenColor = '#00000000'
+
+/**
+ * Returns a function rather than colouring a list, so the ramp's expensive contrast colour is
+ * computed once per map, and only when `missingColor` leaves it to be worked out.
+ */
+export function rampColorer(ramp: Keypoints, scale: ScaleInstance, missingColor?: string): (value: number) => string {
+    const missing = missingColor ?? furthestColor(ramp.map(([, color]) => color))
+    return value => interpolateColor(ramp, scale.forward(value), missing)
 }
 
+/** Missing values go one past the last tick, into the extra category `mapVisuals` colours for them. */
 function rampBin(value: number, scale: ScaleInstance, bins: number): number {
-    return Math.max(0, Math.min(bins - 1, Math.round(scale.forward(value) * (bins - 1))))
+    const position = scale.forward(value)
+    return isNaN(position) ? bins : Math.max(0, Math.min(bins - 1, Math.round(position * (bins - 1))))
 }
 
 /** Marker areas are what the data scales, so the radius drawn is the root of one. */
@@ -69,8 +78,10 @@ export interface MapVisuals {
     colors: string[]
     /** Absent on an RGB map, which has no single scale. Its colours are the colourbar's. */
     ramp?: { scale: ScaleInstance, ticks: number[], colors: string[] }
-    /** Which tick each geography falls on, on a cluster map. */
+    /** Which tick each geography falls on, on a cluster map; one past the last for a missing value. */
     bins?: number[]
+    /** A cluster map's pie-slice colours: the colourbar's, plus one for missing values. */
+    categoryColors?: string[]
 }
 
 export function mapVisuals(result: MapResult): MapVisuals {
@@ -81,12 +92,16 @@ export function mapVisuals(result: MapResult): MapVisuals {
     const map = result.value
     const scale = instantiate(map.scale)
     const ticks = rampTicks(scale)
-    const colorer = rampColorer(map.ramp, scale)
+    const missing = map.missingData === undefined
+        ? hiddenColor
+        : (map.missingData.color === undefined ? undefined : doRender(map.missingData.color))
+    const colorer = rampColorer(map.ramp, scale, missing)
     const ramp = { scale, ticks, colors: ticks.map(colorer) }
     if (result.opaqueType === 'clusterMap') {
         // Discretized so a cluster's slices are counted in the same bins the colourbar shows.
         const bins = map.data.map(value => rampBin(value, scale, ticks.length))
-        return { colors: bins.map(bin => ramp.colors[bin]), ramp, bins }
+        const categoryColors = [...ramp.colors, colorer(NaN)]
+        return { colors: bins.map(bin => categoryColors[bin]), ramp, bins, categoryColors }
     }
     return { colors: map.data.map(colorer), ramp }
 }

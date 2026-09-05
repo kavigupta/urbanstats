@@ -332,7 +332,7 @@ export async function mapCard(origin: string, pageData: Extract<PageData, { kind
             contents = await pointContents(geographyKind, universe, map, visuals.colors)
             break
         case 'clusterMap':
-            contents = await clusterContents(geographyKind, universe, map, visuals.bins!, visuals.ramp!.colors)
+            contents = await clusterContents(geographyKind, universe, map, visuals.bins!, visuals.categoryColors!)
             break
     }
 
