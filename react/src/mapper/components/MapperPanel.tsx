@@ -2,7 +2,7 @@ import React, { ReactNode, useContext, useMemo } from 'react'
 
 import { CountsByUT } from '../../components/countsByArticleType'
 import { Navigator } from '../../navigation/Navigator'
-import { PageDescriptor } from '../../navigation/PageDescriptor'
+import { withButtonRole } from '../../utils/a11y'
 import { defaultTypeEnvironment } from '../context'
 import { useMapGenerator } from '../map-generator'
 import { EditMapperPanel } from '../settings/EditMapperPanel'
@@ -37,9 +37,15 @@ function EditButton(): ReactNode {
         return null
     }
 
+    const link = navigator.link({ ...currentDescriptor, view: false }, { scroll: { kind: 'position', top: 0 } })
+
     return (
-        <button style={{ position: 'absolute', left: '1em', top: '1em' }} {...navigator.link({ ...currentDescriptor, view: false }, { scroll: { kind: 'position', top: 0 } })}>
+        <a
+            {...link}
+            {...withButtonRole('Edit', link.onClick)}
+            style={{ position: 'absolute', left: '1em', top: '1em' }}
+        >
             Edit
-        </button>
+        </a>
     )
 }

@@ -14,11 +14,12 @@ const code = `pMap(
 
 urbanstatsFixture('mapper view mode', urlFromCode('Urban Center', 'Argentina', code))
 
-const editButton = Selector('button').withExactText('Edit')
+const editButton = Selector('a[role=button]').withExactText('Edit')
 
 // TestCafe's native automation can't drive a second window, so the tab View would open becomes this one.
 const openInSameTab = ClientFunction(() => {
     window.open = (url) => {
+        // eslint-disable-next-line no-restricted-syntax -- Test utility
         window.location.href = url as string
         return null
     }
