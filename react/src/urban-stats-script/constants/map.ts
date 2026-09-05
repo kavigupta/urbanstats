@@ -53,6 +53,8 @@ export interface CMapRGB {
     unit?: UnitType
     outline: Outline
     textBoxes: TextBox[]
+    showMissingData: boolean
+    missingDataColor: Color | undefined
 }
 
 export interface PMap extends CommonMap {
@@ -132,17 +134,17 @@ function mapConstructorArguments(
                 data: dataType,
                 scale: { type: { type: 'concrete', value: { type: 'opaque', name: 'scale' } } },
                 ramp: { type: { type: 'concrete', value: { type: 'opaque', name: 'ramp' } } },
-                showMissingData: {
-                    type: { type: 'concrete', value: { type: 'boolean' } },
-                    defaultValue: createConstantExpression(false),
-                },
-                missingDataColor: {
-                    type: { type: 'concrete', value: { type: 'opaque', name: 'color' } },
-                    defaultValue: createConstantExpression(null),
-                },
             }
     return {
         ...dataArgs,
+        showMissingData: {
+            type: { type: 'concrete', value: { type: 'boolean' } },
+            defaultValue: createConstantExpression(false),
+        },
+        missingDataColor: {
+            type: { type: 'concrete', value: { type: 'opaque', name: 'color' } },
+            defaultValue: createConstantExpression(null),
+        },
         label: {
             type: { type: 'concrete', value: { type: 'string' } },
             defaultValue: isRGB ? undefined : createConstantExpression(null),
@@ -433,6 +435,8 @@ export const cMapRGB: USSValue = {
         const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
         const textBoxes = (namedArgs.textBoxes as { value: TextBox }[] | null ?? []).map(({ value }) => value)
         const opacity = Math.max(0, Math.min(1, namedArgs.opacity as number))
+        const showMissingData = namedArgs.showMissingData as boolean
+        const missingDataColor = (namedArgs.missingDataColor as { type: 'opaque', opaqueType: 'color', value: Color } | null)?.value
 
         const dataARaw = namedArgs.dataA as number[] | null
         const dataA: number[] = dataARaw === null
@@ -448,7 +452,7 @@ export const cMapRGB: USSValue = {
         return {
             type: 'opaque',
             opaqueType: 'cMapRGB',
-            value: { geo, dataR, dataG, dataB, dataA, opacity, label, basemap, insets, unit, outline, textBoxes } satisfies CMapRGB,
+            value: { geo, dataR, dataG, dataB, dataA, opacity, label, basemap, insets, unit, outline, textBoxes, showMissingData, missingDataColor } satisfies CMapRGB,
         }
     },
     documentation: {
@@ -460,6 +464,8 @@ export const cMapRGB: USSValue = {
             dataG: 'Green Data (0-1)',
             dataB: 'Blue Data (0-1)',
             dataA: 'Alpha Data (0-1)',
+            showMissingData: 'Show Missing Data',
+            missingDataColor: 'Missing Data Color',
             opacity: 'Opacity',
             label: 'Label',
             geo: 'Geography',

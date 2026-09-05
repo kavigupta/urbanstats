@@ -42,3 +42,25 @@ mapper(() => test)('a hidden region is still clickable', { code, geo: 'Subnation
     await t.click(canvas, { offsetX: Math.round(width * 0.82), offsetY: Math.round(height * 0.57) })
     await t.expect(getLocation()).contains('longname=Austurland%2C+Iceland')
 })
+
+// The same four regions on an RGB map, whose NaN channels used to render as the literal
+// string #NaNNaNNaN.
+const rgbCode = `customNode("");
+condition (true)
+cMapRGB(
+    dataR=if (population > (median(population))) { density_pw_1km / 3000 },
+    dataG=density_pw_1km / 3000,
+    dataB=1 - density_pw_1km / 3000,
+    label="RGB",
+    outline=constructOutline(weight=2),
+    basemap=noBasemap()
+)`
+
+mapper(() => test)('missing values on an RGB map', { code: rgbCode, geo: 'Subnational Region', universe: 'Iceland' }, async (t) => {
+    await t.expect(getErrors()).eql([])
+    await screencap(t, { removeEntireMap: false })
+
+    await checkBox(t, /^Show Missing Data/)
+    await t.expect(getErrors()).eql([])
+    await screencap(t, { removeEntireMap: false })
+})

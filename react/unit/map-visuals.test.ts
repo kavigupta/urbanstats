@@ -2,8 +2,8 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import { hiddenColor, mapVisuals, MapResult } from '../src/mapper/map-rendering'
-import { ClusterMap, CMap } from '../src/urban-stats-script/constants/map'
+import { hiddenColor, mapVisuals, MapResult, rgbMissingColor } from '../src/mapper/map-rendering'
+import { ClusterMap, CMap, CMapRGB } from '../src/urban-stats-script/constants/map'
 
 const ramp: [number, string][] = [[0, '#000000'], [1, '#ffffff']]
 
@@ -44,6 +44,39 @@ void test('showMissingData brings back the colour furthest from the ramp', () =>
 void test('missingDataColor overrides it', () => {
     const colors = mapVisuals(cMap({ showMissingData: true, missingDataColor: { r: 1, g: 0, b: 0, a: 1 } })).colors
     assert.equal(colors[1], '#ff0000')
+})
+
+function cMapRGB(overrides: Partial<CMapRGB>): MapResult {
+    const { geo, basemap, opacity, insets, textBoxes, outline, showMissingData, missingDataColor } = commonMap({})
+    return {
+        type: 'opaque',
+        opaqueType: 'cMapRGB',
+        value: {
+            geo,
+            dataR: [0, 1, NaN],
+            dataG: [0, 1, 1],
+            dataB: [0, 1, 1],
+            dataA: [1, 1, 1],
+            label: [],
+            basemap,
+            opacity,
+            insets,
+            textBoxes,
+            outline,
+            showMissingData,
+            missingDataColor,
+            ...overrides,
+        },
+    }
+}
+
+void test('an RGB map hides a NaN channel rather than rendering #NaNNaNNaN', () => {
+    assert.deepStrictEqual(mapVisuals(cMapRGB({})).colors, ['#000000', '#ffffff', hiddenColor])
+    assert.deepStrictEqual(mapVisuals(cMapRGB({ showMissingData: true })).colors[2], rgbMissingColor)
+    assert.deepStrictEqual(
+        mapVisuals(cMapRGB({ showMissingData: true, missingDataColor: { r: 1, g: 0, b: 0, a: 1 } })).colors[2],
+        '#ff0000',
+    )
 })
 
 void test('a cluster map puts missing values in their own category', () => {
