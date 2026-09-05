@@ -87,6 +87,18 @@ for (const [data, expected] of [
     ['area + population', 'Area + Population × 1km^{2}/person'],
     ['population - area', 'Population − Area × 1/km^{2}'],
     ['population < area', 'Population < Area × 1/km^{2}'],
+    ['area >= population', 'Area ≥ Population × 1km^{2}/person'],
+    ['population + area / 2', 'Population + Area ÷ 2km^{2}/person'],
+    ['population + sqrt(area)', 'Population + sqrt(Area) × 1/km'],
+    // a share is a number of nothing and a count is people, so a factor separates them
+    ['commute_bike + population', 'Commute Bike % + Population × 1/person'],
+    ['population * 2 + area', 'Population × 2 + Area × 1/km^{2}'],
+    ['minimum(population, area)', 'min(Population, Area × 1/km^{2})'],
+    ['inverseQuantile(population, area)', 'quantile^{-1}(Population, Area × 1/km^{2})'],
+    // a reading gives up its zero before it can scale, and a difference has none to give
+    ['high_temp / area', '(Mean high temp − 0°F) ÷ Area'],
+    ['high_temp ** 2', '(Mean high temp − 0°F)^{2}'],
+    ['area / area', 'Area ÷ Area'],
     // a literal already written is read for what it must be, rather than one being added
     ['population + area * 2', 'Population + Area × 2/km^{2}'],
     ['population + area / 2', 'Population + Area ÷ 2km^{2}/person'],
@@ -103,9 +115,9 @@ for (const [data, expected] of [
     ['sqrt(high_temp)', 'sqrt(Mean high temp − 0°F)'],
     ['high_temp / high_temp', '(Mean high temp − 0°F) ÷ (Mean high temp − 0°F)'],
     // a count has no unit name, so the zero it is taken from is written as a bare 0
-    ['high_temp + population', 'Mean high temp + (Population − 0) × 1°F/person'],
+    ['high_temp + population', 'Mean high temp + Population × 1°F/person'],
     ['population + high_temp', 'Population + (Mean high temp − 0°F) × 1/°F'],
-    ['high_temp - low_temp + population', '(Mean high temp − Mean low temp) + (Population − 0) × 1°F/person'],
+    ['high_temp - low_temp + population', '(Mean high temp − Mean low temp) + Population × 1°F/person'],
     // and nothing is written where the two sides already go together
     ['population + population', 'Population + Population'],
     ['area / area', 'Area ÷ Area'],
