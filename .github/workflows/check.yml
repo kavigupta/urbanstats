@@ -28,16 +28,39 @@ jobs:
       actions: write
     steps:
       - name: Cancel this branch's older runs
-        # A run that finishes between the listing and the cancel returns 409, which is
-        # fine; anything else, a bad token above all, should still fail this job.
-        run: |
-          gh api --paginate "repos/$GITHUB_REPOSITORY/actions/workflows/check.yml/runs?event=pull_request&per_page=100" \
-            | jq -r --arg branch "$BRANCH" --arg repo "$GITHUB_REPOSITORY" --argjson id "$GITHUB_RUN_ID" \
-              '.workflow_runs[] | select(.head_branch == $branch and .head_repository.full_name == $repo and .status != "completed" and .id < $id) | .id' \
-            | xargs -r -I{} sh -c 'gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/$1/cancel" \
-                || gh api "repos/$GITHUB_REPOSITORY/actions/runs/$1" --jq .status | grep -qx completed' _ {}
-        env:
-          BRANCH: ${{ github.head_ref }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'check.yml',
+              event: 'pull_request',
+              branch: context.payload.pull_request.head.ref,
+              per_page: 100
+            });
+
+            // A fork's runs live in this repo too, and its branch can share our name.
+            const superseded = runs.filter(run =>
+              run.id < context.runId
+              && run.status !== 'completed'
+              && run.head_repository?.full_name === `${context.repo.owner}/${context.repo.repo}`
+            );
+
+            for (const run of superseded) {
+              try {
+                await github.rest.actions.cancelWorkflowRun({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  run_id: run.id
+                });
+              } catch (error) {
+                // The run finished between the listing and the cancel.
+                if (error.status !== 409) {
+                  throw error;
+                }
+              }
+            }
 
   build-and-push-common-image:
     runs-on: ubuntu-22.04
