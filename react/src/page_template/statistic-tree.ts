@@ -29,7 +29,6 @@ export interface Category {
     kind: 'Category'
     id: CategoryIdentifier
     name: string
-    years: Set<Year | null> // for which years does this category have data
     statPaths: Set<StatPath> // which StatPaths does this category contain
 }
 
@@ -81,7 +80,6 @@ export const statsTree: Category[] = rawStatsTree.map(category => ({
     kind: 'Category',
     id: category.id,
     name: category.name,
-    years: new Set(), // set below
     statPaths: new Set(), // set below
 } satisfies Category))
 
@@ -141,7 +139,6 @@ for (const group of allGroups) {
                 }
             }
         }
-        group.parent.years.add(yearGroup.year)
     }
 }
 
