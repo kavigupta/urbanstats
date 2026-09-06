@@ -20,12 +20,11 @@ function humanReadableElements(ast: Expression | UrbanStatsASTStatement<UnitsRea
     if (written === undefined) {
         return undefined
     }
-    // a constant writes its unit into the number itself, as "1 000/km^2", so it says it there
+    // a constant writes its unit into the number itself, as "1 000/km^2"
     if (ast.converted === undefined || ast.type === 'constant') {
         return written
     }
-    // the conversion is of the whole expression, so "(A + B) [in U]" needs the brackets
-    return howConverted(isAtomic(ast) ? written : [{ type: 'parens', value: written }], ast.converted)
+    return howConverted(written, ast.converted, isAtomic(ast))
 }
 
 /**
@@ -229,11 +228,13 @@ function statedMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanRea
     return label === undefined ? undefined : parseHumanReadableTemplate(label)
 }
 
-export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
-    const { ast: factored } = unitCheck(uss, typeEnvironment)
-    const result = read(editableMapData<UnitsRead>(), factored, typeEnvironment)
+/** `expected` is the unit the map states, which the script is read as being converted into. */
+export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, expected?: StoredUnit): HumanReadableName | undefined {
+    const checked = unitCheck(uss, typeEnvironment)
+    const result = read(editableMapData<UnitsRead>(), checked.ast, typeEnvironment)
     if (result?.currentValue.namedArgs.data === undefined) return
-    const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment)
+    const data = unitWithin(result.currentValue.namedArgs.data, typeEnvironment, checked.named, expected).ast
+    const dataLabel = humanReadableElements(data, typeEnvironment)
     if (dataLabel === undefined) return
     // Replace the map call with just the data description to simplify the label (we know it's a map)
     const withMapCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: grouped(dataLabel) }, location: noLocation } })
@@ -363,67 +364,69 @@ function ungroupUnlessWorthwhile(label: HumanReadableElement[], substituted: Hum
 }
 
 /**
- * The elements followed by what the numbers behind them are counted in, as in "[in /km^{2}]". The
- * reader's units are not it: a logarithm is of the number a script computed with, whatever units
- * the reader has the same number written to them in. A count gets nothing, having no name.
+ * Writes out a conversion. Three forms, by what is being converted:
+ *
+ *     an area read as a plain number      Area [in km^2]
+ *     a plain number read as an area      Names [as km^2]
+ *     people read as an area              Population x 1km^2/person
+ *
+ * A reading does not scale, so its zero is subtracted first: "(Mean high temp - 0F) x Area".
  */
-/**
- * How a conversion is written. A quantity read as a plain number is the number of them it is, so
- * "[in km^2]"; a number with no unit of its own is read as that many, so "[as km^2]"; and one unit
- * read as another is so many of the second for each of the first, so "x 1person/km^2". A reading
- * has to give up the zero it is counted from before any of that, which is written "- 0".
- */
-function howConverted(written: HumanReadableElement[], conversion: UnitConversion): HumanReadableElement[] {
+function howConverted(written: HumanReadableElement[], conversion: UnitConversion, atomic: boolean): HumanReadableElement[] {
     const { internalUnit } = conversion
     const parts = conversionParts(conversion)
-    if (internalUnit === undefined) {
-        return inUnitWritten(written, conversion.expectedUnit, 'as')
-    }
+    // the conversion is of the whole expression, so "(A + B) [in U]" needs the brackets. They are
+    // only worth writing where the conversion itself writes something.
+    const bracketed = atomic ? written : [{ type: 'parens' as const, value: written }]
     if (parts === undefined) {
-        return inUnitWritten(written, internalUnit)
+        const said = internalUnit === undefined
+            ? unitSaid(conversion.expectedUnit, 'as')
+            : unitSaid(internalUnit, 'in')
+        return said === undefined ? written : [...bracketed, ...said]
     }
-    // the zero is bracketed only where something follows it, so that x - 0 x 1F does not misread
-    const follows = parts.factor !== undefined || parts.zeroOn !== undefined
-    let of = written
-    if (parts.zeroOff !== undefined) {
-        const less = [...written, { type: 'atom' as const, value: ' \u2212 ' }, ...formatNumber(0, parts.zeroOff)]
-        of = follows ? [{ type: 'parens', value: less }] : less
+    // bracket the zero only where a factor follows, so that "x - 0 x 1F" does not misread
+    const follows = parts.factor !== undefined || parts.zeroAdded !== undefined
+    let writing = bracketed
+    if (parts.zeroSubtracted !== undefined) {
+        const less = [...bracketed, { type: 'atom' as const, value: ' \u2212 ' }, ...formatNumber(0, parts.zeroSubtracted)]
+        writing = follows ? [{ type: 'parens', value: less }] : less
     }
     if (parts.factor !== undefined) {
-        of = [...of, { type: 'atom', value: ' \u00d7 ' }, ...formatNumber(1, parts.factor)]
+        writing = [...writing, { type: 'atom', value: ' \u00d7 ' }, ...formatNumber(1, parts.factor)]
     }
-    return parts.zeroOn === undefined ? of : [...of, { type: 'atom', value: ' + ' }, ...formatNumber(0, parts.zeroOn)]
+    return parts.zeroAdded === undefined ? writing : [...writing, { type: 'atom', value: ' + ' }, ...formatNumber(0, parts.zeroAdded)]
 }
 
 /**
- * What a conversion writes: the zero a reading gives up, the factor between what is left and what
- * is wanted, and the zero a reading takes back on. Nothing where it is read as a plain number.
+ * The three pieces a conversion can write, any of which may be absent: the zero subtracted from a
+ * reading, the factor, and the zero added to make a reading. Nothing at all for a value read as a
+ * plain number, which is written "[in U]" instead.
  */
-function conversionParts({ internalUnit, expectedUnit }: UnitConversion): { zeroOff?: StoredUnit, factor?: StoredUnit, zeroOn?: StoredUnit } | undefined {
+function conversionParts({ internalUnit, expectedUnit }: UnitConversion): { zeroSubtracted?: StoredUnit, factor?: StoredUnit, zeroAdded?: StoredUnit } | undefined {
     if (internalUnit === undefined || isPlainNumber(expectedUnit)) {
         return undefined
     }
     const scales = multiplies(internalUnit.unit)
     const from = scales ? internalUnit : asADifference(internalUnit)
     const to = multiplies(expectedUnit.unit) ? expectedUnit : asADifference(expectedUnit)
-    // a factor between scales is a difference of them: one degree per person is not one degree,
-    // which is a reading and would be written from the zero of whatever scale it is read on
+    // a factor between two scales is a difference of them. Written as a reading it would use the
+    // zero of the reader's scale: one degree per person would show as -17.2C/person, not 0.556
     const between = unitProduct(to, from, -1)
     const spansAZero = !internalUnit.unit.baseIsScalar || !expectedUnit.unit.baseIsScalar
     const factor = alike(to, from) || between === undefined ? undefined : (spansAZero ? asADifference(between) : between)
     return {
-        ...scales ? {} : { zeroOff: internalUnit },
+        ...scales ? {} : { zeroSubtracted: internalUnit },
         ...factor === undefined ? {} : { factor },
-        ...expectedUnit.unit.times === 1 && !expectedUnit.unit.baseIsScalar ? { zeroOn: expectedUnit } : {},
+        ...expectedUnit.unit.times === 1 && !expectedUnit.unit.baseIsScalar ? { zeroAdded: expectedUnit } : {},
     }
 }
 
 /** The operator a conversion's writing ends on, which is what encloses it has to reckon with. */
 function conversionRunsAs(conversion: UnitConversion): BinaryOperatorSymbol | undefined {
     const parts = conversionParts(conversion)
-    if (parts?.zeroOn !== undefined) return '+'
+    if (parts?.zeroAdded !== undefined) return '+'
     if (parts?.factor !== undefined) return '*'
-    return parts?.zeroOff === undefined ? undefined : '-'
+    return parts?.zeroSubtracted === undefined ? undefined : '-'
 }
 
 function alike(left: StoredUnit, right: StoredUnit): boolean {
@@ -431,20 +434,21 @@ function alike(left: StoredUnit, right: StoredUnit): boolean {
 }
 
 /**
- * "[in km^2]" of a quantity read as the number of them it is, and "[as km^2]" of a number with no
- * unit of its own that the script reads as that many.
+ * The "[in km^2]" or "[as km^2]" written after an expression, in the units the script computed
+ * with rather than the ones its reader chose. Nothing where the unit has no name, as a count has
+ * none.
  */
-function inUnitWritten(written: HumanReadableElement[], unit: StoredUnit | undefined, preposition: 'in' | 'as' = 'in'): HumanReadableElement[] {
-    if (unit === undefined) return written
+function unitSaid(unit: StoredUnit | undefined, preposition: 'in' | 'as'): HumanReadableElement[] | undefined {
+    if (unit === undefined) return undefined
     const name = nameOfStoredUnit(unit)
     // A share is stored as the fraction it is, whatever percentage it is written as, and so is a
     // count of one thing per another: fatalities per capita are stored per person, not per 100k.
     const perSomething = unit.unit.dimensions.some(({ power }) => power < 0)
     if (unit.unit.decoration.kind === 'percent' || (name?.length === 0 && perSomething)) {
-        return [...written, { type: 'atom', value: ' [as a fraction]' }]
+        return [{ type: 'atom', value: ' [as a fraction]' }]
     }
-    if (name === undefined || name.length === 0) return written
-    return [...written, { type: 'atom', value: ` [${preposition} ` }, ...name, { type: 'atom', value: ']' }]
+    if (name === undefined || name.length === 0) return undefined
+    return [{ type: 'atom', value: ` [${preposition} ` }, ...name, { type: 'atom', value: ']' }]
 }
 
 function formatNumber(number: number, unit?: StoredUnit): HumanReadableElement[] {

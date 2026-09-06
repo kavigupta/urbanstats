@@ -164,10 +164,10 @@ function addedForward(form: { combine: (left: number, right: number) => number }
     if (!sameSize(left.unit.toBaseUnits, right.unit.toBaseUnits)) {
         return { kind: 'none' }
     }
-    // degrees added to a temperature give a temperature, so the reading's zero is what counts
-    const of = left.unit.unit.baseIsScalar ? right.unit : left.unit
+    // degrees added to a temperature give a temperature, so the result keeps the reading's zero
+    const counted = left.unit.unit.baseIsScalar ? right.unit : left.unit
     return written(
-        of,
+        counted,
         combined(left.unit.unit.times, right.unit.unit.times, form.combine),
         sharedDecoration(left.unit.unit.decoration, right.unit.unit.decoration),
     )

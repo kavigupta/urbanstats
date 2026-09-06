@@ -7,8 +7,8 @@ import { unitToWriteIn } from './unit-algebra'
 import { UnitsRead, unitCheck, unitWithin } from './unit-inference'
 
 /**
- * Checks the whole script first, so that names it binds are known and factors are written in, then
- * reads the unit off the one expression the map or column draws.
+ * Checks the whole script first, so that the names it binds are known, then reads the unit from
+ * the one expression the map or column draws.
  */
 function unitOf(of: (checked: MapUSS<UnitsRead>) => UrbanStatsASTExpression<UnitsRead> | undefined, uss: MapUSS, typeEnvironment: TypeEnvironment): StoredUnit | undefined {
     const checked = unitCheck(uss, typeEnvironment)

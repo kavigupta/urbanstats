@@ -44,16 +44,16 @@ void test('a map takes the unit of its data', () => {
 
 void test('a sum takes the unit of its left', () => {
     // a script computes with stored values, so metres added to kilometres are read as a thousand
-    // of them each, and the caption writes that factor out
+    // of them each
     assert.equal(mapUnit('hospital_mean_dist + elevation'), '1\u202f000km')
     assert.equal(mapUnit('elevation + hospital_mean_dist'), '1\u202f000m')
     assert.equal(mapUnit('area + area'), '1\u202f000km^{2}')
 })
 
 void test('a literal takes the unit that fits', () => {
-    // people are no area, but a number multiplying them can be an area per person
+    // people are not an area, but a number multiplying them can be square kilometres per person
     assert.equal(mapUnit('area + population * 1'), '1\u202f000km^{2}')
-    // and one is written in where the script has no literal to read
+    // and a conversion is recorded where the script has no literal to read
     assert.equal(mapUnit('area + population'), '1\u202f000km^{2}')
     assert.equal(mapUnit('area + ln(population * 1)'), '1\u202f000km^{2}')
 })
@@ -97,9 +97,9 @@ for (const [data, expected] of [
     ['area / area', '1\u202f230'],
     ['population ** 0', '1\u202f230'],
     ['inverseQuantile(area, area)', '1\u202f230'],
-    // a reading over a reading divides what is left of each once its zero is out
+    // a reading over a reading divides the degrees above each zero
     ['high_temp / high_temp', '1\u202f230'],
-    // two lengths stored differently meet when one is read as so many of the other
+    // two lengths stored differently add when one is read as so many of the other
     ['minimum(elevation, hospital_mean_dist)', '1.23km'],
     // an empty vector is of every kind and so of none
     ['[]', 'nothing'],

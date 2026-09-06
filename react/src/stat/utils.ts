@@ -90,8 +90,8 @@ export function statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn }
     warn: (message: string) => void
 }): StatData {
     const columns = table.columns.map((column, index): StatColumn => {
-        // a column that states its unit says what the script is to be read as converted into, so
-        // the name it is given says how, and the unit it is written in is that one
+        // a column that states its unit says what to convert the script into, so the name says how
+        // it was converted and the numbers are written in that unit
         const stated = column.unit === undefined ? undefined : unitTypeToStoredUnit(column.unit)
         let name = column.name ?? deriveTableColumnLabel(mapUSS, typeEnvironment, index, stated)
         if (name === undefined) {
