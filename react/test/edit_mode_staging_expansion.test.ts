@@ -1,57 +1,82 @@
 import { Selector } from 'testcafe'
 
-import { categoryToggleButton, ensureCategoryCollapsed, ensureCategoryExpanded, enterEditMode, filterBox, interactableGroupCheckbox, setCategoryExpanded } from './edit_mode_test_utils'
+import { categoryToggleButton, enterEditMode, filterBox, interactableGroupCheckbox, setCategoryExpanded, setSubcategoryExpanded, subcategoryToggleButton } from './edit_mode_test_utils'
 import { getLocation, target, urbanstatsFixture } from './test_utils'
 
 /**
- * A collapsed category on the edit tree shows only its selected groups, so a settings link
- * that turns a group off stages a change that the category would hide. Edit mode, which
- * opens on its own in staging mode, expands those categories so every staged change is
- * visible.
+ * Edit mode opens a category iff something in it is selected, so a settings link that turns off
+ * a category's only selected group would leave it closed with nothing to show for the staged
+ * change. The highlighted group counts as a reason to open too.
  */
 
 const californiaPage = `${target}/article.html?longname=California%2C+USA`
 
-let populationOffLink: string
+const stagingControls = Selector('[data-test-id=staging_controls]')
+const vacancy = interactableGroupCheckbox('vacancy')
+const hispanic = interactableGroupCheckbox('hispanic')
 
-urbanstatsFixture('generate link that turns off a group', californiaPage)
+let vacancyOffLink: string
 
-test('turning off a group produces a link that carries it', async (t) => {
+urbanstatsFixture('generate link with an unselected group', californiaPage)
+
+test('a link records Vacancy as unselected', async (t) => {
     await enterEditMode(t)
-    await ensureCategoryExpanded(t, 'main')
-    await t.click(interactableGroupCheckbox('population'))
+    await setCategoryExpanded(t, 'housing', true)
+    await t.click(vacancy)
+    await t.click(vacancy)
 
-    populationOffLink = await getLocation()
+    vacancyOffLink = await getLocation()
 })
 
-urbanstatsFixture('visit link that turns off a group in a collapsed category', californiaPage, async (t) => {
-    // A visitor with saved settings, so the link stages its changes rather than silently
-    // applying them the way it would for a first-time visitor.
-    await t.click(Selector('input[data-test-id=use_imperial]'))
+urbanstatsFixture('visit that link with Vacancy selected', californiaPage, async (t) => {
     await enterEditMode(t)
-    await ensureCategoryCollapsed(t, 'main')
+    await setCategoryExpanded(t, 'housing', true)
+    await t.click(vacancy)
 
-    await t.navigateTo(populationOffLink)
+    await t.navigateTo(vacancyOffLink)
 })
 
-test('the category hiding a staged change is expanded', async (t) => {
-    await t.expect(Selector('[data-test-id=staging_controls]').exists).ok()
-    // Main is expanded: collapsed, it would show no sign of the group staging turns off.
+test('the category whose only selection is staged off is expanded', async (t) => {
+    await t.expect(stagingControls.exists).ok()
     await t.expect(filterBox.exists).ok()
-    await t.expect(categoryToggleButton('main', 'Collapse').exists).ok()
+    await t.expect(categoryToggleButton('housing', 'Collapse').exists).ok()
 
-    const population = interactableGroupCheckbox('population')
-    await t.expect(population.checked).notOk()
-    await t.expect(population.getAttribute('data-test-highlight')).eql('true')
+    await t.expect(vacancy.checked).notOk()
+    await t.expect(vacancy.getAttribute('data-test-highlight')).eql('true')
 })
 
 test('categories with nothing staged behind them stay collapsed', async (t) => {
     await t.expect(categoryToggleButton('race', 'Expand').exists).ok()
 })
 
-test('the expanded category can be collapsed again while staging', async (t) => {
-    await setCategoryExpanded(t, 'main', false)
+let hispanicOffLink: string
 
-    await t.expect(categoryToggleButton('main', 'Expand').exists).ok()
-    await t.expect(interactableGroupCheckbox('population').exists).notOk()
+urbanstatsFixture('generate link with an unselected group inside a subcategory', californiaPage)
+
+test('a link records Hispanic as unselected', async (t) => {
+    await enterEditMode(t)
+    await setCategoryExpanded(t, 'race', true)
+    await setSubcategoryExpanded(t, 'race_composition', true)
+    await t.click(hispanic)
+    await t.click(hispanic)
+
+    hispanicOffLink = await getLocation()
+})
+
+urbanstatsFixture('visit that link with Hispanic selected', californiaPage, async (t) => {
+    await enterEditMode(t)
+    await setCategoryExpanded(t, 'race', true)
+    await setSubcategoryExpanded(t, 'race_composition', true)
+    await t.click(hispanic)
+
+    await t.navigateTo(hispanicOffLink)
+})
+
+test('the subcategory whose only selection is staged off is expanded along with its category', async (t) => {
+    await t.expect(stagingControls.exists).ok()
+    await t.expect(categoryToggleButton('race', 'Collapse').exists).ok()
+    await t.expect(subcategoryToggleButton('race_composition', 'Collapse').exists).ok()
+
+    await t.expect(hispanic.checked).notOk()
+    await t.expect(hispanic.getAttribute('data-test-highlight')).eql('true')
 })

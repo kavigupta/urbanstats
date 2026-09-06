@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { categoryCheckbox, categoryToggleButton, enterEditMode, exitEditMode, filterBox, groupCheckbox, groupMemberRow, groupWarning, interactableGroupCheckbox, setCategoryExpanded, sourceCheckbox, yearCheckbox } from './edit_mode_test_utils'
+import { categoryCheckbox, categoryToggleButton, enterEditMode, exitEditMode, filterBox, groupCheckbox, groupMemberRow, groupWarning, interactableGroupCheckbox, setCategoryExpanded, setSubcategoryExpanded, sourceCheckbox, subcategoryCheckbox, yearCheckbox } from './edit_mode_test_utils'
 import { clickUniverseFlag, getLocation, resizeForPlatform, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, warningRowNames } from './test_utils'
 
 const mainCheck = categoryCheckbox('main')
@@ -9,15 +9,25 @@ const populationCheck = groupCheckbox('population')
 // A collapsed category keeps its unselected rows mounted (so the height transition has
 // content) but marks them inert, so clicking one needs the interactable variant.
 const populationCheckInteractable = interactableGroupCheckbox('population')
-// Present only while Main is collapsed, since the toggle then offers to expand. Main has
-// no toggle at all until something in it is unselected.
+// Main has no toggle at all until something in it is unselected, and opens expanded since
+// its groups are selected, so the toggle it then grows offers to collapse.
 const mainExpandButton = categoryToggleButton('main', 'Expand')
+const mainCollapseButton = categoryToggleButton('main', 'Collapse')
 // Housing is off by default, so it always has something behind its toggle.
 const housingCheck = categoryCheckbox('housing')
 const housingExpandButton = categoryToggleButton('housing', 'Expand')
 const housingCollapseButton = categoryToggleButton('housing', 'Collapse')
 const vacancyCheckInteractable = interactableGroupCheckbox('vacancy')
 const renterCheckInteractable = interactableGroupCheckbox('rent_or_own_rent')
+// Race is the category with a subcategory in it (the races, which add to 100%) alongside
+// groups that are in none (the segregation statistics).
+const raceCheck = categoryCheckbox('race')
+const raceCompositionCheck = subcategoryCheckbox('race_composition')
+const hispanicCheckInteractable = interactableGroupCheckbox('hispanic')
+// eslint-disable-next-line no-restricted-syntax -- a stat group id, not a css color
+const whiteCheck = groupCheckbox('white')
+const hispanicCheck = groupCheckbox('hispanic')
+const segregationCheckInteractable = interactableGroupCheckbox('homogeneity_250')
 const sourceSectionHeader = Selector('.stats_table div').withExactText('Population Sources')
 const ghslCheck = sourceCheckbox('Population', 'GHSL')
 const year2020Check = yearCheckbox(2020)
@@ -38,7 +48,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('category-check', async (t) => {
         /**
-         * Check that the category checks and unchecks correctly without being expanded.
+         * Check that the category checks and unchecks correctly.
          */
         await enterEditMode(t)
         await t.expect(mainCheck.checked).eql(true)
@@ -46,7 +56,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.expect(mainExpandButton.exists).notOk()
         await t.click(mainCheck)
         await t.expect(mainCheck.checked).eql(false)
-        await t.expect(mainExpandButton.exists).ok()
+        await t.expect(mainCollapseButton.exists).ok()
         await t.click(mainCheck)
         await t.expect(mainCheck.checked).eql(true)
     })
@@ -97,21 +107,101 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     test('unchecking-a-category-leaves-the-expansion-alone', async (t) => {
         /**
          * Unchecking is the one step of the cycle that doesn't expand -- it puts nothing on
-         * display that the user asked to see. Main is the category that shows this, since it
-         * starts out checked and collapsed rather than having to be checked first.
+         * display that the user asked to see -- and it doesn't collapse either.
          */
         await enterEditMode(t)
         await t.click(mainCheck)
         await t.expect(mainCheck.checked).eql(false)
-        await t.expect(mainExpandButton.exists).ok()
-        await t.expect(populationCheckInteractable.exists).notOk()
+        await t.expect(mainCollapseButton.exists).ok()
+        await setMainExpanded(t, false)
 
-        // It doesn't collapse either, so a category expanded by checking it stays open.
         await t.click(mainCheck)
         await t.click(mainCheck)
         await t.expect(mainCheck.checked).eql(false)
-        await t.expect(categoryToggleButton('main', 'Collapse').exists).ok()
+        await t.expect(mainCollapseButton.exists).ok()
         await t.expect(populationCheckInteractable.exists).ok()
+    })
+
+    test('subcategory-check-selects-its-groups', async (t) => {
+        /**
+         * The subcategory checkbox stands for its groups the way a category's does, so checking
+         * it leaves the category itself indeterminate -- the segregation groups are still off.
+         */
+        await enterEditMode(t)
+        await setCategoryExpanded(t, 'race', true)
+        await t.expect(raceCompositionCheck.checked).eql(false)
+
+        await t.click(raceCompositionCheck)
+        await t.expect(raceCompositionCheck.checked).eql(true)
+        await t.expect(hispanicCheckInteractable.checked).eql(true)
+        await t.expect(raceCheck.indeterminate).eql(true)
+    })
+
+    test('subcategory-expands-independently-of-its-category', async (t) => {
+        /**
+         * An expanded category shows the subcategory header, not the groups behind it, so a
+         * category of pie charts doesn't unfold into dozens of rows at once.
+         */
+        await enterEditMode(t)
+        await setCategoryExpanded(t, 'race', true)
+        await t.expect(segregationCheckInteractable.exists).ok()
+        await t.expect(hispanicCheckInteractable.exists).notOk()
+
+        await setSubcategoryExpanded(t, 'race_composition', true)
+        await t.expect(hispanicCheckInteractable.exists).ok()
+        await screencap(t)
+
+        // Collapsing the category still takes the whole subcategory with it.
+        await setCategoryExpanded(t, 'race', false)
+        await t.expect(hispanicCheckInteractable.exists).notOk()
+    })
+
+    test('subcategory-expansion-resets-with-edit-mode', async (t) => {
+        // Like a category's, the expansion lasts only as long as edit mode does.
+        await enterEditMode(t)
+        await setCategoryExpanded(t, 'race', true)
+        await setSubcategoryExpanded(t, 'race_composition', true)
+        await exitEditMode(t)
+        await enterEditMode(t)
+        await t.expect(categoryToggleButton('race', 'Expand').exists).ok()
+        await t.expect(hispanicCheckInteractable.exists).notOk()
+    })
+
+    test('subcategory-warning-names-the-subcategory', async (t) => {
+        // One warning for the whole pie chart rather than one per race, since the category
+        // around it has groups that aren't selected and so can't stand in.
+        await enterEditMode(t)
+        await uncheckAllCategories(t)
+        await setCategoryExpanded(t, 'race', true)
+        await t.click(raceCompositionCheck)
+        await t.click(year2020Check)
+        await exitEditMode(t)
+        await t.expect(await warningRowNames()).eql(['Racial Composition'])
+    })
+
+    test('search-matches-a-subcategory-name', async (t) => {
+        // The name is on the tree, so it has to be searchable; matching it keeps the groups
+        // underneath it, which don't have "racial" in their own names.
+        await enterEditMode(t)
+        await t.typeText(filterBox, 'racial comp')
+        await t.expect(hispanicCheckInteractable.exists).ok()
+        await t.expect(segregationCheckInteractable.exists).notOk()
+    })
+
+    test('search-scopes-a-subcategory-checkbox-to-what-it-shows', async (t) => {
+        // Like the category checkbox, the subcategory one acts on the groups the search leaves
+        // visible rather than on the ones it is hiding.
+        await enterEditMode(t)
+        // eslint-disable-next-line no-restricted-syntax -- a stat group name, not a css color
+        await t.typeText(filterBox, 'white')
+        await t.expect(raceCompositionCheck.checked).eql(false)
+        await t.click(raceCompositionCheck)
+        await t.expect(raceCompositionCheck.checked).eql(true)
+
+        await t.selectText(filterBox).pressKey('delete')
+        await t.expect(whiteCheck.checked).eql(true)
+        await t.expect(hispanicCheck.checked).eql(false)
+        await t.expect(raceCompositionCheck.indeterminate).eql(true)
     })
 
     test('indeterminate-cycle-expanded', async (t) => {
@@ -119,11 +209,9 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
          * Check that the category, when expanded, cycles between indeterminate -> true -> false -> indeterminate states
          */
         await enterEditMode(t)
-        // Population is selected, so it's on display before anything is expanded.
         await t.click(populationCheckInteractable)
         await t.expect(populationCheck.checked).eql(false)
         await t.expect(mainCheck.indeterminate).eql(true)
-        await setMainExpanded(t, true)
         await screencap(t)
 
         await t.click(mainCheck)
@@ -152,6 +240,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await enterEditMode(t)
         await t.click(populationCheckInteractable)
         await t.expect(mainCheck.indeterminate).eql(true)
+        await setMainExpanded(t, false)
         await t.expect(populationCheckInteractable.exists).notOk()
         if (platform === 'mobile') {
             await screencap(t)
@@ -190,8 +279,6 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.expect(populationCheck.checked).eql(false)
         await t.expect(mainCheck.indeterminate).eql(true)
 
-        // Unchecking Population hid its row, so reaching it again means expanding Main.
-        await setMainExpanded(t, true)
         await t.click(populationCheckInteractable)
         await t.expect(mainCheck.indeterminate).eql(false)
         await t.expect(mainCheck.checked).eql(true)
@@ -210,8 +297,6 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await enterEditMode(t)
         await t.click(mainCheck)
         await t.expect(mainCheck.checked).eql(false)
-        // With nothing in Main selected, its rows are all behind the toggle.
-        await setMainExpanded(t, true)
         await t.click(populationCheckInteractable)
         await t.expect(populationCheck.checked).eql(true)
         await t.expect(mainCheck.indeterminate).eql(true)
@@ -384,18 +469,20 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.expect(mainCheck.indeterminate).eql(true)
     })
 
-    test('expand-persistence', async (t) => {
-        // Expansion is a setting, so it outlives edit mode and the page. Housing is the
-        // category tested, since nothing in it is selected and so all of its rows are behind
-        // the toggle.
+    test('expansion-follows-the-selection-when-edit-mode-opens', async (t) => {
+        /**
+         * Nothing in Housing is selected, so it opens collapsed however it was left; Main, whose
+         * groups are selected, opens expanded so an unchecked one stays on display.
+         */
         await enterEditMode(t)
         await setCategoryExpanded(t, 'housing', true)
+        await t.expect(vacancyCheckInteractable.visible).eql(true)
         await exitEditMode(t)
+
         await enterEditMode(t)
-        await t.expect(vacancyCheckInteractable.visible).eql(true)
-        await safeReload(t)
-        await enterEditMode(t)
-        await t.expect(vacancyCheckInteractable.visible).eql(true)
+        await t.expect(housingExpandButton.exists).ok()
+        await t.click(populationCheckInteractable)
+        await t.expect(mainCollapseButton.exists).ok()
     })
 
     test('search-smoke', async (t) => {

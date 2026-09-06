@@ -15,19 +15,30 @@ export type StatName = (typeof statNames)[number]
 
 export type CategoryIdentifier = (typeof rawStatsTree)[number]['id']
 export type GroupIdentifier = (typeof rawStatsTree)[number]['contents'][number]['id']
+export type SubcategoryIdentifier = NonNullable<(typeof rawStatsTree)[number]['contents'][number]['subcategory']>['id']
 export type Year = Exclude<(typeof rawStatsTree)[number]['contents'][number]['contents'][number]['year'], null>
 export type DataSource = (typeof rawStatsTree)[number]['contents'][number]['contents'][number]['stats_by_source'][number]['stats'][number]['source']
 export type SourceCategoryIdentifier = DataSource['category']
 export type SourceIdentifier = DataSource['name']
 
-export type StatsTree = Category[]
+/**
+ * Neither a category nor a subcategory holds its groups: `allGroups` is the tree, in order,
+ * and each group names both. Everything that narrows the tree -- what a page has, what a
+ * search matches -- filters that one list, and `sectionsOf` regroups whatever survives.
+ */
 export interface Category {
     kind: 'Category'
     id: CategoryIdentifier
     name: string
-    contents: Group[]
-    years: Set<Year | null> // for which years does this category have data
     statPaths: Set<StatPath> // which StatPaths does this category contain
+}
+
+export interface Subcategory {
+    kind: 'Subcategory'
+    id: SubcategoryIdentifier
+    name: string
+    parent: Category
+    statPaths: Set<StatPath> // which StatPaths does this subcategory contain
 }
 
 export interface Group {
@@ -36,6 +47,7 @@ export interface Group {
     name: string
     contents: GroupYear[]
     parent: Category
+    subcategory?: Subcategory
     years: Set<Year | null> // for which years does this group have data
     statPaths: Set<StatPath> // which StatPaths does this group contain
 }
@@ -74,13 +86,33 @@ export interface MetadataStatistic extends BaseStatistic {
 
 export type Statistic = DataStatistic | MetadataStatistic
 
-export const statsTree: StatsTree = rawStatsTree.map(category => (
-    {
-        kind: 'Category',
-        ...category,
-        contents: category.contents.map(group => ({
+export const statsTree: Category[] = rawStatsTree.map(category => ({
+    kind: 'Category',
+    id: category.id,
+    name: category.name,
+    statPaths: new Set(), // set below
+} satisfies Category))
+
+export const allGroups: Group[] = rawStatsTree.flatMap((category, categoryIndex) => {
+    // A run of groups tagged with the same subcategory is that subcategory
+    let subcategory: Subcategory | undefined
+    return category.contents.map((group) => {
+        if (group.subcategory === null) {
+            subcategory = undefined
+        }
+        else if (subcategory?.id !== group.subcategory.id) {
+            subcategory = {
+                kind: 'Subcategory',
+                id: group.subcategory.id,
+                name: group.subcategory.name,
+                parent: statsTree[categoryIndex],
+                statPaths: new Set(), // set below
+            }
+        }
+        return {
             kind: 'Group',
-            ...group,
+            id: group.id,
+            name: group.name,
             contents: group.contents.map(({ year, stats_by_source }) => ({
                 year,
                 stats: stats_by_source.map(({ name, indentedName, stats: s }) => ({
@@ -111,35 +143,31 @@ export const statsTree: StatsTree = rawStatsTree.map(category => (
                 } satisfies MultiSourceStatistic)),
                 parent: undefined as unknown as Group, // set below
             } satisfies GroupYear)),
-            parent: undefined as unknown as Category, // set below
+            parent: statsTree[categoryIndex],
+            subcategory,
             years: new Set(group.contents.map(({ year }) => year)),
             statPaths: new Set(), // set below
-        } satisfies Group)),
-        years: new Set(), // set below
-        statPaths: new Set(), // set below
-    } satisfies Category
-))
+        } satisfies Group
+    })
+})
 
 // For a given year, what statpaths does it include
 export const yearStatPaths = new DefaultMap<Year, Set<StatPath>>(() => new Set())
 
 // Build references
-for (const category of statsTree) {
-    for (const group of category.contents) {
-        group.parent = category
-        for (const yearGroup of group.contents) {
-            yearGroup.parent = group
-            for (const statsBySource of yearGroup.stats) {
-                for (const stat of statsBySource.bySource) {
-                    stat.parent = yearGroup
-                    group.statPaths.add(stat.path)
-                    category.statPaths.add(stat.path)
-                    if (yearGroup.year !== null) {
-                        yearStatPaths.get(yearGroup.year).add(stat.path)
-                    }
+for (const group of allGroups) {
+    for (const yearGroup of group.contents) {
+        yearGroup.parent = group
+        for (const statsBySource of yearGroup.stats) {
+            for (const stat of statsBySource.bySource) {
+                stat.parent = yearGroup
+                group.statPaths.add(stat.path)
+                group.subcategory?.statPaths.add(stat.path)
+                group.parent.statPaths.add(stat.path)
+                if (yearGroup.year !== null) {
+                    yearStatPaths.get(yearGroup.year).add(stat.path)
                 }
             }
-            category.years.add(yearGroup.year)
         }
     }
 }
@@ -148,7 +176,43 @@ function sortYears(year1: Year, year2: Year): number {
     return year2 - year1
 }
 
-export const allGroups = statsTree.flatMap(category => category.contents)
+export const allSubcategories = Array.from(new Set(allGroups.flatMap(group => group.subcategory ?? [])))
+
+export interface CategorySection { category: Category, groups: Group[] }
+export type Section = { kind: 'Group', group: Group } | { kind: 'Subcategory', subcategory: Subcategory, groups: Group[] }
+
+/** Gathers groups into the categories they belong to, in order. */
+export function categorySections(groups: Group[]): CategorySection[] {
+    const sections: CategorySection[] = []
+    for (const group of groups) {
+        const last = sections.at(-1)
+        if (last?.category === group.parent) {
+            last.groups.push(group)
+        }
+        else {
+            sections.push({ category: group.parent, groups: [group] })
+        }
+    }
+    return sections
+}
+
+/** The same, one level down: a run of groups sharing a subcategory becomes one section. */
+export function sectionsOf(groups: Group[]): Section[] {
+    const sections: Section[] = []
+    for (const group of groups) {
+        const last = sections.at(-1)
+        if (group.subcategory === undefined) {
+            sections.push({ kind: 'Group', group })
+        }
+        else if (last?.kind === 'Subcategory' && last.subcategory === group.subcategory) {
+            last.groups.push(group)
+        }
+        else {
+            sections.push({ kind: 'Subcategory', subcategory: group.subcategory, groups: [group] })
+        }
+    }
+    return sections
+}
 export const allYears = Array.from(
     new Set(allGroups
         .flatMap(group => Array.from(group.years))
