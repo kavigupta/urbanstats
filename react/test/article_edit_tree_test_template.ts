@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { categoryCheckbox, categoryToggleButton, enterEditMode, exitEditMode, filterBox, groupCheckbox, groupMemberRow, groupWarning, interactableGroupCheckbox, setCategoryExpanded, sourceCheckbox, yearCheckbox } from './edit_mode_test_utils'
+import { categoryCheckbox, categoryToggleButton, enterEditMode, exitEditMode, filterBox, groupCheckbox, groupMemberRow, groupWarning, interactableGroupCheckbox, setCategoryExpanded, setSubcategoryExpanded, sourceCheckbox, subcategoryCheckbox, yearCheckbox } from './edit_mode_test_utils'
 import { clickUniverseFlag, getLocation, resizeForPlatform, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, warningRowNames } from './test_utils'
 
 const mainCheck = categoryCheckbox('main')
@@ -19,6 +19,15 @@ const housingExpandButton = categoryToggleButton('housing', 'Expand')
 const housingCollapseButton = categoryToggleButton('housing', 'Collapse')
 const vacancyCheckInteractable = interactableGroupCheckbox('vacancy')
 const renterCheckInteractable = interactableGroupCheckbox('rent_or_own_rent')
+// Race is the category with a subcategory in it (the races, which add to 100%) alongside
+// groups that are in none (the segregation statistics).
+const raceCheck = categoryCheckbox('race')
+const raceCompositionCheck = subcategoryCheckbox('race_composition')
+const hispanicCheckInteractable = interactableGroupCheckbox('hispanic')
+// eslint-disable-next-line no-restricted-syntax -- a stat group id, not a css color
+const whiteCheck = groupCheckbox('white')
+const hispanicCheck = groupCheckbox('hispanic')
+const segregationCheckInteractable = interactableGroupCheckbox('homogeneity_250')
 const sourceSectionHeader = Selector('.stats_table div').withExactText('Population Sources')
 const ghslCheck = sourceCheckbox('Population', 'GHSL')
 const year2020Check = yearCheckbox(2020)
@@ -111,6 +120,88 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.expect(mainCheck.checked).eql(false)
         await t.expect(mainCollapseButton.exists).ok()
         await t.expect(populationCheckInteractable.exists).ok()
+    })
+
+    test('subcategory-check-selects-its-groups', async (t) => {
+        /**
+         * The subcategory checkbox stands for its groups the way a category's does, so checking
+         * it leaves the category itself indeterminate -- the segregation groups are still off.
+         */
+        await enterEditMode(t)
+        await setCategoryExpanded(t, 'race', true)
+        await t.expect(raceCompositionCheck.checked).eql(false)
+
+        await t.click(raceCompositionCheck)
+        await t.expect(raceCompositionCheck.checked).eql(true)
+        await t.expect(hispanicCheckInteractable.checked).eql(true)
+        await t.expect(raceCheck.indeterminate).eql(true)
+    })
+
+    test('subcategory-expands-independently-of-its-category', async (t) => {
+        /**
+         * An expanded category shows the subcategory header, not the groups behind it, so a
+         * category of pie charts doesn't unfold into dozens of rows at once.
+         */
+        await enterEditMode(t)
+        await setCategoryExpanded(t, 'race', true)
+        await t.expect(segregationCheckInteractable.exists).ok()
+        await t.expect(hispanicCheckInteractable.exists).notOk()
+
+        await setSubcategoryExpanded(t, 'race_composition', true)
+        await t.expect(hispanicCheckInteractable.exists).ok()
+        await screencap(t)
+
+        // Collapsing the category still takes the whole subcategory with it.
+        await setCategoryExpanded(t, 'race', false)
+        await t.expect(hispanicCheckInteractable.exists).notOk()
+    })
+
+    test('subcategory-expansion-resets-with-edit-mode', async (t) => {
+        // Like a category's, the expansion lasts only as long as edit mode does.
+        await enterEditMode(t)
+        await setCategoryExpanded(t, 'race', true)
+        await setSubcategoryExpanded(t, 'race_composition', true)
+        await exitEditMode(t)
+        await enterEditMode(t)
+        await t.expect(categoryToggleButton('race', 'Expand').exists).ok()
+        await t.expect(hispanicCheckInteractable.exists).notOk()
+    })
+
+    test('subcategory-warning-names-the-subcategory', async (t) => {
+        // One warning for the whole pie chart rather than one per race, since the category
+        // around it has groups that aren't selected and so can't stand in.
+        await enterEditMode(t)
+        await uncheckAllCategories(t)
+        await setCategoryExpanded(t, 'race', true)
+        await t.click(raceCompositionCheck)
+        await t.click(year2020Check)
+        await exitEditMode(t)
+        await t.expect(await warningRowNames()).eql(['Racial Composition'])
+    })
+
+    test('search-matches-a-subcategory-name', async (t) => {
+        // The name is on the tree, so it has to be searchable; matching it keeps the groups
+        // underneath it, which don't have "racial" in their own names.
+        await enterEditMode(t)
+        await t.typeText(filterBox, 'racial comp')
+        await t.expect(hispanicCheckInteractable.exists).ok()
+        await t.expect(segregationCheckInteractable.exists).notOk()
+    })
+
+    test('search-scopes-a-subcategory-checkbox-to-what-it-shows', async (t) => {
+        // Like the category checkbox, the subcategory one acts on the groups the search leaves
+        // visible rather than on the ones it is hiding.
+        await enterEditMode(t)
+        // eslint-disable-next-line no-restricted-syntax -- a stat group name, not a css color
+        await t.typeText(filterBox, 'white')
+        await t.expect(raceCompositionCheck.checked).eql(false)
+        await t.click(raceCompositionCheck)
+        await t.expect(raceCompositionCheck.checked).eql(true)
+
+        await t.selectText(filterBox).pressKey('delete')
+        await t.expect(whiteCheck.checked).eql(true)
+        await t.expect(hispanicCheck.checked).eql(false)
+        await t.expect(raceCompositionCheck.indeterminate).eql(true)
     })
 
     test('indeterminate-cycle-expanded', async (t) => {

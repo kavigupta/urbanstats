@@ -3,8 +3,8 @@ import { useContext, useMemo, useState } from 'react'
 import { dataSources } from '../data/statistics_tree'
 import { Navigator } from '../navigation/Navigator'
 
-import { isStagedChange, Settings, settingValue, sourceEnabledKey, StatGroupKey, StatYearKey, StatSourceKey, useSettings, useSettingsInfo } from './settings'
-import { allGroups, allYears, AmbiguousSources, Category, CategorySection, categorySections, DataSource, DataSourceCheckboxes, findAmbiguousSourcesAll, Group, SourceIdentifier, sourceDisambiguation, statParents, StatPath, Year, yearStatPaths } from './statistic-tree'
+import { isStagedChange, Settings, settingValue, sourceEnabledKey, StatCategorySavedIndeterminateKey, StatGroupKey, StatYearKey, StatSourceKey, StatSubcategorySavedIndeterminateKey, useSettings, useSettingsInfo } from './settings'
+import { allGroups, allYears, AmbiguousSources, Category, CategorySection, categorySections, DataSource, DataSourceCheckboxes, findAmbiguousSourcesAll, Group, sectionsOf, SourceIdentifier, sourceDisambiguation, statParents, StatPath, Subcategory, Year, yearStatPaths } from './statistic-tree'
 
 export type StatGroupSettings = Record<StatGroupKey | StatYearKey | StatSourceKey, boolean>
 
@@ -65,7 +65,7 @@ export function useVisibleRows<T>(rows: (settings: StatGroupSettings) => T, show
     )
 }
 
-function categoryStatus(enabled: boolean[]): boolean | 'indeterminate' {
+function checkboxStatus(enabled: boolean[]): boolean | 'indeterminate' {
     const checkedGroups = enabled.filter(value => value).length
 
     switch (checkedGroups) {
@@ -78,48 +78,77 @@ function categoryStatus(enabled: boolean[]): boolean | 'indeterminate' {
     }
 }
 
+/** A tri-state checkbox standing for the groups underneath it. */
+type StatNode = Category | Subcategory
+
+/** Every group under the node, whatever a page or a search would leave out. */
+function nodeGroups(node: StatNode): Group[] {
+    return allGroups.filter(group => node.kind === 'Category' ? group.parent === node : group.subcategory === node)
+}
+
+function savedIndeterminateKey(node: StatNode): StatCategorySavedIndeterminateKey | StatSubcategorySavedIndeterminateKey {
+    return node.kind === 'Category'
+        ? `stat_category_saved_indeterminate_${node.id}`
+        : `stat_subcategory_saved_indeterminate_${node.id}`
+}
+
 function changeStatGroupSetting(settings: Settings, group: Group, newValue: boolean): void {
     settings.setSetting(`show_stat_group_${group.id}`, newValue)
     saveIndeterminateState(settings, group.parent)
+    if (group.subcategory !== undefined) {
+        saveIndeterminateState(settings, group.subcategory)
+    }
 }
 
-function saveIndeterminateState(settings: Settings, category: Category): void {
+function saveIndeterminateState(settings: Settings, node: StatNode): void {
     settings.setSetting(
-        `stat_category_saved_indeterminate_${category.id}`,
-        allGroups
-            .filter(group => group.parent === category && settings.get(`show_stat_group_${group.id}`))
-            .map(group => group.id),
+        savedIndeterminateKey(node),
+        nodeGroups(node)
+            .map(group => group.id)
+            .filter(id => settings.get(`show_stat_group_${id}`)),
     )
 }
 
 export interface ExpansionState {
-    isExpanded: (category: Category) => boolean
-    setExpanded: (category: Category, expanded: boolean) => void
+    isExpanded: (node: StatNode) => boolean
+    setExpanded: (node: StatNode, expanded: boolean) => void
+}
+
+function expansionKey(node: StatNode): string {
+    return `${node.kind}_${node.id}`
 }
 
 /**
- * Which categories are open, for as long as edit mode lasts. A category starts open when it has a
- * selected group, or one staging is changing, which a closed category would hide.
+ * Which categories and subcategories are open, for as long as edit mode lasts. A node starts open
+ * when it has a selected group, or one staging is changing, which a closed node would hide.
  */
 export function useExpansionState(): ExpansionState {
     const settings = useContext(Settings.Context)
     const availableGroups = useAvailableGroups()
-    const [expanded, setExpanded] = useState(() => new Set(availableGroups
-        .filter((group) => {
+    const [expanded, setExpanded] = useState(() => {
+        const open = new Set<string>()
+        for (const group of availableGroups) {
             const info = settings.getSettingInfo(`show_stat_group_${group.id}`)
-            return settingValue(info) || isStagedChange(info)
-        })
-        .map(group => group.parent.id)))
+            if (!settingValue(info) && !isStagedChange(info)) {
+                continue
+            }
+            open.add(expansionKey(group.parent))
+            if (group.subcategory !== undefined) {
+                open.add(expansionKey(group.subcategory))
+            }
+        }
+        return open
+    })
     return {
-        isExpanded: category => expanded.has(category.id),
-        setExpanded: (category, value) => {
+        isExpanded: node => expanded.has(expansionKey(node)),
+        setExpanded: (node, value) => {
             setExpanded((current) => {
                 const next = new Set(current)
                 if (value) {
-                    next.add(category.id)
+                    next.add(expansionKey(node))
                 }
                 else {
-                    next.delete(category.id)
+                    next.delete(expansionKey(node))
                 }
                 return next
             })
@@ -133,11 +162,16 @@ export function useExpansionState(): ExpansionState {
  * indeterminate -> checked -> unchecked -(if nonempty saved indeterminate)-> indeterminate
  *                                       -(if empty saved indeterminate)-> checked
  */
-function toggleCategorySetting(settings: Settings, expansion: ExpansionState, category: Category, toggledGroups: Group[], availableGroups: Group[], status: boolean | 'indeterminate'): void {
+function toggleNodeSetting(settings: Settings, expansion: ExpansionState, node: StatNode, toggledGroups: Group[], availableGroups: Group[], status: boolean | 'indeterminate'): void {
     const setAllGroups = (value: (group: Group) => boolean): void => {
         toggledGroups.forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, value(group)) })
     }
-    const expandCategory = (): void => { expansion.setExpanded(category, true) }
+    const expandCategory = (): void => {
+        expansion.setExpanded(node.kind === 'Category' ? node : node.parent, true)
+        if (node.kind === 'Subcategory') {
+            expansion.setExpanded(node, true)
+        }
+    }
     switch (status) {
         case 'indeterminate':
             setAllGroups(() => true)
@@ -147,7 +181,7 @@ function toggleCategorySetting(settings: Settings, expansion: ExpansionState, ca
             setAllGroups(() => false)
             break
         case false:
-            const savedDeterminate = new Set(settings.get(`stat_category_saved_indeterminate_${category.id}`))
+            const savedDeterminate = new Set(settings.get(savedIndeterminateKey(node)))
             // The saved state can refer to groups that don't exist on this page, which would restore nothing
             if (availableGroups.every(group => !savedDeterminate.has(group.id))) {
                 setAllGroups(() => true)
@@ -158,6 +192,9 @@ function toggleCategorySetting(settings: Settings, expansion: ExpansionState, ca
             expandCategory() // Either way should expand to show the selection
             break
     }
+    if (node.kind === 'Subcategory') {
+        saveIndeterminateState(settings, node.parent)
+    }
 }
 
 export interface GroupTreeState {
@@ -167,7 +204,8 @@ export interface GroupTreeState {
     highlight: boolean
 }
 
-export interface CategoryTreeState {
+export interface SubcategoryTreeState {
+    subcategory: Subcategory
     status: boolean | 'indeterminate'
     toggle: () => void
     highlight: boolean
@@ -176,28 +214,60 @@ export interface CategoryTreeState {
     groups: GroupTreeState[]
 }
 
+export type SectionTreeState =
+    { kind: 'Group', group: GroupTreeState } |
+    ({ kind: 'Subcategory' } & SubcategoryTreeState)
+
+export interface CategoryTreeState {
+    status: boolean | 'indeterminate'
+    toggle: () => void
+    highlight: boolean
+    expanded: boolean
+    setExpanded: (expanded: boolean) => void
+    sections: SectionTreeState[]
+}
+
 export function useCategoryTreeState({ category, groups: toggledGroups }: CategorySection, expansion: ExpansionState): CategoryTreeState {
     const settings = useContext(Settings.Context)
     const available = useAvailableGroupSet()
     const availableGroups = toggledGroups.filter(group => available.has(group))
     const info = useSettingsInfo(groupKeys(availableGroups))
 
-    const groups = availableGroups.map(group => ({
+    const groupState = (group: Group): GroupTreeState => ({
         group,
         enabled: settingValue(info[`show_stat_group_${group.id}`]),
         setEnabled: (newValue: boolean) => { changeStatGroupSetting(settings, group, newValue) },
         highlight: isStagedChange(info[`show_stat_group_${group.id}`]),
-    }))
+    })
 
-    const status = categoryStatus(groups.map(group => group.enabled))
+    const sections = sectionsOf(availableGroups).map((section): SectionTreeState => {
+        if (section.kind === 'Group') {
+            return { kind: 'Group', group: groupState(section.group) }
+        }
+        const groups = section.groups.map(groupState)
+        const status = checkboxStatus(groups.map(group => group.enabled))
+        return {
+            kind: 'Subcategory',
+            subcategory: section.subcategory,
+            status,
+            toggle: () => { toggleNodeSetting(settings, expansion, section.subcategory, toggledGroups.filter(group => group.subcategory === section.subcategory), section.groups, status) },
+            highlight: groups.some(group => group.highlight),
+            expanded: expansion.isExpanded(section.subcategory),
+            setExpanded: (newValue: boolean) => { expansion.setExpanded(section.subcategory, newValue) },
+            groups,
+        }
+    })
+
+    const enabled = sections.flatMap(section => section.kind === 'Group' ? [section.group.enabled] : section.groups.map(group => group.enabled))
+    const status = checkboxStatus(enabled)
 
     return {
         status,
-        toggle: () => { toggleCategorySetting(settings, expansion, category, toggledGroups, availableGroups, status) },
-        highlight: groups.some(group => group.highlight),
+        toggle: () => { toggleNodeSetting(settings, expansion, category, toggledGroups, availableGroups, status) },
+        highlight: sections.some(section => section.kind === 'Group' ? section.group.highlight : section.highlight),
         expanded: expansion.isExpanded(category),
         setExpanded: (newValue: boolean) => { expansion.setExpanded(category, newValue) },
-        groups,
+        sections,
     }
 }
 
@@ -206,14 +276,18 @@ function searchMatch(searchTerm: string, target: string): boolean {
 }
 
 /**
- * A group matches when its own name does, or when its category's does. A section keeps every
- * matching group, including ones this page has no statistics for, so while searching the
- * category checkbox acts on what the search leaves rather than on what the page happens to
- * have; a section with nothing the page has is dropped instead of shown empty.
+/**
+ * A group matches when its own name does, or when its category's or subcategory's does. A
+ * section keeps every matching group, including ones this page has no statistics for, so while
+ * searching the category and subcategory checkboxes act on what the search leaves rather than
+ * on what the page happens to have; a section with nothing the page has is dropped instead of
+ * shown empty.
  */
 export function sectionsMatchingSearch(searchTerm: string, availableGroups: Set<Group>): CategorySection[] {
     return categorySections(allGroups.filter(group =>
-        searchMatch(searchTerm, group.parent.name) || searchMatch(searchTerm, group.name)))
+        searchMatch(searchTerm, group.parent.name)
+        || searchMatch(searchTerm, group.name)
+        || (group.subcategory !== undefined && searchMatch(searchTerm, group.subcategory.name))))
         .filter(section => section.groups.some(group => availableGroups.has(group)))
 }
 
@@ -252,11 +326,11 @@ export type MissingGroupReason =
     ({ kind: 'yearAndSource', years: Year[] } & MissingSources)
 
 export interface MissingGroup {
-    groupOrCategory: Group | Category
+    groupOrCategory: Group | Subcategory | Category
     reason: MissingGroupReason
 }
 
-/** Groups only consolidate into their category when their warnings would read identically. */
+/** Groups only consolidate into their subcategory or category when their warnings would read identically. */
 function reasonKey(reason: MissingGroupReason): string {
     switch (reason.kind) {
         case 'year':
@@ -393,13 +467,14 @@ export function useMissingGroupReasonsOfEveryGroup(): { group: Group, reason: Mi
 }
 
 /**
- * If all of the groups in a category are present in-order in the list, replace them with that category
+ * If all of the groups in a category are present in-order in the list, replace them with that category;
+ * otherwise do the same for each of its subcategories.
  *
  * `groups` **must** be a subset of available groups
  */
-function consolidateGroupsIn(availableGroups: Group[]): (groups: Group[]) => (Group | Category)[] {
+function consolidateGroupsIn(availableGroups: Group[]): (groups: Group[]) => (Group | Subcategory | Category)[] {
     return (groups) => {
-        const result: (Group | Category)[] = []
+        const result: (Group | Subcategory | Category)[] = []
         let indexOfGroup = 0
         for (const { category, groups: categoryContents } of categorySections(availableGroups)) {
             let indexInCategory = 0
@@ -414,8 +489,8 @@ function consolidateGroupsIn(availableGroups: Group[]): (groups: Group[]) => (Gr
                 result.push(category)
             }
             else {
-                // If not, push all the groups we iterated through
-                result.push(...groups.slice(startIndexOfGroup, indexOfGroup))
+                // If not, push all the groups we iterated through, consolidated a level down
+                result.push(...consolidateSubcategories(groups.slice(startIndexOfGroup, indexOfGroup), categoryContents))
             }
             if (indexOfGroup > groups.length) {
                 throw new Error('Something has gone terribly wrong')
@@ -424,6 +499,27 @@ function consolidateGroupsIn(availableGroups: Group[]): (groups: Group[]) => (Gr
         result.push(...groups.slice(indexOfGroup))
         return result
     }
+}
+
+/** The same, one level down: a run covering all of a subcategory's available groups becomes that subcategory. */
+function consolidateSubcategories(groups: Group[], categoryContents: Group[]): (Group | Subcategory)[] {
+    const availableIn = new Map(sectionsOf(categoryContents)
+        .flatMap(section => section.kind === 'Subcategory' ? [[section.subcategory, section.groups] as const] : []))
+    const result: (Group | Subcategory)[] = []
+    let index = 0
+    while (index < groups.length) {
+        const subcategory = groups[index].subcategory
+        const contents = subcategory === undefined ? undefined : availableIn.get(subcategory)
+        if (subcategory !== undefined && contents?.every((group, offset) => groups[index + offset] === group)) {
+            result.push(subcategory)
+            index += contents.length
+        }
+        else {
+            result.push(groups[index])
+            index++
+        }
+    }
+    return result
 }
 
 /**
