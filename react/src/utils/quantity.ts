@@ -285,11 +285,20 @@ function wordFor(unit: NamedUnit, singular: boolean): string {
     return singular ? words.one : words.many
 }
 
-function computedUnit(dimensions: Dimension[], toBaseUnits: number): StoredUnit {
-    return { unit: { dimensions, decoration: { kind: 'none' }, times: 1, baseIsScalar: true }, toBaseUnits }
+function computedUnit(dimensions: Dimension[], toBaseUnits: number, times: Coefficient): StoredUnit {
+    return { unit: { dimensions, decoration: { kind: 'none' }, times, baseIsScalar: true }, toBaseUnits }
 }
 
-export const dimensionless = computedUnit([], 1)
+export const dimensionless = computedUnit([], 1, 1)
+
+/**
+ * For products we do not propagate the exact times field, that being ill defined. We do propagate
+ * whether it is 0, which is whether the unit is a difference, and is what renders it signed. A
+ * product is a difference if any of its operands are.
+ */
+function timesOfAProduct(...operands: Unit[]): Coefficient {
+    return operands.some(({ times }) => times === 0) ? 0 : 1
+}
 
 /**
  * A power that arithmetic has left a hair off a whole one: a cube raised to a tenth and then to
@@ -330,7 +339,7 @@ export function unitProduct(left: StoredUnit, right: StoredUnit, rightPower: 1 |
     const toBaseUnits = rightPower === 1
         ? left.toBaseUnits * right.toBaseUnits
         : left.toBaseUnits / right.toBaseUnits
-    return computedUnit(gathered(dimensions), toBaseUnits)
+    return computedUnit(gathered(dimensions), toBaseUnits, timesOfAProduct(left.unit, right.unit))
 }
 
 export function unitPower(stored: StoredUnit, exponent: number): StoredUnit | undefined {
@@ -338,7 +347,7 @@ export function unitPower(stored: StoredUnit, exponent: number): StoredUnit | un
         return undefined
     }
     const raised = stored.unit.dimensions.map(({ baseUnit, power }) => ({ baseUnit, power: power * exponent }))
-    return computedUnit(gathered(raised), Math.pow(stored.toBaseUnits, exponent))
+    return computedUnit(gathered(raised), Math.pow(stored.toBaseUnits, exponent), timesOfAProduct(stored.unit))
 }
 
 /**
