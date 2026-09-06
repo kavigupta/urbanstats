@@ -2,7 +2,7 @@ import React, { CSSProperties, ReactNode, useMemo, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { checkboxCategoryName, sourceEnabledKey, useIsStaged, useUnitSettings } from '../page_template/settings'
-import { GroupTreeState, useAvailableYears, useCategoriesMatchingSearch, useCategoryTreeState, useDataSourceCheckboxes, useExpandCategoriesHidingStagedChanges } from '../page_template/statistic-settings'
+import { ExpansionState, GroupTreeState, useAvailableYears, useCategoriesMatchingSearch, useCategoryTreeState, useDataSourceCheckboxes, useExpansionState } from '../page_template/statistic-settings'
 import { Category, statParents } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 import { HumanReadableName } from '../utils/human-readable-element'
@@ -256,8 +256,9 @@ function EditCategory(props: {
     rowsByGroup: Map<string, EditRow[]>
     warningsByGroup: Map<string, ReactNode>
     searching: boolean
+    expansion: ExpansionState
 }): ReactNode {
-    const tree = useCategoryTreeState(props.category)
+    const tree = useCategoryTreeState(props.category, props.expansion)
     const expanded = props.searching || tree.expanded
     const segments = editBodySegments(categoryBodyRows(tree.groups, props.rowsByGroup, props.warningsByGroup), expanded)
     const anythingToExpand = segments.some(segment => segment.collapsible)
@@ -415,9 +416,8 @@ export interface EditModeState {
 /**
  * Edit mode is deliberately not a setting, so it resets on navigation or reload. It opens on
  * its own whenever the page enters staging mode (e.g. from a settings link) so the pending
- * changes are visible on the table, and expands the categories that would otherwise hide one.
- * Leaving staging only closes it when the user does so via the Discard/Apply buttons, which
- * double as Done.
+ * changes are visible on the table. Leaving staging only closes it when the user does so via
+ * the Discard/Apply buttons, which double as Done.
  */
 export function useEditModeState(): EditModeState {
     const staged = useIsStaged()
@@ -429,8 +429,6 @@ export function useEditModeState(): EditModeState {
             setEditMode(true)
         }
     }
-
-    useExpandCategoriesHidingStagedChanges(editMode && staged)
 
     const [filter, setFilter] = useState('')
 
@@ -460,6 +458,7 @@ export function EditTable(props: {
     const categories = useCategoriesMatchingSearch(filter)
     const staged = useIsStaged()
     const warningsByGroup = useWarningsByGroup()
+    const expansion = useExpansionState()
 
     const editModeHeader: EditModeOpenHeader = {
         open: true,
@@ -485,6 +484,7 @@ export function EditTable(props: {
                     rowsByGroup={props.rowsByGroup}
                     warningsByGroup={warningsByGroup}
                     searching={filter !== ''}
+                    expansion={expansion}
                 />
             ))}
         </TableFrame>

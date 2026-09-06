@@ -130,9 +130,6 @@ export function editModeSharedTests(spec: {
 
         // The tree the user fixes this with is right there, so there's nothing to warn about.
         await t.expect(table.find('[data-test-id=article-warning]').exists).notOk()
-        // A collapsed category keeps its rows mounted for the height transition, so the check is
-        // for rows on display rather than rows in the DOM.
-        await t.expect(table.find('.testing-statistic-value:not([inert] *)').exists).notOk()
         await t.expect(mainCategory.exists).ok()
 
         await t.click(doneButton)

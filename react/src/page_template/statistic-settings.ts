@@ -1,9 +1,9 @@
-import { useContext, useEffect, useMemo } from 'react'
+import { useContext, useMemo, useState } from 'react'
 
 import { dataSources } from '../data/statistics_tree'
 import { Navigator } from '../navigation/Navigator'
 
-import { isStagedChange, Settings, settingValue, sourceEnabledKey, StatGroupKey, StatYearKey, StatSourceKey, useSetting, useSettings, useSettingsInfo } from './settings'
+import { isStagedChange, Settings, settingValue, sourceEnabledKey, StatGroupKey, StatYearKey, StatSourceKey, useSettings, useSettingsInfo } from './settings'
 import { allGroups, allYears, AmbiguousSources, Category, DataSource, DataSourceCheckboxes, findAmbiguousSourcesAll, Group, SourceIdentifier, sourceDisambiguation, statParents, StatPath, statsTree, Year, yearStatPaths } from './statistic-tree'
 
 export type StatGroupSettings = Record<StatGroupKey | StatYearKey | StatSourceKey, boolean>
@@ -92,17 +92,55 @@ function saveIndeterminateState(settings: Settings, category: Category): void {
     )
 }
 
+export interface ExpansionState {
+    isExpanded: (category: Category) => boolean
+    setExpanded: (category: Category, expanded: boolean) => void
+}
+
+/**
+ * Which categories are open, for as long as edit mode lasts. A category starts open when it has a
+ * selected group, or one staging is changing, which a closed category would hide.
+ */
+export function useExpansionState(): ExpansionState {
+    const settings = useContext(Settings.Context)
+    const { categories, groups: availableGroups } = useAvailableTree()
+    const [expanded, setExpanded] = useState(() => new Set(categories
+        .filter(category => category.contents.some((group) => {
+            if (!availableGroups.has(group)) {
+                return false
+            }
+            const info = settings.getSettingInfo(`show_stat_group_${group.id}`)
+            return settingValue(info) || isStagedChange(info)
+        }))
+        .map(category => category.id)))
+    return {
+        isExpanded: category => expanded.has(category.id),
+        setExpanded: (category, value) => {
+            setExpanded((current) => {
+                const next = new Set(current)
+                if (value) {
+                    next.add(category.id)
+                }
+                else {
+                    next.delete(category.id)
+                }
+                return next
+            })
+        },
+    }
+}
+
 /**
  * State machine:
  *
  * indeterminate -> checked -> unchecked -(if nonempty saved indeterminate)-> indeterminate
  *                                       -(if empty saved indeterminate)-> checked
  */
-function toggleCategorySetting(settings: Settings, category: Category, availableGroups: Group[], status: boolean | 'indeterminate'): void {
+function toggleCategorySetting(settings: Settings, expansion: ExpansionState, category: Category, availableGroups: Group[], status: boolean | 'indeterminate'): void {
     const setAllGroups = (value: (group: Group) => boolean): void => {
         category.contents.forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, value(group)) })
     }
-    const expandCategory = (): void => { settings.setSetting(`stat_category_expanded_${category.id}`, true) }
+    const expandCategory = (): void => { expansion.setExpanded(category, true) }
     switch (status) {
         case 'indeterminate':
             setAllGroups(() => true)
@@ -141,11 +179,10 @@ export interface CategoryTreeState {
     groups: GroupTreeState[]
 }
 
-export function useCategoryTreeState(category: Category): CategoryTreeState {
+export function useCategoryTreeState(category: Category, expansion: ExpansionState): CategoryTreeState {
     const settings = useContext(Settings.Context)
     const availableGroups = useAvailableGroups(category)
     const info = useSettingsInfo(groupKeys(availableGroups))
-    const [expanded, setExpanded] = useSetting(`stat_category_expanded_${category.id}`)
 
     const groups = availableGroups.map(group => ({
         group,
@@ -158,42 +195,12 @@ export function useCategoryTreeState(category: Category): CategoryTreeState {
 
     return {
         status,
-        toggle: () => { toggleCategorySetting(settings, category, availableGroups, status) },
+        toggle: () => { toggleCategorySetting(settings, expansion, category, availableGroups, status) },
         highlight: groups.some(group => group.highlight),
-        expanded,
-        setExpanded,
+        expanded: expansion.isExpanded(category),
+        setExpanded: (newValue: boolean) => { expansion.setExpanded(category, newValue) },
         groups,
     }
-}
-
-/**
- * Expands every category that would otherwise hide a change staging is making: a collapsed
- * category shows only its selected groups, so a group staging turns off leaves the category
- * highlighted with nothing behind it to see.
- *
- * Only acts when `active` becomes true (edit mode opening), so the user can collapse such a
- * category again while staging is still going on.
- */
-export function useExpandCategoriesHidingStagedChanges(active: boolean): void {
-    const settings = useContext(Settings.Context)
-    const { categories, groups: availableGroups } = useAvailableTree()
-    useEffect(() => {
-        if (!active) {
-            return
-        }
-        for (const category of categories) {
-            const hidesStagedChange = category.contents.some((group) => {
-                if (!availableGroups.has(group)) {
-                    return false
-                }
-                const info = settings.getSettingInfo(`show_stat_group_${group.id}`)
-                return isStagedChange(info) && !settingValue(info)
-            })
-            if (hidesStagedChange) {
-                settings.setSetting(`stat_category_expanded_${category.id}`, true)
-            }
-        }
-    }, [active, categories, availableGroups, settings])
 }
 
 function searchMatch(searchTerm: string, target: string): boolean {
