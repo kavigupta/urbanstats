@@ -2,7 +2,7 @@
 # This version for compatibility with pandas
 # Pinned by digest because the tag moves, which invalidates the entire build cache.
 # Must stay on bookworm to match the snapshot repo below.
-# slim, because the e2e jobs only need python for tests/check_images.py, and the
+# slim, because the e2e jobs only need python for tests/check_assets.py, and the
 # non-slim base's build toolchain is 330MB of the image every shard pulls.
 FROM python:3.10-slim-bookworm@sha256:7ed92b32353e8d8bd865b5ba811e0315d3999c3b57b1c2df2b504a359d4a1707
 
@@ -30,6 +30,8 @@ RUN apt-get -y update \
     && apt-get -y install \
         chromium=143.* chromium-common=143.* \
         xvfb \
+        # so a --docker run can be watched over VNC
+        x11vnc \
         sqlite3 \
         fluxbox \
         # the checkout step clones inside the container, and the runner diffs against the

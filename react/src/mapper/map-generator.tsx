@@ -431,7 +431,7 @@ async function loadMapResult({ mapResultMain, universe, geographyKind, cache, la
     const { opaqueType, value } = mapResultMain
     const visuals = mapVisuals(mapResultMain)
     const colors = visuals.colors
-    const clusterCategoryColors = visuals.ramp?.colors ?? []
+    const clusterCategoryColors = visuals.categoryColors ?? []
     const clusterRampBins = visuals.bins ?? []
     const ramp: RampToDisplay = opaqueType === 'cMapRGB'
         ? { type: 'label', value: value.label }

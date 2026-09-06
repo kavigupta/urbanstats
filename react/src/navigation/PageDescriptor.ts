@@ -8,8 +8,8 @@ import { ArticleRow, loadArticles } from '../components/load-article'
 import type { QuizPanel } from '../components/quiz-panel'
 import statnames from '../data/statistic_name_list'
 import type { DataCreditPanel } from '../data-credit'
+import type { AssetDiffViewerPanel } from '../dev/AssetDiffViewerPanel'
 import type { EmbedPreviewPanel } from '../dev/EmbedPreviewPanel'
-import type { ScreenshotDiffViewerPanel } from '../dev/ScreenshotDiffViewerPanel'
 import { loadJSON } from '../load_json'
 import type { DebugMapTextBoxPanel } from '../mapper/components/DebugMapTextBox'
 import type { MapperPanel } from '../mapper/components/MapperPanel'
@@ -193,7 +193,7 @@ const editorSchema = z.object({
     mode: z.optional(z.enum(['uss', 'mapper'])),
 })
 
-const screenshotDiffViewerSchema = z.object({
+const assetDiffViewerSchema = z.object({
     artifactId: z.string(),
     hash: z.string(),
     index: z.optional(z.coerce.number()),
@@ -218,7 +218,7 @@ export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('mapper') }).and(mapperSchema),
     z.object({ kind: z.literal('editor') }).and(editorSchema),
     z.object({ kind: z.literal('oauthCallback'), params: z.record(z.string()) }),
-    z.object({ kind: z.literal('screenshotDiffViewer') }).and(screenshotDiffViewerSchema),
+    z.object({ kind: z.literal('assetDiffViewer') }).and(assetDiffViewerSchema),
     z.object({ kind: z.literal('embedPreview') }).and(embedPreviewSchema),
 ])
 
@@ -256,7 +256,7 @@ export type PageData =
         descriptor?: PageDescriptor // If descriptor is not present, we could not parse it
     }
     | { kind: 'initialLoad', descriptor: PageDescriptor }
-    | { kind: 'screenshotDiffViewer', artifactId: string, hash: string, index: number, panel: typeof ScreenshotDiffViewerPanel }
+    | { kind: 'assetDiffViewer', artifactId: string, hash: string, index: number, panel: typeof AssetDiffViewerPanel }
     | { kind: 'embedPreview', target: string, ogPort: number, panel: typeof EmbedPreviewPanel }
 
 export function pageDescriptorFromURL(url: URL): PageDescriptor {
@@ -298,8 +298,8 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
             return { kind: 'editor', ...editorSchema.parse(params) }
         case '/oauth-callback.html':
             return { kind: 'oauthCallback', params }
-        case '/screenshot-diff-viewer.html':
-            return { kind: 'screenshotDiffViewer', ...screenshotDiffViewerSchema.parse(params) }
+        case '/asset-diff-viewer.html':
+            return { kind: 'assetDiffViewer', ...assetDiffViewerSchema.parse(params) }
         case '/embed-preview.html':
             return { kind: 'embedPreview', ...embedPreviewSchema.parse(params) }
         default:
@@ -426,8 +426,8 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
         case 'initialLoad':
         case 'error':
             return pageDescriptor.url
-        case 'screenshotDiffViewer':
-            pathname = '/screenshot-diff-viewer.html'
+        case 'assetDiffViewer':
+            pathname = '/asset-diff-viewer.html'
             searchParams = {
                 artifactId: pageDescriptor.artifactId,
                 hash: pageDescriptor.hash,
@@ -811,12 +811,12 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 effects: () => undefined,
             }
         }
-        case 'screenshotDiffViewer':
+        case 'assetDiffViewer':
             return {
                 pageData: {
                     ...newDescriptor,
                     index: newDescriptor.index ?? 0,
-                    panel: (await import('../dev/ScreenshotDiffViewerPanel')).ScreenshotDiffViewerPanel,
+                    panel: (await import('../dev/AssetDiffViewerPanel')).AssetDiffViewerPanel,
                 },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
@@ -876,8 +876,8 @@ export function pageTitle(pageData: PageData): string {
             return pageData.result.success ? 'Signed In' : 'Sign In Failed'
         case 'error':
             return 'Error'
-        case 'screenshotDiffViewer':
-            return 'Screenshot Diff Viewer'
+        case 'assetDiffViewer':
+            return 'Asset Diff Viewer'
         case 'embedPreview':
             return 'Embed Preview'
     }

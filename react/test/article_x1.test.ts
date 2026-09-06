@@ -8,7 +8,7 @@ import {
     urbanstatsFixture,
     getLocation,
     clickMapFeature,
-    downloadOrCheckString,
+    saveString,
     waitForLoading,
     downloadCSV,
     withInterceptedRequests,
@@ -164,7 +164,7 @@ urbanstatsFixture('csv-export', `/article.html?longname=Rafael+Pena+CDP%2C+Texas
 test('download-article-csv-settings-ignored', async (t) => {
     const csvContent = await downloadCSV(t)
 
-    await downloadOrCheckString(t, csvContent, 'csv-export-california-article', 'csv', false)
+    saveString(t, csvContent, 'csv-export-california-article', 'csv', false)
 })
 
 test('loading indicator', async (t) => {

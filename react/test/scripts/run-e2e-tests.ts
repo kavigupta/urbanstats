@@ -1,4 +1,5 @@
 import fs from 'fs/promises'
+import path from 'path'
 
 import chalkTemplate from 'chalk-template'
 import { execa } from 'execa'
@@ -21,6 +22,8 @@ const options = argumentParser({
         headless: booleanArgument({ defaultValue: true }),
         video: booleanArgument({ defaultValue: false }),
         compare: booleanArgument({ defaultValue: false }),
+        // Overwrite the reference assets with what this run produced, for the tests that passed.
+        write: booleanArgument({ defaultValue: false }),
         timeLimitSeconds: z.optional(z.coerce.number().int()), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
         tries: z.optional(z.coerce.number().int()).default(1), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
         baseRef: z.optional(z.string()),
@@ -61,6 +64,10 @@ if (options.headless) {
     void execa('Xvfb', [':10', '-ac'])
     process.env.DISPLAY = ':10'
     void execa('bash', ['-c', 'fluxbox >/dev/null 2>&1'])
+    if (process.env.URBANSTATS_VNC_PASSWORD) {
+        // Retries because Xvfb above may not be listening yet
+        void execa('bash', ['-c', 'until x11vnc -display :10 -rfbport "$URBANSTATS_VNC_PORT" -passwd "$URBANSTATS_VNC_PASSWORD" -localhost -forever -shared -quiet; do sleep 0.2; done'])
+    }
 }
 
 if (options.proxy) {
@@ -177,7 +184,7 @@ async function runTest(test: string): Promise<TestResult> {
         ].join(' ')}`])
         // Explicitly interpolate test here so we don't add the error to the directory
         // Pattern is only used for take on fail, we make our own pattern otherwise
-        .screenshots(`screenshots/${test}`, true, `\${BROWSER}/\${TEST}.error.png`)
+        .screenshots(`test_assets/${test}`, true, `\${BROWSER}/\${TEST}.error.png`)
 
     if (options.video) {
         runner = runner.video(`videos/${test}`, {
@@ -186,7 +193,7 @@ async function runTest(test: string): Promise<TestResult> {
     }
 
     // Remove artifacts for test
-    await Promise.all(globSync(`{screenshots,delta,videos,changed_screenshots}/${test}/**`, { nodir: true }).map(file => fs.rm(file)))
+    await Promise.all(globSync(`{test_assets,delta,videos,changed_assets}/${test}/**`, { nodir: true }).map(file => fs.rm(file)))
 
     // Reset TOTP wait
     await setTOTPWait(test, 0)
@@ -205,43 +212,61 @@ async function runTest(test: string): Promise<TestResult> {
 
     const result = await withTimeout(runningTests, async () => timeLimitSeconds + await getTOTPWait(test))
 
-    const screenshotsPassed = await maybeCompare(test, result.status === 'ran' && result.assertionsPassed)
+    const assetsPassed = await maybeCompare(test, result.status === 'ran' && result.assertionsPassed)
 
     if (result.status === 'timeout') {
         return { ...result, timeLimitSeconds }
     }
 
-    // A test that fails stops early, so its screenshots aren't comparable
+    // A test that fails stops early, so its assets aren't comparable
     if (!result.assertionsPassed) {
         return { status: 'failure', duration: result.duration, reason: 'assertions' }
     }
 
-    if (!screenshotsPassed) {
-        return { status: 'failure', duration: result.duration, reason: 'screenshots' }
+    if (!assetsPassed) {
+        return { status: 'failure', duration: result.duration, reason: 'assets' }
     }
 
     return { status: 'success', duration: result.duration }
 }
 
 async function maybeCompare(test: string, success: boolean): Promise<boolean> {
-    if (options.compare) {
+    if (options.compare || options.write) {
         // If there were no failures, delete any generated .error.png so they don't set off the comparison
         if (success) {
-            await Promise.all(globSync(`screenshots/${test}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
+            await Promise.all(globSync(`test_assets/${test}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
         }
 
-        const screenshotComparison = await execa('python', ['tests/check_images.py', `--test=${test}`], {
+        const assetComparison = await execa('python', ['tests/check_assets.py', `--test=${test}`], {
             cwd: '..',
             stdio: 'inherit',
             reject: false,
         })
 
-        if (screenshotComparison.failed) {
+        if (options.write) {
+            // A test that stopped early only produced some of its assets
+            if (success) {
+                await updateReferences(test)
+            }
+            return true
+        }
+
+        if (assetComparison.failed) {
             return false
         }
     }
 
     return true
+}
+
+async function updateReferences(test: string): Promise<void> {
+    const changed = globSync(`changed_assets/${test}/**`, { nodir: true }).filter(file => !file.endsWith('.error.png'))
+    await Promise.all(changed.map(async (file) => {
+        const destination = path.join('..', 'reference_test_assets', path.relative('changed_assets', file))
+        await fs.mkdir(path.dirname(destination), { recursive: true })
+        await fs.copyFile(file, destination)
+    }))
+    console.warn(chalkTemplate`{green ${testFile(test)} updated ${changed.length} reference assets}`)
 }
 
 async function withTimeout<T>(promise: Promise<T>, getTimeoutSeconds: () => Promise<number>): Promise<T | { status: 'timeout' }> {

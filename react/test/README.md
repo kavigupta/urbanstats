@@ -10,22 +10,31 @@
 
   Visit `chrome://inspect` in your local browser, and click "Inspect" to connect and interact.
 
-- Regenerate the reference screenshots, instead of commenting `!updateScreenshots` on a PR:
+- Regenerate the reference assets, instead of commenting `!updateAssets` on a PR:
 
-  ```
-  npm run test:e2e -- '--test=test/mapper-edit-text-boxes-desktop.test.ts' --docker --browser=chromium --compare=true
-  rsync -a --exclude='*.error.png' \
-    changed_screenshots/mapper-edit-text-boxes-desktop/ \
-    ../reference_test_screenshots/mapper-edit-text-boxes-desktop/
-  ```
+  `npm run test:e2e -- '--test=test/mapper-edit-text-boxes-desktop.test.ts' --docker --browser=chromium --write=true`
 
-  Name the tests you just ran, rather than syncing `changed_screenshots/` whole. A run
-  only clears that directory for its own test, so it accumulates output from every
-  earlier run — and those stale images would overwrite references the run never looked at.
+  `--write` compares as `--compare` does and then overwrites the references that differ, for
+  the tests that passed. A test that failed leaves its references alone, since it stopped
+  before producing all of them.
+
+  Reference strings — the CSV, XML and GeoJSON a test saves with `saveString` — live in the
+  same tree and regenerate the same way. Nothing checks them without `--compare=true`.
+
+- Pull what CI's run for the current branch produced, rather than rerunning the tests
+  locally: `python -m scripts.grab_assets`. It updates the references in place and prints
+  a `file://` link to the deltas.
 
 - Run the tests off-screen on a Mac, in a container built for the host's architecture:
 
   `npm run test:e2e -- '--test=test/mapper-edit-text-boxes-desktop.test.ts' --docker=host-arch --browser=chromium`
+
+  Any `--docker` run serves its Xvfb display over VNC on a free port of its own, behind a
+  password generated for the run, and on a Mac opens Screen Sharing on it without taking focus,
+  quitting it again when the run ends. Two runs at once each get their own display, but the
+  first to finish quits Screen Sharing for both. Unlike
+  `chrome://inspect` above, this shows the whole display, so native dialogs and window sizing
+  are visible too.
 
 # Docker modes
 
@@ -39,7 +48,7 @@ Either container needs `--browser=chromium`, since it has Chromium rather than C
 
 `host-arch` avoids emulating `amd64`, but **can't do anything screenshot-related**: `arm64` Chromium
 antialiases a handful of pixels differently, well below what anyone would notice but well above
-`check_images.py`'s near-exact threshold. Use `ci` for `--compare` and for regenerating references.
+`check_assets.py`'s near-exact threshold. Use `ci` for `--compare` and for regenerating references.
 
 TestCafe ships no `arm64` build of the helper binaries behind `t.resizeWindow` and friends, so those
 run as `i386` binaries under emulation. Chromium and Node, where the time goes, run natively.

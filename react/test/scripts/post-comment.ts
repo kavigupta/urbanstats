@@ -12,7 +12,7 @@ const env = z.object({
 
 const gh = await github()
 
-const body = [await testsComment(), screenshotsComment()].filter(s => s !== undefined).join('\n\n')
+const body = [await testsComment(), assetsComment()].filter(s => s !== undefined).join('\n\n')
 
 if (body === '') {
     process.exit(0)
@@ -35,10 +35,10 @@ else {
     })
 }
 
-function screenshotsComment(): string | undefined {
+function assetsComment(): string | undefined {
     if (env.ARTIFACT_ID !== '') {
-        // There is a screenshots artifact, so there were screenshots changes
-        return `[Screenshots merge ${env.HEAD_SHA}](https://urbanstats.org/screenshot-diff-viewer.html?artifactId=${env.ARTIFACT_ID}&hash=${gh.context.sha})\n\n\`!updateScreenshots\` to update`
+        // There is an assets artifact, so some assets changed
+        return `[Assets merge ${env.HEAD_SHA}](https://urbanstats.org/asset-diff-viewer.html?artifactId=${env.ARTIFACT_ID}&hash=${gh.context.sha})\n\n\`!updateAssets\` to update`
     }
     return
 }
