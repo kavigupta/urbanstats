@@ -211,6 +211,81 @@ void test('a regression says nothing of a parameter it cannot read', () => {
     assert.equal(inferred('regr = regression(x1=area)\nregr.b'), 'unknown')
 })
 
+void test('a script can shadow a built-in, and calling it is not calling the built-in', () => {
+    assert.equal(inferred('sqrt = area\nsqrt(population)'), 'unknown')
+    assert.equal(inferred('ln = area\nln(population)'), 'unknown')
+})
+
+void test('a node the editor wraps is read through', () => {
+    assert.equal(inferred('autoUXNode(population, "{}")'), 'person^1 times=1 x1')
+    assert.equal(inferred('autoUXNode(population + area, "{}")'), 'inconsistent')
+})
+
+void test('an object literal is read field by field', () => {
+    assert.equal(inferred('x = { a: population, b: area }\nx.a'), 'person^1 times=1 x1')
+    assert.equal(inferred('x = { a: population, b: area }\nx.b'), 'm^2 times=1 x1000000')
+    assert.equal(inferred('x = { a: population }\nx.nonesuch'), 'unknown')
+})
+
+void test('unlike units in an operation', () => {
+    assert.equal(inferred('population + area'), 'inconsistent')
+    assert.equal(inferred('area + population'), 'inconsistent')
+    assert.equal(inferred('population - area'), 'inconsistent')
+    assert.equal(inferred('population < area'), 'unknown')
+    assert.equal(inferred('area >= population'), 'unknown')
+})
+
+void test('a literal beside unlike units', () => {
+    assert.equal(inferred('population + area * 2'), 'inconsistent')
+    assert.equal(inferred('population + area / 2'), 'inconsistent')
+    assert.equal(inferred('population + sqrt(area)'), 'inconsistent')
+    assert.equal(inferred('commute_bike + population'), 'inconsistent')
+})
+
+void test('several unlike units in one expression', () => {
+    assert.equal(inferred('population + area + area'), 'inconsistent')
+    assert.equal(inferred('population * 2 + area'), 'inconsistent')
+    assert.equal(inferred('(population + area) * 2'), 'inconsistent')
+    assert.equal(inferred('x = area\npopulation + x'), 'inconsistent')
+})
+
+void test('arguments of a call that share a unit', () => {
+    assert.equal(inferred('maximum(area, population)'), 'inconsistent')
+    assert.equal(inferred('minimum(population, area)'), 'inconsistent')
+    assert.equal(inferred('inverseQuantile(population, area)'), 'inconsistent')
+})
+
+void test('operations on matching units', () => {
+    assert.equal(inferred('population + population'), 'person^1 times=2 x1')
+    assert.equal(inferred('area / area'), 'dimensionless times=1 x1')
+    assert.equal(inferred('high_temp + low_temp'), 'F^1 times=2 x1')
+})
+
+void test('if arms and vector elements of unlike units', () => {
+    assert.equal(inferred('[population, area, sunny_hours]'), 'unknown')
+    assert.equal(inferred('[population, area]'), 'unknown')
+    assert.equal(inferred('if (population > 0) { population } else { area }'), 'unknown')
+})
+
+void test('a temperature in a product', () => {
+    assert.equal(inferred('high_temp * area'), 'inconsistent')
+    assert.equal(inferred('area * high_temp'), 'inconsistent')
+    assert.equal(inferred('high_temp / area'), 'inconsistent')
+    assert.equal(inferred('high_temp ** 2'), 'inconsistent')
+    assert.equal(inferred('high_temp ** 2 * area'), 'inconsistent')
+    assert.equal(inferred('sqrt(high_temp)'), 'inconsistent')
+    // a bare number scales the reading itself, which keeps its zero
+    assert.equal(inferred('high_temp * 2'), 'F^1 times=2 x1')
+    assert.equal(inferred('(high_temp + low_temp) / 2'), 'F^1 times=1 x1')
+})
+
+void test('a temperature in a sum of unlike units', () => {
+    assert.equal(inferred('high_temp + population'), 'inconsistent')
+    assert.equal(inferred('population + high_temp'), 'inconsistent')
+    assert.equal(inferred('high_temp - low_temp + population'), 'inconsistent')
+    assert.equal(inferred('if (population > 0) { high_temp } else { area }'), 'unknown')
+})
+
 void test('what cannot be read comes back as anything, rather than throwing', () => {
     assert.equal(inferred('someFunctionOrOther(population)'), 'unknown')
     assert.equal(inferred('"a string"'), 'unknown')
