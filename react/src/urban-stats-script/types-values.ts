@@ -196,6 +196,8 @@ export interface Documentation {
     unit?: UnitType
     /** For a function, how a quantity it is given comes back out. */
     unitPropagation?: UnitPropagation
+    /** For a constant that names a unit, which one it names. */
+    namesUnit?: UnitType
 }
 
 export type UnitPropagation = (

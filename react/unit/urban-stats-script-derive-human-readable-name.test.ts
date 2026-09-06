@@ -4,9 +4,7 @@ import test from 'node:test'
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { mapUSSFromString } from '../src/mapper/settings/map-uss'
 import { deriveMapLabel, deriveTableColumnLabel, deriveTableLabel } from '../src/urban-stats-script/derive-human-readable-name'
-import { parseNoError } from '../src/urban-stats-script/parser'
 import { TypeEnvironment } from '../src/urban-stats-script/types-values'
-import { unitCheck } from '../src/urban-stats-script/unit-inference'
 import { HumanReadableName } from '../src/utils/human-readable-element'
 import { reifyString } from '../src/utils/human-readable-name'
 
@@ -161,35 +159,24 @@ for (const [data, reader, settings, expected] of [
     })
 }
 
-// How a column that states its unit is named. The script is converted into that unit and the name
+// How a script that states its unit is read. The script is converted into that unit and the name
 // says how, except where the script already gives that unit and there is nothing to say.
 for (const [values, stated, expected] of [
-    ['population', 'area', 'Population × 1km^{2}/person'],
-    ['ln(population)', 'area', 'ln(Population) × 1km^{2}'],
-    ['population / area', 'density_pw_1km', 'Population ÷ Area'],
+    ['population', 'unitArea', 'Population × 1km^{2}/person'],
+    ['ln(population)', 'unitArea', 'ln(Population) × 1km^{2}'],
+    ['population / area', 'unitDensity', 'Population ÷ Area'],
     // converting a temperature subtracts its zero first; converting into one adds a zero at the end
-    ['high_temp', 'area', '(Mean high temp − 0°F) × +1km^{2}/°F'],
-    ['population', 'high_temp', 'Population × +1°F/person + 0°F'],
-    // and nothing is said where the script already says that unit
-    ['area', 'area', 'Area'],
+    ['high_temp', 'unitArea', '(Mean high temp − 0°F) × +1km^{2}/°F'],
+    ['population', 'unitTemperature', 'Population × +1°F/person + 0°F'],
+    // and nothing is said where the script already gives that unit
+    ['area', 'unitArea', 'Area'],
 ] as const) {
-    void test(`a column of ${values} stated in ${stated}`, () => {
-        const typeEnvironment = getTypeEnvironment()
-        const unit = unitCheck(parseNoError(stated, 'test'), typeEnvironment).unit
-        assert.ok(unit)
-        const uss = mapUSSFromString(`table(columns=[column(values=${values})])`)
-        const label = deriveTableColumnLabel(uss, typeEnvironment, 0, unit)
-        assert.ok(label)
-        assert.equal(reifyString(label, {}), expected)
-    })
+    testMapLabel(test, `cMap(data=${values}, scale=linearScale(), ramp=rampUridis, unit=${stated})`, expected)
 
-    // a map that states its unit is named the same way a column is
-    void test(`a map of ${values} stated in ${stated}`, () => {
-        const typeEnvironment = getTypeEnvironment()
-        const unit = unitCheck(parseNoError(stated, 'test'), typeEnvironment).unit
-        assert.ok(unit)
-        const uss = mapUSSFromString(`cMap(data=${values}, scale=linearScale(), ramp=rampUridis)`)
-        const label = deriveMapLabel(uss, typeEnvironment, unit)
+    // a column states its unit the same way a map does
+    void test(`a column of ${values} stated in ${stated}`, () => {
+        const uss = mapUSSFromString(`table(columns=[column(values=${values}, unit=${stated})])`)
+        const label = deriveTableColumnLabel(uss, getTypeEnvironment(), 0)
         assert.ok(label)
         assert.equal(reifyString(label, {}), expected)
     })

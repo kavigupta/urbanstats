@@ -245,12 +245,31 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
     }
 }
 
+/**
+ * The unit a call states of what it draws: cMap(data=..., unit=unitContaminantLevel) says the map
+ * is in that unit, whatever the script computes, so the data is read as converted into it.
+ */
+function statedUnitOf(ast: UrbanStatsASTExpression<UnitsRead> & { type: 'call' }, scope: Scope): StoredUnit | undefined {
+    const stated = ast.args.find(arg => arg.type === 'named' && arg.name.node === 'unit')?.value
+    if (stated?.type !== 'identifier') {
+        return undefined
+    }
+    const names = scope.typeEnvironment.get(stated.name.node)?.documentation?.namesUnit
+    return names === undefined ? undefined : unitTypeToStoredUnit(names)
+}
+
+/** The arguments a stated unit is stated of: the map's data and the table column's values. */
+const drawnBy = ['data', 'values']
+
 function checkCall(ast: UrbanStatsASTExpression<UnitsRead> & { type: 'call' }, scope: Scope, expected: Expected): Checked<Expression> {
     const propagation = propagationOf(ast.fn, scope)
+    const stated = statedUnitOf(ast, scope)
     const checked: { arg: UrbanStatsASTArg<UnitsRead>, value: Inferred }[] = []
     for (const [index, arg] of ast.args.entries()) {
         const before = checked.filter(({ arg: each }) => each.type === 'unnamed').map(({ value }) => quantity(value))
-        const each = checkExpression(arg.value, scope, expectedOfArgument(propagation, expected, index, before))
+        const draws = stated !== undefined && arg.type === 'named' && drawnBy.includes(arg.name.node)
+        const wanted = draws ? { kind: 'in' as const, unit: stated } : expectedOfArgument(propagation, expected, index, before)
+        const each = checkExpression(arg.value, scope, wanted)
         checked.push({ arg: ({ ...arg, value: each.ast }), value: each.value })
     }
     if (propagation?.kind === 'number') {
@@ -455,9 +474,8 @@ export function unitCheck(program: UrbanStatsASTExpression<UnitsRead> | UrbanSta
  * Reads one expression of a script, given the names the rest of the script bound and a unit
  * expected of this expression alone.
  */
-export function unitWithin(ast: Expression, typeEnvironment: TypeEnvironment, named: Bindings, expected?: StoredUnit): { ast: Expression, unit: AbstractInterpValue } {
-    const checked = checkExpression(ast, { typeEnvironment, named: new Map(named) }, wanting(expected))
-    return { ast: checked.ast, unit: quantity(checked.value) }
+export function unitWithin(ast: Expression, typeEnvironment: TypeEnvironment, named: Bindings, expected?: StoredUnit): AbstractInterpValue {
+    return quantity(checkExpression(ast, { typeEnvironment, named: new Map(named) }, wanting(expected)).value)
 }
 
 function wanting(expected: StoredUnit | undefined): Expected {

@@ -121,8 +121,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
     let label: HumanReadableName
 
     if (mapResultMain.value.label === undefined) {
-        const stated = mapResultMain.value.unit === undefined ? undefined : unitTypeToStoredUnit(mapResultMain.value.unit)
-        const derivedLabel = deriveMapLabel(mapSettings.script.uss, typeEnvironment, stated)
+        const derivedLabel = deriveMapLabel(mapSettings.script.uss, typeEnvironment)
         if (derivedLabel === undefined) {
             label = '[Unlabeled Map]'
             execResult.error.push({

@@ -11,7 +11,7 @@ import * as l from './literal-parser'
 import { noLocation } from './location'
 import { BinaryOperatorSymbol, expressionOperatorMap } from './operators'
 import { TypeEnvironment } from './types-values'
-import { UnitConversion, UnitsRead, unitCheck, unitWithin } from './unit-inference'
+import { UnitConversion, UnitsRead, unitCheck } from './unit-inference'
 
 type Expression = UrbanStatsASTExpression<UnitsRead>
 
@@ -228,13 +228,11 @@ function statedMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanRea
     return label === undefined ? undefined : parseHumanReadableTemplate(label)
 }
 
-/** `expected` is the unit the map states, which the script is read as being converted into. */
-export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, expected?: StoredUnit): HumanReadableName | undefined {
-    const checked = unitCheck(uss, typeEnvironment)
-    const result = read(editableMapData<UnitsRead>(), checked.ast, typeEnvironment)
+export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
+    const { ast: factored } = unitCheck(uss, typeEnvironment)
+    const result = read(editableMapData<UnitsRead>(), factored, typeEnvironment)
     if (result?.currentValue.namedArgs.data === undefined) return
-    const data = unitWithin(result.currentValue.namedArgs.data, typeEnvironment, checked.named, expected).ast
-    const dataLabel = humanReadableElements(data, typeEnvironment)
+    const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment)
     if (dataLabel === undefined) return
     // Replace the map call with just the data description to simplify the label (we know it's a map)
     const withMapCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: grouped(dataLabel) }, location: noLocation } })
@@ -313,14 +311,10 @@ export function tableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): Human
     return columns === undefined ? undefined : deriveTableLabel(uss, typeEnvironment, columns)
 }
 
-/** `expected` is the unit the column states, which the script is read as being converted into. */
-export function deriveTableColumnLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number, expected?: StoredUnit): HumanReadableName | undefined {
-    const checked = unitCheck(uss, typeEnvironment)
-    const values = tableColumnExpression(checked.ast, typeEnvironment, columnIndex)
-    if (values === undefined) {
-        return undefined
-    }
-    return humanReadableElements(unitWithin(values, typeEnvironment, checked.named, expected).ast, typeEnvironment)
+export function deriveTableColumnLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): HumanReadableName | undefined {
+    const { ast: factored } = unitCheck(uss, typeEnvironment)
+    const values = tableColumnExpression(factored, typeEnvironment, columnIndex)
+    return values === undefined ? undefined : humanReadableElements(values, typeEnvironment)
 }
 
 const editableTableCall = mapUssParser(l.edit(l.call({

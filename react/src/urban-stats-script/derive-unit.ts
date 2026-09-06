@@ -16,7 +16,7 @@ function unitOf(of: (checked: MapUSS<UnitsRead>) => UrbanStatsASTExpression<Unit
     if (values === undefined) {
         return undefined
     }
-    return unitToWriteIn(unitWithin(values, typeEnvironment, checked.named).unit)
+    return unitToWriteIn(unitWithin(values, typeEnvironment, checked.named))
 }
 
 export function deriveMapUnit(uss: MapUSS, typeEnvironment: TypeEnvironment): StoredUnit | undefined {

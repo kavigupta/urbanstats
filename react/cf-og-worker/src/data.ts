@@ -336,8 +336,7 @@ export async function mapCard(origin: string, pageData: Extract<PageData, { kind
             break
     }
 
-    const stated = map.unit === undefined ? undefined : unitTypeToStoredUnit(map.unit)
-    const label = map.label ?? deriveMapLabel(script.uss, defaultTypeEnvironment(universe), stated)
+    const label = map.label ?? deriveMapLabel(script.uss, defaultTypeEnvironment(universe))
     return {
         label: label === undefined ? '' : reifyString(label, {}),
         contents,
@@ -349,7 +348,7 @@ export async function mapCard(origin: string, pageData: Extract<PageData, { kind
             : {
                     ticks: visuals.ramp.ticks,
                     colors: visuals.ramp.colors,
-                    unit: stated,
+                    unit: map.unit === undefined ? undefined : unitTypeToStoredUnit(map.unit),
                 },
         units: settings.getMultiple(['use_imperial', 'temperature_unit']),
     }
