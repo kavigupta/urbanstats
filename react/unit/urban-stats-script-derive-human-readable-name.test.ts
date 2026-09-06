@@ -87,6 +87,67 @@ testMapLabel(test, 'cMap(data=-(population * 2), scale=linearScale(), ramp=rampU
 testMapLabel(test, 'cMap(data=-(area ** 2), scale=linearScale(), ramp=rampUridis)', '-Area^{2}')
 testMapLabel(test, 'cMap(data=-population, scale=linearScale(), ramp=rampUridis)', '-Population')
 
+// How a caption reads a script whose units are not the ones needed.
+for (const [data, expected] of [
+    ['population + area', 'Population + Area'],
+    ['area + population', 'Area + Population'],
+    ['population - area', 'Population − Area'],
+    ['population < area', 'Population < Area'],
+    ['area >= population', 'Area ≥ Population'],
+    ['commute_bike + population', 'Commute Bike % + Population'],
+    // a literal already written is read for what it must be
+    ['population + area * 2', 'Population + Area × 2/km^{2}'],
+    ['population + area / 2', 'Population + Area ÷ 2km^{2}/person'],
+    ['population + sqrt(area)', 'Population + sqrt(Area)'],
+    ['population + area + area', 'Population + Area + Area'],
+    ['population * 2 + area', 'Population × 2km^{2}/person + Area'],
+    ['(population + area) * 2', '(Population + Area) × 2'],
+    ['maximum(area, population)', 'max(Area, Population)'],
+    ['minimum(population, area)', 'min(Population, Area)'],
+    ['inverseQuantile(population, area)', 'quantile^{-1}(Population, Area)'],
+    // a temperature is counted from a zero of its own
+    ['high_temp * area', 'Mean high temp × Area'],
+    ['high_temp / area', 'Mean high temp ÷ Area'],
+    ['high_temp ** 2', 'Mean high temp^{2}'],
+    ['high_temp ** 2 * area', 'Mean high temp^{2} × Area'],
+    ['sqrt(high_temp)', 'sqrt(Mean high temp)'],
+    ['high_temp / high_temp', 'Mean high temp ÷ Mean high temp'],
+    ['high_temp + population', 'Mean high temp + Population'],
+    ['population + high_temp', 'Population + Mean high temp'],
+    ['high_temp - low_temp + population', '(Mean high temp − Mean low temp) + Population'],
+    // what is written after an expression, and the brackets that go round it
+    ['ln(area + area)', 'ln(Area + Area [in km^{2}])'],
+    ['ln(population + area)', 'ln(Population + Area)'],
+    // and nothing is written where the two sides already have the same unit
+    ['population + population', 'Population + Population'],
+    ['area / area', 'Area ÷ Area'],
+] as const) {
+    testMapLabel(test, `cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`, expected)
+}
+
+// What a caption says to a reader of other units.
+const imperial = { useImperial: true }
+const celsius = { temperatureUnit: 'celsius' }
+
+for (const [data, reader, settings, expected] of [
+    ['population + area', 'imperial', imperial, 'Population + Area'],
+    ['area + population', 'imperial', imperial, 'Area + Population'],
+    ['population + sqrt(area)', 'imperial', imperial, 'Population + sqrt(Area)'],
+    ['high_temp + population', 'celsius', celsius, 'Mean high temp + Population'],
+    ['population + high_temp', 'celsius', celsius, 'Population + Mean high temp'],
+    ['high_temp * area', 'celsius', celsius, 'Mean high temp × Area'],
+    ['high_temp * area', 'imperial', imperial, 'Mean high temp × Area'],
+    // what a number was counted in does not change with the reader
+    ['ln(area)', 'imperial', imperial, 'ln(Area [in km^{2}])'],
+    ['ln(high_temp)', 'celsius', celsius, 'ln(Mean high temp [in °F])'],
+] as const) {
+    void test(`${data} to a ${reader} reader`, () => {
+        const label = deriveMapLabel(mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), getTypeEnvironment())
+        assert.ok(label)
+        assert.equal(reifyString(label, settings), expected)
+    })
+}
+
 void test('a label reads in the units of whoever is reading it', () => {
     const label = deriveMapLabel(mapUSSFromString('condition (high_temp > 80 & area > 100)\ncMap(data=population, scale=linearScale(), ramp=rampUridis)'), getTypeEnvironment())
     assert.ok(label)
