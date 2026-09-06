@@ -191,16 +191,8 @@ function productForward(rightPower: 1 | -1, left: KnownAIV, right: KnownAIV): Ab
             : written(left.unit, combined(left.unit.unit.times, right.constant, (times, scale) => rightPower === 1 ? times * scale : times / scale))
     }
     const product = unitProduct(left.unit, right.unit, rightPower)
-    if (product === undefined) {
-        return { kind: 'none' }
-    }
-    // times counts the readings a value is, and is only read on the F scale, where 1 means an
-    // offset applies. unitProduct takes no reading as an operand, so a product is never one: it is
-    // 0 there, rather than the Infinity that dividing one reading by none of them gives
-    const times = product.unit.baseIsScalar
-        ? combined(left.unit.unit.times, right.unit.unit.times, (over, under) => rightPower === 1 ? over * under : over / under)
-        : 0
-    return written(product, times)
+    const times = combined(left.unit.unit.times, right.unit.unit.times, (over, under) => rightPower === 1 ? over * under : over / under)
+    return product === undefined ? { kind: 'none' } : written(product, times)
 }
 
 export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue {

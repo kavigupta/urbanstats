@@ -296,10 +296,9 @@ void test('a difference of temperatures divides into things as well as by them',
         const written = writeQuantity(5, perDegree!, settings, 'byItself')
         return `${written.renderedValue}${reifyString(written.unitName, {})}`
     }
-    // five to the Fahrenheit degree is nine to the Celsius one, that being the larger degree, and
-    // both are signed, a rate off a difference being as able to run negative as the difference is
-    assert.equal(write({}), '+5.00/°F')
-    assert.equal(write({ temperatureUnit: 'celsius' }), '+9.00/°C')
+    // five to the Fahrenheit degree is nine to the Celsius one, that being the larger degree
+    assert.equal(write({}), '5.00/°F')
+    assert.equal(write({ temperatureUnit: 'celsius' }), '9.00/°C')
     // and a reading is no more divisible into than it is by: nothing is so many people per 50°F
     assert.equal(shape(forward('/', people, temperature)), 'inconsistent')
 })
