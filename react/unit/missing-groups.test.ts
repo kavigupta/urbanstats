@@ -15,7 +15,7 @@ import type { StatPath } from '../src/page_template/statistic-tree'
 // which take the statistics and settings directly.
 mock.module('../src/navigation/Navigator', { namedExports: { Navigator: {} } })
 
-const { getAvailableGroups, getAvailableTree, getAvailableYears, groupYearKeys, missingGroups } = await import('../src/page_template/statistic-settings')
+const { getAvailableGroups, getAvailableYears, groupYearKeys, missingGroups } = await import('../src/page_template/statistic-settings')
 
 /**
  * The statistics an article page has, as the site would give them: every path the region has data
@@ -68,7 +68,7 @@ function warnings(statPathsAll: StatPath[][], enabled: EnabledKey[]): string[] {
         selectedYears: getAvailableYears(contextStatPaths).filter(year => settings[`show_stat_year_${year}`]),
         statPathsAll,
         settings,
-        availableTree: getAvailableTree(statPathsAll),
+        availableGroups: getAvailableGroups(contextStatPaths),
     }).map(({ groupOrCategory, reason }) => {
         const message = renderToStaticMarkup(createElement(Fragment, null, warningMessage(reason, groupOrCategory)))
         return `${groupOrCategory.name}: ${message.replaceAll(/<\/?b>/g, '**')}`

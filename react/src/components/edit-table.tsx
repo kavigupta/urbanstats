@@ -2,8 +2,8 @@ import React, { CSSProperties, ReactNode, useMemo, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { checkboxCategoryName, sourceEnabledKey, useIsStaged, useUnitSettings } from '../page_template/settings'
-import { ExpansionState, GroupTreeState, useAvailableYears, useCategoriesMatchingSearch, useCategoryTreeState, useDataSourceCheckboxes, useExpansionState } from '../page_template/statistic-settings'
-import { Category, statParents } from '../page_template/statistic-tree'
+import { ExpansionState, GroupTreeState, useAvailableYears, useCategoryTreeState, useDataSourceCheckboxes, useExpansionState, useSectionsMatchingSearch } from '../page_template/statistic-settings'
+import { CategorySection, statParents } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 import { HumanReadableName } from '../utils/human-readable-element'
 import { reifyReact } from '../utils/human-readable-name'
@@ -252,13 +252,14 @@ const toggleSize: CSSProperties = { width: `${togglePx}px`, height: `${togglePx}
 
 function EditCategory(props: {
     layout: MeasuredTableLayout
-    category: Category
+    section: CategorySection
     rowsByGroup: Map<string, EditRow[]>
     warningsByGroup: Map<string, ReactNode>
     searching: boolean
     expansion: ExpansionState
 }): ReactNode {
-    const tree = useCategoryTreeState(props.category, props.expansion)
+    const category = props.section.category
+    const tree = useCategoryTreeState(props.section, props.expansion)
     const expanded = props.searching || tree.expanded
     const segments = editBodySegments(categoryBodyRows(tree.groups, props.rowsByGroup, props.warningsByGroup), expanded)
     const anythingToExpand = segments.some(segment => segment.collapsible)
@@ -271,10 +272,10 @@ function EditCategory(props: {
                         ? (
                                 <ExpandButton
                                     isExpanded={expanded}
-                                    data-category-id={props.category.id}
+                                    data-category-id={category.id}
                                     onClick={() => { tree.setExpanded(!tree.expanded) }}
                                     style={{ ...toggleSize, backgroundSize: '16px' }}
-                                    aria-label={expanded ? `Collapse ${props.category.name} category` : `Expand ${props.category.name} category`}
+                                    aria-label={expanded ? `Collapse ${category.name} category` : `Expand ${category.name} category`}
                                 />
                             )
                         // Categories without a toggle keep its space, so every category name lines up.
@@ -288,12 +289,12 @@ function EditCategory(props: {
                                 checked={tree.status === true}
                                 indeterminate={tree.status === 'indeterminate'}
                                 onChange={tree.toggle}
-                                testId={`edit_category_${props.category.id}`}
+                                testId={`edit_category_${category.id}`}
                                 highlight={tree.highlight}
                             />
                         )}
                     >
-                        {props.category.name}
+                        {category.name}
                     </EditCheckboxLabel>
                 </div>
             </TableRowContainer>
@@ -455,7 +456,7 @@ export function EditTable(props: {
     topLeftSpec: TopLeftCellSpec
 }): ReactNode {
     const { filter, setFilter, exitEditMode } = props.editState
-    const categories = useCategoriesMatchingSearch(filter)
+    const sections = useSectionsMatchingSearch(filter)
     const staged = useIsStaged()
     const warningsByGroup = useWarningsByGroup()
     const expansion = useExpansionState()
@@ -476,11 +477,11 @@ export function EditTable(props: {
         >
             <EditSourceAndYearSections />
             <EditSectionHeader name="Statistics" />
-            {categories.map(category => (
+            {sections.map(section => (
                 <EditCategory
-                    key={category.id}
+                    key={section.category.id}
                     layout={props.layout}
-                    category={category}
+                    section={section}
                     rowsByGroup={props.rowsByGroup}
                     warningsByGroup={warningsByGroup}
                     searching={filter !== ''}
