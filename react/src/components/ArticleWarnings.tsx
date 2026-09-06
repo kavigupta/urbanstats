@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react'
 
 import { useMissingGroupReasonsOfEveryGroup, useMissingGroups, useSelectedGroups } from '../page_template/statistic-settings'
-import { Category, Group, GroupIdentifier, StatPath, statPathToOrder } from '../page_template/statistic-tree'
+import { Category, Group, GroupIdentifier, StatPath, statPathToOrder, Subcategory } from '../page_template/statistic-tree'
 
 import { useScreenshotMode } from './screenshot'
 import { warningMessage } from './warning-message'
@@ -66,7 +66,7 @@ export function useWarningsByGroup(): Map<GroupIdentifier, ReactNode> {
     return result
 }
 
-function firstStatOrder(groupOrCategory: Group | Category): number {
+function firstStatOrder(groupOrCategory: Group | Subcategory | Category): number {
     return Math.min(...Array.from(groupOrCategory.statPaths).map(path => statPathToOrder.get(path)!))
 }
 

@@ -134,3 +134,13 @@ void test('no year selected and no source enabled asks for both', () => {
         ['Population: Select **2020**, **2010**, or **2000** and enable **US Census** or **GHSL** to see this statistic.'],
     )
 })
+
+void test('a whole subcategory in an incomplete category consolidates into the subcategory', () => {
+    // The segregation groups are available but unselected, so the Race category can't stand in;
+    // its pie chart of races can.
+    const race: StatPath[] = ['white', 'black', 'homogeneity_250_2020']
+    assert.deepStrictEqual(
+        warnings([race], ['show_stat_group_white', 'show_stat_group_black']),
+        ['Racial Composition: Select **2020** to see these statistics.'],
+    )
+})

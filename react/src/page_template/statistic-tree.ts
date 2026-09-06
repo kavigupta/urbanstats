@@ -15,6 +15,7 @@ export type StatName = (typeof statNames)[number]
 
 export type CategoryIdentifier = (typeof rawStatsTree)[number]['id']
 export type GroupIdentifier = (typeof rawStatsTree)[number]['contents'][number]['id']
+export type SubcategoryIdentifier = NonNullable<(typeof rawStatsTree)[number]['contents'][number]['subcategory']>['id']
 export type Year = Exclude<(typeof rawStatsTree)[number]['contents'][number]['contents'][number]['year'], null>
 export type DataSource = (typeof rawStatsTree)[number]['contents'][number]['contents'][number]['stats_by_source'][number]['stats'][number]['source']
 export type SourceCategoryIdentifier = DataSource['category']
@@ -30,12 +31,21 @@ export interface Category {
     statPaths: Set<StatPath> // which StatPaths does this category contain
 }
 
+export interface Subcategory {
+    kind: 'Subcategory'
+    id: SubcategoryIdentifier
+    name: string
+    parent: Category
+    statPaths: Set<StatPath> // which StatPaths does this subcategory contain
+}
+
 export interface Group {
     kind: 'Group'
     id: GroupIdentifier
     name: string
     contents: GroupYear[]
     parent: Category
+    subcategory?: Subcategory
     years: Set<Year | null> // for which years does this group have data
     statPaths: Set<StatPath> // which StatPaths does this group contain
 }
@@ -74,51 +84,74 @@ export interface MetadataStatistic extends BaseStatistic {
 
 export type Statistic = DataStatistic | MetadataStatistic
 
-export const statsTree: StatsTree = rawStatsTree.map(category => (
-    {
+export const statsTree: StatsTree = rawStatsTree.map((category) => {
+    const groups: Group[] = category.contents.map(group => ({
+        kind: 'Group',
+        id: group.id,
+        name: group.name,
+        contents: group.contents.map(({ year, stats_by_source }) => ({
+            year,
+            stats: stats_by_source.map(({ name, indentedName, stats: s }) => ({
+                name,
+                indentedName: indentedName ?? undefined,
+                bySource: s.map((stat) => {
+                    switch (stat.kind) {
+                        case 'data':
+                            return {
+                                kind: 'data',
+                                source: stat.source,
+                                path: statPaths[stat.column],
+                                name: statNames[stat.column],
+                                statcol: stats[stat.column],
+                                parent: undefined as unknown as GroupYear, // set below
+                            } satisfies DataStatistic
+                        case 'metadata':
+                            return {
+                                kind: 'metadata',
+                                source: stat.source,
+                                path: stat.path,
+                                name,
+                                metadataIndex: stat.metadata_index,
+                                parent: undefined as unknown as GroupYear, // set below
+                            } satisfies MetadataStatistic
+                    }
+                }),
+            } satisfies MultiSourceStatistic)),
+            parent: undefined as unknown as Group, // set below
+        } satisfies GroupYear)),
+        parent: undefined as unknown as Category, // set below
+        years: new Set(group.contents.map(({ year }) => year)),
+        statPaths: new Set(), // set below
+    } satisfies Group))
+
+    // A run of groups tagged with the same subcategory is that subcategory
+    let subcategory: Subcategory | undefined
+    category.contents.forEach((rawGroup, index) => {
+        if (rawGroup.subcategory === null) {
+            subcategory = undefined
+            return
+        }
+        if (subcategory?.id !== rawGroup.subcategory.id) {
+            subcategory = {
+                kind: 'Subcategory',
+                id: rawGroup.subcategory.id,
+                name: rawGroup.subcategory.name,
+                parent: undefined as unknown as Category, // set below
+                statPaths: new Set(), // set below
+            }
+        }
+        groups[index].subcategory = subcategory
+    })
+
+    return {
         kind: 'Category',
-        ...category,
-        contents: category.contents.map(group => ({
-            kind: 'Group',
-            ...group,
-            contents: group.contents.map(({ year, stats_by_source }) => ({
-                year,
-                stats: stats_by_source.map(({ name, indentedName, stats: s }) => ({
-                    name,
-                    indentedName: indentedName ?? undefined,
-                    bySource: s.map((stat) => {
-                        switch (stat.kind) {
-                            case 'data':
-                                return {
-                                    kind: 'data',
-                                    source: stat.source,
-                                    path: statPaths[stat.column],
-                                    name: statNames[stat.column],
-                                    statcol: stats[stat.column],
-                                    parent: undefined as unknown as GroupYear, // set below
-                                } satisfies DataStatistic
-                            case 'metadata':
-                                return {
-                                    kind: 'metadata',
-                                    source: stat.source,
-                                    path: stat.path,
-                                    name,
-                                    metadataIndex: stat.metadata_index,
-                                    parent: undefined as unknown as GroupYear, // set below
-                                } satisfies MetadataStatistic
-                        }
-                    }),
-                } satisfies MultiSourceStatistic)),
-                parent: undefined as unknown as Group, // set below
-            } satisfies GroupYear)),
-            parent: undefined as unknown as Category, // set below
-            years: new Set(group.contents.map(({ year }) => year)),
-            statPaths: new Set(), // set below
-        } satisfies Group)),
+        id: category.id,
+        name: category.name,
+        contents: groups,
         years: new Set(), // set below
         statPaths: new Set(), // set below
     } satisfies Category
-))
+})
 
 // For a given year, what statpaths does it include
 export const yearStatPaths = new DefaultMap<Year, Set<StatPath>>(() => new Set())
@@ -127,12 +160,16 @@ export const yearStatPaths = new DefaultMap<Year, Set<StatPath>>(() => new Set()
 for (const category of statsTree) {
     for (const group of category.contents) {
         group.parent = category
+        if (group.subcategory !== undefined) {
+            group.subcategory.parent = category
+        }
         for (const yearGroup of group.contents) {
             yearGroup.parent = group
             for (const statsBySource of yearGroup.stats) {
                 for (const stat of statsBySource.bySource) {
                     stat.parent = yearGroup
                     group.statPaths.add(stat.path)
+                    group.subcategory?.statPaths.add(stat.path)
                     category.statPaths.add(stat.path)
                     if (yearGroup.year !== null) {
                         yearStatPaths.get(yearGroup.year).add(stat.path)
@@ -149,6 +186,31 @@ function sortYears(year1: Year, year2: Year): number {
 }
 
 export const allGroups = statsTree.flatMap(category => category.contents)
+export const allSubcategories = Array.from(new Set(allGroups.flatMap(group => group.subcategory ?? [])))
+
+export type Section = { kind: 'Group', group: Group } | { kind: 'Subcategory', subcategory: Subcategory, groups: Group[] }
+
+/**
+ * Lays out a category's groups for display, gathering each run of groups that share a subcategory.
+ * Takes the groups rather than reading the category so that a narrowed list (by availability, or
+ * by a search) produces subcategories holding only the groups that survived.
+ */
+export function sectionsOf(groups: Group[]): Section[] {
+    const sections: Section[] = []
+    for (const group of groups) {
+        const last = sections.at(-1)
+        if (group.subcategory === undefined) {
+            sections.push({ kind: 'Group', group })
+        }
+        else if (last?.kind === 'Subcategory' && last.subcategory === group.subcategory) {
+            last.groups.push(group)
+        }
+        else {
+            sections.push({ kind: 'Subcategory', subcategory: group.subcategory, groups: [group] })
+        }
+    }
+    return sections
+}
 export const allYears = Array.from(
     new Set(allGroups
         .flatMap(group => Array.from(group.years))

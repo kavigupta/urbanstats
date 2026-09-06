@@ -4,7 +4,7 @@
 
 import * as base58 from 'base58-js'
 
-import { defaultSettingsList, RelationshipKey, Settings, SettingsDictionary, StatCategorySavedIndeterminateKey, useSettings } from './settings'
+import { defaultSettingsList, RelationshipKey, Settings, SettingsDictionary, StatCategorySavedIndeterminateKey, StatSubcategorySavedIndeterminateKey, useSettings } from './settings'
 
 const underflow = Symbol()
 
@@ -504,6 +504,7 @@ const settingsVector = [
 type NotIncludedInSettingsVector = (
     RelationshipKey
     | StatCategorySavedIndeterminateKey
+    | StatSubcategorySavedIndeterminateKey
     | 'theme' | 'colorblind_mode' | 'clean_background'
     | 'juxtastatCompactEmoji' | 'syauRequireEnter' | 'mapperSettingsColumnProp'
     | 'randomFilterByCurrentUniverse'

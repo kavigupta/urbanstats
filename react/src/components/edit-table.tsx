@@ -2,7 +2,7 @@ import React, { CSSProperties, ReactNode, useMemo, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { checkboxCategoryName, sourceEnabledKey, useIsStaged, useUnitSettings } from '../page_template/settings'
-import { ExpansionState, GroupTreeState, useAvailableYears, useCategoriesMatchingSearch, useCategoryTreeState, useDataSourceCheckboxes, useExpansionState } from '../page_template/statistic-settings'
+import { ExpansionState, GroupTreeState, SectionTreeState, useAvailableYears, useCategoriesMatchingSearch, useCategoryTreeState, useDataSourceCheckboxes, useExpansionState } from '../page_template/statistic-settings'
 import { Category, statParents } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 import { HumanReadableName } from '../utils/human-readable-element'
@@ -76,9 +76,10 @@ export function editRowsByGroup(
     return result
 }
 
-interface EditGroupHeaderSpec {
-    kind: 'group-header'
+interface EditHeaderSpec {
+    kind: 'header'
     key: string
+    indent: number
     highlight: boolean
     enabled: boolean
     checkbox: ReactNode
@@ -97,7 +98,7 @@ interface EditStatSpec {
     checkbox: { kind: 'own', node: ReactNode } | { kind: 'headers', id: string }
 }
 
-type EditBodyRow = EditGroupHeaderSpec | EditStatSpec
+type EditBodyRow = EditHeaderSpec | EditStatSpec
 
 function EditCheckboxLabel(props: {
     highlight: boolean
@@ -185,34 +186,67 @@ function AnimatedCollapse({ expanded, children }: { expanded: boolean, children:
  * checkbox and no value. It exists for this geography, so dropping it from the tree would
  * leave no way to reach it; its warning stands where the value would be.
  */
-function categoryBodyRows(groups: GroupTreeState[], rowsByGroup: Map<string, EditRow[]>, warningsByGroup: Map<string, ReactNode>): EditBodyRow[] {
-    return groups.flatMap(({ group, enabled, setEnabled, highlight }): EditBodyRow[] => {
-        const groupRows = rowsByGroup.get(group.id) ?? []
-        const checkboxId = `edit-checkbox-${group.id}`
-        const checkbox = (
-            <EditCheckbox
-                id={checkboxId}
-                checked={enabled}
-                onChange={setEnabled}
-                testId={`edit_group_${group.id}`}
-                highlight={highlight}
-            />
-        )
-        const statSpec = (editRow: EditRow, indent: number, whoseCheckbox: EditStatSpec['checkbox']): EditStatSpec => ({
-            kind: 'stat',
-            key: `stat-${editRow.row.statpath}`,
-            highlight,
-            indent,
-            enabled,
-            editRow,
-            checkbox: whoseCheckbox,
-        })
-        if (groupRows.length === 1) {
-            return [statSpec(groupRows[0], 1, { kind: 'own', node: checkbox })]
+function groupBodyRows(
+    { group, enabled, setEnabled, highlight }: GroupTreeState,
+    indent: number,
+    rowsByGroup: Map<string, EditRow[]>,
+    warningsByGroup: Map<string, ReactNode>,
+): EditBodyRow[] {
+    const groupRows = rowsByGroup.get(group.id) ?? []
+    const checkboxId = `edit-checkbox-${group.id}`
+    const checkbox = (
+        <EditCheckbox
+            id={checkboxId}
+            checked={enabled}
+            onChange={setEnabled}
+            testId={`edit_group_${group.id}`}
+            highlight={highlight}
+        />
+    )
+    const statSpec = (editRow: EditRow, statIndent: number, whoseCheckbox: EditStatSpec['checkbox']): EditStatSpec => ({
+        kind: 'stat',
+        key: `stat-${editRow.row.statpath}`,
+        highlight,
+        indent: statIndent,
+        enabled,
+        editRow,
+        checkbox: whoseCheckbox,
+    })
+    if (groupRows.length === 1) {
+        return [statSpec(groupRows[0], indent, { kind: 'own', node: checkbox })]
+    }
+    return [
+        { kind: 'header', key: `group-${group.id}`, indent, highlight, enabled, checkbox, name: group.name, warning: warningsByGroup.get(group.id) },
+        ...groupRows.map(editRow => statSpec(editRow, indent + 1, { kind: 'headers', id: checkboxId })),
+    ]
+}
+
+function categoryBodyRows(sections: SectionTreeState[], rowsByGroup: Map<string, EditRow[]>, warningsByGroup: Map<string, ReactNode>): EditBodyRow[] {
+    return sections.flatMap((section): EditBodyRow[] => {
+        if (section.kind === 'Group') {
+            return groupBodyRows(section.group, 1, rowsByGroup, warningsByGroup)
         }
+        const { subcategory, status, toggle, highlight, groups } = section
         return [
-            { kind: 'group-header', key: `group-${group.id}`, highlight, enabled, checkbox, name: group.name, warning: warningsByGroup.get(group.id) },
-            ...groupRows.map(editRow => statSpec(editRow, 2, { kind: 'headers', id: checkboxId })),
+            {
+                kind: 'header',
+                key: `subcategory-${subcategory.id}`,
+                indent: 1,
+                highlight,
+                // Keeps the header out of the collapsible run whenever it has something to show
+                enabled: groups.some(({ enabled }) => enabled),
+                checkbox: (
+                    <EditCheckbox
+                        checked={status === true}
+                        indeterminate={status === 'indeterminate'}
+                        onChange={toggle}
+                        testId={`edit_subcategory_${subcategory.id}`}
+                        highlight={highlight}
+                    />
+                ),
+                name: subcategory.name,
+            },
+            ...groups.flatMap(group => groupBodyRows(group, 2, rowsByGroup, warningsByGroup)),
         ]
     })
 }
@@ -260,7 +294,7 @@ function EditCategory(props: {
 }): ReactNode {
     const tree = useCategoryTreeState(props.category, props.expansion)
     const expanded = props.searching || tree.expanded
-    const segments = editBodySegments(categoryBodyRows(tree.groups, props.rowsByGroup, props.warningsByGroup), expanded)
+    const segments = editBodySegments(categoryBodyRows(tree.sections, props.rowsByGroup, props.warningsByGroup), expanded)
     const anythingToExpand = segments.some(segment => segment.collapsible)
 
     return (
@@ -298,7 +332,7 @@ function EditCategory(props: {
                 </div>
             </TableRowContainer>
             {segments.map((segment) => {
-                const rows = segment.rows.map(({ spec, index }) => spec.kind === 'group-header'
+                const rows = segment.rows.map(({ spec, index }) => spec.kind === 'header'
                     ? (
                             <EditLabelRow
                                 key={spec.key}
@@ -306,7 +340,7 @@ function EditCategory(props: {
                                 highlight={spec.highlight}
                                 checkbox={spec.checkbox}
                                 name={spec.name}
-                                paddingLeft={treeIndent(1)}
+                                paddingLeft={treeIndent(spec.indent)}
                                 warning={spec.warning === undefined ? undefined : { layout: props.layout, content: spec.warning }}
                             />
                         )
