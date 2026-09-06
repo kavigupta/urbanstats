@@ -119,7 +119,12 @@ function toggleNodeSetting(settings: Settings, node: StatNode, availableGroups: 
         nodeGroups(node).forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, value(group)) })
     }
     const category = node.kind === 'Category' ? node : node.parent
-    const expandCategory = (): void => { settings.setSetting(`stat_category_expanded_${category.id}`, true) }
+    const expandCategory = (): void => {
+        settings.setSetting(`stat_category_expanded_${category.id}`, true)
+        if (node.kind === 'Subcategory') {
+            settings.setSetting(`stat_subcategory_expanded_${node.id}`, true)
+        }
+    }
     switch (status) {
         case 'indeterminate':
             setAllGroups(() => true)
@@ -157,6 +162,8 @@ export interface SubcategoryTreeState {
     status: boolean | 'indeterminate'
     toggle: () => void
     highlight: boolean
+    expanded: boolean
+    setExpanded: (expanded: boolean) => void
     groups: GroupTreeState[]
 }
 
@@ -178,6 +185,7 @@ export function useCategoryTreeState(category: Category): CategoryTreeState {
     const availableGroups = useAvailableGroups(category)
     const info = useSettingsInfo(groupKeys(availableGroups))
     const [expanded, setExpanded] = useSetting(`stat_category_expanded_${category.id}`)
+    const subcategoriesExpanded = useSettings(availableGroups.flatMap(group => group.subcategory === undefined ? [] : [`stat_subcategory_expanded_${group.subcategory.id}` as const]))
 
     const groupState = (group: Group): GroupTreeState => ({
         group,
@@ -198,6 +206,8 @@ export function useCategoryTreeState(category: Category): CategoryTreeState {
             status,
             toggle: () => { toggleNodeSetting(settings, section.subcategory, section.groups, status) },
             highlight: groups.some(group => group.highlight),
+            expanded: subcategoriesExpanded[`stat_subcategory_expanded_${section.subcategory.id}`],
+            setExpanded: (newValue: boolean) => { settings.setSetting(`stat_subcategory_expanded_${section.subcategory.id}`, newValue) },
             groups,
         }
     })
@@ -216,9 +226,9 @@ export function useCategoryTreeState(category: Category): CategoryTreeState {
 }
 
 /**
- * Expands every category that would otherwise hide a change staging is making: a collapsed
- * category shows only its selected groups, so a group staging turns off leaves the category
- * highlighted with nothing behind it to see.
+ * Expands every category and subcategory that would otherwise hide a change staging is making: a
+ * collapsed one shows only its selected groups, so a group staging turns off leaves it highlighted
+ * with nothing behind it to see.
  *
  * Only acts when `active` becomes true (edit mode opening), so the user can collapse such a
  * category again while staging is still going on.
@@ -231,15 +241,20 @@ export function useExpandCategoriesHidingStagedChanges(active: boolean): void {
             return
         }
         for (const category of categories) {
-            const hidesStagedChange = category.contents.some((group) => {
+            const hidden = category.contents.filter((group) => {
                 if (!availableGroups.has(group)) {
                     return false
                 }
                 const info = settings.getSettingInfo(`show_stat_group_${group.id}`)
                 return isStagedChange(info) && !settingValue(info)
             })
-            if (hidesStagedChange) {
+            if (hidden.length > 0) {
                 settings.setSetting(`stat_category_expanded_${category.id}`, true)
+            }
+            for (const { subcategory } of hidden) {
+                if (subcategory !== undefined) {
+                    settings.setSetting(`stat_subcategory_expanded_${subcategory.id}`, true)
+                }
             }
         }
     }, [active, categories, availableGroups, settings])
