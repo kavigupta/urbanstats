@@ -166,15 +166,17 @@ export function useExpansionState(): ExpansionState {
  * indeterminate -> checked -> unchecked -(if nonempty saved indeterminate)-> indeterminate
  *                                       -(if empty saved indeterminate)-> checked
  */
-function toggleNodeSetting(settings: Settings, expansion: ExpansionState, node: StatNode, availableGroups: Group[], status: boolean | 'indeterminate'): void {
+function toggleNodeSetting(settings: Settings, expansion: ExpansionState, category: Category, subcategory: Subcategory | undefined, availableGroups: Group[], status: boolean | 'indeterminate'): void {
+    const node: StatNode = subcategory ?? category
+    // Via the given category, which a search may have narrowed, not nodeGroups' whole-tree view
+    const toggledGroups = category.contents.filter(group => subcategory === undefined || group.subcategory === subcategory)
     const setAllGroups = (value: (group: Group) => boolean): void => {
-        nodeGroups(node).forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, value(group)) })
+        toggledGroups.forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, value(group)) })
     }
-    const category = node.kind === 'Category' ? node : node.parent
     const expandCategory = (): void => {
         expansion.setExpanded(category, true)
-        if (node.kind === 'Subcategory') {
-            expansion.setExpanded(node, true)
+        if (subcategory !== undefined) {
+            expansion.setExpanded(subcategory, true)
         }
     }
     switch (status) {
@@ -197,8 +199,8 @@ function toggleNodeSetting(settings: Settings, expansion: ExpansionState, node: 
             expandCategory() // Either way should expand to show the selection
             break
     }
-    if (node.kind === 'Subcategory') {
-        saveIndeterminateState(settings, category)
+    if (subcategory !== undefined) {
+        saveIndeterminateState(settings, subcategory.parent)
     }
 }
 
@@ -254,7 +256,7 @@ export function useCategoryTreeState(category: Category, expansion: ExpansionSta
             kind: 'Subcategory',
             subcategory: section.subcategory,
             status,
-            toggle: () => { toggleNodeSetting(settings, expansion, section.subcategory, section.groups, status) },
+            toggle: () => { toggleNodeSetting(settings, expansion, category, section.subcategory, section.groups, status) },
             highlight: groups.some(group => group.highlight),
             expanded: expansion.isExpanded(section.subcategory),
             setExpanded: (newValue: boolean) => { expansion.setExpanded(section.subcategory, newValue) },
@@ -267,7 +269,7 @@ export function useCategoryTreeState(category: Category, expansion: ExpansionSta
 
     return {
         status,
-        toggle: () => { toggleNodeSetting(settings, expansion, category, availableGroups, status) },
+        toggle: () => { toggleNodeSetting(settings, expansion, category, undefined, availableGroups, status) },
         highlight: sections.some(section => section.kind === 'Group' ? section.group.highlight : section.highlight),
         expanded: expansion.isExpanded(category),
         setExpanded: (newValue: boolean) => { expansion.setExpanded(category, newValue) },

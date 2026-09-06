@@ -24,6 +24,9 @@ const renterCheckInteractable = interactableGroupCheckbox('rent_or_own_rent')
 const raceCheck = categoryCheckbox('race')
 const raceCompositionCheck = subcategoryCheckbox('race_composition')
 const hispanicCheckInteractable = interactableGroupCheckbox('hispanic')
+// eslint-disable-next-line no-restricted-syntax -- a stat group id, not a css color
+const whiteCheck = groupCheckbox('white')
+const hispanicCheck = groupCheckbox('hispanic')
 const segregationCheckInteractable = interactableGroupCheckbox('homogeneity_250')
 const sourceSectionHeader = Selector('.stats_table div').withExactText('Population Sources')
 const ghslCheck = sourceCheckbox('Population', 'GHSL')
@@ -183,6 +186,22 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.typeText(filterBox, 'racial comp')
         await t.expect(hispanicCheckInteractable.exists).ok()
         await t.expect(segregationCheckInteractable.exists).notOk()
+    })
+
+    test('search-scopes-a-subcategory-checkbox-to-what-it-shows', async (t) => {
+        // Like the category checkbox, the subcategory one acts on the groups the search leaves
+        // visible rather than on the ones it is hiding.
+        await enterEditMode(t)
+        // eslint-disable-next-line no-restricted-syntax -- a stat group name, not a css color
+        await t.typeText(filterBox, 'white')
+        await t.expect(raceCompositionCheck.checked).eql(false)
+        await t.click(raceCompositionCheck)
+        await t.expect(raceCompositionCheck.checked).eql(true)
+
+        await t.selectText(filterBox).pressKey('delete')
+        await t.expect(whiteCheck.checked).eql(true)
+        await t.expect(hispanicCheck.checked).eql(false)
+        await t.expect(raceCompositionCheck.indeterminate).eql(true)
     })
 
     test('indeterminate-cycle-expanded', async (t) => {
