@@ -29,6 +29,13 @@
 
   `npm run test:e2e -- '--test=test/mapper-edit-text-boxes-desktop.test.ts' --docker=host-arch --browser=chromium`
 
+  Any `--docker` run serves its Xvfb display over VNC on a free port of its own, behind a
+  password generated for the run, and on a Mac opens Screen Sharing on it without taking focus,
+  quitting it again when the run ends. Two runs at once each get their own display, but the
+  first to finish quits Screen Sharing for both. Unlike
+  `chrome://inspect` above, this shows the whole display, so native dialogs and window sizing
+  are visible too.
+
 # Docker modes
 
 | Value | Meaning |
