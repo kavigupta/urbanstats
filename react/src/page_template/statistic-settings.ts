@@ -276,18 +276,23 @@ function searchMatch(searchTerm: string, target: string): boolean {
 }
 
 /**
- * A group matches when its own name does, or when its category's or subcategory's does. The
- * sections are narrowed by the search but not by what this page has, so while searching, the
- * category and subcategory checkboxes act on what's visible rather than on the groups the
- * search is hiding, while still writing settings for the groups the page itself is missing.
+/**
+ * A group matches when its own name does, or when its category's or subcategory's does. A
+ * section keeps every matching group, including ones this page has no statistics for, so while
+ * searching the category and subcategory checkboxes act on what the search leaves rather than
+ * on what the page happens to have; a section with nothing the page has is dropped instead of
+ * shown empty.
  */
-export function useSectionsMatchingSearch(searchTerm: string): CategorySection[] {
-    const available = useAvailableGroupSet()
+export function sectionsMatchingSearch(searchTerm: string, availableGroups: Set<Group>): CategorySection[] {
     return categorySections(allGroups.filter(group =>
         searchMatch(searchTerm, group.parent.name)
         || searchMatch(searchTerm, group.name)
         || (group.subcategory !== undefined && searchMatch(searchTerm, group.subcategory.name))))
-        .filter(section => section.groups.some(group => available.has(group)))
+        .filter(section => section.groups.some(group => availableGroups.has(group)))
+}
+
+export function useSectionsMatchingSearch(searchTerm: string): CategorySection[] {
+    return sectionsMatchingSearch(searchTerm, useAvailableGroupSet())
 }
 
 export function useSelectedGroups(): Group[] {
