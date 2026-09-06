@@ -286,7 +286,10 @@ function wordFor(unit: NamedUnit, singular: boolean): string {
 }
 
 function computedUnit(dimensions: Dimension[], toBaseUnits: number): StoredUnit {
-    return { unit: { dimensions, decoration: { kind: 'none' }, times: 1, baseIsScalar: true }, toBaseUnits }
+    // F is the only base counted from a zero of its own, and nothing multiplies a reading, so a
+    // product that involves F is a difference of degrees
+    const baseIsScalar = !dimensions.some(({ baseUnit }) => baseUnit === 'F')
+    return { unit: { dimensions, decoration: { kind: 'none' }, times: baseIsScalar ? 1 : 0, baseIsScalar }, toBaseUnits }
 }
 
 export const dimensionless = computedUnit([], 1)

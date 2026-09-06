@@ -191,8 +191,17 @@ function productForward(rightPower: 1 | -1, left: KnownAIV, right: KnownAIV): Ab
             : written(left.unit, combined(left.unit.unit.times, right.constant, (times, scale) => rightPower === 1 ? times * scale : times / scale))
     }
     const product = unitProduct(left.unit, right.unit, rightPower)
-    const times = combined(left.unit.unit.times, right.unit.unit.times, (over, under) => rightPower === 1 ? over * under : over / under)
-    return product === undefined ? { kind: 'none' } : written(product, times)
+    if (product === undefined) {
+        return { kind: 'none' }
+    }
+    // nothing multiplies a reading, so a product on a scale with a zero of its own is a difference:
+    // people to the degree is a rate, not the one over no degrees that dividing the coefficients
+    // says. A coefficient nobody knows stays unknown, being no arithmetic of ours
+    const known = left.unit.unit.times !== 'unknown' && right.unit.unit.times !== 'unknown'
+    const times = product.unit.baseIsScalar || !known
+        ? combined(left.unit.unit.times, right.unit.unit.times, (over, under) => rightPower === 1 ? over * under : over / under)
+        : 0
+    return written(product, times)
 }
 
 export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue {
