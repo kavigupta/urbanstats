@@ -336,7 +336,6 @@ export async function mapCard(origin: string, pageData: Extract<PageData, { kind
             break
     }
 
-    // a map that states its unit says what to convert the script into, so the label says how
     const stated = map.unit === undefined ? undefined : unitTypeToStoredUnit(map.unit)
     const label = map.label ?? deriveMapLabel(script.uss, defaultTypeEnvironment(universe), stated)
     return {

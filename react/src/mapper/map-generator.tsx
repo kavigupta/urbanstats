@@ -121,7 +121,6 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
     let label: HumanReadableName
 
     if (mapResultMain.value.label === undefined) {
-        // a map that states its unit says what to convert the script into, so the label says how
         const stated = mapResultMain.value.unit === undefined ? undefined : unitTypeToStoredUnit(mapResultMain.value.unit)
         const derivedLabel = deriveMapLabel(mapSettings.script.uss, typeEnvironment, stated)
         if (derivedLabel === undefined) {
