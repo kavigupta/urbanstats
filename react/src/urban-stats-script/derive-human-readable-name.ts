@@ -397,14 +397,13 @@ type ConversionWriting =
     /** Equivalent of multiplying by the unit, to convert a number to something. e.g., ln(population) [as km^2] */
     | { kind: 'as', unit: StoredUnit }
     /** Arithmetic conversion, which is either of the form (x + a) * b or (x - a) * b */
-    | { kind: 'arithmetic', zero?: ZeroOfAReading, factor?: StoredUnit }
+    | { kind: 'arithmetic', zero?: ZeroAnchorConverter, factor?: StoredUnit }
 
 /**
- * The zero a reading is counted from, taken off the value before the factor or put on after it. A
- * conversion has a reading at one end at most: temperature is the only one, so a conversion
- * between two of them would be between a unit and itself, which is no conversion to record.
+ * A converter for the 0-anchor, e.g., a temperature being converted to a difference in temperature
+ * by subtracting out 0F, or a difference in temperature being converted to a temperature by adding 0F.
  */
-interface ZeroOfAReading { unit: StoredUnit, where: 'subtracted' | 'added' }
+interface ZeroAnchorConverter { unit: StoredUnit, where: 'subtracted' | 'added' }
 
 function writingOf({ internalUnit, expectedUnit }: UnitConversion): ConversionWriting {
     if (internalUnit === undefined) {
@@ -413,24 +412,52 @@ function writingOf({ internalUnit, expectedUnit }: UnitConversion): ConversionWr
     if (isPlainNumber(expectedUnit)) {
         return { kind: 'in', unit: internalUnit }
     }
-    const scales = multiplies(internalUnit.unit)
-    const from = scales ? internalUnit : asADifference(internalUnit)
-    const to = multiplies(expectedUnit.unit) ? expectedUnit : asADifference(expectedUnit)
-    // a factor between two scales is a difference of them. Written as a reading it would use the
-    // zero of the reader's scale: one degree per person would show as -17.2C/person, not 0.556
-    const between = unitProduct(to, from, -1)
-    const spansAZero = !internalUnit.unit.baseIsScalar || !expectedUnit.unit.baseIsScalar
-    const factor = alike(to, from) || between === undefined ? undefined : (spansAZero ? asADifference(between) : between)
-    const madeAReading = expectedUnit.unit.times === 1 && !expectedUnit.unit.baseIsScalar
-    const zero: ZeroOfAReading | undefined = scales
-        ? (madeAReading ? { unit: expectedUnit, where: 'added' } : undefined)
-        : { unit: internalUnit, where: 'subtracted' }
+    let currentInternalUnit = internalUnit
+    let currentExpectedUnit = expectedUnit
+    let zero: ZeroAnchorConverter | undefined = undefined
+    if (!multiplies(internalUnit.unit)) {
+        zero = { unit: internalUnit, where: 'subtracted' }
+        currentInternalUnit = asADifference(internalUnit)
+    }
+    if (!multiplies(expectedUnit.unit)) {
+        currentExpectedUnit = asADifference(expectedUnit)
+        // times counts the readings the unit stands for, two where a temperature is added to one.
+        // Those bring their own zeros, so only a lone reading needs one written here
+        if (expectedUnit.unit.times === 1) {
+            zero = { unit: expectedUnit, where: 'added' }
+        }
+    }
+    const ratio = unitProduct(currentExpectedUnit, currentInternalUnit, -1)
+    const factor = ratio === undefined || alike(currentExpectedUnit, currentInternalUnit) ? undefined : ratio
     return {
         kind: 'arithmetic',
         ...zero === undefined ? {} : { zero },
         ...factor === undefined ? {} : { factor },
     }
 }
+
+//     // a temperature counts from a zero of its own, which has to come off before it can be
+//     // multiplied, and go back on where the conversion ends in one
+//     const subtractsAZero = !multiplies(internalUnit.unit)
+//     const addsAZero = expectedUnit.unit.times === 1 && !expectedUnit.unit.baseIsScalar
+//     const from = subtractsAZero ? asADifference(internalUnit) : internalUnit
+//     const to = multiplies(expectedUnit.unit) ? expectedUnit : asADifference(expectedUnit)
+//     const ratio = unitProduct(to, from, -1)
+//     // a factor between two scales is a difference of them. Counted from a zero it would use the
+//     // zero of the reader's scale: one degree per person would show as -17.2C/person, not 0.556
+//     const eitherScaleHasAZero = !internalUnit.unit.baseIsScalar || !expectedUnit.unit.baseIsScalar
+//     const factor = alike(to, from) || ratio === undefined
+//         ? undefined
+//         : (eitherScaleHasAZero ? asADifference(ratio) : ratio)
+//     const zero: ZeroAnchorConverter | undefined = subtractsAZero
+//         ? { unit: internalUnit, where: 'subtracted' }
+//         : (addsAZero ? { unit: expectedUnit, where: 'added' } : undefined)
+//     return {
+//         kind: 'arithmetic',
+//         ...zero === undefined ? {} : { zero },
+//         ...factor === undefined ? {} : { factor },
+//     }
+// }
 
 /** The operator a conversion's writing ends on, which is what encloses it has to reckon with. */
 function conversionRunsAs(conversion: UnitConversion): BinaryOperatorSymbol | undefined {
