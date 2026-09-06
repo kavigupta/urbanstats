@@ -64,9 +64,9 @@ if (options.headless) {
     void execa('Xvfb', [':10', '-ac'])
     process.env.DISPLAY = ':10'
     void execa('bash', ['-c', 'fluxbox >/dev/null 2>&1'])
-    if (process.env.URBANSTATS_VNC) {
+    if (process.env.URBANSTATS_VNC_PASSWORD) {
         // Retries because Xvfb above may not be listening yet
-        void execa('bash', ['-c', 'until x11vnc -display :10 -rfbport "$URBANSTATS_VNC_PORT" -passwd "$URBANSTATS_VNC" -localhost -forever -shared -quiet; do sleep 0.2; done'])
+        void execa('bash', ['-c', 'until x11vnc -display :10 -rfbport "$URBANSTATS_VNC_PORT" -passwd "$URBANSTATS_VNC_PASSWORD" -localhost -forever -shared -quiet; do sleep 0.2; done'])
     }
 }
 

@@ -31,7 +31,7 @@ export async function runE2eTestsDocker(args: string[], hostArch: boolean, docke
             '--mount', 'type=tmpfs,dst=/urbanstats/react/node_modules',
             '-w', '/urbanstats/react',
             ...(['PORT', 'TESTCAFE_PORT'].flatMap(envVar => process.env[envVar] ? ['-e', `${envVar}=${process.env[envVar]}`] : [])),
-            '-e', `URBANSTATS_VNC=${vncPassword}`,
+            '-e', `URBANSTATS_VNC_PASSWORD=${vncPassword}`,
             '-e', `URBANSTATS_VNC_PORT=${vncPort}`,
             imageName,
             ...args,
