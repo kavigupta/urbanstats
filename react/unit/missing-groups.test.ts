@@ -138,6 +138,7 @@ void test('no year selected and no source enabled asks for both', () => {
 void test('a whole subcategory in an incomplete category consolidates into the subcategory', () => {
     // The segregation groups are available but unselected, so the Race category can't stand in;
     // its pie chart of races can.
+    // eslint-disable-next-line no-restricted-syntax -- these are stat paths, not css colors
     const race: StatPath[] = ['white', 'black', 'homogeneity_250_2020']
     assert.deepStrictEqual(
         warnings([race], ['show_stat_group_white', 'show_stat_group_black']),
