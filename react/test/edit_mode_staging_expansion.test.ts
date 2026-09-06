@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { categoryToggleButton, ensureCategoryCollapsed, ensureCategoryExpanded, enterEditMode, filterBox, interactableGroupCheckbox, setCategoryExpanded } from './edit_mode_test_utils'
+import { categoryToggleButton, ensureCategoryCollapsed, ensureCategoryExpanded, enterEditMode, filterBox, interactableGroupCheckbox, setCategoryExpanded, setSubcategoryExpanded, subcategoryCheckbox, subcategoryToggleButton } from './edit_mode_test_utils'
 import { getLocation, target, urbanstatsFixture } from './test_utils'
 
 /**
@@ -54,4 +54,39 @@ test('the expanded category can be collapsed again while staging', async (t) => 
 
     await t.expect(categoryToggleButton('main', 'Expand').exists).ok()
     await t.expect(interactableGroupCheckbox('population').exists).notOk()
+})
+
+let hispanicOffLink: string
+
+urbanstatsFixture('generate link that turns off a group inside a subcategory', californiaPage)
+
+test('turning off a group inside a subcategory produces a link that carries it', async (t) => {
+    await enterEditMode(t)
+    await ensureCategoryExpanded(t, 'race')
+    await t.click(subcategoryCheckbox('race_composition'))
+    await t.click(interactableGroupCheckbox('hispanic'))
+
+    hispanicOffLink = await getLocation()
+})
+
+urbanstatsFixture('visit link that turns off a group in a collapsed subcategory', californiaPage, async (t) => {
+    await enterEditMode(t)
+    await ensureCategoryExpanded(t, 'race')
+    await t.click(subcategoryCheckbox('race_composition'))
+    // Leaves a group behind the subcategory's toggle, which a fully selected one wouldn't have
+    await t.click(interactableGroupCheckbox('asian'))
+    await setSubcategoryExpanded(t, 'race_composition', false)
+    await setCategoryExpanded(t, 'race', false)
+
+    await t.navigateTo(hispanicOffLink)
+})
+
+test('the subcategory hiding a staged change is expanded along with its category', async (t) => {
+    await t.expect(Selector('[data-test-id=staging_controls]').exists).ok()
+    await t.expect(categoryToggleButton('race', 'Collapse').exists).ok()
+    await t.expect(subcategoryToggleButton('race_composition', 'Collapse').exists).ok()
+
+    const hispanic = interactableGroupCheckbox('hispanic')
+    await t.expect(hispanic.checked).notOk()
+    await t.expect(hispanic.getAttribute('data-test-highlight')).eql('true')
 })
