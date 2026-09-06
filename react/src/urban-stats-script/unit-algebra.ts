@@ -195,10 +195,11 @@ function productForward(rightPower: 1 | -1, left: KnownAIV, right: KnownAIV): Ab
     if (product === undefined) {
         return { kind: 'none' }
     }
-    // times counts the readings a value is, and is only read on the F scale, where 1 means an
-    // offset applies. unitProduct takes no reading as an operand, so a product is never one: it is
-    // 0 there, rather than the Infinity that dividing one reading by none of them gives
-    const times = product.unit.baseIsScalar
+    // nothing multiplies a reading, so a product on a scale with a zero of its own is a difference:
+    // people to the degree is a rate, not the one over no degrees that dividing the coefficients
+    // says. A coefficient nobody knows stays unknown, being no arithmetic of ours
+    const known = left.unit.unit.times !== 'unknown' && right.unit.unit.times !== 'unknown'
+    const times = product.unit.baseIsScalar || !known
         ? combined(left.unit.unit.times, right.unit.unit.times, (over, under) => rightPower === 1 ? over * under : over / under)
         : 0
     return written(product, times)

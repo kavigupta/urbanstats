@@ -227,9 +227,8 @@ void test('a regression is read field by field', () => {
     // a coefficient is that difference over a difference of its parameter: people per square kilometre
     assert.equal(inferred(`${people}regr.m1`), 'm^-2 person^1 times=unknown x0.000001')
     assert.equal(inferred(`${people}regr.r2`), 'dimensionless times=1 x1')
-    // and of a temperature, degrees per square kilometre. A rate is a difference, no reading being
-    // divisible, so it counts no readings rather than the none over none the coefficients divide to
-    assert.equal(inferred('regr = regression(y=high_temp, x1=area)\nregr.m1'), 'F^1 m^-2 times=0 x0.000001')
+    // and of a temperature, degrees per square kilometre, a difference of them being what multiplies
+    assert.equal(inferred('regr = regression(y=high_temp, x1=area)\nregr.m1'), 'F^1 m^-2 times=unknown x0.000001')
     // and a share over a logarithm is dimensionless: neither is counted in anything
     assert.equal(inferred('regr = regression(y=commute_bike, x1=ln(population))\nregr.m1'), 'dimensionless times=unknown x1')
     assert.equal(inferred(`${people}regr.nonesuch`), 'unknown')
