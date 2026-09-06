@@ -292,8 +292,9 @@ function computedUnit(dimensions: Dimension[], toBaseUnits: number, times: Coeff
 export const dimensionless = computedUnit([], 1, 1)
 
 /**
- * Anything a difference is multiplied into or divided by is one itself: no zero of the scale it
- * came from is left in it, so nothing is added back when it is written.
+ * For products we do not propagate the exact times field, that being ill defined. We do propagate
+ * whether it is 0, which is whether the unit is a difference, and is what renders it signed. A
+ * product is a difference if any of its operands are.
  */
 function timesOfAProduct(...operands: Unit[]): Coefficient {
     return operands.some(({ times }) => times === 0) ? 0 : 1
