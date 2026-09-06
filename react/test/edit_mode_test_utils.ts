@@ -129,3 +129,13 @@ export async function ensureCategoryExpanded(t: TestController, categoryId: stri
         await setCategoryExpanded(t, categoryId, true)
     }
 }
+
+/** The same, for a subcategory. Its toggle is only reachable while its category is expanded. */
+export function subcategoryToggleButton(subcategoryId: string, direction: 'Expand' | 'Collapse'): Selector {
+    return Selector(`[data-subcategory-id=${subcategoryId}]`).withAttribute('aria-label', new RegExp(`^${direction} `))
+}
+
+export async function setSubcategoryExpanded(t: TestController, subcategoryId: string, expanded: boolean): Promise<void> {
+    await t.click(subcategoryToggleButton(subcategoryId, expanded ? 'Expand' : 'Collapse'))
+    await t.wait(collapseAnimationMs)
+}

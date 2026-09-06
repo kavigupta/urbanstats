@@ -76,13 +76,20 @@ export function editRowsByGroup(
     return result
 }
 
+/** The collapsible run an unselected row belongs to. Absent on rows that are always shown. */
+interface RowCollapse {
+    key: string
+    expanded: boolean
+}
+
 interface EditHeaderSpec {
     kind: 'header'
     key: string
     indent: number
     highlight: boolean
-    enabled: boolean
+    collapse?: RowCollapse
     checkbox: ReactNode
+    toggle?: ReactNode
     name: string
     /** Set for a group the year or source selection leaves with nothing to show. */
     warning?: ReactNode
@@ -94,6 +101,7 @@ interface EditStatSpec {
     highlight: boolean
     indent: number
     enabled: boolean
+    collapse?: RowCollapse
     editRow: EditRow
     checkbox: { kind: 'own', node: ReactNode } | { kind: 'headers', id: string }
 }
@@ -120,20 +128,32 @@ function EditLabelRow(props: {
     index: number
     highlight: boolean
     checkbox: ReactNode
+    toggle?: ReactNode
     name: string
     paddingLeft: string
     warning?: { layout: MeasuredTableLayout, content: ReactNode }
 }): ReactNode {
-    const { warning } = props
+    const { warning, toggle } = props
+    const width = warning === undefined ? '100%' : `${warning.layout.widthLeftHeader}%`
+    const label = (
+        <EditCheckboxLabel
+            highlight={props.highlight}
+            style={toggle === undefined ? { width, paddingLeft: props.paddingLeft } : undefined}
+            checkbox={props.checkbox}
+        >
+            {props.name}
+        </EditCheckboxLabel>
+    )
     return (
         <TableRowContainer index={props.index}>
-            <EditCheckboxLabel
-                highlight={props.highlight}
-                style={{ width: warning === undefined ? '100%' : `${warning.layout.widthLeftHeader}%`, paddingLeft: props.paddingLeft }}
-                checkbox={props.checkbox}
-            >
-                {props.name}
-            </EditCheckboxLabel>
+            {toggle === undefined
+                ? label
+                : (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: `${toggleGapEm}em`, width, paddingLeft: props.paddingLeft }}>
+                            {toggle}
+                            {label}
+                        </div>
+                    )}
             {warning !== undefined && <WarningRowMessage layout={warning.layout} content={warning.content} />}
         </TableRowContainer>
     )
@@ -189,6 +209,7 @@ function AnimatedCollapse({ expanded, children }: { expanded: boolean, children:
 function groupBodyRows(
     { group, enabled, setEnabled, highlight }: GroupTreeState,
     indent: number,
+    collapse: RowCollapse,
     rowsByGroup: Map<string, EditRow[]>,
     warningsByGroup: Map<string, ReactNode>,
 ): EditBodyRow[] {
@@ -203,12 +224,14 @@ function groupBodyRows(
             highlight={highlight}
         />
     )
+    const rowCollapse = enabled ? undefined : collapse
     const statSpec = (editRow: EditRow, statIndent: number, whoseCheckbox: EditStatSpec['checkbox']): EditStatSpec => ({
         kind: 'stat',
         key: `stat-${editRow.row.statpath}`,
         highlight,
         indent: statIndent,
         enabled,
+        collapse: rowCollapse,
         editRow,
         checkbox: whoseCheckbox,
     })
@@ -216,25 +239,33 @@ function groupBodyRows(
         return [statSpec(groupRows[0], indent, { kind: 'own', node: checkbox })]
     }
     return [
-        { kind: 'header', key: `group-${group.id}`, indent, highlight, enabled, checkbox, name: group.name, warning: warningsByGroup.get(group.id) },
+        { kind: 'header', key: `group-${group.id}`, indent, highlight, collapse: rowCollapse, checkbox, name: group.name, warning: warningsByGroup.get(group.id) },
         ...groupRows.map(editRow => statSpec(editRow, indent + 1, { kind: 'headers', id: checkboxId })),
     ]
 }
 
-function categoryBodyRows(sections: SectionTreeState[], rowsByGroup: Map<string, EditRow[]>, warningsByGroup: Map<string, ReactNode>): EditBodyRow[] {
+function categoryBodyRows(
+    sections: SectionTreeState[],
+    { categoryExpanded, searching }: { categoryExpanded: boolean, searching: boolean },
+    rowsByGroup: Map<string, EditRow[]>,
+    warningsByGroup: Map<string, ReactNode>,
+): EditBodyRow[] {
+    const categoryCollapse = { key: 'category', expanded: categoryExpanded }
     return sections.flatMap((section): EditBodyRow[] => {
         if (section.kind === 'Group') {
-            return groupBodyRows(section.group, 1, rowsByGroup, warningsByGroup)
+            return groupBodyRows(section.group, 1, categoryCollapse, rowsByGroup, warningsByGroup)
         }
-        const { subcategory, status, toggle, highlight, groups } = section
+        const { subcategory, status, toggle, highlight, expanded, setExpanded, groups } = section
+        const shown = searching || (categoryExpanded && expanded)
+        const anythingToExpand = groups.some(group => !group.enabled)
         return [
             {
                 kind: 'header',
                 key: `subcategory-${subcategory.id}`,
                 indent: 1,
                 highlight,
-                // Keeps the header out of the collapsible run whenever it has something to show
-                enabled: groups.some(({ enabled }) => enabled),
+                // The header stays out of the category's collapsible run whenever it has something to show
+                collapse: groups.some(group => group.enabled) ? undefined : categoryCollapse,
                 checkbox: (
                     <EditCheckbox
                         checked={status === true}
@@ -244,38 +275,52 @@ function categoryBodyRows(sections: SectionTreeState[], rowsByGroup: Map<string,
                         highlight={highlight}
                     />
                 ),
+                toggle: anythingToExpand && !searching
+                    ? (
+                            <ExpandButton
+                                isExpanded={shown}
+                                data-subcategory-id={subcategory.id}
+                                onClick={() => { setExpanded(!expanded) }}
+                                style={{ ...toggleSize, backgroundSize: '16px' }}
+                                aria-label={shown ? `Collapse ${subcategory.name} subcategory` : `Expand ${subcategory.name} subcategory`}
+                            />
+                        )
+                    : <div style={toggleSize} />,
                 name: subcategory.name,
             },
-            ...groups.flatMap(group => groupBodyRows(group, 2, rowsByGroup, warningsByGroup)),
+            ...groups.flatMap(group => groupBodyRows(group, 2, { key: `subcategory-${subcategory.id}`, expanded: shown }, rowsByGroup, warningsByGroup)),
         ]
     })
 }
 
 interface EditBodySegment {
     key: string
-    collapsible: boolean
+    /** Unset on a run that is always shown. */
+    expanded?: boolean
     rows: { spec: EditBodyRow, index: number }[]
 }
 
 /**
- * Splits a category's rows into runs of selected rows, which the category shows whether or
- * not it is expanded, and runs of unselected ones, which only the expanded category shows.
+ * Splits a category's rows into runs of selected rows, which are shown whether or not the
+ * category is expanded, and runs of unselected ones, each belonging to the category's or a
+ * subcategory's collapse.
  *
  * Rows are striped by the position they end up at, counting only the rows currently on
  * display, so the alternation is unbroken in either state. The category header is row 0.
  */
-function editBodySegments(bodyRows: EditBodyRow[], expanded: boolean): EditBodySegment[] {
+function editBodySegments(bodyRows: EditBodyRow[]): EditBodySegment[] {
     const segments: EditBodySegment[] = []
     let segment: EditBodySegment | undefined
+    let collapseKey: string | undefined
     let index = 1
     for (const spec of bodyRows) {
-        const collapsible = !spec.enabled
-        if (segment?.collapsible !== collapsible) {
-            segment = { key: spec.key, collapsible, rows: [] }
+        if (segment === undefined || collapseKey !== spec.collapse?.key) {
+            collapseKey = spec.collapse?.key
+            segment = { key: spec.key, expanded: spec.collapse?.expanded, rows: [] }
             segments.push(segment)
         }
         segment.rows.push({ spec, index })
-        if (expanded || !collapsible) {
+        if (spec.collapse?.expanded !== false) {
             index++
         }
     }
@@ -294,8 +339,14 @@ function EditCategory(props: {
 }): ReactNode {
     const tree = useCategoryTreeState(props.category, props.expansion)
     const expanded = props.searching || tree.expanded
-    const segments = editBodySegments(categoryBodyRows(tree.sections, props.rowsByGroup, props.warningsByGroup), expanded)
-    const anythingToExpand = segments.some(segment => segment.collapsible)
+    const bodyRows = categoryBodyRows(
+        tree.sections,
+        { categoryExpanded: expanded, searching: props.searching },
+        props.rowsByGroup,
+        props.warningsByGroup,
+    )
+    const segments = editBodySegments(bodyRows)
+    const anythingToExpand = bodyRows.some(row => row.collapse !== undefined)
 
     return (
         <>
@@ -339,16 +390,18 @@ function EditCategory(props: {
                                 index={index}
                                 highlight={spec.highlight}
                                 checkbox={spec.checkbox}
+                                toggle={spec.toggle}
                                 name={spec.name}
-                                paddingLeft={treeIndent(spec.indent)}
+                                // A toggle takes up the space treeIndent reserves for one, so the checkboxes stay in line
+                                paddingLeft={spec.toggle === undefined ? treeIndent(spec.indent) : `${spec.indent * indentEm}em`}
                                 warning={spec.warning === undefined ? undefined : { layout: props.layout, content: spec.warning }}
                             />
                         )
                     : <EditStatRow key={spec.key} layout={props.layout} index={index} spec={spec} />,
                 )
-                return segment.collapsible
-                    ? <AnimatedCollapse key={segment.key} expanded={expanded}>{rows}</AnimatedCollapse>
-                    : <React.Fragment key={segment.key}>{rows}</React.Fragment>
+                return segment.expanded === undefined
+                    ? <React.Fragment key={segment.key}>{rows}</React.Fragment>
+                    : <AnimatedCollapse key={segment.key} expanded={segment.expanded}>{rows}</AnimatedCollapse>
             })}
         </>
     )

@@ -109,36 +109,50 @@ function saveIndeterminateState(settings: Settings, node: StatNode): void {
 }
 
 export interface ExpansionState {
-    isExpanded: (category: Category) => boolean
-    setExpanded: (category: Category, expanded: boolean) => void
+    isExpanded: (node: StatNode) => boolean
+    setExpanded: (node: StatNode, expanded: boolean) => void
+}
+
+function expansionKey(node: StatNode): string {
+    return `${node.kind}_${node.id}`
 }
 
 /**
- * Which categories are open, for as long as edit mode lasts. A category starts open when it has a
- * selected group, or one staging is changing, which a closed category would hide.
+ * Which categories and subcategories are open, for as long as edit mode lasts. A node starts open
+ * when it has a selected group, or one staging is changing, which a closed node would hide.
  */
 export function useExpansionState(): ExpansionState {
     const settings = useContext(Settings.Context)
     const { categories, groups: availableGroups } = useAvailableTree()
-    const [expanded, setExpanded] = useState(() => new Set(categories
-        .filter(category => category.contents.some((group) => {
-            if (!availableGroups.has(group)) {
-                return false
+    const [expanded, setExpanded] = useState(() => {
+        const open = new Set<string>()
+        for (const category of categories) {
+            for (const group of category.contents) {
+                if (!availableGroups.has(group)) {
+                    continue
+                }
+                const info = settings.getSettingInfo(`show_stat_group_${group.id}`)
+                if (!settingValue(info) && !isStagedChange(info)) {
+                    continue
+                }
+                open.add(expansionKey(category))
+                if (group.subcategory !== undefined) {
+                    open.add(expansionKey(group.subcategory))
+                }
             }
-            const info = settings.getSettingInfo(`show_stat_group_${group.id}`)
-            return settingValue(info) || isStagedChange(info)
-        }))
-        .map(category => category.id)))
+        }
+        return open
+    })
     return {
-        isExpanded: category => expanded.has(category.id),
-        setExpanded: (category, value) => {
+        isExpanded: node => expanded.has(expansionKey(node)),
+        setExpanded: (node, value) => {
             setExpanded((current) => {
                 const next = new Set(current)
                 if (value) {
-                    next.add(category.id)
+                    next.add(expansionKey(node))
                 }
                 else {
-                    next.delete(category.id)
+                    next.delete(expansionKey(node))
                 }
                 return next
             })
@@ -157,7 +171,12 @@ function toggleNodeSetting(settings: Settings, expansion: ExpansionState, node: 
         nodeGroups(node).forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, value(group)) })
     }
     const category = node.kind === 'Category' ? node : node.parent
-    const expandCategory = (): void => { expansion.setExpanded(category, true) }
+    const expandCategory = (): void => {
+        expansion.setExpanded(category, true)
+        if (node.kind === 'Subcategory') {
+            expansion.setExpanded(node, true)
+        }
+    }
     switch (status) {
         case 'indeterminate':
             setAllGroups(() => true)
@@ -195,6 +214,8 @@ export interface SubcategoryTreeState {
     status: boolean | 'indeterminate'
     toggle: () => void
     highlight: boolean
+    expanded: boolean
+    setExpanded: (expanded: boolean) => void
     groups: GroupTreeState[]
 }
 
@@ -235,6 +256,8 @@ export function useCategoryTreeState(category: Category, expansion: ExpansionSta
             status,
             toggle: () => { toggleNodeSetting(settings, expansion, section.subcategory, section.groups, status) },
             highlight: groups.some(group => group.highlight),
+            expanded: expansion.isExpanded(section.subcategory),
+            setExpanded: (newValue: boolean) => { expansion.setExpanded(section.subcategory, newValue) },
             groups,
         }
     })
