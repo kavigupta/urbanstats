@@ -57,9 +57,7 @@ jobs:
               return;
             }
 
-            const latestRun = usableRuns[0];
-            core.setOutput('run-id', latestRun.id);
-            core.setOutput('run-attempt', latestRun.run_attempt);
+            core.setOutput('run-id', usableRuns[0].id);
 
       - name: Download combined artifact
         uses: actions/github-script@v7
@@ -67,19 +65,24 @@ jobs:
           script: |
             const fs = require('fs');
 
-            const name = `combined-${{ steps.workflow-run.outputs.run-attempt }}`;
-
-            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+            const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               run_id: '${{ steps.workflow-run.outputs.run-id }}',
-              name
+              per_page: 100
             });
 
-            const artifact = artifacts.data.artifacts[0];
+            // Re-running one job bumps the run's attempt without re-running merge-assets, so
+            // the newest combined artifact isn't necessarily the current attempt's.
+            const artifact = artifacts
+              .flatMap(candidate => {
+                const attempt = /^combined-(\d+)$/.exec(candidate.name)?.[1];
+                return attempt === undefined ? [] : [{ candidate, attempt: Number(attempt) }];
+              })
+              .sort((a, b) => b.attempt - a.attempt)[0]?.candidate;
 
             if (!artifact) {
-              core.setFailed(`No ${name} artifact found`);
+              core.setFailed('No combined artifact found');
               return;
             }
 
