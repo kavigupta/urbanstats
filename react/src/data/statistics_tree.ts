@@ -149,6 +149,7 @@ export const rawStatsTree = [
             {
                 "id": "population",
                 "name": "Population",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -272,6 +273,7 @@ export const rawStatsTree = [
             {
                 "id": "ad_1",
                 "name": "PW Density (r=1km)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -395,6 +397,7 @@ export const rawStatsTree = [
             {
                 "id": "sd",
                 "name": "AW Density",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -482,6 +485,7 @@ export const rawStatsTree = [
             {
                 "id": "area",
                 "name": "Area",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": null,
@@ -507,6 +511,7 @@ export const rawStatsTree = [
             {
                 "id": "compactness",
                 "name": "Compactness",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": null,
@@ -538,6 +543,7 @@ export const rawStatsTree = [
             {
                 "id": "gridded_hilliness",
                 "name": "PW Mean Hilliness (Grade)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -563,6 +569,7 @@ export const rawStatsTree = [
             {
                 "id": "gridded_elevation",
                 "name": "PW Mean Elevation",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -594,6 +601,10 @@ export const rawStatsTree = [
             {
                 "id": "white",
                 "name": "White %",
+                "subcategory": {
+                    "id": "race_composition",
+                    "name": "Racial Composition"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -665,6 +676,10 @@ export const rawStatsTree = [
             {
                 "id": "hispanic",
                 "name": "Hispanic %",
+                "subcategory": {
+                    "id": "race_composition",
+                    "name": "Racial Composition"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -736,6 +751,10 @@ export const rawStatsTree = [
             {
                 "id": "black",
                 "name": "Black %",
+                "subcategory": {
+                    "id": "race_composition",
+                    "name": "Racial Composition"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -807,6 +826,10 @@ export const rawStatsTree = [
             {
                 "id": "asian",
                 "name": "Asian %",
+                "subcategory": {
+                    "id": "race_composition",
+                    "name": "Racial Composition"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -878,6 +901,10 @@ export const rawStatsTree = [
             {
                 "id": "native",
                 "name": "Native %",
+                "subcategory": {
+                    "id": "race_composition",
+                    "name": "Racial Composition"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -949,6 +976,10 @@ export const rawStatsTree = [
             {
                 "id": "hawaiian_pi",
                 "name": "Hawaiian / PI %",
+                "subcategory": {
+                    "id": "race_composition",
+                    "name": "Racial Composition"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -1020,6 +1051,10 @@ export const rawStatsTree = [
             {
                 "id": "other  slash  mixed",
                 "name": "Other / Mixed %",
+                "subcategory": {
+                    "id": "race_composition",
+                    "name": "Racial Composition"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -1091,6 +1126,7 @@ export const rawStatsTree = [
             {
                 "id": "homogeneity_250",
                 "name": "Racial Homogeneity %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2000,
@@ -1182,6 +1218,7 @@ export const rawStatsTree = [
             {
                 "id": "segregation_250",
                 "name": "Segregation %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2000,
@@ -1273,6 +1310,7 @@ export const rawStatsTree = [
             {
                 "id": "segregation_250_10",
                 "name": "Mean Local Segregation %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2000,
@@ -1370,6 +1408,10 @@ export const rawStatsTree = [
             {
                 "id": "citizenship_citizen_by_birth",
                 "name": "Citizen by Birth %",
+                "subcategory": {
+                    "id": "citizenship",
+                    "name": "Citizenship"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -1403,6 +1445,10 @@ export const rawStatsTree = [
             {
                 "id": "citizenship_citizen_by_naturalization",
                 "name": "Citizen by Naturalization %",
+                "subcategory": {
+                    "id": "citizenship",
+                    "name": "Citizenship"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -1436,6 +1482,10 @@ export const rawStatsTree = [
             {
                 "id": "citizenship_not_citizen",
                 "name": "Non-citizen %",
+                "subcategory": {
+                    "id": "citizenship",
+                    "name": "Citizenship"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -1469,6 +1519,10 @@ export const rawStatsTree = [
             {
                 "id": "birthplace_non_us",
                 "name": "Born outside US %",
+                "subcategory": {
+                    "id": "birthplace",
+                    "name": "Birthplace"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -1494,6 +1548,10 @@ export const rawStatsTree = [
             {
                 "id": "birthplace_us_not_state",
                 "name": "Born in us outside state %",
+                "subcategory": {
+                    "id": "birthplace",
+                    "name": "Birthplace"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -1519,6 +1577,10 @@ export const rawStatsTree = [
             {
                 "id": "birthplace_us_state",
                 "name": "Born in state of residence %",
+                "subcategory": {
+                    "id": "birthplace",
+                    "name": "Birthplace"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -1544,6 +1606,10 @@ export const rawStatsTree = [
             {
                 "id": "language_english_only",
                 "name": "Only English at Home %",
+                "subcategory": {
+                    "id": "language",
+                    "name": "Language at Home"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -1577,6 +1643,10 @@ export const rawStatsTree = [
             {
                 "id": "language_spanish",
                 "name": "Spanish at Home %",
+                "subcategory": {
+                    "id": "language",
+                    "name": "Language at Home"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -1610,6 +1680,10 @@ export const rawStatsTree = [
             {
                 "id": "language_french_canada",
                 "name": "French at Home % [StatCan]",
+                "subcategory": {
+                    "id": "language",
+                    "name": "Language at Home"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -1635,6 +1709,10 @@ export const rawStatsTree = [
             {
                 "id": "language_other_non_french_canada",
                 "name": "Other (non-French) at Home % [StatCan]",
+                "subcategory": {
+                    "id": "language",
+                    "name": "Language at Home"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -1660,6 +1738,10 @@ export const rawStatsTree = [
             {
                 "id": "language_other",
                 "name": "Other at Home %",
+                "subcategory": {
+                    "id": "language",
+                    "name": "Language at Home"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -1691,6 +1773,7 @@ export const rawStatsTree = [
             {
                 "id": "religion_no_religion_canada",
                 "name": "No religion % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -1716,6 +1799,7 @@ export const rawStatsTree = [
             {
                 "id": "religion_catholic_canada",
                 "name": "Catholic % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -1741,6 +1825,7 @@ export const rawStatsTree = [
             {
                 "id": "religion_protestant_canada",
                 "name": "Protestant (non-Catholic Christian) % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -1766,6 +1851,7 @@ export const rawStatsTree = [
             {
                 "id": "religion_hindu_canada",
                 "name": "Hindu % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -1791,6 +1877,7 @@ export const rawStatsTree = [
             {
                 "id": "religion_jewish_canada",
                 "name": "Jewish % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -1816,6 +1903,7 @@ export const rawStatsTree = [
             {
                 "id": "religion_muslim_canada",
                 "name": "Muslim % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -1841,6 +1929,7 @@ export const rawStatsTree = [
             {
                 "id": "religion_sikh_canada",
                 "name": "Sikh % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -1866,6 +1955,7 @@ export const rawStatsTree = [
             {
                 "id": "religion_buddhist_canada",
                 "name": "Buddhist % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -1891,6 +1981,7 @@ export const rawStatsTree = [
             {
                 "id": "religion_other_canada",
                 "name": "Other religion % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -1922,6 +2013,10 @@ export const rawStatsTree = [
             {
                 "id": "education_high_school",
                 "name": "High School %",
+                "subcategory": {
+                    "id": "education_attainment",
+                    "name": "Educational Attainment"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -1947,6 +2042,10 @@ export const rawStatsTree = [
             {
                 "id": "education_ugrad",
                 "name": "Undergrad %",
+                "subcategory": {
+                    "id": "education_attainment",
+                    "name": "Educational Attainment"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -1972,6 +2071,10 @@ export const rawStatsTree = [
             {
                 "id": "education_grad",
                 "name": "Grad %",
+                "subcategory": {
+                    "id": "education_attainment",
+                    "name": "Educational Attainment"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -1997,6 +2100,10 @@ export const rawStatsTree = [
             {
                 "id": "education_high_school_canada",
                 "name": "High school diploma [25-64] %",
+                "subcategory": {
+                    "id": "education_attainment",
+                    "name": "Educational Attainment"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2022,6 +2129,10 @@ export const rawStatsTree = [
             {
                 "id": "education_ugrad_canada",
                 "name": "Bachelor's degree [25-64] %",
+                "subcategory": {
+                    "id": "education_attainment",
+                    "name": "Educational Attainment"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2047,6 +2158,10 @@ export const rawStatsTree = [
             {
                 "id": "education_grad_canada",
                 "name": "Graduate degree [25-64] %",
+                "subcategory": {
+                    "id": "education_attainment",
+                    "name": "Educational Attainment"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2072,6 +2187,10 @@ export const rawStatsTree = [
             {
                 "id": "education_field_stem",
                 "name": "Undergrad STEM %",
+                "subcategory": {
+                    "id": "education_field",
+                    "name": "Field of Study"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2097,6 +2216,10 @@ export const rawStatsTree = [
             {
                 "id": "education_field_humanities",
                 "name": "Undergrad Humanities %",
+                "subcategory": {
+                    "id": "education_field",
+                    "name": "Field of Study"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2122,6 +2245,10 @@ export const rawStatsTree = [
             {
                 "id": "education_field_business",
                 "name": "Undergrad Business %",
+                "subcategory": {
+                    "id": "education_field",
+                    "name": "Field of Study"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2147,6 +2274,10 @@ export const rawStatsTree = [
             {
                 "id": "education_field_stem_canada",
                 "name": "Undergrad STEM [25-64] % [StatCan]",
+                "subcategory": {
+                    "id": "education_field",
+                    "name": "Field of Study"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2172,6 +2303,10 @@ export const rawStatsTree = [
             {
                 "id": "education_field_humanities_canada",
                 "name": "Undergrad Humanities [25-64] % [StatCan]",
+                "subcategory": {
+                    "id": "education_field",
+                    "name": "Field of Study"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2197,6 +2332,10 @@ export const rawStatsTree = [
             {
                 "id": "education_field_business_canada",
                 "name": "Undergrad Business [25-64] % [StatCan]",
+                "subcategory": {
+                    "id": "education_field",
+                    "name": "Field of Study"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2222,6 +2361,7 @@ export const rawStatsTree = [
             {
                 "id": "female_hs_gap_4",
                 "name": "% of women with high school education - % of men with high school education",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -2247,6 +2387,7 @@ export const rawStatsTree = [
             {
                 "id": "female_ugrad_gap_4",
                 "name": "% of women with undergraduate education - % of men with undergraduate education",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -2272,6 +2413,7 @@ export const rawStatsTree = [
             {
                 "id": "female_grad_gap_4",
                 "name": "% of women with graduate education - % of men with graduate education",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -2303,6 +2445,7 @@ export const rawStatsTree = [
             {
                 "id": "generation_silent",
                 "name": "Silent %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -2336,6 +2479,7 @@ export const rawStatsTree = [
             {
                 "id": "generation_boomer",
                 "name": "Boomer %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -2369,6 +2513,7 @@ export const rawStatsTree = [
             {
                 "id": "generation_genx",
                 "name": "Gen X %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -2402,6 +2547,7 @@ export const rawStatsTree = [
             {
                 "id": "generation_millenial",
                 "name": "Millennial %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -2435,6 +2581,7 @@ export const rawStatsTree = [
             {
                 "id": "generation_genz",
                 "name": "Gen Z %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -2468,6 +2615,7 @@ export const rawStatsTree = [
             {
                 "id": "generation_genalpha",
                 "name": "Gen Alpha %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -2507,6 +2655,7 @@ export const rawStatsTree = [
             {
                 "id": "median_household_income",
                 "name": "Median Household Income (USD)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -2532,6 +2681,7 @@ export const rawStatsTree = [
             {
                 "id": "poverty_below_line",
                 "name": "Poverty %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -2557,6 +2707,7 @@ export const rawStatsTree = [
             {
                 "id": "lico_at_canada",
                 "name": "LICO-AT %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -2582,6 +2733,7 @@ export const rawStatsTree = [
             {
                 "id": "lim_at_canada",
                 "name": "LIM-AT %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -2607,6 +2759,10 @@ export const rawStatsTree = [
             {
                 "id": "household_income_under_50k",
                 "name": "Household Income < $50k %",
+                "subcategory": {
+                    "id": "household_income",
+                    "name": "Household Income"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2632,6 +2788,10 @@ export const rawStatsTree = [
             {
                 "id": "household_income_50k_to_100k",
                 "name": "Household Income $50k - $100k %",
+                "subcategory": {
+                    "id": "household_income",
+                    "name": "Household Income"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2657,6 +2817,10 @@ export const rawStatsTree = [
             {
                 "id": "household_income_over_100k",
                 "name": "Household Income > $100k %",
+                "subcategory": {
+                    "id": "household_income",
+                    "name": "Household Income"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2682,6 +2846,10 @@ export const rawStatsTree = [
             {
                 "id": "household_income_under_50cad",
                 "name": "Household income < C$50k %",
+                "subcategory": {
+                    "id": "household_income",
+                    "name": "Household Income"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2707,6 +2875,10 @@ export const rawStatsTree = [
             {
                 "id": "household_income_50_to_100cad",
                 "name": "Household income C$50k - C$100k %",
+                "subcategory": {
+                    "id": "household_income",
+                    "name": "Household Income"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2732,6 +2904,10 @@ export const rawStatsTree = [
             {
                 "id": "household_income_above_100_cad",
                 "name": "Household income > C$100k %",
+                "subcategory": {
+                    "id": "household_income",
+                    "name": "Household Income"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2757,6 +2933,10 @@ export const rawStatsTree = [
             {
                 "id": "individual_income_under_50k",
                 "name": "Individual Income < $50k %",
+                "subcategory": {
+                    "id": "individual_income",
+                    "name": "Individual Income"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2782,6 +2962,10 @@ export const rawStatsTree = [
             {
                 "id": "individual_income_50k_to_100k",
                 "name": "Individual Income $50k - $100k %",
+                "subcategory": {
+                    "id": "individual_income",
+                    "name": "Individual Income"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2807,6 +2991,10 @@ export const rawStatsTree = [
             {
                 "id": "individual_income_over_100k",
                 "name": "Individual Income > $100k %",
+                "subcategory": {
+                    "id": "individual_income",
+                    "name": "Individual Income"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2832,6 +3020,10 @@ export const rawStatsTree = [
             {
                 "id": "individual_income_under_50cad",
                 "name": "Individual income < C$50k %",
+                "subcategory": {
+                    "id": "individual_income",
+                    "name": "Individual Income"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2857,6 +3049,10 @@ export const rawStatsTree = [
             {
                 "id": "individual_income_50_to_100cad",
                 "name": "Individual income C$50k - C$100k %",
+                "subcategory": {
+                    "id": "individual_income",
+                    "name": "Individual Income"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2882,6 +3078,10 @@ export const rawStatsTree = [
             {
                 "id": "individual_income_above_100_cad",
                 "name": "Individual income > C$100k %",
+                "subcategory": {
+                    "id": "individual_income",
+                    "name": "Individual Income"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -2913,6 +3113,7 @@ export const rawStatsTree = [
             {
                 "id": "housing_per_pop",
                 "name": "Housing Units per Adult",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -2984,6 +3185,7 @@ export const rawStatsTree = [
             {
                 "id": "housing_per_person",
                 "name": "Housing Units per Person",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -3055,6 +3257,7 @@ export const rawStatsTree = [
             {
                 "id": "vacancy",
                 "name": "Vacancy %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -3118,6 +3321,10 @@ export const rawStatsTree = [
             {
                 "id": "rent_burden_under_20",
                 "name": "Rent/Income < 20%",
+                "subcategory": {
+                    "id": "rent_burden",
+                    "name": "Rent Burden"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3143,6 +3350,10 @@ export const rawStatsTree = [
             {
                 "id": "rent_burden_20_to_40",
                 "name": "Rent/Income 20%-40%",
+                "subcategory": {
+                    "id": "rent_burden",
+                    "name": "Rent Burden"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3168,6 +3379,10 @@ export const rawStatsTree = [
             {
                 "id": "rent_burden_over_40",
                 "name": "Rent/Income > 40%",
+                "subcategory": {
+                    "id": "rent_burden",
+                    "name": "Rent Burden"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3193,6 +3408,10 @@ export const rawStatsTree = [
             {
                 "id": "rent_1br_under_750",
                 "name": "1BR Rent < $750 %",
+                "subcategory": {
+                    "id": "rent_1br",
+                    "name": "1BR Rent"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3218,6 +3437,10 @@ export const rawStatsTree = [
             {
                 "id": "rent_1br_750_to_1500",
                 "name": "1BR Rent $750 - $1500 %",
+                "subcategory": {
+                    "id": "rent_1br",
+                    "name": "1BR Rent"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3243,6 +3466,10 @@ export const rawStatsTree = [
             {
                 "id": "rent_1br_over_1500",
                 "name": "1BR Rent > $1500 %",
+                "subcategory": {
+                    "id": "rent_1br",
+                    "name": "1BR Rent"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3268,6 +3495,10 @@ export const rawStatsTree = [
             {
                 "id": "rent_2br_under_750",
                 "name": "2BR Rent < $750 %",
+                "subcategory": {
+                    "id": "rent_2br",
+                    "name": "2BR Rent"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3293,6 +3524,10 @@ export const rawStatsTree = [
             {
                 "id": "rent_2br_750_to_1500",
                 "name": "2BR Rent $750 - $1500 %",
+                "subcategory": {
+                    "id": "rent_2br",
+                    "name": "2BR Rent"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3318,6 +3553,10 @@ export const rawStatsTree = [
             {
                 "id": "rent_2br_over_1500",
                 "name": "2BR Rent > $1500 %",
+                "subcategory": {
+                    "id": "rent_2br",
+                    "name": "2BR Rent"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3343,6 +3582,10 @@ export const rawStatsTree = [
             {
                 "id": "year_built_1969_or_earlier",
                 "name": "% units built pre-1970",
+                "subcategory": {
+                    "id": "year_built",
+                    "name": "Year Built"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3368,6 +3611,10 @@ export const rawStatsTree = [
             {
                 "id": "year_built_1970_to_1979",
                 "name": "% units built in 1970s",
+                "subcategory": {
+                    "id": "year_built",
+                    "name": "Year Built"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3393,6 +3640,10 @@ export const rawStatsTree = [
             {
                 "id": "year_built_1980_to_1989",
                 "name": "% units built in 1980s",
+                "subcategory": {
+                    "id": "year_built",
+                    "name": "Year Built"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3418,6 +3669,10 @@ export const rawStatsTree = [
             {
                 "id": "year_built_1990_to_1999",
                 "name": "% units built in 1990s",
+                "subcategory": {
+                    "id": "year_built",
+                    "name": "Year Built"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3443,6 +3698,10 @@ export const rawStatsTree = [
             {
                 "id": "year_built_2000_to_2009",
                 "name": "% units built in 2000s",
+                "subcategory": {
+                    "id": "year_built",
+                    "name": "Year Built"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3468,6 +3727,10 @@ export const rawStatsTree = [
             {
                 "id": "year_built_2010_or_later",
                 "name": "% units built in 2010s+",
+                "subcategory": {
+                    "id": "year_built",
+                    "name": "Year Built"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3493,6 +3756,7 @@ export const rawStatsTree = [
             {
                 "id": "household_size_pw",
                 "name": "PW Household Size",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -3526,6 +3790,7 @@ export const rawStatsTree = [
             {
                 "id": "rent_or_own_rent",
                 "name": "Renter %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -3559,6 +3824,7 @@ export const rawStatsTree = [
             {
                 "id": "rent_burden_over_30_canada",
                 "name": "Housing Cost/Income > 30% [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -3590,6 +3856,10 @@ export const rawStatsTree = [
             {
                 "id": "transportation_means_car_no_wfh",
                 "name": "Commute Car %",
+                "subcategory": {
+                    "id": "commute_mode",
+                    "name": "Commute Mode"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3623,6 +3893,10 @@ export const rawStatsTree = [
             {
                 "id": "transportation_means_bike_no_wfh",
                 "name": "Commute Bike %",
+                "subcategory": {
+                    "id": "commute_mode",
+                    "name": "Commute Mode"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3656,6 +3930,10 @@ export const rawStatsTree = [
             {
                 "id": "transportation_means_walk_no_wfh",
                 "name": "Commute Walk %",
+                "subcategory": {
+                    "id": "commute_mode",
+                    "name": "Commute Mode"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3689,6 +3967,10 @@ export const rawStatsTree = [
             {
                 "id": "transportation_means_transit_no_wfh",
                 "name": "Commute Transit %",
+                "subcategory": {
+                    "id": "commute_mode",
+                    "name": "Commute Mode"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3722,6 +4004,7 @@ export const rawStatsTree = [
             {
                 "id": "transportation_commute_time_median",
                 "name": "Median Commute Time (min)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -3755,6 +4038,10 @@ export const rawStatsTree = [
             {
                 "id": "transportation_commute_time_under_15",
                 "name": "Commute Time < 15 min %",
+                "subcategory": {
+                    "id": "commute_time",
+                    "name": "Commute Time"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3788,6 +4075,10 @@ export const rawStatsTree = [
             {
                 "id": "transportation_commute_time_15_to_29",
                 "name": "Commute Time 15 - 29 min %",
+                "subcategory": {
+                    "id": "commute_time",
+                    "name": "Commute Time"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3821,6 +4112,10 @@ export const rawStatsTree = [
             {
                 "id": "transportation_commute_time_30_to_59",
                 "name": "Commute Time 30 - 59 min %",
+                "subcategory": {
+                    "id": "commute_time",
+                    "name": "Commute Time"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3854,6 +4149,10 @@ export const rawStatsTree = [
             {
                 "id": "transportation_commute_time_over_60",
                 "name": "Commute Time > 60 min %",
+                "subcategory": {
+                    "id": "commute_time",
+                    "name": "Commute Time"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3887,6 +4186,10 @@ export const rawStatsTree = [
             {
                 "id": "vehicle_ownership_none",
                 "name": "Households With no Vehicle %",
+                "subcategory": {
+                    "id": "vehicle_ownership",
+                    "name": "Vehicle Ownership"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3912,6 +4215,10 @@ export const rawStatsTree = [
             {
                 "id": "vehicle_ownership_at_least_1",
                 "name": "Households With 1+ Vehicles %",
+                "subcategory": {
+                    "id": "vehicle_ownership",
+                    "name": "Vehicle Ownership"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3937,6 +4244,10 @@ export const rawStatsTree = [
             {
                 "id": "vehicle_ownership_at_least_2",
                 "name": "Households With 2+ Vehicles %",
+                "subcategory": {
+                    "id": "vehicle_ownership",
+                    "name": "Vehicle Ownership"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -3962,6 +4273,7 @@ export const rawStatsTree = [
             {
                 "id": "traffic_fatalities_last_decade_per_capita",
                 "name": "Traffic Fatalities Per Capita Per Year",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -3987,6 +4299,7 @@ export const rawStatsTree = [
             {
                 "id": "traffic_fatalities_ped_last_decade_per_capita",
                 "name": "Pedestrian/Cyclist Fatalities Per Capita Per Year",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4012,6 +4325,7 @@ export const rawStatsTree = [
             {
                 "id": "traffic_fatalities_last_decade",
                 "name": "Total Traffic Fatalities In Last Decade",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4037,6 +4351,7 @@ export const rawStatsTree = [
             {
                 "id": "traffic_fatalities_ped_last_decade",
                 "name": "Total Pedestrian/Cyclist Fatalities In Last Decade",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4068,6 +4383,7 @@ export const rawStatsTree = [
             {
                 "id": "GHLTH_cdc_2",
                 "name": "Fair or poor self-rated health status %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4093,6 +4409,7 @@ export const rawStatsTree = [
             {
                 "id": "PHLTH_cdc_2",
                 "name": "Physical health not good for two weeks in last year %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4118,6 +4435,7 @@ export const rawStatsTree = [
             {
                 "id": "ARTHRITIS_cdc_2",
                 "name": "Arthritis %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4143,6 +4461,7 @@ export const rawStatsTree = [
             {
                 "id": "CASTHMA_cdc_2",
                 "name": "Current asthma %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4168,6 +4487,7 @@ export const rawStatsTree = [
             {
                 "id": "BPHIGH_cdc_2",
                 "name": "High blood pressure %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4193,6 +4513,7 @@ export const rawStatsTree = [
             {
                 "id": "CANCER_cdc_2",
                 "name": "Cancer (excluding skin cancer) %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4218,6 +4539,7 @@ export const rawStatsTree = [
             {
                 "id": "KIDNEY_cdc_2",
                 "name": "Chronic kidney disease %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4243,6 +4565,7 @@ export const rawStatsTree = [
             {
                 "id": "COPD_cdc_2",
                 "name": "COPD %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4268,6 +4591,7 @@ export const rawStatsTree = [
             {
                 "id": "CHD_cdc_2",
                 "name": "Coronary heart disease %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4293,6 +4617,7 @@ export const rawStatsTree = [
             {
                 "id": "DIABETES_cdc_2",
                 "name": "Diagnosed diabetes %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4318,6 +4643,7 @@ export const rawStatsTree = [
             {
                 "id": "OBESITY_cdc_2",
                 "name": "Obesity %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4343,6 +4669,7 @@ export const rawStatsTree = [
             {
                 "id": "STROKE_cdc_2",
                 "name": "Stroke %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4368,6 +4695,7 @@ export const rawStatsTree = [
             {
                 "id": "DISABILITY_cdc_2",
                 "name": "Disability %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4393,6 +4721,7 @@ export const rawStatsTree = [
             {
                 "id": "HEARING_cdc_2",
                 "name": "Hearing disability %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4418,6 +4747,7 @@ export const rawStatsTree = [
             {
                 "id": "VISION_cdc_2",
                 "name": "Vision disability %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4443,6 +4773,7 @@ export const rawStatsTree = [
             {
                 "id": "COGNITION_cdc_2",
                 "name": "Cognitive disability %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4468,6 +4799,7 @@ export const rawStatsTree = [
             {
                 "id": "MOBILITY_cdc_2",
                 "name": "Mobility disability %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4493,6 +4825,7 @@ export const rawStatsTree = [
             {
                 "id": "SELFCARE_cdc_2",
                 "name": "Self-care disability %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4518,6 +4851,7 @@ export const rawStatsTree = [
             {
                 "id": "INDEPLIVE_cdc_2",
                 "name": "Independent living disability %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4543,6 +4877,7 @@ export const rawStatsTree = [
             {
                 "id": "BINGE_cdc_2",
                 "name": "Binge drinking among adults %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4568,6 +4903,7 @@ export const rawStatsTree = [
             {
                 "id": "CSMOKING_cdc_2",
                 "name": "Smoking %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4593,6 +4929,7 @@ export const rawStatsTree = [
             {
                 "id": "LPA_cdc_2",
                 "name": "No leisure-time physical activity %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4618,6 +4955,7 @@ export const rawStatsTree = [
             {
                 "id": "SLEEP_cdc_2",
                 "name": "Sleeping less than 7 hours %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4643,6 +4981,7 @@ export const rawStatsTree = [
             {
                 "id": "CHECKUP_cdc_2",
                 "name": "Attended doctor in last year %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4668,6 +5007,7 @@ export const rawStatsTree = [
             {
                 "id": "DENTAL_cdc_2",
                 "name": "Attended dentist in last year %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4693,6 +5033,7 @@ export const rawStatsTree = [
             {
                 "id": "CHOLSCREEN_cdc_2",
                 "name": "Cholesterol screening in last year %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4718,6 +5059,7 @@ export const rawStatsTree = [
             {
                 "id": "life_expectancy_2019",
                 "name": "Life Expectancy (2019)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4743,6 +5085,7 @@ export const rawStatsTree = [
             {
                 "id": "performance_score_adj_2019",
                 "name": "IHME Health Performance Score (2019)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4774,6 +5117,7 @@ export const rawStatsTree = [
             {
                 "id": "pm_25_2018_2022",
                 "name": "PW Mean PM2.5 Pollution",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4799,6 +5143,10 @@ export const rawStatsTree = [
             {
                 "id": "heating_utility_gas",
                 "name": "Utility gas heating %",
+                "subcategory": {
+                    "id": "heating",
+                    "name": "Heating Fuel"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -4824,6 +5172,10 @@ export const rawStatsTree = [
             {
                 "id": "heating_electricity",
                 "name": "Electricity heating %",
+                "subcategory": {
+                    "id": "heating",
+                    "name": "Heating Fuel"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -4849,6 +5201,10 @@ export const rawStatsTree = [
             {
                 "id": "heating_bottled_tank_lp_gas",
                 "name": "Bottled, tank, or LP gas heating %",
+                "subcategory": {
+                    "id": "heating",
+                    "name": "Heating Fuel"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -4874,6 +5230,10 @@ export const rawStatsTree = [
             {
                 "id": "heating_feul_oil_kerosene",
                 "name": "Fuel oil, kerosene, etc. heating %",
+                "subcategory": {
+                    "id": "heating",
+                    "name": "Heating Fuel"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -4899,6 +5259,10 @@ export const rawStatsTree = [
             {
                 "id": "heating_other",
                 "name": "Other fuel heating %",
+                "subcategory": {
+                    "id": "heating",
+                    "name": "Heating Fuel"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -4924,6 +5288,10 @@ export const rawStatsTree = [
             {
                 "id": "heating_no",
                 "name": "No heating %",
+                "subcategory": {
+                    "id": "heating",
+                    "name": "Heating Fuel"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -4955,6 +5323,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_agriculture,_forestry,_fishing_and_hunting",
                 "name": "Employed in Agriculture, forestry, fishing and hunting %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -4988,6 +5357,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_mining,_quarrying,_and_oil_and_gas_extraction",
                 "name": "Employed in Mining, quarrying, and oil and gas extraction %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5021,6 +5391,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_accommodation_and_food_services",
                 "name": "Employed in Accommodation and food services %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5054,6 +5425,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_arts,_entertainment,_and_recreation",
                 "name": "Employed in Arts, entertainment, and recreation %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5087,6 +5459,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_construction",
                 "name": "Employed in Construction %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5120,6 +5493,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_educational_services",
                 "name": "Employed in Educational services %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5153,6 +5527,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_health_care_and_social_assistance",
                 "name": "Employed in Health care and social assistance %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5186,6 +5561,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_finance_and_insurance",
                 "name": "Employed in Finance and insurance %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5219,6 +5595,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_real_estate_and_rental_and_leasing",
                 "name": "Employed in Real estate and rental and leasing %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5252,6 +5629,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_information",
                 "name": "Employed in Information %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5285,6 +5663,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_manufacturing",
                 "name": "Employed in Manufacturing %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5318,6 +5697,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_other_services,_except_public_administration",
                 "name": "Employed in Other services, except public administration %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5351,6 +5731,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_administrative_and_support_and_waste_management_services",
                 "name": "Employed in Administrative and support and waste management services %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5384,6 +5765,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_management_of_companies_and_enterprises",
                 "name": "Employed in Management of companies and enterprises %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5417,6 +5799,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_professional,_scientific,_and_technical_services",
                 "name": "Employed in Professional, scientific, and technical services %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5450,6 +5833,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_public_administration",
                 "name": "Employed in Public administration %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5483,6 +5867,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_retail_trade",
                 "name": "Employed in Retail trade %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5516,6 +5901,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_transportation_and_warehousing",
                 "name": "Employed in Transportation and warehousing %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5549,6 +5935,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_utilities",
                 "name": "Employed in Utilities %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5582,6 +5969,7 @@ export const rawStatsTree = [
             {
                 "id": "industry_wholesale_trade",
                 "name": "Employed in Wholesale trade %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5621,6 +6009,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_architecture_and_engineering_occupations",
                 "name": "Architecture and engineering occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5646,6 +6035,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_computer_and_mathematical_occupations",
                 "name": "Computer and mathematical occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5671,6 +6061,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_life,_physical,_and_social_science_occupations",
                 "name": "Life, physical, and social science occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5696,6 +6087,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_arts,_design,_entertainment,_sports,_and_media_occupations",
                 "name": "Arts, design, entertainment, sports, and media occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5721,6 +6113,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_community_and_social_service_occupations",
                 "name": "Community and social service occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5746,6 +6139,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_educational_instruction,_and_library_occupations",
                 "name": "Educational instruction, and library occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5771,6 +6165,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_legal_occupations",
                 "name": "Legal occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5796,6 +6191,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_health_diagnosing_and_treating_practitioners_and_other_technical_occupations",
                 "name": "Health diagnosing and treating practitioners and other technical occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5821,6 +6217,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_health_technologists_and_technicians",
                 "name": "Health technologists and technicians %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5846,6 +6243,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_business_and_financial_operations_occupations",
                 "name": "Business and financial operations occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5871,6 +6269,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_management_occupations",
                 "name": "Management occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5896,6 +6295,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_construction_and_extraction_occupations",
                 "name": "Construction and extraction occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5921,6 +6321,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_farming,_fishing,_and_forestry_occupations",
                 "name": "Farming, fishing, and forestry occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5946,6 +6347,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_installation,_maintenance,_and_repair_occupations",
                 "name": "Installation, maintenance, and repair occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5971,6 +6373,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_material_moving_occupations",
                 "name": "Material moving occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -5996,6 +6399,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_production_occupations",
                 "name": "Production occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6021,6 +6425,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_transportation_occupations",
                 "name": "Transportation occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6046,6 +6451,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_office_and_administrative_support_occupations",
                 "name": "Office and administrative support occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6071,6 +6477,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_sales_and_related_occupations",
                 "name": "Sales and related occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6096,6 +6503,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_building_and_grounds_cleaning_and_maintenance_occupations",
                 "name": "Building and grounds cleaning and maintenance occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6121,6 +6529,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_food_preparation_and_serving_related_occupations",
                 "name": "Food preparation and serving related occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6146,6 +6555,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_healthcare_support_occupations",
                 "name": "Healthcare support occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6171,6 +6581,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_personal_care_and_service_occupations",
                 "name": "Personal care and service occupations %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6196,6 +6607,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors",
                 "name": "Firefighting and prevention, and other protective service workers including supervisors %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6221,6 +6633,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_law_enforcement_workers_including_supervisors",
                 "name": "Law enforcement workers including supervisors %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6246,6 +6659,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_legislative_and_senior_management_canada",
                 "name": "Legislative and senior management occupations % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6271,6 +6685,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_business_finance_and_administration_canada",
                 "name": "Business, finance and administration occupations % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6296,6 +6711,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_natural_and_applied_sciences_canada",
                 "name": "Natural and applied sciences occupations % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6321,6 +6737,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_health_canada",
                 "name": "Health occupations % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6346,6 +6763,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_education_law_social_community_government_canada",
                 "name": "Education, law, social, community and government occupations % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6371,6 +6789,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_art_culture_recreation_sport_canada",
                 "name": "Art, culture, recreation and sport occupations % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6396,6 +6815,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_sales_and_service_canada",
                 "name": "Sales and service occupations % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6421,6 +6841,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_trades_transport_equipment_canada",
                 "name": "Trades, transport and equipment operators occupations % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6446,6 +6867,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_natural_resources_agriculture_canada",
                 "name": "Natural resources and agriculture occupations % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6471,6 +6893,7 @@ export const rawStatsTree = [
             {
                 "id": "occupation_manufacturing_utilities_canada",
                 "name": "Manufacturing and utilities occupations % [StatCan]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6502,6 +6925,10 @@ export const rawStatsTree = [
             {
                 "id": "sors_unpartnered_householder",
                 "name": "Not Cohabiting With Partner %",
+                "subcategory": {
+                    "id": "household_relationship",
+                    "name": "Household Relationship"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -6527,6 +6954,10 @@ export const rawStatsTree = [
             {
                 "id": "sors_cohabiting_partnered_gay",
                 "name": "Cohabiting With Partner (Gay) %",
+                "subcategory": {
+                    "id": "household_relationship",
+                    "name": "Household Relationship"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -6552,6 +6983,10 @@ export const rawStatsTree = [
             {
                 "id": "sors_cohabiting_partnered_straight",
                 "name": "Cohabiting With Partner (Straight) %",
+                "subcategory": {
+                    "id": "household_relationship",
+                    "name": "Household Relationship"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -6577,6 +7012,10 @@ export const rawStatsTree = [
             {
                 "id": "sors_child",
                 "name": "Living With Parents %",
+                "subcategory": {
+                    "id": "household_relationship",
+                    "name": "Household Relationship"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -6602,6 +7041,10 @@ export const rawStatsTree = [
             {
                 "id": "sors_other",
                 "name": "Other Living Situation %",
+                "subcategory": {
+                    "id": "household_relationship",
+                    "name": "Household Relationship"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -6627,6 +7070,10 @@ export const rawStatsTree = [
             {
                 "id": "marriage_never_married",
                 "name": "Never Married %",
+                "subcategory": {
+                    "id": "marital_status",
+                    "name": "Marital Status"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -6660,6 +7107,10 @@ export const rawStatsTree = [
             {
                 "id": "marriage_married_not_divorced",
                 "name": "Married (not divorced) %",
+                "subcategory": {
+                    "id": "marital_status",
+                    "name": "Marital Status"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -6693,6 +7144,10 @@ export const rawStatsTree = [
             {
                 "id": "marriage_divorced",
                 "name": "Divorced %",
+                "subcategory": {
+                    "id": "marital_status",
+                    "name": "Marital Status"
+                },
                 "contents": [
                     {
                         "year": 2020,
@@ -6732,6 +7187,7 @@ export const rawStatsTree = [
             {
                 "id": "us_presidential_election",
                 "name": "US Presidential Election",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2010,
@@ -6874,6 +7330,7 @@ export const rawStatsTree = [
             {
                 "id": "canada_general_election_coalition_margin",
                 "name": "Canadian GE: 2-Coalition Margin",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -6983,6 +7440,7 @@ export const rawStatsTree = [
             {
                 "id": "canada_general_election_lib",
                 "name": "Canadian GE: Liberal",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7092,6 +7550,7 @@ export const rawStatsTree = [
             {
                 "id": "canada_general_election_con",
                 "name": "Canadian GE: Conservative",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7201,6 +7660,7 @@ export const rawStatsTree = [
             {
                 "id": "canada_general_election_ndp",
                 "name": "Canadian GE: NDP",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7310,6 +7770,7 @@ export const rawStatsTree = [
             {
                 "id": "canada_general_election_bq",
                 "name": "Canadian GE: Bloc Qu\u00e9b\u00e9cois",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7419,6 +7880,7 @@ export const rawStatsTree = [
             {
                 "id": "canada_general_election_grn",
                 "name": "Canadian GE: Green",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7528,6 +7990,7 @@ export const rawStatsTree = [
             {
                 "id": "canada_general_election_ppc",
                 "name": "Canadian GE: PPC",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7609,6 +8072,7 @@ export const rawStatsTree = [
             {
                 "id": "metadata_show_metadata_congressional_representatives",
                 "name": "Congressional Representatives",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": null,
@@ -7642,6 +8106,7 @@ export const rawStatsTree = [
             {
                 "id": "park_percent_1km_v2",
                 "name": "PW Mean % of parkland within 1km",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7667,6 +8132,7 @@ export const rawStatsTree = [
             {
                 "id": "within_Hospital_10",
                 "name": "Within 10km of Hospital %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7692,6 +8158,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_dist_Hospital_updated",
                 "name": "Mean distance to nearest Hospital",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7717,6 +8184,7 @@ export const rawStatsTree = [
             {
                 "id": "within_Public School_2",
                 "name": "Within 2km of Public School %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7742,6 +8210,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_dist_Public School_updated",
                 "name": "Mean distance to nearest Public School",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7767,6 +8236,7 @@ export const rawStatsTree = [
             {
                 "id": "within_Airport_30",
                 "name": "Within 30km of Airport %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7792,6 +8262,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_dist_Airport_updated",
                 "name": "Mean distance to nearest Airport",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7817,6 +8288,7 @@ export const rawStatsTree = [
             {
                 "id": "within_Active Superfund Site_10",
                 "name": "Within 10km of Active Superfund Site %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7842,6 +8314,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_dist_Active Superfund Site_updated",
                 "name": "Mean distance to nearest Active Superfund Site",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7867,6 +8340,7 @@ export const rawStatsTree = [
             {
                 "id": "lapophalfshare_usda_fra_1",
                 "name": "Within 0.5mi of a grocery store %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7892,6 +8366,7 @@ export const rawStatsTree = [
             {
                 "id": "lapop1share_usda_fra_1",
                 "name": "Within 1mi of a grocery store %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7917,6 +8392,7 @@ export const rawStatsTree = [
             {
                 "id": "lapop10share_usda_fra_1",
                 "name": "Within 10mi of a grocery store %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7942,6 +8418,7 @@ export const rawStatsTree = [
             {
                 "id": "lapop20share_usda_fra_1",
                 "name": "Within 20mi of a grocery store %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7973,6 +8450,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_high_temp_4",
                 "name": "Mean high temp",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -7998,6 +8476,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_low_temp",
                 "name": "Mean low temp",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8023,6 +8502,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_high_heat_index_4",
                 "name": "Mean high heat index",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8048,6 +8528,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_high_dewpoint_4",
                 "name": "Mean high dewpt",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8073,6 +8554,7 @@ export const rawStatsTree = [
             {
                 "id": "days_above_90_4",
                 "name": "High temperature Above 90\u00b0F %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8098,6 +8580,7 @@ export const rawStatsTree = [
             {
                 "id": "days_between_40_and_90_4",
                 "name": "High temperature Between 40 and 90\u00b0F %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8123,6 +8606,7 @@ export const rawStatsTree = [
             {
                 "id": "days_below_40_4",
                 "name": "High temperature Below 40\u00b0F %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8148,6 +8632,7 @@ export const rawStatsTree = [
             {
                 "id": "days_dewpoint_70_inf_4",
                 "name": "Humid days (dewpt > 70\u00b0F) %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8173,6 +8658,7 @@ export const rawStatsTree = [
             {
                 "id": "days_dewpoint_50_70_4",
                 "name": "Non-humid, Non-dry days (50\u00b0F < dewpt < 70\u00b0F) %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8198,6 +8684,7 @@ export const rawStatsTree = [
             {
                 "id": "days_dewpoint_-inf_50_4",
                 "name": "Dry days (dewpt < 50\u00b0F) %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8223,6 +8710,7 @@ export const rawStatsTree = [
             {
                 "id": "hours_sunny_4",
                 "name": "Mean sunny hours",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8248,6 +8736,7 @@ export const rawStatsTree = [
             {
                 "id": "rainfall_4",
                 "name": "Rainfall",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8273,6 +8762,7 @@ export const rawStatsTree = [
             {
                 "id": "snowfall_4",
                 "name": "Snowfall [rain-equivalent]",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8298,6 +8788,7 @@ export const rawStatsTree = [
             {
                 "id": "wind_speed_over_10mph_4",
                 "name": "High windspeed (>10mph) days %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8323,6 +8814,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_high_temp_djf",
                 "name": "Mean high temperature in Dec/Jan/Feb",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8348,6 +8840,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_high_temp_mam",
                 "name": "Mean high temperature in Mar/Apr/May",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8373,6 +8866,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_high_temp_jja",
                 "name": "Mean high temperature in Jun/Jul/Aug",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8398,6 +8892,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_high_temp_son",
                 "name": "Mean high temperature in Sep/Oct/Nov",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8423,6 +8918,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_low_temp_djf",
                 "name": "Mean low temperature in Dec/Jan/Feb",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8448,6 +8944,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_low_temp_mam",
                 "name": "Mean low temperature in Mar/Apr/May",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8473,6 +8970,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_low_temp_jja",
                 "name": "Mean low temperature in Jun/Jul/Aug",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8498,6 +8996,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_low_temp_son",
                 "name": "Mean low temperature in Sep/Oct/Nov",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8529,6 +9028,7 @@ export const rawStatsTree = [
             {
                 "id": "internet_no_access",
                 "name": "No internet access %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8554,6 +9054,7 @@ export const rawStatsTree = [
             {
                 "id": "insurance_coverage_none",
                 "name": "Uninsured %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8579,6 +9080,7 @@ export const rawStatsTree = [
             {
                 "id": "insurance_coverage_govt",
                 "name": "Public Insurance %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8604,6 +9106,7 @@ export const rawStatsTree = [
             {
                 "id": "insurance_coverage_private",
                 "name": "Private Insurance %",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8635,6 +9138,7 @@ export const rawStatsTree = [
             {
                 "id": "metadata_show_metadata_fips",
                 "name": "FIPS",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": null,
@@ -8662,6 +9166,7 @@ export const rawStatsTree = [
             {
                 "id": "metadata_show_metadata_statcan_geocode",
                 "name": "StatCan GeoCode",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": null,
@@ -8689,6 +9194,7 @@ export const rawStatsTree = [
             {
                 "id": "metadata_show_metadata_iso_code",
                 "name": "ISO Code",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": null,
@@ -8722,6 +9228,7 @@ export const rawStatsTree = [
             {
                 "id": "ad_0.25",
                 "name": "PW Density (r=250m)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8837,6 +9344,7 @@ export const rawStatsTree = [
             {
                 "id": "ad_0.5",
                 "name": "PW Density (r=500m)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -8952,6 +9460,7 @@ export const rawStatsTree = [
             {
                 "id": "ad_1.609344",
                 "name": "PW Density (r=1mi)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -9075,6 +9584,7 @@ export const rawStatsTree = [
             {
                 "id": "ad_2",
                 "name": "PW Density (r=2km)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -9198,6 +9708,7 @@ export const rawStatsTree = [
             {
                 "id": "ad_4",
                 "name": "PW Density (r=4km)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -9321,6 +9832,7 @@ export const rawStatsTree = [
             {
                 "id": "ad_8",
                 "name": "PW Density (r=8km)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -9444,6 +9956,7 @@ export const rawStatsTree = [
             {
                 "id": "ad_16",
                 "name": "PW Density (r=16km)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -9567,6 +10080,7 @@ export const rawStatsTree = [
             {
                 "id": "ad_32",
                 "name": "PW Density (r=32km)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -9690,6 +10204,7 @@ export const rawStatsTree = [
             {
                 "id": "ad_64",
                 "name": "PW Density (r=64km)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -9819,6 +10334,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_high_temp_summer_4",
                 "name": "Mean high temperature in summer",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -9844,6 +10360,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_high_temp_winter_4",
                 "name": "Mean high temperature in winter",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -9869,6 +10386,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_high_temp_fall_4",
                 "name": "Mean high temperature in fall",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -9894,6 +10412,7 @@ export const rawStatsTree = [
             {
                 "id": "mean_high_temp_spring_4",
                 "name": "Mean high temperature in spring",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -9919,6 +10438,7 @@ export const rawStatsTree = [
             {
                 "id": "transportation_means_car",
                 "name": "Commute Car % (incl WFH)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -9944,6 +10464,7 @@ export const rawStatsTree = [
             {
                 "id": "transportation_means_bike",
                 "name": "Commute Bike % (incl WFH)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -9969,6 +10490,7 @@ export const rawStatsTree = [
             {
                 "id": "transportation_means_walk",
                 "name": "Commute Walk % (incl WFH)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -9994,6 +10516,7 @@ export const rawStatsTree = [
             {
                 "id": "transportation_means_transit",
                 "name": "Commute Transit % (incl WFH)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
@@ -10019,6 +10542,7 @@ export const rawStatsTree = [
             {
                 "id": "transportation_means_worked_at_home",
                 "name": "Commute Work From Home % (incl WFH)",
+                "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
