@@ -241,8 +241,11 @@ jobs:
           name="${{ matrix.test-file }}"
           echo "name=${name:0:200}" >> $GITHUB_OUTPUT
       # A re-run keeps the artifacts the earlier attempt uploaded, so these names carry the
-      # attempt. Re-running only the failed jobs loses nothing, because only a failing shard
-      # writes changed assets, and a failing shard is exactly what gets re-run.
+      # attempt and merge-assets takes each shard's newest one. The marker makes the delta
+      # artifact unconditional, so a shard that re-ran and passed is distinguishable from one
+      # that wasn't re-run at all; without it the earlier attempt's delta would be picked up.
+      - if: "!cancelled()"
+        run: mkdir -p react/delta && touch react/delta/shard-ran
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
@@ -277,14 +280,35 @@ jobs:
       - uses: ./.github/actions/node_modules
       - uses: actions/download-artifact@v4
         with:
-          pattern: "delta-${{ github.run_attempt }}-*"
-          path: combined/delta
-          merge-multiple: true
+          pattern: "delta-*"
+          path: attempts/delta
       - uses: actions/download-artifact@v4
         with:
-          pattern: "changed_assets-${{ github.run_attempt }}-*"
-          path: combined/changed_assets
-          merge-multiple: true
+          pattern: "changed_assets-*"
+          path: attempts/changed_assets
+      - name: Keep each shard's newest attempt
+        run: |
+          declare -A newest
+          for dir in attempts/delta/delta-*; do
+            [ -d "$dir" ] || continue
+            base="$(basename "$dir")"
+            attempt="${base#delta-}"
+            attempt="${attempt%%-*}"
+            shard="${base#delta-$attempt-}"
+            if [ "$attempt" -gt "${newest[$shard]:-0}" ]; then
+              newest[$shard]="$attempt"
+            fi
+          done
+          mkdir -p combined/delta combined/changed_assets
+          for shard in "${!newest[@]}"; do
+            attempt="${newest[$shard]}"
+            cp -R "attempts/delta/delta-$attempt-$shard/." combined/delta/
+            changed="attempts/changed_assets/changed_assets-$attempt-$shard"
+            if [ -d "$changed" ]; then
+              cp -R "$changed/." combined/changed_assets/
+            fi
+          done
+          rm -f combined/delta/shard-ran
       - id: upload-combined
         uses: actions/upload-artifact@v4
         with:
