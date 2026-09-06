@@ -3,7 +3,7 @@ import { Coefficient, Decoration, dimensionless, Party, sameDimensions, sameSize
 
 import { BinaryOperatorSymbol, UnaryOperatorSymbol } from './operators'
 
-/** `any` is that it could be in any unit; `none` is that no quantity is of it, as people plus an area. */
+/** `any` is that it could be in any unit; `none` is that no unit is consistent with it, as people plus an area. */
 export type AbstractInterpValue = (
     { kind: 'any', constant?: number }
     | { kind: 'none' }
@@ -38,7 +38,7 @@ export function unitToWriteIn(known: AbstractInterpValue): StoredUnit | undefine
     return unit
 }
 
-/** What an operand can be, once forward and backward have refused the values no quantity is of. */
+/** What an operand can be, forward and backward having already refused the inconsistent ones. */
 type KnownAIV = Exclude<AbstractInterpValue, { kind: 'none' }>
 
 function sameParty(left: Party | undefined, right: Party | undefined): boolean {
@@ -101,11 +101,9 @@ function joinedUnits(left: StoredUnit, right: StoredUnit): StoredUnit | undefine
 
 /** Either of two, as the arms of an `if` are: two of a kind are of it, and two of different kinds are of any. */
 export function join(left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue {
-    if (left.kind === 'none') {
-        return right
-    }
-    if (right.kind === 'none') {
-        return left
+    // an inconsistent arm makes the whole expression inconsistent, as an operand does
+    if (left.kind === 'none' || right.kind === 'none') {
+        return { kind: 'none' }
     }
     const shared = left.constant === right.constant ? left.constant : undefined
     if (left.kind === 'in' && right.kind === 'in') {
@@ -156,7 +154,6 @@ function addedForward(form: { combine: (left: number, right: number) => number }
     if (right.kind === 'any') {
         return written(left.unit, combined(left.unit.unit.times, 0, form.combine))
     }
-    // no quantity is both people and an area, so none is their sum
     if (!sameDimensions(left.unit, right.unit)) {
         return { kind: 'none' }
     }
@@ -197,7 +194,7 @@ function productForward(rightPower: 1 | -1, left: KnownAIV, right: KnownAIV): Ab
 }
 
 export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue {
-    // no quantity is computed from one that no quantity is
+    // an inconsistent operand makes the whole expression inconsistent
     if (left.kind === 'none' || right.kind === 'none') {
         return { kind: 'none' }
     }

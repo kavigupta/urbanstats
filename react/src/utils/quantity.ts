@@ -47,7 +47,10 @@ export interface Unit {
     dimensions: Dimension[]
     decoration: Decoration
     times: Coefficient
-    /** Whether 0 of it means none of the quantity. False of a temperature: 0°C is not 0°F. */
+    /**
+     * Whether multiplying the value multiplies the quantity. False of a temperature: twice 10°C is
+     * 20°C, where twice the same reading in °F is 100°F, which is 37.8°C.
+     */
     baseIsScalar: boolean
 }
 

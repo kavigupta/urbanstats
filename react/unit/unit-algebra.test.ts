@@ -236,7 +236,9 @@ void test('either of two is of their kind, where they have one', () => {
     assert.equal(shape(join(inUnit(storedUnits.distanceInM), inUnit(storedUnits.distanceInKm))), 'unknown')
     // and where they are of one kind but not one many-of-itself, of that kind, with how many unknown
     assert.equal(shape(join(people, difference(storedUnits.population))), 'person^1 times=unknown x1')
-    assert.equal(shape(join(inconsistent, people)), 'person^1 times=1 x1')
+    // an arm no unit is consistent with makes the whole thing inconsistent, where one of no known
+    // unit only leaves the whole unknown
+    assert.equal(shape(join(inconsistent, people)), 'inconsistent')
     assert.equal(shape(join(unknown, people)), 'unknown')
     assert.equal(shape(join(constant(2), constant(2))), 'unknown')
     assert.equal(shape(join(constant(2), constant(3))), 'unknown')

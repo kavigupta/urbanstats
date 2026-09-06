@@ -64,8 +64,9 @@ function checkBranch(statement: UrbanStatsASTStatement<UnitsRead>, scope: Scope,
 /** A name an arm bound is worth what that arm made it where its mask held, and what it was where it did not. */
 function bindArms(scope: Scope, consequent: Bindings, alternative: Bindings): void {
     for (const name of new Set([...consequent.keys(), ...alternative.keys()])) {
-        const either = [consequent, alternative].map(arm => quantity(arm.get(name) ?? { kind: 'none' }))
-        scope.named.set(name, join(either[0], either[1]))
+        // the name came from one of the arms, so at least one of these is there
+        const bound = [consequent, alternative].flatMap(arm => arm.get(name) ?? [])
+        scope.named.set(name, bound.map(quantity).reduce(join))
     }
 }
 
@@ -343,7 +344,8 @@ function checkWithin(ast: UrbanStatsASTExpression<UnitsRead>, scope: Scope, expe
             for (const element of ast.elements) {
                 elements.push(checkExpression(element, scope, alsoOf(expected, elements[0]?.value)))
             }
-            const value = elements.reduce<AbstractInterpValue>((soFar, element) => join(soFar, quantity(element.value)), { kind: 'none' })
+            // an empty vector has no element to take a unit from, so any unit suits it
+            const value = elements.length === 0 ? anything : elements.map(each => quantity(each.value)).reduce(join)
             return { ast: ({ ...ast, elements: elements.map(each => each.ast) }), value }
         }
         case 'objectLiteral': {
