@@ -18,6 +18,14 @@ export interface Dimension {
     power: number
 }
 
+/** Bases counted from a zero of their own: 0°F is a temperature, where 0m is no length at all. */
+const basesWithAZero: ReadonlySet<BaseUnit> = new Set<BaseUnit>(['F'])
+
+/** Whether nothing of these dimensions is nothing, which is what scales and what can be multiplied. */
+export function baseIsScalarFor(dimensions: Dimension[]): boolean {
+    return !dimensions.some(({ baseUnit }) => basesWithAZero.has(baseUnit))
+}
+
 export type Party = { kind: 'color', hue: Hue } | { kind: 'lead', system: PartySystem }
 
 export type System = 'metric' | 'imperial'
@@ -286,9 +294,8 @@ function wordFor(unit: NamedUnit, singular: boolean): string {
 }
 
 function computedUnit(dimensions: Dimension[], toBaseUnits: number): StoredUnit {
-    // F is the only base counted from a zero of its own, and nothing multiplies a reading, so a
-    // product that involves F is a difference of degrees
-    const baseIsScalar = !dimensions.some(({ baseUnit }) => baseUnit === 'F')
+    // nothing multiplies a reading, so a product on a scale with a zero of its own is a difference
+    const baseIsScalar = baseIsScalarFor(dimensions)
     return { unit: { dimensions, decoration: { kind: 'none' }, times: baseIsScalar ? 1 : 0, baseIsScalar }, toBaseUnits }
 }
 
