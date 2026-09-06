@@ -18,14 +18,6 @@ export interface Dimension {
     power: number
 }
 
-/** Bases counted from a zero of their own: 0°F is a temperature, where 0m is no length at all. */
-const basesWithAZero: ReadonlySet<BaseUnit> = new Set<BaseUnit>(['F'])
-
-/** Whether nothing of these dimensions is nothing, which is what scales and what can be multiplied. */
-export function baseIsScalarFor(dimensions: Dimension[]): boolean {
-    return !dimensions.some(({ baseUnit }) => basesWithAZero.has(baseUnit))
-}
-
 export type Party = { kind: 'color', hue: Hue } | { kind: 'lead', system: PartySystem }
 
 export type System = 'metric' | 'imperial'
@@ -163,6 +155,7 @@ export const year = scaling('s', 'yr', 365.25 * 24 * 60 * 60, 0)
 export const microgram = scaling('g', 'μg', 1e-6, costScaledUnit)
 const fahrenheit: NamedUnit = { name: '°F', dimensions: [{ baseUnit: 'F', power: 1 }], size: 1, cost: 0, abbreviation: false }
 const celsius: NamedUnit = { name: '°C', dimensions: [{ baseUnit: 'F', power: 1 }], size: 9 / 5, offset: 32, cost: 0, abbreviation: false }
+const temperatureUnits: NamedUnit[] = [fahrenheit, celsius]
 
 const massUnits: NamedUnit[] = [
     scaling('g', 'g', 1, 0),
@@ -198,14 +191,35 @@ const lengthUnits: Record<'metric' | 'imperial', NamedUnit[]> = {
  * The units there are to write a quantity in, whatever dimensions it turns out to have. A count is
  * named by the statistic counting it, so the unit it is counted in has no name to show.
  */
+const countUnits: NamedUnit[] = [
+    scaling('person', '', 1, 0),
+    ...abbreviationsOf('person'),
+    scaling('usd', '', 1, 0),
+    ...abbreviationsOf('usd'),
+    // fatalities are not abbreviated: there are never enough of them for it to save a digit
+    scaling('fatality', '', 1, 0),
+]
+
+const everyNamedUnit: NamedUnit[] = [
+    ...countUnits, ...lengthUnits.metric, ...lengthUnits.imperial, ...massUnits, ...timeUnits, ...temperatureUnits,
+]
+
+/**
+ * A base with no zero of its own, which is one whose units sit at an offset from one another: °C
+ * reads 32 where °F reads 0, so no temperature is nothing, where no metres is no length.
+ */
+const basesWithAZero: ReadonlySet<BaseUnit> = new Set(everyNamedUnit
+    .filter(({ offset }) => offset !== undefined)
+    .flatMap(({ dimensions }) => dimensions.map(({ baseUnit }) => baseUnit)))
+
+/** Whether nothing of these dimensions is nothing, which is what scales and what can be multiplied. */
+export function baseIsScalarFor(dimensions: Dimension[]): boolean {
+    return !dimensions.some(({ baseUnit }) => basesWithAZero.has(baseUnit))
+}
+
 function allUnits(settings: UnitSettings): NamedUnit[] {
     return [
-        scaling('person', '', 1, 0),
-        ...abbreviationsOf('person'),
-        scaling('usd', '', 1, 0),
-        ...abbreviationsOf('usd'),
-        // fatalities are not abbreviated: there are never enough of them for it to save a digit
-        scaling('fatality', '', 1, 0),
+        ...countUnits,
         ...lengthUnits[systemOf(settings)],
         ...massUnits,
         ...timeUnits,
@@ -375,7 +389,7 @@ export function unitPower(stored: StoredUnit, exponent: number): StoredUnit | un
 export function nameOfStoredUnit(stored: StoredUnit): HumanReadableElement[] | undefined {
     // both systems, since the unit a statistic is stored in is not the reader's to choose, and no
     // abbreviations, which shorten a number rather than saying what it is counted in
-    const pool = [...allUnits({}), ...lengthUnits.imperial, celsius].filter(({ abbreviation }) => !abbreviation)
+    const pool = everyNamedUnit.filter(({ abbreviation }) => !abbreviation)
     const written = writtenAsCounted(stored.unit.dimensions, pool, stored.toBaseUnits)
     return written === undefined ? undefined : nameOf(written, 'byItself')
 }
