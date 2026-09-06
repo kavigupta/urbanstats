@@ -20,13 +20,15 @@ export type DataSource = (typeof rawStatsTree)[number]['contents'][number]['cont
 export type SourceCategoryIdentifier = DataSource['category']
 export type SourceIdentifier = DataSource['name']
 
-export type StatsTree = Category[]
+/**
+ * A category holds no groups: `allGroups` is the tree, in order, and each group names its
+ * category. Everything that narrows the tree -- what a page has, what a search matches --
+ * filters that one list, and `categorySections` regroups whatever survives.
+ */
 export interface Category {
     kind: 'Category'
     id: CategoryIdentifier
     name: string
-    contents: Group[]
-    years: Set<Year | null> // for which years does this category have data
     statPaths: Set<StatPath> // which StatPaths does this category contain
 }
 
@@ -74,72 +76,68 @@ export interface MetadataStatistic extends BaseStatistic {
 
 export type Statistic = DataStatistic | MetadataStatistic
 
-export const statsTree: StatsTree = rawStatsTree.map(category => (
-    {
-        kind: 'Category',
-        ...category,
-        contents: category.contents.map(group => ({
-            kind: 'Group',
-            ...group,
-            contents: group.contents.map(({ year, stats_by_source }) => ({
-                year,
-                stats: stats_by_source.map(({ name, indentedName, stats: s }) => ({
-                    name,
-                    indentedName: indentedName ?? undefined,
-                    bySource: s.map((stat) => {
-                        switch (stat.kind) {
-                            case 'data':
-                                return {
-                                    kind: 'data',
-                                    source: stat.source,
-                                    path: statPaths[stat.column],
-                                    name: statNames[stat.column],
-                                    statcol: stats[stat.column],
-                                    parent: undefined as unknown as GroupYear, // set below
-                                } satisfies DataStatistic
-                            case 'metadata':
-                                return {
-                                    kind: 'metadata',
-                                    source: stat.source,
-                                    path: stat.path,
-                                    name,
-                                    metadataIndex: stat.metadata_index,
-                                    parent: undefined as unknown as GroupYear, // set below
-                                } satisfies MetadataStatistic
-                        }
-                    }),
-                } satisfies MultiSourceStatistic)),
-                parent: undefined as unknown as Group, // set below
-            } satisfies GroupYear)),
-            parent: undefined as unknown as Category, // set below
-            years: new Set(group.contents.map(({ year }) => year)),
-            statPaths: new Set(), // set below
-        } satisfies Group)),
-        years: new Set(), // set below
-        statPaths: new Set(), // set below
-    } satisfies Category
-))
+export const statsTree: Category[] = rawStatsTree.map(category => ({
+    kind: 'Category',
+    id: category.id,
+    name: category.name,
+    statPaths: new Set(), // set below
+} satisfies Category))
+
+export const allGroups: Group[] = rawStatsTree.flatMap((category, categoryIndex) => category.contents.map(group => ({
+    kind: 'Group',
+    id: group.id,
+    name: group.name,
+    contents: group.contents.map(({ year, stats_by_source }) => ({
+        year,
+        stats: stats_by_source.map(({ name, indentedName, stats: s }) => ({
+            name,
+            indentedName: indentedName ?? undefined,
+            bySource: s.map((stat) => {
+                switch (stat.kind) {
+                    case 'data':
+                        return {
+                            kind: 'data',
+                            source: stat.source,
+                            path: statPaths[stat.column],
+                            name: statNames[stat.column],
+                            statcol: stats[stat.column],
+                            parent: undefined as unknown as GroupYear, // set below
+                        } satisfies DataStatistic
+                    case 'metadata':
+                        return {
+                            kind: 'metadata',
+                            source: stat.source,
+                            path: stat.path,
+                            name,
+                            metadataIndex: stat.metadata_index,
+                            parent: undefined as unknown as GroupYear, // set below
+                        } satisfies MetadataStatistic
+                }
+            }),
+        } satisfies MultiSourceStatistic)),
+        parent: undefined as unknown as Group, // set below
+    } satisfies GroupYear)),
+    parent: statsTree[categoryIndex],
+    years: new Set(group.contents.map(({ year }) => year)),
+    statPaths: new Set(), // set below
+} satisfies Group)))
 
 // For a given year, what statpaths does it include
 export const yearStatPaths = new DefaultMap<Year, Set<StatPath>>(() => new Set())
 
 // Build references
-for (const category of statsTree) {
-    for (const group of category.contents) {
-        group.parent = category
-        for (const yearGroup of group.contents) {
-            yearGroup.parent = group
-            for (const statsBySource of yearGroup.stats) {
-                for (const stat of statsBySource.bySource) {
-                    stat.parent = yearGroup
-                    group.statPaths.add(stat.path)
-                    category.statPaths.add(stat.path)
-                    if (yearGroup.year !== null) {
-                        yearStatPaths.get(yearGroup.year).add(stat.path)
-                    }
+for (const group of allGroups) {
+    for (const yearGroup of group.contents) {
+        yearGroup.parent = group
+        for (const statsBySource of yearGroup.stats) {
+            for (const stat of statsBySource.bySource) {
+                stat.parent = yearGroup
+                group.statPaths.add(stat.path)
+                group.parent.statPaths.add(stat.path)
+                if (yearGroup.year !== null) {
+                    yearStatPaths.get(yearGroup.year).add(stat.path)
                 }
             }
-            category.years.add(yearGroup.year)
         }
     }
 }
@@ -148,7 +146,26 @@ function sortYears(year1: Year, year2: Year): number {
     return year2 - year1
 }
 
-export const allGroups = statsTree.flatMap(category => category.contents)
+export interface CategorySection { category: Category, groups: Group[] }
+
+/**
+ * Gathers groups into the categories they belong to. Takes the groups rather than reading the
+ * tree so that a narrowed list produces categories holding only the groups that survived.
+ */
+export function categorySections(groups: Group[]): CategorySection[] {
+    const sections: CategorySection[] = []
+    for (const group of groups) {
+        const last = sections.at(-1)
+        if (last?.category === group.parent) {
+            last.groups.push(group)
+        }
+        else {
+            sections.push({ category: group.parent, groups: [group] })
+        }
+    }
+    return sections
+}
+
 export const allYears = Array.from(
     new Set(allGroups
         .flatMap(group => Array.from(group.years))
