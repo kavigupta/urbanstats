@@ -5,7 +5,7 @@ import { StatName } from '../page_template/statistic-tree'
 
 import { assert } from './defensive'
 import {
-    BaseUnit, centimeter, Decoration, fatalities, Hue, hundredThousandPeople, inch, kilometer, meter, microgram, mile,
+    BaseUnit, baseIsScalarFor, centimeter, Decoration, fatalities, Hue, hundredThousandPeople, inch, kilometer, meter, microgram, mile,
     inEitherSystem, minute, Party, people, StoredUnit, Unit, WrittenIn, year,
 } from './quantity'
 
@@ -58,12 +58,13 @@ function checkAllIncluded(unitType: UnitType): (typeof allUnitTypes)[number] {
 function dimensionfull(scales: Partial<Record<BaseUnit, number>>, toBaseUnits = 1, writtenIn?: WrittenIn): StoredUnit {
     const entries = Object.entries(scales) as [BaseUnit, number][]
     const decoration: Decoration = writtenIn === undefined ? { kind: 'none' } : { kind: 'writtenIn', in: writtenIn }
+    const dimensions = entries.map(([baseUnit, power]) => ({ baseUnit, power }))
     return {
         unit: {
-            dimensions: entries.map(([baseUnit, power]) => ({ baseUnit, power })),
+            dimensions,
             decoration,
             times: 1,
-            baseIsScalar: true,
+            baseIsScalar: baseIsScalarFor(dimensions),
         },
         toBaseUnits,
     }
@@ -94,11 +95,7 @@ export const storedUnits = {
     partyChangeTeal: percentage(inParty('cyan'), true),
     partyChangeGreen: percentage(inParty('green'), true),
     partyChangePurple: percentage(inParty('purple'), true),
-    // a temperature is measured from a zero that is not nothing, so it is not a scaling of anything
-    temperature: {
-        unit: { dimensions: [{ baseUnit: 'F', power: 1 }], decoration: { kind: 'none' }, times: 1, baseIsScalar: false },
-        toBaseUnits: 1,
-    },
+    temperature: dimensionfull({ F: 1 }),
     time: dimensionfull({ s: 1 }, 60 * 60, { units: inEitherSystem({ s: minute }), style: { kind: 'hoursMinutes' } }),
     minutes: dimensionfull({ s: 1 }, 60, { units: inEitherSystem({ s: minute }), style: { kind: 'hoursMinutes' } }),
     number: dimensionfull({}),
