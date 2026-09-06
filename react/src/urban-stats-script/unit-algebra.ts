@@ -38,7 +38,7 @@ export function unitToWriteIn(known: AbstractInterpValue): StoredUnit | undefine
     return unit
 }
 
-/** What an operand can be, once forward and backward have refused what came from nothing. */
+/** What an operand can be, once forward and backward have refused the values no quantity is of. */
 type KnownAIV = Exclude<AbstractInterpValue, { kind: 'none' }>
 
 function sameParty(left: Party | undefined, right: Party | undefined): boolean {
@@ -148,15 +148,15 @@ const forms: Record<BinaryOperatorSymbol, Form> = {
 }
 
 function addedForward(form: { combine: (left: number, right: number) => number }, left: KnownAIV, right: KnownAIV): AbstractInterpValue {
-    // a side saying nothing is taken to be of the other's kind, since only alike things add; a
-    // bare number added to a temperature is a number of degrees
+    // a side with no unit of its own is taken to be of the other's kind, since only alike things
+    // add: a bare number added to a temperature is a number of degrees
     if (left.kind === 'any') {
         return right.kind === 'any' ? { kind: 'any' } : written(right.unit, combined(0, right.unit.unit.times, form.combine))
     }
     if (right.kind === 'any') {
         return written(left.unit, combined(left.unit.unit.times, 0, form.combine))
     }
-    // nothing is both people and an area, so nothing is their sum
+    // no quantity is both people and an area, so none is their sum
     if (!sameDimensions(left.unit, right.unit)) {
         return { kind: 'none' }
     }
@@ -192,21 +192,12 @@ function productForward(rightPower: 1 | -1, left: KnownAIV, right: KnownAIV): Ab
             : written(left.unit, combined(left.unit.unit.times, right.constant, (times, scale) => rightPower === 1 ? times * scale : times / scale))
     }
     const product = unitProduct(left.unit, right.unit, rightPower)
-    if (product === undefined) {
-        return { kind: 'none' }
-    }
-    // nothing multiplies a reading, so a product on a scale with a zero of its own is a difference:
-    // people to the degree is a rate, not the one over no degrees that dividing the coefficients
-    // says. A coefficient nobody knows stays unknown, being no arithmetic of ours
-    const known = left.unit.unit.times !== 'unknown' && right.unit.unit.times !== 'unknown'
-    const times = product.unit.baseIsScalar || !known
-        ? combined(left.unit.unit.times, right.unit.unit.times, (over, under) => rightPower === 1 ? over * under : over / under)
-        : 0
-    return written(product, times)
+    const times = combined(left.unit.unit.times, right.unit.unit.times, (over, under) => rightPower === 1 ? over * under : over / under)
+    return product === undefined ? { kind: 'none' } : written(product, times)
 }
 
 export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue {
-    // nothing computed from what cannot be, can be
+    // no quantity is computed from one that no quantity is
     if (left.kind === 'none' || right.kind === 'none') {
         return { kind: 'none' }
     }
@@ -256,7 +247,7 @@ export function backward(operator: BinaryOperatorSymbol, result: AbstractInterpV
             return { kind: 'any' }
         case 'sameUnit':
             if (!form.keepsUnit) {
-                // a comparison says nothing of its own kind, but its operands are of each other's
+                // a comparison has no unit of its own, but its operands are of each other's
                 return known
             }
             assert(operator === '+' || operator === '-', `${operator} keeps the unit of what it adds`)
@@ -286,8 +277,8 @@ export function forwardUnary(operator: UnaryOperatorSymbol, operand: AbstractInt
     if (operator === '+' || operand.kind === 'none') {
         return operand
     }
-    // negating takes it from nothing, so a level becomes minus one of itself, which a temperature
-    // has no reading for, where a difference of two is still one
+    // negating subtracts from 0, so a level becomes minus one of itself, which is no temperature,
+    // where a difference of two is still a difference
     const negated = operand.constant === undefined ? undefined : -operand.constant
     if (operand.kind === 'any') {
         return { kind: 'any', constant: negated }

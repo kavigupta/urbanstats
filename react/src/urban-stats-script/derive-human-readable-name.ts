@@ -288,7 +288,7 @@ function tableColumnLabels(uss: MapUSS, typeEnvironment: TypeEnvironment): Human
     return labels.every(label => label !== undefined) ? labels : undefined
 }
 
-/** The filter a script applies, or undefined for the `condition (true)` that filters nothing. */
+/** The filter a script applies, or undefined for the `condition (true)` that keeps every row. */
 export function deriveConditionLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
     const { ast: factored } = unitCheck(uss, typeEnvironment)
     if (factored.type !== 'statements') {

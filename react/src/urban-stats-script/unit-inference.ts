@@ -13,7 +13,7 @@ import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit,
  * number either way: only how it is read changes.
  */
 export interface UnitConversion {
-    /** What the value is counted in, or nothing where the script says. */
+    /** What the value is counted in, or undefined where the script gives it no unit. */
     internalUnit?: StoredUnit
     /** What it is needed as. */
     expectedUnit: StoredUnit
@@ -50,7 +50,7 @@ interface Checked<T> {
     value: Inferred
 }
 
-/** A block is worth as much as its last statement, and an empty one as much as nothing said. */
+/** A block is worth as much as its last statement, and an empty one has no unit. */
 function checkBlock(statements: UrbanStatsASTStatement<UnitsRead>[], scope: Scope, expected: Expected): Checked<Statement[]> {
     const checked = statements.map((statement, index) => checkStatement(statement, scope, index === statements.length - 1 ? expected : anything))
     return { ast: checked.map(each => each.ast), value: checked[checked.length - 1]?.value ?? anything }
@@ -80,7 +80,7 @@ function identifier(name: string, scope: Scope): Inferred {
 
 const parameterName = /^x(\d+)$/
 
-/** How the function propagates units, or nothing if the script bound that name itself. */
+/** How the function propagates units, or undefined if the script bound that name itself. */
 function propagationOf(fn: Expression, scope: Scope): UnitPropagation | undefined {
     if (fn.type !== 'identifier' || scope.named.has(fn.name.node)) {
         return undefined
@@ -149,7 +149,7 @@ function comesTo(internalUnit: StoredUnit | undefined, expectedUnit: StoredUnit)
     return times === 'unknown' ? { ...expectedUnit, unit: { ...expectedUnit.unit, times: baseIsScalar ? 1 : 0 } } : expectedUnit
 }
 
-/** The expectation as a value. 'scales' names no unit, so it says nothing. */
+/** The expectation as a value. 'scales' names no unit, so there is no value for it. */
 function knownOf(expected: Expected): AbstractInterpValue {
     return expected.kind === 'scales' ? anything : expected
 }
@@ -402,7 +402,7 @@ function checkStatement(ast: UrbanStatsASTStatement<UnitsRead>, scope: Scope, ex
             return { ast: ({ ...ast, result: statements.ast }), value: statements.value }
         }
         case 'condition': {
-            // a filter says nothing about the units of what it keeps, but is still rendered
+            // a filter does not change the units of what it keeps, but is still rendered
             const condition = checkExpression(ast.condition, scope, anything)
             const rest = checkBlock(ast.rest, scope, expected)
             return { ast: ({ ...ast, condition: condition.ast, rest: rest.ast }), value: rest.value }

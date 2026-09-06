@@ -37,8 +37,8 @@ export type Decoration = { kind: 'none' } | { kind: 'percent', party?: Party } |
 
 /**
  * How many quantities were added to make this one: a level is 1, a difference of two is 0, and the
- * mean of two is 1 again. Where zero of the unit is not nothing, 0 and 1 are the only ones that
- * are quantities at all. Elsewhere the only thing read off it is whether it is 0, which is written
+ * mean of two is 1 again. On a temperature scale, where 0 does not mean none of the quantity,
+ * only 0 and 1 are quantities at all. Elsewhere the only thing read off it is whether it is 0, which is written
  * with a leading +. Arithmetic that cannot work it out gives 'unknown'.
  */
 export type Coefficient = number | 'unknown'
@@ -47,7 +47,7 @@ export interface Unit {
     dimensions: Dimension[]
     decoration: Decoration
     times: Coefficient
-    /** Whether zero of it is nothing, which is false of a temperature: 0°C is not 0°F. */
+    /** Whether 0 of it means none of the quantity. False of a temperature: 0°C is not 0°F. */
     baseIsScalar: boolean
 }
 
@@ -123,7 +123,7 @@ function abbreviationsOf(baseUnit: BaseUnit): NamedUnit[] {
         .map(([name, size]) => ({ ...scaling(baseUnit, name, size, 1), abbreviation: true })) // relatively low cost, just the abbreviation's length
 }
 
-// a scaled unit costs nothing, so whichever is most convenient wins
+// a scaled unit has no cost, so whichever is most convenient wins
 const costScaledUnit = 0
 
 const metersPerInch = 0.0254
@@ -190,7 +190,7 @@ function allUnits(settings: UnitSettings): NamedUnit[] {
         ...lengthUnits[systemOf(settings)],
         ...massUnits,
         ...timeUnits,
-        // only the reader's own temperature unit, so the search has nothing to choose between
+        // only the reader's own temperature unit, so the search has one candidate rather than two
         settings.temperatureUnit === 'celsius' ? celsius : fahrenheit,
     ]
 }
@@ -316,7 +316,7 @@ export function multiplies(unit: Unit): boolean {
     return unit.baseIsScalar || unit.times === 0
 }
 
-/** The same unit counted from nothing rather than from where its scale's zero sits. */
+/** The same unit, as a difference of two quantities rather than as one of them. */
 export function asADifference(unit: StoredUnit): StoredUnit {
     return { ...unit, unit: { ...unit.unit, times: 0 } }
 }
@@ -353,7 +353,7 @@ export function unitPower(stored: StoredUnit, exponent: number): StoredUnit | un
 
 /**
  * What the numbers a statistic is stored as are counted in, which is what a script computes with:
- * rainfall is stored per metre though it is read per centimetre. Empty where nothing names it, as
+ * rainfall is stored per metre though it is read per centimetre. Empty where no unit names it, as
  * a fraction and a count have no name, and undefined where no unit is exactly it.
  */
 export function nameOfStoredUnit(stored: StoredUnit): HumanReadableElement[] | undefined {
@@ -377,14 +377,14 @@ export function nameOf(written: Written[], placement: UnitPlacement = 'byItself'
     if (under.length === 0) {
         return merged([...start, ...product(over)])
     }
-    // a solidus with nothing in front of it reads as a dangling slash in a column of its own
+    // a solidus with no numerator in front of it reads as a dangling slash in a column of its own
     const solidus = over.length === 0 && placement === 'inColumn' ? '/\u00a0' : '/'
     return merged([...start, ...product(over), ...atom(solidus), ...product(under, true)])
 }
 
 /**
- * Where the zero of the units a quantity is written in sits. A difference of two quantities is
- * written from nothing instead, the zero cancelling between them.
+ * Where the zero of the units a quantity is written in sits. A difference of two quantities has
+ * no offset, the zero cancelling between them.
  */
 function offsetOf(written: Written[], times: Coefficient): number {
     return times === 1 ? written.reduce((total, { unit, power }) => total + (unit.offset ?? 0) * power, 0) : 0
@@ -395,7 +395,7 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: UnitSettin
         return unit.decoration.party?.kind === 'lead' ? margin : percent
     }
     const convention = conventions[renderAsKey(unit.dimensions)]
-    // a statistic written in units of its own leaves the search nothing to choose between
+    // a statistic written in units of its own fixes them, leaving the search no choice to make
     const writtenIn = unit.decoration.kind === 'writtenIn' ? unit.decoration.in : undefined
     // an abbreviation shortens a count: thousands of people are people. It does not scale anything
     // else, so people times an area is not written in billions of square metres
