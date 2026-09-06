@@ -366,39 +366,51 @@ function ungroupUnlessWorthwhile(label: HumanReadableElement[], substituted: Hum
  *
  * A reading does not scale, so its zero is subtracted first: "(Mean high temp - 0F) x Area".
  */
-function howConverted(written: HumanReadableElement[], conversion: UnitConversion, atomic: boolean): HumanReadableElement[] {
-    const { internalUnit } = conversion
-    const parts = conversionParts(conversion)
+function howConverted(elements: HumanReadableElement[], conversion: UnitConversion, atomic: boolean): HumanReadableElement[] {
+    const writing = writingOf(conversion)
     // the conversion is of the whole expression, so "(A + B) [in U]" needs the brackets. They are
     // only worth writing where the conversion itself writes something.
-    const bracketed = atomic ? written : [{ type: 'parens' as const, value: written }]
-    if (parts === undefined) {
-        const said = internalUnit === undefined
-            ? unitSaid(conversion.expectedUnit, 'as')
-            : unitSaid(internalUnit, 'in')
-        return said === undefined ? written : [...bracketed, ...said]
+    const bracketed = atomic ? elements : [{ type: 'parens' as const, value: elements }]
+    if (writing.kind === 'in' || writing.kind === 'as') {
+        const said = unitSaid(writing.unit, writing.kind)
+        return said === undefined ? elements : [...bracketed, ...said]
     }
-    // bracket the zero only where a factor follows, so that "x - 0 x 1F" does not misread
-    const follows = parts.factor !== undefined || parts.zeroAdded !== undefined
-    let writing = bracketed
-    if (parts.zeroSubtracted !== undefined) {
-        const less = [...bracketed, { type: 'atom' as const, value: ' \u2212 ' }, ...formatNumber(0, parts.zeroSubtracted)]
-        writing = follows ? [{ type: 'parens', value: less }] : less
+    const { zero, factor } = writing
+    let written = bracketed
+    if (zero?.where === 'subtracted') {
+        const less = [...bracketed, { type: 'atom' as const, value: ' \u2212 ' }, ...formatNumber(0, zero.unit)]
+        // bracket the zero where a factor follows it, so that "x - 0 x 1F" does not misread
+        written = factor === undefined ? less : [{ type: 'parens', value: less }]
     }
-    if (parts.factor !== undefined) {
-        writing = [...writing, { type: 'atom', value: ' \u00d7 ' }, ...formatNumber(1, parts.factor)]
+    if (factor !== undefined) {
+        written = [...written, { type: 'atom', value: ' \u00d7 ' }, ...formatNumber(1, factor)]
     }
-    return parts.zeroAdded === undefined ? writing : [...writing, { type: 'atom', value: ' + ' }, ...formatNumber(0, parts.zeroAdded)]
+    return zero?.where === 'added' ? [...written, { type: 'atom', value: ' + ' }, ...formatNumber(0, zero.unit)] : written
 }
 
 /**
- * The three pieces a conversion can write, any of which may be absent: the zero subtracted from a
- * reading, the factor, and the zero added to make a reading. Nothing at all for a value read as a
- * plain number, which is written "[in U]" instead.
+ * How a conversion is written. Reading a quantity as a plain number, or a plain number as a
+ * quantity, leaves the number alone and only says what it is counted in. Any other conversion is
+ * arithmetic on the number: a zero and a factor, either of which may be absent.
  */
-function conversionParts({ internalUnit, expectedUnit }: UnitConversion): { zeroSubtracted?: StoredUnit, factor?: StoredUnit, zeroAdded?: StoredUnit } | undefined {
-    if (internalUnit === undefined || isPlainNumber(expectedUnit)) {
-        return undefined
+type ConversionWriting =
+    { kind: 'in', unit: StoredUnit }
+    | { kind: 'as', unit: StoredUnit }
+    | { kind: 'arithmetic', zero?: ZeroOfAReading, factor?: StoredUnit }
+
+/**
+ * The zero a reading is counted from, taken off the value before the factor or put on after it. A
+ * conversion has a reading at one end at most: temperature is the only one, so a conversion
+ * between two of them would be between a unit and itself, which is no conversion to record.
+ */
+interface ZeroOfAReading { unit: StoredUnit, where: 'subtracted' | 'added' }
+
+function writingOf({ internalUnit, expectedUnit }: UnitConversion): ConversionWriting {
+    if (internalUnit === undefined) {
+        return { kind: 'as', unit: expectedUnit }
+    }
+    if (isPlainNumber(expectedUnit)) {
+        return { kind: 'in', unit: internalUnit }
     }
     const scales = multiplies(internalUnit.unit)
     const from = scales ? internalUnit : asADifference(internalUnit)
@@ -408,19 +420,24 @@ function conversionParts({ internalUnit, expectedUnit }: UnitConversion): { zero
     const between = unitProduct(to, from, -1)
     const spansAZero = !internalUnit.unit.baseIsScalar || !expectedUnit.unit.baseIsScalar
     const factor = alike(to, from) || between === undefined ? undefined : (spansAZero ? asADifference(between) : between)
+    const madeAReading = expectedUnit.unit.times === 1 && !expectedUnit.unit.baseIsScalar
+    const zero: ZeroOfAReading | undefined = scales
+        ? (madeAReading ? { unit: expectedUnit, where: 'added' } : undefined)
+        : { unit: internalUnit, where: 'subtracted' }
     return {
-        ...scales ? {} : { zeroSubtracted: internalUnit },
+        kind: 'arithmetic',
+        ...zero === undefined ? {} : { zero },
         ...factor === undefined ? {} : { factor },
-        ...expectedUnit.unit.times === 1 && !expectedUnit.unit.baseIsScalar ? { zeroAdded: expectedUnit } : {},
     }
 }
 
 /** The operator a conversion's writing ends on, which is what encloses it has to reckon with. */
 function conversionRunsAs(conversion: UnitConversion): BinaryOperatorSymbol | undefined {
-    const parts = conversionParts(conversion)
-    if (parts?.zeroAdded !== undefined) return '+'
-    if (parts?.factor !== undefined) return '*'
-    return parts?.zeroSubtracted === undefined ? undefined : '-'
+    const writing = writingOf(conversion)
+    if (writing.kind !== 'arithmetic') return undefined
+    if (writing.zero?.where === 'added') return '+'
+    if (writing.factor !== undefined) return '*'
+    return writing.zero === undefined ? undefined : '-'
 }
 
 function alike(left: StoredUnit, right: StoredUnit): boolean {
@@ -432,8 +449,7 @@ function alike(left: StoredUnit, right: StoredUnit): boolean {
  * with rather than the ones its reader chose. Nothing where the unit has no name, as a count has
  * none.
  */
-function unitSaid(unit: StoredUnit | undefined, preposition: 'in' | 'as'): HumanReadableElement[] | undefined {
-    if (unit === undefined) return undefined
+function unitSaid(unit: StoredUnit, preposition: 'in' | 'as'): HumanReadableElement[] | undefined {
     const name = nameOfStoredUnit(unit)
     // A share is stored as the fraction it is, whatever percentage it is written as, and so is a
     // count of one thing per another: fatalities per capita are stored per person, not per 100k.
