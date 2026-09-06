@@ -389,13 +389,14 @@ function howConverted(elements: HumanReadableElement[], conversion: UnitConversi
 }
 
 /**
- * How a conversion is written. Reading a quantity as a plain number, or a plain number as a
- * quantity, leaves the number alone and only says what it is counted in. Any other conversion is
- * arithmetic on the number: a zero and a factor, either of which may be absent.
+ * How a conversion is written.
  */
 type ConversionWriting =
+    /** Equivalent of dividing by the unit, to convert something to a number. e.g., ln(Area [in km^2]) */
     { kind: 'in', unit: StoredUnit }
+    /** Equivalent of multiplying by the unit, to convert a number to something. e.g., ln(population) [as km^2] */
     | { kind: 'as', unit: StoredUnit }
+    /** Arithmetic conversion, which is either of the form (x + a) * b or (x - a) * b */
     | { kind: 'arithmetic', zero?: ZeroOfAReading, factor?: StoredUnit }
 
 /**
