@@ -25,7 +25,6 @@ export type PlotMode = 'monthly_time_series' | 'temperature_histogram'
 
 export type StatGroupKey<G extends GroupIdentifier = GroupIdentifier> = `show_stat_group_${G}`
 export type StatCategorySavedIndeterminateKey<C extends CategoryIdentifier = CategoryIdentifier> = `stat_category_saved_indeterminate_${C}`
-export type StatCategoryExpandedKey<C extends CategoryIdentifier = CategoryIdentifier> = `stat_category_expanded_${C}`
 export type StatYearKey<Y extends Year = Year> = `show_stat_year_${Y}`
 // D extends unknown is vacuous, this is a trick to make sure that D['category'] and D['name'] are coupled
 // so we don't end up with a cartesian product.
@@ -58,7 +57,6 @@ export type SettingsDictionary = {
 /* eslint-enable no-restricted-syntax */
 & { [G in GroupIdentifier as StatGroupKey<G>]: boolean }
 & { [C in CategoryIdentifier as StatCategorySavedIndeterminateKey<C>]: GroupIdentifier[] }
-& { [C in CategoryIdentifier as StatCategoryExpandedKey<C>]: boolean }
 & { [Y in Year as StatYearKey<Y>]: boolean }
 & { [D in DataSource as StatSourceKey<D>]: boolean }
 & { [P in StatPathWithExtra as RowExpandedKey<P>]: boolean }
@@ -93,7 +91,6 @@ export const defaultSettingsList = [
     ),
     ...allGroups.map(group => [`show_stat_group_${group.id}` as const, defaultCategorySelections.has(group.parent.id)] as const),
     ...statsTree.map(category => [`stat_category_saved_indeterminate_${category.id}` as const, [] as GroupIdentifier[]] as const),
-    ...statsTree.map(category => [`stat_category_expanded_${category.id}` as const, false] as const),
     ...allYears.map(year => [`show_stat_year_${year}` as const, defaultEnabledYears.has(year)] as const),
     ...dataSources
         .flatMap(({ sources }) => sources

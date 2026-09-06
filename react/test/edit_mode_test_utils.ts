@@ -119,15 +119,9 @@ export async function setCategoryExpanded(t: TestController, categoryId: string,
     await t.wait(collapseAnimationMs)
 }
 
-/** For a category whose state the caller doesn't know, since expansion is a persisted setting. */
+/** For a category whose state the caller doesn't know: it depends on what is selected. */
 export async function ensureCategoryExpanded(t: TestController, categoryId: string): Promise<void> {
     if (await categoryToggleButton(categoryId, 'Expand').exists) {
         await setCategoryExpanded(t, categoryId, true)
-    }
-}
-
-export async function ensureCategoryCollapsed(t: TestController, categoryId: string): Promise<void> {
-    if (await categoryToggleButton(categoryId, 'Collapse').exists) {
-        await setCategoryExpanded(t, categoryId, false)
     }
 }

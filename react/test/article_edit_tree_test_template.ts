@@ -9,9 +9,10 @@ const populationCheck = groupCheckbox('population')
 // A collapsed category keeps its unselected rows mounted (so the height transition has
 // content) but marks them inert, so clicking one needs the interactable variant.
 const populationCheckInteractable = interactableGroupCheckbox('population')
-// Present only while Main is collapsed, since the toggle then offers to expand. Main has
-// no toggle at all until something in it is unselected.
+// Main has no toggle at all until something in it is unselected, and opens expanded since
+// its groups are selected, so the toggle it then grows offers to collapse.
 const mainExpandButton = categoryToggleButton('main', 'Expand')
+const mainCollapseButton = categoryToggleButton('main', 'Collapse')
 // Housing is off by default, so it always has something behind its toggle.
 const housingCheck = categoryCheckbox('housing')
 const housingExpandButton = categoryToggleButton('housing', 'Expand')
@@ -38,7 +39,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('category-check', async (t) => {
         /**
-         * Check that the category checks and unchecks correctly without being expanded.
+         * Check that the category checks and unchecks correctly.
          */
         await enterEditMode(t)
         await t.expect(mainCheck.checked).eql(true)
@@ -46,7 +47,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.expect(mainExpandButton.exists).notOk()
         await t.click(mainCheck)
         await t.expect(mainCheck.checked).eql(false)
-        await t.expect(mainExpandButton.exists).ok()
+        await t.expect(mainCollapseButton.exists).ok()
         await t.click(mainCheck)
         await t.expect(mainCheck.checked).eql(true)
     })
@@ -97,20 +98,18 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     test('unchecking-a-category-leaves-the-expansion-alone', async (t) => {
         /**
          * Unchecking is the one step of the cycle that doesn't expand -- it puts nothing on
-         * display that the user asked to see. Main is the category that shows this, since it
-         * starts out checked and collapsed rather than having to be checked first.
+         * display that the user asked to see -- and it doesn't collapse either.
          */
         await enterEditMode(t)
         await t.click(mainCheck)
         await t.expect(mainCheck.checked).eql(false)
-        await t.expect(mainExpandButton.exists).ok()
-        await t.expect(populationCheckInteractable.exists).notOk()
+        await t.expect(mainCollapseButton.exists).ok()
+        await setMainExpanded(t, false)
 
-        // It doesn't collapse either, so a category expanded by checking it stays open.
         await t.click(mainCheck)
         await t.click(mainCheck)
         await t.expect(mainCheck.checked).eql(false)
-        await t.expect(categoryToggleButton('main', 'Collapse').exists).ok()
+        await t.expect(mainCollapseButton.exists).ok()
         await t.expect(populationCheckInteractable.exists).ok()
     })
 
@@ -119,11 +118,9 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
          * Check that the category, when expanded, cycles between indeterminate -> true -> false -> indeterminate states
          */
         await enterEditMode(t)
-        // Population is selected, so it's on display before anything is expanded.
         await t.click(populationCheckInteractable)
         await t.expect(populationCheck.checked).eql(false)
         await t.expect(mainCheck.indeterminate).eql(true)
-        await setMainExpanded(t, true)
         await screencap(t)
 
         await t.click(mainCheck)
@@ -152,6 +149,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await enterEditMode(t)
         await t.click(populationCheckInteractable)
         await t.expect(mainCheck.indeterminate).eql(true)
+        await setMainExpanded(t, false)
         await t.expect(populationCheckInteractable.exists).notOk()
         if (platform === 'mobile') {
             await screencap(t)
@@ -190,8 +188,6 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.expect(populationCheck.checked).eql(false)
         await t.expect(mainCheck.indeterminate).eql(true)
 
-        // Unchecking Population hid its row, so reaching it again means expanding Main.
-        await setMainExpanded(t, true)
         await t.click(populationCheckInteractable)
         await t.expect(mainCheck.indeterminate).eql(false)
         await t.expect(mainCheck.checked).eql(true)
@@ -210,8 +206,6 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await enterEditMode(t)
         await t.click(mainCheck)
         await t.expect(mainCheck.checked).eql(false)
-        // With nothing in Main selected, its rows are all behind the toggle.
-        await setMainExpanded(t, true)
         await t.click(populationCheckInteractable)
         await t.expect(populationCheck.checked).eql(true)
         await t.expect(mainCheck.indeterminate).eql(true)
@@ -384,18 +378,20 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.expect(mainCheck.indeterminate).eql(true)
     })
 
-    test('expand-persistence', async (t) => {
-        // Expansion is a setting, so it outlives edit mode and the page. Housing is the
-        // category tested, since nothing in it is selected and so all of its rows are behind
-        // the toggle.
+    test('expansion-follows-the-selection-when-edit-mode-opens', async (t) => {
+        /**
+         * Nothing in Housing is selected, so it opens collapsed however it was left; Main, whose
+         * groups are selected, opens expanded so an unchecked one stays on display.
+         */
         await enterEditMode(t)
         await setCategoryExpanded(t, 'housing', true)
+        await t.expect(vacancyCheckInteractable.visible).eql(true)
         await exitEditMode(t)
+
         await enterEditMode(t)
-        await t.expect(vacancyCheckInteractable.visible).eql(true)
-        await safeReload(t)
-        await enterEditMode(t)
-        await t.expect(vacancyCheckInteractable.visible).eql(true)
+        await t.expect(housingExpandButton.exists).ok()
+        await t.click(populationCheckInteractable)
+        await t.expect(mainCollapseButton.exists).ok()
     })
 
     test('search-smoke', async (t) => {
