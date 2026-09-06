@@ -30,6 +30,8 @@ RUN apt-get -y update \
     && apt-get -y install \
         chromium=143.* chromium-common=143.* \
         xvfb \
+        # so a --docker run can be watched over VNC
+        x11vnc \
         sqlite3 \
         fluxbox \
         # the checkout step clones inside the container, and the runner diffs against the
