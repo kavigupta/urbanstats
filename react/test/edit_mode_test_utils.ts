@@ -36,7 +36,7 @@ export async function withEditMode<T>(t: TestController, block: () => Promise<T>
  * The `data-test-id` prefix each kind of edit-tree checkbox carries. Sources use a space
  * because their id embeds the category and source names.
  */
-export const editCheckboxPrefixes = { category: 'edit_category_', group: 'edit_group_', year: 'edit_year_', source: 'edit_source ' } as const
+export const editCheckboxPrefixes = { category: 'edit_category_', subcategory: 'edit_subcategory_', group: 'edit_group_', year: 'edit_year_', source: 'edit_source ' } as const
 
 /**
  * A checkbox with its `indeterminate` state readable. It's a DOM property rather than an
@@ -51,6 +51,10 @@ function checkboxByTestId(testId: string, extraCss = ''): CheckboxSelector {
 
 export function categoryCheckbox(categoryId: string): CheckboxSelector {
     return checkboxByTestId(`${editCheckboxPrefixes.category}${categoryId}`)
+}
+
+export function subcategoryCheckbox(subcategoryId: string): CheckboxSelector {
+    return checkboxByTestId(`${editCheckboxPrefixes.subcategory}${subcategoryId}`)
 }
 
 /**

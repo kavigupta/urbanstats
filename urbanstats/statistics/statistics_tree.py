@@ -1,5 +1,6 @@
 # pylint: disable=too-many-lines
 
+import itertools
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -24,6 +25,19 @@ class Source:
 
     def json(self) -> Dict[str, Any]:
         return {"category": self.category, "name": self.name}
+
+
+@dataclass(frozen=True)
+class Subcategory:
+    """
+    Groups statistics within a category, e.g. the ones that add up to 100%.
+    """
+
+    id: str
+    name: str
+
+    def json(self) -> Dict[str, Any]:
+        return {"id": self.id, "name": self.name}
 
 
 @dataclass
@@ -122,6 +136,7 @@ class StatisticGroup:
     by_year: Dict[Optional[int], List[MultiSource]]
     group_name_statcol: Optional[str] = None
     group_name: Optional[str] = None
+    subcategory: Optional[Subcategory] = None
 
     def __post_init__(self) -> None:
         for year, cols in self.by_year.items():
@@ -165,6 +180,7 @@ class StatisticGroup:
         return {
             "id": group_id_path,
             "name": self.compute_group_name(name_map),
+            "subcategory": self.subcategory.json() if self.subcategory else None,
             "contents": [
                 self.flatten_year(year, stats, name_map, list(name_map))
                 for year, stats in self.by_year.items()
@@ -203,6 +219,27 @@ class StatisticCategory:
         assert isinstance(self.contents, dict)
         assert all(
             isinstance(value, StatisticGroup) for value in self.contents.values()
+        )
+        # The frontend reconstructs a subcategory from the run of groups carrying it.
+        seen = set()
+        for subcategory, _ in itertools.groupby(
+            group.subcategory for group in self.contents.values()
+        ):
+            if subcategory is None:
+                continue
+            assert subcategory.id not in seen, (
+                f"Subcategory {subcategory.id} is not contiguous within "
+                f"category {self.name}"
+            )
+            seen.add(subcategory.id)
+
+    def subcategories(self) -> List[Subcategory]:
+        return list(
+            dict.fromkeys(
+                group.subcategory
+                for group in self.contents.values()
+                if group.subcategory is not None
+            )
         )
 
     def internal_statistics(self) -> List[Union[str, Tuple[str, ...]]]:
@@ -245,6 +282,14 @@ class StatisticTree:
         assert all(
             isinstance(value, StatisticCategory) for value in self.categories.values()
         )
+        # Subcategory ids become settings keys, so they must be unique site-wide.
+        ids = [
+            subcategory.id
+            for category in self.categories.values()
+            for subcategory in category.subcategories()
+        ]
+        duplicated = {id_ for id_ in ids if ids.count(id_) > 1}
+        assert not duplicated, f"Duplicated subcategory ids: {duplicated}"
 
     def internal_statistics(self) -> List[Union[str, Tuple[str, ...]]]:
         return [
@@ -420,6 +465,18 @@ def census_segregation(col_name: str) -> Dict[str, StatisticGroup]:
             }
         )
     }
+
+
+def in_subcategory(
+    subcategory_id: str, name: str, *groups: Dict[str, StatisticGroup]
+) -> Dict[str, StatisticGroup]:
+    subcategory = Subcategory(subcategory_id, name)
+    result = {}
+    for group_dict in groups:
+        for col_name, group in group_dict.items():
+            group.subcategory = subcategory
+            result[col_name] = group
+    return result
 
 
 def just_2020(
@@ -629,13 +686,17 @@ statistics_tree = StatisticTree(
         "race": StatisticCategory(
             name="Race",
             contents={
-                **census_basics_with_canada("white", change=False),
-                **census_basics_with_canada("hispanic", change=False),
-                **census_basics_with_canada("black", change=False),
-                **census_basics_with_canada("asian", change=False),
-                **census_basics_with_canada("native", change=False),
-                **census_basics_with_canada("hawaiian_pi", change=False),
-                **census_basics_with_canada("other / mixed", change=False),
+                **in_subcategory(
+                    "race_composition",
+                    "Racial Composition",
+                    census_basics_with_canada("white", change=False),
+                    census_basics_with_canada("hispanic", change=False),
+                    census_basics_with_canada("black", change=False),
+                    census_basics_with_canada("asian", change=False),
+                    census_basics_with_canada("native", change=False),
+                    census_basics_with_canada("hawaiian_pi", change=False),
+                    census_basics_with_canada("other / mixed", change=False),
+                ),
                 **census_segregation("homogeneity_250"),
                 **census_segregation("segregation_250"),
                 **census_segregation("segregation_250_10"),
@@ -644,29 +705,41 @@ statistics_tree = StatisticTree(
         "national_origin": StatisticCategory(
             name="National Origin",
             contents={
-                **just_2020_with_canada(
-                    "citizenship_citizen_by_birth",
-                    "citizenship_citizen_by_naturalization",
-                    "citizenship_not_citizen",
+                **in_subcategory(
+                    "citizenship",
+                    "Citizenship",
+                    just_2020_with_canada(
+                        "citizenship_citizen_by_birth",
+                        "citizenship_citizen_by_naturalization",
+                        "citizenship_not_citizen",
+                    ),
                 ),
-                **just_2020(
-                    "birthplace_non_us",
-                    "birthplace_us_not_state",
-                    "birthplace_us_state",
-                    source=population_census,
+                **in_subcategory(
+                    "birthplace",
+                    "Birthplace",
+                    just_2020(
+                        "birthplace_non_us",
+                        "birthplace_us_not_state",
+                        "birthplace_us_state",
+                        source=population_census,
+                    ),
                 ),
-                **just_2020_with_canada(
-                    "language_english_only",
-                    "language_spanish",
-                ),
-                **just_2020(
-                    "language_french_canada",
-                    "language_other_non_french_canada",
-                    source=population_canada,
-                ),
-                **just_2020(
-                    "language_other",
-                    source=population_census,
+                **in_subcategory(
+                    "language",
+                    "Language at Home",
+                    just_2020_with_canada(
+                        "language_english_only",
+                        "language_spanish",
+                    ),
+                    just_2020(
+                        "language_french_canada",
+                        "language_other_non_french_canada",
+                        source=population_canada,
+                    ),
+                    just_2020(
+                        "language_other",
+                        source=population_census,
+                    ),
                 ),
             },
         ),
@@ -690,29 +763,37 @@ statistics_tree = StatisticTree(
         "education": StatisticCategory(
             name="Education",
             contents={
-                **just_2020(
-                    "education_high_school",
-                    "education_ugrad",
-                    "education_grad",
-                    source=population_census,
+                **in_subcategory(
+                    "education_attainment",
+                    "Educational Attainment",
+                    just_2020(
+                        "education_high_school",
+                        "education_ugrad",
+                        "education_grad",
+                        source=population_census,
+                    ),
+                    just_2020(
+                        "education_high_school_canada",
+                        "education_ugrad_canada",
+                        "education_grad_canada",
+                        source=population_canada,
+                    ),
                 ),
-                **just_2020(
-                    "education_high_school_canada",
-                    "education_ugrad_canada",
-                    "education_grad_canada",
-                    source=population_canada,
-                ),
-                **just_2020(
-                    "education_field_stem",
-                    "education_field_humanities",
-                    "education_field_business",
-                    source=population_census,
-                ),
-                **just_2020(
-                    "education_field_stem_canada",
-                    "education_field_humanities_canada",
-                    "education_field_business_canada",
-                    source=population_canada,
+                **in_subcategory(
+                    "education_field",
+                    "Field of Study",
+                    just_2020(
+                        "education_field_stem",
+                        "education_field_humanities",
+                        "education_field_business",
+                        source=population_census,
+                    ),
+                    just_2020(
+                        "education_field_stem_canada",
+                        "education_field_humanities_canada",
+                        "education_field_business_canada",
+                        source=population_canada,
+                    ),
                 ),
                 **just_2020(
                     "female_hs_gap_4",
@@ -745,29 +826,37 @@ statistics_tree = StatisticTree(
                     "lim_at_canada",
                     source=population_canada,
                 ),
-                **just_2020(
-                    "household_income_under_50k",
-                    "household_income_50k_to_100k",
-                    "household_income_over_100k",
-                    source=population_census,
+                **in_subcategory(
+                    "household_income",
+                    "Household Income",
+                    just_2020(
+                        "household_income_under_50k",
+                        "household_income_50k_to_100k",
+                        "household_income_over_100k",
+                        source=population_census,
+                    ),
+                    just_2020(
+                        "household_income_under_50cad",
+                        "household_income_50_to_100cad",
+                        "household_income_above_100_cad",
+                        source=population_canada,
+                    ),
                 ),
-                **just_2020(
-                    "household_income_under_50cad",
-                    "household_income_50_to_100cad",
-                    "household_income_above_100_cad",
-                    source=population_canada,
-                ),
-                **just_2020(
-                    "individual_income_under_50k",
-                    "individual_income_50k_to_100k",
-                    "individual_income_over_100k",
-                    source=population_census,
-                ),
-                **just_2020(
-                    "individual_income_under_50cad",
-                    "individual_income_50_to_100cad",
-                    "individual_income_above_100_cad",
-                    source=population_canada,
+                **in_subcategory(
+                    "individual_income",
+                    "Individual Income",
+                    just_2020(
+                        "individual_income_under_50k",
+                        "individual_income_50k_to_100k",
+                        "individual_income_over_100k",
+                        source=population_census,
+                    ),
+                    just_2020(
+                        "individual_income_under_50cad",
+                        "individual_income_50_to_100cad",
+                        "individual_income_above_100_cad",
+                        source=population_canada,
+                    ),
                 ),
             },
         ),
@@ -777,23 +866,48 @@ statistics_tree = StatisticTree(
                 **census_basics_with_canada("housing_per_pop", change=False),
                 **census_basics_with_canada("housing_per_person", change=False),
                 **census_basics("vacancy", change=False),
-                **just_2020(
-                    "rent_burden_under_20",
-                    "rent_burden_20_to_40",
-                    "rent_burden_over_40",
-                    "rent_1br_under_750",
-                    "rent_1br_750_to_1500",
-                    "rent_1br_over_1500",
-                    "rent_2br_under_750",
-                    "rent_2br_750_to_1500",
-                    "rent_2br_over_1500",
-                    "year_built_1969_or_earlier",
-                    "year_built_1970_to_1979",
-                    "year_built_1980_to_1989",
-                    "year_built_1990_to_1999",
-                    "year_built_2000_to_2009",
-                    "year_built_2010_or_later",
-                    source=population_census,
+                **in_subcategory(
+                    "rent_burden",
+                    "Rent Burden",
+                    just_2020(
+                        "rent_burden_under_20",
+                        "rent_burden_20_to_40",
+                        "rent_burden_over_40",
+                        source=population_census,
+                    ),
+                ),
+                **in_subcategory(
+                    "rent_1br",
+                    "1BR Rent",
+                    just_2020(
+                        "rent_1br_under_750",
+                        "rent_1br_750_to_1500",
+                        "rent_1br_over_1500",
+                        source=population_census,
+                    ),
+                ),
+                **in_subcategory(
+                    "rent_2br",
+                    "2BR Rent",
+                    just_2020(
+                        "rent_2br_under_750",
+                        "rent_2br_750_to_1500",
+                        "rent_2br_over_1500",
+                        source=population_census,
+                    ),
+                ),
+                **in_subcategory(
+                    "year_built",
+                    "Year Built",
+                    just_2020(
+                        "year_built_1969_or_earlier",
+                        "year_built_1970_to_1979",
+                        "year_built_1980_to_1989",
+                        "year_built_1990_to_1999",
+                        "year_built_2000_to_2009",
+                        "year_built_2010_or_later",
+                        source=population_census,
+                    ),
                 ),
                 **just_2020_with_canada(
                     "household_size_pw",
@@ -810,24 +924,38 @@ statistics_tree = StatisticTree(
         "transportation": StatisticCategory(
             name="Transportation",
             contents={
-                **just_2020_with_canada(
-                    "transportation_means_car_no_wfh",
-                    "transportation_means_bike_no_wfh",
-                    "transportation_means_walk_no_wfh",
-                    "transportation_means_transit_no_wfh",
+                **in_subcategory(
+                    "commute_mode",
+                    "Commute Mode",
+                    just_2020_with_canada(
+                        "transportation_means_car_no_wfh",
+                        "transportation_means_bike_no_wfh",
+                        "transportation_means_walk_no_wfh",
+                        "transportation_means_transit_no_wfh",
+                    ),
                 ),
                 **just_2020_with_canada(
                     "transportation_commute_time_median",
-                    "transportation_commute_time_under_15",
-                    "transportation_commute_time_15_to_29",
-                    "transportation_commute_time_30_to_59",
-                    "transportation_commute_time_over_60",
                 ),
-                **just_2020(
-                    "vehicle_ownership_none",
-                    "vehicle_ownership_at_least_1",
-                    "vehicle_ownership_at_least_2",
-                    source=population_census,
+                **in_subcategory(
+                    "commute_time",
+                    "Commute Time",
+                    just_2020_with_canada(
+                        "transportation_commute_time_under_15",
+                        "transportation_commute_time_15_to_29",
+                        "transportation_commute_time_30_to_59",
+                        "transportation_commute_time_over_60",
+                    ),
+                ),
+                **in_subcategory(
+                    "vehicle_ownership",
+                    "Vehicle Ownership",
+                    just_2020(
+                        "vehicle_ownership_none",
+                        "vehicle_ownership_at_least_1",
+                        "vehicle_ownership_at_least_2",
+                        source=population_census,
+                    ),
                 ),
                 **just_2020(
                     "traffic_fatalities_last_decade_per_capita",
@@ -884,14 +1012,18 @@ statistics_tree = StatisticTree(
                     "pm_25_2018_2022",
                     source=pollution_acag,
                 ),
-                **just_2020(
-                    "heating_utility_gas",
-                    "heating_electricity",
-                    "heating_bottled_tank_lp_gas",
-                    "heating_feul_oil_kerosene",
-                    "heating_other",
-                    "heating_no",
-                    source=population_census,
+                **in_subcategory(
+                    "heating",
+                    "Heating Fuel",
+                    just_2020(
+                        "heating_utility_gas",
+                        "heating_electricity",
+                        "heating_bottled_tank_lp_gas",
+                        "heating_feul_oil_kerosene",
+                        "heating_other",
+                        "heating_no",
+                        source=population_census,
+                    ),
                 ),
             },
         ),
@@ -968,18 +1100,26 @@ statistics_tree = StatisticTree(
         "relationships": StatisticCategory(
             name="Relationships",
             contents={
-                **just_2020(
-                    "sors_unpartnered_householder",
-                    "sors_cohabiting_partnered_gay",
-                    "sors_cohabiting_partnered_straight",
-                    "sors_child",
-                    "sors_other",
-                    source=population_census,
+                **in_subcategory(
+                    "household_relationship",
+                    "Household Relationship",
+                    just_2020(
+                        "sors_unpartnered_householder",
+                        "sors_cohabiting_partnered_gay",
+                        "sors_cohabiting_partnered_straight",
+                        "sors_child",
+                        "sors_other",
+                        source=population_census,
+                    ),
                 ),
-                **just_2020_with_canada(
-                    "marriage_never_married",
-                    "marriage_married_not_divorced",
-                    "marriage_divorced",
+                **in_subcategory(
+                    "marital_status",
+                    "Marital Status",
+                    just_2020_with_canada(
+                        "marriage_never_married",
+                        "marriage_married_not_divorced",
+                        "marriage_divorced",
+                    ),
                 ),
             },
         ),
