@@ -29,6 +29,16 @@ type Statement = UrbanStatsASTStatement<UnitsRead>
 
 const anything = { kind: 'any' } satisfies AbstractInterpValue
 
+/**
+ * What an operation works out to. Its operands are made to agree before it runs, a unit that does
+ * not fit being converted and a reading scaled, so every expression resolves to something. An
+ * operation that somehow still does not says only that its unit is unknown, rather than throwing:
+ * a script whose units cannot be worked out is still a script to run and to draw.
+ */
+function resolved(value: AbstractInterpValue | undefined): AbstractInterpValue {
+    return value ?? anything
+}
+
 /** A script has objects in it as well as quantities, a regression's result being one. */
 type Inferred = AbstractInterpValue | { kind: 'fields', fields: Map<string, AbstractInterpValue> }
 
@@ -169,8 +179,7 @@ function checkOperation(ast: UrbanStatsASTExpression<UnitsRead> & { type: 'binar
     const [over, under] = takesADifference ? [scaling(reread), scaling(right)] : [reread, right]
     return {
         ast: ({ ...ast, left: over.ast, right: under.ast }),
-        // an operation no unit suits says only that its own unit is not known
-        value: forward(operator, quantity(over.value), quantity(under.value)) ?? anything,
+        value: resolved(forward(operator, quantity(over.value), quantity(under.value))),
     }
 }
 
@@ -204,14 +213,14 @@ function regressionFields(args: { arg: UrbanStatsASTArg<UnitsRead>, value: Infer
     const named = (name: string): AbstractInterpValue | undefined =>
         args.filter(({ arg }) => arg.type === 'named' && arg.name.node === name).map(({ value }) => quantity(value))[0]
     const level = named('y') ?? anything
-    const change = forward('-', level, level) ?? anything
+    const change = resolved(forward('-', level, level))
     const fields = new Map<string, AbstractInterpValue>([['b', level], ['residuals', change], ['r2', inUnit(dimensionless)]])
     for (const { arg, value } of args) {
         const parameter = arg.type === 'named' ? parameterName.exec(arg.name.node) : null
         if (parameter !== null) {
             const parameterValue = quantity(value)
-            const spread = forward('-', parameterValue, parameterValue) ?? anything
-            fields.set(`m${parameter[1]}`, forward('/', change, spread) ?? anything)
+            const spread = resolved(forward('-', parameterValue, parameterValue))
+            fields.set(`m${parameter[1]}`, resolved(forward('/', change, spread)))
         }
     }
     return { kind: 'fields', fields }
@@ -227,7 +236,7 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
             return propagation.unknownTimes === true && !isDifference ? manyOf(value) : value
         }
         case 'power':
-            return forward('**', value, constant(propagation.exponent)) ?? anything
+            return resolved(forward('**', value, constant(propagation.exponent)))
         case 'either': {
             const other = positional[1] ?? anything
             // Two known units must match, and the result is one of them, not their sum.
@@ -235,7 +244,7 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
                 return sameDimensions(value.unit, other.unit) ? join(value, other) : anything
             }
             // A bare number takes the other argument's unit, as it does in a sum.
-            return forward('+', value, other) ?? anything
+            return resolved(forward('+', value, other))
         }
         case 'rank': {
             // both arguments are in one unit, so there is no ranking a population among areas
