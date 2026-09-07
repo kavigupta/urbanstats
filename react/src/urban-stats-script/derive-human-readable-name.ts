@@ -229,7 +229,7 @@ function statedMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanRea
 }
 
 export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
-    const { ast: factored } = unitCheck(uss, typeEnvironment)
+    const factored = unitCheck(uss, typeEnvironment)
     const result = read(editableMapData<UnitsRead>(), factored, typeEnvironment)
     if (result?.currentValue.namedArgs.data === undefined) return
     const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment)
@@ -274,7 +274,7 @@ const statedColumnNames = mapUssParser<{ namedArgs: { columns: { namedArgs: { va
 }), 'dont-reparse')
 
 function tableColumnLabels(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName[] | undefined {
-    const { ast: factored } = unitCheck(uss, typeEnvironment)
+    const factored = unitCheck(uss, typeEnvironment)
     const columns = read(statedColumnNames, factored, typeEnvironment)?.namedArgs.columns
     if (columns === undefined) {
         return undefined
@@ -290,7 +290,7 @@ function tableColumnLabels(uss: MapUSS, typeEnvironment: TypeEnvironment): Human
 
 /** The filter a script applies, or undefined for the `condition (true)` that keeps every row. */
 export function deriveConditionLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
-    const { ast: factored } = unitCheck(uss, typeEnvironment)
+    const factored = unitCheck(uss, typeEnvironment)
     if (factored.type !== 'statements') {
         return undefined
     }
@@ -312,7 +312,7 @@ export function tableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): Human
 }
 
 export function deriveTableColumnLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): HumanReadableName | undefined {
-    const { ast: factored } = unitCheck(uss, typeEnvironment)
+    const factored = unitCheck(uss, typeEnvironment)
     const values = tableColumnExpression(factored, typeEnvironment, columnIndex)
     return values === undefined ? undefined : humanReadableElements(values, typeEnvironment)
 }
@@ -324,7 +324,7 @@ const editableTableCall = mapUssParser(l.edit(l.call({
 })), 'dont-reparse')
 
 export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnNames: HumanReadableName[]): HumanReadableName | undefined {
-    const { ast: factored } = unitCheck(uss, typeEnvironment)
+    const factored = unitCheck(uss, typeEnvironment)
     const result = read(editableTableCall, factored, typeEnvironment)
     if (result === undefined) {
         return undefined

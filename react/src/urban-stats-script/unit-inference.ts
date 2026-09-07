@@ -22,6 +22,8 @@ export interface UnitConversion {
 /** What reading a script for its units leaves on a node. */
 export interface UnitsRead {
     converted?: UnitConversion
+    /** What the expression works out to, once anything recorded above has been done to it. */
+    worksOutTo?: AbstractInterpValue
 }
 
 type Expression = UrbanStatsASTExpression<UnitsRead>
@@ -300,7 +302,9 @@ function alsoOf(expected: Expected, first: Inferred | undefined): Expected {
  * Nothing about what the script computes changes.
  */
 function checkExpression(ast: UrbanStatsASTExpression<UnitsRead>, scope: Scope, expected: Expected): Checked<Expression> {
-    return reconciled(checkWithin(ast, scope, expected), expected)
+    const checked = reconciled(checkWithin(ast, scope, expected), expected)
+    // written down where the reader of a map or a column can find it, rather than read again there
+    return { ...checked, ast: { ...checked.ast, worksOutTo: quantity(checked.value) } }
 }
 
 function checkWithin(ast: UrbanStatsASTExpression<UnitsRead>, scope: Scope, expected: Expected): Checked<Expression> {
@@ -383,6 +387,11 @@ function checkWithin(ast: UrbanStatsASTExpression<UnitsRead>, scope: Scope, expe
 }
 
 function checkStatement(ast: UrbanStatsASTStatement<UnitsRead>, scope: Scope, expected: Expected): Checked<Statement> {
+    const checked = statementWithin(ast, scope, expected)
+    return { ...checked, ast: { ...checked.ast, worksOutTo: quantity(checked.value) } }
+}
+
+function statementWithin(ast: UrbanStatsASTStatement<UnitsRead>, scope: Scope, expected: Expected): Checked<Statement> {
     switch (ast.type) {
         case 'expression': {
             const inner = checkExpression(ast.value, scope, expected)
@@ -442,37 +451,17 @@ function readAsANumber<M>(ast: UrbanStatsASTExpression<M>, scope: Scope): { valu
     return { value: literal === undefined ? undefined : asNumber(literal), read: read as UrbanStatsASTExpression<M> }
 }
 
-/** A checked script: the rewritten AST, the unit it works out to, and the names it bound. */
-interface UnitCheck<T> {
-    ast: T
-    unit: StoredUnit | undefined
-    named: Bindings
-}
-
-export function unitCheck<M>(program: MapUSS<M>, typeEnvironment: TypeEnvironment, expected?: StoredUnit): UnitCheck<MapUSS<M & UnitsRead>>
-export function unitCheck<M>(program: UrbanStatsASTStatement<M>, typeEnvironment: TypeEnvironment, expected?: StoredUnit): UnitCheck<Statement>
-export function unitCheck<M>(program: UrbanStatsASTExpression<M>, typeEnvironment: TypeEnvironment, expected?: StoredUnit): UnitCheck<Expression>
-export function unitCheck(program: UrbanStatsASTExpression<UnitsRead> | UrbanStatsASTStatement<UnitsRead>, typeEnvironment: TypeEnvironment, expected?: StoredUnit): UnitCheck<Expression | Statement> {
+/** The script rewritten, every node of it saying what it works out to. */
+export function unitCheck<M>(program: MapUSS<M>, typeEnvironment: TypeEnvironment): MapUSS<M & UnitsRead>
+export function unitCheck<M>(program: UrbanStatsASTStatement<M>, typeEnvironment: TypeEnvironment): Statement
+export function unitCheck<M>(program: UrbanStatsASTExpression<M>, typeEnvironment: TypeEnvironment): Expression
+export function unitCheck(program: UrbanStatsASTExpression<UnitsRead> | UrbanStatsASTStatement<UnitsRead>, typeEnvironment: TypeEnvironment): Expression | Statement {
     const scope: Scope = { typeEnvironment, named: new Map() }
-    const wanted = wanting(expected)
     // the toNumbers are removed first, so that the units are read from an ordinary script
     const read = withoutToNumbers(program, typeEnvironment)
-    const checked = isExpression(read)
-        ? checkExpression(read, scope, wanted)
-        : checkStatement(read, scope, wanted)
-    return { ast: checked.ast, unit: unitToWriteIn(quantity(checked.value)), named: scope.named }
-}
-
-/**
- * Reads one expression of a script, given the names the rest of the script bound and a unit
- * expected of this expression alone.
- */
-export function unitWithin(ast: Expression, typeEnvironment: TypeEnvironment, named: Bindings, expected?: StoredUnit): AbstractInterpValue {
-    return quantity(checkExpression(ast, { typeEnvironment, named: new Map(named) }, wanting(expected)).value)
-}
-
-function wanting(expected: StoredUnit | undefined): Expected {
-    return expected === undefined ? anything : { kind: 'in', unit: expected }
+    return isExpression(read)
+        ? checkExpression(read, scope, anything).ast
+        : checkStatement(read, scope, anything).ast
 }
 
 function isExpression(ast: UrbanStatsASTExpression<UnitsRead> | UrbanStatsASTStatement<UnitsRead>): ast is UrbanStatsASTExpression<UnitsRead> {

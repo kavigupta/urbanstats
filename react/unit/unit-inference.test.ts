@@ -2,11 +2,10 @@ import assert from 'assert/strict'
 import test from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
-import { noLocation } from '../src/urban-stats-script/location'
+import { mapDataExpression, mapUSSFromString } from '../src/mapper/settings/map-uss'
 import { parseNoError } from '../src/urban-stats-script/parser'
 import { AbstractInterpValue, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
-import { unitCheck, unitWithin } from '../src/urban-stats-script/unit-inference'
-import { StoredUnit } from '../src/utils/quantity'
+import { unitCheck } from '../src/urban-stats-script/unit-inference'
 
 /** What is known, as a string: the dimensions, how many of itself it is, and its scale. */
 function shape(known: AbstractInterpValue): string {
@@ -20,23 +19,32 @@ function shape(known: AbstractInterpValue): string {
     return `${written === '' ? 'dimensionless' : written} times=${known.unit.unit.times} x${known.unit.toBaseUnits}`
 }
 
-function of(code: string, expected?: StoredUnit): AbstractInterpValue {
+function of(code: string): AbstractInterpValue {
+    const worksOutTo = unitCheck(parseNoError(code, 'test'), defaultTypeEnvironment('USA')).worksOutTo
+    assert.ok(worksOutTo !== undefined, `${code} was read without saying what it works out to`)
+    return worksOutTo
+}
+
+/**
+ * What a map's data works out to, where the map states the unit it is drawn in. That is how a
+ * script says what is expected of an expression.
+ */
+function drawnAs(code: string, statedUnit: string): AbstractInterpValue {
     const typeEnvironment = defaultTypeEnvironment('USA')
-    const checked = unitCheck(parseNoError(code, 'test'), typeEnvironment, expected)
-    // read again, since reading a checked script has to give the same answer
-    return unitWithin({ type: 'customNode', entireLoc: noLocation, expr: checked.ast, originalCode: code }, typeEnvironment, checked.named, expected)
+    const uss = mapUSSFromString(`cMap(data=${code}, scale=linearScale(), ramp=rampUridis, unit=${statedUnit})`)
+    const data = mapDataExpression(unitCheck(uss, typeEnvironment), typeEnvironment)
+    assert.ok(data?.worksOutTo !== undefined, `${code} drawn as ${statedUnit} was read without saying what it works out to`)
+    return data.worksOutTo
 }
 
 /** What the script works out to. How it was converted to get there is a caption's business. */
-function inferred(code: string, expected?: StoredUnit): string {
-    return shape(of(code, expected))
+function inferred(code: string): string {
+    return shape(of(code))
 }
 
-/** The unit an expression of the same environment works out to, for expecting one of it. */
-function unitOf(code: string): StoredUnit {
-    const unit = unitCheck(parseNoError(code, 'test'), defaultTypeEnvironment('USA')).unit
-    assert.ok(unit !== undefined, `${code} is of no unit to expect`)
-    return unit
+/** What the script works out to where a map states the unit it is drawn in. */
+function inferredAs(code: string, statedUnit: string): string {
+    return shape(drawnAs(code, statedUnit))
 }
 
 function writable(code: string): boolean {
@@ -282,9 +290,9 @@ void test('if arms and vector elements are made alike', () => {
     assert.equal(inferred('[population, area, sunny_hours]'),
         'person^1 times=1 x1')
     // an expected unit sets it instead, so the first is converted too
-    assert.equal(inferred('[population, area]', unitOf('density_pw_1km')),
+    assert.equal(inferredAs('[population, area]', 'unitDensity'),
         'm^-2 person^1 times=1 x0.000001')
-    assert.equal(inferred('if (population > 0) { population } else { area }', unitOf('density_pw_1km')),
+    assert.equal(inferredAs('if (population > 0) { population } else { area }', 'unitDensity'),
         'm^-2 person^1 times=1 x0.000001')
 })
 
@@ -315,52 +323,52 @@ void test('a sum takes the zero off a reading', () => {
 // What a script works out to when the caller expects a unit of it. Whatever the script says is
 // converted into that unit.
 for (const [code, expected, reads] of [
-    ['population + area', 'rainfall', 'm^1 s^-1 times=1 x3.168808781402895e-8'],
-    ['population + area', 'sunny_hours', 's^1 times=1 x3600'],
-    ['population + area', 'density_pw_1km', 'm^-2 person^1 times=1 x0.000001'],
+    ['population + area', 'unitDistancePerYear', 'm^1 s^-1 times=1 x3.168808781402895e-8'],
+    ['population + area', 'unitTime', 's^1 times=1 x3600'],
+    ['population + area', 'unitDensity', 'm^-2 person^1 times=1 x0.000001'],
     // a share is dimensionless, as a plain number is, so the sum is read as a plain number
-    ['population + area', 'commute_bike', 'dimensionless times=1 x1'],
+    ['population + area', 'unitPercentage', 'dimensionless times=1 x1'],
     // a temperature is counted from its own zero, so a zero is added at the end
-    ['population + area', 'high_temp', 'F^1 times=1 x1'],
+    ['population + area', 'unitTemperature', 'F^1 times=1 x1'],
     // one statistic is converted into another's unit the same way
-    ['population', 'rainfall', 'm^1 s^-1 times=1 x3.168808781402895e-8'],
-    ['population', 'high_temp', 'F^1 times=1 x1'],
-    ['population / area', 'density_pw_1km', 'm^-2 person^1 times=1 x0.000001'],
-    ['population / area', 'sunny_hours', 's^1 times=1 x3600'],
+    ['population', 'unitDistancePerYear', 'm^1 s^-1 times=1 x3.168808781402895e-8'],
+    ['population', 'unitTemperature', 'F^1 times=1 x1'],
+    ['population / area', 'unitDensity', 'm^-2 person^1 times=1 x0.000001'],
+    ['population / area', 'unitTime', 's^1 times=1 x3600'],
     // a logarithm is dimensionless, so a single factor converts it into any unit
-    ['ln(population)', 'rainfall', 'm^1 s^-1 times=1 x3.168808781402895e-8'],
-    ['ln(population)', 'commute_bike', 'dimensionless times=1 x1'],
+    ['ln(population)', 'unitDistancePerYear', 'm^1 s^-1 times=1 x3.168808781402895e-8'],
+    ['ln(population)', 'unitPercentage', 'dimensionless times=1 x1'],
     // and a bare number is simply read in the expected unit
-    ['100', 'rainfall', 'm^1 s^-1 times=1 x3.168808781402895e-8'],
-    ['100', 'high_temp', 'F^1 times=1 x1'],
-    ['100', 'density_pw_1km', 'm^-2 person^1 times=1 x0.000001'],
+    ['100', 'unitDistancePerYear', 'm^1 s^-1 times=1 x3.168808781402895e-8'],
+    ['100', 'unitTemperature', 'F^1 times=1 x1'],
+    ['100', 'unitDensity', 'm^-2 person^1 times=1 x0.000001'],
 ] as const) {
     void test(`${code} as ${expected}`, () => {
-        assert.equal(inferred(code, unitOf(expected)), reads)
+        assert.equal(inferredAs(code, expected), reads)
     })
 }
 
 void test('an expected unit reaches bare numbers', () => {
     // a script that is nothing but a number has nothing else to read it from
-    assert.equal(inferred('100', unitOf('area')), 'm^2 times=1 x1000000')
-    assert.equal(inferred('100', unitOf('high_temp')), 'F^1 times=1 x1')
-    assert.equal(inferred('0.1', unitOf('commute_bike')), 'dimensionless times=1 x1')
+    assert.equal(inferredAs('100', 'unitArea'), 'm^2 times=1 x1000000')
+    assert.equal(inferredAs('100', 'unitTemperature'), 'F^1 times=1 x1')
+    assert.equal(inferredAs('0.1', 'unitPercentage'), 'dimensionless times=1 x1')
     // and the expectation reaches every number in the script
-    assert.equal(inferred('maximum(100, 200)', unitOf('area')), 'm^2 times=1 x1000000')
-    assert.equal(inferred('[100, 200]', unitOf('area')), 'm^2 times=1 x1000000')
-    assert.equal(inferred('if (population > 0) { 100 } else { 200 }', unitOf('area')),
+    assert.equal(inferredAs('maximum(100, 200)', 'unitArea'), 'm^2 times=1 x1000000')
+    assert.equal(inferredAs('[100, 200]', 'unitArea'), 'm^2 times=1 x1000000')
+    assert.equal(inferredAs('if (population > 0) { 100 } else { 200 }', 'unitArea'),
         'm^2 times=1 x1000000')
 })
 
 void test('an expected unit converts the script', () => {
     // a factor appears wherever the script does not say what is expected
-    assert.equal(inferred('population', unitOf('area')), 'm^2 times=1 x1000000')
-    assert.equal(inferred('ln(100)', unitOf('area')), 'm^2 times=1 x1000000')
-    assert.equal(inferred('ln(density_pw_1km)', unitOf('area')),
+    assert.equal(inferredAs('population', 'unitArea'), 'm^2 times=1 x1000000')
+    assert.equal(inferredAs('ln(100)', 'unitArea'), 'm^2 times=1 x1000000')
+    assert.equal(inferredAs('ln(density_pw_1km)', 'unitArea'),
         'm^2 times=1 x1000000')
     // a reading does not scale, so its zero is subtracted first and added back after
-    assert.equal(inferred('area / 2', unitOf('high_temp')), 'F^1 times=1 x1')
-    assert.equal(inferred('high_temp', unitOf('area')), 'm^2 times=0 x1000000')
+    assert.equal(inferredAs('area / 2', 'unitTemperature'), 'F^1 times=1 x1')
+    assert.equal(inferredAs('high_temp', 'unitArea'), 'm^2 times=0 x1000000')
 })
 
 void test('a script with nothing to read', () => {

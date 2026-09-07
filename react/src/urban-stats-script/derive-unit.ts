@@ -4,19 +4,12 @@ import { StoredUnit } from '../utils/quantity'
 import { UrbanStatsASTExpression } from './ast'
 import { TypeEnvironment } from './types-values'
 import { unitToWriteIn } from './unit-algebra'
-import { UnitsRead, unitCheck, unitWithin } from './unit-inference'
+import { UnitsRead, unitCheck } from './unit-inference'
 
-/**
- * Checks the whole script first, so that the names it binds are known, then reads the unit from
- * the one expression the map or column draws.
- */
+/** What the one expression a map or a column draws was read as being in. */
 function unitOf(of: (checked: MapUSS<UnitsRead>) => UrbanStatsASTExpression<UnitsRead> | undefined, uss: MapUSS, typeEnvironment: TypeEnvironment): StoredUnit | undefined {
-    const checked = unitCheck(uss, typeEnvironment)
-    const values = of(checked.ast)
-    if (values === undefined) {
-        return undefined
-    }
-    return unitToWriteIn(unitWithin(values, typeEnvironment, checked.named))
+    const values = of(unitCheck(uss, typeEnvironment))
+    return values?.worksOutTo === undefined ? undefined : unitToWriteIn(values.worksOutTo)
 }
 
 export function deriveMapUnit(uss: MapUSS, typeEnvironment: TypeEnvironment): StoredUnit | undefined {
