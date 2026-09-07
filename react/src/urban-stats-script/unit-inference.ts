@@ -152,18 +152,21 @@ function knownOf(expected: Expected): AbstractInterpValue {
 
 function checkOperation(ast: UrbanStatsASTExpression<UnitsRead> & { type: 'binaryOperator' }, scope: Scope, expected: Expected): Checked<Expression> {
     const operator = ast.operator.node
-    const left = checkExpression(ast.left, scope, expectation(backward(operator, knownOf(expected), anything, 'left')))
-    const right = checkExpression(ast.right, scope, expectation(backward(operator, knownOf(expected), quantity(left.value), 'right')))
+    // there being no square of a reading, a power takes the degrees above its zero, which is what
+    // a root of one already expected of it
+    const raises = formOf(operator) === 'power'
+    const of = (side: 'left' | 'right', known: AbstractInterpValue): Expected =>
+        raises ? { kind: 'scales' } : expectation(backward(operator, knownOf(expected), known, side))
+    const left = checkExpression(ast.left, scope, of('left', anything))
+    const right = checkExpression(ast.right, scope, of('right', quantity(left.value)))
     // re-read the left now the right is known, so the 80 of 80 < high_temp is a temperature
     const reread = quantity(left.value).kind === 'any' && quantity(right.value).kind === 'in'
         ? checkExpression(ast.left, scope, expectation(backward(operator, knownOf(expected), quantity(right.value), 'left')))
         : left
-    // a bare number scaling a reading keeps its zero, the mean of two temperatures being one. A
-    // quantity does not, so there the reading becomes a difference: (temp - 0) * area. A power is
-    // of the difference either way, there being no square of a reading
-    const form = formOf(operator)
-    const takesADifference = form === 'power'
-        || (form === 'product' && quantity(reread.value).kind === 'in' && quantity(right.value).kind === 'in')
+    // a bare number scaling a reading keeps its zero, the mean of two temperatures being one, so
+    // only a quantity on the other side makes it a difference: (temp - 0) * area
+    const takesADifference = formOf(operator) === 'product'
+        && quantity(reread.value).kind === 'in' && quantity(right.value).kind === 'in'
     const [over, under] = takesADifference ? [scalingOfExpression(reread), scalingOfExpression(right)] : [reread, right]
     return {
         ast: ({ ...ast, left: over.ast, right: under.ast }),
