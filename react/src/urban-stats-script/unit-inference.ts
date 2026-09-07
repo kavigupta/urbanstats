@@ -183,10 +183,11 @@ function scalingOfExpression(checked: Checked<Expression>): Checked<Expression> 
 
 /** What an argument is expected to be in, given the arguments before it. */
 function expectedOfArgument(propagation: UnitPropagation | undefined, expected: Expected, index: number, before: AbstractInterpValue[]): Expected {
+    // the size of a temperature is no temperature, and neither is a sum of several, so both are
+    // taken as the degrees above its zero: abs(high_temp - 0). So is a root, for the same reason
     if (propagation?.kind === 'unchanged') {
-        return expected
+        return propagation.losesAReading === true ? { kind: 'scales' } : expected
     }
-    // a root of a temperature is a root of a difference, written sqrt(high_temp - 0)
     if (propagation?.kind === 'power') {
         return { kind: 'scales' }
     }
@@ -224,11 +225,7 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
         case 'number':
             return inUnit(dimensionless)
         case 'unchanged':
-            // the size of a temperature is no temperature, nor is a sum of several, and neither is
-            // anything else we can name: the unit goes rather than the count of it alone
-            return propagation.losesAReading === true && value.kind === 'in' && !multiplies(value.unit.unit)
-                ? anything
-                : value
+            return value
         case 'power':
             return forward('**', value, constant(propagation.exponent))
         case 'either': {

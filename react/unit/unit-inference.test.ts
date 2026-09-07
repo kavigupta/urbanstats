@@ -155,14 +155,15 @@ for (const [code, expected] of [
     })
 }
 
-void test('abs keeps a difference but not a reading', () => {
+void test('abs and nanTo0 take a reading as the degrees above its own zero', () => {
     // ten degrees below freezing is one number in Fahrenheit and another in Celsius, so the size
-    // of a temperature is not on the scale it was read from, nor on any other we can name
-    assert.equal(inferred('abs(high_temp)'), 'unknown')
+    // of a temperature is the size of the degrees it is above zero, written abs(high_temp - 0)
+    assert.equal(inferred('abs(high_temp)'), 'F^1 times=0 x1')
+    assert.ok(writable('abs(high_temp)'))
     assert.equal(inferred('abs(high_temp - low_temp)'), 'F^1 times=0 x1')
     assert.ok(writable('abs(high_temp - low_temp)'))
-    // as is putting a zero in for a missing reading, that zero being wherever the scale puts it
-    assert.equal(inferred('nanTo0(high_temp)'), 'unknown')
+    // as does putting a zero in for a missing reading, that zero being wherever the scale puts it
+    assert.equal(inferred('nanTo0(high_temp)'), 'F^1 times=0 x1')
     assert.equal(inferred('nanTo0(high_temp - low_temp)'), 'F^1 times=0 x1')
 })
 
@@ -185,11 +186,12 @@ void test('max takes the unit of its arguments', () => {
     assert.equal(inferred('maximum(population + area, population)'), 'person^1 times=unknown x1')
 })
 
-void test('a total of people is people, and a total of temperatures is no temperature', () => {
+void test('a total of people is people, and a total of temperatures is so many degrees', () => {
     assert.equal(inferred('sum(population)'), 'person^1 times=1 x1')
     assert.ok(writable('sum(population)'))
-    assert.equal(inferred('sum(high_temp)'), 'unknown')
-    assert.ok(!writable('sum(high_temp)'))
+    // no temperature is the sum of several, but the degrees they are above zero add up
+    assert.equal(inferred('sum(high_temp)'), 'F^1 times=0 x1')
+    assert.ok(writable('sum(high_temp)'))
     // a mean of them is one of them again, and a total of differences is a difference
     assert.ok(writable('mean(high_temp)'))
     assert.equal(inferred('sum(high_temp - low_temp)'), 'F^1 times=0 x1')
