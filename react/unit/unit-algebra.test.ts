@@ -4,7 +4,7 @@ import test from 'node:test'
 import { BinaryOperatorSymbol, infixOperators, unaryOperators } from '../src/urban-stats-script/operators'
 import { backward, constant, forward, forwardUnary, inUnit, join, AbstractInterpValue, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
 import { reifyString } from '../src/utils/human-readable-name'
-import { StoredUnit, writeQuantity } from '../src/utils/quantity'
+import { sameDimensions, StoredUnit, writeQuantity } from '../src/utils/quantity'
 import { storedUnits } from '../src/utils/unit'
 
 /** What is known, as a string: the dimensions, how many of itself it is, and its scale. */
@@ -39,8 +39,9 @@ void test('a bare number scales a quantity rather than being a quantity', () => 
 void test('only alike things add, and the sum is of their kind', () => {
     assert.equal(shape(forward('+', people, people)), 'person^1 times=2 x1')
     assert.equal(shape(forward('-', people, people)), 'person^1 times=0 x1')
-    // nothing is both people and an area, so nothing is their sum
-    assert.equal(shape(forward('+', people, area)), 'unknown')
+    // a script converts its operands to one unit before adding them, so a sum of unlike ones is
+    // not something to answer for
+    assert.throws(() => forward('+', people, area))
 })
 
 void test('a side that says nothing is taken to be of the other side\'s kind', () => {
@@ -122,6 +123,11 @@ void test('every operator answers in both directions, whatever it is given', () 
     for (const operator of infixOperators satisfies readonly BinaryOperatorSymbol[]) {
         for (const left of inputs) {
             for (const right of inputs) {
+                // except a sum of unlike operands, which a script never asks for: see above
+                if ((operator === '+' || operator === '-') && left.kind === 'in' && right.kind === 'in'
+                    && !sameDimensions(left.unit, right.unit)) {
+                    continue
+                }
                 assert.doesNotThrow(() => forward(operator, left, right))
                 assert.doesNotThrow(() => backward(operator, left, right, 'left'))
                 assert.doesNotThrow(() => backward(operator, left, right, 'right'))
@@ -148,8 +154,9 @@ void test('a negated number is the negative of it, so that it scales the right w
 
 // A script converts its operands to one unit before adding them, and scales a reading before
 // multiplying it, so these are of expressions no script produces
-void test('operands that do not go together leave the unit unknown', () => {
-    assert.equal(shape(forward('+', people, area)), 'unknown')
+// A script scales a reading to a difference before multiplying it, so this is of a product no
+// script produces. Solving for an operand asks for one, though, and takes the answer
+void test('a reading in a product leaves the unit unknown', () => {
     assert.equal(shape(forward('*', temperature, people)), 'unknown')
     assert.equal(shape(forward('+', unknown, unknown)), 'unknown')
     assert.equal(unitToWriteIn(unknown), undefined)

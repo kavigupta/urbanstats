@@ -3,11 +3,8 @@ import { asADifference, Coefficient, Decoration, dimensionless, multiplies, Part
 
 import { BinaryOperatorSymbol, UnaryOperatorSymbol } from './operators'
 
-/**
- * What a script's arithmetic works out to. `any` is that it could be in any unit; where no unit is
- * consistent with it, as with people plus an area, the operation gives nothing back at all.
- */
 export type AbstractInterpValue = (
+    /** any is used for constants, which can take any unit. */
     { kind: 'any', constant?: number }
     | { kind: 'in', unit: StoredUnit, constant?: number }
 )
@@ -149,12 +146,10 @@ function addedForward(form: { combine: (left: number, right: number) => number }
     if (right.kind === 'any') {
         return written(left.unit, combined(left.unit.unit.times, 0, form.combine))
     }
-    // a script's operands are converted to one unit before they are added, so these hold of
-    // anything it adds. An area and a population added anyway are of no unit anyone can name
-    const alike = sameDimensions(left.unit, right.unit) && sameSize(left.unit.toBaseUnits, right.unit.toBaseUnits)
-    if (!alike) {
-        return { kind: 'any' }
-    }
+    // a script's operands are converted to one unit before they are added, and a script computes
+    // with stored values, so km^2 and m^2 do not add though both are areas
+    assert(sameDimensions(left.unit, right.unit) && sameSize(left.unit.toBaseUnits, right.unit.toBaseUnits),
+        'operands of a sum are made alike before it is worked out')
     // degrees added to a temperature give a temperature, so the result keeps the reading's zero
     const counted = left.unit.unit.baseIsScalar ? right.unit : left.unit
     return written(
