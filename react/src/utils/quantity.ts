@@ -8,9 +8,7 @@ export type Hue = keyof HueColors
 
 type PartySystem = 'democratic' | 'left'
 
-/**
- * Base units, combined together via multiplication to form the units that correspond to the inBaseUnits value
- */
+/** Base units, multiplied together to form the units that inBaseUnits is counted in. */
 export type BaseUnit = 'person' | 'usd' | 'fatality' | 'm' | 'g' | 's' | 'F'
 
 export interface Dimension {
@@ -24,14 +22,13 @@ export type System = 'metric' | 'imperial'
 
 /**
  * A fixed number of places only means something once the unit is known: two decimals of
- * micrograms, not of grams. So a statistic declares the two together.
+ * micrograms, not of grams.
  */
 export interface WrittenIn {
     units: Record<System, Partial<Record<BaseUnit, NamedUnit>>>
     style: NumberFormat
 }
 
-/** For a quantity written the same way whichever units its reader measures in. */
 export function inEitherSystem(units: Partial<Record<BaseUnit, NamedUnit>>): Record<System, Partial<Record<BaseUnit, NamedUnit>>> {
     return { metric: units, imperial: units }
 }
@@ -39,10 +36,10 @@ export function inEitherSystem(units: Partial<Record<BaseUnit, NamedUnit>>): Rec
 export type Decoration = { kind: 'none' } | { kind: 'percent', party?: Party } | { kind: 'writtenIn', in: WrittenIn }
 
 /**
- * The coefficients of the quantities that were added to make this one: a level is 1, a difference
- * of two is 0, and the mean of two is 1 again. Where the base has no zero of its own only those
- * two are quantities at all; where it has one, all that is read off this is whether it is zero,
- * which is what a leading + is written for. Arithmetic that cannot say which it is says so.
+ * How many quantities were added to make this one: a level is 1, a difference of two is 0, and the
+ * mean of two is 1 again. On a temperature scale, where 0 does not mean none of the quantity, only
+ * 0 and 1 are quantities at all. Elsewhere the only thing read off it is whether it is 0, which is
+ * written with a leading +. Arithmetic that cannot work it out gives 'unknown'.
  */
 export type Coefficient = number | 'unknown'
 
@@ -50,7 +47,10 @@ export interface Unit {
     dimensions: Dimension[]
     decoration: Decoration
     times: Coefficient
-    /** Whether zero of it is nothing, which is false of a temperature: 0°C is not 0°F. */
+    /**
+     * Whether multiplying the value multiplies the quantity. False of a temperature: twice 10°C is
+     * 20°C, where twice the same reading in °F is 100°F, which is 37.8°C.
+     */
     baseIsScalar: boolean
 }
 
@@ -60,7 +60,7 @@ export interface StoredUnit {
     toBaseUnits: number
 }
 
-/** Where a unit is written, which the spacing around it depends on. */
+/** Where a unit is written, which decides the spacing around it. */
 export type UnitPlacement =
     /** In a column of its own, as a table writes it */
     | 'inColumn'
@@ -76,7 +76,6 @@ export interface UnitSettings {
 
 const missingValue = 'N/A'
 
-/** How a quantity is written: what to scale it by, what to call the result, and to how many places. */
 export interface Representation {
     /** E.g., for cm this is x => x * 100 */
     scale: (inBaseUnits: number) => number
@@ -102,10 +101,7 @@ const partyHues = {
 } as const
 /* eslint-enable no-restricted-syntax */
 
-/**
- * One of the units a quantity can be written in. Not a base unit necessarily, e.g.,
- * an acre is a unit of area, but it is not a base unit.
- */
+/** One of the units a quantity can be written in. An acre is one, and is not a base unit. */
 export interface NamedUnit {
     name: string
     /** What one of it is, e.g., m^2 for an acre */
@@ -130,10 +126,9 @@ function abbreviationsOf(baseUnit: BaseUnit): NamedUnit[] {
         .map(([name, size]) => ({ ...scaling(baseUnit, name, size, 1), abbreviation: true })) // relatively low cost, just the abbreviation's length
 }
 
-// no need for a cost for scaled units. It should pick whichever is most convenient.
+// a scaled unit has no cost, so whichever is most convenient wins
 const costScaledUnit = 0
 
-// the exact definitions: an inch is 2.54cm, a foot twelve of them, a mile 5280 feet
 const metersPerInch = 0.0254
 const metersPerFoot = 12 * metersPerInch
 const metersPerMile = 5280 * metersPerFoot
@@ -181,15 +176,12 @@ const lengthUnits: Record<'metric' | 'imperial', NamedUnit[]> = {
         scaling('m', 'ft', metersPerFoot, 0),
         inch,
         mile,
-        // an acre is a unit of area in its own right, and the square of no length anybody writes
+        // an acre is a unit of area in its own right, not the square of a length that is written
         { name: 'acres', dimensions: [{ baseUnit: 'm', power: 2 }], size: 4046.8564224, cost: costScaledUnit, abbreviation: false },
     ],
 }
 
-/**
- * The units there are to write a quantity in, whatever dimensions it turns out to have. A count is
- * named by the statistic counting it, so the unit it is counted in has no name to show.
- */
+/** The units there are to write a quantity in. A count has no name here: the statistic gives it one. */
 function allUnits(settings: UnitSettings): NamedUnit[] {
     return [
         scaling('person', '', 1, 0),
@@ -201,12 +193,12 @@ function allUnits(settings: UnitSettings): NamedUnit[] {
         ...lengthUnits[systemOf(settings)],
         ...massUnits,
         ...timeUnits,
-        // the one a reader reads temperatures in, so there is nothing for the search to weigh
+        // only the reader's own temperature unit, so the search has one candidate rather than two
         settings.temperatureUnit === 'celsius' ? celsius : fahrenheit,
     ]
 }
 
-/** The two forms a count's name takes: people^{2} above the solidus, km^{2}/person below it. */
+/** Plural above the solidus, singular below it: people^{2}, and km^{2}/person. */
 const baseUnitWords: Record<BaseUnit, { one: string, many: string }> = {
     person: { one: 'person', many: 'people' },
     usd: { one: 'dollar', many: 'dollars' },
@@ -227,18 +219,15 @@ function renderAsKey(scales: Dimension[]): DimensionKey {
         .join(' ')
 }
 
-/**
-
- */
 interface Convention {
     style?: NumberFormat
     prefix?: string
 }
 
-/** What quantities of these dimensions are written like, however they arose. */
+/** How a quantity of these dimensions is written, whatever arithmetic produced it. */
 const conventions: Record<DimensionKey, Convention | undefined> = {
     '': { style: { kind: 'significantFigures' } },
-    // things that are counted come in whole numbers, unless they are counted in thousands
+    // things that are counted come in whole numbers
     'person^1': { style: { kind: 'fixed', places: 0 } },
     'usd^1': { style: { kind: 'fixed', places: 0 }, prefix: '$' },
     'fatality^1': { style: { kind: 'fixed', places: 0 } },
@@ -271,7 +260,7 @@ function raisedTo(power: number): HumanReadableElement[] {
     return Math.abs(power) === 1 ? [] : [{ type: 'superscript', value: atom(Math.abs(power).toString()) }]
 }
 
-/** The units multiplied together, e.g., km^2, or people per km^2 for a quantity with a denominator. */
+/** The units multiplied together, e.g., km^{2} or person·m. One side of a solidus, never both. */
 function product(written: Written[], singular = false): HumanReadableElement[] {
     return written.flatMap(({ unit, power }, index) => [
         ...index === 0 ? [] : atom('\u00b7'),
@@ -301,7 +290,7 @@ function timesOfAProduct(...operands: Unit[]): Coefficient {
 }
 
 /**
- * A power that arithmetic has left a hair off a whole one: a cube raised to a tenth and then to
+ * Floating point leaves a power slightly off a whole number: a cube raised to a tenth and then to
  * ten comes back as 3.0000000000000004, which is no dimension anything is written in.
  */
 export function snapToWhole(value: number): number {
@@ -323,8 +312,8 @@ export function sameDimensions(left: StoredUnit, right: StoredUnit): boolean {
 }
 
 /**
- * Nothing scales a temperature, 0°C being no more nothing than 0°F is. A difference of two is
- * another matter: no degrees is no degrees on either scale, so it multiplies like anything else.
+ * A temperature cannot be scaled, 0°C and 0°F being different quantities though both read zero. A
+ * difference of two can be: no degrees is no degrees on either scale.
  */
 function multiplies(unit: Unit): boolean {
     return unit.baseIsScalar || unit.times === 0
@@ -352,26 +341,21 @@ export function unitPower(stored: StoredUnit, exponent: number): StoredUnit | un
 
 /**
  * What the numbers a statistic is stored as are counted in, which is what a script computes with:
- * rainfall is stored per metre though it is read per centimetre, and a share is stored as a
- * fraction though it is read as a percentage. Empty where nothing names it, a fraction and a count
- * having no name, and undefined where no unit is exactly it.
+ * rainfall is stored per metre though it is read per centimetre. Empty where no unit names it, as
+ * a fraction and a count have no name, and undefined where no unit is exactly it.
  */
 export function nameOfStoredUnit(stored: StoredUnit): HumanReadableElement[] | undefined {
     // both systems, since the unit a statistic is stored in is not the reader's to choose, and no
-    // abbreviations, which shorten a number rather than saying what it is counted in
+    // abbreviations, which shorten the number rather than saying what it is counted in
     const pool = [...allUnits({}), ...lengthUnits.imperial, celsius].filter(({ abbreviation }) => !abbreviation)
     const written = writtenAsCounted(stored.unit.dimensions, pool, stored.toBaseUnits)
     return written === undefined ? undefined : nameOf(written, 'byItself')
 }
 
-/**
- * What a unit is called, spaced for where it is written: a leading solidus takes a space in a
- * column of its own, so that it reads as "per square kilometre" rather than as a dangling slash,
- * and a name that is a word takes one off the number it follows, where km^{2} and % do not.
- */
+/** What a unit is called, spaced for where it is written. */
 export function nameOf(written: Written[], placement: UnitPlacement = 'byItself'): HumanReadableElement[] {
-    // a count is named by the statistic counting it, but only where there is one of it: a square
-    // of people is not people, and says so
+    // one of a count is named by the statistic counting it, so it is dropped here. Its square is
+    // not people, and is written
     const named = written.filter(({ unit, power }) => unit.name !== '' || power !== 1)
     const over = named.filter(({ power }) => power > 0)
     const under = named.filter(({ power }) => power < 0)
@@ -381,14 +365,14 @@ export function nameOf(written: Written[], placement: UnitPlacement = 'byItself'
     if (under.length === 0) {
         return merged([...start, ...product(over)])
     }
-    // a solidus with nothing in front of it reads as a dangling slash in a column of its own
+    // a solidus with no numerator in front of it reads as a dangling slash in a column of its own
     const solidus = over.length === 0 && placement === 'inColumn' ? '/\u00a0' : '/'
     return merged([...start, ...product(over), ...atom(solidus), ...product(under, true)])
 }
 
 /**
- * Where the zero of the units a quantity is written in sits. A quantity measured from that zero is
- * written from it; a difference of two is not, since the zero cancels between them.
+ * Where the zero of the units a quantity is written in sits. A difference of two quantities has
+ * no offset, the zero cancelling between them.
  */
 function offsetOf(written: Written[], times: Coefficient): number {
     return times === 1 ? written.reduce((total, { unit, power }) => total + (unit.offset ?? 0) * power, 0) : 0
@@ -396,14 +380,13 @@ function offsetOf(written: Written[], times: Coefficient): number {
 
 function representationFor(inBaseUnits: number, unit: Unit, settings: UnitSettings, placement: UnitPlacement): Representation {
     if (unit.decoration.kind === 'percent') {
-        // a lead is given more digits the closer it is, since that is what is being read off it
         return unit.decoration.party?.kind === 'lead' ? margin : percent
     }
     const convention = conventions[renderAsKey(unit.dimensions)]
-    // a statistic written in units of its own leaves the search nothing to choose between
+    // a statistic written in units of its own fixes them, leaving the search no choice to make
     const writtenIn = unit.decoration.kind === 'writtenIn' ? unit.decoration.in : undefined
-    // An abbreviation shortens a count: thousands of people are people. It has no business scaling
-    // anything else, so people times an area is not written in billions of square metres.
+    // an abbreviation shortens a count: thousands of people are people. It does not scale anything
+    // else, so people times an area is not written in billions of square metres
     const shortenable = unit.dimensions.length === 0 || (unit.dimensions.length === 1 && unit.dimensions[0].power === 1)
     const pool = writtenIn === undefined
         ? allUnits(settings).filter(({ abbreviation }) => shortenable || !abbreviation)
@@ -411,7 +394,7 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: UnitSettin
     const { written, scale, format } = chooseUnits(inBaseUnits, unit.dimensions, pool,
         chosen => writtenIn?.style ?? styleFor(convention, chosen))
     const zero = offsetOf(written, unit.times)
-    // h:mm spends two units and names one, so which one it names is the format's to say
+    // h:mm uses two units and names one, so the format says which name
     const unitName = format.kind === 'hoursMinutes'
         ? atom(hoursAndMinutes(scale(inBaseUnits)).unit)
         : nameOf(written, placement)
@@ -431,7 +414,7 @@ function hueFor(unit: Unit): Hue | undefined {
 }
 
 export interface WrittenQuantity {
-    /** What the number reads as, a lead including its party and a plus, as in D+4.5 */
+    /** The number as text. A lead carries its party and a plus, as in D+4.5 */
     renderedValue: string
     unitName: HumanReadableElement[]
     hue?: Hue
@@ -452,7 +435,7 @@ export function writeQuantity(value: number, stored: StoredUnit, settings: UnitS
         party = getParty(leads, inBaseUnits)
         inBaseUnits = Math.abs(inBaseUnits)
     }
-    // whose lead it is carries a plus of its own, and a difference of two leads is not D++4.5
+    // a lead carries a plus with its party already, and a difference of two leads is not D++4.5
     const explicitSign = party === undefined && unit.times === 0 && inBaseUnits >= 0 ? '+' : ''
     const written = formatNumber(representation.scale(inBaseUnits), representation.format)
     return {
