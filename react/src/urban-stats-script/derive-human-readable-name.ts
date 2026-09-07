@@ -9,9 +9,14 @@ import { abbreviate, formatToSignificantFigures, separateNumber, trimTrailingZer
 import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import * as l from './literal-parser'
 import { noLocation } from './location'
-import { expressionOperatorMap } from './operators'
+import { BinaryOperatorSymbol, expressionOperatorMap } from './operators'
 import { TypeEnvironment } from './types-values'
 import { ConstantUnits, inferConstantUnits, readAsANumber, unitsReadAndDropped, whereWritten } from './unit-inference'
+
+/** The operator an expression prints as, where it prints as one at all. */
+function operatorInHumanReadable(ast: UrbanStatsASTExpression): typeof expressionOperatorMap[BinaryOperatorSymbol] | undefined {
+    return ast.type === 'binaryOperator' ? expressionOperatorMap[ast.operator.node] : undefined
+}
 
 function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, units: ConstantUnits): HumanReadableElement[] | undefined {
     switch (ast.type) {
@@ -27,21 +32,16 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
              */
             let lhs = humanReadableElements(ast.left, typeEnvironment, units)
             if (lhs === undefined) return
-            if (ast.left.type === 'binaryOperator') {
-                const leftOp = expressionOperatorMap[ast.left.operator.node]
-                if (!(leftOp.precedence > centerOp.precedence
-                    || leftOp === centerOp)) {
-                    lhs = [{ type: 'parens', value: lhs }]
-                }
+            const leftOp = operatorInHumanReadable(ast.left)
+            if (leftOp !== undefined && !(leftOp.precedence > centerOp.precedence || leftOp === centerOp)) {
+                lhs = [{ type: 'parens', value: lhs }]
             }
 
             let rhs = humanReadableElements(ast.right, typeEnvironment, units)
             if (rhs === undefined) return
-            if (ast.right.type === 'binaryOperator') {
-                const rightOp = expressionOperatorMap[ast.right.operator.node]
-                if (!(rightOp.precedence > centerOp.precedence || (centerOp === rightOp && centerOp.isAssociative))) {
-                    rhs = [{ type: 'parens', value: rhs }]
-                }
+            const rightOp = operatorInHumanReadable(ast.right)
+            if (rightOp !== undefined && !(rightOp.precedence > centerOp.precedence || (centerOp === rightOp && centerOp.isAssociative))) {
+                rhs = [{ type: 'parens', value: rhs }]
             }
 
             let humanReadableOperator: string
@@ -107,7 +107,7 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
             if (written === undefined) return
             // a sign binds tighter than adding, so -(a + b) would otherwise read as -a + b, which
             // is a different number. It binds looser than multiplying, which needs no brackets.
-            const inner = ast.expr.type === 'binaryOperator' ? expressionOperatorMap[ast.expr.operator.node] : undefined
+            const inner = operatorInHumanReadable(ast.expr)
             const operand: HumanReadableElement[] = inner !== undefined && inner.precedence < expressionOperatorMap['*'].precedence
                 ? [{ type: 'parens', value: written }]
                 : written
