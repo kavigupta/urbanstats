@@ -245,9 +245,14 @@ export function backward(operator: BinaryOperatorSymbol, result: AbstractInterpV
             }
             assert(operator === '+' || operator === '-', `${operator} keeps the unit of what it adds`)
             // what is taken from a reading is a reading, the 32 of high_temp - 32 being freezing
-            // point rather than thirty-two degrees; what is added to one is a difference
+            // point, and what is added to one is a difference, the 5 of high_temp + 5 being five
+            // degrees. Where the operand scales, how many of it there are is what cannot be said
             if (result.kind === 'any') {
-                return operator === '-' && side === 'right' ? known : manyOf(known)
+                if (operator === '-' && side === 'right') {
+                    return known
+                }
+                const scaling = scalingOf(known)
+                return scaling === undefined ? manyOf(known) : inUnit(scaling.to)
             }
             return undo(operator, result, known, side)
         case 'product':

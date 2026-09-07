@@ -112,10 +112,12 @@ void test('what is taken from a quantity is one of it, and what is added to one 
     // the 32 of high_temp - 32 is freezing point, so the degrees above it are what is left
     assert.equal(shape(backward('-', unknown, temperature, 'right')), 'F^1 times=1 x1')
     assert.notEqual(unitToWriteIn(backward('-', unknown, temperature, 'right')), undefined)
-    // where the 5 of high_temp + 5 is five degrees, and a temperature and a difference of two add
-    // to each other either way round, so which of the two it is cannot be said
-    assert.equal(shape(backward('+', unknown, temperature, 'left')), 'F^1 times=unknown x1')
+    // and the 5 of high_temp + 5 is five degrees, which is a difference of them
+    assert.equal(shape(backward('+', unknown, temperature, 'left')), 'F^1 times=0 x1')
     assert.equal(shape(backward('-', unknown, people, 'right')), 'person^1 times=1 x1')
+    // where people and a difference of people add to each other either way round, so how many of
+    // them an operand is cannot be said
+    assert.equal(shape(backward('+', unknown, people, 'left')), 'person^1 times=unknown x1')
 })
 
 // A script makes a sum's operands alike and scales a product's before handing either to the
