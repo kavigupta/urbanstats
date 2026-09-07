@@ -11,6 +11,7 @@ import { doRender } from '../urban-stats-script/constants/color-utils'
 import { MissingData } from '../urban-stats-script/constants/map'
 import { instantiate, ScaleInstance } from '../urban-stats-script/constants/scale'
 import { USSOpaqueValue } from '../urban-stats-script/types-values'
+import { GeographySelection } from '../urban-stats-script/workerManager'
 import { furthestColor, interpolateColor } from '../utils/color'
 import { ICoordinate } from '../utils/protos'
 
@@ -24,6 +25,12 @@ import { Keypoints } from './ramps'
  */
 export function canonicalWidth(aspectRatio: number): number {
     return 1200 * Math.min(1, aspectRatio)
+}
+
+/** Longnames are unique across geographies, so several geographies' lookups merge into one. */
+export async function mergedByName<T>(geographies: GeographySelection[], load: (g: GeographySelection) => Promise<Map<string, T>>): Promise<Map<string, T>> {
+    const loaded = await Promise.all(geographies.map(load))
+    return new Map(loaded.flatMap(byName => Array.from(byName.entries())))
 }
 
 /** Keyed by longname, which is how a map's result names its geographies. */

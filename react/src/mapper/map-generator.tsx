@@ -6,7 +6,6 @@ import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
 import { Basemap as BasemapComponent, CommonMaplibreMap, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
 import { screencapElement, ScreenshotContext, ScreenshotContextType, withScreenshotMode } from '../components/screenshot'
 import { shapesByName } from '../consolidated-shapes'
-import valid_geographies from '../data/mapper/used_geographies'
 import { boundingBox } from '../map-partition'
 import { RelativeLoader } from '../navigation/loading'
 import { Colors, colorThemes } from '../page_template/color-themes'
@@ -14,7 +13,6 @@ import { OverrideTheme, useColors } from '../page_template/colors'
 import { proportionalRelativeArea } from '../syau/cluster-geometry'
 import { ClusterScaleProvider } from '../syau/cluster-scale-context'
 import { ClusterMap as SyauClusterMap } from '../syau/syau-cluster-map'
-import { Universe } from '../universe'
 import { getAllParseErrors } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color-utils'
 import { Inset } from '../urban-stats-script/constants/insets'
@@ -26,7 +24,7 @@ import { deriveMapUnit } from '../urban-stats-script/derive-unit'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
-import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
+import { AssignmentsResult, executeAsync, GeographySelection } from '../urban-stats-script/workerManager'
 import { loadImage } from '../utils/Image'
 import { editIndex, EditSeq } from '../utils/array-edits'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
@@ -41,8 +39,8 @@ import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar
 import { InsetMap } from './components/InsetMap'
 import { AddTextBox, MapTextBoxComponent } from './components/MapTextBox'
 import { loadInsets } from './context'
-import { canonicalWidth, centroidsByName, markerArea, markerRadius, MapResult, mapVisuals } from './map-rendering'
-import { Basemap, computeUSS, MapSettings } from './settings/utils'
+import { canonicalWidth, centroidsByName, markerArea, markerRadius, MapResult, mapVisuals, mergedByName } from './map-rendering'
+import { Basemap, computeUSS, MapSettings, universesOf } from './settings/utils'
 
 const mapUpdateInterval = 500
 
@@ -58,7 +56,7 @@ export function useMapGenerator({ mapSettings, typeEnvironment }: { mapSettings:
         {
             interval: mapUpdateInterval,
             initial: {
-                ui: ({ loading }) => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
+                ui: ({ loading }) => ({ node: <EmptyMapLayout geographies={mapSettings.geographies} loading={loading} /> }),
                 errors: [],
                 assignments: { variables: new Map(), blockValues: new Map() },
             },
@@ -86,9 +84,9 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
     previousGenerator: () => Promise<MapGenerator<{ loading: boolean }>>
     typeEnvironment: TypeEnvironment
 }): Promise<MapGenerator<{ loading: boolean }>> {
-    if (mapSettings.geographyKind === undefined || mapSettings.universe === undefined) {
+    if (mapSettings.geographies.length === 0) {
         return {
-            ui: ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
+            ui: ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout geographies={mapSettings.geographies} loading={loading} /> }),
             errors: [{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }],
             assignments: { variables: new Map(), blockValues: new Map() },
         }
@@ -105,7 +103,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         }
     }
 
-    const execResult = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: mapSettings.geographyKind, universe: mapSettings.universe }, stmts })
+    const execResult = await executeAsync({ descriptor: { kind: 'mapper', geographies: mapSettings.geographies }, stmts })
 
     if (execResult.resultingValue === undefined) {
         const prev = await previousGenerator()
@@ -141,7 +139,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
 
     const csvExportCallback: CSVExportData = () => {
         const csvData = generateMapperCSVData(mapResultMain, execResult.assignments.variables)
-        const csvFilename = `${mapSettings.geographyKind}-${mapSettings.universe}-data.csv`
+        const csvFilename = `${mapSettings.geographies.map(g => `${g.geographyKind}-${g.universe}`).join('-')}-data.csv`
         return {
             csvData,
             csvFilename,
@@ -150,7 +148,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
 
     const derivedUnit = deriveMapUnit(mapSettings.script.uss, typeEnvironment)
 
-    const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind, cache, label, derivedUnit })
+    const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, geographies: mapSettings.geographies, cache, label, derivedUnit })
 
     function MapComponent({ props, exportImageRef }: { props: MapUIProps<{ loading: boolean }>, exportImageRef: (fn: () => Promise<HTMLCanvasElement>) => void }): ReactNode {
         const mapsRef: (MapRef | null)[] = []
@@ -379,8 +377,8 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, who
     )
 }
 
-function EmptyMapLayout({ universe, loading }: { universe?: Universe, loading: boolean }): ReactNode {
-    const insets = loadInsets(universe ?? 'world')
+function EmptyMapLayout({ geographies, loading }: { geographies: GeographySelection[], loading: boolean }): ReactNode {
+    const insets = loadInsets(geographies.length > 0 ? universesOf(geographies) : 'world')
 
     return (
         <MapLayout
@@ -419,11 +417,10 @@ type MapComponentCreator = (
     clickable: boolean,
 ) => ReactNode
 
-async function loadMapResult({ mapResultMain, universe, geographyKind, cache, label, derivedUnit }:
+async function loadMapResult({ mapResultMain, geographies, cache, label, derivedUnit }:
 {
     mapResultMain: MapResult
-    universe: Universe
-    geographyKind: typeof valid_geographies[number]
+    geographies: GeographySelection[]
     cache: MapCache
     label: HumanReadableName
     derivedUnit: StoredUnit | undefined
@@ -452,7 +449,7 @@ async function loadMapResult({ mapResultMain, universe, geographyKind, cache, la
                 }
             })
 
-            features = await pointsGeojson(geographyKind, universe, clusterPoints, cache)
+            features = await pointsGeojson(geographies, clusterPoints, cache)
 
             return {
                 features,
@@ -495,7 +492,7 @@ async function loadMapResult({ mapResultMain, universe, geographyKind, cache, la
                 }
             })
 
-            features = await pointsGeojson(geographyKind, universe, points, cache)
+            features = await pointsGeojson(geographies, points, cache)
 
             mapChildren = (fs, clickable) => <PointFeatureCollection features={fs} clickable={clickable} />
 
@@ -523,7 +520,7 @@ async function loadMapResult({ mapResultMain, universe, geographyKind, cache, la
                 }
             })
 
-            features = await polygonsGeojson(geographyKind, universe, polys, cache)
+            features = await polygonsGeojson(geographies, polys, cache)
 
             mapChildren = (fs, clickable) => <PolygonFeatureCollection features={fs} clickable={clickable} />
 
@@ -623,10 +620,14 @@ function filterOverlaps(inset: Inset, features: GeoJSON.Feature[]): GeoJSON.Feat
 }
 
 interface MapCache {
-    geo?: { universe: Universe, geographyKind: typeof valid_geographies[number] } & (
+    geo?: { geographies: GeographySelection[] } & (
         { type: 'points', centroidsByName: Map<string, ICoordinate> }
         | { type: 'polygons', polygonsByName: Map<string, GeoJSON.Geometry> }
     )
+}
+
+function sameGeographies(a: GeographySelection[] | undefined, b: GeographySelection[]): boolean {
+    return a?.length === b.length && a.every((g, i) => g.universe === b[i].universe && g.geographyKind === b[i].geographyKind)
 }
 
 interface Point {
@@ -641,13 +642,12 @@ interface Point {
 
 }
 
-async function pointsGeojson(geographyKind: typeof valid_geographies[number], universe: Universe, points: Point[], cache: MapCache): Promise<GeoJSON.Feature[]> {
-    if (cache.geo?.type !== 'points' || cache.geo.universe !== universe || cache.geo.geographyKind !== geographyKind) {
+async function pointsGeojson(geographies: GeographySelection[], points: Point[], cache: MapCache): Promise<GeoJSON.Feature[]> {
+    if (cache.geo?.type !== 'points' || !sameGeographies(cache.geo.geographies, geographies)) {
         cache.geo = {
             type: 'points',
-            universe,
-            geographyKind,
-            centroidsByName: await centroidsByName(universe, geographyKind),
+            geographies,
+            centroidsByName: await mergedByName(geographies, g => centroidsByName(g.universe, g.geographyKind)),
         }
     }
 
@@ -667,13 +667,12 @@ async function pointsGeojson(geographyKind: typeof valid_geographies[number], un
     })
 }
 
-async function polygonsGeojson(geographyKind: typeof valid_geographies[number], universe: Universe, polygons: Polygon[], cache: MapCache): Promise<GeoJSON.Feature[]> {
-    if (cache.geo?.type !== 'polygons' || cache.geo.universe !== universe || cache.geo.geographyKind !== geographyKind) {
+async function polygonsGeojson(geographies: GeographySelection[], polygons: Polygon[], cache: MapCache): Promise<GeoJSON.Feature[]> {
+    if (cache.geo?.type !== 'polygons' || !sameGeographies(cache.geo.geographies, geographies)) {
         cache.geo = {
             type: 'polygons',
-            universe,
-            geographyKind,
-            polygonsByName: await shapesByName(universe, geographyKind),
+            geographies,
+            polygonsByName: await mergedByName(geographies, g => shapesByName(g.universe, g.geographyKind)),
         }
     }
 

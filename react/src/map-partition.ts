@@ -1,9 +1,8 @@
 import geojsonExtent from '@mapbox/geojson-extent'
 import maplibregl from 'maplibre-gl'
-import { min } from 'mathjs'
 
 import { geometry } from './utils/geometry'
-import { bestPartition } from './utils/partition'
+import { partitionBoxes } from './utils/partition-boxes'
 import { Feature } from './utils/protos'
 import { loadFeatureFromPossibleSymlink } from './utils/symlinks'
 import { NormalizeProto } from './utils/types'
@@ -30,72 +29,7 @@ export function extendBoxes(boxes: maplibregl.LngLatBounds[]): maplibregl.LngLat
     return boxes.reduce((result, box) => result.extend(box), new maplibregl.LngLatBounds())
 }
 
-// Area of bounds in EPSG:3857 projection
-function area(bounds: maplibregl.LngLatBounds): number {
-    const sw = maplibregl.MercatorCoordinate.fromLngLat(bounds.getSouthWest())
-    const ne = maplibregl.MercatorCoordinate.fromLngLat(bounds.getNorthEast())
-    // Handle wrapping by normalizing x difference
-    let dx = ne.x - sw.x
-    if (dx < 0) {
-        dx += 1 // Web Mercator x wraps at 1
-    }
-    return Math.abs(dx * (ne.y - sw.y))
-}
-
-function proportionFilled(boxes: maplibregl.LngLatBounds[]): number {
-    return boxes.reduce((a, box) => a + area(box), 0) / area(extendBoxes(boxes))
-}
-
-/**
- * Given many regions to be compared, determine how best to split them into multiple maps
- *
- * If the bounds of the regions fill a map above some threshold, put all the regions in the same map
- *
- * Otherwise, weigh multiple groupings to determine the best one
- */
 export async function partitionLongnames(longnames: string[]): Promise<number[][]> {
-    const fillThreshold = 0.1
-    const maxMaps = 6
-
     const boundingBoxes = await Promise.all(longnames.map(async longname => boundingBox(geometry(await loadFeatureFromPossibleSymlink(longname) as NormalizeProto<Feature>))))
-
-    // We need to sort the bounding boxes otherwise there could be an edge case when partitioning where a region gets added in the middle of a partition two other regions
-    // The partition of those two far partitions would not have been explored in `bestPartition`, since the hueristic would have eliminated that search space.
-    // Therefore, we need to sort the bounding boxes
-    const sortedBoundingBoxes = Array.from(boundingBoxes.entries())
-        .sort(([, a], [, b]) => a.getCenter().lat - b.getCenter().lat)
-        .sort(([, a], [, b]) => a.getCenter().lng - b.getCenter().lng)
-
-    try {
-        const partitions = bestPartition(sortedBoundingBoxes.length, maxMaps,
-            ps => ps.map((partition) => {
-                const filled = proportionFilled(partition.map(index => sortedBoundingBoxes[index][1]))
-                if (filled >= fillThreshold) {
-                    return partition.length
-                }
-                return filled
-            }).sort((a, b) => a - b),
-            (a, b) => {
-                for (let i = 0; i < Math.min(a.length, b.length); i++) {
-                    if (a[i] !== b[i]) {
-                        return a[i] - b[i]
-                    }
-                }
-                return a.length - b.length
-            },
-        )
-
-        // Un-sort the indices
-        // Also re-sort the partitions by the unsorted indices
-        const unsortedPartitions = partitions.map(partition => partition.map(index => sortedBoundingBoxes[index][0])
-            .sort((a, b) => a - b)).sort((a, b) => min(a) - min(b))
-
-        return unsortedPartitions
-    }
-    catch (e) {
-        console.warn('Error partitioning maps', e)
-    }
-
-    // Give up
-    return [longnames.map((_, i) => i)]
+    return partitionBoxes(boundingBoxes.map(bounds => [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()]))
 }

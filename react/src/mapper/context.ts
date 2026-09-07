@@ -4,7 +4,7 @@ import statistic_variables_info from '../data/statistic_variables_info'
 import { Universe } from '../universe'
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { defaultConstants } from '../urban-stats-script/constants/constants'
-import { Inset, insetNameToConstantName } from '../urban-stats-script/constants/insets'
+import { deconstruct, Inset, insetNameToConstantName } from '../urban-stats-script/constants/insets'
 import { Context } from '../urban-stats-script/context'
 import { Effect, InterpretationError } from '../urban-stats-script/interpreter'
 import { noLocation } from '../urban-stats-script/location'
@@ -12,8 +12,9 @@ import { allIdentifiers } from '../urban-stats-script/parser'
 import { TypeEnvironment, USSValue } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { firstNonNan } from '../utils/math'
+import { CoordBox, extendCoordBoxes, partitionBoxes } from '../utils/partition-boxes'
 
-export async function mapperContext(stmts: UrbanStatsASTStatement, getVariable: (name: string) => Promise<USSValue | undefined>, effects: Effect[], universe: Universe): Promise<Context> {
+export async function mapperContext(stmts: UrbanStatsASTStatement, getVariable: (name: string) => Promise<USSValue | undefined>, effects: Effect[], universes: Universe[]): Promise<Context> {
     const ctx = new Context(
         (eff) => { effects.push(eff) },
         (msg, loc) => { return new InterpretationError(msg, loc) },
@@ -21,12 +22,12 @@ export async function mapperContext(stmts: UrbanStatsASTStatement, getVariable: 
         new Map(),
     )
 
-    await addVariablesToContext(ctx, stmts, getVariable, universe)
+    await addVariablesToContext(ctx, stmts, getVariable, universes)
     return ctx
 }
 
-async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement, getVariable: (name: string) => Promise<USSValue | undefined>, universe: Universe): Promise<void> {
-    const dte = defaultTypeEnvironment(universe)
+async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement, getVariable: (name: string) => Promise<USSValue | undefined>, universes: Universe[]): Promise<void> {
+    const dte = defaultTypeEnvironment(universes)
     const ids = allIdentifiers(stmts, ctx)
 
     const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geoName', 'geo', 'geoCentroid', 'defaultInsets']
@@ -81,7 +82,8 @@ async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement
     await Promise.all(multiSourcePromises)
 }
 
-export const defaultTypeEnvironment = (universe: Universe | undefined): TypeEnvironment => {
+export const defaultTypeEnvironment = (universe: Universe | Universe[] | undefined): TypeEnvironment => {
+    const universes = universe === undefined ? [] : normalizeUniverses(universe)
     const te: TypeEnvironment = new Map()
 
     for (const [key, value] of defaultConstants) {
@@ -121,7 +123,7 @@ export const defaultTypeEnvironment = (universe: Universe | undefined): TypeEnvi
             humanReadableName: 'Default Insets',
             category: 'mapper',
             longDescription: 'Predefined map inset configurations for the current universe (whatever that is). E.g., for the US, it would be the continental US, Alaska, Hawaii, Puerto Rico, and Guam.',
-            equivalentExpressions: universe !== undefined ? [loadInsetExpression(universe)] : [],
+            equivalentExpressions: universes.length > 0 ? [loadInsetExpression(universes)] : [],
             selectorRendering: { kind: 'subtitleLongDescription' },
         },
     })
@@ -170,11 +172,21 @@ export const defaultTypeEnvironment = (universe: Universe | undefined): TypeEnvi
     return te
 }
 
-export function loadInsets(universe: Universe): Inset[] {
+function normalizeUniverses(universe: Universe | Universe[]): Universe[] {
+    return typeof universe === 'string' ? [universe] : Array.from(new Set(universe))
+}
+
+export function loadInsets(universe: Universe | Universe[]): Inset[] {
+    const universes = normalizeUniverses(universe)
+    assert(universes.length > 0, 'No universes to load insets for')
+    return universes.length === 1 ? insetsFor(universes[0]) : combineInsets(universes)
+}
+
+function insetsFor(universe: Universe): Inset[] {
     const insetsU = insets[universe]
     assert(insetsU.length > 0, `No insets for universe ${universe}`)
     assert(insetsU[0].mainMap, `No main map for universe ${universe}`)
-    const insetsProc = insetsU.map((inset) => {
+    return insetsU.map((inset) => {
         return {
             bottomLeft: [inset.bottomLeft[0], inset.bottomLeft[1]],
             topRight: [inset.topRight[0], inset.topRight[1]],
@@ -183,18 +195,54 @@ export function loadInsets(universe: Universe): Inset[] {
             mainMap: inset.mainMap,
         } satisfies Inset
     })
-    return insetsProc
 }
 
-export function loadInsetExpression(universe: Universe): UrbanStatsASTExpression {
-    const insetsU = insets[universe]
-    const names = insetsU.map(x => x.name)
+/**
+ * Several universes share one canvas: their main maps are grouped the way the comparison map groups
+ * regions, and each group becomes one main map. Every other inset carries over as it is.
+ */
+function combineInsets(universes: Universe[]): Inset[] {
+    const all = universes.flatMap(universe => insetsFor(universe).map((inset, i) => ({ ...inset, name: insets[universe][i].name })))
+    const mains = all.filter(inset => inset.mainMap)
+    const groups = partitionBoxes(mains.map(inset => inset.coordBox)).map(group => ({
+        coordBox: extendCoordBoxes(group.map(i => mains[i].coordBox)),
+        name: group.map(i => mains[i].name).join(' + '),
+    }))
+    const screenExtent = extendCoordBoxes(mains.map(inset => [...inset.bottomLeft, ...inset.topRight]))
+    return [
+        ...layOutMainMaps(groups, screenExtent),
+        ...all.filter(inset => !inset.mainMap),
+    ]
+}
 
-    const exprs = names.map((name) => {
-        const expr = insetNameToConstantName.get(name)
-        assert(expr !== undefined, `No inset constant for ${name}`)
-        return { type: 'identifier', name: { node: expr, location: noLocation } } satisfies UrbanStatsASTExpression
+/** Splits the screen space the old main maps took along whichever axis the maps are more spread over. */
+function layOutMainMaps(groups: { coordBox: CoordBox, name: string }[], [west, south, east, north]: CoordBox): Inset[] {
+    const overall = extendCoordBoxes(groups.map(group => group.coordBox))
+    const axis = overall[2] - overall[0] >= overall[3] - overall[1] ? 0 : 1
+    const center = (box: CoordBox): number => (box[axis] + box[axis + 2]) / 2
+    // Along x the westmost map goes leftmost; along y the northmost goes topmost, and screen y points up
+    const ordered = Array.from(groups).sort((a, b) => (center(a.coordBox) - center(b.coordBox)) * (axis === 0 ? 1 : -1))
+    return ordered.map((group, i) => {
+        const fraction = (j: number): number => j / ordered.length
+        const bottomLeft: [number, number] = axis === 0
+            ? [west + (east - west) * fraction(i), south]
+            : [west, north - (north - south) * fraction(i + 1)]
+        const topRight: [number, number] = axis === 0
+            ? [west + (east - west) * fraction(i + 1), north]
+            : [east, north - (north - south) * fraction(i)]
+        return { bottomLeft, topRight, coordBox: group.coordBox, mainMap: true, name: group.name }
     })
+}
+
+export function loadInsetExpression(universe: Universe | Universe[]): UrbanStatsASTExpression {
+    const universes = normalizeUniverses(universe)
+    const exprs = universes.length === 1
+        ? insets[universes[0]].map((inset) => {
+            const expr = insetNameToConstantName.get(inset.name)
+            assert(expr !== undefined, `No inset constant for ${inset.name}`)
+            return { type: 'identifier', name: { node: expr, location: noLocation } } satisfies UrbanStatsASTExpression
+        })
+        : combineInsets(universes).map(deconstruct)
 
     return {
         type: 'call',
