@@ -206,9 +206,19 @@ export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValu
 
 const inverses = { '+': '-', '-': '+', '*': '/', '/': '*' } as const
 
-/** The version of a unit that is a scalar. Specifically, converts non-scalars to differences. */
+/**
+ * How a value that does not scale is made to: as the difference above its own zero, given as the
+ * unit before and after. Undefined where it scales already, and there is nothing to do.
+ */
+export function scalingOf(value: AbstractInterpValue): { from: StoredUnit, to: StoredUnit } | undefined {
+    return value.kind === 'in' && !multiplies(value.unit.unit)
+        ? { from: value.unit, to: asADifference(value.unit) }
+        : undefined
+}
+
 function scaled(value: AbstractInterpValue): AbstractInterpValue {
-    return value.kind === 'in' && !multiplies(value.unit.unit) ? inUnit(asADifference(value.unit)) : value
+    const scaling = scalingOf(value)
+    return scaling === undefined ? value : inUnit(scaling.to)
 }
 
 /** Solving an operator for one of its operands is running the operator that undoes it. */

@@ -6,7 +6,7 @@ import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTSta
 import { asNumber } from './constants/convert'
 import * as l from './literal-parser'
 import { TypeEnvironment, UnitPropagation, USSPrimitiveRawValue } from './types-values'
-import { AbstractInterpValue, backward, constant, forward, forwardUnary, formOf, inUnit, join, manyOf, unitToWriteIn } from './unit-algebra'
+import { AbstractInterpValue, backward, constant, forward, forwardUnary, formOf, inUnit, join, manyOf, scalingOf, unitToWriteIn } from './unit-algebra'
 
 /**
  * Recorded on a node whose unit is not the one needed there. The script computes the same
@@ -110,7 +110,7 @@ function reconciled(checked: Checked<Expression>, expected: Expected): Checked<E
     if (expected.kind === 'scales') {
         return scaling(checked)
     }
-    if (expected.kind !== 'in') {
+    if (expected.kind === 'any') {
         return checked
     }
     // a literal is written in the expected unit instead, in the constant case below. Anything
@@ -177,8 +177,8 @@ function checkOperation(ast: UrbanStatsASTExpression<UnitsRead> & { type: 'binar
 
 /** A reading read as the difference above its own zero, which is what scales. */
 function scaling(checked: Checked<Expression>): Checked<Expression> {
-    const got = quantity(checked.value)
-    return got.kind === 'in' && !multiplies(got.unit.unit) ? converted(checked, got.unit, asADifference(got.unit)) : checked
+    const scale = scalingOf(quantity(checked.value))
+    return scale === undefined ? checked : converted(checked, scale.from, scale.to)
 }
 
 /** What an argument is expected to be in, given the arguments before it. */
