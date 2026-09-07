@@ -245,6 +245,15 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     createNumberToNumberFunction('exp', Math.exp, 'exp', { kind: 'number' }, 'Returns e raised to the power of the given number.'),
     createNumberToNumberFunction('sign', Math.sign, 'sign', { kind: 'number' }, 'Returns the sign of a number: 1 for positive, -1 for negative, 0 for zero.'),
     createNumberToNumberFunction('nanTo0', (x: number) => isNaN(x) ? 0 : x, 'NaN to Zero', { kind: 'unchanged', unknownTimes: true }, 'Converts NaN values to 0, leaving other numbers unchanged.'),
+    ['isNaN', {
+        type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'boolean' } } },
+        value: (ctx: Context, posArgs: USSRawValue[]) => isNaN(posArgs[0] as number),
+        documentation: {
+            humanReadableName: 'is NaN',
+            category: 'math',
+            longDescription: 'Returns true if the number is NaN, and false otherwise.',
+        },
+    }] satisfies [string, USSValue],
     createTwoNumberToNumberFunction('maximum', Math.max, 'max', { kind: 'either' }, 'Returns the larger of two numbers.'),
     createTwoNumberToNumberFunction('minimum', Math.min, 'min', { kind: 'either' }, 'Returns the smaller of two numbers.'),
     createVectorToNumberFunction('sum', values => values.reduce((a, b) => a + b, 0), 0, 'sum', { kind: 'unchanged', unknownTimes: true }, 'Returns the sum of all numbers in a vector.'),
