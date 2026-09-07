@@ -6,7 +6,7 @@ import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTSta
 import { asNumber } from './constants/convert'
 import * as l from './literal-parser'
 import { TypeEnvironment, UnitPropagation, USSPrimitiveRawValue } from './types-values'
-import { AbstractInterpValue, backward, constant, forward, forwardUnary, inUnit, join, manyOf, scalesOperands, unitToWriteIn } from './unit-algebra'
+import { AbstractInterpValue, backward, constant, forward, forwardUnary, formOf, inUnit, join, manyOf, unitToWriteIn } from './unit-algebra'
 
 /**
  * Recorded on a node whose unit is not the one needed there. The script computes the same
@@ -111,9 +111,6 @@ function reconciled(checked: Checked<Expression>, expected: Expected): Checked<E
     if (expected.kind !== 'in') {
         return checked
     }
-    if (got.kind === 'none') {
-        return checked
-    }
     // a literal is written in the expected unit instead, in the constant case below. Anything
     // else with no unit of its own is converted: the geoName of "density > toNumber(geoName)" is
     // read as a density
@@ -163,16 +160,17 @@ function checkOperation(ast: UrbanStatsASTExpression<UnitsRead> & { type: 'binar
     const reread = quantity(left.value).kind === 'any' && quantity(right.value).kind === 'in'
         ? checkExpression(ast.left, scope, expectation(backward(operator, knownOf(expected), quantity(right.value), 'left')))
         : left
-    const value = forward(operator, quantity(reread.value), quantity(right.value))
-    if (value.kind !== 'none' || !scalesOperands(operator)) {
-        return { ast: ({ ...ast, left: reread.ast, right: right.ast }), value }
-    }
-    // they do not scale together, so a reading is converted to a difference, which a caption
-    // writes as (temp - 0) * area
-    const [over, under] = [scaling(reread), scaling(right)]
+    // a bare number scaling a reading keeps its zero, the mean of two temperatures being one. A
+    // quantity does not, so there the reading becomes a difference: (temp - 0) * area. A power is
+    // of the difference either way, there being no square of a reading
+    const form = formOf(operator)
+    const takesADifference = form === 'power'
+        || (form === 'product' && quantity(reread.value).kind === 'in' && quantity(right.value).kind === 'in')
+    const [over, under] = takesADifference ? [scaling(reread), scaling(right)] : [reread, right]
     return {
         ast: ({ ...ast, left: over.ast, right: under.ast }),
-        value: forward(operator, quantity(over.value), quantity(under.value)),
+        // an operation no unit suits says only that its own unit is not known
+        value: forward(operator, quantity(over.value), quantity(under.value)) ?? anything,
     }
 }
 
@@ -206,13 +204,14 @@ function regressionFields(args: { arg: UrbanStatsASTArg<UnitsRead>, value: Infer
     const named = (name: string): AbstractInterpValue | undefined =>
         args.filter(({ arg }) => arg.type === 'named' && arg.name.node === name).map(({ value }) => quantity(value))[0]
     const level = named('y') ?? anything
-    const change = forward('-', level, level)
+    const change = forward('-', level, level) ?? anything
     const fields = new Map<string, AbstractInterpValue>([['b', level], ['residuals', change], ['r2', inUnit(dimensionless)]])
     for (const { arg, value } of args) {
         const parameter = arg.type === 'named' ? parameterName.exec(arg.name.node) : null
         if (parameter !== null) {
             const parameterValue = quantity(value)
-            fields.set(`m${parameter[1]}`, forward('/', change, forward('-', parameterValue, parameterValue)))
+            const spread = forward('-', parameterValue, parameterValue) ?? anything
+            fields.set(`m${parameter[1]}`, forward('/', change, spread) ?? anything)
         }
     }
     return { kind: 'fields', fields }
@@ -228,20 +227,20 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
             return propagation.unknownTimes === true && !isDifference ? manyOf(value) : value
         }
         case 'power':
-            return forward('**', value, constant(propagation.exponent))
+            return forward('**', value, constant(propagation.exponent)) ?? anything
         case 'either': {
             const other = positional[1] ?? anything
             // Two known units must match, and the result is one of them, not their sum.
             if (value.kind === 'in' && other.kind === 'in') {
-                return sameDimensions(value.unit, other.unit) ? join(value, other) : { kind: 'none' }
+                return sameDimensions(value.unit, other.unit) ? join(value, other) : anything
             }
             // A bare number takes the other argument's unit, as it does in a sum.
-            return forward('+', value, other)
+            return forward('+', value, other) ?? anything
         }
         case 'rank': {
             // both arguments are in one unit, so there is no ranking a population among areas
             const alike = forward('-', value, positional[1] ?? anything)
-            return alike.kind === 'none' ? alike : inUnit(dimensionless)
+            return alike === undefined ? anything : inUnit(dimensionless)
         }
     }
 }
@@ -419,17 +418,12 @@ function checkStatement(ast: UrbanStatsASTStatement<UnitsRead>, scope: Scope, ex
  * two ways: as dimensionless where it scales something (x * 2), and as the other side's unit where
  * it is compared against one (x > 100). A value here would get the first reading in both places.
  */
-type Expected = { kind: 'any' } | { kind: 'none' } | { kind: 'in', unit: StoredUnit } | { kind: 'scales' }
+type Expected = { kind: 'any' } | { kind: 'in', unit: StoredUnit } | { kind: 'scales' }
 
-function expectation(value: AbstractInterpValue): Expected {
-    switch (value.kind) {
-        case 'in':
-            return { kind: 'in', unit: value.unit }
-        case 'any':
-            return { kind: 'any' }
-        case 'none':
-            return value
-    }
+function expectation(value: AbstractInterpValue | undefined): Expected {
+    // an operation that cannot be undone leaves its operand unconstrained: to find the b of a / b
+    // where the result is a temperature is to divide by a reading, which no arithmetic does
+    return value?.kind === 'in' ? { kind: 'in', unit: value.unit } : { kind: 'any' }
 }
 
 const toNumberOfOneThing = l.call({
