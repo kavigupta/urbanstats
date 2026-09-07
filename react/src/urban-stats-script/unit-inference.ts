@@ -6,7 +6,7 @@ import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTSta
 import { asNumber } from './constants/convert'
 import * as l from './literal-parser'
 import { TypeEnvironment, UnitPropagation, USSPrimitiveRawValue } from './types-values'
-import { AbstractInterpValue, backward, constant, forward, forwardUnary, formOf, inUnit, join, manyOf, scalingOf, unitToWriteIn } from './unit-algebra'
+import { AbstractInterpValue, backward, constant, forward, forwardUnary, formOf, inUnit, join, scalingOf, unitToWriteIn } from './unit-algebra'
 
 /**
  * Recorded on a node whose unit is not the one needed there. The script computes the same
@@ -223,10 +223,12 @@ function whatItGives(propagation: Exclude<UnitPropagation, { kind: 'regression' 
     switch (propagation.kind) {
         case 'number':
             return inUnit(dimensionless)
-        case 'unchanged': {
-            const isDifference = value.kind === 'in' && value.unit.unit.times === 0
-            return propagation.unknownTimes === true && !isDifference ? manyOf(value) : value
-        }
+        case 'unchanged':
+            // the size of a temperature is no temperature, nor is a sum of several, and neither is
+            // anything else we can name: the unit goes rather than the count of it alone
+            return propagation.losesAReading === true && value.kind === 'in' && !multiplies(value.unit.unit)
+                ? anything
+                : value
         case 'power':
             return forward('**', value, constant(propagation.exponent))
         case 'either': {

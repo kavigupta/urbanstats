@@ -210,7 +210,8 @@ export type UnitPropagation = (
     {
         kind: 'unchanged'
         /** Unless what it is given is a difference, the coefficient comes back unknown. */
-        unknownTimes?: boolean
+        /** Whether a reading does not survive it: the size of a temperature is no temperature. */
+        losesAReading?: boolean
     }
     | { kind: 'either' } // joins the units of two
     | { kind: 'power', exponent: number } // raises the unit

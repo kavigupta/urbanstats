@@ -133,7 +133,7 @@ void test('a vector takes the unit of its elements', () => {
 for (const [code, expected] of [
     ['abs(high_temp - low_temp)', 'F^1 times=0 x1'],
     ['round(population)', 'person^1 times=1 x1'],
-    ['nanTo0(density_pw_1km)', 'm^-2 person^1 times=unknown x0.000001'],
+    ['nanTo0(density_pw_1km)', 'm^-2 person^1 times=1 x0.000001'],
     ['sqrt(area)', 'm^1 times=1 x1000'],
     ['min(high_temp)', 'F^1 times=1 x1'],
     ['mean(density_pw_1km, weight=population)', 'm^-2 person^1 times=1 x0.000001'],
@@ -156,13 +156,13 @@ for (const [code, expected] of [
 }
 
 void test('abs keeps a difference but not a reading', () => {
-    // ten degrees below freezing is one number in Fahrenheit and another in Celsius
-    assert.equal(inferred('abs(high_temp)'), 'F^1 times=unknown x1')
-    assert.ok(!writable('abs(high_temp)'))
+    // ten degrees below freezing is one number in Fahrenheit and another in Celsius, so the size
+    // of a temperature is not on the scale it was read from, nor on any other we can name
+    assert.equal(inferred('abs(high_temp)'), 'unknown')
     assert.equal(inferred('abs(high_temp - low_temp)'), 'F^1 times=0 x1')
     assert.ok(writable('abs(high_temp - low_temp)'))
     // as is putting a zero in for a missing reading, that zero being wherever the scale puts it
-    assert.equal(inferred('nanTo0(high_temp)'), 'F^1 times=unknown x1')
+    assert.equal(inferred('nanTo0(high_temp)'), 'unknown')
     assert.equal(inferred('nanTo0(high_temp - low_temp)'), 'F^1 times=0 x1')
 })
 
@@ -185,11 +185,10 @@ void test('max takes the unit of its arguments', () => {
     assert.equal(inferred('maximum(population + area, population)'), 'person^1 times=unknown x1')
 })
 
-void test('a total has an unknown coefficient', () => {
-    assert.equal(inferred('sum(population)'), 'person^1 times=unknown x1')
-    // so many people are people all the same, where so many temperatures are no temperature
+void test('a total of people is people, and a total of temperatures is no temperature', () => {
+    assert.equal(inferred('sum(population)'), 'person^1 times=1 x1')
     assert.ok(writable('sum(population)'))
-    assert.equal(inferred('sum(high_temp)'), 'F^1 times=unknown x1')
+    assert.equal(inferred('sum(high_temp)'), 'unknown')
     assert.ok(!writable('sum(high_temp)'))
     // a mean of them is one of them again, and a total of differences is a difference
     assert.ok(writable('mean(high_temp)'))
