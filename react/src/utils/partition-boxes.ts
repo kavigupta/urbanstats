@@ -6,6 +6,11 @@ export type CoordBox = [number, number, number, number]
 const mercatorX = (lng: number): number => (180 + lng) / 360
 const mercatorY = (lat: number): number => (180 - (180 / Math.PI * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)))) / 360
 
+/** The box in EPSG:3857, with both axes running the way screen coordinates do: east and north. */
+export function mercatorBox([west, south, east, north]: CoordBox): CoordBox {
+    return [mercatorX(west), -mercatorY(south), mercatorX(east), -mercatorY(north)]
+}
+
 /** Area of a box in the EPSG:3857 projection. */
 function area([west, south, east, north]: CoordBox): number {
     // Handle wrapping by normalizing x difference
@@ -27,11 +32,10 @@ function proportionFilled(boxes: CoordBox[]): number {
 /**
  * Given many boxes to be shown together, determine how best to split them into multiple maps.
  *
- * If the bounds of the boxes fill a map above some threshold, put all of them in the same map.
+ * If the bounds of the boxes fill a map above `fillThreshold`, put all of them in the same map.
  * Otherwise, weigh multiple groupings to determine the best one.
  */
-export function partitionBoxes(boxes: CoordBox[]): number[][] {
-    const fillThreshold = 0.1
+export function partitionBoxes(boxes: CoordBox[], fillThreshold = 0.1): number[][] {
     const maxMaps = 6
 
     // We need to sort the boxes otherwise there could be an edge case when partitioning where a box gets added in the middle of a partition two other boxes

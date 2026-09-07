@@ -4,12 +4,13 @@ import { test } from 'node:test'
 import { loadInsets } from '../src/mapper/context'
 import { mapUSSFromString } from '../src/mapper/settings/map-uss'
 import { geographiesFromMeta, mapperMetaFields } from '../src/mapper/settings/utils'
+import { Universe } from '../src/universe'
 import { toStatement } from '../src/urban-stats-script/ast'
 import { Inset } from '../src/urban-stats-script/constants/insets'
 import { createRequestExecutor } from '../src/urban-stats-script/execute-request'
 import { USSValue } from '../src/urban-stats-script/types-values'
 import { GeographySelection } from '../src/urban-stats-script/workerManager'
-import { extendCoordBoxes } from '../src/utils/partition-boxes'
+import { CoordBox, extendCoordBoxes, mercatorBox } from '../src/utils/partition-boxes'
 import './util/fetch'
 
 function meta(raw: unknown): ReturnType<typeof geographiesFromMeta> {
@@ -45,26 +46,66 @@ function screenBox(inset: Inset): [number, number, number, number] {
     return [...inset.bottomLeft, ...inset.topRight]
 }
 
-function unnamed(inset: Inset): Inset {
-    return { bottomLeft: inset.bottomLeft, topRight: inset.topRight, coordBox: inset.coordBox, mainMap: inset.mainMap }
+function assertClose(actual: number[], expected: number[]): void {
+    assert.equal(actual.length, expected.length)
+    actual.forEach((value, i) => { assert.ok(Math.abs(value - expected[i]) < 1e-9, `${value} != ${expected[i]}`) })
 }
 
 void test('combining one universe leaves its insets alone', () => {
     assert.deepEqual(loadInsets(['USA', 'USA']), loadInsets('USA'))
 })
 
-void test('combining universes regroups their main maps and keeps the rest', () => {
-    const separate = [...loadInsets('USA'), ...loadInsets('Iceland')]
-    const combined = loadInsets(['USA', 'Iceland'])
-
-    assert.deepEqual(combined.filter(inset => !inset.mainMap).map(unnamed), separate.filter(inset => !inset.mainMap))
-
-    const mains = combined.filter(inset => inset.mainMap)
-    assert.ok(mains.length >= 1)
-    const separateMains = separate.filter(inset => inset.mainMap)
-    assert.deepEqual(extendCoordBoxes(mains.map(inset => inset.coordBox)), extendCoordBoxes(separateMains.map(inset => inset.coordBox)))
-    assert.deepEqual(extendCoordBoxes(mains.map(screenBox)), extendCoordBoxes(separateMains.map(screenBox)))
+void test('universes far apart get main maps of their own, neighbours share one', () => {
+    assert.equal(loadInsets(['USA', 'Iceland']).filter(inset => inset.mainMap).length, 2)
+    assert.equal(loadInsets(['USA', 'Canada']).filter(inset => inset.mainMap).length, 1)
 })
+
+void test('the combined main maps take up exactly the space the separate ones did', () => {
+    const separate = [...loadInsets('USA'), ...loadInsets('Iceland')].filter(inset => inset.mainMap)
+    const combined = loadInsets(['USA', 'Iceland']).filter(inset => inset.mainMap)
+
+    assert.deepEqual(extendCoordBoxes(combined.map(inset => inset.coordBox)), extendCoordBoxes(separate.map(inset => inset.coordBox)))
+    assert.deepEqual(extendCoordBoxes(combined.map(screenBox)), extendCoordBoxes(separate.map(screenBox)))
+})
+
+function remapBox(box: CoordBox, from: CoordBox, to: CoordBox): CoordBox {
+    const axis = (value: number, i: 0 | 1): number => to[i] + (value - from[i]) / (from[i + 2] - from[i]) * (to[i + 2] - to[i])
+    return [axis(box[0], 0), axis(box[1], 1), axis(box[2], 0), axis(box[3], 1)]
+}
+
+/** Which part of the world a box drawn on this map covers. */
+function drawnOver(main: Inset, box: CoordBox): CoordBox {
+    return remapBox(box, screenBox(main), mercatorBox(main.coordBox))
+}
+
+function mainCovering(combined: Inset[], coordBox: CoordBox): Inset {
+    const main = combined.find(inset => inset.mainMap
+        && inset.coordBox[0] <= coordBox[0] && inset.coordBox[1] <= coordBox[1]
+        && inset.coordBox[2] >= coordBox[2] && inset.coordBox[3] >= coordBox[3])
+    assert.ok(main !== undefined, 'no main map covers this universe')
+    return main
+}
+
+// 'France' is far enough from the USA to get a main map of its own; 'Canada' shares one
+for (const other of ['France', 'Canada'] as Universe[]) {
+    void test(`combining the USA with ${other} leaves every inset over the same place`, () => {
+        const combined = loadInsets(['USA', other])
+        let checked = 0
+        for (const universe of ['USA', other] as Universe[]) {
+            const alone = loadInsets(universe)
+            const aloneMain = alone.find(inset => inset.mainMap)!
+            const combinedMain = mainCovering(combined, aloneMain.coordBox)
+
+            for (const inset of alone.filter(candidate => !candidate.mainMap)) {
+                const moved = combined.find(candidate => !candidate.mainMap && candidate.coordBox.every((v, i) => v === inset.coordBox[i]))
+                assert.ok(moved !== undefined, `${universe} lost an inset`)
+                assertClose(drawnOver(combinedMain, screenBox(moved)), drawnOver(aloneMain, screenBox(inset)))
+                checked += 1
+            }
+        }
+        assert.ok(checked > 0, 'no insets to place')
+    })
+}
 
 async function mapVariables(geographies: GeographySelection[], data: string): Promise<Map<string, USSValue>> {
     const result = await createRequestExecutor()({

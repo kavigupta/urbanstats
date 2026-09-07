@@ -12,7 +12,7 @@ import { allIdentifiers } from '../urban-stats-script/parser'
 import { TypeEnvironment, USSValue } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { firstNonNan } from '../utils/math'
-import { CoordBox, extendCoordBoxes, partitionBoxes } from '../utils/partition-boxes'
+import { CoordBox, extendCoordBoxes, mercatorBox, partitionBoxes } from '../utils/partition-boxes'
 
 export async function mapperContext(stmts: UrbanStatsASTStatement, getVariable: (name: string) => Promise<USSValue | undefined>, effects: Effect[], universes: Universe[]): Promise<Context> {
     const ctx = new Context(
@@ -198,40 +198,81 @@ function insetsFor(universe: Universe): Inset[] {
 }
 
 /**
- * Several universes share one canvas: their main maps are grouped the way the comparison map groups
- * regions, and each group becomes one main map. Every other inset carries over as it is.
+ * Several universes share one canvas. Their main maps are grouped the way the comparison map groups
+ * regions, and each group becomes one main map; every other inset moves with the main map it came
+ * from, keeping its place relative to it.
  */
 function combineInsets(universes: Universe[]): Inset[] {
-    const all = universes.flatMap(universe => insetsFor(universe).map((inset, i) => ({ ...inset, name: insets[universe][i].name })))
-    const mains = all.filter(inset => inset.mainMap)
-    const groups = partitionBoxes(mains.map(inset => inset.coordBox)).map(group => ({
+    const perUniverse = universes.map(universe => insetsFor(universe).map((inset, i) => ({ ...inset, name: insets[universe][i].name })))
+    const mains = perUniverse.map((universeInsets) => {
+        const main = universeInsets.find(inset => inset.mainMap)
+        assert(main !== undefined, 'No main map')
+        return main
+    })
+
+    const grouping = partitionBoxes(mains.map(inset => inset.coordBox), mapperFillThreshold)
+    const groups = grouping.map(group => ({
         coordBox: extendCoordBoxes(group.map(i => mains[i].coordBox)),
         name: group.map(i => mains[i].name).join(' + '),
     }))
-    const screenExtent = extendCoordBoxes(mains.map(inset => [...inset.bottomLeft, ...inset.topRight]))
-    return [
-        ...layOutMainMaps(groups, screenExtent),
-        ...all.filter(inset => !inset.mainMap),
-    ]
+    const mainMaps = layOutMainMaps(groups, extendCoordBoxes(mains.map(screenBox)))
+    const groupOfUniverse = new Map(grouping.flatMap((group, g) => group.map(i => [i, g] as const)))
+
+    const others = perUniverse.flatMap((universeInsets, u) => {
+        const g = groupOfUniverse.get(u)!
+        // The part of its group's map this universe covers, which is the whole map when it has one to itself
+        const covers = remapBox(mercatorBox(mains[u].coordBox), mercatorBox(groups[g].coordBox), screenBox(mainMaps[g]))
+        return universeInsets.filter(inset => !inset.mainMap).map(inset => ({
+            ...inset,
+            ...screenBounds(remapBox(screenBox(inset), screenBox(mains[u]), covers)),
+        }))
+    })
+
+    return [...mainMaps, ...others]
+}
+
+/** Higher than the comparison map's, so that distant universes get maps of their own rather than an ocean between them. */
+const mapperFillThreshold = 0.6
+
+function screenBox(inset: Inset): CoordBox {
+    return [...inset.bottomLeft, ...inset.topRight]
+}
+
+function screenBounds([west, south, east, north]: CoordBox): Pick<Inset, 'bottomLeft' | 'topRight'> {
+    return { bottomLeft: [west, south], topRight: [east, north] }
+}
+
+function remapBox(box: CoordBox, from: CoordBox, to: CoordBox): CoordBox {
+    const axis = (value: number, i: 0 | 1): number => {
+        const span = from[i + 2] - from[i]
+        return span === 0 ? to[i] : to[i] + (value - from[i]) / span * (to[i + 2] - to[i])
+    }
+    return [axis(box[0], 0), axis(box[1], 1), axis(box[2], 0), axis(box[3], 1)]
 }
 
 /** Splits the screen space the old main maps took along whichever axis the maps are more spread over. */
 function layOutMainMaps(groups: { coordBox: CoordBox, name: string }[], [west, south, east, north]: CoordBox): Inset[] {
-    const overall = extendCoordBoxes(groups.map(group => group.coordBox))
+    const overall = mercatorBox(extendCoordBoxes(groups.map(group => group.coordBox)))
     const axis = overall[2] - overall[0] >= overall[3] - overall[1] ? 0 : 1
-    const center = (box: CoordBox): number => (box[axis] + box[axis + 2]) / 2
-    // Along x the westmost map goes leftmost; along y the northmost goes topmost, and screen y points up
-    const ordered = Array.from(groups).sort((a, b) => (center(a.coordBox) - center(b.coordBox)) * (axis === 0 ? 1 : -1))
-    return ordered.map((group, i) => {
-        const fraction = (j: number): number => j / ordered.length
-        const bottomLeft: [number, number] = axis === 0
-            ? [west + (east - west) * fraction(i), south]
-            : [west, north - (north - south) * fraction(i + 1)]
-        const topRight: [number, number] = axis === 0
-            ? [west + (east - west) * fraction(i + 1), north]
-            : [east, north - (north - south) * fraction(i)]
-        return { bottomLeft, topRight, coordBox: group.coordBox, mainMap: true, name: group.name }
+    const center = (box: CoordBox): number => {
+        const projected = mercatorBox(box)
+        return (projected[axis] + projected[axis + 2]) / 2
+    }
+    const order = groups.map((_, i) => i).sort((a, b) => center(groups[a].coordBox) - center(groups[b].coordBox))
+
+    const laidOut: Inset[] = []
+    order.forEach((group, position) => {
+        const at = (offset: number): number => (position + offset) / order.length
+        laidOut[group] = {
+            ...screenBounds(axis === 0
+                ? [west + (east - west) * at(0), south, west + (east - west) * at(1), north]
+                : [west, south + (north - south) * at(0), east, south + (north - south) * at(1)]),
+            coordBox: groups[group].coordBox,
+            mainMap: true,
+            name: groups[group].name,
+        }
     })
+    return laidOut
 }
 
 export function loadInsetExpression(universe: Universe | Universe[]): UrbanStatsASTExpression {

@@ -195,16 +195,15 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
         : undefined
 
     return (
-        <universeContext.Provider value={{
-            universe: mapSettings.geographies[0]?.universe ?? 'world',
-            universes: universes_ordered,
-            setUniverse(newUniverse) {
-                setMapSettings({
-                    ...mapSettings,
-                    geographies: mapSettings.geographies.map((geography, i) => i === 0 ? { ...geography, universe: newUniverse } : geography),
-                }, {})
-            },
-        }}
+        <universeContext.Provider value={mapSettings.geographies.length === 1
+            ? {
+                    universe: mapSettings.geographies[0].universe,
+                    universes: universes_ordered,
+                    setUniverse(newUniverse) {
+                        setMapSettings({ ...mapSettings, geographies: [{ ...mapSettings.geographies[0], universe: newUniverse }] }, {})
+                    },
+                }
+            : undefined}
         >
             <mapSettingsContext.Provider value={{ mapSettings, typeEnvironment, setMapEditorMode }}>
                 <transformContext.Provider value={{ selfDetermineHeight: useMobileLayout() }}>
