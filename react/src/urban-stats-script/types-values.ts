@@ -197,7 +197,11 @@ export interface Documentation {
     unit?: UnitType
     /** For a function, how a quantity it is given comes back out. */
     unitPropagation?: UnitPropagation
-    /** For a constant that names a unit, which one it names. */
+    /**
+     * Which unit a constant is: unitArea is the area one. Not `unit` above, which is what a
+     * statistic is measured in. It is here rather than read off the constant's own value because
+     * the type environment a script's units are read from carries no values.
+     */
     namesUnit?: UnitType
 }
 
