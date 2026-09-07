@@ -209,6 +209,9 @@ void test('a script can shadow a built-in', () => {
     // and calling the name it bound is not calling the built-in, so no rule of that one applies
     assert.equal(inferred('sqrt = area\nsqrt(population)'), 'unknown')
     assert.equal(inferred('ln = area\nln(population)'), 'unknown')
+    // toNumber is read through where it is the built-in, and is not one to read through here
+    assert.equal(inferred('toNumber(population)'), 'person^1 times=1 x1')
+    assert.equal(inferred('toNumber = area\ntoNumber(population)'), 'unknown')
 })
 
 void test('a node the editor wraps is read through', () => {

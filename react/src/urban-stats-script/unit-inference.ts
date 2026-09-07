@@ -308,6 +308,12 @@ function checkExpression(ast: UrbanStatsASTExpression<UnitsRead>, scope: Scope, 
 }
 
 function checkWithin(ast: UrbanStatsASTExpression<UnitsRead>, scope: Scope, expected: Expected): Checked<Expression> {
+    const asANumber = readAsANumber(ast, scope)
+    if (asANumber !== undefined) {
+        // toNumber("1000") is the number 1000, and any other toNumber is its argument read in its
+        // place, so the units are read from an ordinary tree and the caption writes one
+        return checkWithin(asANumber, scope, expected)
+    }
     switch (ast.type) {
         case 'identifier':
             return { ast, value: identifier(ast.name.node, scope) }
@@ -441,14 +447,18 @@ const toNumberOfOneThing = l.call({
 const primitive = l.union<USSPrimitiveRawValue>([l.number(), l.string(), l.boolean()])
 
 /** A call to toNumber, carrying the number its argument is when the argument is a literal. */
-function readAsANumber<M>(ast: UrbanStatsASTExpression<M>, scope: Scope): { value?: number, read: UrbanStatsASTExpression<M> } | undefined {
+/** What a toNumber call is read as, or undefined where the expression is not one. */
+function readAsANumber(ast: UrbanStatsASTExpression<UnitsRead>, scope: Scope): Expression | undefined {
     // a script that binds the name itself is calling something else
     if (scope.named.has('toNumber')) return undefined
     const read = l.tryParse(toNumberOfOneThing, ast, scope.typeEnvironment)?.unnamedArgs[0]
     if (read === undefined) return undefined
+    // toNumber("1000") is the number 1000. A string of no number at all is left as it was
     const literal = l.tryParse(primitive, read, scope.typeEnvironment)
-    // the parser returns the argument of the call it was given, so it carries the same metadata
-    return { value: literal === undefined ? undefined : asNumber(literal), read: read as UrbanStatsASTExpression<M> }
+    const value = literal === undefined ? undefined : asNumber(literal)
+    return value === undefined
+        ? read
+        : { type: 'constant', value: { node: { type: 'number', value }, location: locationOf(read) } }
 }
 
 /** The script rewritten, every node of it saying what it works out to. */
@@ -457,88 +467,11 @@ export function unitCheck<M>(program: UrbanStatsASTStatement<M>, typeEnvironment
 export function unitCheck<M>(program: UrbanStatsASTExpression<M>, typeEnvironment: TypeEnvironment): Expression
 export function unitCheck(program: UrbanStatsASTExpression<UnitsRead> | UrbanStatsASTStatement<UnitsRead>, typeEnvironment: TypeEnvironment): Expression | Statement {
     const scope: Scope = { typeEnvironment, named: new Map() }
-    // the toNumbers are removed first, so that the units are read from an ordinary script
-    const read = withoutToNumbers(program, typeEnvironment)
-    return isExpression(read)
-        ? checkExpression(read, scope, anything).ast
-        : checkStatement(read, scope, anything).ast
+    return isExpression(program)
+        ? checkExpression(program, scope, anything).ast
+        : checkStatement(program, scope, anything).ast
 }
 
 function isExpression(ast: UrbanStatsASTExpression<UnitsRead> | UrbanStatsASTStatement<UnitsRead>): ast is UrbanStatsASTExpression<UnitsRead> {
     return !['assignment', 'expression', 'statements', 'condition', 'parseError'].includes(ast.type)
-}
-
-/**
- * The script with every toNumber replaced by its argument. Reading the units then works on an
- * ordinary tree, and records the argument as being read as a plain number.
- */
-function withoutToNumbers<T extends UrbanStatsASTExpression<UnitsRead> | UrbanStatsASTStatement<UnitsRead>>(program: T, typeEnvironment: TypeEnvironment): T {
-    const stripped = isExpression(program)
-        ? strippedExpression(program, typeEnvironment)
-        : strippedStatement(program, typeEnvironment)
-    return stripped as T
-}
-
-function strippedExpression(ast: UrbanStatsASTExpression<UnitsRead>, typeEnvironment: TypeEnvironment): Expression {
-    const within = strippedWithin(ast, typeEnvironment)
-    const toNumber = readAsANumber(within, { typeEnvironment, named: new Map() })
-    if (toNumber === undefined) {
-        return within
-    }
-    // toNumber("1000") is just the number 1000, so it becomes that
-    if (toNumber.value !== undefined) {
-        return { type: 'constant', value: { node: { type: 'number', value: toNumber.value }, location: locationOf(within) } }
-    }
-    return toNumber.read
-}
-
-function strippedStatement(ast: UrbanStatsASTStatement<UnitsRead>, typeEnvironment: TypeEnvironment): Statement {
-    const stripped = (each: UrbanStatsASTExpression<UnitsRead>): Expression => strippedExpression(each, typeEnvironment)
-    const statements = (each: UrbanStatsASTStatement<UnitsRead>[]): Statement[] => each.map(one => strippedStatement(one, typeEnvironment))
-    switch (ast.type) {
-        case 'parseError':
-            return ast
-        case 'assignment':
-            return { ...ast, value: stripped(ast.value) }
-        case 'expression':
-            return { ...ast, value: stripped(ast.value) }
-        case 'statements':
-            return { ...ast, result: statements(ast.result) }
-        case 'condition':
-            return { ...ast, condition: stripped(ast.condition), rest: statements(ast.rest) }
-    }
-}
-
-function strippedWithin(ast: UrbanStatsASTExpression<UnitsRead>, typeEnvironment: TypeEnvironment): Expression {
-    const stripped = (each: UrbanStatsASTExpression<UnitsRead>): Expression => strippedExpression(each, typeEnvironment)
-    switch (ast.type) {
-        case 'identifier':
-        case 'constant':
-            return ast
-        case 'attribute':
-            return { ...ast, expr: stripped(ast.expr) }
-        case 'call':
-            return { ...ast, fn: stripped(ast.fn), args: ast.args.map(arg => ({ ...arg, value: stripped(arg.value) })) }
-        case 'binaryOperator':
-            return { ...ast, left: stripped(ast.left), right: stripped(ast.right) }
-        case 'unaryOperator':
-            return { ...ast, expr: stripped(ast.expr) }
-        case 'objectLiteral':
-            return { ...ast, properties: ast.properties.map(([name, value]): [string, Expression] => [name, stripped(value)]) }
-        case 'vectorLiteral':
-            return { ...ast, elements: ast.elements.map(stripped) }
-        case 'if':
-            return {
-                ...ast,
-                condition: stripped(ast.condition),
-                then: strippedStatement(ast.then, typeEnvironment),
-                ...ast.else === undefined ? {} : { else: strippedStatement(ast.else, typeEnvironment) },
-            }
-        case 'do':
-            return { ...ast, statements: ast.statements.map(each => strippedStatement(each, typeEnvironment)) }
-        case 'customNode':
-            return { ...ast, expr: strippedStatement(ast.expr, typeEnvironment) }
-        case 'autoUXNode':
-            return { ...ast, expr: stripped(ast.expr) }
-    }
 }
