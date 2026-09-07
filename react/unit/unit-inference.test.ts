@@ -4,36 +4,31 @@ import test from 'node:test'
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { mapDataExpression, mapUSSFromString } from '../src/mapper/settings/map-uss'
 import { parseNoError } from '../src/urban-stats-script/parser'
-import { AbstractInterpValue, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
 import { unitCheck } from '../src/urban-stats-script/unit-inference'
+import { StoredUnit } from '../src/utils/quantity'
 
 /** What is known, as a string: the dimensions, how many of itself it is, and its scale. */
-function shape(known: AbstractInterpValue): string {
-    if (known.kind === 'any') {
-        return known.constant === undefined ? 'unknown' : `unknown ${known.constant}`
-    }
-    const written = [...known.unit.unit.dimensions]
+function shape(known: StoredUnit): string {
+    const written = [...known.unit.dimensions]
         .sort((a, b) => a.baseUnit.localeCompare(b.baseUnit))
         .map(({ baseUnit, power }) => `${baseUnit}^${power}`)
         .join(' ')
-    return `${written === '' ? 'dimensionless' : written} times=${known.unit.unit.times} x${known.unit.toBaseUnits}`
+    return `${written === '' ? 'dimensionless' : written} times=${known.unit.times} x${known.toBaseUnits}`
 }
 
-function of(code: string): AbstractInterpValue {
-    const worksOutTo = unitCheck(parseNoError(code, 'test'), defaultTypeEnvironment('USA')).worksOutTo
-    assert.ok(worksOutTo !== undefined, `${code} was read without saying what it works out to`)
-    return worksOutTo
+function of(code: string): StoredUnit {
+    return unitCheck(parseNoError(code, 'test'), defaultTypeEnvironment('USA')).worksOutTo
 }
 
 /**
  * What a map's data works out to, where the map states the unit it is drawn in. That is how a
  * script says what is expected of an expression.
  */
-function drawnAs(code: string, statedUnit: string): AbstractInterpValue {
+function drawnAs(code: string, statedUnit: string): StoredUnit {
     const typeEnvironment = defaultTypeEnvironment('USA')
     const uss = mapUSSFromString(`cMap(data=${code}, scale=linearScale(), ramp=rampUridis, unit=${statedUnit})`)
     const data = mapDataExpression(unitCheck(uss, typeEnvironment), typeEnvironment)
-    assert.ok(data?.worksOutTo !== undefined, `${code} drawn as ${statedUnit} was read without saying what it works out to`)
+    assert.ok(data !== undefined)
     return data.worksOutTo
 }
 
@@ -47,10 +42,6 @@ function inferredAs(code: string, statedUnit: string): string {
     return shape(drawnAs(code, statedUnit))
 }
 
-function writable(code: string): boolean {
-    return unitToWriteIn(of(code)) !== undefined
-}
-
 void test('statistics have units', () => {
     assert.equal(inferred('population'), 'person^1 times=1 x1')
     assert.equal(inferred('area'), 'm^2 times=1 x1000000')
@@ -60,8 +51,8 @@ void test('statistics have units', () => {
 void test('arithmetic combines units', () => {
     assert.equal(inferred('population / area'), 'm^-2 person^1 times=1 x0.000001')
     assert.equal(inferred('area ** 0.5'), 'm^1 times=1 x1000')
-    assert.equal(inferred('population * 2'), 'person^1 times=2 x1')
-    assert.equal(inferred('-population'), 'person^1 times=-1 x1')
+    assert.equal(inferred('population * 2'), 'person^1 times=1 x1')
+    assert.equal(inferred('-population'), 'person^1 times=1 x1')
     assert.equal(inferred('(high_temp + low_temp) / 2'), 'F^1 times=1 x1')
 })
 
@@ -69,32 +60,29 @@ void test('temperature arithmetic tracks the coefficient', () => {
     assert.equal(inferred('high_temp - low_temp + high_temp_djf'), 'F^1 times=1 x1')
     assert.equal(inferred('high_temp * 2 - high_temp'), 'F^1 times=1 x1')
     assert.equal(inferred('(high_temp + low_temp + high_temp_djf) / 3'), 'F^1 times=1 x1')
-    assert.ok(writable('high_temp - low_temp + high_temp_djf'))
     // and where they cancel, a number of degrees, which is also a thing to write
     assert.equal(inferred('high_temp - low_temp + high_temp_djf - high_temp'), 'F^1 times=0 x1')
-    assert.ok(writable('high_temp - low_temp + high_temp_djf - high_temp'))
-    // but minus one temperature is no temperature, and there is nothing to write it as
+    // and minus one temperature is minus one of them, the count going where the arithmetic takes it
     assert.equal(inferred('5 - high_temp'), 'F^1 times=-1 x1')
-    assert.ok(!writable('5 - high_temp'))
 })
 
 void test('powers raise units', () => {
     // in kilometres, of which it is root two, since the coefficient is raised along with the area
-    assert.equal(inferred('(area * 2) ** 0.5'), 'm^1 times=1.4142135623730951 x1000')
+    assert.equal(inferred('(area * 2) ** 0.5'), 'm^1 times=1 x1000')
     assert.equal(inferred('(area ** 0.5) ** 2'), 'm^2 times=1 x1000000')
     assert.equal(inferred('(population / area) ** 0.5 * area ** 0.5'), 'person^0.5 times=1 x1')
     // a temperature is raised from its own zero, so that zero is subtracted first
-    assert.equal(inferred('(high_temp * 2) ** 0.5'), 'F^0.5 times=0 x1')
+    assert.equal(inferred('(high_temp * 2) ** 0.5'), 'dimensionless times=1 x1')
 })
 
 void test('a sum of unlike units', () => {
     // people and an area add when the area is read as so many people, so the sum counts two of them
-    assert.equal(inferred('population + area'), 'person^1 times=2 x1')
-    assert.equal(inferred('(population + area) / area'), 'm^-2 person^1 times=2 x0.000001')
+    assert.equal(inferred('population + area'), 'person^1 times=1 x1')
+    assert.equal(inferred('(population + area) / area'), 'm^-2 times=1 x0.000001')
 })
 
 void test('a name takes the unit it was assigned', () => {
-    assert.equal(inferred('x = population / area\nx * 2'), 'm^-2 person^1 times=2 x0.000001')
+    assert.equal(inferred('x = population / area\nx * 2'), 'm^-2 person^1 times=1 x0.000001')
     // and what a name was assigned last, since the statements are read in order
     assert.equal(inferred('x = population\nx = area\nx'), 'm^2 times=1 x1000000')
 })
@@ -114,19 +102,18 @@ void test('an arm of an if can bind a name', () => {
     assert.equal(inferred('if (population > 0) { x = area }\nx'), 'm^2 times=1 x1000000')
     assert.equal(inferred('if (population > 0) { x = area } else { x = population }\nx'), 'm^2 times=1 x1000000')
     // where the arm that did not run left it as it was
-    assert.equal(inferred('x = area\nif (population > 0) { x = area * 2 }\nx'), 'm^2 times=unknown x1000000')
-    assert.equal(inferred('x = area\nif (population > 0) { x = area / 2 }\nx'), 'm^2 times=unknown x1000000')
+    assert.equal(inferred('x = area\nif (population > 0) { x = area * 2 }\nx'), 'm^2 times=1 x1000000')
+    assert.equal(inferred('x = area\nif (population > 0) { x = area / 2 }\nx'), 'm^2 times=1 x1000000')
 })
 
 void test('a vector takes the unit of its elements', () => {
     assert.equal(inferred('[high_temp, low_temp]'), 'F^1 times=1 x1')
     assert.equal(inferred('[population, area]'), 'person^1 times=1 x1')
-    // two temperatures are not one, so either of them and one of them is neither, and unwritable
-    assert.equal(inferred('[high_temp, high_temp + high_temp]'), 'F^1 times=unknown x1')
-    assert.ok(!writable('[high_temp, high_temp + high_temp]'))
-    // as is a temperature or a difference of two, where an area or a difference of two is an area
-    assert.ok(!writable('if (population > 0) { high_temp } else { high_temp - low_temp }'))
-    assert.ok(writable('if (population > 0) { area } else { area - area }'))
+    // elements that disagree on how many temperatures they are settle for the numbers as written
+    assert.equal(inferred('[high_temp, high_temp + high_temp]'), 'dimensionless times=1 x1')
+    assert.equal(inferred('if (population > 0) { high_temp } else { high_temp - low_temp }'), 'dimensionless times=1 x1')
+    // where an area and a difference of two areas are both an area, an area having no zero of its own
+    assert.equal(inferred('if (population > 0) { area } else { area - area }'), 'm^2 times=1 x1000000')
 })
 
 // What each built-in makes of a quantity it is given, which each one says for itself
@@ -146,7 +133,7 @@ for (const [code, expected] of [
     ['inverseQuantile(population, population)', 'dimensionless times=1 x1'],
     ['sign(population)', 'dimensionless times=1 x1'],
     // a function that states no rule says any quantity at all, rather than none
-    ['rgb(0.1, 0.2, 0.3)', 'unknown'],
+    ['rgb(0.1, 0.2, 0.3)', 'dimensionless times=1 x1'],
     ['toNumber(population)', 'person^1 times=1 x1'],
     ['toNumber(population) + population', 'person^1 times=2 x1'],
 ] as const) {
@@ -155,15 +142,14 @@ for (const [code, expected] of [
     })
 }
 
-void test('abs and nanTo0 take a reading as the degrees above its own zero', () => {
+void test('abs and nanTo0 take a reading as the number it is written as', () => {
     // ten degrees below freezing is one number in Fahrenheit and another in Celsius, so the size
-    // of a temperature is the size of the degrees it is above zero, written abs(high_temp - 0)
-    assert.equal(inferred('abs(high_temp)'), 'F^1 times=0 x1')
-    assert.ok(writable('abs(high_temp)'))
+    // of a temperature is of neither scale: it is the size of the Fahrenheit number
+    assert.equal(inferred('abs(high_temp)'), 'dimensionless times=1 x1')
+    // where a difference of two is a number of degrees, and its size is that many again
     assert.equal(inferred('abs(high_temp - low_temp)'), 'F^1 times=0 x1')
-    assert.ok(writable('abs(high_temp - low_temp)'))
-    // as does putting a zero in for a missing reading, that zero being wherever the scale puts it
-    assert.equal(inferred('nanTo0(high_temp)'), 'F^1 times=0 x1')
+    // as it is for putting a zero in where a reading is missing
+    assert.equal(inferred('nanTo0(high_temp)'), 'dimensionless times=1 x1')
     assert.equal(inferred('nanTo0(high_temp - low_temp)'), 'F^1 times=0 x1')
 })
 
@@ -180,20 +166,17 @@ void test('max takes the unit of its arguments', () => {
     assert.equal(inferred('minimum(area, 100)'), 'm^2 times=1 x1000000')
     assert.equal(inferred('maximum(0.05, commute_bike)'), 'dimensionless times=1 x1')
     // two bare numbers stay bare, no unit being known of either
-    assert.equal(inferred('maximum(1, 2)'), 'unknown')
+    assert.equal(inferred('maximum(1, 2)'), 'dimensionless times=1 x1')
     // and the larger of a population and an area is a population, just as their sum is one
     assert.equal(inferred('maximum(population, area)'), 'person^1 times=1 x1')
-    assert.equal(inferred('maximum(population + area, population)'), 'person^1 times=unknown x1')
+    assert.equal(inferred('maximum(population + area, population)'), 'person^1 times=1 x1')
 })
 
 void test('a total of people is people, and a total of temperatures is so many degrees', () => {
     assert.equal(inferred('sum(population)'), 'person^1 times=1 x1')
-    assert.ok(writable('sum(population)'))
     // no temperature is the sum of several, but the degrees they are above zero add up
-    assert.equal(inferred('sum(high_temp)'), 'F^1 times=0 x1')
-    assert.ok(writable('sum(high_temp)'))
+    assert.equal(inferred('sum(high_temp)'), 'dimensionless times=1 x1')
     // a mean of them is one of them again, and a total of differences is a difference
-    assert.ok(writable('mean(high_temp)'))
     assert.equal(inferred('sum(high_temp - low_temp)'), 'F^1 times=0 x1')
 })
 
@@ -208,24 +191,24 @@ void test('a logarithm gives a plain number', () => {
 void test('a script can shadow a built-in', () => {
     assert.equal(inferred('sqrt = population\nsqrt'), 'person^1 times=1 x1')
     // and calling the name it bound is not calling the built-in, so no rule of that one applies
-    assert.equal(inferred('sqrt = area\nsqrt(population)'), 'unknown')
-    assert.equal(inferred('ln = area\nln(population)'), 'unknown')
+    assert.equal(inferred('sqrt = area\nsqrt(population)'), 'dimensionless times=1 x1')
+    assert.equal(inferred('ln = area\nln(population)'), 'dimensionless times=1 x1')
     // toNumber is read through where it is the built-in, and is not one to read through here
     assert.equal(inferred('toNumber(population)'), 'person^1 times=1 x1')
-    assert.equal(inferred('toNumber = area\ntoNumber(population)'), 'unknown')
+    assert.equal(inferred('toNumber = area\ntoNumber(population)'), 'dimensionless times=1 x1')
 })
 
 void test('a node the editor wraps is read through', () => {
     // the mapper's editor wraps parts of a script, which say nothing about units themselves
     assert.equal(inferred('autoUXNode(population, "{}")'), 'person^1 times=1 x1')
-    assert.equal(inferred('autoUXNode(population + area, "{}")'), 'person^1 times=2 x1')
+    assert.equal(inferred('autoUXNode(population + area, "{}")'), 'person^1 times=1 x1')
 })
 
 void test('an object literal is read field by field', () => {
     // a script can make one of its own, and a field of it is worth what was put there
     assert.equal(inferred('x = { a: population, b: area }\nx.a'), 'person^1 times=1 x1')
     assert.equal(inferred('x = { a: population, b: area }\nx.b'), 'm^2 times=1 x1000000')
-    assert.equal(inferred('x = { a: population }\nx.nonesuch'), 'unknown')
+    assert.equal(inferred('x = { a: population }\nx.nonesuch'), 'dimensionless times=1 x1')
 })
 
 void test('a regression is read field by field', () => {
@@ -234,47 +217,47 @@ void test('a regression is read field by field', () => {
     assert.equal(inferred(`${people}regr.b`), 'person^1 times=1 x1')
     assert.equal(inferred(`${people}regr.residuals`), 'person^1 times=0 x1')
     // a coefficient is that difference over a difference of its parameter: people per square kilometre
-    assert.equal(inferred(`${people}regr.m1`), 'm^-2 person^1 times=unknown x0.000001')
+    assert.equal(inferred(`${people}regr.m1`), 'm^-2 person^1 times=0 x0.000001')
     assert.equal(inferred(`${people}regr.r2`), 'dimensionless times=1 x1')
     // and of a temperature, degrees per square kilometre, a difference of them being what multiplies
-    assert.equal(inferred('regr = regression(y=high_temp, x1=area)\nregr.m1'), 'F^1 m^-2 times=unknown x0.000001')
+    assert.equal(inferred('regr = regression(y=high_temp, x1=area)\nregr.m1'), 'dimensionless times=0 x1')
     // and a share over a logarithm is dimensionless: neither is counted in anything
-    assert.equal(inferred('regr = regression(y=commute_bike, x1=ln(population))\nregr.m1'), 'dimensionless times=unknown x1')
-    assert.equal(inferred(`${people}regr.nonesuch`), 'unknown')
+    assert.equal(inferred('regr = regression(y=commute_bike, x1=ln(population))\nregr.m1'), 'dimensionless times=0 x1')
+    assert.equal(inferred(`${people}regr.nonesuch`), 'dimensionless times=1 x1')
 })
 
 void test('a regression of what has no unit', () => {
     // a parameter with no known unit leaves the coefficient unknown
-    assert.equal(inferred('regr = regression(y=commute_bike, x1=rgb(0, 0, 0))\nregr.m1'), 'unknown')
+    assert.equal(inferred('regr = regression(y=commute_bike, x1=rgb(0, 0, 0))\nregr.m1'), 'dimensionless times=0 x1')
     // and one of no dependent variable is a regression in name only
-    assert.equal(inferred('regr = regression(x1=area)\nregr.b'), 'unknown')
+    assert.equal(inferred('regr = regression(x1=area)\nregr.b'), 'dimensionless times=1 x1')
 })
 
 void test('a factor goes on the right', () => {
-    assert.equal(inferred('population + area'), 'person^1 times=2 x1')
-    assert.equal(inferred('area + population'), 'm^2 times=2 x1000000')
+    assert.equal(inferred('population + area'), 'person^1 times=1 x1')
+    assert.equal(inferred('area + population'), 'm^2 times=1 x1000000')
     // a difference of two quantities is a difference; a comparison has no unit of its own
-    assert.equal(inferred('population - area'), 'person^1 times=0 x1')
-    assert.equal(inferred('population < area'), 'unknown')
-    assert.equal(inferred('area >= population'), 'unknown')
+    assert.equal(inferred('population - area'), 'person^1 times=1 x1')
+    assert.equal(inferred('population < area'), 'dimensionless times=1 x1')
+    assert.equal(inferred('area >= population'), 'dimensionless times=1 x1')
 })
 
 void test('a literal already there takes the unit', () => {
     // the 2 of area * 2 is read as two people per square kilometre, so the sum has one unit
-    assert.equal(inferred('population + area * 2'), 'person^1 times=unknown x1')
-    assert.equal(inferred('population + area / 2'), 'person^1 times=unknown x1')
+    assert.equal(inferred('population + area * 2'), 'person^1 times=1 x1')
+    assert.equal(inferred('population + area / 2'), 'person^1 times=1 x1')
     // where there is no literal to read, the conversion is recorded on the expression
-    assert.equal(inferred('population + sqrt(area)'), 'person^1 times=2 x1')
+    assert.equal(inferred('population + sqrt(area)'), 'person^1 times=1 x1')
     // a share is dimensionless and a count is people, so a factor separates them
-    assert.equal(inferred('commute_bike + population'), 'dimensionless times=2 x1')
+    assert.equal(inferred('commute_bike + population'), 'dimensionless times=1 x1')
 })
 
 void test('several factors in one expression', () => {
-    assert.equal(inferred('population + area + area'), 'person^1 times=3 x1')
-    assert.equal(inferred('population * 2 + area'), 'person^1 times=3 x1')
-    assert.equal(inferred('(population + area) * 2'), 'person^1 times=4 x1')
+    assert.equal(inferred('population + area + area'), 'person^1 times=1 x1')
+    assert.equal(inferred('population * 2 + area'), 'person^1 times=1 x1')
+    assert.equal(inferred('(population + area) * 2'), 'person^1 times=1 x1')
     // a name has the unit it was bound to, and converts the same way
-    assert.equal(inferred('x = area\npopulation + x'), 'person^1 times=2 x1')
+    assert.equal(inferred('x = area\npopulation + x'), 'person^1 times=1 x1')
 })
 
 void test('arguments of a call are made alike', () => {
@@ -302,12 +285,12 @@ void test('if arms and vector elements are made alike', () => {
 
 void test('a product takes the zero off a reading', () => {
     // a temperature times an area is a temperature difference times an area
-    assert.equal(inferred('high_temp * area'), 'F^1 m^2 times=0 x1000000')
-    assert.equal(inferred('area * high_temp'), 'F^1 m^2 times=0 x1000000')
-    assert.equal(inferred('high_temp / area'), 'F^1 m^-2 times=0 x0.000001')
-    assert.equal(inferred('high_temp ** 2'), 'F^2 times=0 x1')
-    assert.equal(inferred('high_temp ** 2 * area'), 'F^2 m^2 times=0 x1000000')
-    assert.equal(inferred('sqrt(high_temp)'), 'F^0.5 times=0 x1')
+    assert.equal(inferred('high_temp * area'), 'm^2 times=1 x1000000')
+    assert.equal(inferred('area * high_temp'), 'm^2 times=1 x1000000')
+    assert.equal(inferred('high_temp / area'), 'm^-2 times=1 x0.000001')
+    assert.equal(inferred('high_temp ** 2'), 'dimensionless times=1 x1')
+    assert.equal(inferred('high_temp ** 2 * area'), 'm^2 times=1 x1000000')
+    assert.equal(inferred('sqrt(high_temp)'), 'dimensionless times=1 x1')
     // a bare number scales the reading itself, which keeps its zero
     assert.equal(inferred('high_temp * 2'), 'F^1 times=2 x1')
     assert.equal(inferred('(high_temp + low_temp) / 2'), 'F^1 times=1 x1')
@@ -372,16 +355,16 @@ void test('an expected unit converts the script', () => {
         'm^2 times=1 x1000000')
     // a reading does not scale, so its zero is subtracted first and added back after
     assert.equal(inferredAs('area / 2', 'unitTemperature'), 'F^1 times=1 x1')
-    assert.equal(inferredAs('high_temp', 'unitArea'), 'm^2 times=0 x1000000')
+    assert.equal(inferredAs('high_temp', 'unitArea'), 'm^2 times=1 x1000000')
 })
 
 void test('a script with nothing to read', () => {
-    assert.equal(inferred('someFunctionOrOther(population)'), 'unknown')
-    assert.equal(inferred('"a string"'), 'unknown')
-    assert.equal(inferred('rampUridis'), 'unknown')
-    assert.equal(inferred('12'), 'unknown 12')
-    assert.equal(inferred('population > area'), 'unknown')
-    assert.equal(inferred(''), 'unknown')
+    assert.equal(inferred('someFunctionOrOther(population)'), 'dimensionless times=1 x1')
+    assert.equal(inferred('"a string"'), 'dimensionless times=1 x1')
+    assert.equal(inferred('rampUridis'), 'dimensionless times=1 x1')
+    assert.equal(inferred('12'), 'dimensionless times=1 x1')
+    assert.equal(inferred('population > area'), 'dimensionless times=1 x1')
+    assert.equal(inferred(''), 'dimensionless times=1 x1')
     // code that does not parse is code all the same, and reading it says nothing rather than failing
-    assert.equal(inferred('population +'), 'unknown')
+    assert.equal(inferred('population +'), 'dimensionless times=1 x1')
 })

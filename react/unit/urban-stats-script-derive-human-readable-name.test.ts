@@ -38,19 +38,19 @@ for (const [condition, expected] of [
     ['rainfall * 2 > 100', 'Rainfall × 2 > 10\u202f000cm/yr'],
     // the 32 is freezing point, so what is left of the temperature is the degrees above it, and
     // the 0 it is compared against is a number of degrees too
-    ['high_temp - 32 > 0', 'Mean high temp \u2212 32°F > +0°F'],
+    ['high_temp - 32 > 0', 'Mean high temp \u2212 32°F > 0°F'],
     // either side of a comparison carries it to the other, and each side of an and is read alone
     ['80 < high_temp', '80°F < Mean high temp'],
     ['population > 1000 & high_temp > 80', 'Population > 1\u202f000 and Mean high temp > 80°F'],
     // a sign is written beside a number rather than in it, where minus a reading is no reading
     ['high_temp > -10', 'Mean high temp > -10°F'],
-    ['-high_temp > -80', '-Mean high temp > -80'],
+    ['-high_temp > -80', '-Mean high temp > -80°F'],
     // a root of a count is in no unit any pool holds, and writing one threw
     ['population ** 0.5 > 100', 'Population^{0.5} > 100\u00a0people^{0.5}'],
     // however many people there are they are still people, where the size of a reading is the
     // size of the degrees it is above its own zero
     ['sum(population) > 1000000', 'sum(Population) > 1m'],
-    ['abs(high_temp) > 5', 'abs(Mean high temp \u2212 0°F) > +5°F'],
+    ['abs(high_temp) > 5', 'abs(Mean high temp [in °F]) > 5'],
     ['ln(1000) > 0', 'ln(1\u202f000) > 0'],
     // a logarithm of a quantity is a number, so the caption says what the quantity was read in
     ['ln(density_pw_1km) > 0', 'ln(PW Density (r=1km) [in /km^{2}]) > 0'],
@@ -72,7 +72,7 @@ for (const [condition, expected] of [
     ['density_pw_1km > toNumber(geoName)', 'PW Density (r=1km) > Default Universe Geography Names [as /km^{2}]'],
     ['population > toNumber(geoName)', 'Population > Default Universe Geography Names'],
     // each name is read against the density separately, and the sign brackets the sum of them
-    ['density_pw_1km > -toNumber(geoName + geoName)', 'PW Density (r=1km) > -(Default Universe Geography Names [as /km^{2}] + Default Universe Geography Names [as /km^{2}])'],
+    ['density_pw_1km > -toNumber(geoName + geoName)', 'PW Density (r=1km) > -(Default Universe Geography Names + Default Universe Geography Names) [as /km^{2}]'],
     // a lead is written as whose it is, and a change from one year to another as a change
     ['pres_2020_margin > 0.1', '2020 Presidential Election > D+10%'],
     ['population_change_2000_2020 > 0.05', 'Population Change (2000-2020) > +5%'],
@@ -112,17 +112,17 @@ for (const [data, expected] of [
     ['minimum(population, area)', 'min(Population, Area × 1/km^{2})'],
     ['inverseQuantile(population, area)', 'quantile^{-1}(Population, Area × 1/km^{2})'],
     // a temperature does not scale, so the caption writes the degrees above its zero
-    ['high_temp * area', '(Mean high temp − 0°F) × Area'],
-    ['high_temp / area', '(Mean high temp − 0°F) ÷ Area'],
-    ['high_temp ** 2', '(Mean high temp − 0°F)^{2}'],
-    ['high_temp ** 2 * area', '(Mean high temp − 0°F)^{2} × Area'],
-    ['sqrt(high_temp)', 'sqrt(Mean high temp − 0°F)'],
-    ['high_temp / high_temp', '(Mean high temp − 0°F) ÷ (Mean high temp − 0°F)'],
+    ['high_temp * area', 'Mean high temp [in °F] × Area'],
+    ['high_temp / area', 'Mean high temp [in °F] ÷ Area'],
+    ['high_temp ** 2', 'Mean high temp [in °F]^{2}'],
+    ['high_temp ** 2 * area', 'Mean high temp [in °F]^{2} × Area'],
+    ['sqrt(high_temp)', 'sqrt(Mean high temp [in °F])'],
+    ['high_temp / high_temp', 'Mean high temp [in °F] ÷ Mean high temp [in °F]'],
     // a count is counted from nothing already, so nothing is subtracted from it. A factor between
     // two scales is a difference of them: so many degrees per person, not a temperature per person
-    ['high_temp + population', 'Mean high temp + Population × +1°F/person'],
-    ['population + high_temp', 'Population + (Mean high temp − 0°F) × +1/°F'],
-    ['high_temp - low_temp + population', '(Mean high temp − Mean low temp) + Population × +1°F/person'],
+    ['high_temp + population', 'Mean high temp + Population × +1°F/person + 0°F'],
+    ['population + high_temp', 'Population + Mean high temp [in °F]'],
+    ['high_temp - low_temp + population', '(Mean high temp − Mean low temp) + Population × +1°F/person + 0°F'],
     // brackets go round a conversion only where something is written after it
     ['ln(area + area)', 'ln((Area + Area) [in km^{2}])'],
     ['ln(population + area)', 'ln(Population + Area × 1/km^{2})'],
@@ -145,11 +145,11 @@ for (const [data, reader, settings, expected] of [
     ['population + sqrt(area)', 'imperial', imperial, 'Population + sqrt(Area) × 1.61/mi'],
     // a factor between two scales is a difference of them, so it converts as one: a degree
     // Fahrenheit per person is five ninths of a degree Celsius per person, not -17.2 of them
-    ['high_temp + population', 'celsius', celsius, 'Mean high temp + Population × +0.556°C/person'],
-    ['population + high_temp', 'celsius', celsius, 'Population + (Mean high temp − -17.8°C) × +1.8/°C'],
+    ['high_temp + population', 'celsius', celsius, 'Mean high temp + Population × +0.556°C/person + -17.8°C'],
+    ['population + high_temp', 'celsius', celsius, 'Population + Mean high temp [in °F]'],
     // the zero subtracted from a reading is itself a reading, so it is shown on the reader's scale
-    ['high_temp * area', 'celsius', celsius, '(Mean high temp − -17.8°C) × Area'],
-    ['high_temp * area', 'imperial', imperial, '(Mean high temp − 0°F) × Area'],
+    ['high_temp * area', 'celsius', celsius, 'Mean high temp [in °F] × Area'],
+    ['high_temp * area', 'imperial', imperial, 'Mean high temp [in °F] × Area'],
     // and what a number was counted in does not change with the reader
     ['ln(area)', 'imperial', imperial, 'ln(Area [in km^{2}])'],
     ['ln(high_temp)', 'celsius', celsius, 'ln(Mean high temp [in °F])'],
@@ -165,14 +165,14 @@ for (const [data, reader, settings, expected] of [
 // says how, except where the script already gives that unit and there is nothing to say.
 for (const [values, stated, expected] of [
     ['population', 'unitArea', 'Population × 1km^{2}/person'],
-    ['ln(population)', 'unitArea', 'ln(Population) × 1km^{2}'],
+    ['ln(population)', 'unitArea', 'ln(Population) [as km^{2}]'],
     ['population / area', 'unitDensity', 'Population ÷ Area'],
     // converting a temperature subtracts its zero first; converting into one adds a zero at the end
     ['high_temp', 'unitArea', '(Mean high temp − 0°F) × +1km^{2}/°F'],
     ['population', 'unitTemperature', 'Population × +1°F/person + 0°F'],
     // a literal in the script takes the unit itself, rather than a factor being written after it
-    ['area / 2', 'unitTemperature', '(Area ÷ 2km^{2}/°F) + 0°F'],
-    ['area * 2', 'unitTemperature', '(Area × +2°F/km^{2}) + 0°F'],
+    ['area / 2', 'unitTemperature', '(Area ÷ 2) × +1°F/km^{2} + 0°F'],
+    ['area * 2', 'unitTemperature', '(Area × 2) × +1°F/km^{2} + 0°F'],
     // and nothing is said where the script already gives that unit
     ['area', 'unitArea', 'Area'],
 ] as const) {

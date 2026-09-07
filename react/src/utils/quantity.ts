@@ -37,11 +37,11 @@ export type Decoration = { kind: 'none' } | { kind: 'percent', party?: Party } |
 
 /**
  * How many quantities were added to make this one: a level is 1, a difference of two is 0, and the
- * mean of two is 1 again. On a temperature scale, where 0 does not mean none of the quantity, only
- * 0 and 1 are quantities at all. Elsewhere the only thing read off it is whether it is 0, which is
- * written with a leading +. Arithmetic that cannot work it out gives 'unknown'.
+ * mean of two is 1 again. It says how many times over the zero of the scale is in the value, and
+ * away from a scale with a zero of its own the only thing read off it is whether it is 0, which is
+ * written with a leading +.
  */
-export type Coefficient = number | 'unknown'
+export type Coefficient = number
 
 export interface Unit {
     dimensions: Dimension[]
@@ -293,7 +293,7 @@ function timesOfAProduct(...operands: Unit[]): Coefficient {
  * Floating point leaves a power slightly off a whole number: a cube raised to a tenth and then to
  * ten comes back as 3.0000000000000004, which is no dimension anything is written in.
  */
-export function snapToWhole(value: number): number {
+function snapToWhole(value: number): number {
     return Math.abs(value - Math.round(value)) < 1e-9 ? Math.round(value) : value
 }
 
@@ -386,11 +386,11 @@ export function nameOf(written: Written[], placement: UnitPlacement = 'byItself'
 }
 
 /**
- * Where the zero of the units a quantity is written in sits. A difference of two quantities has
- * no offset, the zero cancelling between them.
+ * Where the zero of the units a quantity is written in sits, counted once for each quantity that
+ * was added to make it: a difference of two has no offset, the zeros cancelling between them.
  */
 function offsetOf(written: Written[], times: Coefficient): number {
-    return times === 1 ? written.reduce((total, { unit, power }) => total + (unit.offset ?? 0) * power, 0) : 0
+    return times * written.reduce((total, { unit, power }) => total + (unit.offset ?? 0) * power, 0)
 }
 
 function representationFor(inBaseUnits: number, unit: Unit, settings: UnitSettings, placement: UnitPlacement): Representation {

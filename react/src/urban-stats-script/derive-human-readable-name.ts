@@ -5,6 +5,7 @@ import { joinHumanReadableNames } from '../utils/human-readable-name'
 import { parseHumanReadableTemplate } from '../utils/human-readable-template'
 import { asADifference, isPlainNumber, multiplies, nameOfStoredUnit, sameDimensions, sameSize, StoredUnit, unitProduct } from '../utils/quantity'
 import { abbreviate, formatToSignificantFigures, separateNumber, trimTrailingZeros } from '../utils/text'
+import { plainNumber } from '../utils/unit'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import * as l from './literal-parser'
@@ -243,7 +244,7 @@ export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): H
     const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment)
     if (dataLabel === undefined) return
     // Replace the map call with just the data description to simplify the label (we know it's a map)
-    const withMapCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: grouped(dataLabel) }, location: noLocation } })
+    const withMapCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: grouped(dataLabel) }, location: noLocation }, worksOutTo: plainNumber })
     assert(withMapCallReplacedByDataLabel !== undefined, 'should not happen')
     const label = humanReadableElements(withMapCallReplacedByDataLabel, typeEnvironment)
     return label === undefined ? undefined : ungroupUnlessWorthwhile(label, dataLabel, 1)
@@ -325,7 +326,7 @@ export function deriveTableColumnLabel(uss: MapUSS, typeEnvironment: TypeEnviron
     return values === undefined ? undefined : humanReadableElements(values, typeEnvironment)
 }
 
-const editableTableCall = mapUssParser(l.edit(l.call({
+const editableTableCall: (uss: MapUSS<UnitsRead>, typeEnvironment: TypeEnvironment) => l.Edited<unknown, UnitsRead> = mapUssParser(l.edit(l.call({
     fn: l.ignore(),
     namedArgs: {},
     unnamedArgs: [],
@@ -339,7 +340,7 @@ export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, 
     }
     const columns = joinHumanReadableNames(columnNames)
     // Replace the table call with just the column to simplify the label (we know it's a table)
-    const withTableCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: grouped(columns) }, location: noLocation } })
+    const withTableCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: grouped(columns) }, location: noLocation }, worksOutTo: plainNumber })
     assert(withTableCallReplacedByDataLabel !== undefined, 'should not happen')
     const label = humanReadableElements(withTableCallReplacedByDataLabel, typeEnvironment)
     return label === undefined ? undefined : ungroupUnlessWorthwhile(label, columns, columnNames.length)
@@ -414,7 +415,9 @@ type ConversionWriting =
 interface ZeroAnchorConverter { unit: StoredUnit, where: 'subtracted' | 'added' }
 
 function writingOf({ internalUnit, expectedUnit }: UnitConversion): ConversionWriting {
-    if (internalUnit === undefined) {
+    // reading a number as a quantity says what it is taken to be, and reading a quantity as a
+    // number says what it was written in; neither does anything to the number itself
+    if (isPlainNumber(internalUnit)) {
         return { kind: 'as', unit: expectedUnit }
     }
     if (isPlainNumber(expectedUnit)) {

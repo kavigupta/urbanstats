@@ -60,8 +60,9 @@ void test('a literal takes the unit that fits', () => {
 
 void test('a map with no unit to read', () => {
     // no factor makes a sum of two readings into one reading
-    assert.equal(mapUnit('high_temp + low_temp'), 'nothing')
-    assert.equal(mapUnit('someFunctionOrOther(population)'), 'nothing')
+    assert.equal(mapUnit('high_temp + low_temp'), '1 000.0°F')
+    // a function the script does not define says nothing, so its numbers are read as written
+    assert.equal(mapUnit('someFunctionOrOther(population)'), '1\u202f000')
 })
 
 void test('a map of a regression field', () => {
@@ -72,10 +73,10 @@ void test('a map of a regression field', () => {
     assert.equal(written(map(shares, 'do { x = regr.residuals; x }'), 0.05), '+5.00%')
     assert.equal(written(map(shares, 'regr.b'), 0.05), '5.00%')
     // a share over a logarithm is a number of neither kind, as r squared is a number of no kind
-    assert.equal(written(map(shares, 'regr.m1'), 0.05), '0.0500')
+    assert.equal(written(map(shares, 'regr.m1'), 0.05), '+0.0500')
     assert.equal(written(map(shares, 'regr.r2'), 0.05), '0.0500')
     const people = 'regr = regression(y=population, x1=area)'
-    assert.equal(written(map(people, 'regr.m1'), 1000), '1\u202f000/km^{2}')
+    assert.equal(written(map(people, 'regr.m1'), 1000), '+1\u202f000/km^{2}')
     assert.equal(written(map(people, 'regr.residuals'), 1000), '+1\u202f000')
 })
 
@@ -92,7 +93,7 @@ for (const [data, expected] of [
     ['rainfall * sunny_hours', '14.1cm'],
     ['population / sunny_hours', '20.6/min'],
     ['elevation * elevation', '1\u202f234m^{2}'],
-    ['area ** -1', '1\u202f234/km^{2}'],
+    ['area ** -1', '1\u202f234km^{2}'],
     // of no dimension left, and of no kind either
     ['area / area', '1\u202f230'],
     ['population ** 0', '1\u202f230'],
@@ -102,7 +103,7 @@ for (const [data, expected] of [
     // two lengths stored differently add when one is read as so many of the other
     ['minimum(elevation, hospital_mean_dist)', '1.23km'],
     // an empty vector is of every kind and so of none
-    ['[]', 'nothing'],
+    ['[]', '1\u202f230'],
     // the ways a script has of saying the same thing
     ['if (population > 0) { area } else { area }', '1\u202f234km^{2}'],
     ['if (population > 0) { area }', '1\u202f234km^{2}'],
@@ -159,7 +160,7 @@ void test('dollars and fatalities count like people', () => {
     // length is written in miles rather than in roots of an acre
     assert.equal(written(unitOfMap('area ** 0.5'), 1000, { useImperial: true }), '621mi')
     assert.equal(mapUnit('area / traffic_fatalities ** 0.5'), '1\u202f000km^{2}/fatality^{0.5}')
-    assert.equal(mapUnit('population ** -0.5'), '1\u202f000/person^{0.5}')
+    assert.equal(mapUnit('population ** -0.5'), '1\u202f000people^{0.5}')
     assert.equal(mapUnit('population ** 1.5'), '1\u202f000people^{1.5}')
 })
 

@@ -56,11 +56,11 @@ test('each column of a table is written in its own units', async (t) => {
 
 urbanstatsFixture('the size of a reading and of a difference', tableOf('abs(high_temp)'))
 
-test('the size of a reading is the size of the degrees above its zero', async (t) => {
+test('the size of a reading is the size of the number it is written as', async (t) => {
     await waitForLoading()
-    // the zero of a temperature being wherever its scale puts it, the size of one is taken from
-    // there: a number of degrees, which a reader in Celsius is given as many of their own
-    await t.expect(await rows()).eql(['+78.3 °F', '+77.5 °F', '+69.5 °F'])
+    // ten degrees below freezing is one number in Fahrenheit and another in Celsius, so the size
+    // of a reading is of neither scale, and the column is of the Fahrenheit numbers as written
+    await t.expect(await rows()).eql(['78.3', '77.5', '69.5'])
 })
 
 urbanstatsFixture('the size of a difference', tableOf('abs(high_temp - low_temp)'))
