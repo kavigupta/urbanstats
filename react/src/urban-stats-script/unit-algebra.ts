@@ -170,18 +170,19 @@ function productForward(rightPower: 1 | -1, left: AbstractInterpValue, right: Ab
         }
         // where a number over a quantity is not that many of it, but one over it
         const inverted = unitProduct(dimensionless, right.unit, -1)
-        return inverted === undefined ? { kind: 'any' } : written(inverted, combined(left.constant, right.unit.unit.times, (scale, times) => scale / times))
+        assert(inverted !== undefined, 'a number is divided by a difference, a reading having been scaled to one')
+        return written(inverted, combined(left.constant, right.unit.unit.times, (scale, times) => scale / times))
     }
     if (right.kind === 'any') {
         return right.constant === undefined
             ? { kind: 'any' }
             : written(left.unit, combined(left.unit.unit.times, right.constant, (times, scale) => rightPower === 1 ? times * scale : times / scale))
     }
-    // a script scales a reading to a difference before multiplying it, so a product of what it
-    // computes always has a unit. One of a reading anyway is of none anyone can name
+    // a script scales a reading to a difference before multiplying it, in both directions: the b
+    // of a / b is solved for in degrees above the zero, as the product itself is worked out in them
     const product = unitProduct(left.unit, right.unit, rightPower)
-    const times = combined(left.unit.unit.times, right.unit.unit.times, (over, under) => rightPower === 1 ? over * under : over / under)
-    return product === undefined ? { kind: 'any' } : written(product, times)
+    assert(product !== undefined, 'operands of a product are scaled before it is worked out')
+    return written(product, combined(left.unit.unit.times, right.unit.unit.times, (over, under) => rightPower === 1 ? over * under : over / under))
 }
 
 export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue {
@@ -198,8 +199,9 @@ export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValu
                 return { kind: 'any' }
             }
             const raised = unitPower(left.unit, right.constant)
+            assert(raised !== undefined, 'what is raised to a power is scaled first, there being no square of a reading')
             // the coefficient is raised along with what it multiplies: (2a)^0.5 is 2^0.5 of a^0.5
-            return raised === undefined ? { kind: 'any' } : written(raised, combined(left.unit.unit.times, right.constant, Math.pow))
+            return written(raised, combined(left.unit.unit.times, right.constant, Math.pow))
         }
     }
 }
