@@ -1,6 +1,6 @@
 import { MapUSS } from '../mapper/settings/map-uss'
 import { dimensionless, sameDimensions, sameSize, StoredUnit, unitPower, unitProduct } from '../utils/quantity'
-import { plainNumber, unitTypeToStoredUnit } from '../utils/unit'
+import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import { asNumber } from './constants/convert'
@@ -13,7 +13,7 @@ import { TypeEnvironment, UnitPropagation, USSPrimitiveRawValue } from './types-
  * number either way: only how it is read changes.
  */
 export interface UnitConversion {
-    /** What the value is counted in, which is nothing of any name where the script writes a number. */
+    /** What the value is counted in. Where the script writes a plain number, that is no unit. */
     internalUnit: StoredUnit
     /** What it is needed as. */
     expectedUnit: StoredUnit
@@ -30,32 +30,31 @@ type Expression = UrbanStatsASTExpression<UnitsRead>
 type Statement = UrbanStatsASTStatement<UnitsRead>
 
 /**
- * How many quantities were added to make a value, which is every count it could be rather than one:
- * a bare 2 is either a quantity or a difference of two, and the script does not say which. This is
- * the half of a unit that cannot be coerced, no arithmetic turning two temperatures into one. The
- * other half is the dimensions, and a factor converts any of those into any other.
+ * How many quantities were added to make a value. It is a list because a script often does not say:
+ * a bare 2 is either one quantity or a difference of two. Counts do not convert into one another,
+ * no arithmetic turning two temperatures into one, where dimensions always convert with a factor.
  */
 type Times = readonly number[]
 
 /** What a script leaves open about a number it writes: a quantity, or a difference of two. */
 const eitherWay: Times = [0, 1]
 
-/** One of something, which is what a statistic is. */
+/** One quantity, which is what a statistic gives. */
 const one: Times = [1]
 
-/** None of it, which is what a difference is, and what a factor may multiply. */
+/** No quantities, which is what a difference of two is. */
 const none: Times = [0]
 
 /**
- * How much of a claim a reading makes about the dimensions it is in, which says whose unit wins
- * where two must agree, and where a conversion is written when one does not.
+ * How strong a claim a value makes on the unit it is in. Where two values have to be in one unit,
+ * the stronger claim says which unit that is, and the weaker one carries the conversion.
  */
 type Flexibility =
-    /** It is what it is: a statistic is in the unit its column is written in. */
+    /** In one unit and no other: a statistic is in the unit its column is written in. */
     | 'naturalPreference'
-    /** It has one, and a number written inside it can carry a factor instead: rainfall * 2. */
+    /** In one unit, but a number written inside it can take a factor instead: rainfall * 2. */
     | 'flexiblePreference'
-    /** It has none of its own, so it is where a cast goes: a bare 2 is of whatever it is read as. */
+    /** In no unit of its own, so it is read as whatever it is used as: a bare 2. */
     | 'artificialPreference'
 
 const claims: Flexibility[] = ['artificialPreference', 'flexiblePreference', 'naturalPreference']
@@ -65,9 +64,9 @@ function stronger(left: Flexibility, right: Flexibility): Flexibility {
     return claims.indexOf(left) >= claims.indexOf(right) ? left : right
 }
 
-/** What a name the script bound is worth, and what it may still be narrowed to. */
+/** What a value is, and what it may still be narrowed to. */
 interface Expectation {
-    /** The unit it is in where that needs no factor. A number the script writes is of no unit. */
+    /** The unit it is in where no factor is needed. A number the script writes is in no unit. */
     unit: StoredUnit
     times: Times
     flexibility: Flexibility
@@ -86,8 +85,8 @@ interface Wanted {
 const wantsNothing: Wanted = {}
 
 /**
- * As the plain numbers the script writes, which is how its own units are read where they do not go
- * together. Nothing is wanted of the count: a number is however many of itself it is.
+ * As the plain numbers the script writes, which is how a script is read where its units do not go
+ * together. Nothing is asked of the count, a plain number sitting on no scale to be counted on.
  */
 const asWritten: Wanted = { unit: dimensionless }
 
@@ -95,9 +94,9 @@ const asWritten: Wanted = { unit: dimensionless }
 class Unsatisfiable extends Error {}
 
 /**
- * An expression read for its units: itself rewritten, the unit it is in where that needs no factor,
- * and every count it may be. `variables` carries the narrowing this reading did to the names the
- * script bound, and `literal` is the number where the script writes one.
+ * An expression read for its units: the expression rewritten, the unit it is in, and every count it
+ * may be. `variables` carries the narrowing this reading did to the names the script bound, and
+ * `literal` is the number the script writes, where it writes one.
  */
 interface Inference extends Expectation {
     ast: Expression
@@ -114,7 +113,7 @@ function intersect(left: Times, right: Times): Times {
     return left.filter(each => right.includes(each))
 }
 
-/** The unit it is written in, counted as it turned out to be. */
+/** The unit a node is written in, taking the largest count it could be: a bare 2 is one quantity. */
 function counted(unit: StoredUnit, times: Times): StoredUnit {
     return { ...unit, unit: { ...unit.unit, times: times[times.length - 1] } }
 }
@@ -129,8 +128,8 @@ function fits(want: StoredUnit, got: StoredUnit): boolean {
 }
 
 /**
- * The reading narrowed to what was wanted of it. A count that does not fit is unsatisfiable, where
- * a unit that does not is converted, which a caption writes as a factor or as what it was read in.
+ * The reading narrowed to what was wanted of it. A count that does not fit makes the whole reading
+ * unsatisfiable. A unit that does not fit is converted, which a caption writes out.
  */
 function narrowed(inference: Inference, wanted: Wanted): Inference {
     // a count says how many zeros are in play, so on a scale with none it constrains nothing: an
@@ -145,8 +144,8 @@ function narrowed(inference: Inference, wanted: Wanted): Inference {
     }
     return {
         ...inference,
-        // a count says how many zeros are in play on the scale it was read from. Converted to a
-        // scale with none, it says nothing, and the number is whatever it is read as
+        // the count belongs to the scale the value was read from. Converted to a scale with no
+        // zero of its own, it says nothing, and the number is whatever it is read as
         times: wanted.unit.unit.baseIsScalar ? wanted.times ?? eitherWay : times,
         unit: wanted.unit,
         ast: { ...inference.ast, converted: { internalUnit: inference.unit, expectedUnit: wanted.unit } },
@@ -154,8 +153,8 @@ function narrowed(inference: Inference, wanted: Wanted): Inference {
 }
 
 /**
- * Read as the script wants it, or where its own units do not go together there, as the numbers it
- * writes: ln(Mean high temp [in °F]) is the logarithm of the Fahrenheit number.
+ * Read as the script wants it. Where the units do not go together, read again as the plain numbers
+ * the script writes: ln(Mean high temp [in °F]) is the logarithm of the Fahrenheit number.
  */
 function inferEitherWay(ast: Expression, scope: Scope, wanted: Wanted): Inference {
     try {
@@ -182,8 +181,8 @@ function read(inference: Inference): Expression {
 function infer(ast: Expression, scope: Scope, wanted: Wanted): Inference {
     const asANumber = readAsANumber(ast, scope)
     if (asANumber !== undefined) {
-        // toNumber("1000") is the number 1000, and any other toNumber is its argument read in its
-        // place, so the units are read from an ordinary tree and a caption writes one
+        // toNumber("1000") is the number 1000, and any other toNumber is read as its argument, so
+        // everything below here reads an ordinary tree
         return infer(asANumber, scope, wanted)
     }
     return narrowed(within(ast, scope, wanted), wanted)
@@ -299,8 +298,8 @@ function either(of: (Expectation & { variables: Bindings })[], here: { ast: Expr
         return { ...here, unit: dimensionless, times: eitherWay, flexibility: 'artificialPreference' }
     }
     const unit = first.unit
-    // each of them is the same thing as the others, so they agree on how many of it there is: a
-    // temperature and a sum of two is neither. On a scale with no zero there is nothing to agree on
+    // each of them is the same thing as the others, so they have to agree on how many of it there
+    // is. On a scale with no zero of its own there is nothing to agree on
     const times = unit.unit.baseIsScalar
         ? first.times
         : of.map(each => each.times).reduce(intersect, first.times)
@@ -316,7 +315,7 @@ function either(of: (Expectation & { variables: Bindings })[], here: { ast: Expr
     }
 }
 
-/** A name both arms of an `if` bound is worth either of what they made it. */
+/** A name that both arms of an `if` bound may be either of what the two made it. */
 function bothArms(scope: Scope, consequent: { variables: Bindings }, otherwise: { variables: Bindings } | undefined): Bindings {
     const bound = new Map(scope.variables)
     for (const [name, expectation] of consequent.variables) {
@@ -350,10 +349,8 @@ function operation(ast: Expression & { type: 'binaryOperator' }, scope: Scope, w
     // a comparison is of no unit of its own, and its operands are of each other's
     const here = { ast, variables: scope.variables }
     const left = infer(ast.left, scope, wantsNothing)
-    // each side of a comparison is in the other's unit, where the other says which it is: the 80 of
-    // 80 < high_temp is a temperature, and neither is of the other where both are bare numbers
-    // each side of a comparison is in the other's unit, and the one that cannot take any dimensions
-    // is the one that says which they are both in: the 80 of 80 < high_temp is a temperature
+    // each side of a comparison is in the other's unit, and the side with no unit of its own is the
+    // one that takes it: the 80 of 80 < high_temp is a temperature
     const names = comparisons.includes(operator) && left.flexibility !== 'artificialPreference'
     const right = infer(ast.right, after(scope, left), names ? { unit: left.unit } : wantsNothing)
     // read the left again now the right says what it could not, so the 80 of 80 < high_temp is one
@@ -371,9 +368,9 @@ function operation(ast: Expression & { type: 'binaryOperator' }, scope: Scope, w
 }
 
 /**
- * What is added is of one unit, so a side of other dimensions takes a factor, and what a factor
- * multiplies is a difference. The counts of the two add up, and where the script leaves either
- * open, every pair of them is a count the sum could be.
+ * Both sides of a sum are in one unit, so a side of other dimensions takes a factor, and a side
+ * that takes a factor is a difference. The counts of the two add up. Where the script leaves
+ * either side open, every pair of counts is one the sum could be.
  */
 function added(ast: Expression & { type: 'binaryOperator' }, scope: Scope, wanted: Wanted, sign: 1 | -1): Inference {
     const left = inferEitherWay(ast.left, scope, wantsNothing)
@@ -405,8 +402,8 @@ function added(ast: Expression & { type: 'binaryOperator' }, scope: Scope, wante
 
 /**
  * A number written in the script scales what it multiplies, so half of two temperatures is one of
- * them. A quantity does not: nothing multiplies a temperature, so both sides are differences, and
- * where one cannot be it is read as the number it is written as.
+ * them. A quantity does not scale anything: nothing multiplies a temperature, so both sides are
+ * differences, and a side that cannot be one is read as the number it is written as.
  */
 function multiplied(ast: Expression & { type: 'binaryOperator' }, scope: Scope, wanted: Wanted, power: 1 | -1): Inference {
     const left = inferEitherWay(ast.left, scope, wantsNothing)
@@ -414,28 +411,29 @@ function multiplied(ast: Expression & { type: 'binaryOperator' }, scope: Scope, 
     const scaling = right.literal ?? left.literal
     if (scaling !== undefined) {
         const scaled = right.literal !== undefined ? left : right
-        // the number already written is where a conversion goes, so a factor lands on it rather
-        // than beside the whole product: population + area * 2 reads Area × 2/km^2
-        // what b must be for a * b or a / b to come out as wanted
-        const carries = wanted.unit === undefined
-            ? undefined
-            : power === 1 ? unitProduct(wanted.unit, scaled.unit, -1) : unitProduct(scaled.unit, wanted.unit, -1)
-        if (carries !== undefined && wanted.unit !== undefined && right.literal !== undefined) {
-            const taken = infer(ast.right, after(scope, left), { unit: carries })
-            return {
-                ast: { ...ast, left: read(left), right: read(taken) },
-                variables: taken.variables,
-                unit: wanted.unit,
-                times: scaled.times,
-                flexibility: 'flexiblePreference',
+        if (wanted.unit !== undefined && right.literal !== undefined) {
+            // what the number must be in for the product to come out as wanted. It is where a
+            // conversion goes, a factor landing on the number the script already writes rather
+            // than beside the whole product: population + area * 2 reads Area × 2/km^2
+            const carries = power === 1
+                ? unitProduct(wanted.unit, scaled.unit, -1)
+                : unitProduct(scaled.unit, wanted.unit, -1)
+            if (carries !== undefined) {
+                const taken = infer(ast.right, after(scope, left), { unit: carries })
+                return {
+                    ast: { ...ast, left: read(left), right: read(taken) },
+                    variables: taken.variables,
+                    unit: wanted.unit,
+                    times: scaled.times,
+                    flexibility: 'flexiblePreference',
+                }
             }
         }
         return {
             ast: { ...ast, left: read(left), right: read(right) },
             variables: right.variables,
             unit: scaled.unit,
-            // a number scales how many quantities there are, so half of two temperatures is one of
-            // them. On a scale with no zero of its own there is nothing for it to scale
+            // on a scale with no zero of its own there is nothing for a number to scale
             times: scaled.unit.unit.baseIsScalar
                 ? scaled.times
                 : scaled.times.map(each => power === 1 || right.literal === undefined ? each * scaling : each / scaling),
@@ -457,13 +455,12 @@ function multiplied(ast: Expression & { type: 'binaryOperator' }, scope: Scope, 
 function unitOfProduct(left: Inference, right: Inference, power: 1 | -1): StoredUnit {
     const product = unitProduct(left.unit, right.unit, power)
     if (product === undefined) {
-        // one of them counts from a zero of its own, so nothing multiplies it as it is written
         throw new Unsatisfiable('nothing multiplies a quantity counted from a zero of its own')
     }
     return product
 }
 
-/** There being no square of a temperature, what is raised to a power is a difference. */
+/** A temperature has no square, so what is raised to a power is a difference. */
 function raised(ast: Expression & { type: 'binaryOperator' }, scope: Scope): Inference {
     const left = inferEitherWay(ast.left, scope, { times: none })
     const right = infer(ast.right, after(scope, left), wantsNothing)
@@ -476,8 +473,6 @@ function raised(ast: Expression & { type: 'binaryOperator' }, scope: Scope): Inf
         flexibility: left.flexibility,
     }
 }
-
-const parameterName = /^x(\d+)$/
 
 function call(ast: Expression & { type: 'call' }, scope: Scope, wanted: Wanted): Inference {
     const propagation = propagationOf(ast.fn, scope)
@@ -498,7 +493,7 @@ function call(ast: Expression & { type: 'call' }, scope: Scope, wanted: Wanted):
     return { ...here, ...gives(propagation, args.map(({ inferred }) => inferred), args) }
 }
 
-/** The arguments a stated unit is stated of: the map's data and the table column's values. */
+/** The arguments a stated unit applies to: the map's data and the table column's values. */
 const drawnBy = ['data', 'values']
 
 /**
@@ -525,11 +520,11 @@ function propagationOf(fn: Expression, scope: Scope): UnitPropagation | undefine
 function ofArgument(propagation: UnitPropagation | undefined, wanted: Wanted, before: { inferred: Inference }[]): Wanted {
     switch (propagation?.kind) {
         case 'unchanged':
-            // the size of a temperature is no temperature, and neither is a sum of several, so both
-            // take the number it is written as rather than the reading
+            // the size of a temperature is not a temperature, and neither is a sum of several, so
+            // both read the number as written rather than as a reading
             return propagation.losesAReading === true ? { times: none } : wanted
         case 'power':
-            // there being no root of a temperature, a root is of the difference
+            // a temperature has no root, so a root is taken of the difference
             return { times: none }
         case 'number':
             return asWritten
@@ -543,17 +538,17 @@ function ofArgument(propagation: UnitPropagation | undefined, wanted: Wanted, be
 }
 
 function gives(propagation: UnitPropagation | undefined, args: Inference[], named: { arg: UrbanStatsASTArg<UnitsRead> }[]): Expectation {
-    const unknown: Expectation = { unit: dimensionless, times: eitherWay, flexibility: 'artificialPreference' }
+    const bareNumber: Expectation = { unit: dimensionless, times: eitherWay, flexibility: 'artificialPreference' }
     if (propagation === undefined) {
-        return unknown
+        return bareNumber
     }
     const first = args.at(0)
     switch (propagation.kind) {
         case 'number':
         case 'rank':
-            return { unit: dimensionless, times: one, flexibility: 'naturalPreference' satisfies Flexibility }
+            return { unit: dimensionless, times: one, flexibility: 'naturalPreference' }
         case 'unchanged':
-            return first === undefined ? unknown : { unit: first.unit, times: first.times, flexibility: first.flexibility }
+            return first === undefined ? bareNumber : { unit: first.unit, times: first.times, flexibility: first.flexibility }
         case 'power':
             return {
                 unit: (first === undefined ? undefined : unitPower(first.unit, propagation.exponent)) ?? dimensionless,
@@ -562,20 +557,24 @@ function gives(propagation: UnitPropagation | undefined, args: Inference[], name
             }
         case 'either': {
             if (first === undefined) {
-                return unknown
+                return bareNumber
             }
             const { unit, times, flexibility } = either(args, { ast: first.ast, variables: first.variables })
             return { unit, times, flexibility }
         }
         case 'regression':
-            return { ...unknown, fields: regressionFields(args, named) }
+            return { ...bareNumber, fields: regressionFields(args, named) }
     }
 }
 
+const parameterName = /^x(\d+)$/
+
 /** What a regression gives back: an intercept in the units of what it was given, and slopes. */
 function regressionFields(args: Inference[], named: { arg: UrbanStatsASTArg<UnitsRead> }[]): ReadonlyMap<string, Expectation> {
-    const of = (name: string): Inference | undefined =>
-        args.find((_, index) => named[index].arg.type === 'named' && (named[index].arg as { name: { node: string } }).name.node === name)
+    const of = (name: string): Inference | undefined => {
+        const index = named.findIndex(({ arg }) => arg.type === 'named' && arg.name.node === name)
+        return index === -1 ? undefined : args[index]
+    }
     const level = of('y')
     const measured = level?.unit ?? dimensionless
     const fields = new Map<string, Expectation>([
@@ -623,7 +622,6 @@ interface InferredStatement extends Expectation {
 
 function inferStatement(ast: Statement, scope: Scope, wanted: Wanted): InferredStatement {
     const inferred = statementWithin(ast, scope, wanted)
-    // written down where the reader of a map or a column looks for it, as an expression's is
     return { ...inferred, ast: { ...inferred.ast, worksOutTo: counted(inferred.unit, inferred.times) } }
 }
 
@@ -671,7 +669,7 @@ function readAsANumber(ast: Expression, scope: Scope): Expression | undefined {
     const value = literal === undefined ? undefined : asNumber(literal)
     return value === undefined
         ? inner
-        : { type: 'constant', value: { node: { type: 'number', value }, location: locationOf(inner) }, worksOutTo: plainNumber }
+        : { type: 'constant', value: { node: { type: 'number', value }, location: locationOf(inner) }, worksOutTo: dimensionless }
 }
 
 /** The script rewritten, every node of it saying what it works out to. */

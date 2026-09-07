@@ -198,9 +198,9 @@ export interface Documentation {
     /** For a function, how a quantity it is given comes back out. */
     unitPropagation?: UnitPropagation
     /**
-     * Which unit a constant is: unitArea is the area one. Not `unit` above, which is what a
-     * statistic is measured in. It is here rather than read off the constant's own value because
-     * the type environment a script's units are read from carries no values.
+     * Which unit a constant names: unitArea names the area one. Not `unit` above, which is what a
+     * statistic is measured in. It is recorded here rather than read off the constant's value
+     * because units are read from the type environment, which holds no values.
      */
     namesUnit?: UnitType
 }
@@ -209,7 +209,6 @@ export type UnitPropagation = (
     // keeps the unit
     {
         kind: 'unchanged'
-        /** Unless what it is given is a difference, the coefficient comes back unknown. */
         /** Whether a reading does not survive it: the size of a temperature is no temperature. */
         losesAReading?: boolean
     }

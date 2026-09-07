@@ -3,9 +3,8 @@ import { assert } from '../utils/defensive'
 import { HumanReadableElement, HumanReadableName } from '../utils/human-readable-element'
 import { joinHumanReadableNames } from '../utils/human-readable-name'
 import { parseHumanReadableTemplate } from '../utils/human-readable-template'
-import { asADifference, isPlainNumber, multiplies, nameOfStoredUnit, sameDimensions, sameSize, StoredUnit, unitProduct } from '../utils/quantity'
+import { asADifference, dimensionless, isPlainNumber, multiplies, nameOfStoredUnit, sameDimensions, sameSize, StoredUnit, unitProduct } from '../utils/quantity'
 import { abbreviate, formatToSignificantFigures, separateNumber, trimTrailingZeros } from '../utils/text'
-import { plainNumber } from '../utils/unit'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import * as l from './literal-parser'
@@ -244,7 +243,7 @@ export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): H
     const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment)
     if (dataLabel === undefined) return
     // Replace the map call with just the data description to simplify the label (we know it's a map)
-    const withMapCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: grouped(dataLabel) }, location: noLocation }, worksOutTo: plainNumber })
+    const withMapCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: grouped(dataLabel) }, location: noLocation }, worksOutTo: dimensionless })
     assert(withMapCallReplacedByDataLabel !== undefined, 'should not happen')
     const label = humanReadableElements(withMapCallReplacedByDataLabel, typeEnvironment)
     return label === undefined ? undefined : ungroupUnlessWorthwhile(label, dataLabel, 1)
@@ -340,7 +339,7 @@ export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, 
     }
     const columns = joinHumanReadableNames(columnNames)
     // Replace the table call with just the column to simplify the label (we know it's a table)
-    const withTableCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: grouped(columns) }, location: noLocation }, worksOutTo: plainNumber })
+    const withTableCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: grouped(columns) }, location: noLocation }, worksOutTo: dimensionless })
     assert(withTableCallReplacedByDataLabel !== undefined, 'should not happen')
     const label = humanReadableElements(withTableCallReplacedByDataLabel, typeEnvironment)
     return label === undefined ? undefined : ungroupUnlessWorthwhile(label, columns, columnNames.length)
@@ -397,20 +396,17 @@ function howConverted(elements: HumanReadableElement[], conversion: UnitConversi
     return zero?.where === 'added' ? [...written, { type: 'atom', value: ' + ' }, ...formatNumber(0, zero.unit)] : written
 }
 
-/**
- * How a conversion is written.
- */
 type ConversionWriting =
-    /** Equivalent of dividing by the unit, to convert something to a number. e.g., ln(Area [in km^2]) */
+    /** A quantity read as a number, which divides by the unit: ln(Area [in km^2]) */
     { kind: 'in', unit: StoredUnit }
-    /** Equivalent of multiplying by the unit, to convert a number to something. e.g., ln(population) [as km^2] */
+    /** A number read as a quantity, which multiplies by it: ln(population) [as km^2] */
     | { kind: 'as', unit: StoredUnit }
-    /** Arithmetic conversion, which is either of the form (x + a) * b or (x - a) * b */
+    /** Written out as arithmetic, either (x + a) * b or (x - a) * b */
     | { kind: 'arithmetic', zero?: ZeroAnchorConverter, factor?: StoredUnit }
 
 /**
- * A converter for the 0-anchor, e.g., a temperature being converted to a difference in temperature
- * by subtracting out 0F, or a difference in temperature being converted to a temperature by adding 0F.
+ * Where the scale's own zero goes: subtracted to read a temperature as a number of degrees, or
+ * added to read a number of degrees as a temperature.
  */
 interface ZeroAnchorConverter { unit: StoredUnit, where: 'subtracted' | 'added' }
 
@@ -431,8 +427,8 @@ function writingOf({ internalUnit, expectedUnit }: UnitConversion): ConversionWr
         currentInternalUnit = asADifference(currentInternalUnit)
     }
     if (!multiplies(currentExpectedUnit.unit)) {
-        // only actually add a zero when we're being specifically asked to convert to
-        // a non-scalar in 1-mode.
+        // a zero is only added where one quantity is wanted, two of them or none of them not
+        // sitting on the scale's zero at all
         if (currentExpectedUnit.unit.times === 1) {
             zero = { unit: currentExpectedUnit, where: 'added' }
         }

@@ -59,7 +59,7 @@ void test('a literal takes the unit that fits', () => {
 })
 
 void test('a map with no unit to read', () => {
-    // no factor makes a sum of two readings into one reading
+    // no factor turns a sum of two readings into one reading
     assert.equal(mapUnit('high_temp + low_temp'), '1 000.0°F')
     // a function the script does not define says nothing, so its numbers are read as written
     assert.equal(mapUnit('someFunctionOrOther(population)'), '1\u202f000')
@@ -102,7 +102,7 @@ for (const [data, expected] of [
     ['high_temp / high_temp', '1\u202f230'],
     // two lengths stored differently add when one is read as so many of the other
     ['minimum(elevation, hospital_mean_dist)', '1.23km'],
-    // an empty vector is of every kind and so of none
+    // an empty vector has nothing to take a unit from, so it is read as a plain number
     ['[]', '1\u202f230'],
     // the ways a script has of saying the same thing
     ['if (population > 0) { area } else { area }', '1\u202f234km^{2}'],

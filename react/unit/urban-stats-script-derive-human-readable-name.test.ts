@@ -45,10 +45,10 @@ for (const [condition, expected] of [
     // a sign is written beside a number rather than in it, where minus a reading is no reading
     ['high_temp > -10', 'Mean high temp > -10°F'],
     ['-high_temp > -80', '-Mean high temp > -80°F'],
-    // a root of a count is in no unit any pool holds, and writing one threw
+    // a root of a count is in no unit that can be written, so the plain number is shown
     ['population ** 0.5 > 100', 'Population^{0.5} > 100\u00a0people^{0.5}'],
-    // however many people there are they are still people, where the size of a reading is the
-    // size of the degrees it is above its own zero
+    // however many people there are they are still people, and the size of a reading is the size
+    // of the number it is written as
     ['sum(population) > 1000000', 'sum(Population) > 1m'],
     ['abs(high_temp) > 5', 'abs(Mean high temp [in °F]) > 5'],
     ['ln(1000) > 0', 'ln(1\u202f000) > 0'],

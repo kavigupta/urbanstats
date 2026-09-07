@@ -37,9 +37,9 @@ export type Decoration = { kind: 'none' } | { kind: 'percent', party?: Party } |
 
 /**
  * How many quantities were added to make this one: a level is 1, a difference of two is 0, and the
- * mean of two is 1 again. It says how many times over the zero of the scale is in the value, and
- * away from a scale with a zero of its own the only thing read off it is whether it is 0, which is
- * written with a leading +.
+ * mean of two is 1 again. It says how many times the scale's own zero is in the value. Where a
+ * scale has no zero of its own, all that is read off it is whether it is 0, which is written with
+ * a leading +.
  */
 export type Coefficient = number
 
