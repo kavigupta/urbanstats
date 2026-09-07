@@ -4,20 +4,18 @@ import { StoredUnit } from '../utils/quantity'
 import { UrbanStatsASTExpression } from './ast'
 import { TypeEnvironment } from './types-values'
 import { unitToWriteIn } from './unit-algebra'
-import { inferBindings, inferUnit } from './unit-inference'
+import { UnitsRead, unitCheck } from './unit-inference'
 
-/** Read against the whole script, so that a name the script assigned is followed. */
-function unitOf(values: UrbanStatsASTExpression | undefined, uss: MapUSS, typeEnvironment: TypeEnvironment): StoredUnit | undefined {
-    if (values === undefined) {
-        return undefined
-    }
-    return unitToWriteIn(inferUnit(values, typeEnvironment, inferBindings(uss, typeEnvironment)))
+/** What the one expression a map or a column draws was read as being in. */
+function unitOf(of: (checked: MapUSS<UnitsRead>) => UrbanStatsASTExpression<UnitsRead> | undefined, uss: MapUSS, typeEnvironment: TypeEnvironment): StoredUnit | undefined {
+    const values = of(unitCheck(uss, typeEnvironment))
+    return values?.worksOutTo === undefined ? undefined : unitToWriteIn(values.worksOutTo)
 }
 
 export function deriveMapUnit(uss: MapUSS, typeEnvironment: TypeEnvironment): StoredUnit | undefined {
-    return unitOf(mapDataExpression(uss, typeEnvironment), uss, typeEnvironment)
+    return unitOf(checked => mapDataExpression(checked, typeEnvironment), uss, typeEnvironment)
 }
 
 export function deriveTableColumnUnit(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): StoredUnit | undefined {
-    return unitOf(tableColumnExpression(uss, typeEnvironment, columnIndex), uss, typeEnvironment)
+    return unitOf(checked => tableColumnExpression(checked, typeEnvironment, columnIndex), uss, typeEnvironment)
 }

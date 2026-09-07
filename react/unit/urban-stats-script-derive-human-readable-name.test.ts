@@ -66,11 +66,11 @@ for (const [condition, expected] of [
     // a number written the long way is written as the number, in the unit it is read in
     ['density_pw_1km > toNumber("1000")', 'PW Density (r=1km) > 1\u202f000/km^{2}'],
     ['high_temp > toNumber("80")', 'Mean high temp > 80°F'],
-    // and one that cannot be read off the script says what it would be read in, where that has a name
-    ['density_pw_1km > toNumber(geoName)', 'PW Density (r=1km) > Default Universe Geography Names [in /km^{2}]'],
+    // a value the script says nothing about is read as whatever it is compared against
+    ['density_pw_1km > toNumber(geoName)', 'PW Density (r=1km) > Default Universe Geography Names [as /km^{2}]'],
     ['population > toNumber(geoName)', 'Population > Default Universe Geography Names'],
-    // brackets it, whatever encloses the call seeing a call rather than the operator written here
-    ['density_pw_1km > -toNumber(geoName + geoName)', 'PW Density (r=1km) > -(Default Universe Geography Names + Default Universe Geography Names) [in /km^{2}]'],
+    // each name is read against the density separately, and the sign brackets the sum of them
+    ['density_pw_1km > -toNumber(geoName + geoName)', 'PW Density (r=1km) > -(Default Universe Geography Names [as /km^{2}] + Default Universe Geography Names [as /km^{2}])'],
     // a lead is written as whose it is, and a change from one year to another as a change
     ['pres_2020_margin > 0.1', '2020 Presidential Election > D+10%'],
     ['population_change_2000_2020 > 0.05', 'Population Change (2000-2020) > +5%'],
@@ -87,37 +87,43 @@ testMapLabel(test, 'cMap(data=-(population * 2), scale=linearScale(), ramp=rampU
 testMapLabel(test, 'cMap(data=-(area ** 2), scale=linearScale(), ramp=rampUridis)', '-Area^{2}')
 testMapLabel(test, 'cMap(data=-population, scale=linearScale(), ramp=rampUridis)', '-Population')
 
-// How a caption reads a script whose units are not the ones needed.
+// How a caption reads a script whose units are not the ones needed. Nothing about what the script
+// computes changes, so the caption says what the conversion was.
 for (const [data, expected] of [
-    ['population + area', 'Population + Area'],
-    ['area + population', 'Area + Population'],
-    ['population - area', 'Population − Area'],
-    ['population < area', 'Population < Area'],
-    ['area >= population', 'Area ≥ Population'],
-    ['commute_bike + population', 'Commute Bike % + Population'],
-    // a literal already written is read for what it must be
+    ['population + area', 'Population + Area × 1/km^{2}'],
+    ['area + population', 'Area + Population × 1km^{2}/person'],
+    ['population - area', 'Population − Area × 1/km^{2}'],
+    ['population < area', 'Population < Area × 1/km^{2}'],
+    ['area >= population', 'Area ≥ Population × 1km^{2}/person'],
+    // a share is dimensionless and a count is people, so a factor separates them
+    ['commute_bike + population', 'Commute Bike % + Population × 1/person'],
+    // a literal already written takes the unit itself, rather than a conversion being recorded
     ['population + area * 2', 'Population + Area × 2/km^{2}'],
     ['population + area / 2', 'Population + Area ÷ 2km^{2}/person'],
-    ['population + sqrt(area)', 'Population + sqrt(Area)'],
-    ['population + area + area', 'Population + Area + Area'],
-    ['population * 2 + area', 'Population × 2km^{2}/person + Area'],
-    ['(population + area) * 2', '(Population + Area) × 2'],
-    ['maximum(area, population)', 'max(Area, Population)'],
-    ['minimum(population, area)', 'min(Population, Area)'],
-    ['inverseQuantile(population, area)', 'quantile^{-1}(Population, Area)'],
-    // a temperature is counted from a zero of its own
-    ['high_temp * area', 'Mean high temp × Area'],
-    ['high_temp / area', 'Mean high temp ÷ Area'],
-    ['high_temp ** 2', 'Mean high temp^{2}'],
-    ['high_temp ** 2 * area', 'Mean high temp^{2} × Area'],
-    ['sqrt(high_temp)', 'sqrt(Mean high temp)'],
-    ['high_temp / high_temp', 'Mean high temp ÷ Mean high temp'],
-    ['high_temp + population', 'Mean high temp + Population'],
-    ['population + high_temp', 'Population + Mean high temp'],
-    ['high_temp - low_temp + population', '(Mean high temp − Mean low temp) + Population'],
-    // what is written after an expression, and the brackets that go round it
-    ['ln(area + area)', 'ln(Area + Area [in km^{2}])'],
-    ['ln(population + area)', 'ln(Population + Area)'],
+    ['population + sqrt(area)', 'Population + sqrt(Area) × 1/km'],
+    // as many conversions as the script needs, however deeply nested
+    ['population + area + area', 'Population + Area × 1/km^{2} + Area × 1/km^{2}'],
+    ['population * 2 + area', 'Population × 2 + Area × 1/km^{2}'],
+    ['(population + area) * 2', '(Population + Area × 1/km^{2}) × 2'],
+    // an argument that has to share a unit with another is read the same way
+    ['maximum(area, population)', 'max(Area, Population × 1km^{2}/person)'],
+    ['minimum(population, area)', 'min(Population, Area × 1/km^{2})'],
+    ['inverseQuantile(population, area)', 'quantile^{-1}(Population, Area × 1/km^{2})'],
+    // a temperature does not scale, so the caption writes the degrees above its zero
+    ['high_temp * area', '(Mean high temp − 0°F) × Area'],
+    ['high_temp / area', '(Mean high temp − 0°F) ÷ Area'],
+    ['high_temp ** 2', '(Mean high temp − 0°F)^{2}'],
+    ['high_temp ** 2 * area', '(Mean high temp − 0°F)^{2} × Area'],
+    ['sqrt(high_temp)', 'sqrt(Mean high temp − 0°F)'],
+    ['high_temp / high_temp', '(Mean high temp − 0°F) ÷ (Mean high temp − 0°F)'],
+    // a count is counted from nothing already, so nothing is subtracted from it. A factor between
+    // two scales is a difference of them: so many degrees per person, not a temperature per person
+    ['high_temp + population', 'Mean high temp + Population × +1°F/person'],
+    ['population + high_temp', 'Population + (Mean high temp − 0°F) × +1/°F'],
+    ['high_temp - low_temp + population', '(Mean high temp − Mean low temp) + Population × +1°F/person'],
+    // brackets go round a conversion only where something is written after it
+    ['ln(area + area)', 'ln((Area + Area) [in km^{2}])'],
+    ['ln(population + area)', 'ln(Population + Area × 1/km^{2})'],
     // and nothing is written where the two sides already have the same unit
     ['population + population', 'Population + Population'],
     ['area / area', 'Area ÷ Area'],
@@ -125,19 +131,24 @@ for (const [data, expected] of [
     testMapLabel(test, `cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`, expected)
 }
 
-// What a caption says to a reader of other units.
+// How a conversion is written to a reader of other units. A factor is a quantity, so it is written
+// in the units they read. An "[in ...]" annotation is not: it names the unit the script computed
+// in, whatever the reader prefers.
 const imperial = { useImperial: true }
 const celsius = { temperatureUnit: 'celsius' }
 
 for (const [data, reader, settings, expected] of [
-    ['population + area', 'imperial', imperial, 'Population + Area'],
-    ['area + population', 'imperial', imperial, 'Area + Population'],
-    ['population + sqrt(area)', 'imperial', imperial, 'Population + sqrt(Area)'],
-    ['high_temp + population', 'celsius', celsius, 'Mean high temp + Population'],
-    ['population + high_temp', 'celsius', celsius, 'Population + Mean high temp'],
-    ['high_temp * area', 'celsius', celsius, 'Mean high temp × Area'],
-    ['high_temp * area', 'imperial', imperial, 'Mean high temp × Area'],
-    // what a number was counted in does not change with the reader
+    ['population + area', 'imperial', imperial, 'Population + Area × 2.59/mi^{2}'],
+    ['area + population', 'imperial', imperial, 'Area + Population × 247acres/person'],
+    ['population + sqrt(area)', 'imperial', imperial, 'Population + sqrt(Area) × 1.61/mi'],
+    // a factor between two scales is a difference of them, so it converts as one: a degree
+    // Fahrenheit per person is five ninths of a degree Celsius per person, not -17.2 of them
+    ['high_temp + population', 'celsius', celsius, 'Mean high temp + Population × +0.556°C/person'],
+    ['population + high_temp', 'celsius', celsius, 'Population + (Mean high temp − -17.8°C) × +1.8/°C'],
+    // the zero subtracted from a reading is itself a reading, so it is shown on the reader's scale
+    ['high_temp * area', 'celsius', celsius, '(Mean high temp − -17.8°C) × Area'],
+    ['high_temp * area', 'imperial', imperial, '(Mean high temp − 0°F) × Area'],
+    // and what a number was counted in does not change with the reader
     ['ln(area)', 'imperial', imperial, 'ln(Area [in km^{2}])'],
     ['ln(high_temp)', 'celsius', celsius, 'ln(Mean high temp [in °F])'],
 ] as const) {
@@ -145,6 +156,32 @@ for (const [data, reader, settings, expected] of [
         const label = deriveMapLabel(mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), getTypeEnvironment())
         assert.ok(label)
         assert.equal(reifyString(label, settings), expected)
+    })
+}
+
+// How a script that states its unit is read. The script is converted into that unit and the name
+// says how, except where the script already gives that unit and there is nothing to say.
+for (const [values, stated, expected] of [
+    ['population', 'unitArea', 'Population × 1km^{2}/person'],
+    ['ln(population)', 'unitArea', 'ln(Population) × 1km^{2}'],
+    ['population / area', 'unitDensity', 'Population ÷ Area'],
+    // converting a temperature subtracts its zero first; converting into one adds a zero at the end
+    ['high_temp', 'unitArea', '(Mean high temp − 0°F) × +1km^{2}/°F'],
+    ['population', 'unitTemperature', 'Population × +1°F/person + 0°F'],
+    // a literal in the script takes the unit itself, rather than a factor being written after it
+    ['area / 2', 'unitTemperature', '(Area ÷ 2km^{2}/°F) + 0°F'],
+    ['area * 2', 'unitTemperature', '(Area × +2°F/km^{2}) + 0°F'],
+    // and nothing is said where the script already gives that unit
+    ['area', 'unitArea', 'Area'],
+] as const) {
+    testMapLabel(test, `cMap(data=${values}, scale=linearScale(), ramp=rampUridis, unit=${stated})`, expected)
+
+    // a column states its unit the same way a map does
+    void test(`a column of ${values} stated in ${stated}`, () => {
+        const uss = mapUSSFromString(`table(columns=[column(values=${values}, unit=${stated})])`)
+        const label = deriveTableColumnLabel(uss, getTypeEnvironment(), 0)
+        assert.ok(label)
+        assert.equal(reifyString(label, {}), expected)
     })
 }
 

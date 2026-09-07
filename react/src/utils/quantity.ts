@@ -315,8 +315,23 @@ export function sameDimensions(left: StoredUnit, right: StoredUnit): boolean {
  * A temperature cannot be scaled, 0°C and 0°F being different quantities though both read zero. A
  * difference of two can be: no degrees is no degrees on either scale.
  */
-function multiplies(unit: Unit): boolean {
+export function multiplies(unit: Unit): boolean {
     return unit.baseIsScalar || unit.times === 0
+}
+
+/** The same unit, as a difference of two quantities rather than as one of them. */
+export function asADifference(unit: StoredUnit): StoredUnit {
+    return { ...unit, unit: { ...unit.unit, times: 0 } }
+}
+
+/** A number of no unit. A share is not one, being a number of hundredths. */
+export function isPlainNumber(unit: StoredUnit): boolean {
+    return unit.unit.dimensions.length === 0 && unit.unit.decoration.kind === 'none' && sameSize(unit.toBaseUnits, 1)
+}
+
+/** Two sizes within floating point error are the same: a square root squared does not come back exact. */
+export function sameSize(left: number, right: number): boolean {
+    return Math.abs(left - right) <= 1e-9 * Math.max(Math.abs(left), Math.abs(right))
 }
 
 export function unitProduct(left: StoredUnit, right: StoredUnit, rightPower: 1 | -1): StoredUnit | undefined {

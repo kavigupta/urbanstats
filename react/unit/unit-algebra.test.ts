@@ -2,14 +2,14 @@ import assert from 'assert/strict'
 import test from 'node:test'
 
 import { BinaryOperatorSymbol, infixOperators, unaryOperators } from '../src/urban-stats-script/operators'
-import { backward, backwardUnary, constant, forward, forwardUnary, inUnit, join, AbstractInterpValue, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
+import { backward, constant, forward, forwardUnary, inUnit, join, AbstractInterpValue, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
 import { reifyString } from '../src/utils/human-readable-name'
-import { StoredUnit, writeQuantity } from '../src/utils/quantity'
+import { multiplies, sameDimensions, StoredUnit, writeQuantity } from '../src/utils/quantity'
 import { storedUnits } from '../src/utils/unit'
 
 /** What is known, as a string: the dimensions, how many of itself it is, and its scale. */
 function shape(known: AbstractInterpValue): string {
-    if (known.kind !== 'in') return known.kind === 'any' ? 'unknown' : 'inconsistent'
+    if (known.kind !== 'in') return 'unknown'
     const written = [...known.unit.unit.dimensions]
         .sort((a, b) => a.baseUnit.localeCompare(b.baseUnit))
         .map(({ baseUnit, power }) => `${baseUnit}^${power}`)
@@ -18,7 +18,6 @@ function shape(known: AbstractInterpValue): string {
 }
 
 const unknown: AbstractInterpValue = { kind: 'any' }
-const inconsistent: AbstractInterpValue = { kind: 'none' }
 const people = inUnit(storedUnits.population)
 const area = inUnit(storedUnits.area)
 const temperature = inUnit(storedUnits.temperature)
@@ -40,8 +39,9 @@ void test('a bare number scales a quantity rather than being a quantity', () => 
 void test('only alike things add, and the sum is of their kind', () => {
     assert.equal(shape(forward('+', people, people)), 'person^1 times=2 x1')
     assert.equal(shape(forward('-', people, people)), 'person^1 times=0 x1')
-    // nothing is both people and an area, so nothing is their sum
-    assert.equal(shape(forward('+', people, area)), 'inconsistent')
+    // a script converts its operands to one unit before adding them, so a sum of unlike ones is
+    // not something to answer for
+    assert.throws(() => forward('+', people, area))
 })
 
 void test('a side that says nothing is taken to be of the other side\'s kind', () => {
@@ -74,9 +74,10 @@ void test('two temperatures are not a temperature, and nothing writes them as on
 void test('a temperature cannot be multiplied by another quantity', () => {
     // twice a temperature is two of them, which is carried, though it is not a temperature
     assert.equal(shape(forward('*', temperature, constant(2))), 'F^1 times=2 x1')
-    // where there is no such quantity at all as a temperature times a population
-    assert.equal(shape(forward('*', temperature, people)), 'inconsistent')
-    assert.equal(shape(forward('**', temperature, constant(2))), 'inconsistent')
+    // where a script scales a reading before multiplying it, so multiplying one is not something
+    // to answer for
+    assert.throws(() => forward('*', temperature, people))
+    assert.throws(() => forward('**', temperature, constant(2)))
     // a difference of two of them may be, since it is measured from nothing
     assert.equal(shape(forward('*', difference(storedUnits.temperature), constant(2))), 'F^1 times=0 x1')
 })
@@ -118,11 +119,19 @@ void test('with nothing known of a sum, an operand is of the other\'s dimensions
     assert.notEqual(unitToWriteIn(backward('-', unknown, people, 'right')), undefined)
 })
 
-void test('every operator answers in both directions, whatever it is given', () => {
+// A script makes a sum's operands alike and scales a product's before handing either to the
+// algebra, which asserts as much rather than answering for operands it is not meant to be given
+void test('every operator answers for operands a script can give it', () => {
     const inputs = [unknown, people, temperature, constant(2), constant(0)]
+    const reading = (value: AbstractInterpValue): boolean => value.kind === 'in' && !multiplies(value.unit.unit)
     for (const operator of infixOperators satisfies readonly BinaryOperatorSymbol[]) {
         for (const left of inputs) {
             for (const right of inputs) {
+                const unlikeSum = left.kind === 'in' && right.kind === 'in' && !sameDimensions(left.unit, right.unit)
+                const scales = operator === '*' || operator === '/' || operator === '**'
+                if (unlikeSum || (scales && (reading(left) || reading(right)))) {
+                    continue
+                }
                 assert.doesNotThrow(() => forward(operator, left, right))
                 assert.doesNotThrow(() => backward(operator, left, right, 'left'))
                 assert.doesNotThrow(() => backward(operator, left, right, 'right'))
@@ -147,25 +156,17 @@ void test('a negated number is the negative of it, so that it scales the right w
     assert.equal(shape(forward('*', people, forwardUnary('+', constant(2)))), 'person^1 times=2 x1')
 })
 
-// Not knowing which unit something is in is a different thing from nothing being of any unit, and
-// the second is worth telling a script's author about where the first is not
-void test('what cannot be told apart from what cannot be', () => {
-    assert.equal(shape(unknown), 'unknown')
-    assert.equal(shape(inconsistent), 'inconsistent')
-    assert.equal(shape(forward('+', people, area)), 'inconsistent')
+// A script converts its operands to one unit before adding them, and scales a reading before
+// multiplying it, so these are of expressions no script produces
+void test('a side that says no unit leaves the unit unknown', () => {
     assert.equal(shape(forward('+', unknown, unknown)), 'unknown')
-    // and nothing computed from what cannot be is either
-    assert.equal(shape(forward('*', forward('+', people, area), constant(2))), 'inconsistent')
-    assert.equal(shape(backward('*', forward('+', people, area), people, 'left')), 'inconsistent')
-    // neither is written in anything, which is all the display asks
     assert.equal(unitToWriteIn(unknown), undefined)
-    assert.equal(unitToWriteIn(inconsistent), undefined)
 })
 
-void test('a unary operator undoes itself, so the operand is found the same way', () => {
-    for (const operand of [unknown, people, temperature, constant(2), inconsistent]) {
+void test('a unary operator undoes itself, so twice is what was there', () => {
+    for (const operand of [unknown, people, temperature, constant(2)]) {
         for (const operator of unaryOperators) {
-            assert.equal(shape(backwardUnary(operator, forwardUnary(operator, operand))),
+            assert.equal(shape(forwardUnary(operator, forwardUnary(operator, operand))),
                 operator === '!' ? 'unknown' : shape(operand))
         }
     }
@@ -236,7 +237,6 @@ void test('either of two is of their kind, where they have one', () => {
     assert.equal(shape(join(inUnit(storedUnits.distanceInM), inUnit(storedUnits.distanceInKm))), 'unknown')
     // and where they are of one kind but not one many-of-itself, of that kind, with how many unknown
     assert.equal(shape(join(people, difference(storedUnits.population))), 'person^1 times=unknown x1')
-    assert.equal(shape(join(inconsistent, people)), 'person^1 times=1 x1')
     assert.equal(shape(join(unknown, people)), 'unknown')
     assert.equal(shape(join(constant(2), constant(2))), 'unknown')
     assert.equal(shape(join(constant(2), constant(3))), 'unknown')
@@ -282,10 +282,11 @@ void test('a difference of temperatures multiplies as any other quantity does', 
     const change = forward('-', temperature, temperature)
     assert.equal(shape(forward('/', change, area)), 'F^1 m^-2 times=0 x0.000001')
     assert.equal(shape(forward('**', change, constant(2))), 'F^2 times=0 x1')
-    // where a reading has no zero to multiply from, and nothing comes of trying
-    assert.equal(shape(forward('/', temperature, area)), 'inconsistent')
-    assert.equal(shape(forward('*', temperature, temperature)), 'inconsistent')
-    assert.equal(shape(forward('/', forwardUnary('-', temperature), area)), 'inconsistent')
+    // where a reading has no zero to multiply from, and is scaled to a difference before it is
+    // asked to, so multiplying one is not something to answer for
+    assert.throws(() => forward('/', temperature, area))
+    assert.throws(() => forward('*', temperature, temperature))
+    assert.throws(() => forward('/', forwardUnary('-', temperature), area))
 })
 
 void test('a difference of temperatures divides into things as well as by them', () => {
@@ -299,8 +300,8 @@ void test('a difference of temperatures divides into things as well as by them',
     // five to the Fahrenheit degree is nine to the Celsius one, that being the larger degree
     assert.equal(write({}), '5.00/°F')
     assert.equal(write({ temperatureUnit: 'celsius' }), '9.00/°C')
-    // and a reading is no more divisible into than it is by: nothing is so many people per 50°F
-    assert.equal(shape(forward('/', people, temperature)), 'inconsistent')
+    // and a reading is no more divisible into than it is by, being scaled either way first
+    assert.throws(() => forward('/', people, temperature))
 })
 
 void test('a difference per something is read in degrees of the reader\'s own scale', () => {
