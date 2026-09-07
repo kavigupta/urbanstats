@@ -108,7 +108,7 @@ const plainNumber = { kind: 'in', unit: dimensionless } satisfies Expected
 function reconciled(checked: Checked<Expression>, expected: Expected): Checked<Expression> {
     const got = quantity(checked.value)
     if (expected.kind === 'scales') {
-        return scaling(checked)
+        return scalingOfExpression(checked)
     }
     if (expected.kind === 'any') {
         return checked
@@ -168,7 +168,7 @@ function checkOperation(ast: UrbanStatsASTExpression<UnitsRead> & { type: 'binar
     const form = formOf(operator)
     const takesADifference = form === 'power'
         || (form === 'product' && quantity(reread.value).kind === 'in' && quantity(right.value).kind === 'in')
-    const [over, under] = takesADifference ? [scaling(reread), scaling(right)] : [reread, right]
+    const [over, under] = takesADifference ? [scalingOfExpression(reread), scalingOfExpression(right)] : [reread, right]
     return {
         ast: ({ ...ast, left: over.ast, right: under.ast }),
         value: forward(operator, quantity(over.value), quantity(under.value)),
@@ -176,7 +176,7 @@ function checkOperation(ast: UrbanStatsASTExpression<UnitsRead> & { type: 'binar
 }
 
 /** A reading read as the difference above its own zero, which is what scales. */
-function scaling(checked: Checked<Expression>): Checked<Expression> {
+function scalingOfExpression(checked: Checked<Expression>): Checked<Expression> {
     const scale = scalingOf(quantity(checked.value))
     return scale === undefined ? checked : converted(checked, scale.from, scale.to)
 }
