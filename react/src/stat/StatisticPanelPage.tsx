@@ -14,7 +14,7 @@ import { DisplayResults } from '../urban-stats-script/Editor'
 import { tableType } from '../urban-stats-script/constants/table'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
-import { AssignmentsResult } from '../urban-stats-script/workerManager'
+import { AssignmentsResult, GeographySelection } from '../urban-stats-script/workerManager'
 import { reifyReact, reifyString } from '../utils/human-readable-name'
 import { tableToMapper } from '../utils/page-conversion'
 import { sanitize } from '../utils/paths'
@@ -250,8 +250,7 @@ function EditPreamble({ stat, set, errors, counts, typeEnvironment, view, assign
     split: boolean
 }): ReactNode {
     const mapSettings = useMemo((): MapSettings => ({
-        universe: stat.universe,
-        geographyKind: stat.articleType as MapSettings['geographyKind'],
+        geographies: [{ universe: stat.universe, geographyKind: stat.articleType as GeographySelection['geographyKind'] }],
         script: { uss: mapUSSFromStat(stat) },
     }), [stat])
 
@@ -259,11 +258,12 @@ function EditPreamble({ stat, set, errors, counts, typeEnvironment, view, assign
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1em', padding: split ? undefined : '1em' }}>
             <MapperSettings
                 mapSettings={mapSettings}
+                singleGeography
                 setMapSettings={(newMapSettings, actionOptions) => {
                     set({
                         stat: {
-                            articleType: newMapSettings.geographyKind ?? stat.articleType,
-                            universe: newMapSettings.universe ?? stat.universe,
+                            articleType: newMapSettings.geographies[0]?.geographyKind ?? stat.articleType,
+                            universe: newMapSettings.geographies[0]?.universe ?? stat.universe,
                             type: 'uss',
                             uss: newMapSettings.script.uss,
                         },

@@ -34,7 +34,7 @@ import { Selection, SelectionContext } from './SelectionContext'
 import { doEditInsets, getInsets, InsetEdits, normalizeInsetScreenBounds, replaceInsets, swapInsets } from './edit-insets'
 import { getTextBoxes, scriptWithNewTextBoxes } from './edit-text-boxes'
 import { validMapperOutputs } from './map-uss'
-import { mapPageTitle, MapEditorMode, MapSettings } from './utils'
+import { mapPageTitle, MapEditorMode, MapSettings, universesOf } from './utils'
 
 const debugLog = makeDebugLogger('mapExport')
 
@@ -130,7 +130,7 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
         document.title = mapPageTitle(mapSettings, unitSettings)
     }, [mapSettings, unitSettings])
 
-    const typeEnvironment = useMemo(() => defaultTypeEnvironment(mapSettings.universe), [mapSettings.universe])
+    const typeEnvironment = useMemo(() => defaultTypeEnvironment(universesOf(mapSettings.geographies)), [mapSettings.geographies])
 
     // Update current selection when it changes
     useEffect(() => {
@@ -195,16 +195,15 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
         : undefined
 
     return (
-        <universeContext.Provider value={{
-            universe: mapSettings.universe ?? 'world',
-            universes: universes_ordered,
-            setUniverse(newUniverse) {
-                setMapSettings({
-                    ...mapSettings,
-                    universe: newUniverse,
-                }, {})
-            },
-        }}
+        <universeContext.Provider value={mapSettings.geographies.length === 1
+            ? {
+                    universe: mapSettings.geographies[0].universe,
+                    universes: universes_ordered,
+                    setUniverse(newUniverse) {
+                        setMapSettings({ ...mapSettings, geographies: [{ ...mapSettings.geographies[0], universe: newUniverse }] }, {})
+                    },
+                }
+            : undefined}
         >
             <mapSettingsContext.Provider value={{ mapSettings, typeEnvironment, setMapEditorMode }}>
                 <transformContext.Provider value={{ selfDetermineHeight: useMobileLayout() }}>
@@ -268,7 +267,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
         editInsets: {
             add: () => {
                 const newInset: Inset = {
-                    ...loadInsets(mapSettings.universe ?? 'world')[0],
+                    ...loadInsets(mapSettings.geographies.length > 0 ? universesOf(mapSettings.geographies) : 'world')[0],
                     bottomLeft: [0.25, 0.25],
                     topRight: [0.75, 0.75],
                     mainMap: false,
@@ -396,18 +395,19 @@ function Export(props: { pngExport?: () => Promise<void>, geoJSONExport?: () => 
         saveAsFile('map.geojson', props.geoJSONExport(), 'application/geo+json')
     }
 
-    const tableExpression = mapperToTable(props.mapSettings.script.uss, props.typeEnvironment)
+    // A table is over one article type, so a map spanning several geographies has no table form
+    const tableExpression = props.mapSettings.geographies.length === 1 ? mapperToTable(props.mapSettings.script.uss, props.typeEnvironment) : undefined
 
     const handleConvertToTable = (): void => {
         if (!tableExpression) return
         void navContext.navigate({
             kind: 'statistic',
-            article_type: props.mapSettings.geographyKind ?? 'Subnational Region',
+            article_type: props.mapSettings.geographies[0].geographyKind,
             uss: unparse(tableExpression),
             start: 1,
             amount: 20,
             order: 'descending',
-            universe: props.mapSettings.universe,
+            universe: props.mapSettings.geographies[0].universe,
             edit: true,
             sort_column: 0,
         }, {

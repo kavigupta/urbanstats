@@ -6,7 +6,7 @@ import { withButtonRole } from '../../utils/a11y'
 import { defaultTypeEnvironment } from '../context'
 import { useMapGenerator } from '../map-generator'
 import { EditMapperPanel } from '../settings/EditMapperPanel'
-import { MapSettings } from '../settings/utils'
+import { MapSettings, universesOf } from '../settings/utils'
 
 export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, counts: CountsByUT }): ReactNode {
     if (props.view) {
@@ -17,7 +17,7 @@ export function MapperPanel(props: { mapSettings: MapSettings, view: boolean, co
 }
 
 function DisplayMap({ mapSettings }: { mapSettings: MapSettings }): ReactNode {
-    const typeEnvironment = useMemo(() => defaultTypeEnvironment(mapSettings.universe), [mapSettings.universe])
+    const typeEnvironment = useMemo(() => defaultTypeEnvironment(universesOf(mapSettings.geographies)), [mapSettings.geographies])
     const mapGenerator = useMapGenerator({ mapSettings, typeEnvironment })
 
     return (

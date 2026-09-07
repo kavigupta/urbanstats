@@ -39,13 +39,14 @@ async function describeMap(settings: string | undefined): Promise<{ title: strin
         const { mapSettingsFromURLParam, mapTitle } = await import('../../src/mapper/settings/utils')
         const mapSettings = await mapSettingsFromURLParam(settings)
         const title = mapTitle(mapSettings, {})
-        const { universe, geographyKind } = mapSettings
-        if (title === undefined || universe === undefined || geographyKind === undefined) {
+        const { geographies } = mapSettings
+        if (title === undefined || geographies.length === 0) {
             return undefined
         }
+        const over = geographies.map(({ universe, geographyKind }) => `${displayType(universe, geographyKind)} in ${universe}`)
         return {
             title,
-            description: `${title} mapped over ${displayType(universe, geographyKind)} in ${universe}, on Urban Stats.`,
+            description: `${title} mapped over ${over.length === 1 ? over[0] : `${over.slice(0, -1).join(', ')} and ${over[over.length - 1]}`}, on Urban Stats.`,
         }
     }
     catch {

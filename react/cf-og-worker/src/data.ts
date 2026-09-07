@@ -7,8 +7,8 @@ import { ArticleStatisticRow, getHighlightIndex } from '../../src/components/loa
 import { shapesByName } from '../../src/consolidated-shapes'
 import validGeographies from '../../src/data/mapper/used_geographies'
 import { defaultTypeEnvironment } from '../../src/mapper/context'
-import { centroidsByName, markerArea, markerRadius, MapResult, mapVisuals } from '../../src/mapper/map-rendering'
-import { Basemap, computeUSS } from '../../src/mapper/settings/utils'
+import { centroidsByName, markerArea, markerRadius, MapResult, mapVisuals, mergedByName } from '../../src/mapper/map-rendering'
+import { Basemap, computeUSS, universesOf } from '../../src/mapper/settings/utils'
 import { loadPageDescriptor, PageData, PageDescriptor } from '../../src/navigation/PageDescriptor'
 import { universePath } from '../../src/navigation/links'
 import { Settings, SettingsDictionary } from '../../src/page_template/settings'
@@ -16,7 +16,6 @@ import { groupYearKeys } from '../../src/page_template/statistic-settings'
 import { StatName } from '../../src/page_template/statistic-tree'
 import { mapUSSFromStat, pageRowIndices, sortedRowIndices, statDataFromTable } from '../../src/stat/utils'
 import { clusterRadius } from '../../src/syau/cluster-geometry'
-import { Universe } from '../../src/universe'
 import { toStatement } from '../../src/urban-stats-script/ast'
 import { doRender } from '../../src/urban-stats-script/constants/color-utils'
 import { Inset } from '../../src/urban-stats-script/constants/insets'
@@ -24,6 +23,7 @@ import { ClusterMap, CMap, CMapRGB, PMap } from '../../src/urban-stats-script/co
 import { Table, TableCellValue } from '../../src/urban-stats-script/constants/table'
 import { deriveConditionLabel, deriveMapLabel } from '../../src/urban-stats-script/derive-human-readable-name'
 import { createRequestExecutor } from '../../src/urban-stats-script/execute-request'
+import { GeographySelection } from '../../src/urban-stats-script/workerManager'
 import { geometry } from '../../src/utils/geometry'
 import { HumanReadableName } from '../../src/utils/human-readable-element'
 import { reifyString } from '../../src/utils/human-readable-name'
@@ -260,8 +260,8 @@ function rings(shape: GeoJSON.Geometry): Ring[] {
     return polygons.flatMap(polygon => polygon.map(ring => ring.map(([lon, lat]): [number, number] => [lon, lat])))
 }
 
-async function shapeContents(geographyKind: string, universe: Universe, map: CMap | CMapRGB, fills: string[]): Promise<MapContents> {
-    const shapes = await shapesByName(universe, geographyKind)
+async function shapeContents(geographies: GeographySelection[], map: CMap | CMapRGB, fills: string[]): Promise<MapContents> {
+    const shapes = await mergedByName(geographies, g => shapesByName(g.universe, g.geographyKind))
     return {
         kind: 'shapes',
         shapes: map.geo.flatMap((name, i) => {
@@ -272,8 +272,8 @@ async function shapeContents(geographyKind: string, universe: Universe, map: CMa
     }
 }
 
-async function pointContents(geographyKind: string, universe: Universe, map: PMap, fills: string[]): Promise<MapContents> {
-    const at = await centroidsByName(universe, geographyKind)
+async function pointContents(geographies: GeographySelection[], map: PMap, fills: string[]): Promise<MapContents> {
+    const at = await mergedByName(geographies, g => centroidsByName(g.universe, g.geographyKind))
     return {
         kind: 'points',
         points: map.geo.flatMap((name, i) => {
@@ -286,8 +286,8 @@ async function pointContents(geographyKind: string, universe: Universe, map: PMa
 }
 
 /** Sizes are areas rather than radii, so that merging two points adds their areas the way the site's do. */
-async function clusterContents(geographyKind: string, universe: Universe, map: ClusterMap, bins: number[], categoryColors: string[]): Promise<MapContents> {
-    const at = await centroidsByName(universe, geographyKind)
+async function clusterContents(geographies: GeographySelection[], map: ClusterMap, bins: number[], categoryColors: string[]): Promise<MapContents> {
+    const at = await mergedByName(geographies, g => centroidsByName(g.universe, g.geographyKind))
     return {
         kind: 'clusters',
         points: map.geo.flatMap((name, i) => {
@@ -309,12 +309,12 @@ async function clusterContents(geographyKind: string, universe: Universe, map: C
 
 export async function mapCard(origin: string, pageData: Extract<PageData, { kind: 'mapper' }>, settings: Settings): Promise<MapCard | undefined> {
     setOrigin(origin)
-    const { geographyKind, universe, script } = pageData.settings
-    if (geographyKind === undefined || universe === undefined) {
+    const { geographies, script } = pageData.settings
+    if (geographies.length === 0) {
         return undefined
     }
 
-    const executed = await createRequestExecutor()({ descriptor: { kind: 'mapper', geographyKind, universe }, stmts: computeUSS(script) })
+    const executed = await createRequestExecutor()({ descriptor: { kind: 'mapper', geographies }, stmts: computeUSS(script) })
     const result = executed.resultingValue?.value as MapResult | undefined
     if (result === undefined) {
         return undefined
@@ -326,17 +326,17 @@ export async function mapCard(origin: string, pageData: Extract<PageData, { kind
     switch (opaqueType) {
         case 'cMap':
         case 'cMapRGB':
-            contents = await shapeContents(geographyKind, universe, map, visuals.colors)
+            contents = await shapeContents(geographies, map, visuals.colors)
             break
         case 'pMap':
-            contents = await pointContents(geographyKind, universe, map, visuals.colors)
+            contents = await pointContents(geographies, map, visuals.colors)
             break
         case 'clusterMap':
-            contents = await clusterContents(geographyKind, universe, map, visuals.bins!, visuals.categoryColors!)
+            contents = await clusterContents(geographies, map, visuals.bins!, visuals.categoryColors!)
             break
     }
 
-    const label = map.label ?? deriveMapLabel(script.uss, defaultTypeEnvironment(universe))
+    const label = map.label ?? deriveMapLabel(script.uss, defaultTypeEnvironment(universesOf(geographies)))
     return {
         label: label === undefined ? '' : reifyString(label, {}),
         contents,

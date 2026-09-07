@@ -30,7 +30,8 @@ export async function runE2eTestsDocker(args: string[], hostArch: boolean, docke
             // built for the container.
             '--mount', 'type=tmpfs,dst=/urbanstats/react/node_modules',
             '-w', '/urbanstats/react',
-            ...(['PORT', 'TESTCAFE_PORT'].flatMap(envVar => process.env[envVar] ? ['-e', `${envVar}=${process.env[envVar]}`] : [])),
+            // RECORD_OG_TILES: the tile snapshots a card test needs are fetched by the test process, which is in here
+            ...(['PORT', 'TESTCAFE_PORT', 'RECORD_OG_TILES'].flatMap(envVar => process.env[envVar] ? ['-e', `${envVar}=${process.env[envVar]}`] : [])),
             '-e', `URBANSTATS_VNC_PASSWORD=${vncPassword}`,
             '-e', `URBANSTATS_VNC_PORT=${vncPort}`,
             imageName,
