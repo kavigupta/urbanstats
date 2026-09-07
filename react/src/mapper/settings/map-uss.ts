@@ -178,15 +178,15 @@ function mapDataCall<M>(): l.LiteralExprParser<{ namedArgs: { data: UrbanStatsAS
 }
 
 export function editableMapData<M>(): (uss: MapUSS<M>, typeEnvironment: TypeEnvironment) => l.Edited<{ namedArgs: { data: UrbanStatsASTExpression<M> | undefined } }, M> {
-    return mapUssParser<l.Edited<{ namedArgs: { data: UrbanStatsASTExpression<M> | undefined } }, M>, M>(l.edit(mapDataCall<M>()), 'dont-reparse')
+    return mapUssParser(l.edit(mapDataCall<M>()), 'dont-reparse')
 }
 
 export function mapDataExpression<M>(uss: MapUSS<M>, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression<M> | undefined {
-    return read(mapUssParser<{ namedArgs: { data: UrbanStatsASTExpression<M> | undefined } }, M>(mapDataCall<M>(), 'dont-reparse'), uss, typeEnvironment)?.namedArgs.data
+    return read(mapUssParser(mapDataCall<M>(), 'dont-reparse'), uss, typeEnvironment)?.namedArgs.data
 }
 
 function tableColumns<M>(): (uss: MapUSS<M>, typeEnvironment: TypeEnvironment) => { namedArgs: { columns: { namedArgs: { values: UrbanStatsASTExpression<M> | undefined } }[] } } {
-    return mapUssParser<{ namedArgs: { columns: { namedArgs: { values: UrbanStatsASTExpression<M> | undefined } }[] } }, M>(l.call({
+    return mapUssParser(l.call({
         fn: l.ignore(),
         namedArgs: {
             columns: l.vector(l.call({
