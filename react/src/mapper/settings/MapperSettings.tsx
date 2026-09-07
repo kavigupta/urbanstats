@@ -120,7 +120,7 @@ function GeographyListEditor({ geographies, setGeographies, counts }: {
                 Geographies
             </div>
             {geographies.map((geography, i) => (
-                <div key={i} style={{ display: 'flex', gap: '0.5em', alignItems: 'center', marginBottom: '0.5em' }}>
+                <div key={i} data-test-id="test-geography-row" style={{ display: 'flex', gap: '0.5em', alignItems: 'center', marginBottom: '0.5em' }}>
                     <div style={{ flex: 1 }}>
                         <BetterSelector
                             possibleValues={universes}
