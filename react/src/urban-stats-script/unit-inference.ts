@@ -1,5 +1,5 @@
 import { MapUSS } from '../mapper/settings/map-uss'
-import { asADifference, dimensionless, isPlainNumber, multiplies, sameDimensions, sameSize, StoredUnit } from '../utils/quantity'
+import { asADifference, dimensionless, multiplies, sameDimensions, sameSize, StoredUnit } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
@@ -117,8 +117,7 @@ function reconciled(checked: Checked<Expression>, expected: Expected): Checked<E
     // else with no unit of its own is converted: the geoName of "density > toNumber(geoName)" is
     // read as a density
     if (got.kind === 'any') {
-        const opaque = got.constant === undefined && !isPlainNumber(expected.unit)
-        return opaque ? converted(checked, undefined, expected.unit) : checked
+        return got.constant === undefined ? converted(checked, undefined, expected.unit) : checked
     }
     if (goesWhere(expected.unit, got.unit)) {
         return checked
@@ -140,9 +139,6 @@ function converted(checked: Checked<Expression>, internalUnit: StoredUnit | unde
  */
 function comesTo(internalUnit: StoredUnit | undefined, expectedUnit: StoredUnit): StoredUnit {
     const { times, baseIsScalar } = expectedUnit.unit
-    if (times === 1 && !baseIsScalar) {
-        return expectedUnit
-    }
     if (internalUnit !== undefined && !multiplies(internalUnit.unit)) {
         return asADifference(expectedUnit)
     }
@@ -195,7 +191,7 @@ function expectedOfArgument(propagation: UnitPropagation | undefined, expected: 
     if (propagation?.kind !== 'either' && propagation?.kind !== 'rank') {
         return anything
     }
-    return index === 0 && expected.kind === 'in' ? expected : expectation(before[0] ?? anything)
+    return expectation(before[0] ?? anything)
 }
 
 /**
