@@ -44,6 +44,9 @@ function CommonMaplibreMapImpl(props: CommonMapProps, ref: React.Ref<MapRef>): R
         <Map
             ref={ref}
             mapStyle="https://tiles.openfreemap.org/styles/bright"
+            maxPitch={0}
+            pitchWithRotate={false}
+            touchPitch={false}
             canvasContextAttributes={{
                 preserveDrawingBuffer: true, // Allows screenshots
             }}

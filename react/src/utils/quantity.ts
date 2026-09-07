@@ -37,9 +37,9 @@ export type Decoration = { kind: 'none' } | { kind: 'percent', party?: Party } |
 
 /**
  * How many quantities were added to make this one: a level is 1, a difference of two is 0, and the
- * mean of two is 1 again. On a temperature scale, where 0 does not mean none of the quantity,
- * only 0 and 1 are quantities at all. Elsewhere the only thing read off it is whether it is 0, which is written
- * with a leading +. Arithmetic that cannot work it out gives 'unknown'.
+ * mean of two is 1 again. On a temperature scale, where 0 does not mean none of the quantity, only
+ * 0 and 1 are quantities at all. Elsewhere the only thing read off it is whether it is 0, which is
+ * written with a leading +. Arithmetic that cannot work it out gives 'unknown'.
  */
 export type Coefficient = number | 'unknown'
 

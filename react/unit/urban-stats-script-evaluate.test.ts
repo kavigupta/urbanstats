@@ -924,6 +924,10 @@ void test('constants', (): void => {
         undocValue([2, 3, 4, NaN], numVectorType),
     )
     assert.deepStrictEqual(
+        evaluate(parseExpr('isNaN([1, 0 / 0, inf, NaN])'), emptyContext()),
+        undocValue([false, true, false, true], { type: 'vector', elementType: boolType }),
+    )
+    assert.deepStrictEqual(
         evaluate(parseExpr('toNumber([1, 2, 3] == 2)'), emptyContext()),
         undocValue([0, 1, 0], numVectorType),
     )
