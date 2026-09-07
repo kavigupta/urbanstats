@@ -146,8 +146,6 @@ function addedForward(form: { combine: (left: number, right: number) => number }
     if (right.kind === 'any') {
         return written(left.unit, combined(left.unit.unit.times, 0, form.combine))
     }
-    // a script's operands are converted to one unit before they are added, and a script computes
-    // with stored values, so km^2 and m^2 do not add though both are areas
     assert(sameDimensions(left.unit, right.unit) && sameSize(left.unit.toBaseUnits, right.unit.toBaseUnits),
         'operands of a sum are made alike before it is worked out')
     // degrees added to a temperature give a temperature, so the result keeps the reading's zero
@@ -208,7 +206,7 @@ export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValu
 
 const inverses = { '+': '-', '-': '+', '*': '/', '/': '*' } as const
 
-/** The same value as the degrees above its own zero, which is what multiplies. */
+/** The version of a unit that is a scalar. Specifically, converts non-scalars to differences. */
 function scaled(value: AbstractInterpValue): AbstractInterpValue {
     return value.kind === 'in' && !multiplies(value.unit.unit) ? inUnit(asADifference(value.unit)) : value
 }
@@ -240,8 +238,8 @@ export function backward(operator: BinaryOperatorSymbol, result: AbstractInterpV
             return result.kind === 'any' ? manyOf(known) : undo(operator, result, known, side)
         case 'product':
             assert(operator === '*' || operator === '/', `${operator} is a product`)
-            // a reading does not scale, so an operand of a product is solved for in the degrees
-            // above its zero, as the product itself is worked out in them
+            // coerce both operators to be differences, this might result in further coersion later,
+            // but this is necessary to make multiplication work.
             return undo(operator, scaled(result), scaled(known), side)
     }
 }
