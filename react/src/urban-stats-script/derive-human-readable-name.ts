@@ -38,13 +38,21 @@ function isAtomic(ast: Expression | UrbanStatsASTStatement<UnitsRead>): boolean 
 /** The operator that will be at top-level in the human-readable representation of this AST */
 function operatorInHumanReadable(ast: Expression): typeof expressionOperatorMap[BinaryOperatorSymbol] | undefined {
     if (ast.converted !== undefined) {
-        const runsAs = conversionRunsAs(ast.converted)
+        const runsAs = topLevelOperatorForUnitConversion(ast.converted)
         return runsAs === undefined ? undefined : expressionOperatorMap[runsAs]
     }
     if (ast.type !== 'binaryOperator' || isAtomic(ast)) {
         return undefined
     }
     return expressionOperatorMap[ast.operator.node]
+}
+
+function topLevelOperatorForUnitConversion(conversion: UnitConversion): BinaryOperatorSymbol | undefined {
+    const writing = writingOf(conversion)
+    if (writing.kind !== 'arithmetic') return undefined
+    if (writing.zero?.where === 'added') return '+'
+    if (writing.factor !== undefined) return '*'
+    return writing.zero === undefined ? undefined : '-'
 }
 
 function describe(ast: Expression | UrbanStatsASTStatement<UnitsRead>, typeEnvironment: TypeEnvironment): HumanReadableElement[] | undefined {
@@ -372,7 +380,7 @@ function howConverted(elements: HumanReadableElement[], conversion: UnitConversi
     // only worth writing where the conversion itself writes something.
     const bracketed = atomic ? elements : [{ type: 'parens' as const, value: elements }]
     if (writing.kind === 'in' || writing.kind === 'as') {
-        const said = unitSaid(writing.unit, writing.kind)
+        const said = displayBracketedUnit(writing.unit, writing.kind)
         return said === undefined ? elements : [...bracketed, ...said]
     }
     const { zero, factor } = writing
@@ -436,25 +444,11 @@ function writingOf({ internalUnit, expectedUnit }: UnitConversion): ConversionWr
     }
 }
 
-/** The operator a conversion's writing ends on, which is what encloses it has to reckon with. */
-function conversionRunsAs(conversion: UnitConversion): BinaryOperatorSymbol | undefined {
-    const writing = writingOf(conversion)
-    if (writing.kind !== 'arithmetic') return undefined
-    if (writing.zero?.where === 'added') return '+'
-    if (writing.factor !== undefined) return '*'
-    return writing.zero === undefined ? undefined : '-'
-}
-
 function alike(left: StoredUnit, right: StoredUnit): boolean {
     return sameDimensions(left, right) && sameSize(left.toBaseUnits, right.toBaseUnits)
 }
 
-/**
- * The "[in km^2]" or "[as km^2]" written after an expression, in the units the script computed
- * with rather than the ones its reader chose. Nothing where the unit has no name, as a count has
- * none.
- */
-function unitSaid(unit: StoredUnit, preposition: 'in' | 'as'): HumanReadableElement[] | undefined {
+function displayBracketedUnit(unit: StoredUnit, preposition: 'in' | 'as'): HumanReadableElement[] | undefined {
     const name = nameOfStoredUnit(unit)
     // A share is stored as the fraction it is, whatever percentage it is written as, and so is a
     // count of one thing per another: fatalities per capita are stored per person, not per 100k.
