@@ -2,7 +2,7 @@ import assert from 'assert/strict'
 import test from 'node:test'
 
 import { BinaryOperatorSymbol, infixOperators, unaryOperators } from '../src/urban-stats-script/operators'
-import { backward, backwardUnary, constant, forward, forwardUnary, inUnit, join, AbstractInterpValue, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
+import { backward, constant, forward, forwardUnary, inUnit, join, AbstractInterpValue, unitToWriteIn } from '../src/urban-stats-script/unit-algebra'
 import { reifyString } from '../src/utils/human-readable-name'
 import { StoredUnit, writeQuantity } from '../src/utils/quantity'
 import { storedUnits } from '../src/utils/unit'
@@ -155,10 +155,10 @@ void test('operands that do not go together leave the unit unknown', () => {
     assert.equal(unitToWriteIn(unknown), undefined)
 })
 
-void test('a unary operator undoes itself, so the operand is found the same way', () => {
+void test('a unary operator undoes itself, so twice is what was there', () => {
     for (const operand of [unknown, people, temperature, constant(2)]) {
         for (const operator of unaryOperators) {
-            assert.equal(shape(backwardUnary(operator, forwardUnary(operator, operand))),
+            assert.equal(shape(forwardUnary(operator, forwardUnary(operator, operand))),
                 operator === '!' ? 'unknown' : shape(operand))
         }
     }

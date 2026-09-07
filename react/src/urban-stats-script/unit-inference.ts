@@ -36,7 +36,7 @@ function quantity(value: Inferred): AbstractInterpValue {
     return value.kind === 'fields' ? anything : value
 }
 
-export type Bindings = Map<string, Inferred>
+type Bindings = Map<string, Inferred>
 
 /** What has been worked out so far: the statistics as the script found them, and the names it gave. */
 interface Scope {
@@ -443,7 +443,7 @@ function readAsANumber<M>(ast: UrbanStatsASTExpression<M>, scope: Scope): { valu
 }
 
 /** A checked script: the rewritten AST, the unit it works out to, and the names it bound. */
-export interface UnitCheck<T> {
+interface UnitCheck<T> {
     ast: T
     unit: StoredUnit | undefined
     named: Bindings
