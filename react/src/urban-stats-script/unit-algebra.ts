@@ -1,5 +1,5 @@
 import { assert } from '../utils/defensive'
-import { Coefficient, Decoration, dimensionless, Party, sameDimensions, sameSize, snapToWhole, StoredUnit, unitPower, unitProduct } from '../utils/quantity'
+import { asADifference, Coefficient, Decoration, dimensionless, multiplies, Party, sameDimensions, sameSize, snapToWhole, StoredUnit, unitPower, unitProduct } from '../utils/quantity'
 
 import { BinaryOperatorSymbol, UnaryOperatorSymbol } from './operators'
 
@@ -211,6 +211,11 @@ export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValu
 
 const inverses = { '+': '-', '-': '+', '*': '/', '/': '*' } as const
 
+/** The same value as the degrees above its own zero, which is what multiplies. */
+function scaled(value: AbstractInterpValue): AbstractInterpValue {
+    return value.kind === 'in' && !multiplies(value.unit.unit) ? inUnit(asADifference(value.unit)) : value
+}
+
 /** Solving an operator for one of its operands is running the operator that undoes it. */
 function undo(operator: keyof typeof inverses, result: AbstractInterpValue, known: AbstractInterpValue, side: 'left' | 'right'): AbstractInterpValue {
     // the right of a sum or a product is found the same way as the left; of a difference or a
@@ -238,7 +243,9 @@ export function backward(operator: BinaryOperatorSymbol, result: AbstractInterpV
             return result.kind === 'any' ? manyOf(known) : undo(operator, result, known, side)
         case 'product':
             assert(operator === '*' || operator === '/', `${operator} is a product`)
-            return undo(operator, result, known, side)
+            // a reading does not scale, so an operand of a product is solved for in the degrees
+            // above its zero, as the product itself is worked out in them
+            return undo(operator, scaled(result), scaled(known), side)
     }
 }
 

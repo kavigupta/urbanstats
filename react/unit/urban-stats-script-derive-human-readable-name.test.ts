@@ -168,6 +168,9 @@ for (const [values, stated, expected] of [
     // converting a temperature subtracts its zero first; converting into one adds a zero at the end
     ['high_temp', 'unitArea', '(Mean high temp − 0°F) × +1km^{2}/°F'],
     ['population', 'unitTemperature', 'Population × +1°F/person + 0°F'],
+    // a literal in the script takes the unit itself, rather than a factor being written after it
+    ['area / 2', 'unitTemperature', '(Area ÷ 2km^{2}/°F) + 0°F'],
+    ['area * 2', 'unitTemperature', '(Area × +2°F/km^{2}) + 0°F'],
     // and nothing is said where the script already gives that unit
     ['area', 'unitArea', 'Area'],
 ] as const) {
