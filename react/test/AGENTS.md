@@ -63,3 +63,10 @@ test against the wrong site (or fail to connect) unless you go through
 `--live` watches the test file and re-runs it, and `--compare=true` runs the screenshot
 comparison. See [README.md](README.md) for the Docker modes in full, worked examples of
 regenerating references, and the caveats on each.
+
+## The memory tests
+
+`memory_*.test.ts` need `--docker=ci` and a production bundle, and the ceiling they assert fails
+locally whatever the code does — read [MEMORY.md](MEMORY.md) before touching one.
+`test/scripts/memory-ab.sh <site-folder> <test> [base-ref] [head-ref]` measures two refs and
+prints the delta.
