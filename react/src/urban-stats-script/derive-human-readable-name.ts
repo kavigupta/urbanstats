@@ -35,8 +35,8 @@ function isAtomic(ast: Expression | UrbanStatsASTStatement<UnitsRead>): boolean 
     return ast.type !== 'binaryOperator' || ast.operator.node === '**'
 }
 
-/** The operator an expression prints as. One that says what unit it is in prints bracketed. */
-function printsAsOperation(ast: Expression): typeof expressionOperatorMap[BinaryOperatorSymbol] | undefined {
+/** The operator that will be at top-level in the human-readable representation of this AST */
+function operatorInHumanReadable(ast: Expression): typeof expressionOperatorMap[BinaryOperatorSymbol] | undefined {
     if (ast.converted !== undefined) {
         const runsAs = conversionRunsAs(ast.converted)
         return runsAs === undefined ? undefined : expressionOperatorMap[runsAs]
@@ -61,14 +61,14 @@ function describe(ast: Expression | UrbanStatsASTStatement<UnitsRead>, typeEnvir
              */
             let lhs = humanReadableElements(ast.left, typeEnvironment)
             if (lhs === undefined) return
-            const leftOp = printsAsOperation(ast.left)
+            const leftOp = operatorInHumanReadable(ast.left)
             if (leftOp !== undefined && !(leftOp.precedence > centerOp.precedence || leftOp === centerOp)) {
                 lhs = [{ type: 'parens', value: lhs }]
             }
 
             let rhs = humanReadableElements(ast.right, typeEnvironment)
             if (rhs === undefined) return
-            const rightOp = printsAsOperation(ast.right)
+            const rightOp = operatorInHumanReadable(ast.right)
             if (rightOp !== undefined && !(rightOp.precedence > centerOp.precedence || (centerOp === rightOp && centerOp.isAssociative))) {
                 rhs = [{ type: 'parens', value: rhs }]
             }
@@ -136,7 +136,7 @@ function describe(ast: Expression | UrbanStatsASTStatement<UnitsRead>, typeEnvir
             if (written === undefined) return
             // a sign binds tighter than adding, so -(a + b) would otherwise read as -a + b, which
             // is a different number. It binds looser than multiplying, which needs no brackets.
-            const inner = printsAsOperation(ast.expr)
+            const inner = operatorInHumanReadable(ast.expr)
             const operand: HumanReadableElement[] = inner !== undefined && inner.precedence < expressionOperatorMap['*'].precedence
                 ? [{ type: 'parens', value: written }]
                 : written
