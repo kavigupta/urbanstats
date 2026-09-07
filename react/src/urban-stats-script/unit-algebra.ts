@@ -29,8 +29,8 @@ export function manyOf(value: AbstractInterpValue): AbstractInterpValue {
  * Asked at the end rather than at every step: two temperatures added are neither one temperature
  * nor none, but their mean is one again, and refusing the sum on the way past would lose that.
  */
-export function unitToWriteIn(known: AbstractInterpValue | undefined): StoredUnit | undefined {
-    if (known?.kind !== 'in') {
+export function unitToWriteIn(known: AbstractInterpValue): StoredUnit | undefined {
+    if (known.kind !== 'in') {
         return undefined
     }
     const { unit } = known
@@ -140,7 +140,7 @@ const forms: Record<BinaryOperatorSymbol, Form> = {
     '|': { kind: 'opaque' },
 }
 
-function addedForward(form: { combine: (left: number, right: number) => number }, left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue | undefined {
+function addedForward(form: { combine: (left: number, right: number) => number }, left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue {
     // a side with no unit of its own is taken to be of the other's kind, since only alike things
     // add: a bare number added to a temperature is a number of degrees
     if (left.kind === 'any') {
@@ -149,12 +149,11 @@ function addedForward(form: { combine: (left: number, right: number) => number }
     if (right.kind === 'any') {
         return written(left.unit, combined(left.unit.unit.times, 0, form.combine))
     }
-    if (!sameDimensions(left.unit, right.unit)) {
-        return undefined
-    }
-    // a script computes with stored values, so km^2 and m^2 do not add though both are areas
-    if (!sameSize(left.unit.toBaseUnits, right.unit.toBaseUnits)) {
-        return undefined
+    // a script's operands are converted to one unit before they are added, so these hold of
+    // anything it adds. An area and a population added anyway are of no unit anyone can name
+    const alike = sameDimensions(left.unit, right.unit) && sameSize(left.unit.toBaseUnits, right.unit.toBaseUnits)
+    if (!alike) {
+        return { kind: 'any' }
     }
     // degrees added to a temperature give a temperature, so the result keeps the reading's zero
     const counted = left.unit.unit.baseIsScalar ? right.unit : left.unit
@@ -165,7 +164,7 @@ function addedForward(form: { combine: (left: number, right: number) => number }
     )
 }
 
-function productForward(rightPower: 1 | -1, left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue | undefined {
+function productForward(rightPower: 1 | -1, left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue {
     if (left.kind === 'any') {
         if (right.kind === 'any' || left.constant === undefined) {
             return { kind: 'any' }
@@ -176,19 +175,21 @@ function productForward(rightPower: 1 | -1, left: AbstractInterpValue, right: Ab
         }
         // where a number over a quantity is not that many of it, but one over it
         const inverted = unitProduct(dimensionless, right.unit, -1)
-        return inverted === undefined ? undefined : written(inverted, combined(left.constant, right.unit.unit.times, (scale, times) => scale / times))
+        return inverted === undefined ? { kind: 'any' } : written(inverted, combined(left.constant, right.unit.unit.times, (scale, times) => scale / times))
     }
     if (right.kind === 'any') {
         return right.constant === undefined
             ? { kind: 'any' }
             : written(left.unit, combined(left.unit.unit.times, right.constant, (times, scale) => rightPower === 1 ? times * scale : times / scale))
     }
+    // a script scales a reading to a difference before multiplying it, so a product of what it
+    // computes always has a unit. One of a reading anyway is of none anyone can name
     const product = unitProduct(left.unit, right.unit, rightPower)
     const times = combined(left.unit.unit.times, right.unit.unit.times, (over, under) => rightPower === 1 ? over * under : over / under)
-    return product === undefined ? undefined : written(product, times)
+    return product === undefined ? { kind: 'any' } : written(product, times)
 }
 
-export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue | undefined {
+export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValue, right: AbstractInterpValue): AbstractInterpValue {
     const form = forms[operator]
     switch (form.kind) {
         case 'opaque':
@@ -203,7 +204,7 @@ export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValu
             }
             const raised = unitPower(left.unit, right.constant)
             // the coefficient is raised along with what it multiplies: (2a)^0.5 is 2^0.5 of a^0.5
-            return raised === undefined ? undefined : written(raised, combined(left.unit.unit.times, right.constant, Math.pow))
+            return raised === undefined ? { kind: 'any' } : written(raised, combined(left.unit.unit.times, right.constant, Math.pow))
         }
     }
 }
@@ -211,7 +212,7 @@ export function forward(operator: BinaryOperatorSymbol, left: AbstractInterpValu
 const inverses = { '+': '-', '-': '+', '*': '/', '/': '*' } as const
 
 /** Solving an operator for one of its operands is running the operator that undoes it. */
-function undo(operator: keyof typeof inverses, result: AbstractInterpValue, known: AbstractInterpValue, side: 'left' | 'right'): AbstractInterpValue | undefined {
+function undo(operator: keyof typeof inverses, result: AbstractInterpValue, known: AbstractInterpValue, side: 'left' | 'right'): AbstractInterpValue {
     // the right of a sum or a product is found the same way as the left; of a difference or a
     // quotient, the operands change places, the right of `a - b` being `a - result`
     return side === 'left' || operator === '+' || operator === '*'
@@ -220,7 +221,7 @@ function undo(operator: keyof typeof inverses, result: AbstractInterpValue, know
 }
 
 /** How the 0.1 of `commute_bike < 0.1` is read as ten percent. */
-export function backward(operator: BinaryOperatorSymbol, result: AbstractInterpValue, known: AbstractInterpValue, side: 'left' | 'right'): AbstractInterpValue | undefined {
+export function backward(operator: BinaryOperatorSymbol, result: AbstractInterpValue, known: AbstractInterpValue, side: 'left' | 'right'): AbstractInterpValue {
     const form = forms[operator]
     switch (form.kind) {
         case 'opaque':

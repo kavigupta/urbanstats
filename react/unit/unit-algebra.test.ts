@@ -8,8 +8,7 @@ import { StoredUnit, writeQuantity } from '../src/utils/quantity'
 import { storedUnits } from '../src/utils/unit'
 
 /** What is known, as a string: the dimensions, how many of itself it is, and its scale. */
-function shape(known: AbstractInterpValue | undefined): string {
-    if (known === undefined) return 'inconsistent'
+function shape(known: AbstractInterpValue): string {
     if (known.kind !== 'in') return 'unknown'
     const written = [...known.unit.unit.dimensions]
         .sort((a, b) => a.baseUnit.localeCompare(b.baseUnit))
@@ -19,11 +18,6 @@ function shape(known: AbstractInterpValue | undefined): string {
 }
 
 const unknown: AbstractInterpValue = { kind: 'any' }
-/** An operation a unit does suit, for feeding its result into another. */
-function worked(known: AbstractInterpValue | undefined): AbstractInterpValue {
-    assert.ok(known)
-    return known
-}
 const people = inUnit(storedUnits.population)
 const area = inUnit(storedUnits.area)
 const temperature = inUnit(storedUnits.temperature)
@@ -46,7 +40,7 @@ void test('only alike things add, and the sum is of their kind', () => {
     assert.equal(shape(forward('+', people, people)), 'person^1 times=2 x1')
     assert.equal(shape(forward('-', people, people)), 'person^1 times=0 x1')
     // nothing is both people and an area, so nothing is their sum
-    assert.equal(shape(forward('+', people, area)), 'inconsistent')
+    assert.equal(shape(forward('+', people, area)), 'unknown')
 })
 
 void test('a side that says nothing is taken to be of the other side\'s kind', () => {
@@ -62,7 +56,7 @@ void test('a temperature is one of itself, and only stays a quantity while it is
     // their sum is two temperatures, which is carried along even though it is not one
     assert.equal(shape(forward('+', temperature, temperature)), 'F^1 times=2 x1')
     // because their mean is a temperature again
-    assert.equal(shape(forward('/', worked(forward('+', temperature, temperature)), constant(2))), 'F^1 times=1 x1')
+    assert.equal(shape(forward('/', forward('+', temperature, temperature), constant(2))), 'F^1 times=1 x1')
     // and a number of degrees added to one is a temperature
     assert.equal(shape(forward('+', temperature, constant(2))), 'F^1 times=1 x1')
 })
@@ -71,7 +65,7 @@ void test('two temperatures are not a temperature, and nothing writes them as on
     assert.equal(unitToWriteIn(forward('+', temperature, temperature)), undefined)
     assert.equal(unitToWriteIn(forward('*', temperature, constant(2))), undefined)
     // where a mean of them, and a difference, are things to write
-    assert.notEqual(unitToWriteIn(forward('/', worked(forward('+', temperature, temperature)), constant(2))), undefined)
+    assert.notEqual(unitToWriteIn(forward('/', forward('+', temperature, temperature), constant(2))), undefined)
     assert.notEqual(unitToWriteIn(forward('-', temperature, temperature)), undefined)
     assert.notEqual(unitToWriteIn(people), undefined)
 })
@@ -80,8 +74,8 @@ void test('a temperature cannot be multiplied by another quantity', () => {
     // twice a temperature is two of them, which is carried, though it is not a temperature
     assert.equal(shape(forward('*', temperature, constant(2))), 'F^1 times=2 x1')
     // where there is no such quantity at all as a temperature times a population
-    assert.equal(shape(forward('*', temperature, people)), 'inconsistent')
-    assert.equal(shape(forward('**', temperature, constant(2))), 'inconsistent')
+    assert.equal(shape(forward('*', temperature, people)), 'unknown')
+    assert.equal(shape(forward('**', temperature, constant(2))), 'unknown')
     // a difference of two of them may be, since it is measured from nothing
     assert.equal(shape(forward('*', difference(storedUnits.temperature), constant(2))), 'F^1 times=0 x1')
 })
@@ -98,16 +92,16 @@ void test('a comparison is of no kind, and its operands are of each other\'s', (
 })
 
 void test('an operand is found by undoing the operator', () => {
-    const perArea = worked(forward('/', people, area))
+    const perArea = forward('/', people, area)
     assert.equal(shape(backward('/', perArea, area, 'left')), 'person^1 times=1 x1')
     assert.equal(shape(backward('/', perArea, people, 'right')), 'm^2 times=1 x1000000')
-    const total = worked(forward('*', people, area))
+    const total = forward('*', people, area)
     assert.equal(shape(backward('*', total, area, 'left')), 'person^1 times=1 x1')
     assert.equal(shape(backward('*', total, people, 'right')), 'm^2 times=1 x1000000')
 })
 
 void test('a difference gives back the level it was taken from', () => {
-    const change = worked(forward('-', people, people))
+    const change = forward('-', people, people)
     assert.equal(shape(backward('-', change, people, 'left')), 'person^1 times=1 x1')
     assert.equal(shape(backward('+', people, difference(storedUnits.population), 'left')), 'person^1 times=1 x1')
 })
@@ -152,16 +146,13 @@ void test('a negated number is the negative of it, so that it scales the right w
     assert.equal(shape(forward('*', people, forwardUnary('+', constant(2)))), 'person^1 times=2 x1')
 })
 
-// Not knowing which unit something is in is a different thing from no unit suiting it, and the
-// second is worth telling a script's author about where the first is not
-void test('an unknown unit told apart from no unit at all', () => {
-    assert.equal(shape(unknown), 'unknown')
+// A script converts its operands to one unit before adding them, and scales a reading before
+// multiplying it, so these are of expressions no script produces
+void test('operands that do not go together leave the unit unknown', () => {
+    assert.equal(shape(forward('+', people, area)), 'unknown')
+    assert.equal(shape(forward('*', temperature, people)), 'unknown')
     assert.equal(shape(forward('+', unknown, unknown)), 'unknown')
-    // an operation no unit suits gives its caller nothing to carry on with
-    assert.equal(forward('+', people, area), undefined)
-    // and neither is written in anything, which is all the display asks
     assert.equal(unitToWriteIn(unknown), undefined)
-    assert.equal(unitToWriteIn(undefined), undefined)
 })
 
 void test('a unary operator undoes itself, so the operand is found the same way', () => {
@@ -192,13 +183,13 @@ for (const [label, left, right, expected] of [
     ['a density less a density', storedUnits.density, storedUnits.density, 'writtenIn'],
 ] as const) {
     void test(`${label} is written as ${expected}`, () => {
-        assert.equal(partyOf(worked(forward('-', inUnit(left), inUnit(right)))), expected)
+        assert.equal(partyOf(forward('-', inUnit(left), inUnit(right))), expected)
     })
 }
 
 void test('scaling a share leaves it the party\'s that it was', () => {
-    assert.equal(partyOf(worked(forward('*', inUnit(storedUnits.partyPctOrange), constant(2)))), 'orange')
-    assert.equal(partyOf(worked(forward('-', inUnit(storedUnits.partyPctOrange), constant(0.05)))), 'orange')
+    assert.equal(partyOf(forward('*', inUnit(storedUnits.partyPctOrange), constant(2))), 'orange')
+    assert.equal(partyOf(forward('-', inUnit(storedUnits.partyPctOrange), constant(0.05))), 'orange')
 })
 /* eslint-enable no-restricted-syntax */
 
@@ -224,7 +215,7 @@ void test('a coefficient that comes back a hair off a whole one is the whole one
     // 49 * (1/49) is 0.9999999999999999, so the mean of 49 temperatures would be no temperature
     let sum = temperature
     for (let count = 1; count < 49; count++) {
-        sum = worked(forward('+', sum, temperature))
+        sum = forward('+', sum, temperature)
     }
     const mean = forward('*', sum, constant(1 / 49))
     assert.equal(shape(mean), 'F^1 times=1 x1')
@@ -252,45 +243,45 @@ void test('either of two shares of different parties is a share of neither', () 
 })
 
 void test('a coefficient is carried through a product and raised through a power', () => {
-    const twice = worked(forward('*', area, constant(2)))
+    const twice = forward('*', area, constant(2))
     assert.equal(shape(forward('*', twice, people)), 'm^2 person^1 times=2 x1000000')
     assert.equal(shape(forward('/', twice, people)), 'm^2 person^-1 times=2 x1000000')
     assert.equal(shape(forward('/', people, twice)), 'm^-2 person^1 times=0.5 x0.000001')
     assert.equal(shape(forward('**', twice, constant(0.5))), 'm^1 times=1.4142135623730951 x1000')
     // and a difference is still one of nothing however it is scaled
-    assert.equal(shape(forward('/', worked(forward('-', area, area)), people)), 'm^2 person^-1 times=0 x1000000')
+    assert.equal(shape(forward('/', forward('-', area, area), people)), 'm^2 person^-1 times=0 x1000000')
 })
 
 void test('a coefficient no longer known is no bar to writing a scalar, and is one to writing a temperature', () => {
-    const scaled = join(worked(forward('*', area, constant(2))), area)
+    const scaled = join(forward('*', area, constant(2)), area)
     assert.equal(shape(scaled), 'm^2 times=unknown x1000000')
     // an area is written the same whether it is one area or twice one, or a difference of two
     assert.notEqual(unitToWriteIn(scaled), undefined)
-    assert.notEqual(unitToWriteIn(join(worked(forward('-', area, area)), area)), undefined)
+    assert.notEqual(unitToWriteIn(join(forward('-', area, area), area)), undefined)
     // where a temperature is not, since only a level is written up from the zero of its scale
-    const eitherWay = join(temperature, worked(forward('-', temperature, temperature)))
+    const eitherWay = join(temperature, forward('-', temperature, temperature))
     assert.equal(shape(eitherWay), 'F^1 times=unknown x1')
     assert.equal(unitToWriteIn(eitherWay), undefined)
 })
 
 void test('a coefficient that is not a number of anything is no longer known', () => {
     // nothing is minus one area to the half, nor an area over none of one
-    assert.equal(shape(forward('**', worked(forwardUnary('-', area)), constant(0.5))), 'm^1 times=unknown x1000')
-    assert.equal(shape(forward('/', area, worked(forward('-', area, area)))), 'dimensionless times=unknown x1')
+    assert.equal(shape(forward('**', forwardUnary('-', area), constant(0.5))), 'm^1 times=unknown x1000')
+    assert.equal(shape(forward('/', area, forward('-', area, area))), 'dimensionless times=unknown x1')
 })
 
 void test('a difference of temperatures multiplies as any other quantity does', () => {
-    const change = worked(forward('-', temperature, temperature))
+    const change = forward('-', temperature, temperature)
     assert.equal(shape(forward('/', change, area)), 'F^1 m^-2 times=0 x0.000001')
     assert.equal(shape(forward('**', change, constant(2))), 'F^2 times=0 x1')
     // where a reading has no zero to multiply from, and nothing comes of trying
-    assert.equal(shape(forward('/', temperature, area)), 'inconsistent')
-    assert.equal(shape(forward('*', temperature, temperature)), 'inconsistent')
-    assert.equal(shape(forward('/', worked(forwardUnary('-', temperature)), area)), 'inconsistent')
+    assert.equal(shape(forward('/', temperature, area)), 'unknown')
+    assert.equal(shape(forward('*', temperature, temperature)), 'unknown')
+    assert.equal(shape(forward('/', forwardUnary('-', temperature), area)), 'unknown')
 })
 
 void test('a difference of temperatures divides into things as well as by them', () => {
-    const change = worked(forward('-', temperature, temperature))
+    const change = forward('-', temperature, temperature)
     const perDegree = unitToWriteIn(forward('/', people, change))
     assert.notEqual(perDegree, undefined)
     const write = (settings: object): string => {
@@ -301,11 +292,11 @@ void test('a difference of temperatures divides into things as well as by them',
     assert.equal(write({}), '5.00/°F')
     assert.equal(write({ temperatureUnit: 'celsius' }), '9.00/°C')
     // and a reading is no more divisible into than it is by: nothing is so many people per 50°F
-    assert.equal(shape(forward('/', people, temperature)), 'inconsistent')
+    assert.equal(shape(forward('/', people, temperature)), 'unknown')
 })
 
 void test('a difference per something is read in degrees of the reader\'s own scale', () => {
-    const perArea = unitToWriteIn(forward('/', worked(forward('-', temperature, temperature)), area))
+    const perArea = unitToWriteIn(forward('/', forward('-', temperature, temperature), area))
     assert.notEqual(perArea, undefined)
     const write = (settings: object): string => {
         const written = writeQuantity(5, perArea!, settings, 'byItself')

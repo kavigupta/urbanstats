@@ -9,10 +9,7 @@ import { unitCheck, unitWithin } from '../src/urban-stats-script/unit-inference'
 import { StoredUnit } from '../src/utils/quantity'
 
 /** What is known, as a string: the dimensions, how many of itself it is, and its scale. */
-function shape(known: AbstractInterpValue | undefined): string {
-    if (known === undefined) {
-        return 'inconsistent'
-    }
+function shape(known: AbstractInterpValue): string {
     if (known.kind === 'any') {
         return known.constant === undefined ? 'unknown' : `unknown ${known.constant}`
     }
