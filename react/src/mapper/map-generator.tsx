@@ -92,6 +92,9 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         }
     }
 
+    // Adding a geography copies the last row, so the same geography can be listed twice until it's edited
+    const geographies = Array.from(new Map(mapSettings.geographies.map(g => [`${g.universe}|${g.geographyKind}`, g])).values())
+
     const stmts = computeUSS(mapSettings.script)
 
     const parseErrors = getAllParseErrors(stmts)
@@ -103,7 +106,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         }
     }
 
-    const execResult = await executeAsync({ descriptor: { kind: 'mapper', geographies: mapSettings.geographies }, stmts })
+    const execResult = await executeAsync({ descriptor: { kind: 'mapper', geographies }, stmts })
 
     if (execResult.resultingValue === undefined) {
         const prev = await previousGenerator()
@@ -139,7 +142,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
 
     const csvExportCallback: CSVExportData = () => {
         const csvData = generateMapperCSVData(mapResultMain, execResult.assignments.variables)
-        const csvFilename = `${mapSettings.geographies.map(g => `${g.geographyKind}-${g.universe}`).join('-')}-data.csv`
+        const csvFilename = `${geographies.map(g => `${g.geographyKind}-${g.universe}`).join('-')}-data.csv`
         return {
             csvData,
             csvFilename,
@@ -148,7 +151,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
 
     const derivedUnit = deriveMapUnit(mapSettings.script.uss, typeEnvironment)
 
-    const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, geographies: mapSettings.geographies, cache, label, derivedUnit })
+    const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, geographies, cache, label, derivedUnit })
 
     function MapComponent({ props, exportImageRef }: { props: MapUIProps<{ loading: boolean }>, exportImageRef: (fn: () => Promise<HTMLCanvasElement>) => void }): ReactNode {
         const mapsRef: (MapRef | null)[] = []
