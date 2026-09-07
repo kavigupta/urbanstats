@@ -1,4 +1,5 @@
 import { MapUSS } from '../mapper/settings/map-uss'
+import { assert } from '../utils/defensive'
 import { asADifference, dimensionless, isPlainNumber, multiplies, sameDimensions, sameSize, StoredUnit } from '../utils/quantity'
 import { unitTypeToStoredUnit } from '../utils/unit'
 
@@ -31,12 +32,11 @@ const anything = { kind: 'any' } satisfies AbstractInterpValue
 
 /**
  * What an operation works out to. Its operands are made to agree before it runs, a unit that does
- * not fit being converted and a reading scaled, so every expression resolves to something. An
- * operation that somehow still does not says only that its unit is unknown, rather than throwing:
- * a script whose units cannot be worked out is still a script to run and to draw.
+ * not fit being converted and a reading scaled, so every expression resolves to one.
  */
 function resolved(value: AbstractInterpValue | undefined): AbstractInterpValue {
-    return value ?? anything
+    assert(value !== undefined, 'an operation of operands made to agree works out to a unit')
+    return value
 }
 
 /** A script has objects in it as well as quantities, a regression's result being one. */
