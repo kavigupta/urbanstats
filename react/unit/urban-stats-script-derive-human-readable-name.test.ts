@@ -36,8 +36,9 @@ for (const [condition, expected] of [
     // what scales a quantity is no quantity, and neither is what one is divided into
     ['population * 2 > population', 'Population × 2 > Population'],
     ['rainfall * 2 > 100', 'Rainfall × 2 > 10\u202f000cm/yr'],
-    // which of the two the 32 is cannot be said, where the 0 is in the unit it is compared against
-    ['high_temp - 32 > 0', 'Mean high temp \u2212 32 > 0°F'],
+    // the 32 is freezing point, so what is left of the temperature is the degrees above it, and
+    // the 0 it is compared against is a number of degrees too
+    ['high_temp - 32 > 0', 'Mean high temp \u2212 32°F > +0°F'],
     // either side of a comparison carries it to the other, and each side of an and is read alone
     ['80 < high_temp', '80°F < Mean high temp'],
     ['population > 1000 & high_temp > 80', 'Population > 1\u202f000 and Mean high temp > 80°F'],
