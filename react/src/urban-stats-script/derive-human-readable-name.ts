@@ -258,7 +258,7 @@ function statedTableTitle(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanR
 }
 
 /** Every column's name, stated or derived. Undefined if any one of them cannot be read. */
-const statedColumnNames = mapUssParser<{ namedArgs: { columns: { namedArgs: { values: Expression | undefined, name: string | undefined } }[] } }, UnitsRead>(l.call({
+const statedColumnNames = mapUssParser(l.call({
     fn: l.ignore(),
     namedArgs: {
         columns: l.vector(l.call({
