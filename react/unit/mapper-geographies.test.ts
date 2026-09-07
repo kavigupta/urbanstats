@@ -25,6 +25,10 @@ void test('a geography kind that no longer exists falls back to the default', ()
     assert.deepEqual(meta({ universe: 'USA', geographyKind: 'Duchy' }), [{ universe: 'USA', geographyKind: 'Subnational Region' }])
 })
 
+void test('a universe that no longer exists falls back to the default', () => {
+    assert.deepEqual(meta({ universe: 'Cascadia', geographyKind: 'County' }), [{ universe: 'USA', geographyKind: 'County' }])
+})
+
 void test('parallel lists pair up by position', () => {
     assert.deepEqual(meta({ universe: ['USA', 'Iceland'], geographyKind: ['County', 'Urban Center'] }), [
         { universe: 'USA', geographyKind: 'County' },
