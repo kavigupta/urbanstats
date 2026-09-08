@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Bike %",
+      "stat_path": "transportation_means_bike_no_wfh",
+      "question": "higher % of people who commute by bike",
+      "longname_a": "Santa Rosa MSA, CA, USA",
+      "longname_b": "Chattanooga MSA, TN-GA, USA",
+      "stat_a": 0.010347506971011684,
+      "stat_b": 0.00266187501305865
+    },
+    "b": {
+      "stat_column": "Born in us outside state %",
+      "stat_path": "birthplace_us_not_state",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "Missoula MT Media Market, USA",
+      "longname_b": "Albany-Schenectady-Troy NY Media Market, USA",
+      "stat_a": 0.5066261244140371,
+      "stat_b": 0.19021715636139938
+    },
+    "a_ease": 0.7927332782824112,
+    "b_ease": 0.3730612244897959
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Mean % of parkland within 1km",
+      "stat_path": "park_percent_1km_v2",
+      "question": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
+      "longname_a": "Tulare County, California, USA",
+      "longname_b": "Tarrant County, Texas, USA",
+      "stat_a": 0.010622043454244508,
+      "stat_b": 0.03182797038454371
+    },
+    "b": {
+      "stat_column": "2008 Presidential Election",
+      "stat_path": "2008 Presidential Election-margin",
+      "question": "!FULL Which voted more for Obama in the 2008 presidential election?",
+      "longname_a": "Tuscaloosa MSA, AL, USA",
+      "longname_b": "Fayetteville MSA, NC, USA",
+      "stat_a": -0.12003950901813792,
+      "stat_b": 0.17790254326056776
+    },
+    "a_ease": 0.40924956369982546,
+    "b_ease": 0.8115183246073299
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Gen X %",
+      "stat_path": "generation_genx",
+      "question": "higher % of people who are gen x!TOOLTIP born between 1967 and 1981",
+      "longname_a": "FL-19 (2023), USA",
+      "longname_b": "NY-14 (2025), USA",
+      "stat_a": 0.15821559208489758,
+      "stat_b": 0.19368474737419764
+    },
+    "b": {
+      "stat_column": "Median Commute Time (min)",
+      "stat_path": "transportation_commute_time_median",
+      "question": "higher median commute time",
+      "longname_a": "Harris County, Texas, USA",
+      "longname_b": "Hamilton CDR, Ontario, Canada",
+      "stat_a": 28.120451131630567,
+      "stat_b": 24.162508207485228
+    },
+    "a_ease": 0.4436026936026936,
+    "b_ease": 0.8458100558659218
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2024 Presidential Election",
+      "stat_path": "2024 Presidential Election-margin",
+      "question": "!FULL Which voted more for Harris in the 2024 presidential election?",
+      "longname_a": "Lansing-East Lansing MSA, MI, USA",
+      "longname_b": "Fresno MSA, CA, USA",
+      "stat_a": 0.14281360333022944,
+      "stat_b": -0.04360659178059094
+    },
+    "b": {
+      "stat_column": "Household Income < $50k %",
+      "stat_path": "household_income_under_50k",
+      "question": "higher % of households who have household income under $50k",
+      "longname_a": "Fairfax County, Virginia, USA",
+      "longname_b": "St. Louis city-County, Missouri, USA",
+      "stat_a": 0.15694999395299136,
+      "stat_b": 0.5091562117015321
+    },
+    "a_ease": 0.41701073492981006,
+    "b_ease": 0.851010101010101
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Stroke %",
+      "stat_path": "STROKE_cdc_2",
+      "question": "higher % of adults who have had a stroke",
+      "longname_a": "IN-08 (2023), USA",
+      "longname_b": "GA-07 (2025), USA",
+      "stat_a": 0.03326274137432869,
+      "stat_b": 0.02197774266059366
+    },
+    "b": {
+      "stat_column": "Hispanic %",
+      "stat_path": "hispanic",
+      "question": "higher % of people who are Hispanic",
+      "longname_a": "Calgary Urban Center, Canada",
+      "longname_b": "Syracuse Urban Center, USA",
+      "stat_a": 0.019297905796582835,
+      "stat_b": 0.07893713850418775
+    },
+    "a_ease": 0.41273996509598604,
+    "b_ease": 0.8729508196721312
+  }
+]
