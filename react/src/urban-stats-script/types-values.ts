@@ -209,8 +209,8 @@ export type UnitPropagation = (
     // keeps the unit
     {
         kind: 'unchanged'
-        /** Whether a reading does not survive it: the size of a temperature is no temperature. */
-        losesAReading?: boolean
+        /** Whether it takes its argument as a difference: there is no size of a temperature. */
+        takesADifference?: boolean
     }
     | { kind: 'either' } // joins the units of two
     | { kind: 'power', exponent: number } // raises the unit

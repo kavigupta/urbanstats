@@ -196,7 +196,7 @@ function within(ast: Expression, scope: Scope, wanted: Wanted): Inference {
         case 'constant':
             return { ...here, unit: dimensionless, times: eitherWay, flexibility: 'artificialPreference', ...ast.value.node.type === 'number' ? { literal: ast.value.node.value } : {} }
         case 'attribute': {
-            const object = infer(ast.expr, scope, wantsNothing)
+            const object = inferEitherWay(ast.expr, scope, wantsNothing)
             const field = object.fields?.get(ast.name.node)
             return {
                 ...here,
@@ -244,7 +244,7 @@ function within(ast: Expression, scope: Scope, wanted: Wanted): Inference {
             }
         }
         case 'if': {
-            const condition = infer(ast.condition, scope, wantsNothing)
+            const condition = inferEitherWay(ast.condition, scope, wantsNothing)
             const consequent = inferStatement(ast.then, after(scope, condition), wanted)
             const otherwise = ast.else === undefined
                 ? undefined
@@ -266,7 +266,7 @@ function within(ast: Expression, scope: Scope, wanted: Wanted): Inference {
             return { ...block, ast: { ...ast, statements: block.ast } }
         }
         case 'autoUXNode': {
-            const inner = infer(ast.expr, scope, wanted)
+            const inner = inferEitherWay(ast.expr, scope, wanted)
             return { ...inner, ast: { ...ast, expr: read(inner) } }
         }
         case 'customNode': {
@@ -348,14 +348,14 @@ function operation(ast: Expression & { type: 'binaryOperator' }, scope: Scope, w
     }
     // a comparison is of no unit of its own, and its operands are of each other's
     const here = { ast, variables: scope.variables }
-    const left = infer(ast.left, scope, wantsNothing)
+    const left = inferEitherWay(ast.left, scope, wantsNothing)
     // each side of a comparison is in the other's unit, and the side with no unit of its own is the
     // one that takes it: the 80 of 80 < high_temp is a temperature
     const names = comparisons.includes(operator) && left.flexibility !== 'artificialPreference'
-    const right = infer(ast.right, after(scope, left), names ? { unit: left.unit } : wantsNothing)
+    const right = inferEitherWay(ast.right, after(scope, left), names ? { unit: left.unit } : wantsNothing)
     // read the left again now the right says what it could not, so the 80 of 80 < high_temp is one
     const reread = left.flexibility === 'artificialPreference' && right.flexibility !== 'artificialPreference'
-        ? infer(ast.left, after(scope, right), { unit: right.unit })
+        ? inferEitherWay(ast.left, after(scope, right), { unit: right.unit })
         : left
     return {
         ...here,
@@ -419,7 +419,7 @@ function multiplied(ast: Expression & { type: 'binaryOperator' }, scope: Scope, 
                 ? unitProduct(wanted.unit, scaled.unit, -1)
                 : unitProduct(scaled.unit, wanted.unit, -1)
             if (carries !== undefined) {
-                const taken = infer(ast.right, after(scope, left), { unit: carries })
+                const taken = inferEitherWay(ast.right, after(scope, left), { unit: carries })
                 return {
                     ast: { ...ast, left: read(left), right: read(taken) },
                     variables: taken.variables,
@@ -463,7 +463,7 @@ function unitOfProduct(left: Inference, right: Inference, power: 1 | -1): Stored
 /** A temperature has no square, so what is raised to a power is a difference. */
 function raised(ast: Expression & { type: 'binaryOperator' }, scope: Scope): Inference {
     const left = inferEitherWay(ast.left, scope, { times: none })
-    const right = infer(ast.right, after(scope, left), wantsNothing)
+    const right = inferEitherWay(ast.right, after(scope, left), wantsNothing)
     const exponent = right.literal
     return {
         ast: { ...ast, left: read(left), right: read(right) },
@@ -520,9 +520,9 @@ function propagationOf(fn: Expression, scope: Scope): UnitPropagation | undefine
 function ofArgument(propagation: UnitPropagation | undefined, wanted: Wanted, before: { inferred: Inference }[]): Wanted {
     switch (propagation?.kind) {
         case 'unchanged':
-            // the size of a temperature is not a temperature, and neither is a sum of several, so
-            // both read the number as written rather than as a reading
-            return propagation.losesAReading === true ? { times: none } : wanted
+            // there is no size of a temperature, nor a total of several, only of the degrees
+            // between two of them
+            return propagation.takesADifference === true ? { times: none } : wanted
         case 'power':
             // a temperature has no root, so a root is taken of the difference
             return { times: none }
@@ -530,8 +530,10 @@ function ofArgument(propagation: UnitPropagation | undefined, wanted: Wanted, be
             return asWritten
         case 'either':
         case 'rank':
-            // max and min take both arguments in one unit, so each is of the first's
-            return { unit: before[0]?.inferred.unit }
+            // max and min take both arguments in one unit, so each is of the first's. The first
+            // takes what is wanted of the call, so that reading the whole thing as plain numbers
+            // reaches the arguments too
+            return { unit: before.at(0)?.inferred.unit ?? wanted.unit }
         default:
             return wantsNothing
     }

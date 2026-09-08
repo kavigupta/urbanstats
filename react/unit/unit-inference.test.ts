@@ -170,6 +170,12 @@ void test('max takes the unit of its arguments', () => {
     // and the larger of a population and an area is a population, just as their sum is one
     assert.equal(inferred('maximum(population, area)'), 'person^1 times=1 x1')
     assert.equal(inferred('maximum(population + area, population)'), 'person^1 times=1 x1')
+    // arguments that disagree on how many temperatures they are are read as the numbers written,
+    // whichever of them comes first and wherever the call sits
+    assert.equal(inferred('maximum(high_temp + low_temp, high_temp)'), 'dimensionless times=1 x1')
+    assert.equal(inferred('maximum(high_temp, high_temp + low_temp)'), 'dimensionless times=1 x1')
+    assert.equal(inferred('maximum(high_temp + low_temp, high_temp) > high_temp'), 'dimensionless times=1 x1')
+    assert.equal(inferred('abs(maximum(high_temp + low_temp, high_temp))'), 'dimensionless times=1 x1')
 })
 
 void test('a total of people is people, and a total of temperatures is so many degrees', () => {

@@ -228,7 +228,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['NaN', { type: { type: 'number' }, value: NaN, documentation: { humanReadableName: 'NaN', category: 'math', longDescription: 'Not a Number, a special numeric value representing an undefined or unrepresentable numeric result.' } }] satisfies [string, USSValue],
     ...colorConstants,
     ...unitConstants,
-    createNumberToNumberFunction('abs', Math.abs, 'abs', { kind: 'unchanged', losesAReading: true }, 'Returns the absolute value of a number (removes the negative sign).'),
+    createNumberToNumberFunction('abs', Math.abs, 'abs', { kind: 'unchanged', takesADifference: true }, 'Returns the absolute value of a number (removes the negative sign).'),
     createNumberToNumberFunction('sqrt', Math.sqrt, 'sqrt', { kind: 'power', exponent: 0.5 }, 'Returns the square root of a number.'),
     createNumberToNumberFunction('ln', Math.log, 'ln', { kind: 'number' }, 'Returns the natural logarithm (base e) of a number.', 'logarithm-functions'),
     createNumberToNumberFunction('log10', Math.log10, hre`log_{10}`, { kind: 'number' }, 'Returns the base-10 logarithm of a number.', 'logarithm-functions'),
@@ -244,7 +244,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     createNumberToNumberFunction('round', Math.round, 'round', { kind: 'unchanged' }, 'Rounds a number to the nearest integer.'),
     createNumberToNumberFunction('exp', Math.exp, 'exp', { kind: 'number' }, 'Returns e raised to the power of the given number.'),
     createNumberToNumberFunction('sign', Math.sign, 'sign', { kind: 'number' }, 'Returns the sign of a number: 1 for positive, -1 for negative, 0 for zero.'),
-    createNumberToNumberFunction('nanTo0', (x: number) => isNaN(x) ? 0 : x, 'NaN to Zero', { kind: 'unchanged', losesAReading: true }, 'Converts NaN values to 0, leaving other numbers unchanged.'),
+    createNumberToNumberFunction('nanTo0', (x: number) => isNaN(x) ? 0 : x, 'NaN to Zero', { kind: 'unchanged', takesADifference: true }, 'Converts NaN values to 0, leaving other numbers unchanged.'),
     ['isNaN', {
         type: { type: 'function', posArgs: [{ type: 'concrete', value: { type: 'number' } }], namedArgs: {}, returnType: { type: 'concrete', value: { type: 'boolean' } } },
         value: (ctx: Context, posArgs: USSRawValue[]) => isNaN(posArgs[0] as number),
@@ -256,7 +256,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     }] satisfies [string, USSValue],
     createTwoNumberToNumberFunction('maximum', Math.max, 'max', { kind: 'either' }, 'Returns the larger of two numbers.'),
     createTwoNumberToNumberFunction('minimum', Math.min, 'min', { kind: 'either' }, 'Returns the smaller of two numbers.'),
-    createVectorToNumberFunction('sum', values => values.reduce((a, b) => a + b, 0), 0, 'sum', { kind: 'unchanged', losesAReading: true }, 'Returns the sum of all numbers in a vector.'),
+    createVectorToNumberFunction('sum', values => values.reduce((a, b) => a + b, 0), 0, 'sum', { kind: 'unchanged', takesADifference: true }, 'Returns the sum of all numbers in a vector.'),
     createVectorToNumberFunction('min', values => Math.min(...values), Infinity, 'min', { kind: 'unchanged' }, 'Returns the smallest number in a vector.'),
     createVectorToNumberFunction('max', values => Math.max(...values), -Infinity, 'max', { kind: 'unchanged' }, 'Returns the largest number in a vector.'),
     createWeightedVectorFunction('mean', (values, weights) => {

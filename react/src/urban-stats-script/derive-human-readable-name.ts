@@ -427,11 +427,7 @@ function writingOf({ internalUnit, expectedUnit }: UnitConversion): ConversionWr
         currentInternalUnit = asADifference(currentInternalUnit)
     }
     if (!multiplies(currentExpectedUnit.unit)) {
-        // a zero is only added where one quantity is wanted, two of them or none of them not
-        // sitting on the scale's zero at all
-        if (currentExpectedUnit.unit.times === 1) {
-            zero = { unit: currentExpectedUnit, where: 'added' }
-        }
+        zero = { unit: currentExpectedUnit, where: 'added' }
         currentExpectedUnit = asADifference(currentExpectedUnit)
     }
     const ratio = unitProduct(currentExpectedUnit, currentInternalUnit, -1)
