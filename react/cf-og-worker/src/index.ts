@@ -36,10 +36,10 @@ async function describeMap(settings: string | undefined): Promise<{ title: strin
     try {
         // Deferred for the same reason as render.ts: reading a script pulls in every USS constant,
         // which is most of what is left of startup once the drawing half is out of it.
-        const { mapSettingsFromURLParam, mapTitle } = await import('../../src/mapper/settings/utils')
+        const { dedupeGeographies, mapSettingsFromURLParam, mapTitle } = await import('../../src/mapper/settings/utils')
         const mapSettings = await mapSettingsFromURLParam(settings)
         const title = mapTitle(mapSettings, {})
-        const { geographies } = mapSettings
+        const geographies = dedupeGeographies(mapSettings.geographies)
         if (title === undefined || geographies.length === 0) {
             return undefined
         }

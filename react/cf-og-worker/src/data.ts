@@ -8,7 +8,7 @@ import { shapesByName } from '../../src/consolidated-shapes'
 import validGeographies from '../../src/data/mapper/used_geographies'
 import { defaultTypeEnvironment } from '../../src/mapper/context'
 import { centroidsByName, markerArea, markerRadius, MapResult, mapVisuals, mergedByName } from '../../src/mapper/map-rendering'
-import { Basemap, computeUSS, universesOf } from '../../src/mapper/settings/utils'
+import { Basemap, computeUSS, dedupeGeographies, universesOf } from '../../src/mapper/settings/utils'
 import { loadPageDescriptor, PageData, PageDescriptor } from '../../src/navigation/PageDescriptor'
 import { universePath } from '../../src/navigation/links'
 import { Settings, SettingsDictionary } from '../../src/page_template/settings'
@@ -309,7 +309,8 @@ async function clusterContents(geographies: GeographySelection[], map: ClusterMa
 
 export async function mapCard(origin: string, pageData: Extract<PageData, { kind: 'mapper' }>, settings: Settings): Promise<MapCard | undefined> {
     setOrigin(origin)
-    const { geographies, script } = pageData.settings
+    const { script } = pageData.settings
+    const geographies = dedupeGeographies(pageData.settings.geographies)
     if (geographies.length === 0) {
         return undefined
     }

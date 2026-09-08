@@ -41,7 +41,7 @@ import { InsetMap } from './components/InsetMap'
 import { AddTextBox, MapTextBoxComponent } from './components/MapTextBox'
 import { loadInsets } from './context'
 import { canonicalWidth, centroidsByName, markerArea, markerRadius, MapResult, mapVisuals, mergedByName } from './map-rendering'
-import { Basemap, computeUSS, MapSettings, universesOf } from './settings/utils'
+import { Basemap, computeUSS, dedupeGeographies, MapSettings, universesOf } from './settings/utils'
 
 const mapUpdateInterval = 500
 
@@ -93,8 +93,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         }
     }
 
-    // Adding a geography copies the last row, so the same geography can be listed twice until it's edited
-    const geographies = Array.from(new Map(mapSettings.geographies.map(g => [`${g.universe}|${g.geographyKind}`, g])).values())
+    const geographies = dedupeGeographies(mapSettings.geographies)
 
     const stmts = computeUSS(mapSettings.script)
 

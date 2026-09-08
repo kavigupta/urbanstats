@@ -59,6 +59,11 @@ export interface MapSettings {
     script: MapperScriptSettings
 }
 
+/** Adding a geography copies the last row, so the same geography can be listed twice until it's edited. */
+export function dedupeGeographies(geographies: GeographySelection[]): GeographySelection[] {
+    return Array.from(new Map(geographies.map(g => [`${g.universe}|${g.geographyKind}`, g])).values())
+}
+
 export function universesOf(geographies: GeographySelection[]): Universe[] {
     return Array.from(new Set(geographies.map(g => g.universe)))
 }
