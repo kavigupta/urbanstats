@@ -105,7 +105,8 @@ async function freePortRun(count: number): Promise<number> {
     for (;;) {
         const base = 20_000 + Math.floor(Math.random() * 40_000)
         const servers = await Promise.all(Array.from({ length: count }, (_, i) => bind(base + i)))
-        await Promise.all(servers.map(server => new Promise((resolve) => { server?.close(resolve) })))
+        const bound = servers.filter(server => server !== undefined)
+        await Promise.all(bound.map(server => new Promise((resolve) => { server.close(resolve) })))
         if (servers.every(server => server !== undefined)) {
             return base
         }
