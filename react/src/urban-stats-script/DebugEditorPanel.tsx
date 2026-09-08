@@ -3,6 +3,7 @@ import React, { ReactNode, useEffect } from 'react'
 import { PageTemplate } from '../page_template/template'
 import { isMac } from '../utils/platform'
 
+import { AssignmentsContext } from './AssignmentsContext'
 import { Editor } from './Editor'
 import { useStandaloneEditorState } from './StandaloneEditor'
 import { Range } from './editor-utils'
@@ -42,33 +43,33 @@ export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
     return (
         <PageTemplate>
             {/* Most props to the editors are purposely not memoized for testing purposes. */}
-            <div id="test-editor-panel">
-                <Editor
-                    uss={uss}
-                    setUss={setUss}
-                    typeEnvironment={typeEnvironment}
-                    results={results}
-                    placeholder="Enter Urban Stats Script"
-                    selection={selection[0]}
-                    setSelection={(newSelection) => {
-                        setSelection([newSelection, selection[1]])
-                    }}
-                    assignments={assignments}
-                />
-                <Editor
-                    uss={uss}
-                    setUss={setUss}
-                    typeEnvironment={typeEnvironment}
-                    results={results}
-                    placeholder="Enter Urban Stats Script"
-                    selection={selection[1]}
-                    setSelection={(newSelection) => {
-                        setSelection([selection[0], newSelection])
-                    }}
-                    assignments={assignments}
-                />
-                {undoRedoUi}
-            </div>
+            <AssignmentsContext.Provider value={assignments}>
+                <div id="test-editor-panel">
+                    <Editor
+                        uss={uss}
+                        setUss={setUss}
+                        typeEnvironment={typeEnvironment}
+                        results={results}
+                        placeholder="Enter Urban Stats Script"
+                        selection={selection[0]}
+                        setSelection={(newSelection) => {
+                            setSelection([newSelection, selection[1]])
+                        }}
+                    />
+                    <Editor
+                        uss={uss}
+                        setUss={setUss}
+                        typeEnvironment={typeEnvironment}
+                        results={results}
+                        placeholder="Enter Urban Stats Script"
+                        selection={selection[1]}
+                        setSelection={(newSelection) => {
+                            setSelection([selection[0], newSelection])
+                        }}
+                    />
+                    {undoRedoUi}
+                </div>
+            </AssignmentsContext.Provider>
         </PageTemplate>
     )
 }

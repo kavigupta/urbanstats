@@ -5,8 +5,10 @@
 
 import React, { ReactNode, useEffect, useRef, useState } from 'react'
 
+import { Property } from '../utils/Property'
 import { UndoRedoOptions, useUndoRedo } from '../utils/useUndoRedo'
 
+import { AssignmentsContext } from './AssignmentsContext'
 import { Editor } from './Editor'
 import { defaultConstants } from './constants/constants'
 import { EditorResult, Range } from './editor-utils'
@@ -24,20 +26,21 @@ export function StandaloneEditor(props: { ident: string, getCode: () => string, 
     })
 
     return (
-        <div id="test-editor-panel">
-            <Editor
-                uss={uss}
-                setUss={setUss}
-                typeEnvironment={typeEnvironment}
-                results={results}
-                placeholder="Enter Urban Stats Script"
-                selection={selection}
-                setSelection={setSelection}
-                eRef={editorRef}
-                assignments={assignments}
-            />
-            {undoRedoUi}
-        </div>
+        <AssignmentsContext.Provider value={assignments}>
+            <div id="test-editor-panel">
+                <Editor
+                    uss={uss}
+                    setUss={setUss}
+                    typeEnvironment={typeEnvironment}
+                    results={results}
+                    placeholder="Enter Urban Stats Script"
+                    selection={selection}
+                    setSelection={setSelection}
+                    eRef={editorRef}
+                />
+                {undoRedoUi}
+            </div>
+        </AssignmentsContext.Provider>
     )
 }
 
@@ -55,10 +58,10 @@ export function useStandaloneEditorState<Selection>({ ident, getCode, onChange, 
         selection: Selection
         setSelection: (newSelection: Selection) => void
         undoRedoUi: ReactNode
-        assignments: AssignmentsResult
+        assignments: Property<AssignmentsResult>
     } {
     const [results, setResults] = useState<EditorResult[]>([])
-    const [assignments, setAssignments] = useState<AssignmentsResult>({ variables: new Map(), blockValues: new Map() })
+    const assignments = useRef(new Property<AssignmentsResult>({ variables: new Map(), blockValues: new Map() })).current
 
     const [uss, setUss] = useState(getCode)
     const ussVersion = useRef(0)
@@ -85,7 +88,7 @@ export function useStandaloneEditorState<Selection>({ ident, getCode, onChange, 
                 ...(exec.resultingValue !== undefined ? [{ kind: 'success' as const, result: exec.resultingValue }] : []),
                 ...exec.error,
             ])
-            setAssignments(exec.assignments)
+            assignments.value = exec.assignments
         }
     }
 

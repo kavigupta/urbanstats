@@ -8,6 +8,7 @@ import { useColors } from '../../page_template/colors'
 import { useUnitSettings } from '../../page_template/settings'
 import { PageTemplate } from '../../page_template/template'
 import { universeContext } from '../../universe'
+import { AssignmentsContext } from '../../urban-stats-script/AssignmentsContext'
 import { Inset } from '../../urban-stats-script/constants/insets'
 import { documentLength } from '../../urban-stats-script/constants/rich-text'
 import { defaults, TextBox } from '../../urban-stats-script/constants/text-box'
@@ -212,15 +213,16 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
                         <MaybeSplitLayout
                             error={mapGenerator.errors.some(e => e.kind === 'error')}
                             left={(
-                                <MapperSettings
-                                    mapSettings={mapSettings}
-                                    setMapSettings={setMapSettings}
-                                    errors={mapGenerator.errors}
-                                    counts={counts}
-                                    typeEnvironment={typeEnvironment}
-                                    targetOutputTypes={validMapperOutputs}
-                                    assignments={mapGenerator.assignments}
-                                />
+                                <AssignmentsContext.Provider value={mapGenerator.assignments}>
+                                    <MapperSettings
+                                        mapSettings={mapSettings}
+                                        setMapSettings={setMapSettings}
+                                        errors={mapGenerator.errors}
+                                        counts={counts}
+                                        typeEnvironment={typeEnvironment}
+                                        targetOutputTypes={validMapperOutputs}
+                                    />
+                                </AssignmentsContext.Provider>
                             )}
                             right={(
                                 <>

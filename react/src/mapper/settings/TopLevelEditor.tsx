@@ -8,7 +8,6 @@ import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { unparse, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
 import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
-import { AssignmentsResult } from '../../urban-stats-script/workerManager'
 import { TextAreaSizeContextProvider } from '../../utils/text-area-size-sync'
 
 import { AutoUXEditor } from './AutoUXEditor'
@@ -24,14 +23,12 @@ export function TopLevelEditor({
     typeEnvironment,
     errors,
     targetOutputTypes,
-    assignments,
 }: {
     uss: MapUSS
     setUss: (u: MapUSS, o: ActionOptions) => void
     typeEnvironment: TypeEnvironment
     errors: EditorError[]
     targetOutputTypes: USSType[]
-    assignments: AssignmentsResult
 }): ReactNode {
     const subcomponent = (): ReactNode => {
         if (uss.type === 'customNode') {
@@ -42,7 +39,6 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={rootBlockIdent}
-                    assignments={assignments}
                 />
             )
         }
@@ -62,7 +58,6 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idPreamble}
-                    assignments={assignments}
                 />
                 {/* Condition */}
                 <ConditionEditor
@@ -79,7 +74,6 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idCondition}
-                    assignments={assignments}
                 />
                 {/* Output */}
                 <AutoUXEditor
@@ -98,7 +92,6 @@ export function TopLevelEditor({
                     blockIdent={idOutput}
                     type={targetOutputTypes}
                     labelWidth="0px"
-                    assignments={assignments}
                 />
             </div>
         )

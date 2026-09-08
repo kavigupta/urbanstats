@@ -6,7 +6,6 @@ import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { extendBlockIdPositionalArg, extendBlockIdVectorElement } from '../../urban-stats-script/location'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
-import { AssignmentsResult } from '../../urban-stats-script/workerManager'
 
 import { AutoUXEditor } from './AutoUXEditor'
 import { BetterSelector, SelectorRenderResult } from './BetterSelector'
@@ -22,7 +21,6 @@ interface NodeProps {
     typeEnvironment: TypeEnvironment
     errors: EditorError[]
     blockIdent: string
-    assignments: AssignmentsResult
 }
 
 export function ConditionEditor({
