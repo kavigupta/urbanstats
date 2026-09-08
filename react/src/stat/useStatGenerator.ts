@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 
 import { CountsByUT, forType, getCountsByArticleType } from '../components/countsByArticleType'
 import validGeographies from '../data/mapper/used_geographies'
@@ -11,6 +11,7 @@ import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { renderType, TypeEnvironment } from '../urban-stats-script/types-values'
 import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
+import { Property } from '../utils/Property'
 import { assert } from '../utils/defensive'
 import { pluralize } from '../utils/text'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
@@ -21,7 +22,9 @@ import { mapUSSFromStat, statDataFromTable } from './utils'
 const statUpdateInterval = 500
 
 export function useStatGenerator({ stat, typeEnvironment }: { stat: Statistic, typeEnvironment: TypeEnvironment }): StatGenerator & { loading: boolean } {
-    const compute = useCallback((previousGenerator: () => Promise<StatGenerator>) => makeStatGenerator({ stat, typeEnvironment, previousGenerator }), [stat, typeEnvironment])
+    const assignments = useRef(new Property<AssignmentsResult>({ variables: new Map(), blockValues: new Map() })).current
+
+    const compute = useCallback((previousGenerator: () => Promise<StatGenerator>) => makeStatGenerator({ stat, typeEnvironment, previousGenerator, assignments }), [stat, typeEnvironment, assignments])
 
     return useDebouncedResolve(
         compute,
@@ -31,7 +34,7 @@ export function useStatGenerator({ stat, typeEnvironment }: { stat: Statistic, t
                 data: undefined,
                 errors: [],
                 universesFiltered: universes_ordered,
-                assignments: { variables: new Map(), blockValues: new Map() },
+                assignments,
             },
             ui: (generator, loading) => ({
                 ...generator,
@@ -45,16 +48,15 @@ export interface StatGenerator {
     data: StatData | undefined
     errors: EditorError[]
     universesFiltered: readonly Universe[]
-    assignments: AssignmentsResult
+    assignments: Property<AssignmentsResult>
 }
 
-async function makeStatGenerator({ stat, typeEnvironment, previousGenerator }: { stat: Statistic, typeEnvironment: TypeEnvironment, previousGenerator: () => Promise<StatGenerator> }): Promise<StatGenerator> {
-    const errorResult = async (errors: EditorError[], assignments: AssignmentsResult): Promise<StatGenerator> => {
-        const prev = await previousGenerator()
+async function makeStatGenerator({ stat, typeEnvironment, previousGenerator, assignments }: { stat: Statistic, typeEnvironment: TypeEnvironment, previousGenerator: () => Promise<StatGenerator>, assignments: Property<AssignmentsResult> }): Promise<StatGenerator> {
+    const errorResult = async (errors: EditorError[], values: AssignmentsResult): Promise<StatGenerator> => {
+        assignments.value = values
         return {
-            ...prev,
+            ...(await previousGenerator()),
             errors,
-            assignments,
         }
     }
 
@@ -107,6 +109,8 @@ async function makeStatGenerator({ stat, typeEnvironment, previousGenerator }: {
             },
         })
 
+        assignments.value = exec.assignments
+
         const statIndex = stat.type === 'simple' ? statistic_name_list.indexOf(stat.statName) : undefined
 
         return {
@@ -116,7 +120,7 @@ async function makeStatGenerator({ stat, typeEnvironment, previousGenerator }: {
                 ? universes_ordered.filter(
                     universe => forType(counts, universe, stats[statIndex], stat.articleType) > 0)
                 : universes_ordered,
-            assignments: exec.assignments,
+            assignments,
         }
     }
     catch (e) {

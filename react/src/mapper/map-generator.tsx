@@ -26,6 +26,7 @@ import { noLocation } from '../urban-stats-script/location'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { AssignmentsResult, executeAsync, GeographySelection } from '../urban-stats-script/workerManager'
 import { loadImage } from '../utils/Image'
+import { Property } from '../utils/Property'
 import { editIndex, EditSeq } from '../utils/array-edits'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { makeDebugLogger } from '../utils/debug-logging'
@@ -47,7 +48,7 @@ const mapUpdateInterval = 500
 const debugLog = makeDebugLogger('mapExport')
 
 export function useMapGenerator({ mapSettings, typeEnvironment }: { mapSettings: MapSettings, typeEnvironment: TypeEnvironment }): MapGenerator {
-    const cache = useRef<MapCache>({})
+    const cache = useRef<MapCache>({ assignments: new Property({ variables: new Map(), blockValues: new Map() }) })
 
     const compute = useCallback((previousGenerator: () => Promise<MapGenerator<{ loading: boolean }>>) => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator, typeEnvironment }), [mapSettings, typeEnvironment])
 
@@ -58,7 +59,7 @@ export function useMapGenerator({ mapSettings, typeEnvironment }: { mapSettings:
             initial: {
                 ui: ({ loading }) => ({ node: <EmptyMapLayout geographies={mapSettings.geographies} loading={loading} /> }),
                 errors: [],
-                assignments: { variables: new Map(), blockValues: new Map() },
+                assignments: cache.current.assignments,
             },
             ui: (generator, loading) => ({
                 ...generator,
@@ -75,7 +76,7 @@ export interface MapGenerator<T = unknown> {
     exportGeoJSON?: () => string
     exportCSV?: CSVExportData
     errors: EditorError[]
-    assignments: AssignmentsResult
+    assignments: Property<AssignmentsResult>
 }
 
 async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnvironment }: {
@@ -88,7 +89,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         return {
             ui: ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout geographies={mapSettings.geographies} loading={loading} /> }),
             errors: [{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }],
-            assignments: { variables: new Map(), blockValues: new Map() },
+            assignments: publishAssignments(cache, { variables: new Map(), blockValues: new Map() }),
         }
     }
 
@@ -113,7 +114,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         return {
             ...prev,
             // A failed run stops partway, so its block values are missing everything after the error
-            assignments: { variables: execResult.assignments.variables, blockValues: prev.assignments.blockValues },
+            assignments: publishAssignments(cache, { variables: execResult.assignments.variables, blockValues: prev.assignments.value.blockValues }),
             errors: execResult.error,
         }
     }
@@ -275,7 +276,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
                 exportImage: () => exportImage(),
             }
         },
-        assignments: execResult.assignments,
+        assignments: publishAssignments(cache, execResult.assignments),
     }
 }
 
@@ -623,10 +624,16 @@ function filterOverlaps(inset: Inset, features: GeoJSON.Feature[]): GeoJSON.Feat
 }
 
 interface MapCache {
+    assignments: Property<AssignmentsResult>
     geo?: { geographies: GeographySelection[] } & (
         { type: 'points', centroidsByName: Map<string, ICoordinate> }
         | { type: 'polygons', polygonsByName: Map<string, GeoJSON.Geometry> }
     )
+}
+
+function publishAssignments(cache: MapCache, assignments: AssignmentsResult): Property<AssignmentsResult> {
+    cache.assignments.value = assignments
+    return cache.assignments
 }
 
 function sameGeographies(a: GeographySelection[] | undefined, b: GeographySelection[]): boolean {

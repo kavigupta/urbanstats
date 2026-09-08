@@ -6,7 +6,7 @@ import universes_ordered from '../../data/universes_ordered'
 import { humanReadableUniverse, Universe } from '../../universe'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
-import { AssignmentsResult, GeographySelection } from '../../urban-stats-script/workerManager'
+import { GeographySelection } from '../../urban-stats-script/workerManager'
 import { settingNameStyle } from '../style'
 
 import { BetterSelector } from './BetterSelector'
@@ -26,7 +26,6 @@ export function MapperSettings({
     counts,
     typeEnvironment,
     targetOutputTypes,
-    assignments,
     singleGeography = false,
 }: {
     mapSettings: MapSettings
@@ -35,7 +34,6 @@ export function MapperSettings({
     counts: CountsByUT
     typeEnvironment: TypeEnvironment
     targetOutputTypes: USSType[]
-    assignments: AssignmentsResult
     singleGeography?: boolean
 }): ReactNode {
     const uss = mapSettings.script.uss
@@ -60,7 +58,6 @@ export function MapperSettings({
                 typeEnvironment={typeEnvironment}
                 errors={errors}
                 targetOutputTypes={targetOutputTypes}
-                assignments={assignments}
             />
         </>
     )

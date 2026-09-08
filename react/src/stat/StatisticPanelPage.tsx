@@ -14,7 +14,7 @@ import { DisplayResults } from '../urban-stats-script/Editor'
 import { tableType } from '../urban-stats-script/constants/table'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
-import { AssignmentsResult, GeographySelection } from '../urban-stats-script/workerManager'
+import { GeographySelection } from '../urban-stats-script/workerManager'
 import { reifyReact, reifyString } from '../utils/human-readable-name'
 import { tableToMapper } from '../utils/page-conversion'
 import { sanitize } from '../utils/paths'
@@ -28,7 +28,7 @@ import { StatisticPanelTable } from './StatisticPanelTable'
 import { StatData, Statistic, StatSetter, View } from './types'
 import { mapUSSFromStat, variable } from './utils'
 
-export function StatisticPanelPage({ view, stat, data, set, loading, counts, errors, assignments, typeEnvironment }: {
+export function StatisticPanelPage({ view, stat, data, set, loading, counts, errors, typeEnvironment }: {
     view: View
     stat: Statistic
     data: StatData | undefined
@@ -36,7 +36,6 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
     loading: boolean
     counts: CountsByUT
     errors: EditorError[]
-    assignments: AssignmentsResult
     typeEnvironment: TypeEnvironment
 }): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
@@ -61,7 +60,6 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
                     typeEnvironment={typeEnvironment}
                     counts={counts}
                     errors={errors}
-                    assignments={assignments}
                     split={splitLayout}
                 />
             )
@@ -239,14 +237,13 @@ function EditHeader({ stat, set, typeEnvironment, view, inline }: { stat: Statis
     )
 }
 
-function EditPreamble({ stat, set, errors, counts, typeEnvironment, view, assignments, split }: {
+function EditPreamble({ stat, set, errors, counts, typeEnvironment, view, split }: {
     stat: Statistic
     set: StatSetter
     errors: EditorError[]
     counts: CountsByUT
     typeEnvironment: TypeEnvironment
     view: View
-    assignments: AssignmentsResult
     split: boolean
 }): ReactNode {
     const mapSettings = useMemo((): MapSettings => ({
@@ -273,7 +270,6 @@ function EditPreamble({ stat, set, errors, counts, typeEnvironment, view, assign
                 counts={counts}
                 typeEnvironment={typeEnvironment}
                 targetOutputTypes={[tableType]}
-                assignments={assignments}
             />
             {!split && <EditHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} inline={false} />}
         </div>
