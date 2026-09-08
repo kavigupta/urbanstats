@@ -15,16 +15,17 @@ Two things have to match CI or the delta disappears:
   and 77.1MB against 89.9MB under `ci`. Whatever `arm64` does differently, it hides the leak.
 - **A production bundle.** The dev server's reads about 9MB heavier.
 
-`test/scripts/memory-ab.sh` does both, for two refs:
+`npm run test:memory-ab` does both, for two refs:
 
 ```
-test/scripts/memory-ab.sh ~/densitydb.github.io memory_mapper_leak main my-branch
+npm run test:memory-ab -- --site=$HOME/densitydb.github.io --test=memory_mapper_leak \
+    --base=main --head=my-branch
 ```
 
 It builds each ref in a throwaway worktree, serves the bundle over the site folder the way
-`create_website.py --target scripts` would have, and prints both numbers and the delta. The last
-argument is optional and defaults to the working tree. It picks its own ports, so it neither
-collides with a dev server nor needs `direnv exec .`.
+`create_website.py --target scripts` would have, and prints both numbers and the delta. `--head`
+is optional and defaults to the working tree; `--keep` leaves the builds and test logs behind. It
+picks its own ports, so it neither collides with a dev server nor needs `direnv exec .`.
 
 To see what CI measured, the `bytes:` line is in the job log:
 

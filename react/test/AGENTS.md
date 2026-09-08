@@ -68,5 +68,5 @@ regenerating references, and the caveats on each.
 
 `memory_*.test.ts` need `--docker=ci` and a production bundle, and the ceiling they assert fails
 locally whatever the code does — read [MEMORY.md](MEMORY.md) before touching one.
-`test/scripts/memory-ab.sh <site-folder> <test> [base-ref] [head-ref]` measures two refs and
-prints the delta.
+`npm run test:memory-ab -- --site=<site-folder> --test=<test> --base=<ref> --head=<ref>` measures
+two refs and prints the delta.
