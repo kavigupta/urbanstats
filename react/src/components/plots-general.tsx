@@ -39,20 +39,39 @@ const labelTickGap = 10
 // Plot insets left tick labels from the frame by tickSize + tickPadding
 const tickLabelInset = 9
 
-interface LeftAxisLayout {
+// On screen the settings bar floats over the top of the plot, so the frame sits low enough to
+// clear it. The exported image has no settings bar, so its top margin is measured instead.
+const screenMarginTop = 80
+const exportTopPad = 12
+
+interface PlotLayout {
     marginLeft: number
     labelOffset: number
+    marginTop: number
 }
 
-function provisionalLeftAxisLayout(transpose: boolean): LeftAxisLayout {
+function provisionalLayout(transpose: boolean): PlotLayout {
     const margin = transpose ? provisionalMarginLeftTranspose : provisionalMarginLeft
-    return { marginLeft: margin, labelOffset: margin - labelEdgePad }
+    return { marginLeft: margin, labelOffset: margin - labelEdgePad, marginTop: screenMarginTop }
+}
+
+// how far the plot's ink reaches above the frame, in plot units. The title sits up there, and so do
+// axis ticks, which are rounded up past the top of the domain.
+function inkAboveFrame(plot: SVGSVGElement | HTMLElement): number {
+    const svg = plot instanceof SVGSVGElement ? plot : plot.querySelector<SVGSVGElement>(':scope > svg')!
+    const svgRect = svg.getBoundingClientRect()
+    const scale = svgRect.height / svg.height.baseVal.value
+    const tops = Array.from(svg.querySelectorAll<SVGGraphicsElement>(':scope > g'))
+        .map(group => group.getBoundingClientRect())
+        .filter(rect => rect.height > 0)
+        .map(rect => (rect.top - svgRect.top) / scale)
+    return screenMarginTop - Math.min(screenMarginTop, ...tops)
 }
 
 // measures a rendered plot's left axis and works out the margin that fits its tick labels and its
 // rotated label side by side. The label is rotated, so it is its bbox *height* that eats into the
 // margin; the ticks are horizontal, so it is their width.
-function measureLeftAxisLayout(plot: SVGSVGElement | HTMLElement): LeftAxisLayout {
+function measureLayout(plot: SVGSVGElement | HTMLElement, fitTopMargin: boolean): PlotLayout {
     const widthOf = (selector: string, dimension: 'width' | 'height'): number => {
         const elements = Array.from(plot.querySelectorAll<SVGGraphicsElement>(`g[aria-label="${selector}"] text`))
         return Math.max(0, ...elements.map(element => element.getBBox()[dimension]))
@@ -64,13 +83,14 @@ function measureLeftAxisLayout(plot: SVGSVGElement | HTMLElement): LeftAxisLayou
     return {
         marginLeft: labelStrip + tickWidth + tickLabelInset,
         labelOffset: labelStrip + tickWidth + tickLabelInset - labelEdgePad,
+        marginTop: fitTopMargin ? inkAboveFrame(plot) + exportTopPad : screenMarginTop,
     }
 }
 
-function renderMeasuredPlot(container: HTMLElement, config: (leftAxis: LeftAxisLayout) => Plot.PlotOptions, transpose: boolean): SVGSVGElement | HTMLElement {
-    const probe = Plot.plot(config(provisionalLeftAxisLayout(transpose)))
+function renderMeasuredPlot(container: HTMLElement, config: (layout: PlotLayout) => Plot.PlotOptions, transpose: boolean, fitTopMargin: boolean): SVGSVGElement | HTMLElement {
+    const probe = Plot.plot(config(provisionalLayout(transpose)))
     container.replaceChildren(probe)
-    const layout = measureLeftAxisLayout(probe)
+    const layout = measureLayout(probe, fitTopMargin)
     const plot = Plot.plot(config(layout))
     container.replaceChildren(plot)
     return plot
@@ -649,8 +669,8 @@ export function PlotComponent(props: {
 
     const plotSpec = props.plotSpec
 
-    const plotConfig = useCallback((transposeConfig: boolean, leftAxis: LeftAxisLayout): Plot.PlotOptions => {
-        const { marks, xlabel, ylabel, ydomain, legend } = plotSpec(transposeConfig, leftAxis.labelOffset, pinnedTips)
+    const plotConfig = useCallback((transposeConfig: boolean, layout: PlotLayout): Plot.PlotOptions => {
+        const { marks, xlabel, ylabel, ydomain, legend } = plotSpec(transposeConfig, layout.labelOffset, pinnedTips)
         const result: Plot.PlotOptions = {
             marks,
             x: {
@@ -664,7 +684,7 @@ export function PlotComponent(props: {
                 domain: ydomain,
                 labelAnchor: 'center',
                 labelArrow: 'none',
-                labelOffset: leftAxis.labelOffset,
+                labelOffset: layout.labelOffset,
             },
             grid: false,
             width: transposeConfig ? undefined : 1000,
@@ -673,9 +693,9 @@ export function PlotComponent(props: {
                 fontSize: transposeConfig ? '2em' : '1em',
                 fontFamily: 'Jost, Arial, sans-serif',
             },
-            marginTop: 80,
+            marginTop: layout.marginTop,
             marginBottom: transposeConfig ? 90 : 62,
-            marginLeft: leftAxis.marginLeft,
+            marginLeft: layout.marginLeft,
             color: legend,
         }
         if (transposeConfig) {
@@ -691,7 +711,7 @@ export function PlotComponent(props: {
                 reverse: true,
                 labelAnchor: 'center',
                 labelArrow: 'none',
-                labelOffset: leftAxis.labelOffset,
+                labelOffset: layout.labelOffset,
             }
         }
         return result
@@ -702,7 +722,7 @@ export function PlotComponent(props: {
         if (container === null) {
             return
         }
-        const plot = renderMeasuredPlot(container, leftAxis => plotConfig(transpose, leftAxis), transpose)
+        const plot = renderMeasuredPlot(container, layout => plotConfig(transpose, layout), transpose, false)
 
         const dismiss = (tipIndex: number): void => {
             setPinnedTips(current => withoutTip(current, tipIndex))
@@ -804,7 +824,7 @@ export function PlotComponent(props: {
                                 // measuring needs layout, so render while attached, then hand the
                                 // finished element back for the caller to place
                                 document.body.appendChild(div)
-                                const plot = renderMeasuredPlot(div, leftAxis => plotConfig(false, leftAxis), false)
+                                const plot = renderMeasuredPlot(div, layout => plotConfig(false, layout), false, true)
                                 div.remove()
                                 // `display: block` drops the descender gap an inline <svg> would leave underneath
                                 plot.style.display = 'block'
