@@ -146,7 +146,7 @@ input[type=text]:disabled, textarea:disabled {
     color: var(--text-main)
 }
 
-/* Rounded corners antialias differently across platforms, which moves screenshot comparisons */
+/* Antialiased rounded corners render inconsistently between runs, making screenshots flaky */
 html[data-testing] button, html[data-testing] select, html[data-testing] a[role=button] {
     border-radius: 0;
 }
