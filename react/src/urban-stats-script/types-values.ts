@@ -210,7 +210,7 @@ export type UnitPropagation = (
     {
         kind: 'unchanged'
         /** Whether it takes its argument as a difference: there is no size of a temperature. */
-        takesADifference?: boolean
+        takesAScalar?: boolean
     }
     | { kind: 'either' } // joins the units of two
     | { kind: 'power', exponent: number } // raises the unit

@@ -13,7 +13,7 @@ import { TypeEnvironment, UnitPropagation, USSPrimitiveRawValue } from './types-
  * number either way: only how it is read changes.
  */
 export interface UnitConversion {
-    /** What the value is counted in. Where the script writes a plain number, that is no unit. */
+    /** What the expression works out to. */
     internalUnit: StoredUnit
     /** What it is needed as. */
     expectedUnit: StoredUnit
@@ -75,12 +75,6 @@ interface Wanted {
 
 const wantsNothing: Wanted = {}
 
-/**
- * As the plain numbers the script writes, which is how a script is read where its units do not go
- * together. Nothing is asked of the count, a plain number sitting on no scale to be counted on.
- */
-const asWritten: Wanted = { unit: dimensionless }
-
 /** No count of it is the one wanted, so what is written has to be read some other way. */
 class Unsatisfiable extends Error {}
 
@@ -102,9 +96,12 @@ function intersect(left: Times, right: Times): Times {
     return left.filter(each => right.includes(each))
 }
 
-/** The unit a node is written in, taking the largest count it could be: a bare 2 is one quantity. */
+/**
+ * Collapses the times an expression may have down to the one its unit records. The largest is
+ * taken, so a bare 2 is read as a quantity rather than as a difference of two.
+ */
 function counted(unit: StoredUnit, times: Times): StoredUnit {
-    return { ...unit, unit: { ...unit.unit, times: times[times.length - 1] } }
+    return { ...unit, unit: { ...unit.unit, times: Math.max(...times) } }
 }
 
 /** Whether what is written can be read as what is wanted with no factor between them. */
@@ -121,10 +118,11 @@ function fits(want: StoredUnit, got: StoredUnit): boolean {
  * unsatisfiable. A unit that does not fit is converted, which a caption writes out.
  */
 function narrowed(inference: Inference, wanted: Wanted): Inference {
-    // a count says how many zeros are in play, so on a scale with none it constrains nothing: an
-    // area is an area however many were added to make it
-    const counts = inference.unit.unit.baseIsScalar
-    const times = wanted.times === undefined || counts ? inference.times : intersect(inference.times, wanted.times)
+    // times only narrows a value on a scale with a zero of its own. An area is an area however
+    // many were added to make it, so wanting a particular count of one rules nothing out
+    const times = wanted.times === undefined || inference.unit.unit.baseIsScalar
+        ? inference.times
+        : intersect(inference.times, wanted.times)
     if (times.length === 0) {
         throw new Unsatisfiable('no count of it is the one wanted')
     }
@@ -133,8 +131,8 @@ function narrowed(inference: Inference, wanted: Wanted): Inference {
     }
     return {
         ...inference,
-        // the count belongs to the scale the value was read from. Converted to a scale with no
-        // zero of its own, it says nothing, and the number is whatever it is read as
+        // times belongs to the scale the value was read from. Converted onto a scale with no zero
+        // of its own it means nothing there, so the value takes whatever count is wanted of it
         times: wanted.unit.unit.baseIsScalar ? wanted.times ?? [0, 1] : times,
         unit: wanted.unit,
         ast: { ...inference.ast, converted: { internalUnit: inference.unit, expectedUnit: wanted.unit } },
@@ -153,7 +151,7 @@ function inferEitherWay(ast: Expression, scope: Scope, wanted: Wanted): Inferenc
         if (!(error instanceof Unsatisfiable)) {
             throw error
         }
-        return infer(ast, scope, asWritten)
+        return infer(ast, scope, { unit: dimensionless })
     }
 }
 
@@ -549,12 +547,12 @@ function ofArgument(propagation: UnitPropagation | undefined, wanted: Wanted): W
         case 'unchanged':
             // there is no size of a temperature, nor a total of several, only of the degrees
             // between two of them
-            return propagation.takesADifference === true ? { times: [0] } : wanted
+            return propagation.takesAScalar === true ? { times: [0] } : wanted
         case 'power':
             // a temperature has no root, so a root is taken of the difference
             return { times: [0] }
         case 'number':
-            return asWritten
+            return { unit: dimensionless }
         case 'either':
         case 'rank':
             // the caller reads these twice, so the first reading leaves each argument to say what
