@@ -101,6 +101,9 @@ void test('an if joins both of its arms', () => {
 void test('an arm of an if can bind a name', () => {
     assert.equal(inferred('if (population > 0) { x = area }\nx'), 'm^2 times=1 x1000000')
     assert.equal(inferred('if (population > 0) { x = area } else { x = population }\nx'), 'm^2 times=1 x1000000')
+    // and neither arm names the unit by running first, a bare number naming none at all
+    assert.equal(inferred('if (population > 0) { high_temp } else { 2 }'), 'F^1 times=1 x1')
+    assert.equal(inferred('if (population > 0) { 2 } else { high_temp }'), 'F^1 times=1 x1')
     // where the arm that did not run left it as it was
     assert.equal(inferred('x = area\nif (population > 0) { x = area * 2 }\nx'), 'm^2 times=1 x1000000')
     assert.equal(inferred('x = area\nif (population > 0) { x = area / 2 }\nx'), 'm^2 times=1 x1000000')
@@ -109,6 +112,10 @@ void test('an arm of an if can bind a name', () => {
 void test('a vector takes the unit of its elements', () => {
     assert.equal(inferred('[high_temp, low_temp]'), 'F^1 times=1 x1')
     assert.equal(inferred('[population, area]'), 'person^1 times=1 x1')
+    // a number the script writes states no unit, so it does not name the one they are all in,
+    // whichever end of the vector it is written at
+    assert.equal(inferred('[high_temp, 2]'), 'F^1 times=1 x1')
+    assert.equal(inferred('[2, high_temp]'), 'F^1 times=1 x1')
     // where the elements disagree on how many temperatures they are, the numbers are read as written
     assert.equal(inferred('[high_temp, high_temp + high_temp]'), 'dimensionless times=1 x1')
     assert.equal(inferred('if (population > 0) { high_temp } else { high_temp - low_temp }'), 'dimensionless times=1 x1')
@@ -172,6 +179,9 @@ void test('max takes the unit of its arguments', () => {
     assert.equal(inferred('maximum(population + area, population)'), 'person^1 times=1 x1')
     // arguments that disagree on how many temperatures they are are read as the numbers written,
     // whichever of them comes first and wherever the call sits
+    // and a bare number names no unit at either end of the call, as it names none in a vector
+    assert.equal(inferred('maximum(2, area)'), 'm^2 times=1 x1000000')
+    assert.equal(inferred('maximum(2, high_temp)'), 'F^1 times=1 x1')
     assert.equal(inferred('maximum(high_temp + low_temp, high_temp)'), 'dimensionless times=1 x1')
     assert.equal(inferred('maximum(high_temp, high_temp + low_temp)'), 'dimensionless times=1 x1')
     assert.equal(inferred('maximum(high_temp + low_temp, high_temp) > high_temp'), 'dimensionless times=1 x1')
