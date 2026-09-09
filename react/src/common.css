@@ -145,3 +145,8 @@ input[type=text]:disabled, textarea:disabled {
 .syau-searchbox::placeholder {
     color: var(--text-main)
 }
+
+/* Rounded corners antialias differently across platforms, which moves screenshot comparisons */
+html[data-testing] button, html[data-testing] select, html[data-testing] a[role=button] {
+    border-radius: 0;
+}

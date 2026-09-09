@@ -48,6 +48,7 @@ export function PageTemplate({
         styleElement(document.documentElement)
         if (TestUtils.shared.isTesting) {
             document.documentElement.setAttribute('spellcheck', 'false')
+            document.documentElement.setAttribute('data-testing', 'true')
         }
         document.body.style.backgroundColor = colors.background
         document.body.style.color = colors.textMain
