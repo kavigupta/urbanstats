@@ -165,6 +165,11 @@ function addedForward(form: { combine: (left: number, right: number) => number }
     if (!sameDimensions(left.unit, right.unit)) {
         return { kind: 'none' }
     }
+    // the values added are the ones the statistics are stored as, so two areas add only where they
+    // are stored the same way: square kilometres and square metres are areas both, and do not add
+    if (!sameSize(left.unit.toBaseUnits, right.unit.toBaseUnits)) {
+        return { kind: 'none' }
+    }
     return written(
         left.unit,
         combined(left.unit.unit.times, right.unit.unit.times, form.combine),
