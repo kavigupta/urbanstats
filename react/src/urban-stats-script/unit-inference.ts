@@ -10,19 +10,19 @@ import { TypeEnvironment, UnitPropagation, USSPrimitiveRawValue } from './types-
 
 /**
  * Recorded on a node whose unit is not the one needed there. The script computes the same
- * number either way: only how it is read changes.
+ * number either way: only how it is interpreted changes.
  */
 export interface UnitConversion {
-    /** What the expression works out to. */
+    /** What the expression actually computes to. */
     internalUnit: StoredUnit
-    /** What it is needed as. */
+    /** What it is needed as for the broader context. */
     expectedUnit: StoredUnit
 }
 
 /** What reading a script for its units leaves on a node. */
 export interface UnitsRead {
     converted?: UnitConversion
-    /** What the expression works out to. Anything that is not a quantity is a number of no unit. */
+    /** What the expression actually computes to. */
     worksOutTo: StoredUnit
 }
 
@@ -30,9 +30,9 @@ type Expression = UrbanStatsASTExpression<UnitsRead>
 type Statement = UrbanStatsASTStatement<UnitsRead>
 
 /**
- * The values of times an expression can have: for high_temp * 2 this is [2], for a constant number
+ * The values of `times` an expression can have: for high_temp * 2 this is [2], for a constant number
  * like 2 it is [0, 1], and for a constant expression like 2 + 2 it is [0, 1, 2]. Units can always
- * be coerced where times cannot, so times is tracked more completely.
+ * be coerced where `times` cannot, so `times` is tracked more completely.
  */
 type Times = readonly number[]
 
@@ -55,31 +55,35 @@ function stronger(left: Flexibility, right: Flexibility): Flexibility {
     return claims.indexOf(left) >= claims.indexOf(right) ? left : right
 }
 
-/** What a value is, and what it may still be narrowed to. */
-interface Expectation {
+/** The unit an expression is in */
+interface UnitAbstractInterp {
     /** The unit it is in where no factor is needed. A number the script writes is in no unit. */
     unit: StoredUnit
     times: Times
     flexibility: Flexibility
     /** On an object, the unit for each field. */
-    fields?: ReadonlyMap<string, Expectation>
+    fields?: ReadonlyMap<string, UnitAbstractInterp>
 }
 
-type Bindings = ReadonlyMap<string, Expectation>
+type Bindings = ReadonlyMap<string, UnitAbstractInterp>
 
 /** In unit checking we can set preferences for what we want. Either may be left blank for none. */
-interface Wanted {
+interface UnitExpectation {
     unit?: StoredUnit
     times?: Times
 }
 
-const wantsNothing: Wanted = {}
+const noUnitExpectation: UnitExpectation = {}
+
+/** A number the script writes, which is of no unit until something says what it is read as. */
+const bareNumber: UnitAbstractInterp = { unit: dimensionless, times: [0, 1], flexibility: 'artificialPreference' }
 
 /** No count of it is the one wanted, so what is written has to be read some other way. */
 class Unsatisfiable extends Error {}
 
 /** What reading one expression gives: the expression rewritten, and what it works out to. */
-interface Inference extends Expectation {
+interface InferenceResult {
+    interp: UnitAbstractInterp
     ast: Expression
     /** The names in scope, as this expression narrowed them. */
     variables: Bindings
@@ -97,8 +101,7 @@ function intersect(left: Times, right: Times): Times {
 }
 
 /**
- * Collapses the times an expression may have down to the one its unit records. The largest is
- * taken, so a bare 2 is read as a quantity rather than as a difference of two.
+ * Returns a unit that has the given times; taking the maximum to break ties.
  */
 function counted(unit: StoredUnit, times: Times): StoredUnit {
     return { ...unit, unit: { ...unit.unit, times: Math.max(...times) } }
@@ -117,33 +120,35 @@ function fits(want: StoredUnit, got: StoredUnit): boolean {
  * The reading narrowed to what was wanted of it. A count that does not fit makes the whole reading
  * unsatisfiable. A unit that does not fit is converted, which a caption writes out.
  */
-function narrowed(inference: Inference, wanted: Wanted): Inference {
-    // times only narrows a value on a scale with a zero of its own. An area is an area however
-    // many were added to make it, so wanting a particular count of one rules nothing out
-    const times = wanted.times === undefined || inference.unit.unit.baseIsScalar
-        ? inference.times
-        : intersect(inference.times, wanted.times)
+function narrowed(inference: InferenceResult, wanted: UnitExpectation): InferenceResult {
+    // scalars are exempt from being narrowed; we just ignore times on them since it isn't materially relevant.
+    const { interp } = inference
+    const times = wanted.times === undefined || interp.unit.unit.baseIsScalar
+        ? interp.times
+        : intersect(interp.times, wanted.times)
     if (times.length === 0) {
         throw new Unsatisfiable('no count of it is the one wanted')
     }
-    if (wanted.unit === undefined || fits(wanted.unit, inference.unit)) {
-        return { ...inference, times }
+    if (wanted.unit === undefined || fits(wanted.unit, interp.unit)) {
+        return { ...inference, interp: { ...interp, times } }
     }
     return {
         ...inference,
-        // times belongs to the scale the value was read from. Converted onto a scale with no zero
-        // of its own it means nothing there, so the value takes whatever count is wanted of it
-        times: wanted.unit.unit.baseIsScalar ? wanted.times ?? [0, 1] : times,
-        unit: wanted.unit,
-        ast: { ...inference.ast, converted: { internalUnit: inference.unit, expectedUnit: wanted.unit } },
+        interp: {
+            ...interp,
+            // times belongs to the scale the value was read from. Converted onto a scale with no
+            // zero of its own it means nothing there, so it takes whatever count is wanted of it
+            times: wanted.unit.unit.baseIsScalar ? wanted.times ?? [0, 1] : times,
+            unit: wanted.unit,
+        },
+        ast: { ...inference.ast, converted: { internalUnit: interp.unit, expectedUnit: wanted.unit } },
     }
 }
 
 /**
- * Read as the script wants it. Where the units do not go together, read again as the plain numbers
- * the script writes: ln(Mean high temp [in °F]) is the logarithm of the Fahrenheit number.
+ * Try to read the expression in the unit wanted, and if that fails read it as a bare number
  */
-function inferEitherWay(ast: Expression, scope: Scope, wanted: Wanted): Inference {
+function inferEitherWay(ast: Expression, scope: Scope, wanted: UnitExpectation): InferenceResult {
     try {
         return infer(ast, scope, wanted)
     }
@@ -161,11 +166,11 @@ function after(scope: Scope, inference: { variables: Bindings }): Scope {
 }
 
 /** The node with what it works out to written on it, where a map or a column looks for it. */
-function read(inference: Inference): Expression {
-    return { ...inference.ast, worksOutTo: counted(inference.unit, inference.times) }
+function packExpression(inference: InferenceResult): Expression {
+    return { ...inference.ast, worksOutTo: counted(inference.interp.unit, inference.interp.times) }
 }
 
-function infer(ast: Expression, scope: Scope, wanted: Wanted): Inference {
+function infer(ast: Expression, scope: Scope, wanted: UnitExpectation): InferenceResult {
     const asANumber = readAsANumber(ast, scope)
     if (asANumber !== undefined) {
         // toNumber("1000") is the number 1000, and any other toNumber is read as its argument, so
@@ -175,35 +180,35 @@ function infer(ast: Expression, scope: Scope, wanted: Wanted): Inference {
     return narrowed(within(ast, scope, wanted), wanted)
 }
 
-function within(ast: Expression, scope: Scope, wanted: Wanted): Inference {
+function within(ast: Expression, scope: Scope, wanted: UnitExpectation): InferenceResult {
     const here = { ast, variables: scope.variables }
     switch (ast.type) {
         case 'identifier':
             return identifier(ast, scope, wanted)
         case 'constant':
-            return { ...here, unit: dimensionless, times: [0, 1], flexibility: 'artificialPreference', ...ast.value.node.type === 'number' ? { literal: ast.value.node.value } : {} }
+            return { ...here, interp: bareNumber, ...ast.value.node.type === 'number' ? { literal: ast.value.node.value } : {} }
         case 'attribute': {
-            const object = inferEitherWay(ast.expr, scope, wantsNothing)
-            const field = object.fields?.get(ast.name.node)
+            const object = inferEitherWay(ast.expr, scope, noUnitExpectation)
+            const field = object.interp.fields?.get(ast.name.node)
             return {
                 ...here,
-                ast: { ...ast, expr: read(object) },
+                ast: { ...ast, expr: packExpression(object) },
                 variables: object.variables,
-                ...field ?? { unit: dimensionless, times: [0, 1], flexibility: 'naturalPreference' },
+                interp: field ?? { unit: dimensionless, times: [0, 1], flexibility: 'naturalPreference' },
             }
         }
         case 'unaryOperator': {
             // the sign is written outside the number, so -10 keeps its unit and reads -10°F
-            const inner = inferEitherWay(ast.expr, scope, ast.operator.node === '!' ? wantsNothing : wanted)
-            return { ...inner, ast: { ...ast, expr: read(inner) } }
+            const inner = inferEitherWay(ast.expr, scope, ast.operator.node === '!' ? noUnitExpectation : wanted)
+            return { ...inner, ast: { ...ast, expr: packExpression(inner) } }
         }
         case 'binaryOperator':
             return operation(ast, scope, wanted)
         case 'call':
             return call(ast, scope, wanted)
         case 'vectorLiteral': {
-            const elements = (inWhat: Wanted): Inference[] => {
-                const all: Inference[] = []
+            const elements = (inWhat: UnitExpectation): InferenceResult[] => {
+                const all: InferenceResult[] = []
                 let soFar = scope
                 for (const element of ast.elements) {
                     const each = inferEitherWay(element, soFar, inWhat)
@@ -213,37 +218,39 @@ function within(ast: Expression, scope: Scope, wanted: Wanted): Inference {
                 return all
             }
             const claimed = elements(wanted)
-            const agreed = agreedUnit(wanted, claimed)
+            const agreed = agreedUnit(wanted, claimed.map(each => each.interp))
             const all = agreed === undefined ? claimed : elements(agreed)
-            return { ...either(all, here), ast: { ...ast, elements: all.map(read) } }
+            return { ...either(all, here), ast: { ...ast, elements: all.map(packExpression) } }
         }
         case 'objectLiteral': {
-            const properties: [string, Inference][] = []
+            const properties: [string, InferenceResult][] = []
             let soFar = scope
             for (const [name, value] of ast.properties) {
-                const each = inferEitherWay(value, soFar, wantsNothing)
+                const each = inferEitherWay(value, soFar, noUnitExpectation)
                 properties.push([name, each])
                 soFar = after(soFar, each)
             }
             return {
                 ...here,
-                ast: { ...ast, properties: properties.map(([name, each]): [string, Expression] => [name, read(each)]) },
+                ast: { ...ast, properties: properties.map(([name, each]): [string, Expression] => [name, packExpression(each)]) },
                 variables: soFar.variables,
-                unit: dimensionless,
-                times: [0, 1],
-                flexibility: 'naturalPreference',
-                fields: new Map(properties),
+                interp: {
+                    unit: dimensionless,
+                    times: [0, 1],
+                    flexibility: 'naturalPreference',
+                    fields: new Map(properties.map(([name, each]) => [name, each.interp])),
+                },
             }
         }
         case 'if': {
-            const condition = inferEitherWay(ast.condition, scope, wantsNothing)
+            const condition = inferEitherWay(ast.condition, scope, noUnitExpectation)
             // an arm is read from where the condition left off, and not from the other arm: a name
             // one of them binds is not in scope in the other
             const afterCondition = after(scope, condition)
             const bothOf = ast.else === undefined ? [ast.then] : [ast.then, ast.else]
-            const arms = (inWhat: Wanted): InferredStatement[] => bothOf.map(arm => inferStatement(arm, afterCondition, inWhat))
+            const arms = (inWhat: UnitExpectation): InferredStatement[] => bothOf.map(arm => inferStatement(arm, afterCondition, inWhat))
             const claimed = arms(wanted)
-            const agreed = agreedUnit(wanted, claimed)
+            const agreed = agreedUnit(wanted, claimed.map(each => each.interp))
             const all = agreed === undefined ? claimed : arms(agreed)
             const consequent = all[0]
             const otherwise = ast.else === undefined ? undefined : all[1]
@@ -253,7 +260,7 @@ function within(ast: Expression, scope: Scope, wanted: Wanted): Inference {
                 variables: bothArms(scope, consequent, otherwise),
                 ast: {
                     ...ast,
-                    condition: read(condition),
+                    condition: packExpression(condition),
                     then: consequent.ast,
                     ...otherwise === undefined ? {} : { else: otherwise.ast },
                 },
@@ -265,7 +272,7 @@ function within(ast: Expression, scope: Scope, wanted: Wanted): Inference {
         }
         case 'autoUXNode': {
             const inner = inferEitherWay(ast.expr, scope, wanted)
-            return { ...inner, ast: { ...ast, expr: read(inner) } }
+            return { ...inner, ast: { ...ast, expr: packExpression(inner) } }
         }
         case 'customNode': {
             const inner = inferStatement(ast.expr, scope, wanted)
@@ -274,26 +281,26 @@ function within(ast: Expression, scope: Scope, wanted: Wanted): Inference {
     }
 }
 
-function identifier(ast: Expression & { type: 'identifier' }, scope: Scope, wanted: Wanted): Inference {
+function identifier(ast: Expression & { type: 'identifier' }, scope: Scope, wanted: UnitExpectation): InferenceResult {
     const here = { ast, variables: scope.variables }
     const bound = scope.variables.get(ast.name.node)
     if (bound !== undefined) {
         // a name bound to a number is of whatever it is used as, and stays that way after
         const narrowedTo = bound.flexibility === 'artificialPreference' && wanted.unit !== undefined ? { ...bound, unit: wanted.unit } : bound
-        return { ...here, ...narrowedTo, variables: new Map(scope.variables).set(ast.name.node, narrowedTo) }
+        return { ...here, interp: narrowedTo, variables: new Map(scope.variables).set(ast.name.node, narrowedTo) }
     }
     const unit = scope.typeEnvironment.get(ast.name.node)?.documentation?.unit
     // a name of no unit of its own says nothing about its dimensions, as a bare number does not
     return unit === undefined
-        ? { ...here, unit: dimensionless, times: [1], flexibility: 'artificialPreference' }
-        : { ...here, unit: unitTypeToStoredUnit(unit), times: [1], flexibility: 'naturalPreference' }
+        ? { ...here, interp: { unit: dimensionless, times: [1], flexibility: 'artificialPreference' } }
+        : { ...here, interp: { unit: unitTypeToStoredUnit(unit), times: [1], flexibility: 'naturalPreference' } }
 }
 
 /**
  * The unit several alternatives are all read in, or undefined where the first reading already used
  * it. A bare number states no unit, so it is not the one that decides.
  */
-function agreedUnit(wanted: Wanted, claimed: Expectation[]): Wanted | undefined {
+function agreedUnit(wanted: UnitExpectation, claimed: UnitAbstractInterp[]): UnitExpectation | undefined {
     if (wanted.unit !== undefined) {
         return undefined
     }
@@ -302,26 +309,25 @@ function agreedUnit(wanted: Wanted, claimed: Expectation[]): Wanted | undefined 
 }
 
 /** Either of several, as the arms of an `if` are, or as the elements of a vector are. */
-function either(of: (Expectation & { variables: Bindings })[], here: { ast: Expression, variables: Bindings }): Inference {
+function either(of: { interp: UnitAbstractInterp, variables: Bindings }[], here: { ast: Expression, variables: Bindings }): InferenceResult {
     const first = of.at(0)
     if (first === undefined) {
-        return { ...here, unit: dimensionless, times: [0, 1], flexibility: 'artificialPreference' }
+        return { ...here, interp: bareNumber }
     }
-    const unit = of.find(each => each.flexibility !== 'artificialPreference')?.unit ?? first.unit
+    const interps = of.map(each => each.interp)
+    const unit = interps.find(each => each.flexibility !== 'artificialPreference')?.unit ?? first.interp.unit
     // each of them is the same thing as the others, so they have to agree on how many of it there
     // is. On a scale with no zero of its own there is nothing to agree on
     const times = unit.unit.baseIsScalar
-        ? first.times
-        : of.map(each => each.times).reduce(intersect, first.times)
+        ? first.interp.times
+        : interps.map(each => each.times).reduce(intersect, first.interp.times)
     if (times.length === 0) {
         throw new Unsatisfiable('no one count is what all of them are')
     }
     return {
         ...here,
         variables: of[of.length - 1].variables,
-        unit,
-        times,
-        flexibility: of.map(each => each.flexibility).reduce(stronger, 'artificialPreference'),
+        interp: { unit, times, flexibility: interps.map(each => each.flexibility).reduce(stronger, 'artificialPreference') },
     }
 }
 
@@ -345,7 +351,7 @@ const sums: readonly BinaryOperatorSymbol[] = ['+', '-']
 const products: readonly BinaryOperatorSymbol[] = ['*', '/']
 const comparisons: readonly BinaryOperatorSymbol[] = ['==', '!=', '<', '>', '<=', '>=']
 
-function operation(ast: Expression & { type: 'binaryOperator' }, scope: Scope, wanted: Wanted): Inference {
+function operation(ast: Expression & { type: 'binaryOperator' }, scope: Scope, wanted: UnitExpectation): InferenceResult {
     const operator = ast.operator.node
     if (sums.includes(operator)) {
         return added(ast, scope, wanted, operator === '+' ? 1 : -1)
@@ -358,22 +364,20 @@ function operation(ast: Expression & { type: 'binaryOperator' }, scope: Scope, w
     }
     // a comparison is of no unit of its own, and its operands are of each other's
     const here = { ast, variables: scope.variables }
-    const left = inferEitherWay(ast.left, scope, wantsNothing)
+    const left = inferEitherWay(ast.left, scope, noUnitExpectation)
     // each side of a comparison is in the other's unit, and the side with no unit of its own is the
     // one that takes it: the 80 of 80 < high_temp is a temperature
-    const names = comparisons.includes(operator) && left.flexibility !== 'artificialPreference'
-    const right = inferEitherWay(ast.right, after(scope, left), names ? { unit: left.unit } : wantsNothing)
+    const names = comparisons.includes(operator) && left.interp.flexibility !== 'artificialPreference'
+    const right = inferEitherWay(ast.right, after(scope, left), names ? { unit: left.interp.unit } : noUnitExpectation)
     // read the left again now the right says what it could not, so the 80 of 80 < high_temp is one
-    const reread = left.flexibility === 'artificialPreference' && right.flexibility !== 'artificialPreference'
-        ? inferEitherWay(ast.left, after(scope, right), { unit: right.unit })
+    const reread = left.interp.flexibility === 'artificialPreference' && right.interp.flexibility !== 'artificialPreference'
+        ? inferEitherWay(ast.left, after(scope, right), { unit: right.interp.unit })
         : left
     return {
         ...here,
-        ast: { ...ast, left: read(reread), right: read(right) },
+        ast: { ...ast, left: packExpression(reread), right: packExpression(right) },
         variables: right.variables,
-        unit: dimensionless,
-        times: [0, 1],
-        flexibility: 'naturalPreference',
+        interp: { unit: dimensionless, times: [0, 1], flexibility: 'naturalPreference' },
     }
 }
 
@@ -382,13 +386,13 @@ function operation(ast: Expression & { type: 'binaryOperator' }, scope: Scope, w
  * that takes a factor is a difference. The counts of the two add up. Where the script leaves
  * either side open, every pair of counts is one the sum could be.
  */
-function added(ast: Expression & { type: 'binaryOperator' }, scope: Scope, wanted: Wanted, sign: 1 | -1): Inference {
-    const left = inferEitherWay(ast.left, scope, wantsNothing)
-    const right = inferEitherWay(ast.right, after(scope, left), wantsNothing)
-    const unit = left.flexibility === 'artificialPreference' ? right.unit : left.unit
-    const converts = (each: Inference): boolean => !fits(unit, each.unit)
-    const counts = (each: Inference, times: Times): Times => converts(each) ? [0] : times
-    const pairs = counts(left, left.times).flatMap(onLeft => counts(right, right.times)
+function added(ast: Expression & { type: 'binaryOperator' }, scope: Scope, wanted: UnitExpectation, sign: 1 | -1): InferenceResult {
+    const left = inferEitherWay(ast.left, scope, noUnitExpectation)
+    const right = inferEitherWay(ast.right, after(scope, left), noUnitExpectation)
+    const unit = left.interp.flexibility === 'artificialPreference' ? right.interp.unit : left.interp.unit
+    const converts = (each: InferenceResult): boolean => !fits(unit, each.interp.unit)
+    const counts = (each: InferenceResult, times: Times): Times => converts(each) ? [0] : times
+    const pairs = counts(left, left.interp.times).flatMap(onLeft => counts(right, right.interp.times)
         .map(onRight => ({ l: onLeft, r: onRight, sum: onLeft + sign * onRight })))
         .filter(({ sum }) => wanted.times === undefined || wanted.times.includes(sum))
     if (pairs.length === 0) {
@@ -402,11 +406,13 @@ function added(ast: Expression & { type: 'binaryOperator' }, scope: Scope, wante
     const over = inferEitherWay(ast.left, scope, { unit, times: [best.l] })
     const under = inferEitherWay(ast.right, after(scope, over), { unit, times: [best.r] })
     return {
-        ast: { ...ast, left: read(over), right: read(under) },
+        ast: { ...ast, left: packExpression(over), right: packExpression(under) },
         variables: under.variables,
-        unit,
-        times: [...new Set(pairs.map(({ sum }) => sum))].sort((a, b) => a - b),
-        flexibility: stronger(over.flexibility, under.flexibility),
+        interp: {
+            unit,
+            times: [...new Set(pairs.map(({ sum }) => sum))].sort((a, b) => a - b),
+            flexibility: stronger(over.interp.flexibility, under.interp.flexibility),
+        },
     }
 }
 
@@ -415,9 +421,9 @@ function added(ast: Expression & { type: 'binaryOperator' }, scope: Scope, wante
  * them. A quantity does not scale anything: nothing multiplies a temperature, so both sides are
  * differences, and a side that cannot be one is read as the number it is written as.
  */
-function multiplied(ast: Expression & { type: 'binaryOperator' }, scope: Scope, wanted: Wanted, power: 1 | -1): Inference {
-    const left = inferEitherWay(ast.left, scope, wantsNothing)
-    const right = inferEitherWay(ast.right, after(scope, left), wantsNothing)
+function multiplied(ast: Expression & { type: 'binaryOperator' }, scope: Scope, wanted: UnitExpectation, power: 1 | -1): InferenceResult {
+    const left = inferEitherWay(ast.left, scope, noUnitExpectation)
+    const right = inferEitherWay(ast.right, after(scope, left), noUnitExpectation)
     const scaling = right.literal ?? left.literal
     if (scaling !== undefined) {
         const scaled = right.literal !== undefined ? left : right
@@ -426,44 +432,42 @@ function multiplied(ast: Expression & { type: 'binaryOperator' }, scope: Scope, 
             // conversion goes, a factor landing on the number the script already writes rather
             // than beside the whole product: population + area * 2 reads Area × 2/km^2
             const carries = power === 1
-                ? unitProduct(wanted.unit, scaled.unit, -1)
-                : unitProduct(scaled.unit, wanted.unit, -1)
+                ? unitProduct(wanted.unit, scaled.interp.unit, -1)
+                : unitProduct(scaled.interp.unit, wanted.unit, -1)
             if (carries !== undefined) {
                 const taken = inferEitherWay(ast.right, after(scope, left), { unit: carries })
                 return {
-                    ast: { ...ast, left: read(left), right: read(taken) },
+                    ast: { ...ast, left: packExpression(left), right: packExpression(taken) },
                     variables: taken.variables,
-                    unit: wanted.unit,
-                    times: scaled.times,
-                    flexibility: 'flexiblePreference',
+                    interp: { unit: wanted.unit, times: scaled.interp.times, flexibility: 'flexiblePreference' },
                 }
             }
         }
         return {
-            ast: { ...ast, left: read(left), right: read(right) },
+            ast: { ...ast, left: packExpression(left), right: packExpression(right) },
             variables: right.variables,
-            unit: scaled.unit,
-            // on a scale with no zero of its own there is nothing for a number to scale
-            times: scaled.unit.unit.baseIsScalar
-                ? scaled.times
-                : scaled.times.map(each => power === 1 || right.literal === undefined ? each * scaling : each / scaling),
-            flexibility: 'flexiblePreference',
+            interp: {
+                unit: scaled.interp.unit,
+                // on a scale with no zero of its own there is nothing for a number to scale
+                times: scaled.interp.unit.unit.baseIsScalar
+                    ? scaled.interp.times
+                    : scaled.interp.times.map(each => power === 1 || right.literal === undefined ? each * scaling : each / scaling),
+                flexibility: 'flexiblePreference',
+            },
         }
     }
     const over = inferEitherWay(ast.left, scope, { times: [0] })
     const under = inferEitherWay(ast.right, after(scope, over), { times: [0] })
     const unit = unitOfProduct(over, under, power)
     return {
-        ast: { ...ast, left: read(over), right: read(under) },
+        ast: { ...ast, left: packExpression(over), right: packExpression(under) },
         variables: under.variables,
-        unit,
-        times: [unit.unit.times],
-        flexibility: stronger(over.flexibility, under.flexibility),
+        interp: { unit, times: [unit.unit.times], flexibility: stronger(over.interp.flexibility, under.interp.flexibility) },
     }
 }
 
-function unitOfProduct(left: Inference, right: Inference, power: 1 | -1): StoredUnit {
-    const product = unitProduct(left.unit, right.unit, power)
+function unitOfProduct(left: InferenceResult, right: InferenceResult, power: 1 | -1): StoredUnit {
+    const product = unitProduct(left.interp.unit, right.interp.unit, power)
     if (product === undefined) {
         throw new Unsatisfiable('nothing multiplies a quantity counted from a zero of its own')
     }
@@ -471,31 +475,33 @@ function unitOfProduct(left: Inference, right: Inference, power: 1 | -1): Stored
 }
 
 /** A temperature has no square, so what is raised to a power is a difference. */
-function raised(ast: Expression & { type: 'binaryOperator' }, scope: Scope): Inference {
+function raised(ast: Expression & { type: 'binaryOperator' }, scope: Scope): InferenceResult {
     const left = inferEitherWay(ast.left, scope, { times: [0] })
-    const right = inferEitherWay(ast.right, after(scope, left), wantsNothing)
+    const right = inferEitherWay(ast.right, after(scope, left), noUnitExpectation)
     const exponent = right.literal
     return {
-        ast: { ...ast, left: read(left), right: read(right) },
+        ast: { ...ast, left: packExpression(left), right: packExpression(right) },
         variables: right.variables,
-        unit: (exponent === undefined ? undefined : unitPower(left.unit, exponent)) ?? dimensionless,
-        times: [1],
-        flexibility: left.flexibility,
+        interp: {
+            unit: (exponent === undefined ? undefined : unitPower(left.interp.unit, exponent)) ?? dimensionless,
+            times: [1],
+            flexibility: left.interp.flexibility,
+        },
     }
 }
 
-interface ReadArgument { arg: UrbanStatsASTArg<UnitsRead>, inferred: Inference }
+interface ReadArgument { arg: UrbanStatsASTArg<UnitsRead>, inferred: InferenceResult }
 
-function call(ast: Expression & { type: 'call' }, scope: Scope, wanted: Wanted): Inference {
+function call(ast: Expression & { type: 'call' }, scope: Scope, wanted: UnitExpectation): InferenceResult {
     const propagation = propagationOf(ast.fn, scope)
     const stated = statedUnitOf(ast, scope)
-    const args = (inWhat: Wanted): ReadArgument[] => {
+    const args = (inWhat: UnitExpectation): ReadArgument[] => {
         const all: ReadArgument[] = []
         let soFar = scope
         for (const arg of ast.args) {
             const drawn = stated !== undefined && arg.type === 'named' && drawnBy.includes(arg.name.node)
             const inferred = inferEitherWay(arg.value, soFar, drawn ? { unit: stated } : ofArgument(propagation, inWhat))
-            all.push({ arg: { ...arg, value: read(inferred) }, inferred })
+            all.push({ arg: { ...arg, value: packExpression(inferred) }, inferred })
             soFar = after(soFar, inferred)
         }
         return all
@@ -503,14 +509,14 @@ function call(ast: Expression & { type: 'call' }, scope: Scope, wanted: Wanted):
     const claimed = args(wanted)
     // where the arguments have to be in one unit, they are read again in the one they agree on
     // rather than in whichever the first of them happened to claim
-    const agreed = argumentsAgree(propagation) ? agreedUnit(wanted, claimed.map(({ inferred }) => inferred)) : undefined
+    const agreed = argumentsAgree(propagation) ? agreedUnit(wanted, claimed.map(({ inferred }) => inferred.interp)) : undefined
     const all = agreed === undefined ? claimed : args(agreed)
     const here = {
         // the name of a function is read too, so that every node says what it works out to
-        ast: { ...ast, fn: read(inferEitherWay(ast.fn, scope, wantsNothing)), args: all.map(({ arg }) => arg) },
+        ast: { ...ast, fn: packExpression(inferEitherWay(ast.fn, scope, noUnitExpectation)), args: all.map(({ arg }) => arg) },
         variables: all.at(-1)?.inferred.variables ?? scope.variables,
     }
-    return { ...here, ...gives(propagation, all.map(({ inferred }) => inferred), all) }
+    return { ...here, interp: gives(propagation, all.map(({ inferred }) => inferred), all) }
 }
 
 /** Whether every argument has to be in one unit, as max and min need of theirs. */
@@ -542,7 +548,7 @@ function propagationOf(fn: Expression, scope: Scope): UnitPropagation | undefine
     return scope.typeEnvironment.get(fn.name.node)?.documentation?.unitPropagation
 }
 
-function ofArgument(propagation: UnitPropagation | undefined, wanted: Wanted): Wanted {
+function ofArgument(propagation: UnitPropagation | undefined, wanted: UnitExpectation): UnitExpectation {
     switch (propagation?.kind) {
         case 'unchanged':
             // there is no size of a temperature, nor a total of several, only of the degrees
@@ -559,12 +565,11 @@ function ofArgument(propagation: UnitPropagation | undefined, wanted: Wanted): W
             // unit it is in and the second puts them all in the one they agree on
             return { unit: wanted.unit }
         default:
-            return wantsNothing
+            return noUnitExpectation
     }
 }
 
-function gives(propagation: UnitPropagation | undefined, args: Inference[], named: { arg: UrbanStatsASTArg<UnitsRead> }[]): Expectation {
-    const bareNumber: Expectation = { unit: dimensionless, times: [0, 1], flexibility: 'artificialPreference' }
+function gives(propagation: UnitPropagation | undefined, args: InferenceResult[], named: { arg: UrbanStatsASTArg<UnitsRead> }[]): UnitAbstractInterp {
     if (propagation === undefined) {
         return bareNumber
     }
@@ -574,20 +579,15 @@ function gives(propagation: UnitPropagation | undefined, args: Inference[], name
         case 'rank':
             return { unit: dimensionless, times: [1], flexibility: 'naturalPreference' }
         case 'unchanged':
-            return first === undefined ? bareNumber : { unit: first.unit, times: first.times, flexibility: first.flexibility }
+            return first?.interp ?? bareNumber
         case 'power':
             return {
-                unit: (first === undefined ? undefined : unitPower(first.unit, propagation.exponent)) ?? dimensionless,
+                unit: (first === undefined ? undefined : unitPower(first.interp.unit, propagation.exponent)) ?? dimensionless,
                 times: [1],
-                flexibility: first?.flexibility ?? 'naturalPreference',
+                flexibility: first?.interp.flexibility ?? 'naturalPreference',
             }
-        case 'either': {
-            if (first === undefined) {
-                return bareNumber
-            }
-            const { unit, times, flexibility } = either(args, { ast: first.ast, variables: first.variables })
-            return { unit, times, flexibility }
-        }
+        case 'either':
+            return first === undefined ? bareNumber : either(args, { ast: first.ast, variables: first.variables }).interp
         case 'regression':
             return { ...bareNumber, fields: regressionFields(args, named) }
     }
@@ -596,14 +596,14 @@ function gives(propagation: UnitPropagation | undefined, args: Inference[], name
 const parameterName = /^x(\d+)$/
 
 /** What a regression gives back: an intercept in the units of what it was given, and slopes. */
-function regressionFields(args: Inference[], named: { arg: UrbanStatsASTArg<UnitsRead> }[]): ReadonlyMap<string, Expectation> {
-    const of = (name: string): Inference | undefined => {
+function regressionFields(args: InferenceResult[], named: { arg: UrbanStatsASTArg<UnitsRead> }[]): ReadonlyMap<string, UnitAbstractInterp> {
+    const of = (name: string): InferenceResult | undefined => {
         const index = named.findIndex(({ arg }) => arg.type === 'named' && arg.name.node === name)
         return index === -1 ? undefined : args[index]
     }
     const level = of('y')
-    const measured = level?.unit ?? dimensionless
-    const fields = new Map<string, Expectation>([
+    const measured = level?.interp.unit ?? dimensionless
+    const fields = new Map<string, UnitAbstractInterp>([
         ['b', { unit: measured, times: [1], flexibility: 'naturalPreference' }],
         ['residuals', { unit: measured, times: [0], flexibility: 'naturalPreference' }],
         ['r2', { unit: dimensionless, times: [1], flexibility: 'naturalPreference' }],
@@ -612,7 +612,7 @@ function regressionFields(args: Inference[], named: { arg: UrbanStatsASTArg<Unit
         const parameter = arg.type === 'named' ? parameterName.exec(arg.name.node) : null
         if (parameter !== null) {
             fields.set(`m${parameter[1]}`, {
-                unit: unitProduct(measured, args[index].unit, -1) ?? dimensionless,
+                unit: unitProduct(measured, args[index].interp.unit, -1) ?? dimensionless,
                 times: [0],
                 flexibility: 'naturalPreference',
             })
@@ -621,52 +621,45 @@ function regressionFields(args: Inference[], named: { arg: UrbanStatsASTArg<Unit
     return fields
 }
 
-function inferBlock(statements: Statement[], scope: Scope, wanted: Wanted): Expectation & { ast: Statement[], variables: Bindings } {
+function inferBlock(statements: Statement[], scope: Scope, wanted: UnitExpectation): { interp: UnitAbstractInterp, ast: Statement[], variables: Bindings } {
     const stamped: Statement[] = []
     let soFar = scope
-    let last: Expectation | undefined
+    let last: UnitAbstractInterp | undefined
     for (const [index, statement] of statements.entries()) {
-        const each = inferStatement(statement, soFar, index === statements.length - 1 ? wanted : wantsNothing)
+        const each = inferStatement(statement, soFar, index === statements.length - 1 ? wanted : noUnitExpectation)
         stamped.push(each.ast)
         soFar = after(soFar, each)
-        last = each
+        last = each.interp
     }
-    return {
-        ast: stamped,
-        variables: soFar.variables,
-        unit: last?.unit ?? dimensionless,
-        times: last?.times ?? [0, 1],
-        flexibility: last?.flexibility ?? 'naturalPreference',
-        fields: last?.fields,
-    }
+    // a block of no statements at all works out to nothing, which reads as a plain number
+    return { ast: stamped, variables: soFar.variables, interp: last ?? bareNumber }
 }
 
-interface InferredStatement extends Expectation {
+interface InferredStatement {
+    interp: UnitAbstractInterp
     ast: Statement
     variables: Bindings
 }
 
-function inferStatement(ast: Statement, scope: Scope, wanted: Wanted): InferredStatement {
+function inferStatement(ast: Statement, scope: Scope, wanted: UnitExpectation): InferredStatement {
     const inferred = statementWithin(ast, scope, wanted)
-    return { ...inferred, ast: { ...inferred.ast, worksOutTo: counted(inferred.unit, inferred.times) } }
+    return { ...inferred, ast: { ...inferred.ast, worksOutTo: counted(inferred.interp.unit, inferred.interp.times) } }
 }
 
-function statementWithin(ast: Statement, scope: Scope, wanted: Wanted): InferredStatement {
+function statementWithin(ast: Statement, scope: Scope, wanted: UnitExpectation): InferredStatement {
     switch (ast.type) {
         case 'parseError':
-            return { ast, variables: scope.variables, unit: dimensionless, times: [0, 1], flexibility: 'naturalPreference' }
+            return { ast, variables: scope.variables, interp: { unit: dimensionless, times: [0, 1], flexibility: 'naturalPreference' } }
         case 'expression': {
             const inner = inferEitherWay(ast.value, scope, wanted)
-            return { ...inner, ast: { ...ast, value: read(inner) } }
+            return { ...inner, ast: { ...ast, value: packExpression(inner) } }
         }
         case 'assignment': {
             const inner = inferEitherWay(ast.value, scope, wanted)
             const variables = ast.lhs.type === 'identifier'
-                ? new Map(inner.variables).set(ast.lhs.name.node, {
-                    unit: inner.unit, times: inner.times, flexibility: inner.flexibility, fields: inner.fields,
-                })
+                ? new Map(inner.variables).set(ast.lhs.name.node, inner.interp)
                 : inner.variables
-            return { ...inner, variables, ast: { ...ast, value: read(inner) } }
+            return { ...inner, variables, ast: { ...ast, value: packExpression(inner) } }
         }
         case 'statements': {
             const block = inferBlock(ast.result, scope, wanted)
@@ -674,9 +667,9 @@ function statementWithin(ast: Statement, scope: Scope, wanted: Wanted): Inferred
         }
         case 'condition': {
             // a filter says nothing about the units of what it keeps, but is still read
-            const condition = inferEitherWay(ast.condition, scope, wantsNothing)
+            const condition = inferEitherWay(ast.condition, scope, noUnitExpectation)
             const rest = inferBlock(ast.rest, after(scope, condition), wanted)
-            return { ...rest, ast: { ...ast, condition: read(condition), rest: rest.ast } }
+            return { ...rest, ast: { ...ast, condition: packExpression(condition), rest: rest.ast } }
         }
     }
 }
@@ -705,8 +698,8 @@ export function unitCheck<M>(program: UrbanStatsASTExpression<M>, typeEnvironmen
 export function unitCheck(program: Expression | Statement, typeEnvironment: TypeEnvironment): Expression | Statement {
     const scope: Scope = { typeEnvironment, variables: new Map() }
     return isExpression(program)
-        ? read(inferEitherWay(program, scope, wantsNothing))
-        : inferStatement(program, scope, wantsNothing).ast
+        ? packExpression(inferEitherWay(program, scope, noUnitExpectation))
+        : inferStatement(program, scope, noUnitExpectation).ast
 }
 
 function isExpression(ast: Expression | Statement): ast is Expression {
