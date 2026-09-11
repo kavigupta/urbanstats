@@ -177,14 +177,16 @@ function infer(ast: Expression, scope: Scope, wanted: UnitExpectation): Inferenc
         // everything below here reads an ordinary tree
         return infer(asANumber, scope, wanted)
     }
-    return narrowed(within(ast, scope, wanted), wanted)
+    // fallback in case best effort returns something that does not fit what is wanted
+    return narrowed(inferBestEffort(ast, scope, wanted), wanted)
 }
 
-function within(ast: Expression, scope: Scope, wanted: UnitExpectation): InferenceResult {
+/** Makes a best effort to read the expression in the unit wanted. Might return something with a different unit, that needs to be converted. */
+function inferBestEffort(ast: Expression, scope: Scope, wanted: UnitExpectation): InferenceResult {
     const here = { ast, variables: scope.variables }
     switch (ast.type) {
         case 'identifier':
-            return identifier(ast, scope, wanted)
+            return inferIdentifier(ast, scope, wanted)
         case 'constant':
             return { ...here, interp: bareNumber, ...ast.value.node.type === 'number' ? { literal: ast.value.node.value } : {} }
         case 'attribute': {
@@ -281,7 +283,7 @@ function within(ast: Expression, scope: Scope, wanted: UnitExpectation): Inferen
     }
 }
 
-function identifier(ast: Expression & { type: 'identifier' }, scope: Scope, wanted: UnitExpectation): InferenceResult {
+function inferIdentifier(ast: Expression & { type: 'identifier' }, scope: Scope, wanted: UnitExpectation): InferenceResult {
     const here = { ast, variables: scope.variables }
     const bound = scope.variables.get(ast.name.node)
     if (bound !== undefined) {
