@@ -222,7 +222,12 @@ function inferBestEffort(ast: Expression, scope: Scope, wanted: UnitExpectation)
             const claimed = elements(wanted)
             const agreed = agreedUnit(wanted, claimed.map(each => each.interp))
             const all = agreed === undefined ? claimed : elements(agreed)
-            return { ...either(all, here), ast: { ...ast, elements: all.map(packExpression) } }
+            return {
+                ...here,
+                variables: all.at(-1)?.variables ?? scope.variables,
+                interp: unifyUnits(all.map(each => each.interp)),
+                ast: { ...ast, elements: all.map(packExpression) },
+            }
         }
         case 'objectLiteral': {
             const properties: [string, InferenceResult][] = []
@@ -257,9 +262,10 @@ function inferBestEffort(ast: Expression, scope: Scope, wanted: UnitExpectation)
             const consequent = all[0]
             const otherwise = ast.else === undefined ? undefined : all[1]
             return {
-                ...either(otherwise === undefined ? [consequent] : [consequent, otherwise], here),
+                ...here,
+                interp: unifyUnits(all.map(each => each.interp)),
                 // a name an arm binds is bound outside it, where both arms bind it
-                variables: bothArms(scope, consequent, otherwise),
+                variables: unifyIfArms(scope, consequent, otherwise),
                 ast: {
                     ...ast,
                     condition: packExpression(condition),
@@ -298,53 +304,61 @@ function inferIdentifier(ast: Expression & { type: 'identifier' }, scope: Scope,
         : { ...here, interp: { unit: unitTypeToStoredUnit(unit), times: [1], flexibility: 'naturalPreference' } }
 }
 
+/** Which of several says what unit they are all in. A bare number names none, so it does not. */
+function unitNamedBy(interps: UnitAbstractInterp[]): StoredUnit | undefined {
+    return interps.find(each => each.flexibility !== 'artificialPreference')?.unit
+}
+
 /**
- * The unit several alternatives are all read in, or undefined where the first reading already used
- * it. A bare number states no unit, so it is not the one that decides.
+ * What to ask of a second reading of several alternatives, so they all come back in one unit.
+ * Undefined where a second reading would say nothing new: the caller already named the unit, or
+ * none of the alternatives names one.
  */
 function agreedUnit(wanted: UnitExpectation, claimed: UnitAbstractInterp[]): UnitExpectation | undefined {
     if (wanted.unit !== undefined) {
         return undefined
     }
-    const unit = claimed.find(each => each.flexibility !== 'artificialPreference')?.unit
+    const unit = unitNamedBy(claimed)
     return unit === undefined ? undefined : { ...wanted, unit }
 }
 
-/** Either of several, as the arms of an `if` are, or as the elements of a vector are. */
-function either(of: { interp: UnitAbstractInterp, variables: Bindings }[], here: { ast: Expression, variables: Bindings }): InferenceResult {
-    const first = of.at(0)
+/**
+ * Unify several unit abstract interpretations. naturally narrows.
+ */
+function unifyUnits(interps: UnitAbstractInterp[]): UnitAbstractInterp {
+    const first = interps.at(0)
     if (first === undefined) {
-        return { ...here, interp: bareNumber }
+        return bareNumber
     }
-    const interps = of.map(each => each.interp)
-    const unit = interps.find(each => each.flexibility !== 'artificialPreference')?.unit ?? first.interp.unit
-    // each of them is the same thing as the others, so they have to agree on how many of it there
-    // is. On a scale with no zero of its own there is nothing to agree on
+    const unit = unitNamedBy(interps) ?? first.unit
+    // only need to unify times when not in a scalar context.
     const times = unit.unit.baseIsScalar
-        ? first.interp.times
-        : interps.map(each => each.times).reduce(intersect, first.interp.times)
+        ? first.times
+        : interps.map(each => each.times).reduce(intersect, first.times)
     if (times.length === 0) {
         throw new Unsatisfiable('no one count is what all of them are')
     }
-    return {
-        ...here,
-        variables: of[of.length - 1].variables,
-        interp: { unit, times, flexibility: interps.map(each => each.flexibility).reduce(stronger, 'artificialPreference') },
+    return { unit, times, flexibility: interps.map(each => each.flexibility).reduce(stronger, 'artificialPreference') }
+}
+
+function unifyWithFallback(inArm: UnitAbstractInterp, other: UnitAbstractInterp): UnitAbstractInterp {
+    try {
+        return unifyUnits([inArm, other])
+    }
+    catch (error) {
+        if (!(error instanceof Unsatisfiable)) {
+            throw error
+        }
+        return bareNumber
     }
 }
 
-/** A name that both arms of an `if` bound may be either of what the two made it. */
-function bothArms(scope: Scope, consequent: { variables: Bindings }, otherwise: { variables: Bindings } | undefined): Bindings {
+/** A name that both arms of an `if` bound is worth what the two of them agree it is. */
+function unifyIfArms(scope: Scope, consequent: { variables: Bindings }, otherwise: { variables: Bindings } | undefined): Bindings {
     const bound = new Map(scope.variables)
-    for (const [name, expectation] of consequent.variables) {
+    for (const [name, inArm] of consequent.variables) {
         const other = otherwise?.variables.get(name) ?? scope.variables.get(name)
-        bound.set(name, other === undefined
-            ? expectation
-            : {
-                    unit: expectation.unit,
-                    times: [...new Set([...expectation.times, ...other.times])].sort((a, b) => a - b),
-                    flexibility: stronger(expectation.flexibility, other.flexibility),
-                })
+        bound.set(name, other === undefined ? inArm : unifyWithFallback(inArm, other))
     }
     return bound
 }
@@ -398,7 +412,7 @@ function added(ast: Expression & { type: 'binaryOperator' }, scope: Scope, wante
         .map(onRight => ({ l: onLeft, r: onRight, sum: onLeft + sign * onRight })))
         .filter(({ sum }) => wanted.times === undefined || wanted.times.includes(sum))
     if (pairs.length === 0) {
-        throw new Unsatisfiable('no counts of the two make the one wanted')
+        throw new Unsatisfiable('cannot add or subtract these units to get the times wanted')
     }
     // the fewest quantities in play, and of those the most on the left
     const best = pairs.reduce((a, b) => {
@@ -589,7 +603,7 @@ function gives(propagation: UnitPropagation | undefined, args: InferenceResult[]
                 flexibility: first?.interp.flexibility ?? 'naturalPreference',
             }
         case 'either':
-            return first === undefined ? bareNumber : either(args, { ast: first.ast, variables: first.variables }).interp
+            return unifyUnits(args.map(each => each.interp))
         case 'regression':
             return { ...bareNumber, fields: regressionFields(args, named) }
     }

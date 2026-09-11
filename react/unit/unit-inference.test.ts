@@ -107,6 +107,12 @@ void test('an arm of an if can bind a name', () => {
     // where the arm that did not run left it as it was
     assert.equal(inferred('x = area\nif (population > 0) { x = area * 2 }\nx'), 'm^2 times=1 x1000000')
     assert.equal(inferred('x = area\nif (population > 0) { x = area / 2 }\nx'), 'm^2 times=1 x1000000')
+    // a name is worth what a value of the same two arms would be, even where the arms themselves
+    // agree and only the name they bind does not: a temperature and a difference are neither
+    assert.equal(inferred('if (population > 0) { high_temp } else { high_temp - low_temp }'), 'dimensionless times=1 x1')
+    assert.equal(inferred('if (population > 0) { x = high_temp; area } else { x = high_temp - low_temp; area }\nx'), 'dimensionless times=1 x1')
+    // and a bare number names no unit for a name either, whichever arm writes it
+    assert.equal(inferred('if (population > 0) { x = 2; area } else { x = high_temp; area }\nx'), 'F^1 times=1 x1')
 })
 
 void test('a vector takes the unit of its elements', () => {
