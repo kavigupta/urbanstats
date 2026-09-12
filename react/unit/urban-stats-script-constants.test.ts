@@ -152,6 +152,9 @@ void test('constant listing', (): void => {
             '(string, string; ) -> boolean': [
                 'matchesRegex',
             ],
+            '(number; ) -> boolean': [
+                'isNaN',
+            ],
 
             '(any; ) -> number': [
                 'toNumber',
