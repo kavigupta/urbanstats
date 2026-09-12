@@ -3,7 +3,7 @@ import test from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { mapUSSFromString } from '../src/mapper/settings/map-uss'
-import { deriveMapUnit, deriveTableColumnUnit } from '../src/urban-stats-script/derive-unit'
+import { deriveMapUnit, deriveTableColumnUnit, mapRampUnit } from '../src/urban-stats-script/derive-unit'
 import { reifyString } from '../src/utils/human-readable-name'
 import { UnitSettings, StoredUnit, writeQuantity } from '../src/utils/quantity'
 
@@ -179,3 +179,19 @@ void test('a column is written in the units of its values', () => {
     assert.equal(columnUnit('column(values=population), column(values=area)', 1), '1\u202f000km^{2}')
     assert.equal(columnUnit('column(values=population)', 1), 'nothing')
 })
+
+// What a map's ramp is labelled in. Both the mapper and the link embed card ask this, and the card
+// used to answer it differently: it had no fall back to what the data works out to, so a map that
+// stated no unit was drawn with a ramp of bare numbers.
+for (const [data, stated, expected] of [
+    ['population / area', undefined, '1\u202f000/km^{2}'],
+    ['high_temp - low_temp', undefined, '+1\u202f000.0\u00b0F'],
+    ['pm25_pollution * area', undefined, '1\u202f000g/m'],
+    ['population / area', 'temperature', '1\u202f000.0\u00b0F'],
+    ['high_temp', 'number', '1\u202f000'],
+] as const) {
+    void test(`a ramp of ${data} stating ${stated ?? 'no unit'}`, () => {
+        const uss = mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`)
+        assert.equal(written(mapRampUnit(uss, defaultTypeEnvironment('USA'), stated)), expected)
+    })
+}

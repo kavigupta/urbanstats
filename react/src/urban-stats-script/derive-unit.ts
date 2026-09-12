@@ -1,5 +1,6 @@
 import { mapDataExpression, MapUSS, tableColumnExpression } from '../mapper/settings/map-uss'
 import { StoredUnit } from '../utils/quantity'
+import { UnitType, unitTypeToStoredUnit } from '../utils/unit'
 
 import { UrbanStatsASTExpression } from './ast'
 import { TypeEnvironment } from './types-values'
@@ -20,4 +21,13 @@ export function deriveMapUnit(uss: MapUSS, typeEnvironment: TypeEnvironment): St
 
 export function deriveTableColumnUnit(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): StoredUnit | undefined {
     return unitOf(tableColumnExpression(uss, typeEnvironment, columnIndex), uss, typeEnvironment)
+}
+
+/**
+ * The unit a map's ramp is labelled in. A script that states a unit is drawn in that one; a script
+ * that states none is drawn in whatever its data works out to. Both the mapper and the link embed
+ * card label a ramp, and they have to agree on this.
+ */
+export function mapRampUnit(uss: MapUSS, typeEnvironment: TypeEnvironment, stated: UnitType | undefined): StoredUnit | undefined {
+    return stated === undefined ? deriveMapUnit(uss, typeEnvironment) : unitTypeToStoredUnit(stated)
 }
