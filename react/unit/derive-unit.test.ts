@@ -221,3 +221,22 @@ for (const [data, declared, expected] of [
         assert.equal(written(unit), expected)
     })
 }
+
+// Units of more than one dimension, written out. These are the shapes a reader is least likely to
+// have seen, and the ones a naming pool is least likely to have a tidy answer for.
+for (const [data, expected] of [
+    ['pm25_pollution', '1\u202f234.00\u03bcg/m^{3}'],
+    ['pm25_pollution * area', '12.3g/cm'],
+    ['pm25_pollution ** 2', '1\u202f234\u03bcg^{2}/m^{6}'],
+    ['sqrt(pm25_pollution)', '1.23g^{0.5}/m^{1.5}'],
+    // a thousand million cubic metres to the gram is more readably a cubic kilometre to it
+    ['1 / pm25_pollution', '1.23km^{3}/g'],
+    ['rainfall * sunny_hours', '14.1cm'],
+    ['elevation / sunny_hours', '20.6m/min'],
+    ['rainfall / snowfall', '1\u202f230'],
+    ['1 / area', '1\u202f234/km^{2}'],
+] as const) {
+    void test(`a map of ${data} is written`, () => {
+        assert.equal(written(unitOfMap(data), 1234), expected)
+    })
+}

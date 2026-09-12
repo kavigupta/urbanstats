@@ -197,6 +197,47 @@ void test('max takes the unit of its arguments', () => {
     assert.equal(inferred('abs(maximum(high_temp + low_temp, high_temp))'), 'dimensionless times=1 x1')
 })
 
+void test('a difference of two temperatures multiplies and raises as any quantity does', () => {
+    // the reading cannot be scaled, but the degrees between two readings are a size like any other,
+    // so anything that asks whether a unit multiplies has to ask of the count it was read with
+    assert.equal(inferred('(high_temp - low_temp) * area'), 'F^1 m^2 times=0 x1000000')
+    assert.equal(inferred('(high_temp - low_temp) / area'), 'F^1 m^-2 times=0 x0.000001')
+    assert.equal(inferred('(high_temp - low_temp) ** 2'), 'F^2 times=1 x1')
+    assert.equal(inferred('sqrt(high_temp - low_temp)'), 'F^0.5 times=1 x1')
+    // a name the script never bound says nothing, and multiplying by it once read out of the pass
+    assert.equal(inferred('(high_temp - low_temp) * notAName'), 'F^1 times=0 x1')
+    // where a reading itself still multiplies nothing, and is read as the number it is written as
+    assert.equal(inferred('high_temp * notAName'), 'dimensionless times=1 x1')
+})
+
+void test('a number over a quantity is one over that quantity', () => {
+    // the number is the numerator, so the quantity is inverted rather than carried through
+    assert.equal(inferred('1 / area'), 'm^-2 times=1 x0.000001')
+    assert.equal(inferred('100 / density_pw_1km'), 'm^2 person^-1 times=1 x1000000')
+    assert.equal(inferred('1 / pm25_pollution'), 'g^-1 m^3 times=1 x1000000')
+    // where a number under one leaves it as it was, the number being the divisor
+    assert.equal(inferred('area / 1'), 'm^2 times=1 x1000000')
+    assert.equal(inferred('area / 2'), 'm^2 times=1 x1000000')
+    // nothing divides into a reading, so it is read as the number it is written as, but the
+    // degrees between two readings divide as any quantity does
+    assert.equal(inferred('1 / high_temp'), 'dimensionless times=1 x1')
+    assert.equal(inferred('1 / (high_temp - low_temp)'), 'F^-1 times=0 x1')
+})
+
+void test('units of more than one dimension compose', () => {
+    // a concentration is a mass in a volume, so an amount of it over an area is a mass over a length
+    assert.equal(inferred('pm25_pollution'), 'g^1 m^-3 times=1 x0.000001')
+    assert.equal(inferred('pm25_pollution * area'), 'g^1 m^-1 times=1 x1')
+    assert.equal(inferred('pm25_pollution ** 2'), 'g^2 m^-6 times=1 x1e-12')
+    assert.equal(inferred('sqrt(pm25_pollution)'), 'g^0.5 m^-1.5 times=1 x0.001')
+    // a length each year times a number of hours is a length, the years and the hours cancelling
+    assert.equal(inferred('rainfall * sunny_hours'), 'm^1 times=1 x0.0001140771161305042')
+    assert.equal(inferred('elevation / sunny_hours'), 'm^1 s^-1 times=1 x0.0002777777777777778')
+    // and a quantity over one of the same kind is of no kind at all
+    assert.equal(inferred('rainfall / snowfall'), 'dimensionless times=1 x1')
+    assert.equal(inferred('pm25_pollution / pm25_pollution'), 'dimensionless times=1 x1')
+})
+
 void test('a total of people is people, and a total of temperatures is so many degrees', () => {
     assert.equal(inferred('sum(population)'), 'person^1 times=1 x1')
     // no temperature is the sum of several, but the degrees they are above zero add up
