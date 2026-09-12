@@ -69,15 +69,17 @@ function CommonMaplibreMapImpl(props: CommonMapProps, ref: React.Ref<MapRef>): R
     )
 }
 
-export function MapAttribution(): ReactNode {
+export function MapAttribution({ children }: { children?: ReactNode }): ReactNode {
     const colors = useColors()
     // Exported PNGs carry the credit on their footer banner instead
-    if (useScreenshotMode()) {
+    const inScreenshot = useScreenshotMode()
+    if (inScreenshot && children === undefined) {
         return null
     }
     return (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', fontSize: '0.75em', color: colors.ordinalTextColor, marginTop: '0.25em' }}>
-            {tileAttribution}
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1em', fontSize: '0.75em', color: colors.ordinalTextColor, marginTop: '0.25em' }}>
+            <div>{children}</div>
+            <div>{inScreenshot ? '' : tileAttribution}</div>
         </div>
     )
 }
