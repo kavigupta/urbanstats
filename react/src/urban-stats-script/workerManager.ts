@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+
 import validGeographies from '../data/mapper/used_geographies'
 import { Universe } from '../universe'
 
@@ -10,9 +12,22 @@ export interface USSExecutionRequest { descriptor: USSExecutionDescriptor, stmts
 export type AsyncInterpretationError = EditorError[]
 
 export interface AssignmentsResult {
-    variables: Map<string, USSValue>
+    variables: Map<string, USSValue> | undefined
     // Values functions recorded for the expressions they came from, keyed by block ident
-    blockValues: Map<string, USSValue>
+    blockValues: Map<string, USSValue> | undefined
+}
+
+// Assignments can take up a lot of memory, and also get stuck in React memoization
+// So, we should clear out the old instance once it is not longer being used
+export function useClearPreviousAssignments(assignments: AssignmentsResult): void {
+    const prev = useRef(assignments)
+    useEffect(() => {
+        if (assignments !== prev.current) {
+            prev.current.variables = undefined
+            prev.current.blockValues = undefined
+            prev.current = assignments
+        }
+    })
 }
 
 export interface USSExecutionResult<Value extends USSValue = USSValue> {

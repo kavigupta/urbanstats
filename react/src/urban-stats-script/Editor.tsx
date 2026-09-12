@@ -9,12 +9,12 @@ import { LongFormDocumentation, linkContext } from '../uss-documentation'
 import { TestUtils } from '../utils/TestUtils'
 import { totalOffset } from '../utils/layout'
 
-import { useAssignments } from './AssignmentsContext'
 import { createAutocompleteMenu, createDocumentationPopover, getAutocompleteOptions } from './autocomplete'
 import { renderCode, getRange, nodeContent, Range, setRange, EditorResult, longMessage, Script, makeScript, createPlaceholder } from './editor-utils'
 import { AnnotatedToken } from './lexer'
 import { LocInfo } from './location'
 import { renderValue, TypeEnvironment, USSDocumentedType, USSValue } from './types-values'
+import { AssignmentsResult } from './workerManager'
 
 interface AutocompleteState {
     kind: 'autocomplete'
@@ -36,7 +36,7 @@ interface InspectState {
 type PopoverState = AutocompleteState | InspectState | undefined
 
 export function Editor(
-    { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, eRef, children }: {
+    { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, eRef, assignments, children }: {
         uss: string
         setUss: (newScript: string) => void
         typeEnvironment: TypeEnvironment
@@ -45,11 +45,10 @@ export function Editor(
         selection: Range | null
         setSelection: (newRange: Range | null) => void
         eRef?: React.MutableRefObject<HTMLPreElement | null>
+        assignments: AssignmentsResult
         children?: ReactNode
     },
 ): ReactNode {
-    const assignments = useAssignments()
-
     const setSelectionRef = useRef(setSelection)
     setSelectionRef.current = setSelection
 
@@ -319,7 +318,7 @@ export function Editor(
                 if (token?.token.type === 'identifier') {
                     const name = token.token.value
                     const documentation = typeEnvironment.get(name)
-                    const value = assignments.value.variables.get(name)
+                    const value = assignments.variables!.get(name)
                     if (documentation !== undefined || value !== undefined) {
                         // Keep the same object while we're on the same token, so we don't restart the delay
                         const next = { token, elemOffset: totalOffset(elem).left, opts: { location: token.location, name, documentation, value } }
