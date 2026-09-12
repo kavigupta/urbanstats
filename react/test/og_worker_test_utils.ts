@@ -157,7 +157,18 @@ async function startTileServer(): Promise<void> {
             response.writeHead(500).end()
         })
     })
-    await new Promise<void>(resolve => server.listen(tilePort, '127.0.0.1', resolve))
+    await new Promise<void>((resolve, reject) => {
+        // A retry reimports this module, so the port is still held by the previous attempt's server.
+        server.on('error', (error: NodeJS.ErrnoException) => {
+            if (error.code === 'EADDRINUSE') {
+                resolve()
+            }
+            else {
+                reject(error)
+            }
+        })
+        server.listen(tilePort, '127.0.0.1', resolve)
+    })
     // Otherwise it holds the runner open once the tests are done.
     server.unref()
 }
