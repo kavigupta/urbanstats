@@ -83,6 +83,7 @@ export interface ScreencapElements {
     path: string
     overallWidth: number
     elementsToRender: HTMLElement[]
+    topPadding?: number
 }
 
 function drawImageIfNotTesting(context: CanvasRenderingContext2D, index: number, image: CanvasImageSource, x: number, y: number, w: number, h: number, testing: boolean): void {
@@ -296,14 +297,14 @@ export async function createScreenshot(config: () => ScreencapElements, universe
         const bannerHeight = banner.height * bannerScale
 
         canvas.width = padAround * 2 + overallWidth
-        canvas.height = padAround + padBetween * (canvases.length - 1) + canvases.reduce((a, b) => a + b.height, 0) + bannerHeight
+        canvas.height = (resolved.topPadding ?? padAround) + padBetween * (canvases.length - 1) + canvases.reduce((a, b) => a + b.height, 0) + bannerHeight
 
         const ctx = canvas.getContext('2d')!
 
         ctx.fillStyle = colors.background
         ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-        let start = padAround
+        let start = resolved.topPadding ?? padAround
         for (const elementCanvas of canvases) {
             ctx.drawImage(elementCanvas, padAround, start)
             start += elementCanvas.height + padBetween
