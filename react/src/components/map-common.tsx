@@ -19,7 +19,7 @@ import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { ScreenshotAwareLayer } from './ScreenshotAwareLayer'
-import { keptByNoBasemap, urbanStatsLayerPrefix } from './map-common-utils'
+import { keptByNoBasemap, tileAttribution, urbanStatsLayerPrefix } from './map-common-utils'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotCallback, useScreenshotMode } from './screenshot'
 
 const debugLog = makeDebugLogger('mapExport')
@@ -50,6 +50,7 @@ function CommonMaplibreMapImpl(props: CommonMapProps, ref: React.Ref<MapRef>): R
             canvasContextAttributes={{
                 preserveDrawingBuffer: true, // Allows screenshots
             }}
+            attributionControl={false}
             {...props}
             style={{
                 width: '100%',
@@ -65,6 +66,19 @@ function CommonMaplibreMapImpl(props: CommonMapProps, ref: React.Ref<MapRef>): R
             <ExposeMapForTesting id={testId} />
             <SynchronizeMapWithScreenshots />
         </Map>
+    )
+}
+
+export function MapAttribution(): ReactNode {
+    const colors = useColors()
+    // Exported PNGs carry the credit on their footer banner instead
+    if (useScreenshotMode()) {
+        return null
+    }
+    return (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', fontSize: '0.75em', color: colors.ordinalTextColor, marginTop: '0.25em' }}>
+            {tileAttribution}
+        </div>
     )
 }
 
