@@ -5,31 +5,31 @@ import statistic_variables_info from '../data/statistic_variables_info'
 import { loadOrderingDataProtobuf, loadProtobuf } from '../load_json'
 import { mapperContext, defaultTypeEnvironment, loadInsets } from '../mapper/context'
 import { indexLink } from '../navigation/links'
-import { Universe } from '../universe'
 import { assert } from '../utils/defensive'
 import { installSegmenterPolyfill } from '../utils/segmenter'
 
-import { locationOfLastExpression } from './ast'
+import { locationOfLastExpression, UrbanStatsASTStatement } from './ast'
 import { Context } from './context'
 import { EditorError } from './editor-utils'
 import { Effect, execute, InterpretationError } from './interpreter'
 import { noLocation } from './location'
 import { renderType, USSRawValue, USSValue } from './types-values'
-import { AssignmentsResult, USSExecutionRequest, USSExecutionResult } from './workerManager'
+import { AssignmentsResult, GeographySelection, USSExecutionRequest, USSExecutionResult } from './workerManager'
 
-interface LoadedGeography {
-    universe: Universe
-    geographyKind: typeof validGeographies[number]
+interface LoadedGeographies {
+    geographies: GeographySelection[]
     longnames: string[]
+    /** How many of `longnames` each of `geographies` contributed, in order. */
+    lengths: number[]
     dataCache: Map<string, number[]>
 }
 
-/** Replaced whenever a request asks for a geography other than the one already loaded. */
-interface ExecutorCache { loaded: LoadedGeography | undefined }
+/** Replaced whenever a request asks for geographies other than the ones already loaded. */
+interface ExecutorCache { loaded: LoadedGeographies | undefined }
 
 /**
- * The executor holds the names and columns of the geography it last ran over, so a request over
- * that same geography loads nothing. Its lifetime is that cache's lifetime.
+ * The executor holds the names and columns of the geographies it last ran over, so a request over
+ * those same geographies loads nothing. Its lifetime is that cache's lifetime.
  */
 export function createRequestExecutor(): (request: USSExecutionRequest) => Promise<USSExecutionResult> {
     const cache: ExecutorCache = { loaded: undefined }
@@ -109,33 +109,29 @@ async function contextForRequest(request: USSExecutionRequest, cache: ExecutorCa
         case 'generic':
             return [emptyContext(effects), getWarnings]
         case 'mapper':
+            return [await mapperContextForRequest(request.stmts, request.descriptor.geographies, effects, cache), getWarnings]
         case 'statistics':
-            return [await mapperContextForRequest(request as USSExecutionRequest & { descriptor: { kind: 'mapper' } }, effects, cache), getWarnings]
+            return [await mapperContextForRequest(request.stmts, [{ universe: request.descriptor.universe, geographyKind: request.descriptor.geographyKind }], effects, cache), getWarnings]
     }
 }
 
-async function mapperContextForRequest(request: USSExecutionRequest & { descriptor: { kind: 'mapper' } }, effects: Effect[], cache: ExecutorCache): Promise<Context> {
-    const geographyKind = request.descriptor.geographyKind
-    const universe = request.descriptor.universe
-    const dte = defaultTypeEnvironment(universe)
-    if (!validGeographies.includes(geographyKind)) {
+async function mapperContextForRequest(stmts: UrbanStatsASTStatement, geographies: GeographySelection[], effects: Effect[], cache: ExecutorCache): Promise<Context> {
+    const universes = Array.from(new Set(geographies.map(g => g.universe)))
+    const dte = defaultTypeEnvironment(universes)
+    if (geographies.some(g => !validGeographies.includes(g.geographyKind))) {
         throw new Error('invalid geography')
     }
 
-    // Load geography names and set up cache
-    let longnames: string[]
-    let dataCache: Map<string, number[]>
-
-    if (cache.loaded?.geographyKind === geographyKind && cache.loaded.universe === universe) {
-        ({ longnames, dataCache } = cache.loaded)
+    if (cache.loaded === undefined || !sameGeographies(cache.loaded.geographies, geographies)) {
+        const indices = await Promise.all(geographies.map(g => loadProtobuf(indexLink(g.universe, g.geographyKind), 'ArticleOrderingList')))
+        cache.loaded = {
+            geographies,
+            longnames: indices.flatMap(index => index.longnames),
+            lengths: indices.map(index => index.longnames.length),
+            dataCache: new Map(),
+        }
     }
-    else {
-        // Load geography names from index
-        const indexData = await loadProtobuf(indexLink(universe, geographyKind), 'ArticleOrderingList')
-        longnames = indexData.longnames
-        dataCache = new Map()
-        cache.loaded = { universe, geographyKind, longnames, dataCache }
-    }
+    const { longnames, lengths, dataCache } = cache.loaded
 
     const annotateType = (name: string, val: USSRawValue): USSValue => {
         const typeInfo = dte.get(name)
@@ -158,7 +154,7 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
             return annotateType('geoCentroid', longnames.map(longname => ({ type: 'opaque', opaqueType: 'geoCentroidHandle', value: longname })))
         }
         if (name === 'defaultInsets') {
-            return annotateType('defaultInsets', { type: 'opaque', opaqueType: 'insets', value: loadInsets(request.descriptor.universe) })
+            return annotateType('defaultInsets', { type: 'opaque', opaqueType: 'insets', value: loadInsets(universes) })
         }
         const variableInfo = statistic_variables_info.variableNames.find(v => v.varName === name)
         if (!variableInfo) {
@@ -174,14 +170,26 @@ async function mapperContextForRequest(request: USSExecutionRequest & { descript
 
         const statpath = statistic_path_list[index]
 
-        const variableData = await loadOrderingDataProtobuf(universe, statpath, geographyKind)
-        assert(Array.isArray(variableData.value), `Expected variable data for ${name} to be an array`)
-        dataCache.set(name, variableData.value)
-        return annotateType(name, variableData.value)
+        // A geography whose kind never had this statistic computed contributes NaN, which a
+        // multi-source variable then fills in from whichever source does cover it
+        const perGeography = await Promise.all(geographies.map(async (g, i) => {
+            const variableData = await loadOrderingDataProtobuf(g.universe, statpath, g.geographyKind)
+            if (variableData === undefined) {
+                return new Array<number>(lengths[i]).fill(NaN)
+            }
+            assert(Array.isArray(variableData.value), `Expected variable data for ${name} to be an array`)
+            return variableData.value
+        }))
+        const value = perGeography.flat()
+        dataCache.set(name, value)
+        return annotateType(name, value)
     }
 
-    const context = await mapperContext(request.stmts, getVariable, effects, universe)
-    return context
+    return await mapperContext(stmts, getVariable, effects, universes)
+}
+
+function sameGeographies(a: GeographySelection[], b: GeographySelection[]): boolean {
+    return a.length === b.length && a.every((g, i) => g.universe === b[i].universe && g.geographyKind === b[i].geographyKind)
 }
 
 function removeFunctions(value: USSRawValue): USSRawValue {

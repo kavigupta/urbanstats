@@ -8,7 +8,7 @@ import { assert } from '../../utils/defensive'
 import { loadInsetExpression, loadInsets } from '../context'
 
 import { MapUSS, mapUssParser, validMapperOutputs } from './map-uss'
-import { MapSettings } from './utils'
+import { MapSettings, universesOf } from './utils'
 
 export const neswSchema = l.object({
     north: l.number(),
@@ -45,8 +45,8 @@ export function getInsets(settings: MapSettings, typeEnvironment: TypeEnvironmen
     if (settings.script.uss.type === 'statements') {
         try {
             const parseResult = mapSchema(settings.script.uss, typeEnvironment).namedArgs.insets
-            if (parseResult.currentValue === undefined && settings.universe !== undefined) {
-                return loadInsets(settings.universe)
+            if (parseResult.currentValue === undefined && settings.geographies.length > 0) {
+                return loadInsets(universesOf(settings.geographies))
             }
             return parseResult.currentValue?.currentValue
         }
@@ -106,14 +106,14 @@ export function normalizeInsetScreenBounds(edits: InsetEdits, insets: Inset[]): 
 export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvironment: TypeEnvironment): MapUSS {
     assert(settings.script.uss.type === 'statements', 'Trying to do an inset edit on USS that is not inset editable')
     const mapInsets = mapSchema(settings.script.uss, typeEnvironment).namedArgs.insets
-    assert(settings.universe !== undefined, 'Trying to do an inset edit on USS that is not inset editable')
+    assert(settings.geographies.length > 0, 'Trying to do an inset edit on USS that is not inset editable')
 
     let currentInsetsAst: UrbanStatsASTExpression
     if (mapInsets.currentValue !== undefined) {
         currentInsetsAst = mapInsets.expr!
     }
     else {
-        currentInsetsAst = loadInsetExpression(settings.universe)
+        currentInsetsAst = loadInsetExpression(universesOf(settings.geographies))
     }
 
     const newConstructInsets = constructInsetsSchema.parse(currentInsetsAst, typeEnvironment).edit(edits.ast) as UrbanStatsASTExpression

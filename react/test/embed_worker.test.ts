@@ -51,6 +51,12 @@ function usaMap(geographyKind: string, uss: string): string {
     })).toString('base64'))}`
 }
 
+/** Two universes too far apart to share a main map, so the card lays out two side by side. */
+const multiGeographyMap = `/mapper.html?settings=${encodeURIComponent(gzipSync(JSON.stringify({
+    geographies: [{ universe: 'USA', geographyKind: 'Subnational Region' }, { universe: 'France', geographyKind: 'Subnational Region' }],
+    script: { uss: 'cMap(data=population, scale=linearScale(), ramp=rampUridis)' },
+})).toString('base64'))}`
+
 /** A script stating its own label, rather than the default map, whose label has to be derived. */
 const labelledMap = usaMap('County', 'cMap(data=density_pw_1km, label="How dense is it")')
 // A circle per geography rather than a filled shape, sized by population so the radii differ.
@@ -156,6 +162,10 @@ test('embed-worker-long-named-statistic-card', async (t) => {
 
 test('embed-worker-late-sorted-statistic-card', async (t) => {
     await snapshotCard(t, lateSortedStatistic)
+})
+
+test('embed-worker-multi-geography-map-card', async (t) => {
+    await snapshotCard(t, multiGeographyMap)
 })
 
 test('embed-worker-inset-map-card', async (t) => {

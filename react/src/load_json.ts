@@ -212,15 +212,19 @@ async function loadOrderingProtobuf(universe: Universe, statpath: string, type: 
     return { orderIdxs: orderIndices }
 }
 
+/** Undefined when this type of article never had the statistic computed for it. */
 export async function loadOrderingDataProtobuf(universe: Universe, statpath: string, type: string): Promise<{
     value: number[]
     populationPercentile: number[]
-}> {
+} | undefined> {
     const links = data_links
     const idx = type in links ? pullKey(links[type], statpath) : 0
     const orderLink = orderingDataLink(type, idx)
     const dataLists = await loadProtobuf(orderLink, 'DataLists')
     const index = dataLists.statnames.indexOf(statpath)
+    if (index === -1) {
+        return undefined
+    }
     const res = dataLists.dataLists[index]
     const universeIdx = universes_ordered.indexOf(universe)
     const universes = await loadUniverses(type)
@@ -273,6 +277,7 @@ export async function loadStatisticsPage(
     const orderingOriginal = await loadOrderingProtobuf(statUniverse, statpath, articleType)
     const ordering = await loadOrdering(statUniverse, statpath, articleType)
     const orderingData = await loadOrderingDataProtobuf(statUniverse, statpath, articleType)
+    assert(orderingData !== undefined, `No data for ${statpath} in ${articleType}`)
     assert(Array.isArray(orderingOriginal.orderIdxs), 'Ordering original must be an array')
     const reorder = reindex(orderingOriginal.orderIdxs)
     const articleNames = ordering.longnames

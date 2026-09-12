@@ -186,8 +186,7 @@ mapper(() => test)('import', { code: 'customNode("");\ncondition (true)\ncMap(da
     await t.click(Selector('button').withExactText('Import Script'))
     await t.setFilesToUpload('input[type=file]', [tempfile])
     await t.expect(settingsFromURL(await getLocation())).eql({
-        geographyKind: 'Urban Area',
-        universe: 'USA',
+        geographies: [{ universe: 'USA', geographyKind: 'Urban Area' }],
         script: {
             uss: userCode,
         },
