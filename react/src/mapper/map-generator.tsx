@@ -26,7 +26,7 @@ import { deriveMapUnit } from '../urban-stats-script/derive-unit'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
-import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
+import { AssignmentsResult, executeAsync, useClearPreviousAssignments } from '../urban-stats-script/workerManager'
 import { loadImage } from '../utils/Image'
 import { editIndex, EditSeq } from '../utils/array-edits'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
@@ -53,7 +53,7 @@ export function useMapGenerator({ mapSettings, typeEnvironment }: { mapSettings:
 
     const compute = useCallback((previousGenerator: () => Promise<MapGenerator<{ loading: boolean }>>) => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator, typeEnvironment }), [mapSettings, typeEnvironment])
 
-    return useDebouncedResolve(
+    const result: MapGenerator = useDebouncedResolve(
         compute,
         {
             interval: mapUpdateInterval,
@@ -68,6 +68,10 @@ export function useMapGenerator({ mapSettings, typeEnvironment }: { mapSettings:
             }),
         },
     )
+
+    useClearPreviousAssignments(result.assignments)
+
+    return result
 }
 
 type MapUIProps<T> = T & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: EditSeq<Inset> } | { mode: 'textBoxes', editTextBoxes: EditSeq<TextBox> })
@@ -140,7 +144,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
     }
 
     const csvExportCallback: CSVExportData = () => {
-        const csvData = generateMapperCSVData(mapResultMain, execResult.assignments.variables)
+        const csvData = generateMapperCSVData(mapResultMain, execResult.assignments.variables!)
         const csvFilename = `${mapSettings.geographyKind}-${mapSettings.universe}-data.csv`
         return {
             csvData,

@@ -58,7 +58,7 @@ function ArgumentEditor(props: {
     const EditButton = argDoc?.editButton && ArgEditButtons[argDoc.editButton]
 
     // What the map settled on for this argument, to show while the user hasn't set it
-    const computedValue = isEnabled ? undefined : props.assignments.blockValues.get(subident)
+    const computedValue = isEnabled ? undefined : props.assignments.blockValues!.get(subident)
 
     const editor = isEnabled && (
         <AutoUXEditor

@@ -10,7 +10,7 @@ import { toStatement } from '../urban-stats-script/ast'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { renderType, TypeEnvironment } from '../urban-stats-script/types-values'
-import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
+import { AssignmentsResult, executeAsync, useClearPreviousAssignments } from '../urban-stats-script/workerManager'
 import { assert } from '../utils/defensive'
 import { pluralize } from '../utils/text'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
@@ -23,7 +23,7 @@ const statUpdateInterval = 500
 export function useStatGenerator({ stat, typeEnvironment }: { stat: Statistic, typeEnvironment: TypeEnvironment }): StatGenerator & { loading: boolean } {
     const compute = useCallback((previousGenerator: () => Promise<StatGenerator>) => makeStatGenerator({ stat, typeEnvironment, previousGenerator }), [stat, typeEnvironment])
 
-    return useDebouncedResolve(
+    const result: StatGenerator & { loading: boolean } = useDebouncedResolve(
         compute,
         {
             interval: statUpdateInterval,
@@ -39,6 +39,10 @@ export function useStatGenerator({ stat, typeEnvironment }: { stat: Statistic, t
             }),
         },
     )
+
+    useClearPreviousAssignments(result.assignments)
+
+    return result
 }
 
 export interface StatGenerator {
