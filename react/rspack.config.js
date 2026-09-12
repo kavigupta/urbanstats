@@ -106,7 +106,12 @@ export default env => ({
         },
         minimizer: [
             new rspack.SwcJsMinimizerRspackPlugin({
-                exclude: /maplibre/ // MapLibre starts having race conditions if minimized
+                exclude: /maplibre/, // MapLibre starts having race conditions if minimized
+                minimizerOptions: {
+                    compress: {
+                        inline: false // Changes memory semantics in closures, see https://github.com/swc-project/swc/issues/12344
+                    }
+                }
             }),
             new rspack.LightningCssMinimizerRspackPlugin(),
         ],

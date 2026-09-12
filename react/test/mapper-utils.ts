@@ -38,8 +38,7 @@ export async function toggleCustomScript(t: TestController): Promise<void> {
 
 export function urlFromCode(geographyKind: string, universe: string, code: string): string {
     const settingsJSON = JSON.stringify({
-        geographyKind,
-        universe,
+        geographies: [{ universe, geographyKind }],
         script: {
             uss: code,
         },

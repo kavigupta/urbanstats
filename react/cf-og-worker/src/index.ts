@@ -36,16 +36,17 @@ async function describeMap(settings: string | undefined): Promise<{ title: strin
     try {
         // Deferred for the same reason as render.ts: reading a script pulls in every USS constant,
         // which is most of what is left of startup once the drawing half is out of it.
-        const { mapSettingsFromURLParam, mapTitle } = await import('../../src/mapper/settings/utils')
+        const { dedupeGeographies, mapSettingsFromURLParam, mapTitle } = await import('../../src/mapper/settings/utils')
         const mapSettings = await mapSettingsFromURLParam(settings)
         const title = mapTitle(mapSettings, {})
-        const { universe, geographyKind } = mapSettings
-        if (title === undefined || universe === undefined || geographyKind === undefined) {
+        const geographies = dedupeGeographies(mapSettings.geographies)
+        if (title === undefined || geographies.length === 0) {
             return undefined
         }
+        const over = geographies.map(({ universe, geographyKind }) => `${displayType(universe, geographyKind)} in ${universe}`)
         return {
             title,
-            description: `${title} mapped over ${displayType(universe, geographyKind)} in ${universe}, on Urban Stats.`,
+            description: `${title} mapped over ${over.length === 1 ? over[0] : `${over.slice(0, -1).join(', ')} and ${over[over.length - 1]}`}, on Urban Stats.`,
         }
     }
     catch {

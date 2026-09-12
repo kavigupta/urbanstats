@@ -2,6 +2,7 @@ import { saveAs } from 'file-saver'
 import React, { ReactNode } from 'react'
 import { z } from 'zod'
 
+import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { renderLocInfo } from '../../urban-stats-script/interpreter'
 import { parse, unparse } from '../../urban-stats-script/parser'
 import { cancelled, uploadFile } from '../../utils/upload'
@@ -79,10 +80,11 @@ function importMapSettings(fileContent: string): { success: true, mapSettings: M
             if (arg.type === 'unnamed') {
                 return { success: false, error: `"meta" function call at ${renderLocInfo(meta.entireLoc)} must have only named arguments` }
             }
-            if (arg.value.type !== 'constant') {
-                return { success: false, error: `"meta" function argument "${arg.name.node}" must have a constant value` }
+            const value = metaArgValue(arg.value)
+            if (value === undefined) {
+                return { success: false, error: `"meta" function argument "${arg.name.node}" must have a constant value, or a list of them` }
             }
-            args.push([arg.name.node, arg.value.value.node.value])
+            args.push([arg.name.node, value.value])
         }
 
         const metadataResult = metadataSchema.safeParse(Object.fromEntries(args))
@@ -106,6 +108,20 @@ function importMapSettings(fileContent: string): { success: true, mapSettings: M
     return { success: true, mapSettings: newSettings }
 }
 
+/** A single geography stays a bare string, which is what every file written before lists existed has. */
 function exportMapSettings(mapSettings: MapSettings): string {
-    return `meta(kind="mapper", universe="${mapSettings.universe}", geographyKind="${mapSettings.geographyKind}")\n${unparse(mapSettings.script.uss)}`
+    const field = (name: string, values: string[]): string =>
+        values.length === 1 ? `${name}="${values[0]}"` : `${name}=[${values.map(value => `"${value}"`).join(', ')}]`
+    const geographies = mapSettings.geographies
+    return `meta(kind="mapper", ${field('universe', geographies.map(g => g.universe))}, ${field('geographyKind', geographies.map(g => g.geographyKind))})\n${unparse(mapSettings.script.uss)}`
+}
+
+function metaArgValue(expr: UrbanStatsASTExpression): { value: unknown } | undefined {
+    if (expr.type === 'constant') {
+        return { value: expr.value.node.value }
+    }
+    if (expr.type === 'vectorLiteral' && expr.elements.every(element => element.type === 'constant')) {
+        return { value: expr.elements.map(element => element.value.node.value) }
+    }
+    return undefined
 }

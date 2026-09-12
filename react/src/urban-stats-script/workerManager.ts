@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+
 import validGeographies from '../data/mapper/used_geographies'
 import { Universe } from '../universe'
 
@@ -5,14 +7,32 @@ import { UrbanStatsASTStatement } from './ast'
 import { EditorError } from './editor-utils'
 import { USSOpaqueType, USSOpaqueValue, USSValue } from './types-values'
 
-export type USSExecutionDescriptor = { kind: 'generic' } | { kind: 'mapper', geographyKind: typeof validGeographies[number], universe: Universe } | { kind: 'statistics', geographyKind: typeof validGeographies[number], universe: Universe }
+export interface GeographySelection {
+    universe: Universe
+    geographyKind: typeof validGeographies[number]
+}
+
+export type USSExecutionDescriptor = { kind: 'generic' } | { kind: 'mapper', geographies: GeographySelection[] } | { kind: 'statistics', geographyKind: typeof validGeographies[number], universe: Universe }
 export interface USSExecutionRequest { descriptor: USSExecutionDescriptor, stmts: UrbanStatsASTStatement }
 export type AsyncInterpretationError = EditorError[]
 
 export interface AssignmentsResult {
-    variables: Map<string, USSValue>
+    variables: Map<string, USSValue> | undefined
     // Values functions recorded for the expressions they came from, keyed by block ident
-    blockValues: Map<string, USSValue>
+    blockValues: Map<string, USSValue> | undefined
+}
+
+// Assignments can take up a lot of memory, and also get stuck in React memoization
+// So, we should clear out the old instance once it is not longer being used
+export function useClearPreviousAssignments(assignments: AssignmentsResult): void {
+    const prev = useRef(assignments)
+    useEffect(() => {
+        if (assignments !== prev.current) {
+            prev.current.variables = undefined
+            prev.current.blockValues = undefined
+            prev.current = assignments
+        }
+    })
 }
 
 export interface USSExecutionResult<Value extends USSValue = USSValue> {
@@ -21,7 +41,7 @@ export interface USSExecutionResult<Value extends USSValue = USSValue> {
     assignments: AssignmentsResult
 }
 
-export function executeAsync(request: { descriptor: { kind: 'mapper', geographyKind: typeof validGeographies[number], universe: Universe }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' | 'clusterMap' } }>>
+export function executeAsync(request: { descriptor: { kind: 'mapper', geographies: GeographySelection[] }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' | 'clusterMap' } }>>
 export function executeAsync(request: { descriptor: { kind: 'statistics', geographyKind: typeof validGeographies[number], universe: Universe }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: USSOpaqueValue & { opaqueType: 'table' } }>>
 export function executeAsync(request: USSExecutionRequest): Promise<USSExecutionResult>
 export async function executeAsync(request: USSExecutionRequest): Promise<USSExecutionResult> {
