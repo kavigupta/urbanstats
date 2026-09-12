@@ -77,11 +77,14 @@ const colors = {
     rule: '#d8cfc4',
     shape: '#5a6ebd',
     insetBorder: theme.mapInsetBorderColor,
+    mapBorder: theme.borderNonShadow,
 }
 /* eslint-enable no-restricted-syntax */
 
-// insetBorderWidth in map-common, which the Worker cannot import: it would pull maplibre in.
+// insetBorderWidth in map-common and mapBorderWidth in screenshot, which the Worker cannot import:
+// they would pull maplibre in.
 const insetBorderWidth = 2
+const mapBorderWidth = 1
 
 // openfreemap's credit line, as its TileJSON states it.
 const tileAttribution = 'OpenFreeMap © OpenMapTiles · Data from OpenStreetMap'
@@ -351,7 +354,9 @@ async function insetImage(map: MapCard, inset: Inset, box: { width: number, heig
             src={mapImage(content, width, height)}
             width={width}
             height={height}
-            style={inset.mainMap ? {} : { border: `${insetBorderWidth}px solid ${colors.insetBorder}` }}
+            style={inset.mainMap
+                ? { border: `${mapBorderWidth}px solid ${colors.mapBorder}` }
+                : { border: `${insetBorderWidth}px solid ${colors.insetBorder}` }}
         />
     )
 }
