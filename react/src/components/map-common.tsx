@@ -79,13 +79,13 @@ export function MapAttribution({ children }: { children?: ReactNode }): ReactNod
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1em', fontSize: '0.75em', color: colors.ordinalTextColor, marginTop: '0.25em' }}>
             <div>{children}</div>
-            <div>
+            <div className="map-credit">
                 {inScreenshot
                     ? ''
                     : tileAttributionParts.map((part, i) => (
                         <React.Fragment key={part.href}>
                             {i > 0 ? ' · ' : ''}
-                            <a href={part.href} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>{part.text}</a>
+                            <a href={part.href} target="_blank" rel="noopener noreferrer">{part.text}</a>
                         </React.Fragment>
                     ))}
             </div>
