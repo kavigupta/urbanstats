@@ -181,17 +181,21 @@ void test('a column is written in the units of its values', () => {
 })
 
 // What a map's ramp is labelled in. Both the mapper and the link embed card ask this, and the card
-// used to answer it differently: it had no fall back to what the data works out to, so a map that
-// stated no unit was drawn with a ramp of bare numbers.
-for (const [data, stated, expected] of [
+// used to answer it differently: it had no fall back to a unit derived from the script, so a map
+// the user provided no unit for was drawn with a ramp of bare numbers.
+for (const [data, userProvided, expected] of [
     ['population / area', undefined, '1\u202f000/km^{2}'],
     ['high_temp - low_temp', undefined, '+1\u202f000.0\u00b0F'],
     ['pm25_pollution * area', undefined, '1\u202f000g/m'],
     ['population / area', 'temperature', '1\u202f000.0\u00b0F'],
     ['high_temp', 'number', '1\u202f000'],
+    // a bare statistic works out to its own unit, so dropping the guess taken from the data's
+    // documentation costs nothing: the script gives the same answer
+    ['high_temp', undefined, '1\u202f000.0\u00b0F'],
+    ['population', undefined, '1\u202f000'],
 ] as const) {
-    void test(`a ramp of ${data} stating ${stated ?? 'no unit'}`, () => {
+    void test(`a ramp of ${data} where the user provided ${userProvided ?? 'no unit'}`, () => {
         const uss = mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`)
-        assert.equal(written(mapRampUnit(uss, defaultTypeEnvironment('USA'), stated)), expected)
+        assert.equal(written(mapRampUnit(uss, defaultTypeEnvironment('USA'), userProvided)), expected)
     })
 }
