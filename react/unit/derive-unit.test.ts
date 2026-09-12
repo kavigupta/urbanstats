@@ -179,3 +179,22 @@ void test('a column is written in the units of its values', () => {
     assert.equal(columnUnit('column(values=population), column(values=area)', 1), '1\u202f000km^{2}')
     assert.equal(columnUnit('column(values=population)', 1), 'nothing')
 })
+
+// Units built from more than one dimension. These are the shapes a naming pool is least likely to
+// have a ready answer for, so they pin down both what the arithmetic works out to and how it reads.
+for (const [data, expected] of [
+    ['pm25_pollution', '1\u202f234.00\u03bcg/m^{3}'],
+    ['pm25_pollution * area', '12.3g/cm'],
+    ['pm25_pollution ** 2', '1\u202f234\u03bcg^{2}/m^{6}'],
+    ['sqrt(pm25_pollution)', '1.23g^{0.5}/m^{1.5}'],
+    // a thousand million cubic metres to the gram reads better as a cubic kilometre to it
+    ['1 / pm25_pollution', '1.23km^{3}/g'],
+    ['1 / area', '1\u202f234/km^{2}'],
+    ['rainfall * sunny_hours', '14.1cm'],
+    ['elevation / sunny_hours', '20.6m/min'],
+    ['rainfall / snowfall', '1\u202f230'],
+] as const) {
+    void test(`a map of ${data} is written`, () => {
+        assert.equal(written(unitOfMap(data), 1234), expected)
+    })
+}
