@@ -143,3 +143,34 @@ test('a root of a count is written plainly rather than failing', async (t) => {
     // to three figures, as anything in no known unit is, rather than whole as a count of people is
     await t.expect(await rows()).eql(['8\u202f176 people0.5', '6\u202f105 people0.5', '6\u202f063 people0.5'])
 })
+
+urbanstatsFixture('a concentration over an area', tableOf('pm25_pollution * area'))
+
+test('a mass in a volume over an area is a mass over a length', async (t) => {
+    await waitForLoading()
+    // micrograms per cubic metre times square kilometres works out as grams to the centimetre
+    await t.expect(await rows()).eql(['304 kg/cm', '94.0 kg/cm', '85.2 kg/cm'])
+})
+
+urbanstatsFixture('one over a concentration', tableOf('1 / pm25_pollution'))
+
+test('a number written over a quantity inverts that quantity', async (t) => {
+    await waitForLoading()
+    await t.expect(columnName.innerText).eql('1 \u00f7 PW Mean PM2.5 Pollution')
+    await t.expect(await rows()).eql(['159 m3/mg', '155 m3/mg', '149 m3/mg'])
+})
+
+urbanstatsFixture('a root of a concentration', tableOf('sqrt(pm25_pollution)'))
+
+test('a root of a quantity of two dimensions takes the root of both', async (t) => {
+    await waitForLoading()
+    await t.expect(await rows()).eql(['92.5 g0.5/km1.5', '87.8 g0.5/km1.5', '87.6 g0.5/km1.5'])
+})
+
+urbanstatsFixture('a difference of temperatures times an area', tableOf('(high_temp - low_temp) * area'))
+
+test('a difference of two readings can be multiplied, where a reading cannot', async (t) => {
+    await waitForLoading()
+    await t.expect(columnName.innerText).eql('(Mean high temp \u2212 Mean low temp) \u00d7 Area')
+    await t.expect(await rows()).eql(['+61\u202f408\u202f742 \u00b0F\u00b7km2', '+32\u202f447\u202f280 \u00b0F\u00b7km2', '+23\u202f160\u202f823 \u00b0F\u00b7km2'])
+})
