@@ -60,3 +60,8 @@ four cores, so capping the container's is a way to tell whether a failure is tim
 
 Write each option in its `--flag value` form. `zodcli` drops everything after a second `=`, so
 `--docker-options=--cpus=2` silently arrives as `--cpus` alone.
+
+# Memory tests
+
+`memory_*.test.ts` measure rather than pass, and take a setup of their own. See
+[MEMORY.md](MEMORY.md).
