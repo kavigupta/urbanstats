@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback } from 'react'
 
 import { CountsByUT, forType, getCountsByArticleType } from '../components/countsByArticleType'
 import validGeographies from '../data/mapper/used_geographies'
@@ -10,8 +10,7 @@ import { toStatement } from '../urban-stats-script/ast'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { renderType, TypeEnvironment } from '../urban-stats-script/types-values'
-import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
-import { Property } from '../utils/Property'
+import { AssignmentsResult, executeAsync, useClearPreviousAssignments } from '../urban-stats-script/workerManager'
 import { assert } from '../utils/defensive'
 import { pluralize } from '../utils/text'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
@@ -22,11 +21,9 @@ import { mapUSSFromStat, statDataFromTable } from './utils'
 const statUpdateInterval = 500
 
 export function useStatGenerator({ stat, typeEnvironment }: { stat: Statistic, typeEnvironment: TypeEnvironment }): StatGenerator & { loading: boolean } {
-    const assignments = useRef(new Property<AssignmentsResult>({ variables: new Map(), blockValues: new Map() })).current
+    const compute = useCallback((previousGenerator: () => Promise<StatGenerator>) => makeStatGenerator({ stat, typeEnvironment, previousGenerator }), [stat, typeEnvironment])
 
-    const compute = useCallback((previousGenerator: () => Promise<StatGenerator>) => makeStatGenerator({ stat, typeEnvironment, previousGenerator, assignments }), [stat, typeEnvironment, assignments])
-
-    return useDebouncedResolve(
+    const result: StatGenerator & { loading: boolean } = useDebouncedResolve(
         compute,
         {
             interval: statUpdateInterval,
@@ -34,7 +31,7 @@ export function useStatGenerator({ stat, typeEnvironment }: { stat: Statistic, t
                 data: undefined,
                 errors: [],
                 universesFiltered: universes_ordered,
-                assignments,
+                assignments: { variables: new Map(), blockValues: new Map() },
             },
             ui: (generator, loading) => ({
                 ...generator,
@@ -42,21 +39,26 @@ export function useStatGenerator({ stat, typeEnvironment }: { stat: Statistic, t
             }),
         },
     )
+
+    useClearPreviousAssignments(result.assignments)
+
+    return result
 }
 
 export interface StatGenerator {
     data: StatData | undefined
     errors: EditorError[]
     universesFiltered: readonly Universe[]
-    assignments: Property<AssignmentsResult>
+    assignments: AssignmentsResult
 }
 
-async function makeStatGenerator({ stat, typeEnvironment, previousGenerator, assignments }: { stat: Statistic, typeEnvironment: TypeEnvironment, previousGenerator: () => Promise<StatGenerator>, assignments: Property<AssignmentsResult> }): Promise<StatGenerator> {
-    const errorResult = async (errors: EditorError[], values: AssignmentsResult): Promise<StatGenerator> => {
-        assignments.value = values
+async function makeStatGenerator({ stat, typeEnvironment, previousGenerator }: { stat: Statistic, typeEnvironment: TypeEnvironment, previousGenerator: () => Promise<StatGenerator> }): Promise<StatGenerator> {
+    const errorResult = async (errors: EditorError[], assignments: AssignmentsResult): Promise<StatGenerator> => {
+        const prev = await previousGenerator()
         return {
-            ...(await previousGenerator()),
+            ...prev,
             errors,
+            assignments,
         }
     }
 
@@ -109,8 +111,6 @@ async function makeStatGenerator({ stat, typeEnvironment, previousGenerator, ass
             },
         })
 
-        assignments.value = exec.assignments
-
         const statIndex = stat.type === 'simple' ? statistic_name_list.indexOf(stat.statName) : undefined
 
         return {
@@ -120,7 +120,7 @@ async function makeStatGenerator({ stat, typeEnvironment, previousGenerator, ass
                 ? universes_ordered.filter(
                     universe => forType(counts, universe, stats[statIndex], stat.articleType) > 0)
                 : universes_ordered,
-            assignments,
+            assignments: exec.assignments,
         }
     }
     catch (e) {
