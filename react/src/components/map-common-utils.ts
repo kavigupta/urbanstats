@@ -6,4 +6,11 @@ export function keptByNoBasemap(layer: { id: string, source: string }): boolean 
 }
 
 // openfreemap's credit line, as its TileJSON states it.
-export const tileAttribution = 'OpenFreeMap © OpenMapTiles · Data from OpenStreetMap'
+export const tileAttributionParts = [
+    { text: 'OpenFreeMap', href: 'https://openfreemap.org' },
+    { text: '© OpenMapTiles', href: 'https://www.openmaptiles.org/' },
+    { text: 'Data from OpenStreetMap', href: 'https://www.openstreetmap.org/copyright' },
+]
+
+// For canvases and cards, which cannot carry the links
+export const tileAttribution = tileAttributionParts.map(part => part.text).join(' · ')

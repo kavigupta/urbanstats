@@ -19,7 +19,7 @@ import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { ScreenshotAwareLayer } from './ScreenshotAwareLayer'
-import { keptByNoBasemap, tileAttribution, urbanStatsLayerPrefix } from './map-common-utils'
+import { keptByNoBasemap, tileAttributionParts, urbanStatsLayerPrefix } from './map-common-utils'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotCallback, useScreenshotMode } from './screenshot'
 
 const debugLog = makeDebugLogger('mapExport')
@@ -79,7 +79,16 @@ export function MapAttribution({ children }: { children?: ReactNode }): ReactNod
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1em', fontSize: '0.75em', color: colors.ordinalTextColor, marginTop: '0.25em' }}>
             <div>{children}</div>
-            <div>{inScreenshot ? '' : tileAttribution}</div>
+            <div>
+                {inScreenshot
+                    ? ''
+                    : tileAttributionParts.map((part, i) => (
+                        <React.Fragment key={part.href}>
+                            {i > 0 ? ' · ' : ''}
+                            <a href={part.href} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>{part.text}</a>
+                        </React.Fragment>
+                    ))}
+            </div>
         </div>
     )
 }
