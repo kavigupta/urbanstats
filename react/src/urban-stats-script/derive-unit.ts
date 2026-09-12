@@ -1,8 +1,9 @@
 import { mapDataExpression, MapUSS, tableColumnExpression } from '../mapper/settings/map-uss'
 import { StoredUnit } from '../utils/quantity'
+import { UnitType, unitTypeToStoredUnit } from '../utils/unit'
 
 import { UrbanStatsASTExpression } from './ast'
-import { DeclaredUnits } from './declared-units'
+import { assignDeclaredMapUnit, DeclaredUnits } from './declared-units'
 import { TypeEnvironment } from './types-values'
 import { UnitsRead, unitCheck } from './unit-inference'
 
@@ -17,4 +18,17 @@ export function deriveMapUnit(uss: MapUSS, typeEnvironment: TypeEnvironment, dec
 
 export function deriveTableColumnUnit(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number, declaredUnits: DeclaredUnits): StoredUnit | undefined {
     return unitOf(checked => tableColumnExpression(checked, typeEnvironment, columnIndex), uss, typeEnvironment, declaredUnits)
+}
+
+/**
+ * What a map is drawn in, and what to tell unit inference about it: the unit the map declared, or
+ * where it declared none, whatever its script works out to. Both the app and the link embed card
+ * ask this, and a card that answered it differently would be labelled differently.
+ */
+export function mapIsDrawnIn(uss: MapUSS, typeEnvironment: TypeEnvironment, declared: UnitType | undefined): { declaredUnits: DeclaredUnits, unit: StoredUnit | undefined } {
+    const declaredUnits = assignDeclaredMapUnit(uss, typeEnvironment, declared)
+    return {
+        declaredUnits,
+        unit: declared === undefined ? deriveMapUnit(uss, typeEnvironment, declaredUnits) : unitTypeToStoredUnit(declared),
+    }
 }

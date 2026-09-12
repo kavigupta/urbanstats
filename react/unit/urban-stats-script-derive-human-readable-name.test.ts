@@ -4,8 +4,8 @@ import test from 'node:test'
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { MapUSS, mapUSSFromString } from '../src/mapper/settings/map-uss'
 import { unitNamedByConstant } from '../src/urban-stats-script/constants/units'
-import { DeclaredUnits, assignDeclaredColumnUnits, assignDeclaredMapUnit, nothingDeclared } from '../src/urban-stats-script/declared-units'
-import { deriveMapLabel, deriveTableColumnLabel, deriveTableLabel } from '../src/urban-stats-script/derive-human-readable-name'
+import { DeclaredUnits, assignColumnUnitsStatically, assignDeclaredColumnUnits, assignDeclaredMapUnit, nothingDeclared } from '../src/urban-stats-script/declared-units'
+import { deriveMapLabel, deriveTableColumnLabel, deriveTableLabel, mapLabel, tableLabel } from '../src/urban-stats-script/derive-human-readable-name'
 import { TypeEnvironment } from '../src/urban-stats-script/types-values'
 import { HumanReadableName } from '../src/utils/human-readable-element'
 import { reifyString } from '../src/utils/human-readable-name'
@@ -395,3 +395,24 @@ testTableLabel(test,
     [coldWhereCold],
     'Population where Mean low temp < 50°F',
 )
+
+// What a map and a table are titled before they run. Nothing has been evaluated to hand these a
+// unit, so they read the one the script declares off the script itself, and the two must say the
+// same thing: a map once lost the declared unit here while a table kept it.
+for (const [values, declared, expected] of [
+    ['high_temp', '', 'Mean high temp'],
+    ['high_temp', ', unit=unitNumber', 'Mean high temp [in \u00b0F]'],
+    ['population / area', ', unit=unitTemperature', '(Population \u00f7 Area) \u00d7 +1\u00b0F\u00b7km^{2}/person + 0\u00b0F'],
+    ['area', ', unit=unitArea', 'Area'],
+] as const) {
+    void test(`titled before it runs: ${values}${declared}`, () => {
+        const map = mapLabel(mapUSSFromString(`cMap(data=${values}, scale=linearScale(), ramp=rampUridis${declared})`), getTypeEnvironment())
+        assert.ok(map)
+        assert.equal(reifyString(map, {}), expected)
+
+        const uss = mapUSSFromString(`condition (true)\ntable(columns=[column(values=${values}${declared})])`)
+        const table = tableLabel(uss, getTypeEnvironment(), assignColumnUnitsStatically(uss, getTypeEnvironment()))
+        assert.ok(table)
+        assert.equal(reifyString(table, {}), expected)
+    })
+}

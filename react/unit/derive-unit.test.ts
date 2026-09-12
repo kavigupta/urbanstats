@@ -4,7 +4,7 @@ import test from 'node:test'
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { MapUSS, mapUSSFromString } from '../src/mapper/settings/map-uss'
 import { nothingDeclared } from '../src/urban-stats-script/declared-units'
-import { deriveMapUnit, deriveTableColumnUnit } from '../src/urban-stats-script/derive-unit'
+import { deriveMapUnit, deriveTableColumnUnit, mapIsDrawnIn } from '../src/urban-stats-script/derive-unit'
 import { reifyString } from '../src/utils/human-readable-name'
 import { UnitSettings, StoredUnit, writeQuantity } from '../src/utils/quantity'
 
@@ -203,3 +203,21 @@ void test('a column is written in the units of its values', () => {
     assert.equal(columnUnit('column(values=population), column(values=area)', 1), '1\u202f000km^{2}')
     assert.equal(columnUnit('column(values=population)', 1), 'nothing')
 })
+
+// What a map is drawn in, which the app's ramp and the link embed card's ramp both ask for. A
+// script that declares a unit is drawn in that; one that declares none is drawn in what it works
+// out to, which is the part a card once lost by asking a different question.
+for (const [data, declared, expected] of [
+    ['high_temp', undefined, '1\u202f000.0\u00b0F'],
+    ['population / area', undefined, '1\u202f000/km^{2}'],
+    ['high_temp - low_temp', undefined, '+1\u202f000.0\u00b0F'],
+    ['population ** 0.5', undefined, '1\u202f000people^{0.5}'],
+    ['high_temp', 'number', '1\u202f000'],
+    ['population / area', 'temperature', '1\u202f000.0\u00b0F'],
+] as const) {
+    void test(`a map of ${data} declaring ${declared ?? 'nothing'}`, () => {
+        const uss = mapOf(data)
+        const { unit } = mapIsDrawnIn(uss, defaultTypeEnvironment('USA'), declared)
+        assert.equal(written(unit), expected)
+    })
+}
