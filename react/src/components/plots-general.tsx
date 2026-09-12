@@ -330,6 +330,7 @@ function PlotDownloadButton(props: { makePlot: () => HTMLElement, shortnames: st
                         path: `${uniqueShortnames.join('_')}_${props.filenameSuffix}`,
                         overallWidth: plot.offsetWidth * 2,
                         elementsToRender: [plot],
+                        topPadding: 0,
                     }),
                     universe,
                     colors,
