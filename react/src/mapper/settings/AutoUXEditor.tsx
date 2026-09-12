@@ -7,7 +7,6 @@ import React, { ReactNode, useRef } from 'react'
 import { ExpandButton } from '../../components/ExpandButton'
 import { RenderTwiceHidden } from '../../components/RenderTwiceHidden'
 import { CheckboxSettingCustom } from '../../components/checkbox-setting'
-import { useComputedNumber } from '../../urban-stats-script/AssignmentsContext'
 import { UrbanStatsASTExpression, locationOf } from '../../urban-stats-script/ast'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
 import { EditorError } from '../../urban-stats-script/editor-utils'
@@ -15,6 +14,7 @@ import { emptyLocation } from '../../urban-stats-script/lexer'
 import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement, noLocation } from '../../urban-stats-script/location'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
 import { USSType, USSFunctionArgType, TypeEnvironment, argTypeOptions } from '../../urban-stats-script/types-values'
+import { AssignmentsResult } from '../../urban-stats-script/workerManager'
 import { DefaultMap } from '../../utils/DefaultMap'
 import { Property } from '../../utils/Property'
 import { assert } from '../../utils/defensive'
@@ -37,6 +37,7 @@ function ArgumentEditor(props: {
     typeEnvironment: TypeEnvironment
     errors: EditorError[]
     blockIdent: string
+    assignments: AssignmentsResult
 }): ReactNode {
     const argTypes = argTypeOptions(props.argWDefault.type)
 
@@ -45,7 +46,6 @@ function ArgumentEditor(props: {
     const hasDefault = props.argWDefault.defaultValue !== undefined
     const isEnabled = argValue !== undefined
     const subident = extendBlockIdKwarg(props.blockIdent, props.name)
-    const computedNumber = useComputedNumber(subident)
 
     // Get the function's documentation to find human-readable argument names
     const tdoc = props.typeEnvironment.get(functionUss.fn.name.node)
@@ -58,7 +58,7 @@ function ArgumentEditor(props: {
     const EditButton = argDoc?.editButton && ArgEditButtons[argDoc.editButton]
 
     // What the map settled on for this argument, to show while the user hasn't set it
-    const computedValue = isEnabled ? undefined : computedNumber
+    const computedValue = isEnabled ? undefined : props.assignments.blockValues!.get(subident)
 
     const editor = isEnabled && (
         <AutoUXEditor
@@ -72,6 +72,7 @@ function ArgumentEditor(props: {
             blockIdent={subident}
             type={argTypes}
             margin={!collapsed}
+            assignments={props.assignments}
         />
     )
 
@@ -154,13 +155,13 @@ function ArgumentEditor(props: {
                             )
                         : <span>{humanReadableName}</span>}
                     {EditButton && <EditButton />}
-                    {computedValue !== undefined && (
+                    {computedValue?.type.type === 'number' && (
                         <input
                             type="text"
                             disabled
                             data-test="computed-value"
                             data-test-name={props.name}
-                            value={Number(computedValue.toPrecision(6))}
+                            value={Number((computedValue.value as number).toPrecision(6))}
                             style={{ width: '200px', minWidth: '4em', flexShrink: 2, fontSize: '14px', padding: '4px 8px' }}
                         />
                     )}
@@ -259,6 +260,7 @@ function VectorLiteralEditor(props: {
     errors: EditorError[]
     blockIdent: string
     elementType: USSType
+    assignments: AssignmentsResult
 }): ReactNode {
     /*
      * We need stable identifiers for dnd-kit, but elements don't have unique ids.
@@ -314,6 +316,7 @@ function VectorLiteralEditor(props: {
                                     blockIdent={extendBlockIdVectorElement(props.blockIdent, i)}
                                     type={[props.elementType]}
                                     label={`${i + 1}`}
+                                    assignments={props.assignments}
                                     dragHandle={dragHandle}
                                     removeButton={(
                                         <button
@@ -376,6 +379,7 @@ export function AutoUXEditor(props: {
     label?: string
     labelWidth?: string
     margin?: boolean
+    assignments: AssignmentsResult
     // Rendered on the header's line: the handle hangs outside to the left, the button sits to the right
     dragHandle?: ReactNode
     removeButton?: ReactNode
@@ -427,6 +431,7 @@ export function AutoUXEditor(props: {
                     typeEnvironment={props.typeEnvironment}
                     errors={props.errors}
                     blockIdent={props.blockIdent}
+                    assignments={props.assignments}
                 />
             )
             return [editor, 'consumes-errors']
@@ -455,6 +460,7 @@ export function AutoUXEditor(props: {
                         errors={props.errors}
                         blockIdent={extendBlockIdPositionalArg(props.blockIdent, i)}
                         type={argTypeOptions(arg)}
+                        assignments={props.assignments}
                     />,
                 )
             })
@@ -471,6 +477,7 @@ export function AutoUXEditor(props: {
                             typeEnvironment={props.typeEnvironment}
                             errors={props.errors}
                             blockIdent={props.blockIdent}
+                            assignments={props.assignments}
                         />,
                     )
                 }
@@ -498,6 +505,7 @@ export function AutoUXEditor(props: {
                     errors={props.errors}
                     blockIdent={props.blockIdent}
                     elementType={elementType}
+                    assignments={props.assignments}
                 />
             )
             return [element, 'does-not-consume-errors']
@@ -526,6 +534,7 @@ export function AutoUXEditor(props: {
                                 blockIdent={extendBlockIdObjectProperty(props.blockIdent, key)}
                                 type={[propertyType]}
                                 label={key}
+                                assignments={props.assignments}
                             />
                         )
                     })}

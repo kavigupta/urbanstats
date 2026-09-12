@@ -24,9 +24,8 @@ import { deriveMapUnit } from '../urban-stats-script/derive-unit'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
-import { AssignmentsResult, executeAsync, GeographySelection } from '../urban-stats-script/workerManager'
+import { AssignmentsResult, executeAsync, GeographySelection, useClearPreviousAssignments } from '../urban-stats-script/workerManager'
 import { loadImage } from '../utils/Image'
-import { Property } from '../utils/Property'
 import { editIndex, EditSeq } from '../utils/array-edits'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { makeDebugLogger } from '../utils/debug-logging'
@@ -48,18 +47,18 @@ const mapUpdateInterval = 500
 const debugLog = makeDebugLogger('mapExport')
 
 export function useMapGenerator({ mapSettings, typeEnvironment }: { mapSettings: MapSettings, typeEnvironment: TypeEnvironment }): MapGenerator {
-    const cache = useRef<MapCache>({ assignments: new Property({ variables: new Map(), blockValues: new Map() }) })
+    const cache = useRef<MapCache>({})
 
     const compute = useCallback((previousGenerator: () => Promise<MapGenerator<{ loading: boolean }>>) => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator, typeEnvironment }), [mapSettings, typeEnvironment])
 
-    return useDebouncedResolve(
+    const result: MapGenerator = useDebouncedResolve(
         compute,
         {
             interval: mapUpdateInterval,
             initial: {
                 ui: ({ loading }) => ({ node: <EmptyMapLayout geographies={mapSettings.geographies} loading={loading} /> }),
                 errors: [],
-                assignments: cache.current.assignments,
+                assignments: { variables: new Map(), blockValues: new Map() },
             },
             ui: (generator, loading) => ({
                 ...generator,
@@ -67,6 +66,10 @@ export function useMapGenerator({ mapSettings, typeEnvironment }: { mapSettings:
             }),
         },
     )
+
+    useClearPreviousAssignments(result.assignments)
+
+    return result
 }
 
 type MapUIProps<T> = T & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: EditSeq<Inset> } | { mode: 'textBoxes', editTextBoxes: EditSeq<TextBox> })
@@ -76,7 +79,7 @@ export interface MapGenerator<T = unknown> {
     exportGeoJSON?: () => string
     exportCSV?: CSVExportData
     errors: EditorError[]
-    assignments: Property<AssignmentsResult>
+    assignments: AssignmentsResult
 }
 
 async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnvironment }: {
@@ -89,7 +92,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         return {
             ui: ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout geographies={mapSettings.geographies} loading={loading} /> }),
             errors: [{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }],
-            assignments: publishAssignments(cache, { variables: new Map(), blockValues: new Map() }),
+            assignments: { variables: new Map(), blockValues: new Map() },
         }
     }
 
@@ -113,7 +116,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         return {
             ...prev,
             // A failed run stops partway, so its block values are missing everything after the error
-            assignments: publishAssignments(cache, { variables: execResult.assignments.variables, blockValues: prev.assignments.value.blockValues }),
+            assignments: { variables: execResult.assignments.variables, blockValues: prev.assignments.blockValues },
             errors: execResult.error,
         }
     }
@@ -141,7 +144,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
     }
 
     const csvExportCallback: CSVExportData = () => {
-        const csvData = generateMapperCSVData(mapResultMain, execResult.assignments.variables)
+        const csvData = generateMapperCSVData(mapResultMain, execResult.assignments.variables!)
         const csvFilename = `${geographies.map(g => `${g.geographyKind}-${g.universe}`).join('-')}-data.csv`
         return {
             csvData,
@@ -275,7 +278,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
                 exportImage: () => exportImage(),
             }
         },
-        assignments: publishAssignments(cache, execResult.assignments),
+        assignments: execResult.assignments,
     }
 }
 
@@ -623,16 +626,10 @@ function filterOverlaps(inset: Inset, features: GeoJSON.Feature[]): GeoJSON.Feat
 }
 
 interface MapCache {
-    assignments: Property<AssignmentsResult>
     geo?: { geographies: GeographySelection[] } & (
         { type: 'points', centroidsByName: Map<string, ICoordinate> }
         | { type: 'polygons', polygonsByName: Map<string, GeoJSON.Geometry> }
     )
-}
-
-function publishAssignments(cache: MapCache, assignments: AssignmentsResult): Property<AssignmentsResult> {
-    cache.assignments.value = assignments
-    return cache.assignments
 }
 
 function sameGeographies(a: GeographySelection[] | undefined, b: GeographySelection[]): boolean {

@@ -6,7 +6,6 @@ import { Selection, SelectionContext } from '../mapper/settings/SelectionContext
 import { Navigator } from '../navigation/Navigator'
 import { useUnitSettings } from '../page_template/settings'
 import { universeContext } from '../universe'
-import { AssignmentsContext } from '../urban-stats-script/AssignmentsContext'
 import { Property } from '../utils/Property'
 import { TestUtils } from '../utils/TestUtils'
 import { useUndoRedo } from '../utils/useUndoRedo'
@@ -125,18 +124,17 @@ export function StatisticPanel({ settings, counts }: { settings: StatSettings, c
                 },
             }}
             >
-                <AssignmentsContext.Provider value={generator.assignments}>
-                    <StatisticPanelPage
-                        stat={stat}
-                        view={view}
-                        loading={generator.loading}
-                        set={setSettingsStateWrapper}
-                        errors={generator.errors}
-                        counts={counts}
-                        data={generator.data}
-                        typeEnvironment={typeEnvironment}
-                    />
-                </AssignmentsContext.Provider>
+                <StatisticPanelPage
+                    stat={stat}
+                    view={view}
+                    loading={generator.loading}
+                    set={setSettingsStateWrapper}
+                    errors={generator.errors}
+                    counts={counts}
+                    data={generator.data}
+                    assignments={generator.assignments}
+                    typeEnvironment={typeEnvironment}
+                />
             </universeContext.Provider>
             {settingsState.view.edit && undoRedo.ui}
         </SelectionContext.Provider>

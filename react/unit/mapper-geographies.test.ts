@@ -117,7 +117,7 @@ async function mapVariables(geographies: GeographySelection[], data: string): Pr
         stmts: toStatement(mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`)),
     })
     assert.deepEqual(result.error, [])
-    return result.assignments.variables
+    return result.assignments.variables!
 }
 
 const numbers = async (geographies: GeographySelection[], data: string): Promise<number[]> =>
