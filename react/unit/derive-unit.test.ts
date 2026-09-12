@@ -189,6 +189,10 @@ for (const [data, stated, expected] of [
     ['pm25_pollution * area', undefined, '1\u202f000g/m'],
     ['population / area', 'temperature', '1\u202f000.0\u00b0F'],
     ['high_temp', 'number', '1\u202f000'],
+    // a bare statistic works out to its own unit, so dropping the guess taken from the data's
+    // documentation costs nothing: the script says the same thing
+    ['high_temp', undefined, '1\u202f000.0\u00b0F'],
+    ['population', undefined, '1\u202f000'],
 ] as const) {
     void test(`a ramp of ${data} stating ${stated ?? 'no unit'}`, () => {
         const uss = mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`)
