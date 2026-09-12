@@ -7,6 +7,7 @@ import type { PageDescriptor } from '../navigation/PageDescriptor'
 import { StatName } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 import { numberColumnValues, orderCells, orderNonNan, Table, tableType } from '../urban-stats-script/constants/table'
+import { assignColumnUnitsStatically, assignDeclaredColumnUnits } from '../urban-stats-script/declared-units'
 import { deriveTableColumnLabel, deriveTableLabel, tableLabel } from '../urban-stats-script/derive-human-readable-name'
 import { deriveTableColumnUnit } from '../urban-stats-script/derive-unit'
 import { unparse } from '../urban-stats-script/parser'
@@ -41,7 +42,9 @@ export function parseStatUSS(uss: string, universe: Universe): MapUSS {
 
 /** @public this is included dynamically */
 export function tableTitle(uss: MapUSS, universe: Universe, settings: UnitSettings): string | undefined {
-    const label = tableLabel(uss, defaultTypeEnvironment(universe))
+    const typeEnvironment = defaultTypeEnvironment(universe)
+    // we are not executing. fall back to inferring statically what the column units are
+    const label = tableLabel(uss, typeEnvironment, assignColumnUnitsStatically(uss, typeEnvironment))
     return label === undefined ? undefined : reifyString(label, settings)
 }
 
@@ -89,14 +92,16 @@ export function statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn }
     typeEnvironment: TypeEnvironment
     warn: (message: string) => void
 }): StatData {
+    // each column in the unit it turned out to be written in, which the script may have declared
+    const declaredUnits = assignDeclaredColumnUnits(mapUSS, typeEnvironment, table.columns.map(column => column.unit))
     const columns = table.columns.map((column, index): StatColumn => {
-        let name = column.name ?? deriveTableColumnLabel(mapUSS, typeEnvironment, index)
+        let name = column.name ?? deriveTableColumnLabel(mapUSS, typeEnvironment, index, declaredUnits)
         if (name === undefined) {
             warn(`Name could not be derived for column ${index}, please pass name="<your name here>" to column(...)`)
             name = '[Unnamed Column]'
         }
         const unit = column.unit === undefined
-            ? deriveTableColumnUnit(mapUSS, typeEnvironment, index)
+            ? deriveTableColumnUnit(mapUSS, typeEnvironment, index, declaredUnits)
             : unitTypeToStoredUnit(column.unit)
         const numbers = numberColumnValues(column.values)
         if (numbers === undefined || column.populationPercentiles === undefined) {

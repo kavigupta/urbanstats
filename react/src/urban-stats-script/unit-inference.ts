@@ -4,6 +4,7 @@ import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { locationOf, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import { asNumber } from './constants/convert'
+import { DeclaredUnits, nothingDeclared } from './declared-units'
 import * as l from './literal-parser'
 import { BinaryOperatorSymbol } from './operators'
 import { TypeEnvironment, UnitPropagation, USSPrimitiveRawValue } from './types-values'
@@ -94,6 +95,7 @@ interface InferenceResult {
 interface Scope {
     typeEnvironment: TypeEnvironment
     variables: Bindings
+    declaredUnits: DeclaredUnits
 }
 
 function intersect(left: Times, right: Times): Times {
@@ -177,8 +179,11 @@ function infer(ast: Expression, scope: Scope, wanted: UnitExpectation): Inferenc
         // everything below here reads an ordinary tree
         return infer(asANumber, scope, wanted)
     }
+    // a node the caller declared a unit for is read in that, whatever it is used as
+    const declared = scope.declaredUnits.get(ast)
+    const asked = declared === undefined ? wanted : { ...wanted, unit: declared }
     // fallback in case best effort returns something that does not fit what is wanted
-    return narrowed(inferBestEffort(ast, scope, wanted), wanted)
+    return narrowed(inferBestEffort(ast, scope, asked), asked)
 }
 
 /** Makes a best effort to read the expression in the unit wanted. Might return something with a different unit, that needs to be converted. */
@@ -510,13 +515,11 @@ interface ReadArgument { arg: UrbanStatsASTArg<UnitsRead>, inferred: InferenceRe
 
 function call(ast: Expression & { type: 'call' }, scope: Scope, wanted: UnitExpectation): InferenceResult {
     const propagation = propagationOf(ast.fn, scope)
-    const stated = statedUnitOf(ast, scope)
     const args = (inWhat: UnitExpectation): ReadArgument[] => {
         const all: ReadArgument[] = []
         let soFar = scope
         for (const arg of ast.args) {
-            const drawn = stated !== undefined && arg.type === 'named' && drawnBy.includes(arg.name.node)
-            const inferred = inferEitherWay(arg.value, soFar, drawn ? { unit: stated } : ofArgument(propagation, inWhat))
+            const inferred = inferEitherWay(arg.value, soFar, ofArgument(propagation, inWhat))
             all.push({ arg: { ...arg, value: packExpression(inferred) }, inferred })
             soFar = after(soFar, inferred)
         }
@@ -538,22 +541,6 @@ function call(ast: Expression & { type: 'call' }, scope: Scope, wanted: UnitExpe
 /** Whether every argument has to be in one unit, as max and min need of theirs. */
 function argumentsAgree(propagation: UnitPropagation | undefined): boolean {
     return propagation?.kind === 'either' || propagation?.kind === 'rank'
-}
-
-/** The arguments a stated unit applies to: the map's data and the table column's values. */
-const drawnBy = ['data', 'values']
-
-/**
- * The unit a call states of what it draws: cMap(data=..., unit=unitContaminantLevel) says the map
- * is in that unit, whatever the script computes, so the data is read as converted into it.
- */
-function statedUnitOf(ast: Expression & { type: 'call' }, scope: Scope): StoredUnit | undefined {
-    const stated = ast.args.find(arg => arg.type === 'named' && arg.name.node === 'unit')?.value
-    if (stated?.type !== 'identifier') {
-        return undefined
-    }
-    const names = scope.typeEnvironment.get(stated.name.node)?.documentation?.namesUnit
-    return names === undefined ? undefined : unitTypeToStoredUnit(names)
 }
 
 /** How the function propagates units, or undefined if the script bound that name itself. */
@@ -708,11 +695,11 @@ function readAsANumber(ast: Expression, scope: Scope): Expression | undefined {
 }
 
 /** The script rewritten, every node of it saying what it works out to. */
-export function unitCheck<M>(program: MapUSS<M>, typeEnvironment: TypeEnvironment): MapUSS<M & UnitsRead>
-export function unitCheck<M>(program: UrbanStatsASTStatement<M>, typeEnvironment: TypeEnvironment): Statement
-export function unitCheck<M>(program: UrbanStatsASTExpression<M>, typeEnvironment: TypeEnvironment): Expression
-export function unitCheck(program: Expression | Statement, typeEnvironment: TypeEnvironment): Expression | Statement {
-    const scope: Scope = { typeEnvironment, variables: new Map() }
+export function unitCheck<M>(program: MapUSS<M>, typeEnvironment: TypeEnvironment, declaredUnits?: DeclaredUnits): MapUSS<M & UnitsRead>
+export function unitCheck<M>(program: UrbanStatsASTStatement<M>, typeEnvironment: TypeEnvironment, declaredUnits?: DeclaredUnits): Statement
+export function unitCheck<M>(program: UrbanStatsASTExpression<M>, typeEnvironment: TypeEnvironment, declaredUnits?: DeclaredUnits): Expression
+export function unitCheck(program: Expression | Statement, typeEnvironment: TypeEnvironment, declaredUnits: DeclaredUnits = nothingDeclared): Expression | Statement {
+    const scope: Scope = { typeEnvironment, variables: new Map(), declaredUnits }
     return isExpression(program)
         ? packExpression(inferEitherWay(program, scope, noUnitExpectation))
         : inferStatement(program, scope, noUnitExpectation).ast

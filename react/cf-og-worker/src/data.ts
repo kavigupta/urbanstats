@@ -22,6 +22,7 @@ import { doRender } from '../../src/urban-stats-script/constants/color-utils'
 import { Inset } from '../../src/urban-stats-script/constants/insets'
 import { ClusterMap, CMap, CMapRGB, PMap } from '../../src/urban-stats-script/constants/map'
 import { Table, TableCellValue } from '../../src/urban-stats-script/constants/table'
+import { assignDeclaredMapUnit } from '../../src/urban-stats-script/declared-units'
 import { deriveConditionLabel, deriveMapLabel } from '../../src/urban-stats-script/derive-human-readable-name'
 import { createRequestExecutor } from '../../src/urban-stats-script/execute-request'
 import { geometry } from '../../src/utils/geometry'
@@ -336,7 +337,9 @@ export async function mapCard(origin: string, pageData: Extract<PageData, { kind
             break
     }
 
-    const label = map.label ?? deriveMapLabel(script.uss, defaultTypeEnvironment(universe))
+    const typeEnvironment = defaultTypeEnvironment(universe)
+    const label = map.label
+        ?? deriveMapLabel(script.uss, typeEnvironment, assignDeclaredMapUnit(script.uss, typeEnvironment, map.unit))
     return {
         label: label === undefined ? '' : reifyString(label, {}),
         contents,

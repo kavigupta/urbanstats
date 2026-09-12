@@ -7,6 +7,7 @@ import { asADifference, dimensionless, isPlainNumber, multiplies, nameOfStoredUn
 import { abbreviate, formatToSignificantFigures, separateNumber, trimTrailingZeros } from '../utils/text'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
+import { assignMapUnitStatically, DeclaredUnits } from './declared-units'
 import * as l from './literal-parser'
 import { noLocation } from './location'
 import { BinaryOperatorSymbol, expressionOperatorMap } from './operators'
@@ -236,8 +237,8 @@ function statedMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanRea
     return label === undefined ? undefined : parseHumanReadableTemplate(label)
 }
 
-export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
-    const factored = unitCheck(uss, typeEnvironment)
+export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, declaredUnits: DeclaredUnits): HumanReadableName | undefined {
+    const factored = unitCheck(uss, typeEnvironment, declaredUnits)
     const result = read(editableMapData<UnitsRead>(), factored, typeEnvironment)
     if (result?.currentValue.namedArgs.data === undefined) return
     const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment)
@@ -250,7 +251,8 @@ export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): H
 }
 
 export function mapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
-    return statedMapLabel(uss, typeEnvironment) ?? deriveMapLabel(uss, typeEnvironment)
+    return statedMapLabel(uss, typeEnvironment)
+        ?? deriveMapLabel(uss, typeEnvironment, assignMapUnitStatically(uss, typeEnvironment))
 }
 
 /** The title a table states outright, which running it would otherwise be the only way to read. */
@@ -281,8 +283,8 @@ const statedColumnNames = mapUssParser(l.call({
     unnamedArgs: [],
 }), 'dont-reparse')
 
-function tableColumnLabels(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName[] | undefined {
-    const factored = unitCheck(uss, typeEnvironment)
+function tableColumnLabels(uss: MapUSS, typeEnvironment: TypeEnvironment, declaredUnits: DeclaredUnits): HumanReadableName[] | undefined {
+    const factored = unitCheck(uss, typeEnvironment, declaredUnits)
     const columns = read(statedColumnNames, factored, typeEnvironment)?.namedArgs.columns
     if (columns === undefined) {
         return undefined
@@ -310,17 +312,17 @@ export function deriveConditionLabel(uss: MapUSS, typeEnvironment: TypeEnvironme
 }
 
 /** A table's title the way `mapLabel` is a map's: stated if it says one, derived from it if not. */
-export function tableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
+export function tableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, declaredUnits: DeclaredUnits): HumanReadableName | undefined {
     const stated = statedTableTitle(uss, typeEnvironment)
     if (stated !== undefined) {
         return stated
     }
-    const columns = tableColumnLabels(uss, typeEnvironment)
+    const columns = tableColumnLabels(uss, typeEnvironment, declaredUnits)
     return columns === undefined ? undefined : deriveTableLabel(uss, typeEnvironment, columns)
 }
 
-export function deriveTableColumnLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number): HumanReadableName | undefined {
-    const factored = unitCheck(uss, typeEnvironment)
+export function deriveTableColumnLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number, declaredUnits: DeclaredUnits): HumanReadableName | undefined {
+    const factored = unitCheck(uss, typeEnvironment, declaredUnits)
     const values = tableColumnExpression(factored, typeEnvironment, columnIndex)
     return values === undefined ? undefined : humanReadableElements(values, typeEnvironment)
 }

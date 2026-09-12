@@ -21,6 +21,7 @@ import { Inset } from '../urban-stats-script/constants/insets'
 import { CommonMap } from '../urban-stats-script/constants/map'
 import { ScaleInstance } from '../urban-stats-script/constants/scale'
 import { TextBox } from '../urban-stats-script/constants/text-box'
+import { assignDeclaredMapUnit } from '../urban-stats-script/declared-units'
 import { deriveMapLabel } from '../urban-stats-script/derive-human-readable-name'
 import { deriveMapUnit } from '../urban-stats-script/derive-unit'
 import { EditorError } from '../urban-stats-script/editor-utils'
@@ -118,10 +119,11 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
     }
 
     const mapResultMain = execResult.resultingValue.value
+    const declaredUnits = assignDeclaredMapUnit(mapSettings.script.uss, typeEnvironment, mapResultMain.value.unit)
     let label: HumanReadableName
 
     if (mapResultMain.value.label === undefined) {
-        const derivedLabel = deriveMapLabel(mapSettings.script.uss, typeEnvironment)
+        const derivedLabel = deriveMapLabel(mapSettings.script.uss, typeEnvironment, declaredUnits)
         if (derivedLabel === undefined) {
             label = '[Unlabeled Map]'
             execResult.error.push({
@@ -148,7 +150,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         }
     }
 
-    const derivedUnit = deriveMapUnit(mapSettings.script.uss, typeEnvironment)
+    const derivedUnit = deriveMapUnit(mapSettings.script.uss, typeEnvironment, declaredUnits)
 
     const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind, cache, label, derivedUnit })
 

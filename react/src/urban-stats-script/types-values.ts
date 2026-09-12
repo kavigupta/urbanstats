@@ -197,12 +197,6 @@ export interface Documentation {
     unit?: UnitType
     /** For a function, how a quantity it is given comes back out. */
     unitPropagation?: UnitPropagation
-    /**
-     * Which unit a constant names: unitArea names the area one. Not `unit` above, which is what a
-     * statistic is measured in. It is recorded here rather than read off the constant's value
-     * because units are read from the type environment, which holds no values.
-     */
-    namesUnit?: UnitType
 }
 
 export type UnitPropagation = (
