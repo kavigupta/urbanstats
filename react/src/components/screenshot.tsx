@@ -115,6 +115,11 @@ function fixElementForScreenshot(element: HTMLElement): () => void {
 }
 
 export const mapBorderWidth = 1
+// Fractions of the footer banner image: where the logo lockup starts, and the size and baseline
+// of the map credit that sits to its left
+export const bannerLockupStart = 0.76
+export const bannerCreditSize = 0.15
+export const bannerCreditBottom = 0.16
 export const defaultMapBorderRadius = 5
 
 export async function screencapElement(ref: HTMLElement, overallWidth: number, {
