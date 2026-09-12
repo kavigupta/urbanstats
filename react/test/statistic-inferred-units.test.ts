@@ -56,9 +56,10 @@ test('each column of a table is written in its own units', async (t) => {
 
 urbanstatsFixture('the size of a reading and of a difference', tableOf('abs(high_temp)'))
 
-test('the size of a reading is no reading', async (t) => {
+test('the size of a reading is the size of the number it is written as', async (t) => {
     await waitForLoading()
-    // no degrees, the zero of a temperature being wherever its scale puts it
+    // ten degrees below freezing is one number in Fahrenheit and another in Celsius, so the size
+    // of a reading is of neither scale, and the column is of the Fahrenheit numbers as written
     await t.expect(await rows()).eql(['78.3', '77.5', '69.5'])
 })
 
@@ -142,4 +143,36 @@ test('a root of a count is written plainly rather than failing', async (t) => {
     await waitForLoading()
     // to three figures, as anything in no known unit is, rather than whole as a count of people is
     await t.expect(await rows()).eql(['8\u202f176 people0.5', '6\u202f105 people0.5', '6\u202f063 people0.5'])
+})
+
+urbanstatsFixture('a concentration over an area', tableOf('pm25_pollution * area'))
+
+test('a mass in a volume over an area is a mass over a length', async (t) => {
+    await waitForLoading()
+    // micrograms per cubic metre times square kilometres, which comes out grams to the centimetre
+    await t.expect(await rows()).eql(['304 kg/cm', '94.0 kg/cm', '85.2 kg/cm'])
+})
+
+urbanstatsFixture('one over a concentration', tableOf('1 / pm25_pollution'))
+
+test('a number over a quantity inverts it rather than keeping it', async (t) => {
+    await waitForLoading()
+    await t.expect(columnName.innerText).eql('1 ÷ PW Mean PM2.5 Pollution')
+    await t.expect(await rows()).eql(['159 m3/mg', '155 m3/mg', '149 m3/mg'])
+})
+
+urbanstatsFixture('a root of a concentration', tableOf('sqrt(pm25_pollution)'))
+
+test('a root of a quantity of two dimensions takes the root of each', async (t) => {
+    await waitForLoading()
+    await t.expect(await rows()).eql(['92.5 g0.5/km1.5', '87.8 g0.5/km1.5', '87.6 g0.5/km1.5'])
+})
+
+urbanstatsFixture('a difference of temperatures scaled', tableOf('(high_temp - low_temp) * area'))
+
+test('a difference of two readings multiplies where a reading does not', async (t) => {
+    await waitForLoading()
+    // the reading cannot be scaled, but the degrees between two of them are a size like any other
+    await t.expect(columnName.innerText).eql('(Mean high temp − Mean low temp) × Area')
+    await t.expect(await rows()).eql(['+61\u202f408\u202f742 °F\u00b7km2', '+32\u202f447\u202f280 °F\u00b7km2', '+23\u202f160\u202f823 °F\u00b7km2'])
 })

@@ -228,7 +228,6 @@ function mapConstructorArguments(
 function computeCommonMap(
     isPmap: boolean,
     namedArgs: Record<string, USSRawValue>,
-    originalArgs: OriginalFunctionArgs,
 ): CommonMap {
     const geoRaw = namedArgs.geo as USSRawValue[]
     const geo: string[] = geoRaw.map((g) => {
@@ -243,16 +242,7 @@ function computeCommonMap(
     const basemap = (namedArgs.basemap as { type: 'opaque', opaqueType: 'basemap', value: Basemap }).value
     const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: Inset[] }).value
     const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'unit', value: { unit: string } } | null
-    let unit: UnitType | undefined
-    if (unitArg) {
-        unit = unitArg.value.unit as UnitType
-    }
-    else {
-        const inferredUnit = originalArgs.namedArgs.data.documentation?.unit
-        if (inferredUnit !== undefined) {
-            unit = inferredUnit
-        }
-    }
+    const unit = unitArg === null ? undefined : unitArg.value.unit as UnitType
     const textBoxes = (namedArgs.textBoxes as { value: TextBox }[] | null ?? []).map(({ value }) => value)
     const opacity = Math.max(0, Math.min(1, namedArgs.opacity as number))
     const missingData = (namedArgs.missingData as { type: 'opaque', opaqueType: 'missingData', value: MissingData } | null)?.value
@@ -294,9 +284,9 @@ export const cMap: USSValue = {
         }),
         returnType: { type: 'concrete', value: cMapType },
     },
-    value: (ctx, posArgs, namedArgs, originalArgs) => {
+    value: (ctx, posArgs, namedArgs) => {
         const outline = (namedArgs.outline as { type: 'opaque', opaqueType: 'outline', value: Outline }).value
-        const commonMap = computeCommonMap(false, namedArgs, originalArgs)
+        const commonMap = computeCommonMap(false, namedArgs)
         return {
             type: 'opaque',
             opaqueType: 'cMap',
@@ -332,11 +322,11 @@ export const pMap: USSValue = {
         }),
         returnType: { type: 'concrete', value: pMapType },
     },
-    value: (ctx, posArgs, namedArgs, originalArgs) => {
+    value: (ctx, posArgs, namedArgs) => {
         const maxRadius = namedArgs.maxRadius as number
         const relativeArea = namedArgs.relativeArea as number[] | null
 
-        const commonMap = computeCommonMap(true, namedArgs, originalArgs)
+        const commonMap = computeCommonMap(true, namedArgs)
         const normalizedRelativeArea = normalizeRelativeArea(relativeArea, commonMap.data.length)
 
         return {
@@ -379,7 +369,7 @@ export const clusterMap: USSValue = {
         }),
         returnType: { type: 'concrete', value: clusterMapType },
     },
-    value: (ctx, posArgs, namedArgs, originalArgs) => {
+    value: (ctx, posArgs, namedArgs) => {
         const maxRadius = namedArgs.maxRadius as number
         const relativeArea = namedArgs.relativeArea as number[] | null
         const clusterRadiusSpacing = namedArgs.clusterRadiusSpacing as number
@@ -387,7 +377,7 @@ export const clusterMap: USSValue = {
             throw new Error(`clusterRadiusSpacing must be non-negative: ${clusterRadiusSpacing}`)
         }
 
-        const commonMap = computeCommonMap(true, namedArgs, originalArgs)
+        const commonMap = computeCommonMap(true, namedArgs)
         const normalizedRelativeArea = normalizeRelativeArea(relativeArea, commonMap.data.length)
 
         return {

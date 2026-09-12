@@ -22,6 +22,7 @@ import { Inset } from '../../src/urban-stats-script/constants/insets'
 import { ClusterMap, CMap, CMapRGB, PMap } from '../../src/urban-stats-script/constants/map'
 import { Table, TableCellValue } from '../../src/urban-stats-script/constants/table'
 import { deriveConditionLabel, deriveMapLabel } from '../../src/urban-stats-script/derive-human-readable-name'
+import { mapIsDrawnIn } from '../../src/urban-stats-script/derive-unit'
 import { createRequestExecutor } from '../../src/urban-stats-script/execute-request'
 import { GeographySelection } from '../../src/urban-stats-script/workerManager'
 import { geometry } from '../../src/utils/geometry'
@@ -32,7 +33,6 @@ import { StoredUnit } from '../../src/utils/quantity'
 import { loadFeatureFromPossibleSymlink } from '../../src/utils/symlinks'
 import { displayType } from '../../src/utils/text'
 import { NormalizeProto } from '../../src/utils/types'
-import { unitTypeToStoredUnit } from '../../src/utils/unit'
 
 import { Ring } from './map-layout'
 
@@ -337,7 +337,9 @@ export async function mapCard(origin: string, pageData: Extract<PageData, { kind
             break
     }
 
-    const label = map.label ?? deriveMapLabel(script.uss, defaultTypeEnvironment(universesOf(geographies)))
+    const typeEnvironment = defaultTypeEnvironment(universesOf(geographies))
+    const { declaredUnits, unit } = mapIsDrawnIn(script.uss, typeEnvironment, map.unit)
+    const label = map.label ?? deriveMapLabel(script.uss, typeEnvironment, declaredUnits)
     return {
         label: label === undefined ? '' : reifyString(label, {}),
         contents,
@@ -349,7 +351,7 @@ export async function mapCard(origin: string, pageData: Extract<PageData, { kind
             : {
                     ticks: visuals.ramp.ticks,
                     colors: visuals.ramp.colors,
-                    unit: map.unit === undefined ? undefined : unitTypeToStoredUnit(map.unit),
+                    unit,
                 },
         units: settings.getMultiple(['use_imperial', 'temperature_unit']),
     }

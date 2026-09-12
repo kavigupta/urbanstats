@@ -23,3 +23,11 @@ function createUnit(name: UnitType, humanReadableName: string): [string, USSValu
 export const unitConstants: [string, USSValue][] = allUnitTypes.map(unit =>
     createUnit(unit, getUnitName(unit)),
 )
+
+/**
+ * The unit each of these constants names. For a caller that has to read a unit off a script it is
+ * not running; anything that runs the script is handed the value itself.
+ */
+export const unitNamedByConstant = new Map<string, UnitType>(
+    unitConstants.map(([constant, { value }]) => [constant, (value as { value: { unit: UnitType } }).value.unit]),
+)
