@@ -1,6 +1,8 @@
 import assert from 'assert'
 import fs from 'fs/promises'
+import path from 'path'
 
+import chalkTemplate from 'chalk-template'
 import { globSync } from 'glob'
 import { z } from 'zod'
 
@@ -70,4 +72,44 @@ export async function loadAndMergeTestHistories(): Promise<TestHistory> {
 
 export function testFile(test: string): string {
     return `test/${test}.test.ts`
+}
+
+export function testsFromGlobs(globs: string[]): string[] {
+    const testFiles = globSync(globs)
+    if (testFiles.length === 0) {
+        console.error(`No test files found for ${globs.join(', ')}`)
+        process.exit(1)
+    }
+    return testFiles.map(file => /test\/(.+)\.test\.ts/.exec(file)![1])
+}
+
+const changedAssetsManifest = 'manifest.json'
+
+/** Paths relative to the test's directory, so they resolve against the reference and delta trees too. */
+export function changedAssets(test: string): string[] {
+    return globSync(`changed_assets/${test}/**`, { nodir: true })
+        .map(file => path.relative(`changed_assets/${test}`, file))
+        .filter(file => file !== changedAssetsManifest && !file.endsWith('.error.png'))
+}
+
+/** The asset diff viewer's index of a local run, since it can't list the directories itself. */
+export async function writeChangedAssetsManifest(test: string): Promise<void> {
+    const changed = changedAssets(test)
+    if (changed.length === 0) {
+        return
+    }
+    const delta = globSync(`delta/${test}/**`, { nodir: true }).map(file => path.relative(`delta/${test}`, file))
+    await fs.writeFile(path.join('changed_assets', test, changedAssetsManifest), JSON.stringify({ changed, delta }))
+}
+
+export async function updateReferences(test: string): Promise<void> {
+    const changed = changedAssets(test)
+    await Promise.all(changed.map(async (file) => {
+        const destination = path.join('..', 'reference_test_assets', test, file)
+        await fs.mkdir(path.dirname(destination), { recursive: true })
+        await fs.copyFile(path.join('changed_assets', test, file), destination)
+    }))
+    // The deltas are against references that no longer exist, so leaving them would only mislead.
+    await Promise.all([`changed_assets/${test}`, `delta/${test}`].map(dir => fs.rm(dir, { recursive: true, force: true })))
+    console.warn(chalkTemplate`{green ${testFile(test)} updated ${changed.length} reference assets}`)
 }

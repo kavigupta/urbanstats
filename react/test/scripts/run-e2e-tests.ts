@@ -1,5 +1,4 @@
 import fs from 'fs/promises'
-import path from 'path'
 
 import chalkTemplate from 'chalk-template'
 import { execa } from 'execa'
@@ -8,11 +7,13 @@ import createTestCafe from 'testcafe'
 import { z } from 'zod'
 import { argumentParser } from 'zodcli'
 
+import { port } from '../../port'
+
 import { startProxy } from './ci_proxy'
 import { github } from './github-utils'
 import { runE2eTestsDocker } from './run-e2e-tests-docker'
 import { testCafePorts } from './testcafe-ports'
-import { booleanArgument, getTOTPWait, setTOTPWait, testFile, TestHistory, TestResult } from './util'
+import { booleanArgument, changedAssets, getTOTPWait, setTOTPWait, testFile, TestHistory, TestResult, testsFromGlobs, updateReferences, writeChangedAssetsManifest } from './util'
 
 const options = argumentParser({
     options: z.object({
@@ -50,14 +51,7 @@ if (options.docker !== 'none') {
     process.exit(exitCode)
 }
 
-const testFiles = globSync(options.test)
-
-if (testFiles.length === 0) {
-    console.error(`No test files found for ${options.test}`)
-    process.exit(1)
-}
-
-const tests = testFiles.map(file => /test\/(.+)\.test\.ts/.exec(file)![1])
+const tests = testsFromGlobs(options.test)
 
 if (options.headless) {
     // Start display subsystem to browser can run
@@ -129,6 +123,13 @@ testHistory.forEach(printResult)
 
 await fs.mkdir('test_histories', { recursive: true })
 await fs.writeFile(`test_histories/${process.env.GITHUB_ACTIONS ? crypto.randomUUID() : 'history'}.json`, JSON.stringify(testHistory))
+
+const testsWithChangedAssets = tests.filter(test => changedAssets(test).length > 0)
+
+if (testsWithChangedAssets.length > 0) {
+    const url = `http://localhost:${port()}/asset-diff-viewer.html?tests=${encodeURIComponent(testsWithChangedAssets.join(','))}`
+    console.warn(chalkTemplate`{yellow Assets changed. View the diffs at ${url}}`)
+}
 
 if (testHistory.some(({ result }) => result.status !== 'success')) {
     process.exit(1)
@@ -251,22 +252,14 @@ async function maybeCompare(test: string, success: boolean): Promise<boolean> {
             return true
         }
 
+        await writeChangedAssetsManifest(test)
+
         if (assetComparison.failed) {
             return false
         }
     }
 
     return true
-}
-
-async function updateReferences(test: string): Promise<void> {
-    const changed = globSync(`changed_assets/${test}/**`, { nodir: true }).filter(file => !file.endsWith('.error.png'))
-    await Promise.all(changed.map(async (file) => {
-        const destination = path.join('..', 'reference_test_assets', path.relative('changed_assets', file))
-        await fs.mkdir(path.dirname(destination), { recursive: true })
-        await fs.copyFile(file, destination)
-    }))
-    console.warn(chalkTemplate`{green ${testFile(test)} updated ${changed.length} reference assets}`)
 }
 
 async function withTimeout<T>(promise: Promise<T>, getTimeoutSeconds: () => Promise<number>): Promise<T | { status: 'timeout' }> {

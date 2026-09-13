@@ -203,22 +203,6 @@ void test('a column is written in the units of its values', () => {
     assert.equal(columnUnit('column(values=population)', 1), 'nothing')
 })
 
-// What a map is drawn in, which the app's ramp and the link embed card's ramp both ask for. A
-// script that declares a unit is drawn in that; one that declares none is drawn in what it works
-// out to, which is the part a card once lost by asking a different question.
-for (const [data, declared, expected] of [
-    ['high_temp', undefined, '1\u202f000.0\u00b0F'],
-    ['population / area', undefined, '1\u202f000/km^{2}'],
-    ['high_temp - low_temp', undefined, '+1\u202f000.0\u00b0F'],
-    ['population ** 0.5', undefined, '1\u202f000people^{0.5}'],
-    ['high_temp', 'number', '1\u202f000'],
-    ['population / area', 'temperature', '1\u202f000.0\u00b0F'],
-] as const) {
-    void test(`a ramp of ${data} where the user provided ${declared ?? 'no unit'}`, () => {
-        assert.equal(written(mapRampUnitAndLabel(mapOf(data), defaultTypeEnvironment('USA'), declared).unit), expected)
-    })
-}
-
 // Units built from more than one dimension. These are the shapes a naming pool is least likely to
 // have a ready answer for, so they pin down both what the arithmetic works out to and how it reads.
 for (const [data, expected] of [
@@ -235,5 +219,23 @@ for (const [data, expected] of [
 ] as const) {
     void test(`a map of ${data} is written`, () => {
         assert.equal(written(unitOfMap(data), 1234), expected)
+    })
+}
+
+// What a map's ramp is labelled in. Both the mapper and the link embed card ask this, and the card
+// used to answer it differently: it had no fall back to a unit derived from the data, so a map the
+// user provided no unit for was drawn with a ramp of bare numbers.
+for (const [data, userProvided, expected] of [
+    ['high_temp', undefined, '1\u202f000.0\u00b0F'],
+    ['population', undefined, '1\u202f000'],
+    ['population / area', undefined, '1\u202f000/km^{2}'],
+    ['high_temp - low_temp', undefined, '+1\u202f000.0\u00b0F'],
+    ['population ** 0.5', undefined, '1\u202f000people^{0.5}'],
+    ['pm25_pollution * area', undefined, '1\u202f000g/m'],
+    ['high_temp', 'number', '1\u202f000'],
+    ['population / area', 'temperature', '1\u202f000.0\u00b0F'],
+] as const) {
+    void test(`a ramp of ${data} where the user provided ${userProvided ?? 'no unit'}`, () => {
+        assert.equal(written(mapRampUnitAndLabel(mapOf(data), defaultTypeEnvironment('USA'), userProvided).unit), expected)
     })
 }

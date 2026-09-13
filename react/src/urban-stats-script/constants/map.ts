@@ -241,6 +241,8 @@ function computeCommonMap(
     const labelPassedIn = namedArgs.label as string | null
     const basemap = (namedArgs.basemap as { type: 'opaque', opaqueType: 'basemap', value: Basemap }).value
     const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: Inset[] }).value
+    // what the user chose, and nothing else. A call with no unit argument leaves this undefined,
+    // and mapRampUnitAndLabel falls back to the unit derived from the data
     const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'unit', value: { unit: UnitType } } | null
     const unit = unitArg === null ? undefined : unitArg.value.unit
     const textBoxes = (namedArgs.textBoxes as { value: TextBox }[] | null ?? []).map(({ value }) => value)
