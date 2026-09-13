@@ -1,7 +1,9 @@
+import indefinite from 'indefinite'
 import React, { ReactNode, useMemo, useState } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
+import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSettings } from '../page_template/settings'
@@ -41,7 +43,18 @@ export function ArticleMap(props: ArticleMapProps): ReactNode {
                     <FullscreenControl position="top-left" />
                 </CommonMaplibreMap>
             </div>
-            <MapAttribution />
+            <MapAttribution>
+                <a
+                    href={urlFromPageDescriptor({ kind: 'dataCredit', hash: `#shapefile_${props.articleType}` }).toString()}
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    What is
+                    {' '}
+                    {indefinite(props.articleType)}
+                    ?
+                </a>
+            </MapAttribution>
         </>
     )
 }
