@@ -46,7 +46,7 @@ mapper(() => test)('filter on a name', { code: base }, async (t) => {
     await checkTextboxesDirect(t, ['Filter?'])
     // A string predicate compares names, so the operands restart as the geography names and a search box
     await replaceInput(t, '>', 'starts with')
-    await t.expect(getInput('Default Universe Geography Names').exists).ok()
+    await t.expect(getInput('Name').exists).ok()
     const needle = Selector('textarea').withAttribute('placeholder', 'Enter string')
     await t.click(needle)
     await t.typeText(needle, 'Rey')
@@ -72,7 +72,7 @@ mapper(() => test)('a name filter written as code comes up graphically', {
     code: `customNode("");\ncondition (customNode("fuzzyMatch(geoName, \\"reykyavik\\")"))\n${base}`,
 }, async (t) => {
     await t.expect(getInput('fuzzy match').exists).ok()
-    await t.expect(getInput('Default Universe Geography Names').exists).ok()
+    await t.expect(getInput('Name').exists).ok()
     await t.expect(getErrors()).eql([])
 
     // Switching back to comparing numbers starts the comparison over rather than keeping a name where a number goes

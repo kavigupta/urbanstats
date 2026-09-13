@@ -78,15 +78,24 @@ for (const [condition, expected] of [
     ['density_pw_1km > toNumber("1000")', 'PW Density (r=1km) > 1\u202f000/km^{2}'],
     ['high_temp > toNumber("80")', 'Mean high temp > 80°F'],
     // a value the script says nothing about is read as whatever it is compared against
-    ['density_pw_1km > toNumber(geoName)', 'PW Density (r=1km) > Default Universe Geography Names [as /km^{2}]'],
-    ['population > toNumber(geoName)', 'Population > Default Universe Geography Names'],
+    ['density_pw_1km > toNumber(geoName)', 'PW Density (r=1km) > Name [as /km^{2}]'],
+    ['population > toNumber(geoName)', 'Population > Name'],
     // each name is read against the density separately, and the sign brackets the sum of them
-    ['density_pw_1km > -toNumber(geoName + geoName)', 'PW Density (r=1km) > -(Default Universe Geography Names + Default Universe Geography Names) [as /km^{2}]'],
+    ['density_pw_1km > -toNumber(geoName + geoName)', 'PW Density (r=1km) > -(Name + Name) [as /km^{2}]'],
     // a lead is written as whose it is, and a change from one year to another as a change
     ['pres_2020_margin > 0.1', '2020 Presidential Election > D+10%'],
     ['population_change_2000_2020 > 0.05', 'Population Change (2000-2020) > +5%'],
     ['population > 0', 'Population > 0'],
     ['sunny_hours > 2000', 'Mean sunny hours > 2000:00h'],
+    // a predicate on a name is written between the name and what is looked for, which is quoted
+    ['startsWith(geoName, "San")', 'Name starts with \'San\''],
+    ['includes(geoName, "san")', 'Name includes \'san\''],
+    ['fuzzyMatch(geoName, "pittsburg")', 'Name fuzzy matches \'pittsburg\''],
+    ['matchesRegex(geoName, "^San")', 'Name matches regex \'^San\''],
+    // an operand carrying an operator of its own is bracketed, so the predicate reads against all of it
+    ['startsWith(geoName + geoName, "San")', '(Name + Name) starts with \'San\''],
+    // an argument that does not fit between the two is written as a call again
+    ['fuzzyMatch(geoName, "pittsburg", maxErrors=3)', 'fuzzy match(Name, \'pittsburg\', maxErrors = 3)'],
 ] as const) {
     testMapLabel(test, `condition (${condition})\ncMap(data=population, scale=linearScale(), ramp=rampUridis)`, `Population where ${expected}`)
 }

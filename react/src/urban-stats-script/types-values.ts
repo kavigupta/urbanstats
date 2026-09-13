@@ -173,6 +173,10 @@ export interface Documentation {
      */
     longDescription?: HumanReadableName
     /**
+     * For a two-argument function, written between its arguments: "Name starts with 'A'".
+     */
+    infix?: HumanReadableName
+    /**
      * Used when displaying this value in a selector
      */
     selectorRendering?: SelectorRendering
