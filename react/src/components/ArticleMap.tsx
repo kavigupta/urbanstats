@@ -1,7 +1,8 @@
-import React, { ReactNode, useMemo, useState } from 'react'
+import React, { ReactNode, useContext, useMemo, useState } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
+import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSettings } from '../page_template/settings'
@@ -39,7 +40,18 @@ export function ArticleMap(props: ArticleMapProps): ReactNode {
                 <PolygonFeatureCollection features={readyFeatures} clickable={true} />
                 <FullscreenControl position="top-left" />
             </CommonMaplibreMap>
-            <MapAttribution />
+            <MapAttribution>
+                <a
+                    href={urlFromPageDescriptor({ kind: 'dataCredit', hash: `#shapefile_${props.articleType}` }).toString()}
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    What is a
+                    {' '}
+                    {props.articleType}
+                    ?
+                </a>
+            </MapAttribution>
         </div>
     )
 }

@@ -6,11 +6,13 @@ import { computeComparisonWidthColumns, MaybeScroll } from '../components/scroll
 import { CellSpec, SuperHeaderSpec, TableContents, TopLeftCellSpec } from '../components/supertable'
 import { ColumnIdentifier, valueOnlyColumns } from '../components/table'
 import { Navigator } from '../navigation/Navigator'
+import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { useColors } from '../page_template/colors'
+import { useUnitSettings } from '../page_template/settings'
 import { useDefinedUniverse } from '../universe'
 import { TableTextValues } from '../urban-stats-script/constants/table'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
-import { reifyString } from '../utils/human-readable-name'
+import { reifyReact, reifyString } from '../utils/human-readable-name'
 import { sanitize } from '../utils/paths'
 import { plainNumber } from '../utils/unit'
 
@@ -250,16 +252,22 @@ function Pagination({ set, view, count, data }: { set: StatSetter, view: View, c
         />
     )
 
+    const unitSettings = useUnitSettings()
+
     const explanationCredit = data.explanationPage !== undefined
         ? (
-                <div style={{ margin: 'auto', textAlign: 'center' }}>
+                <div style={{ margin: 'auto', textAlign: 'center', fontSize: 14 }}>
                     <a
-                        {...navContext.link(
+                        href={urlFromPageDescriptor(
                             { kind: 'dataCredit', hash: `#explanation_${sanitize(data.explanationPage)}` },
-                            { scroll: { kind: 'none' } },
-                        )}
+                        ).toString()}
+                        target="_blank"
+                        rel="noreferrer"
                     >
-                        Data Explanation and Credit
+                        What is
+                        {' '}
+                        {reifyReact(data.renderedStatname, unitSettings)}
+                        ?
                     </a>
                 </div>
             )
