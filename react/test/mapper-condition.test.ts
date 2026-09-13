@@ -57,6 +57,17 @@ mapper(() => test)('filter on a name', { code: base }, async (t) => {
     await t.expect(getCodeFromMainField()).contains('condition (startsWith(geoName, "Rey"))')
 })
 
+// The needle's box shares a row with the operand and the operator, so the three have to line up
+mapper(() => test)('a saved name filter lines up with the rest of its row', {
+    code: `customNode("");\ncondition (startsWith(geoName, "A"))\n${base}`,
+    geo: 'Subnational Region',
+    universe: 'USA',
+}, async (t) => {
+    await t.expect(getInput('starts with').exists).ok()
+    await t.expect(getErrors()).eql([])
+    await screencap(t, { removeEntireMap: true })
+})
+
 mapper(() => test)('a name filter written as code comes up graphically', {
     code: `customNode("");\ncondition (customNode("fuzzyMatch(geoName, \\"reykyavik\\")"))\n${base}`,
 }, async (t) => {
