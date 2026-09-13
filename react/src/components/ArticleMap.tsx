@@ -1,3 +1,4 @@
+import indefinite from 'indefinite'
 import React, { ReactNode, useMemo, useState } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
@@ -48,9 +49,9 @@ export function ArticleMap(props: ArticleMapProps): ReactNode {
                     target="_blank"
                     rel="noreferrer"
                 >
-                    What is a
+                    What is
                     {' '}
-                    {props.articleType}
+                    {indefinite(props.articleType)}
                     ?
                 </a>
             </MapAttribution>
