@@ -24,11 +24,9 @@ export function deriveTableColumnUnit(uss: MapUSS, typeEnvironment: TypeEnvironm
 }
 
 /**
- * The unit a map's ramp is labelled in: the one the user provided through the map's `unit=`
- * argument, or where they provided none, the one derived from the script. The provided unit is the
- * evaluated one, so a name bound to a unit works as well as a unit written out.
- *
- * Both the mapper and the link embed card label a ramp, and they have to agree on this.
+ * The unit a map's ramp is labelled in: the one the user chose through the map's `unit=` argument,
+ * or, where they chose none, the unit derived from the data. Both the mapper and the link embed
+ * card label a ramp, and they have to agree on this.
  */
 export function mapRampUnit(uss: MapUSS, typeEnvironment: TypeEnvironment, userProvided: UnitType | undefined): StoredUnit | undefined {
     return userProvided === undefined ? deriveMapUnit(uss, typeEnvironment) : unitTypeToStoredUnit(userProvided)
