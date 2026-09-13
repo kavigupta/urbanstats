@@ -1,7 +1,7 @@
 import stableStringify from 'json-stable-stringify'
 import React, { ReactNode, useCallback, useMemo, useState } from 'react'
 
-import { PolygonFeatureCollection, polygonFeatureCollection } from '../components/map-common'
+import { MapAttribution, PolygonFeatureCollection, polygonFeatureCollection } from '../components/map-common'
 import { notWaiting } from '../utils/promiseStream'
 import { ICoordinate } from '../utils/protos'
 
@@ -47,20 +47,23 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
     const readyFeatures = useMemo(() => features.filter(notWaiting), [features])
 
     return (
-        <ClusterMap
-            categories={categories}
-            pieChartSizeFor={props.population}
-            centroids={props.centroids}
-            categoryColors={categoryColors}
-            clusterMarkerLabel={syauClusterMarkerLabel}
-            unclusteredMarkerLabel={syauUnclusteredMarkerLabel}
-            onVisibleUnclusteredChange={setPolysOnScreen}
-            maxClusterRadius={20}
-            clusterRadiusSpacing={150}
-            computeRelativeArea={() => 1}
-            doZoom={true}
-        >
-            <PolygonFeatureCollection features={readyFeatures} clickable={false} />
-        </ClusterMap>
+        <>
+            <ClusterMap
+                categories={categories}
+                pieChartSizeFor={props.population}
+                centroids={props.centroids}
+                categoryColors={categoryColors}
+                clusterMarkerLabel={syauClusterMarkerLabel}
+                unclusteredMarkerLabel={syauUnclusteredMarkerLabel}
+                onVisibleUnclusteredChange={setPolysOnScreen}
+                maxClusterRadius={20}
+                clusterRadiusSpacing={150}
+                computeRelativeArea={() => 1}
+                doZoom={true}
+            >
+                <PolygonFeatureCollection features={readyFeatures} clickable={false} />
+            </ClusterMap>
+            <MapAttribution />
+        </>
     )
 }

@@ -8,7 +8,7 @@ import { PageTemplate } from '../page_template/template'
 import { TestUtils } from '../utils/TestUtils'
 
 import { Navigator } from './Navigator'
-import { PageData, pageTitle, urlFromPageDescriptor } from './PageDescriptor'
+import { elementIdFromHash, PageData, pageTitle, urlFromPageDescriptor } from './PageDescriptor'
 import { InitialLoad, SubsequentLoad } from './loading'
 
 export function Router(): ReactNode {
@@ -46,7 +46,7 @@ function HighlightHash(): ReactNode {
     return hash !== ''
         ? (
                 <style>
-                    {`${hash} {
+                    {`#${CSS.escape(elementIdFromHash(hash))} {
 background-color: var(--highlight) !important;
 }`}
                 </style>

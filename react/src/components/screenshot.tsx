@@ -11,6 +11,8 @@ import { makeDebugLogger } from '../utils/debug-logging'
 import { totalOffset } from '../utils/layout'
 import { zIndex } from '../utils/zIndex'
 
+import { tileAttribution } from './map-common-utils'
+
 const debugLog = makeDebugLogger('mapExport')
 
 // matches the corners of the screenshot icon
@@ -100,21 +102,20 @@ function drawImageIfNotTesting(context: CanvasRenderingContext2D, index: number,
 }
 
 function fixElementForScreenshot(element: HTMLElement): () => void {
-    // Fixes https://github.com/kavigupta/urbanstats/issues/1145
-    // Some sort of rounding issue in Chrome
-    const attribTexts = Array.from(element.querySelectorAll('.maplibregl-ctrl-attrib-inner')).map(e => e as HTMLElement)
-    attribTexts.forEach(text => text.style.width = `${Math.ceil(text.offsetWidth) + 1}px`)
-
     // Hide the fullscreen button
     const fullscreenButtons = Array.from(element.querySelectorAll('.maplibregl-ctrl:has(.maplibregl-ctrl-fullscreen)')).map(e => e as HTMLElement)
     fullscreenButtons.forEach(button => button.style.visibility = 'hidden')
     return () => {
-        attribTexts.forEach(text => text.style.width = '')
         fullscreenButtons.forEach(button => button.style.visibility = '')
     }
 }
 
 export const mapBorderWidth = 1
+// Fractions of the footer banner image: where the logo lockup starts, and the size and baseline
+// of the map credit that sits to its left
+export const bannerLockupStart = 0.76
+export const bannerCreditSize = 0.2
+export const bannerCreditBottom = 0.16
 export const defaultMapBorderRadius = 5
 
 export async function screencapElement(ref: HTMLElement, overallWidth: number, {
@@ -314,6 +315,8 @@ export async function createScreenshot(config: () => ScreencapElements, universe
 
         ctx.drawImage(banner, padAround, start, overallWidth, bannerHeight)
 
+        let creditLeft = padAround
+
         if (universe !== undefined) {
             const flag = new Image()
             flag.src = universePath(universe)
@@ -334,6 +337,15 @@ export async function createScreenshot(config: () => ScreencapElements, universe
             ctx.textAlign = 'center'
             ctx.textBaseline = 'top'
             ctx.fillText('UNIVERSE', left + flagWidth / 2, top + flagHeight + labelGap)
+            creditLeft = left + flagWidth
+        }
+
+        if (resolved.elementsToRender.some(element => element.querySelector('.maplibregl-map') !== null)) {
+            ctx.fillStyle = colors.ordinalTextColor
+            ctx.font = `${bannerHeight * bannerCreditSize}px 'Jost', 'Arial', sans-serif`
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'alphabetic'
+            ctx.fillText(tileAttribution, (creditLeft + padAround + overallWidth * bannerLockupStart) / 2, start + bannerHeight * (1 - bannerCreditBottom))
         }
 
         canvas.toBlob(function (blob) {

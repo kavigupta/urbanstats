@@ -6,6 +6,7 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useStat
 import { ArticleOrderingListInternal, loadOrdering, loadStatisticsPage } from '../load_json'
 import './table.css'
 import { NavLink, Navigator } from '../navigation/Navigator'
+import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings, useUnitSettings } from '../page_template/settings'
@@ -997,11 +998,12 @@ function StatisticName(props: {
         ? (
                 <a
                     className="underline_on_hover"
-                    {...navContext.link(
+                    href={urlFromPageDescriptor(
                         { kind: 'dataCredit', hash: `#explanation_${sanitize(props.row.dataCreditExplanationPage)}` },
-                        { scroll: { kind: 'none' } },
-                    )}
+                    ).toString()}
+                    target="_blank"
                     data-test-id="statistic-link"
+                    rel="noreferrer"
                 >
                     {reifyReact(props.displayName, unitSettings)}
                 </a>
