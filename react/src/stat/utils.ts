@@ -9,13 +9,12 @@ import { Universe } from '../universe'
 import { numberColumnValues, orderCells, orderNonNan, Table, tableType } from '../urban-stats-script/constants/table'
 import { assignColumnUnitsStatically, assignDeclaredColumnUnits } from '../urban-stats-script/declared-units'
 import { deriveTableColumnLabel, deriveTableLabel, tableLabel } from '../urban-stats-script/derive-human-readable-name'
-import { deriveTableColumnUnit } from '../urban-stats-script/derive-unit'
+import { tableColumnUnit } from '../urban-stats-script/derive-unit'
 import { unparse } from '../urban-stats-script/parser'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { reifyString } from '../utils/human-readable-name'
 import { UnitSettings } from '../utils/quantity'
-import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { StatColumn, StatData, Statistic, StatSettings, View } from './types'
 
@@ -100,9 +99,7 @@ export function statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn }
             warn(`Name could not be derived for column ${index}, please pass name="<your name here>" to column(...)`)
             name = '[Unnamed Column]'
         }
-        const unit = column.unit === undefined
-            ? deriveTableColumnUnit(mapUSS, typeEnvironment, index, declaredUnits)
-            : unitTypeToStoredUnit(column.unit)
+        const unit = tableColumnUnit(mapUSS, typeEnvironment, index, column.unit)
         const numbers = numberColumnValues(column.values)
         if (numbers === undefined || column.populationPercentiles === undefined) {
             return { value: column.values as string[] | boolean[], name, unit }

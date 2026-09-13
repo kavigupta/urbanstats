@@ -4,7 +4,7 @@ import test from 'node:test'
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { MapUSS, mapUSSFromString } from '../src/mapper/settings/map-uss'
 import { nothingDeclared } from '../src/urban-stats-script/declared-units'
-import { deriveMapUnit, deriveTableColumnUnit, mapIsDrawnIn } from '../src/urban-stats-script/derive-unit'
+import { deriveMapUnit, deriveTableColumnUnit, mapRampUnit } from '../src/urban-stats-script/derive-unit'
 import { reifyString } from '../src/utils/human-readable-name'
 import { UnitSettings, StoredUnit, writeQuantity } from '../src/utils/quantity'
 
@@ -215,10 +215,8 @@ for (const [data, declared, expected] of [
     ['high_temp', 'number', '1\u202f000'],
     ['population / area', 'temperature', '1\u202f000.0\u00b0F'],
 ] as const) {
-    void test(`a map of ${data} declaring ${declared ?? 'nothing'}`, () => {
-        const uss = mapOf(data)
-        const { unit } = mapIsDrawnIn(uss, defaultTypeEnvironment('USA'), declared)
-        assert.equal(written(unit), expected)
+    void test(`a ramp of ${data} where the user provided ${declared ?? 'no unit'}`, () => {
+        assert.equal(written(mapRampUnit(mapOf(data), defaultTypeEnvironment('USA'), declared)), expected)
     })
 }
 

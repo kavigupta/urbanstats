@@ -21,8 +21,9 @@ import { doRender } from '../../src/urban-stats-script/constants/color-utils'
 import { Inset } from '../../src/urban-stats-script/constants/insets'
 import { ClusterMap, CMap, CMapRGB, PMap } from '../../src/urban-stats-script/constants/map'
 import { Table, TableCellValue } from '../../src/urban-stats-script/constants/table'
+import { assignDeclaredMapUnit } from '../../src/urban-stats-script/declared-units'
 import { deriveConditionLabel, deriveMapLabel } from '../../src/urban-stats-script/derive-human-readable-name'
-import { mapIsDrawnIn } from '../../src/urban-stats-script/derive-unit'
+import { mapRampUnit } from '../../src/urban-stats-script/derive-unit'
 import { createRequestExecutor } from '../../src/urban-stats-script/execute-request'
 import { GeographySelection } from '../../src/urban-stats-script/workerManager'
 import { geometry } from '../../src/utils/geometry'
@@ -338,7 +339,8 @@ export async function mapCard(origin: string, pageData: Extract<PageData, { kind
     }
 
     const typeEnvironment = defaultTypeEnvironment(universesOf(geographies))
-    const { declaredUnits, unit } = mapIsDrawnIn(script.uss, typeEnvironment, map.unit)
+    const declaredUnits = assignDeclaredMapUnit(script.uss, typeEnvironment, map.unit)
+    const unit = mapRampUnit(script.uss, typeEnvironment, map.unit)
     const label = map.label ?? deriveMapLabel(script.uss, typeEnvironment, declaredUnits)
     return {
         label: label === undefined ? '' : reifyString(label, {}),

@@ -19,8 +19,9 @@ import { Inset } from '../urban-stats-script/constants/insets'
 import { CommonMap } from '../urban-stats-script/constants/map'
 import { ScaleInstance } from '../urban-stats-script/constants/scale'
 import { TextBox } from '../urban-stats-script/constants/text-box'
+import { assignDeclaredMapUnit } from '../urban-stats-script/declared-units'
 import { deriveMapLabel } from '../urban-stats-script/derive-human-readable-name'
-import { mapIsDrawnIn } from '../urban-stats-script/derive-unit'
+import { mapRampUnit } from '../urban-stats-script/derive-unit'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
@@ -122,7 +123,9 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
     }
 
     const mapResultMain = execResult.resultingValue.value
-    const { declaredUnits, unit: drawnUnit } = mapIsDrawnIn(mapSettings.script.uss, typeEnvironment, mapResultMain.value.unit)
+    const userProvidedUnit = mapResultMain.value.unit
+    const declaredUnits = assignDeclaredMapUnit(mapSettings.script.uss, typeEnvironment, userProvidedUnit)
+    const rampUnit = mapRampUnit(mapSettings.script.uss, typeEnvironment, userProvidedUnit)
     let label: HumanReadableName
 
     if (mapResultMain.value.label === undefined) {
@@ -153,7 +156,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         }
     }
 
-    const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, geographies, cache, label, derivedUnit: drawnUnit })
+    const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, geographies, cache, label, derivedUnit: rampUnit })
 
     function MapComponent({ props, exportImageRef }: { props: MapUIProps<{ loading: boolean }>, exportImageRef: (fn: () => Promise<HTMLCanvasElement>) => void }): ReactNode {
         const mapsRef: (MapRef | null)[] = []

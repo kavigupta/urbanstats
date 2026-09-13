@@ -3,7 +3,7 @@ import { StoredUnit } from '../utils/quantity'
 import { UnitType, unitTypeToStoredUnit } from '../utils/unit'
 
 import { UrbanStatsASTExpression } from './ast'
-import { assignDeclaredMapUnit, DeclaredUnits } from './declared-units'
+import { DeclaredUnits, nothingDeclared } from './declared-units'
 import { TypeEnvironment } from './types-values'
 import { UnitsRead, unitCheck } from './unit-inference'
 
@@ -21,14 +21,20 @@ export function deriveTableColumnUnit(uss: MapUSS, typeEnvironment: TypeEnvironm
 }
 
 /**
- * What a map is drawn in, and what to tell unit inference about it: the unit the map declared, or
- * where it declared none, whatever its script works out to. Both the app and the link embed card
- * ask this, and a card that answered it differently would be labelled differently.
+ * What a map's ramp is labelled in: the unit the user chose through the map's `unit=` argument, or
+ * where they chose none, the unit derived from the data.
+ *
+ * Both the mapper and the link embed card label a ramp, and they have to agree on this.
  */
-export function mapIsDrawnIn(uss: MapUSS, typeEnvironment: TypeEnvironment, declared: UnitType | undefined): { declaredUnits: DeclaredUnits, unit: StoredUnit | undefined } {
-    const declaredUnits = assignDeclaredMapUnit(uss, typeEnvironment, declared)
-    return {
-        declaredUnits,
-        unit: declared === undefined ? deriveMapUnit(uss, typeEnvironment, declaredUnits) : unitTypeToStoredUnit(declared),
-    }
+export function mapRampUnit(uss: MapUSS, typeEnvironment: TypeEnvironment, userProvided: UnitType | undefined): StoredUnit | undefined {
+    return userProvided === undefined
+        ? deriveMapUnit(uss, typeEnvironment, nothingDeclared)
+        : unitTypeToStoredUnit(userProvided)
+}
+
+/** What a table column is written in, chosen and derived the same way a map's ramp is. */
+export function tableColumnUnit(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number, userProvided: UnitType | undefined): StoredUnit | undefined {
+    return userProvided === undefined
+        ? deriveTableColumnUnit(uss, typeEnvironment, columnIndex, nothingDeclared)
+        : unitTypeToStoredUnit(userProvided)
 }
