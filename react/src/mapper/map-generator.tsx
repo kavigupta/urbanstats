@@ -3,7 +3,7 @@ import React, { createContext, ReactNode, useCallback, useContext, useEffect, us
 import { MapInstance, MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
-import { Basemap as BasemapComponent, CommonMaplibreMap, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
+import { Basemap as BasemapComponent, CommonMaplibreMap, MapAttribution, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
 import { tileAttribution } from '../components/map-common-utils'
 import { bannerCreditBottom, bannerCreditSize, bannerLockupStart, screencapElement, ScreenshotContext, ScreenshotContextType, withScreenshotMode } from '../components/screenshot'
 import { shapesByName } from '../consolidated-shapes'
@@ -254,6 +254,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
                     maps={insetMaps}
                     loading={props.loading}
                     colorbar={colorbar}
+                    attribution={mapResultMain.value.basemap.type !== 'none' && ['uss', 'view'].includes(props.mode)}
                     aspectRatio={aspectRatio}
                     mapsContainerRef={mapsContainerRef}
                     wholeRenderRef={wholeRenderRef}
@@ -288,19 +289,9 @@ function prepareMapForImageExport(map: MapInstance): () => void {
     debugLog('prepareMapForImageExport: setting pixel ratio', originalPixelRatio, '→', exportPixelRatio)
     map.setPixelRatio(exportPixelRatio)
 
-    const attrib: HTMLElement | null = map.getContainer().querySelector('.maplibregl-ctrl-attrib')
-    let resetAttrib: undefined | (() => void)
-    if (attrib !== null) {
-        debugLog('prepareMapForImageExport: hiding attribution overlay')
-        const prevDisplay = attrib.style.display
-        attrib.style.display = 'none'
-        resetAttrib = () => attrib.style.display = prevDisplay
-    }
-
     return () => {
         debugLog('prepareMapForImageExport: restoring pixel ratio', exportPixelRatio, '→', originalPixelRatio)
         map.setPixelRatio(originalPixelRatio)
-        resetAttrib?.()
     }
 }
 
@@ -348,7 +339,7 @@ async function mapImageExport(elementCanvas: HTMLCanvasElement, basemap: Basemap
     return resultCanvas
 }
 
-function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, wholeRenderRef, textBoxes }: {
+function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, wholeRenderRef, textBoxes, attribution }: {
     maps: ReactNode
     textBoxes: ReactNode
     colorbar: ReactNode
@@ -356,6 +347,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, who
     mapsContainerRef?: React.Ref<HTMLDivElement>
     aspectRatio: number
     wholeRenderRef?: React.Ref<HTMLDivElement>
+    attribution: boolean
 }): ReactNode {
     return (
         <TransformConstantWidth width={canonicalWidth(aspectRatio)}>
@@ -387,6 +379,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, who
                 </div>
                 {colorbar}
             </div>
+            {attribution && <MapAttribution />}
         </TransformConstantWidth>
     )
 }
@@ -418,6 +411,7 @@ function EmptyMapLayout({ geographies, loading }: { geographies: GeographySelect
             textBoxes={null}
             loading={loading}
             colorbar={null}
+            attribution={true}
             aspectRatio={computeAspectRatioForInsets(insets)}
         />
     )
