@@ -124,18 +124,17 @@ function attribution(width: number): ReactElement {
 
 /** One map fitted around every shape on it, each drawn in its own colour. */
 async function mapPanel(shapes: { rings: Ring[], color: string }[], { width, height }: { width: number, height: number }, tileOrigin: string): Promise<ReactElement> {
-    const mapHeight = height - attributionHeight
-    const layout = fitRings(shapes.flatMap(shape => shape.rings), width, mapHeight)
-    const paint = await basemap(layout, width, mapHeight, tileOrigin)
+    const layout = fitRings(shapes.flatMap(shape => shape.rings), width, height)
+    const paint = await basemap(layout, width, height, tileOrigin)
     const drawn = shapes
-        .map(({ rings, color }) => ({ color, d: rings.map(ring => ringPath(ring, layout, width, mapHeight)).join('') }))
+        .map(({ rings, color }) => ({ color, d: rings.map(ring => ringPath(ring, layout, width, height)).join('') }))
         .filter(shape => shape.d !== '')
         .map(shape => `<path d="${shape.d}" fill="${shape.color}" fill-opacity="0.2" stroke="${shape.color}" stroke-width="2.5" stroke-linejoin="round" fill-rule="evenodd"/>`)
         .join('')
     return (
         <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-            <div style={{ display: 'flex', overflow: 'hidden', width, height: mapHeight, flexShrink: 0, borderRadius: 5 }}>
-                <img src={mapImage(`${paint.under}${drawn}`, width, mapHeight)} width={width} height={mapHeight} />
+            <div style={{ display: 'flex', overflow: 'hidden', width, height, flexShrink: 0, borderRadius: 5 }}>
+                <img src={mapImage(`${paint.under}${drawn}`, width, height)} width={width} height={height} />
             </div>
             {attribution(width)}
         </div>
