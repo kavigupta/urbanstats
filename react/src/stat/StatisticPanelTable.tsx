@@ -1,16 +1,17 @@
-import React, { ChangeEvent, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ChangeEvent, ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { StatisticCellRenderingInfo } from '../components/load-article'
 import { PointerArrow } from '../components/pointer-cell'
 import { computeComparisonWidthColumns, MaybeScroll } from '../components/scrollable'
 import { CellSpec, SuperHeaderSpec, TableContents, TopLeftCellSpec } from '../components/supertable'
 import { ColumnIdentifier, valueOnlyColumns } from '../components/table'
-import { Navigator } from '../navigation/Navigator'
+import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { useColors } from '../page_template/colors'
+import { useUnitSettings } from '../page_template/settings'
 import { useDefinedUniverse } from '../universe'
 import { TableTextValues } from '../urban-stats-script/constants/table'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
-import { reifyString } from '../utils/human-readable-name'
+import { reifyReact, reifyString } from '../utils/human-readable-name'
 import { sanitize } from '../utils/paths'
 import { plainNumber } from '../utils/unit'
 
@@ -171,8 +172,6 @@ function Pagination({ set, view, count, data }: { set: StatSetter, view: View, c
     // next and previous buttons, along with the current range (editable to jump to a specific page)
     // also a button to change the number of items per page
 
-    const navContext = useContext(Navigator.Context)
-
     const changeStart = (newStart: number): void => {
         set({
             view: {
@@ -250,16 +249,22 @@ function Pagination({ set, view, count, data }: { set: StatSetter, view: View, c
         />
     )
 
+    const unitSettings = useUnitSettings()
+
     const explanationCredit = data.explanationPage !== undefined
         ? (
-                <div style={{ margin: 'auto', textAlign: 'center' }}>
+                <div style={{ margin: 'auto', textAlign: 'center', fontSize: 14 }}>
                     <a
-                        {...navContext.link(
+                        href={urlFromPageDescriptor(
                             { kind: 'dataCredit', hash: `#explanation_${sanitize(data.explanationPage)}` },
-                            { scroll: { kind: 'none' } },
-                        )}
+                        ).toString()}
+                        target="_blank"
+                        rel="noreferrer"
                     >
-                        Data Explanation and Credit
+                        What is
+                        {' '}
+                        {reifyReact(data.renderedStatname, unitSettings)}
+                        ?
                     </a>
                 </div>
             )

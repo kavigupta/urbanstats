@@ -8,8 +8,8 @@ import { ArticleRow, loadArticles } from '../components/load-article'
 import type { QuizPanel } from '../components/quiz-panel'
 import statnames from '../data/statistic_name_list'
 import type { DataCreditPanel } from '../data-credit'
-import type { AssetDiffViewerPanel } from '../dev/AssetDiffViewerPanel'
 import type { EmbedPreviewPanel } from '../dev/EmbedPreviewPanel'
+import type { SnapshotDiffViewerPanel } from '../dev/SnapshotDiffViewerPanel'
 import { loadJSON } from '../load_json'
 import type { DebugMapTextBoxPanel } from '../mapper/components/DebugMapTextBox'
 import type { MapperPanel } from '../mapper/components/MapperPanel'
@@ -194,7 +194,7 @@ const editorSchema = z.object({
 })
 
 // Without artifactId and hash, the viewer reads a local test run through the dev server instead of a CI artifact.
-const assetDiffViewerSchema = z.object({
+const snapshotDiffViewerSchema = z.object({
     artifactId: z.optional(z.string()),
     hash: z.optional(z.string()),
     // Comma-separated. Restricts the viewer to these tests.
@@ -221,7 +221,7 @@ export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('mapper') }).and(mapperSchema),
     z.object({ kind: z.literal('editor') }).and(editorSchema),
     z.object({ kind: z.literal('oauthCallback'), params: z.record(z.string()) }),
-    z.object({ kind: z.literal('assetDiffViewer') }).and(assetDiffViewerSchema),
+    z.object({ kind: z.literal('snapshotDiffViewer') }).and(snapshotDiffViewerSchema),
     z.object({ kind: z.literal('embedPreview') }).and(embedPreviewSchema),
 ])
 
@@ -259,7 +259,7 @@ export type PageData =
         descriptor?: PageDescriptor // If descriptor is not present, we could not parse it
     }
     | { kind: 'initialLoad', descriptor: PageDescriptor }
-    | { kind: 'assetDiffViewer', artifactId?: string, hash?: string, tests?: string, index: number, panel: typeof AssetDiffViewerPanel }
+    | { kind: 'snapshotDiffViewer', artifactId?: string, hash?: string, tests?: string, index: number, panel: typeof SnapshotDiffViewerPanel }
     | { kind: 'embedPreview', target: string, ogPort: number, panel: typeof EmbedPreviewPanel }
 
 export function pageDescriptorFromURL(url: URL): PageDescriptor {
@@ -301,13 +301,18 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
             return { kind: 'editor', ...editorSchema.parse(params) }
         case '/oauth-callback.html':
             return { kind: 'oauthCallback', params }
-        case '/asset-diff-viewer.html':
-            return { kind: 'assetDiffViewer', ...assetDiffViewerSchema.parse(params) }
+        case '/snapshot-diff-viewer.html':
+            return { kind: 'snapshotDiffViewer', ...snapshotDiffViewerSchema.parse(params) }
         case '/embed-preview.html':
             return { kind: 'embedPreview', ...embedPreviewSchema.parse(params) }
         default:
             throw new Error('404 not found')
     }
+}
+
+// Element ids can contain characters that a URL hash percent-encodes, e.g. spaces
+export function elementIdFromHash(hash: string): string {
+    return decodeURIComponent(hash.substring(1))
 }
 
 export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor): URL {
@@ -429,8 +434,8 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
         case 'initialLoad':
         case 'error':
             return pageDescriptor.url
-        case 'assetDiffViewer':
-            pathname = '/asset-diff-viewer.html'
+        case 'snapshotDiffViewer':
+            pathname = '/snapshot-diff-viewer.html'
             searchParams = {
                 artifactId: pageDescriptor.artifactId,
                 hash: pageDescriptor.hash,
@@ -815,12 +820,12 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 effects: () => undefined,
             }
         }
-        case 'assetDiffViewer':
+        case 'snapshotDiffViewer':
             return {
                 pageData: {
                     ...newDescriptor,
                     index: newDescriptor.index ?? 0,
-                    panel: (await import('../dev/AssetDiffViewerPanel')).AssetDiffViewerPanel,
+                    panel: (await import('../dev/SnapshotDiffViewerPanel')).SnapshotDiffViewerPanel,
                 },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
@@ -880,8 +885,8 @@ export function pageTitle(pageData: PageData): string {
             return pageData.result.success ? 'Signed In' : 'Sign In Failed'
         case 'error':
             return 'Error'
-        case 'assetDiffViewer':
-            return 'Asset Diff Viewer'
+        case 'snapshotDiffViewer':
+            return 'Snapshot Diff Viewer'
         case 'embedPreview':
             return 'Embed Preview'
     }

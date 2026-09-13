@@ -12,7 +12,7 @@ const env = z.object({
 
 const gh = await github()
 
-const body = [await testsComment(), assetsComment()].filter(s => s !== undefined).join('\n\n')
+const body = [await testsComment(), snapshotsComment()].filter(s => s !== undefined).join('\n\n')
 
 if (body === '') {
     process.exit(0)
@@ -35,10 +35,10 @@ else {
     })
 }
 
-function assetsComment(): string | undefined {
+function snapshotsComment(): string | undefined {
     if (env.ARTIFACT_ID !== '') {
-        // There is an assets artifact, so some assets changed
-        return `[Assets merge ${env.HEAD_SHA}](https://urbanstats.org/asset-diff-viewer.html?artifactId=${env.ARTIFACT_ID}&hash=${gh.context.sha})\n\n\`!updateAssets\` to update`
+        // There is a snapshots artifact, so some snapshots changed
+        return `[Snapshots merge ${env.HEAD_SHA}](https://urbanstats.org/snapshot-diff-viewer.html?artifactId=${env.ARTIFACT_ID}&hash=${gh.context.sha})\n\n\`!updateSnapshots\` to update`
     }
     return
 }
@@ -57,8 +57,8 @@ async function testsComment(): Promise<string | undefined> {
 
     const lines = await Promise.all(failedExecutions.map(async ({ test, result, retries, github: executionGithub }) => {
         const statusText = result.status === 'timeout'
-            ? `timeout (limit: ${result.timeLimitSeconds}s)`
-            : `failure (${result.reason})`
+            ? `⏱️ timeout (limit: ${result.timeLimitSeconds}s)`
+            : `${result.reason === 'snapshots' ? '📸' : '❌'} failure (${result.reason})`
         const retriesText = retries === 0 ? '' : ` (${retries} retries)`
 
         const { data } = await gh.octokit.rest.actions.downloadJobLogsForWorkflowRun({

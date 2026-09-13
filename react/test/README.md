@@ -10,7 +10,7 @@
 
   Visit `chrome://inspect` in your local browser, and click "Inspect" to connect and interact.
 
-- Regenerate the reference assets, instead of commenting `!updateAssets` on a PR:
+- Regenerate the reference snapshots, instead of commenting `!updateSnapshots` on a PR:
 
   `npm run test:e2e -- '--test=test/mapper-edit-text-boxes-desktop.test.ts' --docker --browser=chromium --write=true`
 
@@ -22,24 +22,24 @@
   same tree and regenerate the same way. Nothing checks them without `--compare=true`.
 
 - Look at a local run's diffs in the same viewer the PR comment links to. A run that finds
-  changed assets prints a link to it, scoped to the tests that run covered:
+  changed snapshots prints a link to it, scoped to the tests that run covered:
 
-  `http://localhost:8000/asset-diff-viewer.html?tests=mapper-edit-text-boxes-desktop`
+  `http://localhost:8000/snapshot-diff-viewer.html?tests=mapper-edit-text-boxes-desktop`
 
-  The page reads `changed_assets`, `delta` and `reference_test_assets` through the dev server,
+  The page reads `changed_snapshots`, `delta` and `reference_test_snapshots` through the dev server,
   which therefore has to be up. Dropping `tests` shows nothing, since there is no way to
   enumerate the tests; with `artifactId` and `hash` instead, it reads a CI artifact as before,
   and `tests` narrows that too.
 
 - Take a run's output as the new references, without rerunning it:
 
-  `npm run update-assets -- '--test=test/mapper-edit-text-boxes-desktop.test.ts'`
+  `npm run update-snapshots -- '--test=test/mapper-edit-text-boxes-desktop.test.ts'`
 
-  The copy `--write` does, against whatever `changed_assets` already holds. It clears the test's
-  `changed_assets` and `delta` afterwards, so the viewer stops offering diffs you've accepted.
+  The copy `--write` does, against whatever `changed_snapshots` already holds. It clears the test's
+  `changed_snapshots` and `delta` afterwards, so the viewer stops offering diffs you've accepted.
 
 - Pull what CI's run for the current branch produced, rather than rerunning the tests
-  locally: `python -m scripts.grab_assets`. It updates the references in place and prints
+  locally: `python -m scripts.grab_snapshots`. It updates the references in place and prints
   a `file://` link to the deltas.
 
 - Run the tests off-screen on a Mac, in a container built for the host's architecture:
@@ -65,7 +65,7 @@ Either container needs `--browser=chromium`, since it has Chromium rather than C
 
 `host-arch` avoids emulating `amd64`, but **can't do anything screenshot-related**: `arm64` Chromium
 antialiases a handful of pixels differently, well below what anyone would notice but well above
-`check_assets.py`'s near-exact threshold. Use `ci` for `--compare` and for regenerating references.
+`check_snapshots.py`'s near-exact threshold. Use `ci` for `--compare` and for regenerating references.
 
 TestCafe ships no `arm64` build of the helper binaries behind `t.resizeWindow` and friends, so those
 run as `i386` binaries under emulation. Chromium and Node, where the time goes, run natively.
