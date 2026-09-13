@@ -24,7 +24,7 @@ export interface UnitConversion {
 export interface UnitsRead {
     converted?: UnitConversion
     /** What the expression actually computes to. */
-    worksOutTo: StoredUnit
+    computesTo: StoredUnit
 }
 
 type Expression = UrbanStatsASTExpression<UnitsRead>
@@ -82,7 +82,6 @@ const bareNumber: UnitAbstractInterp = { unit: dimensionless, times: [0, 1], fle
 /** No count of it is the one wanted, so what is written has to be read some other way. */
 class Unsatisfiable extends Error {}
 
-/** What reading one expression gives: the expression rewritten, and what it works out to. */
 interface InferenceResult {
     interp: UnitAbstractInterp
     ast: Expression
@@ -178,9 +177,9 @@ function after(scope: Scope, inference: { variables: Bindings }): Scope {
     return { ...scope, variables: inference.variables }
 }
 
-/** The node with what it works out to written on it, where a map or a column looks for it. */
+/** Put the computed unit on the expression. */
 function packExpression(inference: InferenceResult): Expression {
-    return { ...inference.ast, worksOutTo: counted(inference.interp.unit, inference.interp.times) }
+    return { ...inference.ast, computesTo: counted(inference.interp.unit, inference.interp.times) }
 }
 
 function infer(ast: Expression, scope: Scope, wanted: UnitExpectation): InferenceResult {
@@ -556,7 +555,6 @@ function call(ast: Expression & { type: 'call' }, scope: Scope, wanted: UnitExpe
     const agreed = argumentsAgree(propagation) ? agreedUnit(wanted, claimed.map(({ inferred }) => inferred.interp)) : undefined
     const all = agreed === undefined ? claimed : args(agreed)
     const here = {
-        // the name of a function is read too, so that every node says what it works out to
         ast: { ...ast, fn: packExpression(inferEitherWay(ast.fn, scope, noUnitExpectation)), args: all.map(({ arg }) => arg) },
         variables: all.at(-1)?.inferred.variables ?? scope.variables,
     }
@@ -659,7 +657,7 @@ function inferBlock(statements: Statement[], scope: Scope, wanted: UnitExpectati
         soFar = after(soFar, each)
         last = each.interp
     }
-    // a block of no statements at all works out to nothing, which reads as a plain number
+    // empty expressions just fall back to bare number. doesn't really matter since it won't type check anyway.
     return { ast: stamped, variables: soFar.variables, interp: last ?? bareNumber }
 }
 
@@ -671,7 +669,7 @@ interface InferredStatement {
 
 function inferStatement(ast: Statement, scope: Scope, wanted: UnitExpectation): InferredStatement {
     const inferred = statementWithin(ast, scope, wanted)
-    return { ...inferred, ast: { ...inferred.ast, worksOutTo: counted(inferred.interp.unit, inferred.interp.times) } }
+    return { ...inferred, ast: { ...inferred.ast, computesTo: counted(inferred.interp.unit, inferred.interp.times) } }
 }
 
 function statementWithin(ast: Statement, scope: Scope, wanted: UnitExpectation): InferredStatement {
@@ -716,10 +714,10 @@ function readAsANumber(ast: Expression, scope: Scope): Expression | undefined {
     const value = literal === undefined ? undefined : asNumber(literal)
     return value === undefined
         ? inner
-        : { type: 'constant', value: { node: { type: 'number', value }, location: locationOf(inner) }, worksOutTo: dimensionless }
+        : { type: 'constant', value: { node: { type: 'number', value }, location: locationOf(inner) }, computesTo: dimensionless }
 }
 
-/** The script rewritten, every node of it saying what it works out to. */
+/** The script rewritten, every node of it saying the unit it computes. */
 export function unitCheck<M>(program: MapUSS<M>, typeEnvironment: TypeEnvironment, declaredUnits?: DeclaredUnits): MapUSS<M & UnitsRead>
 export function unitCheck<M>(program: UrbanStatsASTStatement<M>, typeEnvironment: TypeEnvironment, declaredUnits?: DeclaredUnits): Statement
 export function unitCheck<M>(program: UrbanStatsASTExpression<M>, typeEnvironment: TypeEnvironment, declaredUnits?: DeclaredUnits): Expression

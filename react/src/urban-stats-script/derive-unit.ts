@@ -22,7 +22,7 @@ export function mapRampUnitAndLabel(uss: MapUSS, typeEnvironment: TypeEnvironmen
     const factored = unitCheck(uss, typeEnvironment, constructDeclaredUnitsForMap(uss, typeEnvironment, userProvided))
     return {
         unit: userProvided === undefined
-            ? mapDataExpression(factored, typeEnvironment)?.worksOutTo
+            ? mapDataExpression(factored, typeEnvironment)?.computesTo
             : unitTypeToStoredUnit(userProvided),
         label: mapLabelOf(factored, typeEnvironment),
     }
@@ -34,7 +34,7 @@ export function tableColumnUnitAndName(uss: MapUSS, typeEnvironment: TypeEnviron
     const factored = unitCheck(uss, typeEnvironment, declared)
     return {
         unit: userProvided === undefined
-            ? tableColumnExpression(factored, typeEnvironment, columnIndex)?.worksOutTo
+            ? tableColumnExpression(factored, typeEnvironment, columnIndex)?.computesTo
             : unitTypeToStoredUnit(userProvided),
         name: tableColumnNameOf(factored, typeEnvironment, columnIndex),
     }

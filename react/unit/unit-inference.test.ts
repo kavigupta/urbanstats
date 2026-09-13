@@ -19,7 +19,7 @@ function shape(known: StoredUnit): string {
 }
 
 function of(code: string): StoredUnit {
-    return unitCheck(parseNoError(code, 'test'), defaultTypeEnvironment('USA')).worksOutTo
+    return unitCheck(parseNoError(code, 'test'), defaultTypeEnvironment('USA')).computesTo
 }
 
 /**
@@ -32,7 +32,7 @@ function drawnAs(code: string, statedUnit: string): StoredUnit {
     const declaredUnits = constructDeclaredUnitsForMap(uss, typeEnvironment, unitNamedByConstant.get(statedUnit))
     const data = mapDataExpression(unitCheck(uss, typeEnvironment, declaredUnits), typeEnvironment)
     assert.ok(data !== undefined)
-    return data.worksOutTo
+    return data.computesTo
 }
 
 /** What the script works out to. How it was converted to get there is a caption's business. */

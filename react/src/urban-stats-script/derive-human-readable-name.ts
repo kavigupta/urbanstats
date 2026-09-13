@@ -244,7 +244,7 @@ export function mapLabelOf(factored: MapUSS<UnitsRead>, typeEnvironment: TypeEnv
     const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment)
     if (dataLabel === undefined) return
     // Replace the map call with just the data description to simplify the label (we know it's a map)
-    const withMapCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: grouped(dataLabel) }, location: noLocation }, worksOutTo: dimensionless })
+    const withMapCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: grouped(dataLabel) }, location: noLocation }, computesTo: dimensionless })
     assert(withMapCallReplacedByDataLabel !== undefined, 'should not happen')
     const label = humanReadableElements(withMapCallReplacedByDataLabel, typeEnvironment)
     return label === undefined ? undefined : ungroupUnlessWorthwhile(label, dataLabel, 1)
@@ -343,7 +343,7 @@ export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, 
     }
     const columns = joinHumanReadableNames(columnNames)
     // Replace the table call with just the column to simplify the label (we know it's a table)
-    const withTableCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: grouped(columns) }, location: noLocation }, worksOutTo: dimensionless })
+    const withTableCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: grouped(columns) }, location: noLocation }, computesTo: dimensionless })
     assert(withTableCallReplacedByDataLabel !== undefined, 'should not happen')
     const label = humanReadableElements(withTableCallReplacedByDataLabel, typeEnvironment)
     return label === undefined ? undefined : ungroupUnlessWorthwhile(label, columns, columnNames.length)
