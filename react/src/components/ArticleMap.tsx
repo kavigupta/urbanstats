@@ -32,14 +32,16 @@ export function ArticleMap(props: ArticleMapProps): ReactNode {
     const firstFeatureWaiting = features.length > 0 && features[0] === waiting
 
     return (
-        <div style={{ position: 'relative' }}>
-            <RelativeLoader loading={firstFeatureWaiting} />
-            <CommonMaplibreMap
-                ref={setMapRef}
-            >
-                <PolygonFeatureCollection features={readyFeatures} clickable={true} />
-                <FullscreenControl position="top-left" />
-            </CommonMaplibreMap>
+        <>
+            <div style={{ position: 'relative' }}>
+                <RelativeLoader loading={firstFeatureWaiting} />
+                <CommonMaplibreMap
+                    ref={setMapRef}
+                >
+                    <PolygonFeatureCollection features={readyFeatures} clickable={true} />
+                    <FullscreenControl position="top-left" />
+                </CommonMaplibreMap>
+            </div>
             <MapAttribution>
                 <a
                     href={urlFromPageDescriptor({ kind: 'dataCredit', hash: `#shapefile_${props.articleType}` }).toString()}
@@ -52,7 +54,7 @@ export function ArticleMap(props: ArticleMapProps): ReactNode {
                     ?
                 </a>
             </MapAttribution>
-        </div>
+        </>
     )
 }
 

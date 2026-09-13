@@ -41,14 +41,16 @@ function Map({ longname, color, attribution }: MapProps): ReactNode {
     const firstFeatureWaiting = features.length > 0 && features[0] === waiting
 
     return (
-        <div style={{ position: 'relative' }}>
-            <RelativeLoader loading={firstFeatureWaiting} />
-            <CommonMaplibreMap
-                ref={setMapRef}
-            >
-                <PolygonFeatureCollection features={readyFeatures} clickable={false} />
-                <FullscreenControl position="top-left" />
-            </CommonMaplibreMap>
+        <div>
+            <div style={{ position: 'relative' }}>
+                <RelativeLoader loading={firstFeatureWaiting} />
+                <CommonMaplibreMap
+                    ref={setMapRef}
+                >
+                    <PolygonFeatureCollection features={readyFeatures} clickable={false} />
+                    <FullscreenControl position="top-left" />
+                </CommonMaplibreMap>
+            </div>
             {attribution && <MapAttribution />}
         </div>
     )
