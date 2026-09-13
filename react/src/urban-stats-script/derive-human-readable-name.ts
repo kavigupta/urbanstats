@@ -56,6 +56,19 @@ function topLevelOperatorForUnitConversion(conversion: UnitConversion): BinaryOp
     return writing.zero === undefined ? undefined : '-'
 }
 
+function elementsOf(name: HumanReadableName): HumanReadableElement[] {
+    return typeof name === 'string' ? [{ type: 'atom', value: name }] : name
+}
+
+/** An operand of an infix phrase, bracketed where it is itself written with an operator. */
+function asOperand(ast: Expression, typeEnvironment: TypeEnvironment): HumanReadableElement[] | undefined {
+    const written = humanReadableElements(ast, typeEnvironment)
+    if (written === undefined || operatorInHumanReadable(ast) === undefined) {
+        return written
+    }
+    return [{ type: 'parens', value: written }]
+}
+
 function describe(ast: Expression | UrbanStatsASTStatement<UnitInferenceMetadata>, typeEnvironment: TypeEnvironment): HumanReadableElement[] | undefined {
     switch (ast.type) {
         case 'assignment':
@@ -128,9 +141,7 @@ function describe(ast: Expression | UrbanStatsASTStatement<UnitInferenceMetadata
         }
         case 'identifier':
             const identifierName = typeEnvironment.get(ast.name.node)?.documentation?.humanReadableName
-            if (identifierName === undefined) return
-            if (typeof identifierName === 'string') return [{ type: 'atom', value: identifierName }]
-            return identifierName
+            return identifierName === undefined ? undefined : elementsOf(identifierName)
         case 'constant':
             switch (ast.value.node.type) {
                 case 'humanReadableElements':
@@ -138,7 +149,8 @@ function describe(ast: Expression | UrbanStatsASTStatement<UnitInferenceMetadata
                 case 'number':
                     return formatNumber(ast.value.node.value, ast.converted?.expectedUnit)
                 case 'string':
-                    return [{ type: 'atom', value: ast.value.node.value }]
+                    // Quoted, so that a name being looked for is not read as part of the sentence around it
+                    return [{ type: 'atom', value: `'${ast.value.node.value}'` }]
             }
         case 'unaryOperator': {
             const written = humanReadableElements(ast.expr, typeEnvironment)
@@ -168,6 +180,13 @@ function describe(ast: Expression | UrbanStatsASTStatement<UnitInferenceMetadata
         case 'expression':
             return humanReadableElements(ast.value, typeEnvironment)
         case 'call': {
+            const infix = ast.fn.type === 'identifier' ? typeEnvironment.get(ast.fn.name.node)?.documentation?.infix : undefined
+            if (infix !== undefined && ast.args.length === 2 && ast.args.every(arg => arg.type === 'unnamed')) {
+                const lhs = asOperand(ast.args[0].value, typeEnvironment)
+                const rhs = asOperand(ast.args[1].value, typeEnvironment)
+                if (lhs === undefined || rhs === undefined) return
+                return [...lhs, { type: 'atom', value: ' ' }, ...elementsOf(infix), { type: 'atom', value: ' ' }, ...rhs]
+            }
             const fn = humanReadableElements(ast.fn, typeEnvironment)
             if (fn === undefined) return
             const args: HumanReadableElement[][] = []
