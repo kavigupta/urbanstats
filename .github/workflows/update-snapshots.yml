@@ -103,7 +103,7 @@ jobs:
           mv combined_temp/changed_snapshots changed_snapshots_temp
 
           # Check if there are any snapshots to copy
-          if [ ! -d "changed_snapshots_temp" ] || [ -z "$(find changed_snapshots_temp -type f ! -name '*.error.png' 2>/dev/null)" ]; then
+          if [ ! -d "changed_snapshots_temp" ] || [ -z "$(find changed_snapshots_temp -type f ! -name '*.error.png' ! -name 'manifest.json' 2>/dev/null)" ]; then
             echo "No snapshot files found in artifact"
             exit 0
           fi
@@ -112,7 +112,8 @@ jobs:
           mkdir -p reference_test_snapshots
 
           # Copy all snapshot files recursively, preserving directory structure
-          find changed_snapshots_temp -type f ! -name "*.error.png" -exec sh -c '         for file do
+          # manifest.json is the snapshot diff viewer's index of the run, not a snapshot.
+          find changed_snapshots_temp -type f ! -name "*.error.png" ! -name "manifest.json" -exec sh -c '         for file do
               # Get relative path from changed_snapshots_temp
               rel_path="${file#changed_snapshots_temp/}"
               # Create directory structure in reference_test_snapshots
