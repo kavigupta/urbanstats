@@ -6,6 +6,7 @@
 import React, { ReactElement, ReactNode, cloneElement, isValidElement } from 'react'
 
 import { percentileSuffix } from '../../src/components/display-stats'
+import { tileAttribution } from '../../src/components/map-common-utils'
 import { renderQuantity } from '../../src/components/unit-display'
 import flagDimensions from '../../src/data/flag_dimensions'
 import { canonicalWidth } from '../../src/mapper/map-rendering'
@@ -86,9 +87,6 @@ const colors = {
 const insetBorderWidth = 2
 const mapBorderWidth = 1
 
-// openfreemap's credit line, as its TileJSON states it.
-const tileAttribution = 'OpenFreeMap © OpenMapTiles · Data from OpenStreetMap'
-
 const logoImage = `data:image/svg+xml;utf8,${encodeURIComponent(logoSvg)}`
 
 // Proportions measured off the screenshot footer, so the two lockups match. The mark stands taller
@@ -112,18 +110,34 @@ function mapImage(content: string, width: number, height: number): string {
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
 }
 
+const attributionSize = 12
+const attributionHeight = 18
+
+/** The tile credit, set against the tiles it is for. */
+function attribution(width: number): ReactElement {
+    return (
+        <div style={{ display: 'flex', width, height: attributionHeight, alignItems: 'center', fontSize: attributionSize, color: colors.muted }}>
+            {tileAttribution}
+        </div>
+    )
+}
+
 /** One map fitted around every shape on it, each drawn in its own colour. */
 async function mapPanel(shapes: { rings: Ring[], color: string }[], { width, height }: { width: number, height: number }, tileOrigin: string): Promise<ReactElement> {
-    const layout = fitRings(shapes.flatMap(shape => shape.rings), width, height)
-    const paint = await basemap(layout, width, height, tileOrigin)
+    const mapHeight = height - attributionHeight
+    const layout = fitRings(shapes.flatMap(shape => shape.rings), width, mapHeight)
+    const paint = await basemap(layout, width, mapHeight, tileOrigin)
     const drawn = shapes
-        .map(({ rings, color }) => ({ color, d: rings.map(ring => ringPath(ring, layout, width, height)).join('') }))
+        .map(({ rings, color }) => ({ color, d: rings.map(ring => ringPath(ring, layout, width, mapHeight)).join('') }))
         .filter(shape => shape.d !== '')
         .map(shape => `<path d="${shape.d}" fill="${shape.color}" fill-opacity="0.2" stroke="${shape.color}" stroke-width="2.5" stroke-linejoin="round" fill-rule="evenodd"/>`)
         .join('')
     return (
-        <div style={{ display: 'flex', overflow: 'hidden', width, height, flexShrink: 0, borderRadius: 5 }}>
-            <img src={mapImage(`${paint.under}${drawn}`, width, height)} width={width} height={height} />
+        <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+            <div style={{ display: 'flex', overflow: 'hidden', width, height: mapHeight, flexShrink: 0, borderRadius: 5 }}>
+                <img src={mapImage(`${paint.under}${drawn}`, width, mapHeight)} width={width} height={mapHeight} />
+            </div>
+            {attribution(width)}
         </div>
     )
 }
@@ -428,9 +442,9 @@ export async function mapEmbedCard(map: MapCard, { width, height }: { width: num
                 </div>
             </div>
             {map.ramp === undefined ? <div style={{ display: 'flex' }}></div> : colorbar(map.ramp, map.label, map.units)}
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: footerFontSize, color: colors.muted, alignItems: 'center', marginTop: footerGap }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: footerFontSize, color: colors.muted, alignItems: 'baseline', marginTop: footerGap }}>
                 {wordmark(footerFontSize)}
-                <div style={{ display: 'flex', fontSize: 16 }}>{map.basemap.type === 'none' ? '' : tileAttribution}</div>
+                <div style={{ display: 'flex', fontSize: attributionSize }}>{map.basemap.type === 'none' ? '' : tileAttribution}</div>
             </div>
         </div>
     )
@@ -493,9 +507,8 @@ export async function embedCard(article: ArticleCard, rings: Ring[], { width, he
                 </div>
                 {rings.length === 0 ? <div style={{ display: 'flex' }}></div> : await mapPanel([{ rings, color: colors.shape }], mapSize, tileOrigin)}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: footerSize, color: colors.muted, alignItems: 'center' }}>
+            <div style={{ display: 'flex', fontSize: footerSize, color: colors.muted }}>
                 {wordmark(footerSize)}
-                <div style={{ display: 'flex', fontSize: 18 }}>{rings.length === 0 ? '' : tileAttribution}</div>
             </div>
         </div>
     )
@@ -728,9 +741,8 @@ export async function comparisonEmbedCard(comparison: ComparisonCard, shapes: Ri
                 </div>
                 {withMap ? await mapPanel(drawn, { width: mapWidth, height: body }, tileOrigin) : <div style={{ display: 'flex' }}></div>}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: footerSize, color: colors.muted, alignItems: 'center' }}>
+            <div style={{ display: 'flex', fontSize: footerSize, color: colors.muted }}>
                 {wordmark(footerSize)}
-                <div style={{ display: 'flex', fontSize: 18 }}>{withMap ? tileAttribution : ''}</div>
             </div>
         </div>
     )

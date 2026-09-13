@@ -1,7 +1,7 @@
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode, useContext, useEffect, useId, useMemo } from 'react'
-import { Map, MapProps, MapRef, Source, useControl, useMap } from 'react-map-gl/maplibre'
+import { Map, MapProps, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
 import { boundingBox, extendBoxes } from '../map-partition'
 import { Basemap } from '../mapper/settings/utils'
@@ -19,7 +19,7 @@ import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { ScreenshotAwareLayer } from './ScreenshotAwareLayer'
-import { keptByNoBasemap, urbanStatsLayerPrefix } from './map-common-utils'
+import { keptByNoBasemap, tileAttributionParts, urbanStatsLayerPrefix } from './map-common-utils'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotCallback, useScreenshotMode } from './screenshot'
 
 const debugLog = makeDebugLogger('mapExport')
@@ -50,6 +50,7 @@ function CommonMaplibreMapImpl(props: CommonMapProps, ref: React.Ref<MapRef>): R
             canvasContextAttributes={{
                 preserveDrawingBuffer: true, // Allows screenshots
             }}
+            attributionControl={false}
             {...props}
             style={{
                 width: '100%',
@@ -65,6 +66,30 @@ function CommonMaplibreMapImpl(props: CommonMapProps, ref: React.Ref<MapRef>): R
             <ExposeMapForTesting id={testId} />
             <SynchronizeMapWithScreenshots />
         </Map>
+    )
+}
+
+export function MapAttribution({ children }: { children?: ReactNode }): ReactNode {
+    const colors = useColors()
+    // Exported PNGs carry the credit on their footer banner instead
+    const inScreenshot = useScreenshotMode()
+    if (inScreenshot && children === undefined) {
+        return null
+    }
+    return (
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1em', fontSize: '0.75em', color: colors.ordinalTextColor, marginTop: '0.25em' }}>
+            <div>{children}</div>
+            <div className="map-credit">
+                {inScreenshot
+                    ? ''
+                    : tileAttributionParts.map((part, i) => (
+                        <React.Fragment key={part.href}>
+                            {i > 0 ? ' · ' : ''}
+                            <a href={part.href} target="_blank" rel="noopener noreferrer">{part.text}</a>
+                        </React.Fragment>
+                    ))}
+            </div>
+        </div>
     )
 }
 
@@ -258,29 +283,6 @@ function useContentBeforeId(map: MapRef | undefined): string | undefined {
         }
     }
     return hasBasemapSubnationalsLayer ? basemapSubnationalsId : labelId
-}
-
-class CustomAttributionControl extends maplibregl.AttributionControl {
-    constructor(startShowingAttribution: boolean) {
-        super()
-
-        // Copied from implementation https://github.com/maplibre/maplibre-gl-js/blob/34b95c06259014661cf72a418fd81917313088bf/src/ui/control/attribution_control.ts#L190
-        // But reduced since always compact
-        this._updateCompact = () => {
-            if (!this._container.classList.contains('maplibregl-compact') && !this._container.classList.contains('maplibregl-attrib-empty')) {
-                this._container.classList.add('maplibregl-compact')
-                if (startShowingAttribution) {
-                    this._container.setAttribute('open', '')
-                    this._container.classList.add('maplibregl-compact-show')
-                }
-            }
-        }
-    }
-}
-
-export function CustomAttributionControlComponent({ startShowingAttribution }: { startShowingAttribution: boolean }): ReactNode {
-    useControl(() => new CustomAttributionControl(startShowingAttribution))
-    return null
 }
 
 function pointsId(id: string, kind: 'source' | 'fill' | 'outline'): string {

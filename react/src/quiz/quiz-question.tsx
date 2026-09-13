@@ -5,7 +5,7 @@ import React, { ReactNode, useMemo, useState } from 'react'
 import { isFirefox } from 'react-device-detect'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
-import { CommonMaplibreMap, CustomAttributionControlComponent, PolygonFeatureCollection, polygonFeatureCollection, useZoomFirstFeature } from '../components/map-common'
+import { CommonMaplibreMap, MapAttribution, PolygonFeatureCollection, polygonFeatureCollection, useZoomFirstFeature } from '../components/map-common'
 import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { withButtonRole } from '../utils/a11y'
@@ -45,12 +45,11 @@ function Map({ longname, color, attribution }: MapProps): ReactNode {
             <RelativeLoader loading={firstFeatureWaiting} />
             <CommonMaplibreMap
                 ref={setMapRef}
-                attributionControl={false}
             >
                 <PolygonFeatureCollection features={readyFeatures} clickable={false} />
                 <FullscreenControl position="top-left" />
-                { attribution && <CustomAttributionControlComponent startShowingAttribution={false} /> }
             </CommonMaplibreMap>
+            {attribution && <MapAttribution />}
         </div>
     )
 }
