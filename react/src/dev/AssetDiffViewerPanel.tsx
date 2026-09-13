@@ -7,12 +7,26 @@ import { LongLoad } from '../navigation/loading'
 import { DefaultMap } from '../utils/DefaultMap'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
-export function AssetDiffViewerPanel({ hash, artifactId, index }: { hash: string, artifactId: string, index: number }): ReactNode {
-    const entriesPromise = useMemo(async () => {
-        const allEntries = await (zipReader(artifactId)).getEntries()
-        const fileEntries = allEntries.filter(e => !e.directory)
-        return fileEntries
-    }, [artifactId])
+/** Which run's assets to show, and which tests of it. Everything but the index the viewer navigates within. */
+interface Source { artifactId?: string, hash?: string, tests?: string }
+
+interface Item {
+    test: string
+    browser: string
+    file: string
+    referenceUrl: string
+    changed?: Delayed
+    delta?: Delayed
+}
+
+export function AssetDiffViewerPanel({ hash, artifactId, tests, index }: Source & { index: number }): ReactNode {
+    const source = useMemo(() => ({ artifactId, hash, tests }), [artifactId, hash, tests])
+    const items = useMemo(
+        () => artifactId === undefined || hash === undefined
+            ? localItems(splitTests(tests))
+            : artifactItems(artifactId, hash, splitTests(tests)),
+        [artifactId, hash, tests],
+    )
 
     return (
         <>
@@ -58,7 +72,7 @@ export function AssetDiffViewerPanel({ hash, artifactId, index }: { hash: string
     .container {
         flex-direction: column;
     }
-    
+
     img {
         max-height: 30vh;
         max-width: 90vw;
@@ -87,57 +101,107 @@ pre.asset-text {
 .diff-hunk { color: blue; }
 `}
             </style>
-            <LazyNode node={entriesPromise.then(entries => <Entries hash={hash} entries={entries} index={index} artifactId={artifactId} />)} />
+            <LazyNode node={items.then(loaded => <Entries items={loaded} index={index} source={source} />)} />
         </>
     )
 }
 
-function Entries({ hash, entries, index, artifactId }: { hash: string, entries: FileEntry[], index: number, artifactId: string }): ReactNode {
-    const changed = useMemo(() => entries
+function splitTests(tests: string | undefined): string[] | undefined {
+    return tests === undefined ? undefined : tests.split(',').filter(test => test !== '')
+}
+
+async function artifactItems(artifactId: string, hash: string, tests: string[] | undefined): Promise<Item[]> {
+    const entries = (await (zipReader(artifactId)).getEntries()).filter(e => !e.directory)
+    return entries
         .map(entry => ({ entry, match: /changed_assets\/([^\/]+)\/([^\/]+)\/(.+)$/.exec(entry.filename) }))
         .filter((item): item is { entry: FileEntry, match: RegExpExecArray } => item.match !== null)
+        .filter(({ match: [, test] }) => tests === undefined || tests.includes(test))
         .sort((a, b) => a.entry.filename.localeCompare(b.entry.filename))
         .map(({ entry, match: [, test, browser, file] }) => {
             const delta = entries.find(e => e.filename === `delta/${test}/${browser}/${deltaName(file)}`)
             return {
-                // A changed text asset says nothing its diff doesn't, and can run to tens of megabytes
-                changed: isImage(file) || delta === undefined ? nodeFromEntry(entry) : undefined,
-                delta: delta ? nodeFromEntry(delta) : undefined,
                 test,
                 browser,
                 file,
+                referenceUrl: encodeURI(`https://raw.githubusercontent.com/kavigupta/urbanstats/${hash}/reference_test_assets/${test}/${browser}/${file}`),
+                changed: showChanged(file, delta !== undefined) ? nodeFromEntry(entry) : undefined,
+                delta: delta === undefined ? undefined : nodeFromEntry(delta),
             }
-        }), [entries])
+        })
+}
 
+const manifestSchema = z.object({ changed: z.array(z.string()), delta: z.array(z.string()) })
+
+/**
+ * What `writeChangedAssetsManifest` recorded of a local run, served by the dev server under
+ * /local-assets. A test whose manifest is missing changed nothing.
+ */
+async function localItems(tests: string[] | undefined): Promise<Item[]> {
+    if (tests === undefined) {
+        return []
+    }
+    const perTest = await Promise.all(tests.map(async (test) => {
+        const response = await fetch(localUrl('changed', test, 'manifest.json'))
+        if (!response.ok) {
+            return []
+        }
+        const { changed, delta } = manifestSchema.parse(await response.json())
+        return changed.sort((a, b) => a.localeCompare(b)).map((path): Item => {
+            const [browser, ...rest] = path.split('/')
+            const file = rest.join('/')
+            const hasDelta = delta.includes(`${browser}/${deltaName(file)}`)
+            return {
+                test,
+                browser,
+                file,
+                referenceUrl: localUrl('reference', test, path),
+                changed: showChanged(file, hasDelta) ? nodeFromUrl(localUrl('changed', test, path), file) : undefined,
+                delta: hasDelta ? nodeFromUrl(localUrl('delta', test, `${browser}/${deltaName(file)}`), deltaName(file)) : undefined,
+            }
+        })
+    }))
+    return perTest.flat()
+}
+
+function localUrl(tree: 'reference' | 'changed' | 'delta', test: string, path: string): string {
+    return encodeURI(`/local-assets/${tree}/${test}/${path}`)
+}
+
+// A changed text asset says nothing its diff doesn't, and can run to tens of megabytes
+function showChanged(file: string, hasDelta: boolean): boolean {
+    return isImage(file) || !hasDelta
+}
+
+function Entries({ items, index, source }: { items: Item[], index: number, source: Source }): ReactNode {
     const navigator = useContext(Navigator.Context)
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent): void => {
             if (event.key === 'ArrowLeft') {
                 if (index > 0) {
-                    void navigator.navigate({ kind: 'assetDiffViewer', hash, artifactId, index: index - 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
+                    void navigator.navigate({ kind: 'assetDiffViewer', ...source, index: index - 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
                 }
             }
             else if (event.key === 'ArrowRight') {
-                if (index < changed.length - 1) {
-                    void navigator.navigate({ kind: 'assetDiffViewer', hash, artifactId, index: index + 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
+                if (index < items.length - 1) {
+                    void navigator.navigate({ kind: 'assetDiffViewer', ...source, index: index + 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
                 }
             }
         }
 
         window.addEventListener('keydown', handleKeyDown)
         return () => { window.removeEventListener('keydown', handleKeyDown) }
-    }, [changed.length, navigator, artifactId, hash, index])
+    }, [items.length, navigator, source, index])
 
     useEffect(() => {
         const range = 2
-        changed.slice(Math.max(0, index - range), Math.min(changed.length, index + range + 1)).forEach((item) => {
+        items.slice(Math.max(0, index - range), Math.min(items.length, index + range + 1)).forEach((item) => {
             item.changed?.load()
             item.delta?.load()
         })
-    }, [changed, index])
+    }, [items, index])
 
-    if (changed.length === 0) {
+    if (items.length === 0) {
         return (
             <div>
                 <h1>
@@ -147,7 +211,7 @@ function Entries({ hash, entries, index, artifactId }: { hash: string, entries: 
         )
     }
 
-    if (index >= changed.length || index < 0) {
+    if (index >= items.length || index < 0) {
         return (
             <div>
                 <h1>
@@ -157,22 +221,22 @@ function Entries({ hash, entries, index, artifactId }: { hash: string, entries: 
         )
     }
 
-    return <Diff {...changed[index]} hash={hash} index={index} total={changed.length} navigator={navigator} artifactId={artifactId} />
+    return <Diff {...items[index]} source={source} index={index} total={items.length} navigator={navigator} />
 }
 
-function Diff({ test, browser, file, hash, delta, changed, index, total, navigator, artifactId }: { test: string, browser: string, file: string, hash: string, changed?: Delayed, delta?: Delayed, index: number, total: number, navigator: Navigator, artifactId: string }): ReactNode {
+function Diff({ test, file, referenceUrl, delta, changed, index, total, navigator, source }: Item & { index: number, total: number, navigator: Navigator, source: Source }): ReactNode {
     const canGoBack = index > 0
     const canGoForward = index < total - 1
 
     const handleBack = (): void => {
         if (canGoBack) {
-            void navigator.navigate({ kind: 'assetDiffViewer', hash, artifactId, index: index - 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
+            void navigator.navigate({ kind: 'assetDiffViewer', ...source, index: index - 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
         }
     }
 
     const handleForward = (): void => {
         if (canGoForward) {
-            void navigator.navigate({ kind: 'assetDiffViewer', hash, artifactId, index: index + 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
+            void navigator.navigate({ kind: 'assetDiffViewer', ...source, index: index + 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
         }
     }
 
@@ -207,8 +271,8 @@ function Diff({ test, browser, file, hash, delta, changed, index, total, navigat
                             <>
                                 <div>
                                     {isImage(file)
-                                        ? <img src={referenceUrl(hash, test, browser, file)} />
-                                        : <a href={referenceUrl(hash, test, browser, file)}>Reference</a>}
+                                        ? <img src={referenceUrl} />
+                                        : <a href={referenceUrl}>Reference</a>}
                                 </div>
                                 <div>
                                     <LazyNode node={delta.get} />
@@ -335,13 +399,9 @@ function deltaName(file: string): string {
     return isImage(file) ? file : `${file}.diff`
 }
 
-function referenceUrl(hash: string, test: string, browser: string, file: string): string {
-    return encodeURI(`https://raw.githubusercontent.com/kavigupta/urbanstats/${hash}/reference_test_assets/${test}/${browser}/${file}`)
-}
-
 interface Delayed { load: () => void, get: Promise<ReactNode> }
 
-function nodeFromEntry(entry: FileEntry): Delayed {
+function delayed(render: () => Promise<ReactNode>): Delayed {
     let resolve: () => void
     return {
         load: () => {
@@ -351,26 +411,48 @@ function nodeFromEntry(entry: FileEntry): Delayed {
             await new Promise<void>((r) => {
                 resolve = r
             })
-            if (isImage(entry.filename)) {
-                const writer = new Data64URIWriter('image/png')
-                await entry.getData(writer)
-                return <img src={await writer.getData()} />
-            }
-            return textNode(await textFromEntry(entry), entry.filename.endsWith('.diff'))
+            return await render()
         })(),
     }
+}
+
+function nodeFromEntry(entry: FileEntry): Delayed {
+    return delayed(async () => {
+        if (isImage(entry.filename)) {
+            const writer = new Data64URIWriter('image/png')
+            await entry.getData(writer)
+            return <img src={await writer.getData()} />
+        }
+        return textNode(await textFromEntry(entry), entry.filename.endsWith('.diff'))
+    })
+}
+
+function nodeFromUrl(url: string, file: string): Delayed {
+    return delayed(async () => {
+        if (isImage(file)) {
+            return <img src={url} />
+        }
+        const response = await fetch(url)
+        return textNode(await decompress(await response.blob(), file), file.endsWith('.diff'))
+    })
 }
 
 async function textFromEntry(entry: FileEntry): Promise<string> {
     if (entry.filename.endsWith('.gz')) {
         const writer = new Uint8ArrayWriter()
         await entry.getData(writer)
-        const decompressed = new Blob([await writer.getData()]).stream().pipeThrough(new DecompressionStream('gzip'))
-        return await new Response(decompressed).text()
+        return await decompress(new Blob([await writer.getData()]), entry.filename)
     }
     const writer = new TextWriter()
     await entry.getData(writer)
     return await writer.getData()
+}
+
+async function decompress(blob: Blob, file: string): Promise<string> {
+    if (!file.endsWith('.gz')) {
+        return await blob.text()
+    }
+    return await new Response(blob.stream().pipeThrough(new DecompressionStream('gzip'))).text()
 }
 
 const maxTextLines = 1000
