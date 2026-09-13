@@ -5,7 +5,7 @@ import React, { ReactNode, useMemo, useState } from 'react'
 import { isFirefox } from 'react-device-detect'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
-import { CommonMaplibreMap, MapAttribution, PolygonFeatureCollection, polygonFeatureCollection, useZoomFirstFeature } from '../components/map-common'
+import { CommonMaplibreMap, CustomAttributionControlComponent, PolygonFeatureCollection, polygonFeatureCollection, useZoomFirstFeature } from '../components/map-common'
 import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { withButtonRole } from '../utils/a11y'
@@ -41,17 +41,13 @@ function Map({ longname, color, attribution }: MapProps): ReactNode {
     const firstFeatureWaiting = features.length > 0 && features[0] === waiting
 
     return (
-        <div>
-            <div style={{ position: 'relative' }}>
-                <RelativeLoader loading={firstFeatureWaiting} />
-                <CommonMaplibreMap
-                    ref={setMapRef}
-                >
-                    <PolygonFeatureCollection features={readyFeatures} clickable={false} />
-                    <FullscreenControl position="top-left" />
-                </CommonMaplibreMap>
-            </div>
-            {attribution && <MapAttribution />}
+        <div style={{ position: 'relative' }}>
+            <RelativeLoader loading={firstFeatureWaiting} />
+            <CommonMaplibreMap ref={setMapRef}>
+                <PolygonFeatureCollection features={readyFeatures} clickable={false} />
+                <FullscreenControl position="top-left" />
+                { attribution && <CustomAttributionControlComponent startShowingAttribution={false} /> }
+            </CommonMaplibreMap>
         </div>
     )
 }
