@@ -12,11 +12,11 @@ import * as l from './literal-parser'
 import { noLocation } from './location'
 import { BinaryOperatorSymbol, expressionOperatorMap } from './operators'
 import { TypeEnvironment } from './types-values'
-import { UnitConversion, UnitsRead, unitCheck } from './unit-inference'
+import { UnitConversion, UnitInferenceMetadata, unitCheck } from './unit-inference'
 
-type Expression = UrbanStatsASTExpression<UnitsRead>
+type Expression = UrbanStatsASTExpression<UnitInferenceMetadata>
 
-function humanReadableElements(ast: Expression | UrbanStatsASTStatement<UnitsRead>, typeEnvironment: TypeEnvironment): HumanReadableElement[] | undefined {
+function humanReadableElements(ast: Expression | UrbanStatsASTStatement<UnitInferenceMetadata>, typeEnvironment: TypeEnvironment): HumanReadableElement[] | undefined {
     const written = describe(ast, typeEnvironment)
     if (written === undefined) {
         return undefined
@@ -32,7 +32,7 @@ function humanReadableElements(ast: Expression | UrbanStatsASTStatement<UnitsRea
  * Whether this renders as an unambiguous atom, needing no parentheses. Powers are unique among the
  * operators in that they render as superscripts.
  */
-function isAtomic(ast: Expression | UrbanStatsASTStatement<UnitsRead>): boolean {
+function isAtomic(ast: Expression | UrbanStatsASTStatement<UnitInferenceMetadata>): boolean {
     return ast.type !== 'binaryOperator' || ast.operator.node === '**'
 }
 
@@ -56,7 +56,7 @@ function topLevelOperatorForUnitConversion(conversion: UnitConversion): BinaryOp
     return writing.zero === undefined ? undefined : '-'
 }
 
-function describe(ast: Expression | UrbanStatsASTStatement<UnitsRead>, typeEnvironment: TypeEnvironment): HumanReadableElement[] | undefined {
+function describe(ast: Expression | UrbanStatsASTStatement<UnitInferenceMetadata>, typeEnvironment: TypeEnvironment): HumanReadableElement[] | undefined {
     switch (ast.type) {
         case 'assignment':
             return humanReadableElements(ast.value, typeEnvironment)
@@ -238,8 +238,8 @@ function statedMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanRea
 }
 
 /** Takes a script already read for its units, so that a caller wanting the unit too reads it once. */
-export function mapLabelOf(factored: MapUSS<UnitsRead>, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
-    const result = read(editableMapData<UnitsRead>(), factored, typeEnvironment)
+export function mapLabelOf(factored: MapUSS<UnitInferenceMetadata>, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
+    const result = read(editableMapData<UnitInferenceMetadata>(), factored, typeEnvironment)
     if (result?.currentValue.namedArgs.data === undefined) return
     const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment)
     if (dataLabel === undefined) return
@@ -275,7 +275,7 @@ const statedColumnNames = mapUssParser(l.call({
         columns: l.vector(l.call({
             fn: l.ignore(),
             namedArgs: {
-                values: l.passthrough<UnitsRead>(),
+                values: l.passthrough<UnitInferenceMetadata>(),
                 name: l.optional(l.string()),
             },
             unnamedArgs: [],
@@ -284,7 +284,7 @@ const statedColumnNames = mapUssParser(l.call({
     unnamedArgs: [],
 }), 'dont-reparse')
 
-function tableColumnLabels(factored: MapUSS<UnitsRead>, typeEnvironment: TypeEnvironment): HumanReadableName[] | undefined {
+function tableColumnLabels(factored: MapUSS<UnitInferenceMetadata>, typeEnvironment: TypeEnvironment): HumanReadableName[] | undefined {
     const columns = read(statedColumnNames, factored, typeEnvironment)?.namedArgs.columns
     if (columns === undefined) {
         return undefined
@@ -324,12 +324,12 @@ export function tableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): Human
 }
 
 /** Takes a script already read for its units, as `mapLabelOf` does. */
-export function tableColumnNameOf(factored: MapUSS<UnitsRead>, typeEnvironment: TypeEnvironment, columnIndex: number): HumanReadableName | undefined {
+export function tableColumnNameOf(factored: MapUSS<UnitInferenceMetadata>, typeEnvironment: TypeEnvironment, columnIndex: number): HumanReadableName | undefined {
     const values = tableColumnExpression(factored, typeEnvironment, columnIndex)
     return values === undefined ? undefined : humanReadableElements(values, typeEnvironment)
 }
 
-const editableTableCall: (uss: MapUSS<UnitsRead>, typeEnvironment: TypeEnvironment) => l.Edited<unknown, UnitsRead> = mapUssParser(l.edit(l.call({
+const editableTableCall: (uss: MapUSS<UnitInferenceMetadata>, typeEnvironment: TypeEnvironment) => l.Edited<unknown, UnitInferenceMetadata> = mapUssParser(l.edit(l.call({
     fn: l.ignore(),
     namedArgs: {},
     unnamedArgs: [],

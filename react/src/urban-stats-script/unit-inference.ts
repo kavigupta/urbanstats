@@ -20,15 +20,15 @@ export interface UnitConversion {
     expectedUnit: StoredUnit
 }
 
-/** What reading a script for its units leaves on a node. */
-export interface UnitsRead {
+/** Metadata representing a unit inference result */
+export interface UnitInferenceMetadata {
     converted?: UnitConversion
     /** What the expression actually computes to. */
     computesTo: StoredUnit
 }
 
-type Expression = UrbanStatsASTExpression<UnitsRead>
-type Statement = UrbanStatsASTStatement<UnitsRead>
+type Expression = UrbanStatsASTExpression<UnitInferenceMetadata>
+type Statement = UrbanStatsASTStatement<UnitInferenceMetadata>
 
 /**
  * The values of `times` an expression can have: for high_temp * 2 this is [2], for a constant number
@@ -76,10 +76,10 @@ interface UnitExpectation {
 
 const noUnitExpectation: UnitExpectation = {}
 
-/** A number the script writes, which is of no unit until something says what it is read as. */
+// what a bare number is assigned until an expectation narrows it.
 const bareNumber: UnitAbstractInterp = { unit: dimensionless, times: [0, 1], flexibility: 'artificialPreference' }
 
-/** No count of it is the one wanted, so what is written has to be read some other way. */
+// only thrown when times are incompatible, and it is irrecoverable.
 class Unsatisfiable extends Error {}
 
 interface InferenceResult {
@@ -108,28 +108,18 @@ function counted(unit: StoredUnit, times: Times): StoredUnit {
     return { ...unit, unit: { ...unit.unit, times: Math.max(...times) } }
 }
 
-/**
- * The unit a reading is in, carrying the count it turned out to have rather than the one its unit
- * was stored with. Anything that asks whether a unit multiplies has to ask of this: a difference of
- * two temperatures scales and raises like any other quantity, where a reading of one does not.
- */
 function countedUnit(interp: UnitAbstractInterp): StoredUnit {
     return counted(interp.unit, interp.times)
 }
 
-/** Whether what is written can be read as what is wanted with no factor between them. */
 function fits(want: StoredUnit, got: StoredUnit): boolean {
-    // a share is stored as a fraction and shown as a percentage, so a caption says so where one is
-    // read as a plain number. Any other decoration only says how a statistic names its own units.
+    // ensures that ln(bike) renders as ln(bike [as a fraction]); i.e., we want to make sure
+    // percentages are annotated.
     const justOneIsAShare = [want, got].some(({ unit }) => unit.decoration.kind === 'percent')
         && want.unit.decoration.kind !== got.unit.decoration.kind
     return sameDimensions(want, got) && sameSize(want.toBaseUnits, got.toBaseUnits) && !justOneIsAShare
 }
 
-/**
- * The reading narrowed to what was wanted of it. A count that does not fit makes the whole reading
- * unsatisfiable. A unit that does not fit is converted, which a caption writes out.
- */
 function narrowed(inference: InferenceResult, wanted: UnitExpectation): InferenceResult {
     // scalars are exempt from being narrowed; we just ignore times on them since it isn't materially relevant.
     const { interp } = inference
@@ -155,10 +145,7 @@ function narrowed(inference: InferenceResult, wanted: UnitExpectation): Inferenc
     }
 }
 
-/**
- * Try to read the expression in the unit wanted, and if that fails read it as a bare number
- */
-function inferEitherWay(ast: Expression, scope: Scope, wanted: UnitExpectation): InferenceResult {
+function inferWithFallback(ast: Expression, scope: Scope, wanted: UnitExpectation): InferenceResult {
     try {
         return infer(ast, scope, wanted)
     }
@@ -170,7 +157,7 @@ function inferEitherWay(ast: Expression, scope: Scope, wanted: UnitExpectation):
     }
 }
 
-/** The names a reading bound, for whatever is read after it. */
+// update the scope
 function after(scope: Scope, inference: { variables: Bindings }): Scope {
     return { ...scope, variables: inference.variables }
 }
@@ -181,10 +168,8 @@ function packExpression(inference: InferenceResult): Expression {
 }
 
 function infer(ast: Expression, scope: Scope, wanted: UnitExpectation): InferenceResult {
-    const asANumber = readAsANumber(ast, scope)
+    const asANumber = attemptParseNumber(ast, scope)
     if (asANumber !== undefined) {
-        // toNumber("1000") is the number 1000, and any other toNumber is read as its argument, so
-        // everything below here reads an ordinary tree
         return infer(asANumber, scope, wanted)
     }
     // a node the caller declared a unit for is read in that, whatever it is used as
@@ -194,7 +179,10 @@ function infer(ast: Expression, scope: Scope, wanted: UnitExpectation): Inferenc
     return narrowed(inferBestEffort(ast, scope, asked), asked)
 }
 
-/** Makes a best effort to read the expression in the unit wanted. Might return something with a different unit, that needs to be converted. */
+/**
+ * Makes a best effort to infer the unit of the expression, in the given constraint.
+ * Might return something with a different unit, that needs to be converted.
+ */
 function inferBestEffort(ast: Expression, scope: Scope, wanted: UnitExpectation): InferenceResult {
     const here = { ast, variables: scope.variables }
     switch (ast.type) {
@@ -203,7 +191,7 @@ function inferBestEffort(ast: Expression, scope: Scope, wanted: UnitExpectation)
         case 'constant':
             return { ...here, interp: bareNumber, ...ast.value.node.type === 'number' ? { literal: ast.value.node.value } : {} }
         case 'attribute': {
-            const object = inferEitherWay(ast.expr, scope, noUnitExpectation)
+            const object = inferWithFallback(ast.expr, scope, noUnitExpectation)
             const field = object.interp.fields?.get(ast.name.node)
             return {
                 ...here,
@@ -214,7 +202,7 @@ function inferBestEffort(ast: Expression, scope: Scope, wanted: UnitExpectation)
         }
         case 'unaryOperator': {
             // the sign is written outside the number, so -10 keeps its unit and reads -10°F
-            const inner = inferEitherWay(ast.expr, scope, ast.operator.node === '!' ? noUnitExpectation : wanted)
+            const inner = inferWithFallback(ast.expr, scope, ast.operator.node === '!' ? noUnitExpectation : wanted)
             return { ...inner, ast: { ...ast, expr: packExpression(inner) } }
         }
         case 'binaryOperator':
@@ -226,7 +214,7 @@ function inferBestEffort(ast: Expression, scope: Scope, wanted: UnitExpectation)
                 const all: InferenceResult[] = []
                 let soFar = scope
                 for (const element of ast.elements) {
-                    const each = inferEitherWay(element, soFar, inWhat)
+                    const each = inferWithFallback(element, soFar, inWhat)
                     all.push(each)
                     soFar = after(soFar, each)
                 }
@@ -246,7 +234,7 @@ function inferBestEffort(ast: Expression, scope: Scope, wanted: UnitExpectation)
             const properties: [string, InferenceResult][] = []
             let soFar = scope
             for (const [name, value] of ast.properties) {
-                const each = inferEitherWay(value, soFar, noUnitExpectation)
+                const each = inferWithFallback(value, soFar, noUnitExpectation)
                 properties.push([name, each])
                 soFar = after(soFar, each)
             }
@@ -263,9 +251,7 @@ function inferBestEffort(ast: Expression, scope: Scope, wanted: UnitExpectation)
             }
         }
         case 'if': {
-            const condition = inferEitherWay(ast.condition, scope, noUnitExpectation)
-            // an arm is read from where the condition left off, and not from the other arm: a name
-            // one of them binds is not in scope in the other
+            const condition = inferWithFallback(ast.condition, scope, noUnitExpectation)
             const afterCondition = after(scope, condition)
             const bothOf = ast.else === undefined ? [ast.then] : [ast.then, ast.else]
             const arms = (inWhat: UnitExpectation): InferredStatement[] => bothOf.map(arm => inferStatement(arm, afterCondition, inWhat))
@@ -292,7 +278,7 @@ function inferBestEffort(ast: Expression, scope: Scope, wanted: UnitExpectation)
             return { ...block, ast: { ...ast, statements: block.ast } }
         }
         case 'autoUXNode': {
-            const inner = inferEitherWay(ast.expr, scope, wanted)
+            const inner = inferWithFallback(ast.expr, scope, wanted)
             return { ...inner, ast: { ...ast, expr: packExpression(inner) } }
         }
         case 'customNode': {
@@ -317,8 +303,7 @@ function inferIdentifier(ast: Expression & { type: 'identifier' }, scope: Scope,
         : { ...here, interp: { unit: unitTypeToStoredUnit(unit), times: [1], flexibility: 'naturalPreference' } }
 }
 
-/** Which of several says what unit they are all in. A bare number names none, so it does not. */
-function unitNamedBy(interps: UnitAbstractInterp[]): StoredUnit | undefined {
+function leastFlexibleUnit(interps: UnitAbstractInterp[]): StoredUnit | undefined {
     return interps.find(each => each.flexibility !== 'artificialPreference')?.unit
 }
 
@@ -331,7 +316,7 @@ function agreedUnit(wanted: UnitExpectation, claimed: UnitAbstractInterp[]): Uni
     if (wanted.unit !== undefined) {
         return undefined
     }
-    const unit = unitNamedBy(claimed)
+    const unit = leastFlexibleUnit(claimed)
     return unit === undefined ? undefined : { ...wanted, unit }
 }
 
@@ -343,7 +328,7 @@ function unifyUnits(interps: UnitAbstractInterp[]): UnitAbstractInterp {
     if (first === undefined) {
         return bareNumber
     }
-    const unit = unitNamedBy(interps) ?? first.unit
+    const unit = leastFlexibleUnit(interps) ?? first.unit
     // only need to unify times when not in a scalar context.
     const times = unit.unit.baseIsScalar
         ? first.times
@@ -393,14 +378,14 @@ function operation(ast: Expression & { type: 'binaryOperator' }, scope: Scope, w
     }
     // a comparison is of no unit of its own, and its operands are of each other's
     const here = { ast, variables: scope.variables }
-    const left = inferEitherWay(ast.left, scope, noUnitExpectation)
+    const left = inferWithFallback(ast.left, scope, noUnitExpectation)
     // each side of a comparison is in the other's unit, and the side with no unit of its own is the
     // one that takes it: the 80 of 80 < high_temp is a temperature
     const names = comparisons.includes(operator) && left.interp.flexibility !== 'artificialPreference'
-    const right = inferEitherWay(ast.right, after(scope, left), names ? { unit: left.interp.unit } : noUnitExpectation)
+    const right = inferWithFallback(ast.right, after(scope, left), names ? { unit: left.interp.unit } : noUnitExpectation)
     // read the left again now the right says what it could not, so the 80 of 80 < high_temp is one
     const reread = left.interp.flexibility === 'artificialPreference' && right.interp.flexibility !== 'artificialPreference'
-        ? inferEitherWay(ast.left, after(scope, right), { unit: right.interp.unit })
+        ? inferWithFallback(ast.left, after(scope, right), { unit: right.interp.unit })
         : left
     return {
         ...here,
@@ -416,8 +401,8 @@ function operation(ast: Expression & { type: 'binaryOperator' }, scope: Scope, w
  * either side open, every pair of counts is one the sum could be.
  */
 function added(ast: Expression & { type: 'binaryOperator' }, scope: Scope, wanted: UnitExpectation, sign: 1 | -1): InferenceResult {
-    const left = inferEitherWay(ast.left, scope, noUnitExpectation)
-    const right = inferEitherWay(ast.right, after(scope, left), noUnitExpectation)
+    const left = inferWithFallback(ast.left, scope, noUnitExpectation)
+    const right = inferWithFallback(ast.right, after(scope, left), noUnitExpectation)
     const unit = left.interp.flexibility === 'artificialPreference' ? right.interp.unit : left.interp.unit
     const converts = (each: InferenceResult): boolean => !fits(unit, each.interp.unit)
     const counts = (each: InferenceResult, times: Times): Times => converts(each) ? [0] : times
@@ -432,8 +417,8 @@ function added(ast: Expression & { type: 'binaryOperator' }, scope: Scope, wante
         const [near, far] = [Math.abs(a.l) + Math.abs(a.r), Math.abs(b.l) + Math.abs(b.r)]
         return near < far || (near === far && a.l >= b.l) ? a : b
     })
-    const over = inferEitherWay(ast.left, scope, { unit, times: [best.l] })
-    const under = inferEitherWay(ast.right, after(scope, over), { unit, times: [best.r] })
+    const over = inferWithFallback(ast.left, scope, { unit, times: [best.l] })
+    const under = inferWithFallback(ast.right, after(scope, over), { unit, times: [best.r] })
     return {
         ast: { ...ast, left: packExpression(over), right: packExpression(under) },
         variables: under.variables,
@@ -451,12 +436,11 @@ function added(ast: Expression & { type: 'binaryOperator' }, scope: Scope, wante
  * differences, and a side that cannot be one is read as the number it is written as.
  */
 function multiplied(ast: Expression & { type: 'binaryOperator' }, scope: Scope, wanted: UnitExpectation, power: 1 | -1): InferenceResult {
-    const left = inferEitherWay(ast.left, scope, noUnitExpectation)
-    const right = inferEitherWay(ast.right, after(scope, left), noUnitExpectation)
+    const left = inferWithFallback(ast.left, scope, noUnitExpectation)
+    const right = inferWithFallback(ast.right, after(scope, left), noUnitExpectation)
     const scaling = right.literal ?? left.literal
     const scaled = right.literal !== undefined ? left : right
-    // a number scales what it multiplies, and a number under a quantity scales it too. A number
-    // over one does not: there the quantity is being divided into, which is an ordinary division
+    // x * const, const * x, and x / const are all constant scalings, other multiplications aren't.
     if (scaling !== undefined && (power === 1 || right.literal !== undefined)) {
         if (wanted.unit !== undefined && right.literal !== undefined) {
             // what the number must be in for the product to come out as wanted. It is where a
@@ -466,7 +450,7 @@ function multiplied(ast: Expression & { type: 'binaryOperator' }, scope: Scope, 
                 ? unitProduct(wanted.unit, countedUnit(scaled.interp), -1)
                 : unitProduct(countedUnit(scaled.interp), wanted.unit, -1)
             if (carries !== undefined) {
-                const taken = inferEitherWay(ast.right, after(scope, left), { unit: carries })
+                const taken = inferWithFallback(ast.right, after(scope, left), { unit: carries })
                 return {
                     ast: { ...ast, left: packExpression(left), right: packExpression(taken) },
                     variables: taken.variables,
@@ -487,8 +471,8 @@ function multiplied(ast: Expression & { type: 'binaryOperator' }, scope: Scope, 
             },
         }
     }
-    const over = inferEitherWay(ast.left, scope, { times: [0] })
-    const under = inferEitherWay(ast.right, after(scope, over), { times: [0] })
+    const over = inferWithFallback(ast.left, scope, { times: [0] })
+    const under = inferWithFallback(ast.right, after(scope, over), { times: [0] })
     const unit = unitOfProduct(over, under, power)
     return {
         ast: { ...ast, left: packExpression(over), right: packExpression(under) },
@@ -507,8 +491,8 @@ function unitOfProduct(left: InferenceResult, right: InferenceResult, power: 1 |
 
 /** A temperature has no square, so what is raised to a power is a difference. */
 function raised(ast: Expression & { type: 'binaryOperator' }, scope: Scope): InferenceResult {
-    const left = inferEitherWay(ast.left, scope, { times: [0] })
-    const right = inferEitherWay(ast.right, after(scope, left), noUnitExpectation)
+    const left = inferWithFallback(ast.left, scope, { times: [0] })
+    const right = inferWithFallback(ast.right, after(scope, left), noUnitExpectation)
     const exponent = right.literal
     return {
         ast: { ...ast, left: packExpression(left), right: packExpression(right) },
@@ -521,7 +505,7 @@ function raised(ast: Expression & { type: 'binaryOperator' }, scope: Scope): Inf
     }
 }
 
-interface ReadArgument { arg: UrbanStatsASTArg<UnitsRead>, inferred: InferenceResult }
+interface ReadArgument { arg: UrbanStatsASTArg<UnitInferenceMetadata>, inferred: InferenceResult }
 
 function call(ast: Expression & { type: 'call' }, scope: Scope, wanted: UnitExpectation): InferenceResult {
     const propagation = propagationOf(ast.fn, scope)
@@ -529,7 +513,7 @@ function call(ast: Expression & { type: 'call' }, scope: Scope, wanted: UnitExpe
         const all: ReadArgument[] = []
         let soFar = scope
         for (const arg of ast.args) {
-            const inferred = inferEitherWay(arg.value, soFar, ofArgument(propagation, inWhat))
+            const inferred = inferWithFallback(arg.value, soFar, ofArgument(propagation, inWhat))
             all.push({ arg: { ...arg, value: packExpression(inferred) }, inferred })
             soFar = after(soFar, inferred)
         }
@@ -541,7 +525,7 @@ function call(ast: Expression & { type: 'call' }, scope: Scope, wanted: UnitExpe
     const agreed = argumentsAgree(propagation) ? agreedUnit(wanted, claimed.map(({ inferred }) => inferred.interp)) : undefined
     const all = agreed === undefined ? claimed : args(agreed)
     const here = {
-        ast: { ...ast, fn: packExpression(inferEitherWay(ast.fn, scope, noUnitExpectation)), args: all.map(({ arg }) => arg) },
+        ast: { ...ast, fn: packExpression(inferWithFallback(ast.fn, scope, noUnitExpectation)), args: all.map(({ arg }) => arg) },
         variables: all.at(-1)?.inferred.variables ?? scope.variables,
     }
     return { ...here, interp: gives(propagation, all.map(({ inferred }) => inferred), all) }
@@ -581,7 +565,7 @@ function ofArgument(propagation: UnitPropagation | undefined, wanted: UnitExpect
     }
 }
 
-function gives(propagation: UnitPropagation | undefined, args: InferenceResult[], named: { arg: UrbanStatsASTArg<UnitsRead> }[]): UnitAbstractInterp {
+function gives(propagation: UnitPropagation | undefined, args: InferenceResult[], named: { arg: UrbanStatsASTArg<UnitInferenceMetadata> }[]): UnitAbstractInterp {
     if (propagation === undefined) {
         return bareNumber
     }
@@ -608,7 +592,7 @@ function gives(propagation: UnitPropagation | undefined, args: InferenceResult[]
 const parameterName = /^x(\d+)$/
 
 /** What a regression gives back: an intercept in the units of what it was given, and slopes. */
-function regressionFields(args: InferenceResult[], named: { arg: UrbanStatsASTArg<UnitsRead> }[]): ReadonlyMap<string, UnitAbstractInterp> {
+function regressionFields(args: InferenceResult[], named: { arg: UrbanStatsASTArg<UnitInferenceMetadata> }[]): ReadonlyMap<string, UnitAbstractInterp> {
     const of = (name: string): InferenceResult | undefined => {
         const index = named.findIndex(({ arg }) => arg.type === 'named' && arg.name.node === name)
         return index === -1 ? undefined : args[index]
@@ -663,11 +647,11 @@ function statementWithin(ast: Statement, scope: Scope, wanted: UnitExpectation):
         case 'parseError':
             return { ast, variables: scope.variables, interp: { unit: dimensionless, times: [0, 1], flexibility: 'naturalPreference' } }
         case 'expression': {
-            const inner = inferEitherWay(ast.value, scope, wanted)
+            const inner = inferWithFallback(ast.value, scope, wanted)
             return { ...inner, ast: { ...ast, value: packExpression(inner) } }
         }
         case 'assignment': {
-            const inner = inferEitherWay(ast.value, scope, wanted)
+            const inner = inferWithFallback(ast.value, scope, wanted)
             const variables = ast.lhs.type === 'identifier'
                 ? new Map(inner.variables).set(ast.lhs.name.node, inner.interp)
                 : inner.variables
@@ -679,18 +663,18 @@ function statementWithin(ast: Statement, scope: Scope, wanted: UnitExpectation):
         }
         case 'condition': {
             // a filter says nothing about the units of what it keeps, but is still read
-            const condition = inferEitherWay(ast.condition, scope, noUnitExpectation)
+            const condition = inferWithFallback(ast.condition, scope, noUnitExpectation)
             const rest = inferBlock(ast.rest, after(scope, condition), wanted)
             return { ...rest, ast: { ...ast, condition: packExpression(condition), rest: rest.ast } }
         }
     }
 }
 
-const toNumberOfOneThing = l.call({ fn: l.identifier('toNumber'), namedArgs: {}, unnamedArgs: [l.passthrough<UnitsRead>()] })
+const toNumberOfOneThing = l.call({ fn: l.identifier('toNumber'), namedArgs: {}, unnamedArgs: [l.passthrough<UnitInferenceMetadata>()] })
 const primitive = l.union<USSPrimitiveRawValue>([l.number(), l.string(), l.boolean()])
 
 /** What a toNumber call is read as, or undefined where the expression is not one. */
-function readAsANumber(ast: Expression, scope: Scope): Expression | undefined {
+function attemptParseNumber(ast: Expression, scope: Scope): Expression | undefined {
     // a script that binds the name itself is calling something else
     if (scope.variables.has('toNumber')) return undefined
     const inner = l.tryParse(toNumberOfOneThing, ast, scope.typeEnvironment)?.unnamedArgs[0]
@@ -704,13 +688,13 @@ function readAsANumber(ast: Expression, scope: Scope): Expression | undefined {
 }
 
 /** The script rewritten, every node of it saying the unit it computes. */
-export function unitCheck<M>(program: MapUSS<M>, typeEnvironment: TypeEnvironment, declaredUnits?: DeclaredUnits): MapUSS<M & UnitsRead>
+export function unitCheck<M>(program: MapUSS<M>, typeEnvironment: TypeEnvironment, declaredUnits?: DeclaredUnits): MapUSS<M & UnitInferenceMetadata>
 export function unitCheck<M>(program: UrbanStatsASTStatement<M>, typeEnvironment: TypeEnvironment, declaredUnits?: DeclaredUnits): Statement
 export function unitCheck<M>(program: UrbanStatsASTExpression<M>, typeEnvironment: TypeEnvironment, declaredUnits?: DeclaredUnits): Expression
 export function unitCheck(program: Expression | Statement, typeEnvironment: TypeEnvironment, declaredUnits: DeclaredUnits = nothingDeclared): Expression | Statement {
     const scope: Scope = { typeEnvironment, variables: new Map(), declaredUnits }
     return isExpression(program)
-        ? packExpression(inferEitherWay(program, scope, noUnitExpectation))
+        ? packExpression(inferWithFallback(program, scope, noUnitExpectation))
         : inferStatement(program, scope, noUnitExpectation).ast
 }
 
