@@ -221,8 +221,7 @@ function inferBestEffort(ast: Expression, scope: Scope, wanted: UnitExpectation)
                 return all
             }
             const claimed = elements(wanted)
-            const agreed = agreedUnit(wanted, claimed.map(each => each.interp))
-            const all = agreed === undefined ? claimed : elements(agreed)
+            const all = elements({ ...wanted, unit: unifyUnits(claimed.map(each => each.interp)).unit })
             return {
                 ...here,
                 variables: all.at(-1)?.variables ?? scope.variables,
@@ -256,8 +255,7 @@ function inferBestEffort(ast: Expression, scope: Scope, wanted: UnitExpectation)
             const bothOf = ast.else === undefined ? [ast.then] : [ast.then, ast.else]
             const arms = (inWhat: UnitExpectation): InferredStatement[] => bothOf.map(arm => inferStatement(arm, afterCondition, inWhat))
             const claimed = arms(wanted)
-            const agreed = agreedUnit(wanted, claimed.map(each => each.interp))
-            const all = agreed === undefined ? claimed : arms(agreed)
+            const all = arms({ ...wanted, unit: unifyUnits(claimed.map(each => each.interp)).unit })
             const consequent = all[0]
             const otherwise = ast.else === undefined ? undefined : all[1]
             return {
@@ -303,52 +301,24 @@ function inferIdentifier(ast: Expression & { type: 'identifier' }, scope: Scope,
         : { ...here, interp: { unit: unitTypeToStoredUnit(unit), times: [1], flexibility: 'naturalPreference' } }
 }
 
-function leastFlexibleUnit(interps: UnitAbstractInterp[]): StoredUnit | undefined {
-    return interps.find(each => each.flexibility !== 'artificialPreference')?.unit
-}
-
 /**
- * What to ask of a second reading of several alternatives, so they all come back in one unit.
- * Undefined where a second reading would say nothing new: the caller already named the unit, or
- * none of the alternatives names one.
- */
-function agreedUnit(wanted: UnitExpectation, claimed: UnitAbstractInterp[]): UnitExpectation | undefined {
-    if (wanted.unit !== undefined) {
-        return undefined
-    }
-    const unit = leastFlexibleUnit(claimed)
-    return unit === undefined ? undefined : { ...wanted, unit }
-}
-
-/**
- * Unify several unit abstract interpretations. naturally narrows.
+ * Unifies several abstract interpretations, naturally narrows. If inconsistent,
+ * falls back to a bare number.
  */
 function unifyUnits(interps: UnitAbstractInterp[]): UnitAbstractInterp {
     const first = interps.at(0)
     if (first === undefined) {
         return bareNumber
     }
-    const unit = leastFlexibleUnit(interps) ?? first.unit
-    // only need to unify times when not in a scalar context.
+    const least = interps.reduce((soFar, each) =>
+        stronger(soFar.flexibility, each.flexibility) === soFar.flexibility ? soFar : each)
+    const unit = least.flexibility === 'artificialPreference' ? first.unit : least.unit
     const times = unit.unit.baseIsScalar
         ? first.times
         : interps.map(each => each.times).reduce(intersect, first.times)
-    if (times.length === 0) {
-        throw new Unsatisfiable('no one count is what all of them are')
-    }
-    return { unit, times, flexibility: interps.map(each => each.flexibility).reduce(stronger, 'artificialPreference') }
-}
-
-function unifyWithFallback(inArm: UnitAbstractInterp, other: UnitAbstractInterp): UnitAbstractInterp {
-    try {
-        return unifyUnits([inArm, other])
-    }
-    catch (error) {
-        if (!(error instanceof Unsatisfiable)) {
-            throw error
-        }
-        return bareNumber
-    }
+    return times.length === 0
+        ? bareNumber
+        : { unit, times, flexibility: interps.map(each => each.flexibility).reduce(stronger, 'artificialPreference') }
 }
 
 /** A name that both arms of an `if` bound is worth what the two of them agree it is. */
@@ -356,7 +326,7 @@ function unifyIfArms(scope: Scope, consequent: { variables: Bindings }, otherwis
     const bound = new Map(scope.variables)
     for (const [name, inArm] of consequent.variables) {
         const other = otherwise?.variables.get(name) ?? scope.variables.get(name)
-        bound.set(name, other === undefined ? inArm : unifyWithFallback(inArm, other))
+        bound.set(name, other === undefined ? inArm : unifyUnits([inArm, other]))
     }
     return bound
 }
@@ -522,8 +492,9 @@ function call(ast: Expression & { type: 'call' }, scope: Scope, wanted: UnitExpe
     const claimed = args(wanted)
     // where the arguments have to be in one unit, they are read again in the one they agree on
     // rather than in whichever the first of them happened to claim
-    const agreed = argumentsAgree(propagation) ? agreedUnit(wanted, claimed.map(({ inferred }) => inferred.interp)) : undefined
-    const all = agreed === undefined ? claimed : args(agreed)
+    const all = argumentsAgree(propagation)
+        ? args({ ...wanted, unit: unifyUnits(claimed.map(({ inferred }) => inferred.interp)).unit })
+        : claimed
     const here = {
         ast: { ...ast, fn: packExpression(inferWithFallback(ast.fn, scope, noUnitExpectation)), args: all.map(({ arg }) => arg) },
         variables: all.at(-1)?.inferred.variables ?? scope.variables,
