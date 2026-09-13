@@ -10,19 +10,19 @@ function drawing(data: string): string {
 mapper(() => test)('a name that does not exist is reported rather than thrown', {
     code: drawing('(high_temp - low_temp) * a'),
 }, async (t) => {
-    await t.expect(await getErrors()).eql(['Undefined variable: a at 1:36'])
+    await t.expect(getErrors()).eql(['Undefined variable: a at 1:36'])
 })
 
 mapper(() => test)('a difference of two readings can be scaled by a quantity', {
     code: drawing('(high_temp - low_temp) * area'),
 }, async (t) => {
-    await t.expect(await getErrors()).eql([])
+    await t.expect(getErrors()).eql([])
 })
 
 mapper(() => test)('nothing divides into a reading, where the degrees between two divide', {
     code: drawing('1 / (high_temp - low_temp)'),
 }, async (t) => {
-    await t.expect(await getErrors()).eql([])
+    await t.expect(getErrors()).eql([])
 })
 
 // The legend is where a unit of more than one dimension is hardest to write, so these two are
