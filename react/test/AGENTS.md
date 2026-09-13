@@ -25,7 +25,7 @@ That's the whole thing. In particular:
 - **A run that finds changed assets prints a link to the asset diff viewer**, covering only the
   tests it ran. The page needs the dev server up, since that is what serves the local
   `changed_assets`, `delta` and `reference_test_assets`. To accept what the run produced without
-  rerunning it: `npm run test:update-assets -- '--test=test/mapper-ux_x1.test.ts'`.
+  rerunning it: `npm run update-assets -- '--test=test/mapper-ux_x1.test.ts'`.
 - **Redirect to a file, as above, rather than piping through `head`, `tail`, or `grep`.**
   Runs take minutes and produce a lot of log, and a run you truncate is a run you have to
   do again. With the whole thing on disk, narrowing down costs nothing:

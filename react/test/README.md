@@ -33,7 +33,7 @@
 
 - Take a run's output as the new references, without rerunning it:
 
-  `npm run test:update-assets -- '--test=test/mapper-edit-text-boxes-desktop.test.ts'`
+  `npm run update-assets -- '--test=test/mapper-edit-text-boxes-desktop.test.ts'`
 
   The copy `--write` does, against whatever `changed_assets` already holds. It clears the test's
   `changed_assets` and `delta` afterwards, so the viewer stops offering diffs you've accepted.

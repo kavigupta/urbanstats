@@ -12,10 +12,10 @@
     "unused-exports": "knip --include exports",
     "test:e2e": "tsx test/scripts/run-e2e-tests.ts",
     "test:memory-ab": "tsx test/scripts/memory-ab.ts",
-    "test:update-assets": "tsx test/scripts/update-assets.ts",
     "test:unit": "tsx --experimental-test-module-mocks unit/scripts/run-unit-tests.ts",
     "bench:search": "tsx unit/scripts/search-bench.ts",
     "test:unit:coverage": "c8 --reporter=text --reporter=clover tsx --experimental-test-module-mocks unit/scripts/run-unit-tests.ts",
+    "update-assets": "tsx test/scripts/update-assets.ts",
     "og-preview": "./cf-og-worker/preview.sh"
   },
   "keywords": [],
