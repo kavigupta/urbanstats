@@ -11,7 +11,7 @@ import { IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 import { NormalizeProto } from '../utils/types'
 
-import { CommonMaplibreMap, Polygon, PolygonFeatureCollection, polygonFeatureCollection, useZoomFirstFeature } from './map-common'
+import { CommonMaplibreMap, MapAttribution, Polygon, PolygonFeatureCollection, polygonFeatureCollection, useZoomFirstFeature } from './map-common'
 
 interface ArticleMapProps {
     articleType: string
@@ -31,15 +31,18 @@ export function ArticleMap(props: ArticleMapProps): ReactNode {
     const firstFeatureWaiting = features.length > 0 && features[0] === waiting
 
     return (
-        <div style={{ position: 'relative' }}>
-            <RelativeLoader loading={firstFeatureWaiting} />
-            <CommonMaplibreMap
-                ref={setMapRef}
-            >
-                <PolygonFeatureCollection features={readyFeatures} clickable={true} />
-                <FullscreenControl position="top-left" />
-            </CommonMaplibreMap>
-        </div>
+        <>
+            <div style={{ position: 'relative' }}>
+                <RelativeLoader loading={firstFeatureWaiting} />
+                <CommonMaplibreMap
+                    ref={setMapRef}
+                >
+                    <PolygonFeatureCollection features={readyFeatures} clickable={true} />
+                    <FullscreenControl position="top-left" />
+                </CommonMaplibreMap>
+            </div>
+            <MapAttribution />
+        </>
     )
 }
 
