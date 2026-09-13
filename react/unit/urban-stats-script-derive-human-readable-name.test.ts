@@ -3,12 +3,12 @@ import test from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { mapUSSFromString } from '../src/mapper/settings/map-uss'
-import { unitNamedByConstant } from '../src/urban-stats-script/constants/units'
 import { deriveTableLabel, mapLabel, tableLabel } from '../src/urban-stats-script/derive-human-readable-name'
 import { mapRampUnitAndLabel, tableColumnUnitAndName } from '../src/urban-stats-script/derive-unit'
 import { TypeEnvironment } from '../src/urban-stats-script/types-values'
 import { HumanReadableName } from '../src/utils/human-readable-element'
 import { reifyString } from '../src/utils/human-readable-name'
+import { UnitType } from '../src/utils/unit'
 
 function getTypeEnvironment(): TypeEnvironment {
     return defaultTypeEnvironment('USA')
@@ -16,10 +16,16 @@ function getTypeEnvironment(): TypeEnvironment {
 
 let mapLabelIdx = 0
 
+/** The unit a constant names, which the tests need because they write the constant into a script. */
+function unitNamed(constant: string): UnitType {
+    const named = constant.slice('unit'.length)
+    return `${named[0].toLowerCase()}${named.slice(1)}` as UnitType
+}
+
 function testMapLabel(testFn: typeof test, code: string, expectedLabel: string, stated?: string): void {
     void testFn(`map label ${++mapLabelIdx}`, () => {
         const uss = mapUSSFromString(code)
-        const label = mapRampUnitAndLabel(uss, getTypeEnvironment(), stated === undefined ? undefined : unitNamedByConstant.get(stated)).label
+        const label = mapRampUnitAndLabel(uss, getTypeEnvironment(), stated === undefined ? undefined : unitNamed(stated)).label
         assert.ok(label)
         assert.equal(reifyString(label, {}), expectedLabel)
     })
@@ -184,7 +190,7 @@ for (const [values, stated, expected] of [
     // a column states its unit the same way a map does
     void test(`a column of ${values} stated in ${stated}`, () => {
         const uss = mapUSSFromString(`table(columns=[column(values=${values}, unit=${stated})])`)
-        const label = tableColumnUnitAndName(uss, getTypeEnvironment(), 0, unitNamedByConstant.get(stated)).name
+        const label = tableColumnUnitAndName(uss, getTypeEnvironment(), 0, unitNamed(stated)).name
         assert.ok(label)
         assert.equal(reifyString(label, {}), expected)
     })

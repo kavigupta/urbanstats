@@ -95,8 +95,6 @@ interface Scope {
     typeEnvironment: TypeEnvironment
     variables: Bindings
     declaredUnits: DeclaredUnits
-    /** Read every node as the plain number it is written as. The backstop, described on unitCheck. */
-    everythingAsWritten: boolean
 }
 
 function intersect(left: Times, right: Times): Times {
@@ -191,9 +189,7 @@ function infer(ast: Expression, scope: Scope, wanted: UnitExpectation): Inferenc
     }
     // a node the caller declared a unit for is read in that, whatever it is used as
     const declared = scope.declaredUnits.get(ast)
-    const asked = scope.everythingAsWritten
-        ? { unit: dimensionless }
-        : declared === undefined ? wanted : { ...wanted, unit: declared }
+    const asked = declared === undefined ? wanted : { ...wanted, unit: declared }
     // fallback in case best effort returns something that does not fit what is wanted
     return narrowed(inferBestEffort(ast, scope, asked), asked)
 }
@@ -458,8 +454,10 @@ function multiplied(ast: Expression & { type: 'binaryOperator' }, scope: Scope, 
     const left = inferEitherWay(ast.left, scope, noUnitExpectation)
     const right = inferEitherWay(ast.right, after(scope, left), noUnitExpectation)
     const scaling = right.literal ?? left.literal
-    if (scaling !== undefined) {
-        const scaled = right.literal !== undefined ? left : right
+    const scaled = right.literal !== undefined ? left : right
+    // a number scales what it multiplies, and a number under a quantity scales it too. A number
+    // over one does not: there the quantity is being divided into, which is an ordinary division
+    if (scaling !== undefined && (power === 1 || right.literal !== undefined)) {
         if (wanted.unit !== undefined && right.literal !== undefined) {
             // what the number must be in for the product to come out as wanted. It is where a
             // conversion goes, a factor landing on the number the script already writes rather
@@ -476,18 +474,15 @@ function multiplied(ast: Expression & { type: 'binaryOperator' }, scope: Scope, 
                 }
             }
         }
-        // a number over a quantity is one over that quantity: 1 / area is per square kilometre
-        const overTheQuantity = power === -1 && right.literal === undefined
-        const unit = overTheQuantity ? reciprocalOf(scaled) : scaled.interp.unit
         return {
             ast: { ...ast, left: packExpression(left), right: packExpression(right) },
             variables: right.variables,
             interp: {
-                unit,
+                unit: scaled.interp.unit,
                 // on a scale with no zero of its own there is nothing for a number to scale
-                times: unit.unit.baseIsScalar
+                times: scaled.interp.unit.unit.baseIsScalar
                     ? scaled.interp.times
-                    : scaled.interp.times.map(each => power === 1 || right.literal === undefined ? each * scaling : each / scaling),
+                    : scaled.interp.times.map(each => power === 1 ? each * scaling : each / scaling),
                 flexibility: 'flexiblePreference',
             },
         }
@@ -500,15 +495,6 @@ function multiplied(ast: Expression & { type: 'binaryOperator' }, scope: Scope, 
         variables: under.variables,
         interp: { unit, times: [unit.unit.times], flexibility: stronger(over.interp.flexibility, under.interp.flexibility) },
     }
-}
-
-/** One over a quantity. Nothing is one over a reading, that not being a quantity to divide into. */
-function reciprocalOf(under: InferenceResult): StoredUnit {
-    const product = unitProduct(dimensionless, countedUnit(under.interp), -1)
-    if (product === undefined) {
-        throw new Unsatisfiable('nothing divides into a quantity counted from a zero of its own')
-    }
-    return product
 }
 
 function unitOfProduct(left: InferenceResult, right: InferenceResult, power: 1 | -1): StoredUnit {
@@ -722,21 +708,7 @@ export function unitCheck<M>(program: MapUSS<M>, typeEnvironment: TypeEnvironmen
 export function unitCheck<M>(program: UrbanStatsASTStatement<M>, typeEnvironment: TypeEnvironment, declaredUnits?: DeclaredUnits): Statement
 export function unitCheck<M>(program: UrbanStatsASTExpression<M>, typeEnvironment: TypeEnvironment, declaredUnits?: DeclaredUnits): Expression
 export function unitCheck(program: Expression | Statement, typeEnvironment: TypeEnvironment, declaredUnits: DeclaredUnits = nothingDeclared): Expression | Statement {
-    try {
-        return readWhole(program, { typeEnvironment, variables: new Map(), declaredUnits, everythingAsWritten: false })
-    }
-    catch (error) {
-        if (!(error instanceof Unsatisfiable)) {
-            throw error
-        }
-        // Nothing should reach here: every node is read twice, and the second reading takes the
-        // numbers as written, which always goes together. Reading a script is not worth failing a
-        // page over, though, so a script that finds a way is read as the plain numbers it writes.
-        return readWhole(program, { typeEnvironment, variables: new Map(), declaredUnits: nothingDeclared, everythingAsWritten: true })
-    }
-}
-
-function readWhole(program: Expression | Statement, scope: Scope): Expression | Statement {
+    const scope: Scope = { typeEnvironment, variables: new Map(), declaredUnits }
     return isExpression(program)
         ? packExpression(inferEitherWay(program, scope, noUnitExpectation))
         : inferStatement(program, scope, noUnitExpectation).ast

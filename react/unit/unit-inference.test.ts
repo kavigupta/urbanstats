@@ -3,11 +3,11 @@ import test from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { mapDataExpression, mapUSSFromString } from '../src/mapper/settings/map-uss'
-import { unitNamedByConstant } from '../src/urban-stats-script/constants/units'
 import { constructDeclaredUnitsForMap } from '../src/urban-stats-script/declared-units'
 import { parseNoError } from '../src/urban-stats-script/parser'
 import { unitCheck } from '../src/urban-stats-script/unit-inference'
 import { StoredUnit } from '../src/utils/quantity'
+import { UnitType } from '../src/utils/unit'
 
 /** What is known, as a string: the dimensions, how many of itself it is, and its scale. */
 function shape(known: StoredUnit): string {
@@ -22,6 +22,12 @@ function of(code: string): StoredUnit {
     return unitCheck(parseNoError(code, 'test'), defaultTypeEnvironment('USA')).computesTo
 }
 
+/** The unit a constant names, which the tests need because they write the constant into a script. */
+function unitNamed(constant: string): UnitType {
+    const named = constant.slice('unit'.length)
+    return `${named[0].toLowerCase()}${named.slice(1)}` as UnitType
+}
+
 /**
  * What a map's data works out to, where the map states the unit it is drawn in. That is how a
  * script says what is expected of an expression.
@@ -29,7 +35,7 @@ function of(code: string): StoredUnit {
 function drawnAs(code: string, statedUnit: string): StoredUnit {
     const typeEnvironment = defaultTypeEnvironment('USA')
     const uss = mapUSSFromString(`cMap(data=${code}, scale=linearScale(), ramp=rampUridis, unit=${statedUnit})`)
-    const declaredUnits = constructDeclaredUnitsForMap(uss, typeEnvironment, unitNamedByConstant.get(statedUnit))
+    const declaredUnits = constructDeclaredUnitsForMap(uss, typeEnvironment, unitNamed(statedUnit))
     const data = mapDataExpression(unitCheck(uss, typeEnvironment, declaredUnits), typeEnvironment)
     assert.ok(data !== undefined)
     return data.computesTo
