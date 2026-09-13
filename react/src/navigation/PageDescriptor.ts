@@ -307,6 +307,11 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
     }
 }
 
+// Element ids can contain characters that a URL hash percent-encodes, e.g. spaces
+export function elementIdFromHash(hash: string): string {
+    return decodeURIComponent(hash.substring(1))
+}
+
 export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor): URL {
     let pathname: string
     let searchParams: Record<string, string | undefined>

@@ -1,11 +1,13 @@
 import { MathJax, MathJaxContext } from 'better-react-mathjax'
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useContext } from 'react'
 import { FootnoteRef, Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 
 import './style.css'
 import './common.css'
 import industry_occupation_table from './data/explanation_industry_occupation_table'
 import shapefile_data_credit from './data/shapefile_data_credit'
+import { Navigator } from './navigation/Navigator'
+import { elementIdFromHash, urlFromPageDescriptor } from './navigation/PageDescriptor'
 import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
 import { useHeaderTextClass } from './utils/responsive'
@@ -59,10 +61,15 @@ function NRef({ children, name, h: Header = 'h2' }: { children: React.ReactNode,
     )
 }
 
+function shapefileAnchor(name: string): string {
+    return `shapefile_${name}`
+}
+
 function Shapefiles(): ReactNode {
     // {name: string, dataCredit: {text: string | undefined, linkText: string, link: string}[]}[]
     // make a table of this data, with the link in the second column and the text in the third, if it exists. Put multiple rows on the right 2 columns if there are multiple data credits.
     const colors = useColors()
+    const anchoredId = elementIdFromHash(urlFromPageDescriptor(useContext(Navigator.Context).usePageState().current.descriptor).hash)
     return (
         <div style={{ marginLeft: '1em', marginTop: '1em', marginBottom: '1em', border: `1px solid ${colors.textMain}` }}>
             <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -71,7 +78,18 @@ function Shapefiles(): ReactNode {
             </div>
             {shapefile_data_credit.map(({ names, dataCredits }, i) => (
                 <div key={i}>
-                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            position: 'relative',
+                            backgroundColor: names.some(name => anchoredId === shapefileAnchor(name)) ? colors.highlight : undefined,
+                        }}
+                    >
+                        {/* Zero-height so that seeking to any of these anchors lands on the top of the row */}
+                        {names.map(name => (
+                            <div key={name} id={shapefileAnchor(name)} style={{ position: 'absolute', top: 0 }} />
+                        ))}
                         <div style={{ width: '30%', border: `1px solid ${colors.textMain}`, padding: '1em', display: 'flex', flexDirection: 'row', verticalAlign: 'middle' }}>
                             <div style={{ width: '100%', margin: 'auto' }}>
                                 {names.map((name, j) => (
