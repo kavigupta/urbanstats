@@ -150,3 +150,13 @@ input[type=text]:disabled, textarea:disabled {
 html[data-testing] button, html[data-testing] select, html[data-testing] a[role=button] {
     border-radius: 0;
 }
+
+a.underline_on_hover {
+    text-decoration: none;
+    color: var(--text-main);
+}
+
+a.underline_on_hover:hover {
+    text-decoration: underline;
+    color: var(--blue-link);
+}
