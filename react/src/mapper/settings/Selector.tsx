@@ -40,6 +40,7 @@ export function Selector(props: {
     type: USSType[]
     blockIdent: string
     errors: EditorError[]
+    singleLine?: boolean
 }): ReactNode {
     const { setSelection, typeEnvironment } = props
     const unitSettings = useUnitSettings()
@@ -142,7 +143,7 @@ export function Selector(props: {
     )
 }
 
-function TextInput({ currentValue, blockIdent, setUss }: { currentValue: string, blockIdent: string, setUss: (u: UrbanStatsASTExpression, o: ActionOptions) => void }): ReactNode {
+function TextInput({ currentValue, blockIdent, setUss, singleLine }: { currentValue: string, blockIdent: string, setUss: (u: UrbanStatsASTExpression, o: ActionOptions) => void, singleLine?: boolean }): ReactNode {
     const textAreaRef = useRef<HTMLTextAreaElement>(null)
 
     useTextAreaSizeSync(textAreaRef, blockIdent)
@@ -150,6 +151,7 @@ function TextInput({ currentValue, blockIdent, setUss }: { currentValue: string,
     return (
         <textarea
             ref={textAreaRef}
+            rows={singleLine === true ? 1 : undefined}
             value={currentValue}
             onChange={(e) => {
                 const value = e.target.value

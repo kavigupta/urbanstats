@@ -41,6 +41,46 @@ mapper(() => test)('a comparison against another statistic', { code: base }, asy
     await t.expect(getCodeFromMainField()).contains('condition (population > density_pw_1km)')
 })
 
+mapper(() => test)('filter on a name', { code: base }, async (t) => {
+    await toggleCustomScript(t)
+    await checkTextboxesDirect(t, ['Filter?'])
+    // A string predicate compares names, so the operands restart as the geography names and a search box
+    await replaceInput(t, '>', 'starts with')
+    await t.expect(getInput('Default Universe Geography Names').exists).ok()
+    const needle = Selector('textarea').withAttribute('placeholder', 'Enter string')
+    await t.click(needle)
+    await t.typeText(needle, 'Rey')
+    await t.expect(getErrors()).eql([])
+    await screencap(t, { removeEntireMap: true })
+
+    await toggleCustomScript(t)
+    await t.expect(getCodeFromMainField()).contains('condition (startsWith(geoName, "Rey"))')
+})
+
+// The needle's box shares a row with the operand and the operator, so the three have to line up
+mapper(() => test)('a saved name filter lines up with the rest of its row', {
+    code: `customNode("");\ncondition (startsWith(geoName, "A"))\n${base}`,
+    geo: 'Subnational Region',
+    universe: 'USA',
+}, async (t) => {
+    await t.expect(getInput('starts with').exists).ok()
+    await t.expect(getErrors()).eql([])
+    await screencap(t, { removeEntireMap: true })
+})
+
+mapper(() => test)('a name filter written as code comes up graphically', {
+    code: `customNode("");\ncondition (customNode("fuzzyMatch(geoName, \\"reykyavik\\")"))\n${base}`,
+}, async (t) => {
+    await t.expect(getInput('fuzzy match').exists).ok()
+    await t.expect(getInput('Default Universe Geography Names').exists).ok()
+    await t.expect(getErrors()).eql([])
+
+    // Switching back to comparing numbers starts the comparison over rather than keeping a name where a number goes
+    await replaceInput(t, 'fuzzy match', '≥')
+    await t.expect(getInput('PW Density (r=1km)').exists).ok()
+    await t.expect(getErrors()).eql([])
+})
+
 mapper(() => test)('group conditions and nest them', { code: base }, async (t) => {
     await toggleCustomScript(t)
     await checkTextboxesDirect(t, ['Filter?'])

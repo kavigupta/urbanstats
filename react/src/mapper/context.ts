@@ -95,6 +95,7 @@ export const defaultTypeEnvironment = (universe: Universe | Universe[] | undefin
         documentation: {
             humanReadableName: 'Default Universe Geography Names',
             category: 'mapper',
+            isDefault: true,
             longDescription: 'A vector containing the names of geographic units for the current universe. Each element represents a geographic unit (e.g., census block, county) and can be used for labeling and identification purposes in mapping and spatial analysis.',
         },
     })
