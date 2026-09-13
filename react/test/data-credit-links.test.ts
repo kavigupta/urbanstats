@@ -24,7 +24,7 @@ const shapefileRow = ClientFunction((name: string) => {
 urbanstatsFixture('article map attribution', `${target}/article.html?longname=Boston+Urban+Center%2C+USA`)
 
 test('map attribution links to the shapefile row', async (t) => {
-    const link = Selector('a').withExactText(`What is a ${typeWithSpace}?`)
+    const link = Selector('a').withExactText(`What is an ${typeWithSpace}?`)
     await t.expect(link.getAttribute('href')).eql(`${target}/data-credit.html#shapefile_Urban%20Center`)
     await t.expect(link.getAttribute('target')).eql('_blank')
     await t.click(link)
