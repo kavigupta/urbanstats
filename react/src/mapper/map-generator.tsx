@@ -256,7 +256,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
                     maps={insetMaps}
                     loading={props.loading}
                     colorbar={colorbar}
-                    attribution={mapResultMain.value.basemap.type !== 'none'}
+                    attribution={mapResultMain.value.basemap.type !== 'none' && ['uss', 'view'].includes(props.mode)}
                     aspectRatio={aspectRatio}
                     mapsContainerRef={mapsContainerRef}
                     wholeRenderRef={wholeRenderRef}

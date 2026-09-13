@@ -22,6 +22,10 @@
     }
 }
 
+.maplibregl-ctrl-attrib {
+    transform: scale(0.85);
+    transform-origin: bottom right;
+}
 
 .map-credit a {
     color: inherit;
