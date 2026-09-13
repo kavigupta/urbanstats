@@ -996,7 +996,7 @@ function StatisticName(props: {
     const link = props.row?.kind === 'metadata'
         ? (
                 <a
-                    style={{ textDecoration: 'none', color: colors.textMain }}
+                    className="underline_on_hover"
                     {...navContext.link(
                         { kind: 'dataCredit', hash: `#explanation_${sanitize(props.row.dataCreditExplanationPage)}` },
                         { scroll: { kind: 'none' } },
@@ -1009,7 +1009,7 @@ function StatisticName(props: {
         : props.row?.kind === 'statistic'
             ? (
                     <a
-                        style={{ textDecoration: 'none', color: colors.textMain }}
+                        className="underline_on_hover"
                         {...navContext.link({
                             kind: 'statistic',
                             universe: props.currentUniverse,
