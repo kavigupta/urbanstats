@@ -35,6 +35,17 @@ export const repoInfo = {
     repo: 'urbanstats',
 }
 
+const upstreamUsageSchema = z.object({
+    requests: z.number(),
+    bytes: z.number(),
+    /** Summed per request, so concurrency can push this past the wall clock. */
+    sumMs: z.number(),
+    /** Wall clock with at least one upstream request in flight. */
+    busyMs: z.number(),
+})
+
+export type UpstreamUsage = z.infer<typeof upstreamUsageSchema>
+
 export const testHistorySchema = z.array(z.object({
     test: z.string(),
     result: z.discriminatedUnion('status', [
@@ -43,6 +54,7 @@ export const testHistorySchema = z.array(z.object({
         z.object({ status: z.literal('failure'), duration: z.number(), reason: z.enum(['assertions', 'assets']) }),
     ]),
     retries: z.number(),
+    upstream: z.optional(upstreamUsageSchema),
     github: z.optional(z.object({
         jobId: z.number(),
         stepNumber: z.number(),
@@ -52,6 +64,24 @@ export const testHistorySchema = z.array(z.object({
 export type TestHistory = z.infer<typeof testHistorySchema>
 
 export type TestResult = TestHistory[number]['result']
+
+export function resultDuration(result: TestResult): number {
+    return result.status === 'timeout' ? result.timeLimitSeconds * 1000 : result.duration
+}
+
+export function describeUpstream(upstream: UpstreamUsage, duration: number): string {
+    const share = duration > 0 ? ` (${(100 * upstream.busyMs / duration).toFixed(0)}% of ${(duration / 1000).toFixed(0)}s)` : ''
+    return `${upstream.requests} requests, ${(upstream.bytes / 1e6).toFixed(1)}MB, ${(upstream.busyMs / 1000).toFixed(1)}s busy${share}, ${(upstream.sumMs / 1000).toFixed(1)}s summed`
+}
+
+export function sumUpstream(usages: (UpstreamUsage | undefined)[]): UpstreamUsage {
+    return usages.reduce<UpstreamUsage>((total, usage) => ({
+        requests: total.requests + (usage?.requests ?? 0),
+        bytes: total.bytes + (usage?.bytes ?? 0),
+        sumMs: total.sumMs + (usage?.sumMs ?? 0),
+        busyMs: total.busyMs + (usage?.busyMs ?? 0),
+    }), { requests: 0, bytes: 0, sumMs: 0, busyMs: 0 })
+}
 
 export async function loadAndMergeTestHistories(): Promise<TestHistory> {
     const historiesFiles = globSync('test_histories/*.json')

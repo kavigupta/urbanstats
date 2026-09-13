@@ -328,6 +328,21 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
+  upstream-report:
+    runs-on: ubuntu-22.04
+    needs: [e2e]
+    if: "!cancelled()"
+    steps:
+      - *checkout
+      - uses: ./.github/actions/node_modules
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "test_histories-*"
+          path: react/test_histories
+          merge-multiple: true
+      - run: npx tsx test/scripts/upstream-report.ts
+        working-directory: react
+
   merge-and-save-durations:
     runs-on: ubuntu-22.04
     needs: [e2e]

@@ -15,6 +15,7 @@ import { z } from 'zod'
 import { port } from '../../port'
 
 import { github } from './github-utils'
+import { UpstreamUsage } from './util'
 
 /**
  * jsdelivr occasionally stalls on a file and answers with a 504 a full minute later, which is
@@ -23,6 +24,44 @@ import { github } from './github-utils'
  */
 const attemptTimeoutMs = 10_000
 const attempts = 3
+
+const usage: UpstreamUsage = { requests: 0, bytes: 0, sumMs: 0, busyMs: 0 }
+let inFlight = 0
+let busySince = 0
+
+export function upstreamUsage(): UpstreamUsage {
+    return { ...usage }
+}
+
+export function upstreamUsageSince(before: UpstreamUsage): UpstreamUsage {
+    return {
+        requests: usage.requests - before.requests,
+        bytes: usage.bytes - before.bytes,
+        sumMs: usage.sumMs - before.sumMs,
+        busyMs: usage.busyMs - before.busyMs,
+    }
+}
+
+/** Reached only once a request has missed the locally built site and is headed for the CDN. */
+const trackUpstream: express.RequestHandler = (_, res, next) => {
+    const start = Date.now()
+    usage.requests++
+    if (inFlight++ === 0) {
+        busySince = start
+    }
+    // HTTP/1.1 serializes responses on a connection, so the socket's delta is this response's wire bytes.
+    const { socket } = res
+    const socketBytesAtStart = socket?.bytesWritten ?? 0
+    res.on('close', () => {
+        const now = Date.now()
+        usage.bytes += Math.max((socket?.bytesWritten ?? 0) - socketBytesAtStart, 0)
+        usage.sumMs += now - start
+        if (--inFlight === 0) {
+            usage.busyMs += now - busySince
+        }
+    })
+    next()
+}
 
 const upstream: proxy.ProxyOptions = {
     timeout: attemptTimeoutMs,
@@ -110,7 +149,7 @@ export async function startProxy(): Promise<void> {
     })
     handlers.push(rawGithubProxy(branch.commit.sha))
 
-    app.use(express.static('test/density-db'), ...handlers)
+    app.use(express.static('test/density-db'), trackUpstream, ...handlers)
 
     app.listen(port())
 }

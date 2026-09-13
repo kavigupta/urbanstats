@@ -9,11 +9,11 @@ import { argumentParser } from 'zodcli'
 
 import { port } from '../../port'
 
-import { startProxy } from './ci_proxy'
+import { startProxy, upstreamUsage, upstreamUsageSince } from './ci_proxy'
 import { github } from './github-utils'
 import { runE2eTestsDocker } from './run-e2e-tests-docker'
 import { testCafePorts } from './testcafe-ports'
-import { booleanArgument, changedAssets, getTOTPWait, setTOTPWait, testFile, TestHistory, TestResult, testsFromGlobs, updateReferences, writeChangedAssetsManifest } from './util'
+import { booleanArgument, changedAssets, describeUpstream, getTOTPWait, resultDuration, setTOTPWait, sumUpstream, testFile, TestHistory, TestResult, testsFromGlobs, updateReferences, UpstreamUsage, writeChangedAssetsManifest } from './util'
 
 const options = argumentParser({
     options: z.object({
@@ -78,14 +78,17 @@ for (const test of tests) {
     const numTries = options.tries * (await testFileDidChange(test) ? 1 : 2)
     let retries = 0
     let result: TestResult
+    let upstream: UpstreamUsage
 
     retry: while (true) {
         if (gh) {
             console.warn(`::group::${testFile(test)} attempt ${retries + 1}`)
         }
         console.warn(chalkTemplate`{cyan ${testFile(test)} attempt ${(retries + 1)} running...}`)
+        const usageBefore = upstreamUsage()
         result = await runTest(test)
-        printResult({ test, result, retries })
+        upstream = upstreamUsageSince(usageBefore)
+        printResult({ test, result, retries, upstream })
         switch (result.status) {
             case 'success':
                 break retry
@@ -112,6 +115,7 @@ for (const test of tests) {
         test,
         result,
         retries,
+        upstream,
         github: gh && {
             jobId: gh.currentJobId(),
             stepNumber: await gh.currentStepNumber(),
@@ -120,6 +124,12 @@ for (const test of tests) {
 }
 
 testHistory.forEach(printResult)
+
+const shardUpstream = sumUpstream(testHistory.map(({ upstream }) => upstream))
+if (shardUpstream.requests > 0) {
+    const shardDuration = testHistory.reduce((total, { result }) => total + resultDuration(result), 0)
+    console.warn(chalkTemplate`{cyan shard upstream ${describeUpstream(shardUpstream, shardDuration)}}`)
+}
 
 await fs.mkdir('test_histories', { recursive: true })
 await fs.writeFile(`test_histories/${process.env.GITHUB_ACTIONS ? crypto.randomUUID() : 'history'}.json`, JSON.stringify(testHistory))
@@ -137,7 +147,7 @@ if (testHistory.some(({ result }) => result.status !== 'success')) {
 
 process.exit(0) // Needed to clean up subprocesses
 
-function printResult({ test, result, retries }: { test: string, result: TestResult, retries: number }): void {
+function printResult({ test, result, retries, upstream }: { test: string, result: TestResult, retries: number, upstream?: UpstreamUsage }): void {
     switch (result.status) {
         case 'success':
             console.warn(chalkTemplate`{green.bold ${testFile(test)} succeeded (${retries} retries)}`)
@@ -148,6 +158,9 @@ function printResult({ test, result, retries }: { test: string, result: TestResu
         case 'timeout':
             console.error(chalkTemplate`{red ${testFile(test)} took too long! (allowed duration ${result.timeLimitSeconds}s) (${retries} retries)}`)
             break
+    }
+    if (upstream !== undefined && upstream.requests > 0) {
+        console.warn(chalkTemplate`{cyan ${testFile(test)} upstream ${describeUpstream(upstream, resultDuration(result))}}`)
     }
 }
 
