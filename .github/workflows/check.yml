@@ -212,7 +212,7 @@ jobs:
       - *checkout
       - run: git fetch origin ${{ github.base_ref }} --depth=1 # needed so test runner can diff tests against base ref
         if: ${{ github.base_ref != '' }}
-      # No python_environment here: the image carries what check_assets.py needs, and the
+      # No python_environment here: the image carries what check_snapshots.py needs, and the
       # full venv is a 484MB restore that every shard would pay for.
       - uses: ./.github/actions/node_modules
       - uses: actions/download-artifact@v4
@@ -241,7 +241,7 @@ jobs:
           name="${{ matrix.test-file }}"
           echo "name=${name:0:200}" >> $GITHUB_OUTPUT
       # A re-run keeps the artifacts the earlier attempt uploaded, so these names carry the
-      # attempt and merge-assets takes each shard's newest one. The marker makes the delta
+      # attempt and merge-snapshots takes each shard's newest one. The marker makes the delta
       # artifact unconditional, so a shard that re-ran and passed is distinguishable from one
       # that wasn't re-run at all; without it the earlier attempt's delta would be picked up.
       - if: "!cancelled()"
@@ -254,15 +254,15 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
-          name: changed_assets-${{ github.run_attempt }}-${{ steps.artifact-name.outputs.name }}
-          path: react/changed_assets
+          name: changed_snapshots-${{ github.run_attempt }}-${{ steps.artifact-name.outputs.name }}
+          path: react/changed_snapshots
       # Both TestCafe's take-on-fail shots and the ones `flaky` takes per attempt land here, and
       # a run that passes deletes them, so this only ever carries pictures of something going wrong.
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
           name: error_screenshots-${{ github.run_attempt }}-${{ steps.artifact-name.outputs.name }}
-          path: react/test_assets/**/*.error.png
+          path: react/test_snapshots/**/*.error.png
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
@@ -271,7 +271,7 @@ jobs:
           path: react/test_histories
           overwrite: true
 
-  merge-assets:
+  merge-snapshots:
     runs-on: ubuntu-22.04
     needs: [e2e]
     if: "!cancelled()"
@@ -284,8 +284,8 @@ jobs:
           path: attempts/delta
       - uses: actions/download-artifact@v4
         with:
-          pattern: "changed_assets-*"
-          path: attempts/changed_assets
+          pattern: "changed_snapshots-*"
+          path: attempts/changed_snapshots
       - name: Keep each shard's newest attempt
         run: |
           declare -A newest
@@ -299,13 +299,13 @@ jobs:
               newest[$shard]="$attempt"
             fi
           done
-          mkdir -p combined/delta combined/changed_assets
+          mkdir -p combined/delta combined/changed_snapshots
           for shard in "${!newest[@]}"; do
             attempt="${newest[$shard]}"
             cp -R "attempts/delta/delta-$attempt-$shard/." combined/delta/
-            changed="attempts/changed_assets/changed_assets-$attempt-$shard"
+            changed="attempts/changed_snapshots/changed_snapshots-$attempt-$shard"
             if [ -d "$changed" ]; then
-              cp -R "$changed/." combined/changed_assets/
+              cp -R "$changed/." combined/changed_snapshots/
             fi
           done
           rm -f combined/delta/shard-ran

@@ -7,7 +7,7 @@ import { StatPath } from '../page_template/statistic-tree'
 import { TestUtils } from '../utils/TestUtils'
 import { assert } from '../utils/defensive'
 
-import { ExceptionalPageDescriptor, loadPageDescriptor, PageData, PageDescriptor, pageDescriptorFromURL, pageDescriptorSchema, urlFromPageDescriptor } from './PageDescriptor'
+import { elementIdFromHash, ExceptionalPageDescriptor, loadPageDescriptor, PageData, PageDescriptor, pageDescriptorFromURL, pageDescriptorSchema, urlFromPageDescriptor } from './PageDescriptor'
 
 const historyStateSchema = z.object({
     pageDescriptor: pageDescriptorSchema,
@@ -307,7 +307,7 @@ export class Navigator {
         }
 
         const seekToHash = (): void => {
-            const element = document.getElementById(url.hash.substring(1))
+            const element = document.getElementById(elementIdFromHash(url.hash))
             if (element !== null) {
                 const position = element.getBoundingClientRect().top + window.scrollY
                 if (Math.round(position) !== Math.round(window.scrollY)) {
