@@ -28,7 +28,7 @@ import { useCSVExport } from './csv-export'
 import { TableEditButton } from './edit-mode-header'
 import { EditModeState, EditTable, editRowsByGroup, useEditModeState, useEditTableLayout } from './edit-table'
 import { ArticleRow, getHighlightIndex, isCongressionalRepresentativesMetadataRow } from './load-article'
-import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
+import { CommonMaplibreMap, MapAttribution, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding } from './map-common'
 import { PlotProps, pullRelevantPlotProps, useExpandedByStat } from './plots'
 import { createScreenshot, ScreencapElements, ScreenshotContext, ScreenshotContextType, useScreenshotMode } from './screenshot'
 import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
@@ -643,9 +643,7 @@ function ComparisonMultiMap(props: { longnames: string[], colors: string[], mapP
                         <ComparisonMap
                             longnames={partition.map(index => props.longnames[index])}
                             colors={partition.map(index => props.colors[index])}
-                            attribution={
-                                partitionIndex === props.mapPartitions.length - 1
-                            }
+                            attribution={partitionIndex === props.mapPartitions.length - 1}
                         />
                     </div>
                 )
@@ -672,12 +670,11 @@ function ComparisonMap({ longnames, colors, attribution }: { longnames: string[]
             <CommonMaplibreMap
                 id={id}
                 ref={setMapRef}
-                attributionControl={false}
             >
                 <PolygonFeatureCollection features={readyFeatures} clickable={true} />
                 <FullscreenControl position="top-left" />
-                { attribution && <CustomAttributionControlComponent startShowingAttribution={true} />}
             </CommonMaplibreMap>
+            {attribution && <MapAttribution />}
             <ComparisonMapButtons longnames={longnames} colors={colors} features={features} mapRef={mapRef} />
         </div>
     )

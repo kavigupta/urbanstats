@@ -49,9 +49,8 @@ test('statistics-page', async (t) => {
     const count = Selector('div').withAttribute('style', /background-color: rgb\((212, 181, 226|59, 29, 73)\);/)
         .withText(/Indianapolis IN HRR, USA/)
     await t.expect(count.count).gte(1, 'Need highlighting')
-    // click link "Data Explanation and Credit"
     await t
-        .click(Selector('a').withText(/^Data Explanation and Credit$/))
+        .click(Selector('a').withText(/^What is Population \[US Census\]\?$/))
     await t.expect(getLocation())
         .eql(`${target}/data-credit.html#explanation_population`)
 })
