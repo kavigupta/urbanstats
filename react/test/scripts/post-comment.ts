@@ -57,8 +57,8 @@ async function testsComment(): Promise<string | undefined> {
 
     const lines = await Promise.all(failedExecutions.map(async ({ test, result, retries, github: executionGithub }) => {
         const statusText = result.status === 'timeout'
-            ? `timeout (limit: ${result.timeLimitSeconds}s)`
-            : `failure (${result.reason})`
+            ? `⏱️ timeout (limit: ${result.timeLimitSeconds}s)`
+            : `${result.reason === 'snapshots' ? '📸' : '❌'} failure (${result.reason})`
         const retriesText = retries === 0 ? '' : ` (${retries} retries)`
 
         const { data } = await gh.octokit.rest.actions.downloadJobLogsForWorkflowRun({
