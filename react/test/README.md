@@ -21,6 +21,23 @@
   Reference strings — the CSV, XML and GeoJSON a test saves with `saveString` — live in the
   same tree and regenerate the same way. Nothing checks them without `--compare=true`.
 
+- Look at a local run's diffs in the same viewer the PR comment links to. A run that finds
+  changed assets prints a link to it, scoped to the tests that run covered:
+
+  `http://localhost:8000/asset-diff-viewer.html?tests=mapper-edit-text-boxes-desktop`
+
+  The page reads `changed_assets`, `delta` and `reference_test_assets` through the dev server,
+  which therefore has to be up. Dropping `tests` shows nothing, since there is no way to
+  enumerate the tests; with `artifactId` and `hash` instead, it reads a CI artifact as before,
+  and `tests` narrows that too.
+
+- Take a run's output as the new references, without rerunning it:
+
+  `npm run update-assets -- '--test=test/mapper-edit-text-boxes-desktop.test.ts'`
+
+  The copy `--write` does, against whatever `changed_assets` already holds. It clears the test's
+  `changed_assets` and `delta` afterwards, so the viewer stops offering diffs you've accepted.
+
 - Pull what CI's run for the current branch produced, rather than rerunning the tests
   locally: `python -m scripts.grab_assets`. It updates the references in place and prints
   a `file://` link to the deltas.
