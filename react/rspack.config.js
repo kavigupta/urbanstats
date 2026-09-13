@@ -70,9 +70,20 @@ export default env => ({
         new LogChangedFile()
     ],
     devServer: {
-        static: {
-            directory: env.directory,
-        },
+        static: [
+            { directory: env.directory },
+            // What the asset diff viewer reads when it's pointed at a local test run rather than a CI artifact.
+            ...Object.entries({
+                reference: path.resolve(import.meta.dirname, '..', 'reference_test_assets'),
+                changed: path.resolve(import.meta.dirname, 'changed_assets'),
+                delta: path.resolve(import.meta.dirname, 'delta'),
+            }).map(([name, directory]) => ({
+                directory,
+                publicPath: `/local-assets/${name}`,
+                // A test run writing these shouldn't reload whatever page is open.
+                watch: false,
+            })),
+        ],
         compress: true,
         port: port(),
         devMiddleware: {

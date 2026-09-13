@@ -20,7 +20,7 @@ import { CommonMap } from '../urban-stats-script/constants/map'
 import { ScaleInstance } from '../urban-stats-script/constants/scale'
 import { TextBox } from '../urban-stats-script/constants/text-box'
 import { deriveMapLabel } from '../urban-stats-script/derive-human-readable-name'
-import { deriveMapUnit } from '../urban-stats-script/derive-unit'
+import { mapRampUnit } from '../urban-stats-script/derive-unit'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
@@ -32,7 +32,7 @@ import { makeDebugLogger } from '../utils/debug-logging'
 import { HumanReadableName } from '../utils/human-readable-element'
 import { ICoordinate } from '../utils/protos'
 import { StoredUnit } from '../utils/quantity'
-import { plainNumber, unitTypeToStoredUnit } from '../utils/unit'
+import { plainNumber } from '../utils/unit'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
 import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar'
@@ -152,7 +152,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         }
     }
 
-    const derivedUnit = deriveMapUnit(mapSettings.script.uss, typeEnvironment)
+    const derivedUnit = mapRampUnit(mapSettings.script.uss, typeEnvironment, mapResultMain.value.unit)
 
     const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, geographies, cache, label, derivedUnit })
 
@@ -556,7 +556,7 @@ async function loadMapResult({ mapResultMain, geographies, cache, label, derived
 function computeRampToDisplay(value: CommonMap, label: HumanReadableName, derivedUnit: StoredUnit | undefined, { scale, ticks }: { scale: ScaleInstance, ticks: number[] }): RampToDisplay & { type: 'ramp' } {
     const hasValuesClampedToStart = value.data.some(val => scale.forward(val) < 0)
     const hasValuesClampedToEnd = value.data.some(val => scale.forward(val) > 1)
-    const unit = value.unit === undefined ? derivedUnit ?? plainNumber : unitTypeToStoredUnit(value.unit)
+    const unit = derivedUnit ?? plainNumber
     return { type: 'ramp', value: { ramp: value.ramp, interpolations: ticks, scale, label, unit, hasValuesClampedToStart, hasValuesClampedToEnd } }
 }
 
