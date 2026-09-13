@@ -7,7 +7,7 @@ import { asADifference, dimensionless, isPlainNumber, multiplies, nameOfStoredUn
 import { abbreviate, formatToSignificantFigures, separateNumber, trimTrailingZeros } from '../utils/text'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
-import { assignMapUnitStatically, DeclaredUnits } from './declared-units'
+import { columnUnitsWrittenDown, mapUnitWrittenDown } from './declared-units'
 import * as l from './literal-parser'
 import { noLocation } from './location'
 import { BinaryOperatorSymbol, expressionOperatorMap } from './operators'
@@ -237,8 +237,8 @@ function statedMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanRea
     return label === undefined ? undefined : parseHumanReadableTemplate(label)
 }
 
-export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, declaredUnits: DeclaredUnits): HumanReadableName | undefined {
-    const factored = unitCheck(uss, typeEnvironment, declaredUnits)
+/** Takes a script already read for its units, so that a caller wanting the unit too reads it once. */
+export function mapLabelOf(factored: MapUSS<UnitsRead>, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
     const result = read(editableMapData<UnitsRead>(), factored, typeEnvironment)
     if (result?.currentValue.namedArgs.data === undefined) return
     const dataLabel = humanReadableElements(result.currentValue.namedArgs.data, typeEnvironment)
@@ -251,8 +251,9 @@ export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, de
 }
 
 export function mapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
+    // no run to ask, so the unit the map declares is read off the script
     return statedMapLabel(uss, typeEnvironment)
-        ?? deriveMapLabel(uss, typeEnvironment, assignMapUnitStatically(uss, typeEnvironment))
+        ?? mapLabelOf(unitCheck(uss, typeEnvironment, mapUnitWrittenDown(uss, typeEnvironment)), typeEnvironment)
 }
 
 /** The title a table states outright, which running it would otherwise be the only way to read. */
@@ -283,8 +284,7 @@ const statedColumnNames = mapUssParser(l.call({
     unnamedArgs: [],
 }), 'dont-reparse')
 
-function tableColumnLabels(uss: MapUSS, typeEnvironment: TypeEnvironment, declaredUnits: DeclaredUnits): HumanReadableName[] | undefined {
-    const factored = unitCheck(uss, typeEnvironment, declaredUnits)
+function tableColumnLabels(factored: MapUSS<UnitsRead>, typeEnvironment: TypeEnvironment): HumanReadableName[] | undefined {
     const columns = read(statedColumnNames, factored, typeEnvironment)?.namedArgs.columns
     if (columns === undefined) {
         return undefined
@@ -312,17 +312,19 @@ export function deriveConditionLabel(uss: MapUSS, typeEnvironment: TypeEnvironme
 }
 
 /** A table's title the way `mapLabel` is a map's: stated if it says one, derived from it if not. */
-export function tableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, declaredUnits: DeclaredUnits): HumanReadableName | undefined {
+export function tableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
     const stated = statedTableTitle(uss, typeEnvironment)
     if (stated !== undefined) {
         return stated
     }
-    const columns = tableColumnLabels(uss, typeEnvironment, declaredUnits)
+    // no run to ask, so the units each column declares are read off the script
+    const factored = unitCheck(uss, typeEnvironment, columnUnitsWrittenDown(uss, typeEnvironment))
+    const columns = tableColumnLabels(factored, typeEnvironment)
     return columns === undefined ? undefined : deriveTableLabel(uss, typeEnvironment, columns)
 }
 
-export function deriveTableColumnLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number, declaredUnits: DeclaredUnits): HumanReadableName | undefined {
-    const factored = unitCheck(uss, typeEnvironment, declaredUnits)
+/** Takes a script already read for its units, as `mapLabelOf` does. */
+export function tableColumnNameOf(factored: MapUSS<UnitsRead>, typeEnvironment: TypeEnvironment, columnIndex: number): HumanReadableName | undefined {
     const values = tableColumnExpression(factored, typeEnvironment, columnIndex)
     return values === undefined ? undefined : humanReadableElements(values, typeEnvironment)
 }

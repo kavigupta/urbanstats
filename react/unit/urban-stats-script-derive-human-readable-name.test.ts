@@ -2,10 +2,10 @@ import assert from 'assert/strict'
 import test from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
-import { MapUSS, mapUSSFromString } from '../src/mapper/settings/map-uss'
+import { mapUSSFromString } from '../src/mapper/settings/map-uss'
 import { unitNamedByConstant } from '../src/urban-stats-script/constants/units'
-import { DeclaredUnits, assignColumnUnitsStatically, assignDeclaredColumnUnits, assignDeclaredMapUnit, nothingDeclared } from '../src/urban-stats-script/declared-units'
-import { deriveMapLabel, deriveTableColumnLabel, deriveTableLabel, mapLabel, tableLabel } from '../src/urban-stats-script/derive-human-readable-name'
+import { deriveTableLabel, mapLabel, tableLabel } from '../src/urban-stats-script/derive-human-readable-name'
+import { mapRampUnitAndLabel, tableColumnUnitAndName } from '../src/urban-stats-script/derive-unit'
 import { TypeEnvironment } from '../src/urban-stats-script/types-values'
 import { HumanReadableName } from '../src/utils/human-readable-element'
 import { reifyString } from '../src/utils/human-readable-name'
@@ -16,15 +16,10 @@ function getTypeEnvironment(): TypeEnvironment {
 
 let mapLabelIdx = 0
 
-/** What the caller of a map declares it is drawn in, which is a unit it worked out by running it. */
-function drawnAs(uss: MapUSS, declared?: string): DeclaredUnits {
-    return assignDeclaredMapUnit(uss, getTypeEnvironment(), declared === undefined ? undefined : unitNamedByConstant.get(declared))
-}
-
 function testMapLabel(testFn: typeof test, code: string, expectedLabel: string, stated?: string): void {
     void testFn(`map label ${++mapLabelIdx}`, () => {
         const uss = mapUSSFromString(code)
-        const label = deriveMapLabel(uss, getTypeEnvironment(), drawnAs(uss, stated))
+        const label = mapRampUnitAndLabel(uss, getTypeEnvironment(), stated === undefined ? undefined : unitNamedByConstant.get(stated)).label
         assert.ok(label)
         assert.equal(reifyString(label, {}), expectedLabel)
     })
@@ -163,7 +158,7 @@ for (const [data, reader, settings, expected] of [
     ['ln(high_temp)', 'celsius', celsius, 'ln(Mean high temp [in °F])'],
 ] as const) {
     void test(`${data} to a ${reader} reader`, () => {
-        const label = deriveMapLabel(mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), getTypeEnvironment(), nothingDeclared)
+        const label = mapRampUnitAndLabel(mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), getTypeEnvironment(), undefined).label
         assert.ok(label)
         assert.equal(reifyString(label, settings), expected)
     })
@@ -189,15 +184,14 @@ for (const [values, stated, expected] of [
     // a column states its unit the same way a map does
     void test(`a column of ${values} stated in ${stated}`, () => {
         const uss = mapUSSFromString(`table(columns=[column(values=${values}, unit=${stated})])`)
-        const declaredUnits = assignDeclaredColumnUnits(uss, getTypeEnvironment(), [unitNamedByConstant.get(stated)])
-        const label = deriveTableColumnLabel(uss, getTypeEnvironment(), 0, declaredUnits)
+        const label = tableColumnUnitAndName(uss, getTypeEnvironment(), 0, unitNamedByConstant.get(stated)).name
         assert.ok(label)
         assert.equal(reifyString(label, {}), expected)
     })
 }
 
 void test('a label reads in the units of whoever is reading it', () => {
-    const label = deriveMapLabel(mapUSSFromString('condition (high_temp > 80 & area > 100)\ncMap(data=population, scale=linearScale(), ramp=rampUridis)'), getTypeEnvironment(), nothingDeclared)
+    const label = mapRampUnitAndLabel(mapUSSFromString('condition (high_temp > 80 & area > 100)\ncMap(data=population, scale=linearScale(), ramp=rampUridis)'), getTypeEnvironment(), undefined).label
     assert.ok(label)
     assert.equal(reifyString(label, {}), 'Population where Mean high temp > 80°F and Area > 100km^{2}')
     assert.equal(reifyString(label, { temperatureUnit: 'celsius' }), 'Population where Mean high temp > 26.7°C and Area > 100km^{2}')
@@ -279,7 +273,7 @@ testMapLabel(test,
 )
 
 void test('map label cannot be derived for a raw vector literal', () => {
-    const label = deriveMapLabel(mapUSSFromString('cMap(data=[1, 2, 3], scale=linearScale(), ramp=rampUridis)'), getTypeEnvironment(), nothingDeclared)
+    const label = mapRampUnitAndLabel(mapUSSFromString('cMap(data=[1, 2, 3], scale=linearScale(), ramp=rampUridis)'), getTypeEnvironment(), undefined).label
     assert.equal(label, undefined)
 })
 
@@ -287,7 +281,7 @@ let tableColumnLabelIdx = 0
 
 function testTableColumnLabel(testFn: typeof test, code: string, columnIndex: number, expectedLabel: string | undefined): void {
     void testFn(`table column label ${++tableColumnLabelIdx}`, () => {
-        const label = deriveTableColumnLabel(mapUSSFromString(code), getTypeEnvironment(), columnIndex, nothingDeclared)
+        const label = tableColumnUnitAndName(mapUSSFromString(code), getTypeEnvironment(), columnIndex, undefined).name
         if (expectedLabel === undefined) {
             assert.equal(label, undefined)
         }
@@ -411,7 +405,7 @@ for (const [values, declared, expected] of [
         assert.equal(reifyString(map, {}), expected)
 
         const uss = mapUSSFromString(`condition (true)\ntable(columns=[column(values=${values}${declared})])`)
-        const table = tableLabel(uss, getTypeEnvironment(), assignColumnUnitsStatically(uss, getTypeEnvironment()))
+        const table = tableLabel(uss, getTypeEnvironment())
         assert.ok(table)
         assert.equal(reifyString(table, {}), expected)
     })

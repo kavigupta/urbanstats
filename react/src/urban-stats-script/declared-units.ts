@@ -59,7 +59,7 @@ const mapUnit = mapUssParser(l.call({
  * The unit a map declares, read off the script rather than handed over by a run. For the one caller
  * that titles a map before running it, so there is no run to ask.
  */
-export function assignMapUnitStatically(uss: MapUSS, typeEnvironment: TypeEnvironment): DeclaredUnits {
+export function mapUnitWrittenDown(uss: MapUSS, typeEnvironment: TypeEnvironment): DeclaredUnits {
     const written = read(mapUnit, uss, typeEnvironment)?.namedArgs.unit
     return assignDeclaredMapUnit(uss, typeEnvironment, unitNamedOutright(written))
 }
@@ -77,7 +77,7 @@ const columnUnits = mapUssParser(l.call({
 }), 'dont-reparse')
 
 /** The same for each column of a table, for the caller that titles one before running it. */
-export function assignColumnUnitsStatically(uss: MapUSS, typeEnvironment: TypeEnvironment): DeclaredUnits {
+export function columnUnitsWrittenDown(uss: MapUSS, typeEnvironment: TypeEnvironment): DeclaredUnits {
     const columns = read(columnUnits, uss, typeEnvironment)?.namedArgs.columns ?? []
     return assignDeclaredColumnUnits(uss, typeEnvironment, columns.map(({ namedArgs }) => unitNamedOutright(namedArgs.unit)))
 }

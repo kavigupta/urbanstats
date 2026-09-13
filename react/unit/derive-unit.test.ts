@@ -3,8 +3,7 @@ import test from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { MapUSS, mapUSSFromString } from '../src/mapper/settings/map-uss'
-import { nothingDeclared } from '../src/urban-stats-script/declared-units'
-import { deriveMapUnit, deriveTableColumnUnit, mapRampUnit } from '../src/urban-stats-script/derive-unit'
+import { mapRampUnitAndLabel, tableColumnUnitAndName } from '../src/urban-stats-script/derive-unit'
 import { reifyString } from '../src/utils/human-readable-name'
 import { UnitSettings, StoredUnit, writeQuantity } from '../src/utils/quantity'
 
@@ -22,7 +21,7 @@ function mapOf(data: string): MapUSS {
 }
 
 function unitOfMap(data: string): StoredUnit | undefined {
-    return deriveMapUnit(mapOf(data), defaultTypeEnvironment('USA'), nothingDeclared)
+    return mapRampUnitAndLabel(mapOf(data), defaultTypeEnvironment('USA'), undefined).unit
 }
 
 function mapUnit(data: string): string {
@@ -31,7 +30,7 @@ function mapUnit(data: string): string {
 
 function columnUnit(values: string, columnIndex = 0): string {
     const uss = mapUSSFromString(`table(columns=[${values}])`)
-    return written(deriveTableColumnUnit(uss, defaultTypeEnvironment('USA'), columnIndex, nothingDeclared))
+    return written(tableColumnUnitAndName(uss, defaultTypeEnvironment('USA'), columnIndex, undefined).unit)
 }
 
 void test('a map takes the unit of its data', () => {
@@ -68,7 +67,7 @@ void test('a map with no unit to read', () => {
 
 void test('a map of a regression field', () => {
     const map = (preamble: string, data: string): StoredUnit | undefined =>
-        deriveMapUnit(mapUSSFromString(`${preamble}\ncondition (true)\ncMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), defaultTypeEnvironment('USA'), nothingDeclared)
+        mapRampUnitAndLabel(mapUSSFromString(`${preamble}\ncondition (true)\ncMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), defaultTypeEnvironment('USA'), undefined).unit
     const shares = 'regr = regression(y=commute_transit, x1=ln(density_pw_1km), weight=population)'
     // what a share was above what the regression expected of it, which is a difference of two shares
     assert.equal(written(map(shares, 'do { x = regr.residuals; x }'), 0.05), '+5.00%')
@@ -83,7 +82,7 @@ void test('a map of a regression field', () => {
 
 void test('a statistic that names its own units', () => {
     // fatalities over people, both of them counted, which the statistic names as fatalities per 100k
-    const perCapita = deriveTableColumnUnit(mapUSSFromString('table(columns=[column(values=ped_cyclist_fatalities_per_capita)])'), defaultTypeEnvironment('USA'), 0, nothingDeclared)
+    const perCapita = tableColumnUnitAndName(mapUSSFromString('table(columns=[column(values=ped_cyclist_fatalities_per_capita)])'), defaultTypeEnvironment('USA'), 0, undefined).unit
     assert.equal(written(perCapita, 1e-5), '1.00/100k')
     assert.equal(written(unitOfMap('traffic_fatalities_per_capita'), 1e-5), '1.00/100k')
 })
@@ -195,7 +194,7 @@ void test('a difference is written with a sign', () => {
 
 void test('a map of a name the script bound', () => {
     const uss = mapUSSFromString('x = population / area\ncondition (true)\ncMap(data=x, scale=linearScale(), ramp=rampUridis)')
-    assert.equal(written(deriveMapUnit(uss, defaultTypeEnvironment('USA'), nothingDeclared)), '1\u202f000/km^{2}')
+    assert.equal(written(mapRampUnitAndLabel(uss, defaultTypeEnvironment('USA'), undefined).unit), '1\u202f000/km^{2}')
 })
 
 void test('a column is written in the units of its values', () => {
@@ -216,7 +215,7 @@ for (const [data, declared, expected] of [
     ['population / area', 'temperature', '1\u202f000.0\u00b0F'],
 ] as const) {
     void test(`a ramp of ${data} where the user provided ${declared ?? 'no unit'}`, () => {
-        assert.equal(written(mapRampUnit(mapOf(data), defaultTypeEnvironment('USA'), declared)), expected)
+        assert.equal(written(mapRampUnitAndLabel(mapOf(data), defaultTypeEnvironment('USA'), declared).unit), expected)
     })
 }
 

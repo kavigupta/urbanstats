@@ -1,40 +1,51 @@
 import { mapDataExpression, MapUSS, tableColumnExpression } from '../mapper/settings/map-uss'
+import { HumanReadableName } from '../utils/human-readable-element'
 import { StoredUnit } from '../utils/quantity'
 import { UnitType, unitTypeToStoredUnit } from '../utils/unit'
 
-import { UrbanStatsASTExpression } from './ast'
-import { DeclaredUnits, nothingDeclared } from './declared-units'
+import { assignDeclaredColumnUnits, assignDeclaredMapUnit } from './declared-units'
+import { mapLabelOf, tableColumnNameOf } from './derive-human-readable-name'
 import { TypeEnvironment } from './types-values'
-import { UnitsRead, unitCheck } from './unit-inference'
+import { unitCheck } from './unit-inference'
 
-/** What the one expression a map or a column draws was read as being in. */
-function unitOf(of: (checked: MapUSS<UnitsRead>) => UrbanStatsASTExpression<UnitsRead> | undefined, uss: MapUSS, typeEnvironment: TypeEnvironment, declaredUnits: DeclaredUnits): StoredUnit | undefined {
-    return of(unitCheck(uss, typeEnvironment, declaredUnits))?.worksOutTo
+/**
+ * How to label a map's ramp: the unit it is written in, and the name of what it draws. The unit is
+ * the one the user chose through the map's `unit=` argument, or where they chose none, the one the
+ * data works out to.
+ *
+ * Both come out of a single reading of the script, and that reading is told what the user chose,
+ * which is how the name comes to mention any conversion that choice caused.
+ *
+ * The mapper and the link embed card both label a ramp, and they have to agree on this.
+ */
+export function mapRampUnitAndLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, userProvided: UnitType | undefined): { unit: StoredUnit | undefined, label: HumanReadableName | undefined } {
+    const factored = unitCheck(uss, typeEnvironment, assignDeclaredMapUnit(uss, typeEnvironment, userProvided))
+    return {
+        unit: userProvided === undefined
+            ? mapDataExpression(factored, typeEnvironment)?.worksOutTo
+            : unitTypeToStoredUnit(userProvided),
+        label: mapLabelOf(factored, typeEnvironment),
+    }
 }
 
-export function deriveMapUnit(uss: MapUSS, typeEnvironment: TypeEnvironment, declaredUnits: DeclaredUnits): StoredUnit | undefined {
-    return unitOf(checked => mapDataExpression(checked, typeEnvironment), uss, typeEnvironment, declaredUnits)
-}
-
-export function deriveTableColumnUnit(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number, declaredUnits: DeclaredUnits): StoredUnit | undefined {
-    return unitOf(checked => tableColumnExpression(checked, typeEnvironment, columnIndex), uss, typeEnvironment, declaredUnits)
+/** The same for one column of a table, whose name is what a map calls its label. */
+export function tableColumnUnitAndName(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number, userProvided: UnitType | undefined): { unit: StoredUnit | undefined, name: HumanReadableName | undefined } {
+    const declared = assignDeclaredColumnUnits(uss, typeEnvironment, onlyColumn(columnIndex, userProvided))
+    const factored = unitCheck(uss, typeEnvironment, declared)
+    return {
+        unit: userProvided === undefined
+            ? tableColumnExpression(factored, typeEnvironment, columnIndex)?.worksOutTo
+            : unitTypeToStoredUnit(userProvided),
+        name: tableColumnNameOf(factored, typeEnvironment, columnIndex),
+    }
 }
 
 /**
- * What a map's ramp is labelled in: the unit the user chose through the map's `unit=` argument, or
- * where they chose none, the unit derived from the data.
- *
- * Both the mapper and the link embed card label a ramp, and they have to agree on this.
+ * One column's unit, in the shape a whole table's declarations take. Saying nothing of the other
+ * columns is safe: a column's name and unit are read off its own values and no other's.
  */
-export function mapRampUnit(uss: MapUSS, typeEnvironment: TypeEnvironment, userProvided: UnitType | undefined): StoredUnit | undefined {
-    return userProvided === undefined
-        ? deriveMapUnit(uss, typeEnvironment, nothingDeclared)
-        : unitTypeToStoredUnit(userProvided)
-}
-
-/** What a table column is written in, chosen and derived the same way a map's ramp is. */
-export function tableColumnUnit(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number, userProvided: UnitType | undefined): StoredUnit | undefined {
-    return userProvided === undefined
-        ? deriveTableColumnUnit(uss, typeEnvironment, columnIndex, nothingDeclared)
-        : unitTypeToStoredUnit(userProvided)
+function onlyColumn(columnIndex: number, unit: UnitType | undefined): (UnitType | undefined)[] {
+    const units = new Array<UnitType | undefined>(columnIndex + 1).fill(undefined)
+    units[columnIndex] = unit
+    return units
 }
