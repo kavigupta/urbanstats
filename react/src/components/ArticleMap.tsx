@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useMemo, useState } from 'react'
+import React, { ReactNode, useMemo, useState } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
 import 'maplibre-gl/dist/maplibre-gl.css'

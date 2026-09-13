@@ -1,11 +1,10 @@
-import React, { ChangeEvent, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ChangeEvent, ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
 import { StatisticCellRenderingInfo } from '../components/load-article'
 import { PointerArrow } from '../components/pointer-cell'
 import { computeComparisonWidthColumns, MaybeScroll } from '../components/scrollable'
 import { CellSpec, SuperHeaderSpec, TableContents, TopLeftCellSpec } from '../components/supertable'
 import { ColumnIdentifier, valueOnlyColumns } from '../components/table'
-import { Navigator } from '../navigation/Navigator'
 import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { useColors } from '../page_template/colors'
 import { useUnitSettings } from '../page_template/settings'
@@ -172,8 +171,6 @@ function renderTextCell(value: TableTextValues[number]): string {
 function Pagination({ set, view, count, data }: { set: StatSetter, view: View, count: number, data: StatData }): ReactNode {
     // next and previous buttons, along with the current range (editable to jump to a specific page)
     // also a button to change the number of items per page
-
-    const navContext = useContext(Navigator.Context)
 
     const changeStart = (newStart: number): void => {
         set({
