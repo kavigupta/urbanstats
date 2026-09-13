@@ -193,9 +193,12 @@ const editorSchema = z.object({
     mode: z.optional(z.enum(['uss', 'mapper'])),
 })
 
+// Without artifactId and hash, the viewer reads a local test run through the dev server instead of a CI artifact.
 const assetDiffViewerSchema = z.object({
-    artifactId: z.string(),
-    hash: z.string(),
+    artifactId: z.optional(z.string()),
+    hash: z.optional(z.string()),
+    // Comma-separated. Restricts the viewer to these tests.
+    tests: z.optional(z.string()),
     index: z.optional(z.coerce.number()),
 })
 
@@ -256,7 +259,7 @@ export type PageData =
         descriptor?: PageDescriptor // If descriptor is not present, we could not parse it
     }
     | { kind: 'initialLoad', descriptor: PageDescriptor }
-    | { kind: 'assetDiffViewer', artifactId: string, hash: string, index: number, panel: typeof AssetDiffViewerPanel }
+    | { kind: 'assetDiffViewer', artifactId?: string, hash?: string, tests?: string, index: number, panel: typeof AssetDiffViewerPanel }
     | { kind: 'embedPreview', target: string, ogPort: number, panel: typeof EmbedPreviewPanel }
 
 export function pageDescriptorFromURL(url: URL): PageDescriptor {
@@ -436,6 +439,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             searchParams = {
                 artifactId: pageDescriptor.artifactId,
                 hash: pageDescriptor.hash,
+                tests: pageDescriptor.tests,
                 index: pageDescriptor.index?.toString(),
             }
             break
