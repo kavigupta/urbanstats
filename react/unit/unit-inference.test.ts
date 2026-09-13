@@ -4,7 +4,7 @@ import test from 'node:test'
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { mapDataExpression, mapUSSFromString } from '../src/mapper/settings/map-uss'
 import { unitNamedByConstant } from '../src/urban-stats-script/constants/units'
-import { assignDeclaredMapUnit } from '../src/urban-stats-script/declared-units'
+import { constructDeclaredUnitsForMap } from '../src/urban-stats-script/declared-units'
 import { parseNoError } from '../src/urban-stats-script/parser'
 import { unitCheck } from '../src/urban-stats-script/unit-inference'
 import { StoredUnit } from '../src/utils/quantity'
@@ -29,7 +29,7 @@ function of(code: string): StoredUnit {
 function drawnAs(code: string, statedUnit: string): StoredUnit {
     const typeEnvironment = defaultTypeEnvironment('USA')
     const uss = mapUSSFromString(`cMap(data=${code}, scale=linearScale(), ramp=rampUridis, unit=${statedUnit})`)
-    const declaredUnits = assignDeclaredMapUnit(uss, typeEnvironment, unitNamedByConstant.get(statedUnit))
+    const declaredUnits = constructDeclaredUnitsForMap(uss, typeEnvironment, unitNamedByConstant.get(statedUnit))
     const data = mapDataExpression(unitCheck(uss, typeEnvironment, declaredUnits), typeEnvironment)
     assert.ok(data !== undefined)
     return data.worksOutTo

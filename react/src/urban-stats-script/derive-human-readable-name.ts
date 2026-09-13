@@ -7,7 +7,7 @@ import { asADifference, dimensionless, isPlainNumber, multiplies, nameOfStoredUn
 import { abbreviate, formatToSignificantFigures, separateNumber, trimTrailingZeros } from '../utils/text'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
-import { columnUnitsWrittenDown, mapUnitWrittenDown } from './declared-units'
+import { constructDeclaredUnitsForTableStatically, constructDeclaredUnitsForMapStatically } from './declared-units'
 import * as l from './literal-parser'
 import { noLocation } from './location'
 import { BinaryOperatorSymbol, expressionOperatorMap } from './operators'
@@ -253,7 +253,7 @@ export function mapLabelOf(factored: MapUSS<UnitsRead>, typeEnvironment: TypeEnv
 export function mapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
     // no run to ask, so the unit the map declares is read off the script
     return statedMapLabel(uss, typeEnvironment)
-        ?? mapLabelOf(unitCheck(uss, typeEnvironment, mapUnitWrittenDown(uss, typeEnvironment)), typeEnvironment)
+        ?? mapLabelOf(unitCheck(uss, typeEnvironment, constructDeclaredUnitsForMapStatically(uss, typeEnvironment)), typeEnvironment)
 }
 
 /** The title a table states outright, which running it would otherwise be the only way to read. */
@@ -318,7 +318,7 @@ export function tableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): Human
         return stated
     }
     // no run to ask, so the units each column declares are read off the script
-    const factored = unitCheck(uss, typeEnvironment, columnUnitsWrittenDown(uss, typeEnvironment))
+    const factored = unitCheck(uss, typeEnvironment, constructDeclaredUnitsForTableStatically(uss, typeEnvironment))
     const columns = tableColumnLabels(factored, typeEnvironment)
     return columns === undefined ? undefined : deriveTableLabel(uss, typeEnvironment, columns)
 }

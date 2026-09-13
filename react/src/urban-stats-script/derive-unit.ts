@@ -3,7 +3,7 @@ import { HumanReadableName } from '../utils/human-readable-element'
 import { StoredUnit } from '../utils/quantity'
 import { UnitType, unitTypeToStoredUnit } from '../utils/unit'
 
-import { assignDeclaredColumnUnits, assignDeclaredMapUnit } from './declared-units'
+import { constructDeclaredUnitsForTable, constructDeclaredUnitsForMap } from './declared-units'
 import { mapLabelOf, tableColumnNameOf } from './derive-human-readable-name'
 import { TypeEnvironment } from './types-values'
 import { unitCheck } from './unit-inference'
@@ -19,7 +19,7 @@ import { unitCheck } from './unit-inference'
  * The mapper and the link embed card both label a ramp, and they have to agree on this.
  */
 export function mapRampUnitAndLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, userProvided: UnitType | undefined): { unit: StoredUnit | undefined, label: HumanReadableName | undefined } {
-    const factored = unitCheck(uss, typeEnvironment, assignDeclaredMapUnit(uss, typeEnvironment, userProvided))
+    const factored = unitCheck(uss, typeEnvironment, constructDeclaredUnitsForMap(uss, typeEnvironment, userProvided))
     return {
         unit: userProvided === undefined
             ? mapDataExpression(factored, typeEnvironment)?.worksOutTo
@@ -30,7 +30,7 @@ export function mapRampUnitAndLabel(uss: MapUSS, typeEnvironment: TypeEnvironmen
 
 /** The same for one column of a table, whose name is what a map calls its label. */
 export function tableColumnUnitAndName(uss: MapUSS, typeEnvironment: TypeEnvironment, columnIndex: number, userProvided: UnitType | undefined): { unit: StoredUnit | undefined, name: HumanReadableName | undefined } {
-    const declared = assignDeclaredColumnUnits(uss, typeEnvironment, onlyColumn(columnIndex, userProvided))
+    const declared = constructDeclaredUnitsForTable(uss, typeEnvironment, onlyColumn(columnIndex, userProvided))
     const factored = unitCheck(uss, typeEnvironment, declared)
     return {
         unit: userProvided === undefined
