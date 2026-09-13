@@ -1,0 +1,27 @@
+name = "dev-totp"
+main = "src/index.ts"
+compatibility_date = "2026-08-01"
+
+# A custom domain rather than a workers.dev subdomain, so the endpoint's URL is a constant the tests
+# can carry rather than an account-specific hostname. Deploying creates the hostname's DNS record,
+# which a path route on an unresolvable hostname would not; the Worker then owns every path on it,
+# hence the path check in index.ts.
+#
+# Must stay above the first [table] header, or TOML nests it inside that table and wrangler
+# silently deploys no routes.
+routes = [
+  { pattern = "dev-totp.urbanstats.org", custom_domain = true },
+]
+
+# SQLite-backed so it runs on the free plan. The cursor is one number, read and written under
+# blockConcurrencyWhile; nothing here needs SQL.
+[[durable_objects.bindings]]
+name = "TOTP_SLOTS"
+class_name = "TOTPSlots"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["TOTPSlots"]
+
+[observability]
+enabled = true
