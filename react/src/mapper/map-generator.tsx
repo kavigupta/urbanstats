@@ -4,7 +4,8 @@ import { MapInstance, MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
 import { Basemap as BasemapComponent, CommonMaplibreMap, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
-import { screencapElement, ScreenshotContext, ScreenshotContextType, withScreenshotMode } from '../components/screenshot'
+import { tileAttribution } from '../components/map-common-utils'
+import { bannerCreditBottom, bannerCreditSize, bannerLockupStart, screencapElement, ScreenshotContext, ScreenshotContextType, withScreenshotMode } from '../components/screenshot'
 import { shapesByName } from '../consolidated-shapes'
 import { boundingBox } from '../map-partition'
 import { RelativeLoader } from '../navigation/loading'
@@ -333,6 +334,15 @@ async function mapImageExport(elementCanvas: HTMLCanvasElement, basemap: Basemap
         bannerWidth,
         bannerHeight,
     )
+
+    if (basemap.type !== 'none') {
+        ctx.fillStyle = colors.ordinalTextColor
+        ctx.font = `${bannerHeight * bannerCreditSize}px Jost, sans-serif`
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'alphabetic'
+        const lockupLeft = resultCanvas.width - bannerWidth * (1 - bannerLockupStart)
+        ctx.fillText(tileAttribution, lockupLeft / 2, resultCanvas.height - bannerHeight * bannerCreditBottom)
+    }
 
     debugLog('mapImageExport: done compositing')
     return resultCanvas
