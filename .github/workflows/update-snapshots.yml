@@ -1,4 +1,4 @@
-name: Update Reference Assets
+name: Update Reference Snapshots
 on:
   issue_comment:
     types: [created]
@@ -7,9 +7,10 @@ env:
   GITHUB_TOKEN: ${{ secrets.FINE_GRAINED_TOKEN_FOR_UPDATE_SCREENSHOTS }}
 
 jobs:
-  update-assets:
-    # !updateScreenshots is what the command used to be called, and older comments still say it.
-    if: github.event.issue.pull_request && (contains(github.event.comment.body, '!updateAssets') || contains(github.event.comment.body, '!updateScreenshots'))
+  update-snapshots:
+    # !updateAssets and !updateScreenshots are what the command used to be called, and older
+    # comments still say them.
+    if: github.event.issue.pull_request && (contains(github.event.comment.body, '!updateSnapshots') || contains(github.event.comment.body, '!updateAssets') || contains(github.event.comment.body, '!updateScreenshots'))
     runs-on: ubuntu-22.04
     permissions:
       contents: write
@@ -72,7 +73,7 @@ jobs:
               per_page: 100
             });
 
-            // Re-running one job bumps the run's attempt without re-running merge-assets, so
+            // Re-running one job bumps the run's attempt without re-running merge-snapshots, so
             // the newest combined artifact isn't necessarily the current attempt's.
             const artifact = artifacts
               .flatMap(candidate => {
@@ -95,29 +96,29 @@ jobs:
 
             fs.writeFileSync('combined.zip', Buffer.from(download.data));
 
-      - name: Extract and copy assets
+      - name: Extract and copy snapshots
         run: |
           # Extract the artifact
           unzip combined.zip -d combined_temp/
-          mv combined_temp/changed_assets changed_assets_temp
+          mv combined_temp/changed_snapshots changed_snapshots_temp
 
-          # Check if there are any assets to copy
-          if [ ! -d "changed_assets_temp" ] || [ -z "$(find changed_assets_temp -type f ! -name '*.error.png' 2>/dev/null)" ]; then
-            echo "No asset files found in artifact"
+          # Check if there are any snapshots to copy
+          if [ ! -d "changed_snapshots_temp" ] || [ -z "$(find changed_snapshots_temp -type f ! -name '*.error.png' 2>/dev/null)" ]; then
+            echo "No snapshot files found in artifact"
             exit 0
           fi
 
           # Create reference directory if it doesn't exist
-          mkdir -p reference_test_assets
+          mkdir -p reference_test_snapshots
 
-          # Copy all asset files recursively, preserving directory structure
-          find changed_assets_temp -type f ! -name "*.error.png" -exec sh -c '         for file do
-              # Get relative path from changed_assets_temp
-              rel_path="${file#changed_assets_temp/}"
-              # Create directory structure in reference_test_assets
-              mkdir -p "reference_test_assets/$(dirname "$rel_path")"
+          # Copy all snapshot files recursively, preserving directory structure
+          find changed_snapshots_temp -type f ! -name "*.error.png" -exec sh -c '         for file do
+              # Get relative path from changed_snapshots_temp
+              rel_path="${file#changed_snapshots_temp/}"
+              # Create directory structure in reference_test_snapshots
+              mkdir -p "reference_test_snapshots/$(dirname "$rel_path")"
               # Copy the file
-              cp "$file" "reference_test_assets/$rel_path"
+              cp "$file" "reference_test_snapshots/$rel_path"
               echo "Copied: $rel_path"
             done
           ' _ {} +
@@ -125,11 +126,11 @@ jobs:
       - name: Check for changes
         id: changes
         run: |
-          if [ -n "$(git status --porcelain reference_test_assets/)" ]; then
+          if [ -n "$(git status --porcelain reference_test_snapshots/)" ]; then
             echo "has-changes=true" >> $GITHUB_OUTPUT
           else
             echo "has-changes=false" >> $GITHUB_OUTPUT
-            echo "No changes detected in reference assets"
+            echo "No changes detected in reference snapshots"
           fi
 
       - name: Commit and push changes
@@ -138,6 +139,6 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
-          git add reference_test_assets/
-          git commit -m "Update reference assets from !updateAssets command"
+          git add reference_test_snapshots/
+          git commit -m "Update reference snapshots from !updateSnapshots command"
           git push

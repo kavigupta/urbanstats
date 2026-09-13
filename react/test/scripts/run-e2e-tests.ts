@@ -13,7 +13,7 @@ import { startProxy } from './ci_proxy'
 import { github } from './github-utils'
 import { runE2eTestsDocker } from './run-e2e-tests-docker'
 import { testCafePorts } from './testcafe-ports'
-import { booleanArgument, changedAssets, getTOTPWait, setTOTPWait, testFile, TestHistory, TestResult, testsFromGlobs, updateReferences, writeChangedAssetsManifest } from './util'
+import { booleanArgument, changedSnapshots, getTOTPWait, setTOTPWait, testFile, TestHistory, TestResult, testsFromGlobs, updateReferences, writeChangedSnapshotsManifest } from './util'
 
 const options = argumentParser({
     options: z.object({
@@ -23,7 +23,7 @@ const options = argumentParser({
         headless: booleanArgument({ defaultValue: true }),
         video: booleanArgument({ defaultValue: false }),
         compare: booleanArgument({ defaultValue: false }),
-        // Overwrite the reference assets with what this run produced, for the tests that passed.
+        // Overwrite the reference snapshots with what this run produced, for the tests that passed.
         write: booleanArgument({ defaultValue: false }),
         timeLimitSeconds: z.optional(z.coerce.number().int()), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
         tries: z.optional(z.coerce.number().int()).default(1), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
@@ -124,11 +124,11 @@ testHistory.forEach(printResult)
 await fs.mkdir('test_histories', { recursive: true })
 await fs.writeFile(`test_histories/${process.env.GITHUB_ACTIONS ? crypto.randomUUID() : 'history'}.json`, JSON.stringify(testHistory))
 
-const testsWithChangedAssets = tests.filter(test => changedAssets(test).length > 0)
+const testsWithChangedSnapshots = tests.filter(test => changedSnapshots(test).length > 0)
 
-if (testsWithChangedAssets.length > 0) {
-    const url = `http://localhost:${port()}/asset-diff-viewer.html?tests=${encodeURIComponent(testsWithChangedAssets.join(','))}`
-    console.warn(chalkTemplate`{yellow Assets changed. View the diffs at ${url}}`)
+if (testsWithChangedSnapshots.length > 0) {
+    const url = `http://localhost:${port()}/snapshot-diff-viewer.html?tests=${encodeURIComponent(testsWithChangedSnapshots.join(','))}`
+    console.warn(chalkTemplate`{yellow Snapshots changed. View the diffs at ${url}}`)
 }
 
 if (testHistory.some(({ result }) => result.status !== 'success')) {
@@ -185,7 +185,7 @@ async function runTest(test: string): Promise<TestResult> {
         ].join(' ')}`])
         // Explicitly interpolate test here so we don't add the error to the directory
         // Pattern is only used for take on fail, we make our own pattern otherwise
-        .screenshots(`test_assets/${test}`, true, `\${BROWSER}/\${TEST}.error.png`)
+        .screenshots(`test_snapshots/${test}`, true, `\${BROWSER}/\${TEST}.error.png`)
 
     if (options.video) {
         runner = runner.video(`videos/${test}`, {
@@ -194,7 +194,7 @@ async function runTest(test: string): Promise<TestResult> {
     }
 
     // Remove artifacts for test
-    await Promise.all(globSync(`{test_assets,delta,videos,changed_assets}/${test}/**`, { nodir: true }).map(file => fs.rm(file)))
+    await Promise.all(globSync(`{test_snapshots,delta,videos,changed_snapshots}/${test}/**`, { nodir: true }).map(file => fs.rm(file)))
 
     // Reset TOTP wait
     await setTOTPWait(test, 0)
@@ -213,19 +213,19 @@ async function runTest(test: string): Promise<TestResult> {
 
     const result = await withTimeout(runningTests, async () => timeLimitSeconds + await getTOTPWait(test))
 
-    const assetsPassed = await maybeCompare(test, result.status === 'ran' && result.assertionsPassed)
+    const snapshotsPassed = await maybeCompare(test, result.status === 'ran' && result.assertionsPassed)
 
     if (result.status === 'timeout') {
         return { ...result, timeLimitSeconds }
     }
 
-    // A test that fails stops early, so its assets aren't comparable
+    // A test that fails stops early, so its snapshots aren't comparable
     if (!result.assertionsPassed) {
         return { status: 'failure', duration: result.duration, reason: 'assertions' }
     }
 
-    if (!assetsPassed) {
-        return { status: 'failure', duration: result.duration, reason: 'assets' }
+    if (!snapshotsPassed) {
+        return { status: 'failure', duration: result.duration, reason: 'snapshots' }
     }
 
     return { status: 'success', duration: result.duration }
@@ -235,26 +235,26 @@ async function maybeCompare(test: string, success: boolean): Promise<boolean> {
     if (options.compare || options.write) {
         // If there were no failures, delete any generated .error.png so they don't set off the comparison
         if (success) {
-            await Promise.all(globSync(`test_assets/${test}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
+            await Promise.all(globSync(`test_snapshots/${test}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
         }
 
-        const assetComparison = await execa('python', ['tests/check_assets.py', `--test=${test}`], {
+        const snapshotComparison = await execa('python', ['tests/check_snapshots.py', `--test=${test}`], {
             cwd: '..',
             stdio: 'inherit',
             reject: false,
         })
 
         if (options.write) {
-            // A test that stopped early only produced some of its assets
+            // A test that stopped early only produced some of its snapshots
             if (success) {
                 await updateReferences(test)
             }
             return true
         }
 
-        await writeChangedAssetsManifest(test)
+        await writeChangedSnapshotsManifest(test)
 
-        if (assetComparison.failed) {
+        if (snapshotComparison.failed) {
             return false
         }
     }

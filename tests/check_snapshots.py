@@ -170,7 +170,7 @@ def comparator(path):
     raise ValueError(f"No comparator for {path}")
 
 
-def compare_asset(reference, actual, delta_path, changed_path):
+def compare_snapshot(reference, actual, delta_path, changed_path):
     if comparator(reference)(reference, actual, delta_path):
         return True
     print(f"{reference} and {actual} are different")
@@ -207,7 +207,7 @@ def compare_all(reference, actual, delta, changed):
                 print(f"Expected actual file {actual_path} not found")
                 continue
             delta_path = os.path.join(delta, relative)
-            errors += not compare_asset(
+            errors += not compare_snapshot(
                 reference_path, actual_path, delta_path, changed_path
             )
     if errors:
@@ -225,15 +225,15 @@ if __name__ == "__main__":
     args = p.parse_args()
     if args.test:
         compare_all(
-            reference=f"reference_test_assets/{args.test}",
-            actual=f"react/test_assets/{args.test}",
+            reference=f"reference_test_snapshots/{args.test}",
+            actual=f"react/test_snapshots/{args.test}",
             delta=f"react/delta/{args.test}",
-            changed=f"react/changed_assets/{args.test}",
+            changed=f"react/changed_snapshots/{args.test}",
         )
     else:
         compare_all(
-            reference="reference_test_assets",
-            actual="react/test_assets",
+            reference="reference_test_snapshots",
+            actual="react/test_snapshots",
             delta="react/delta",
-            changed="react/changed_assets",
+            changed="react/changed_snapshots",
         )
