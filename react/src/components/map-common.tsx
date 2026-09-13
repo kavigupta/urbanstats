@@ -73,21 +73,19 @@ export function MapAttribution({ children }: { children?: ReactNode }): ReactNod
     const colors = useColors()
     // Exported PNGs carry the credit on their footer banner instead
     const inScreenshot = useScreenshotMode()
-    if (inScreenshot && children === undefined) {
+    if (inScreenshot) {
         return null
     }
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1em', fontSize: '0.75em', color: colors.ordinalTextColor, marginTop: '0.25em' }}>
             <div>{children}</div>
-            <div className="map-credit">
-                {inScreenshot
-                    ? ''
-                    : tileAttributionParts.map((part, i) => (
-                        <React.Fragment key={part.href}>
-                            {i > 0 ? ' · ' : ''}
-                            <a href={part.href} target="_blank" rel="noopener noreferrer">{part.text}</a>
-                        </React.Fragment>
-                    ))}
+            <div className="map-credit" style={{ textAlign: 'right' }}>
+                {tileAttributionParts.map((part, i) => (
+                    <React.Fragment key={part.href}>
+                        {i > 0 ? ' · ' : ''}
+                        <a href={part.href} target="_blank" rel="noopener noreferrer">{part.text}</a>
+                    </React.Fragment>
+                ))}
             </div>
         </div>
     )
