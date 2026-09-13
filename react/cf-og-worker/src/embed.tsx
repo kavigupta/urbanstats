@@ -6,6 +6,7 @@
 import React, { ReactElement, ReactNode, cloneElement, isValidElement } from 'react'
 
 import { percentileSuffix } from '../../src/components/display-stats'
+import { tileAttribution } from '../../src/components/map-common-utils'
 import { renderQuantity } from '../../src/components/unit-display'
 import flagDimensions from '../../src/data/flag_dimensions'
 import { canonicalWidth } from '../../src/mapper/map-rendering'
@@ -85,9 +86,6 @@ const colors = {
 // they would pull maplibre in.
 const insetBorderWidth = 2
 const mapBorderWidth = 1
-
-// openfreemap's credit line, as its TileJSON states it.
-const tileAttribution = 'OpenFreeMap © OpenMapTiles · Data from OpenStreetMap'
 
 const logoImage = `data:image/svg+xml;utf8,${encodeURIComponent(logoSvg)}`
 
