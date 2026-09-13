@@ -72,14 +72,14 @@ export default env => ({
     devServer: {
         static: [
             { directory: env.directory },
-            // What the asset diff viewer reads when it's pointed at a local test run rather than a CI artifact.
+            // What the snapshot diff viewer reads when it's pointed at a local test run rather than a CI artifact.
             ...Object.entries({
-                reference: path.resolve(import.meta.dirname, '..', 'reference_test_assets'),
-                changed: path.resolve(import.meta.dirname, 'changed_assets'),
+                reference: path.resolve(import.meta.dirname, '..', 'reference_test_snapshots'),
+                changed: path.resolve(import.meta.dirname, 'changed_snapshots'),
                 delta: path.resolve(import.meta.dirname, 'delta'),
             }).map(([name, directory]) => ({
                 directory,
-                publicPath: `/local-assets/${name}`,
+                publicPath: `/local-snapshots/${name}`,
                 // A test run writing these shouldn't reload whatever page is open.
                 watch: false,
             })),

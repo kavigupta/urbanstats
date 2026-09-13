@@ -16,11 +16,11 @@ def main():
     act = get_action(pr)
     artifacts = get_artifacts(act)["artifacts"]
 
-    # The per-shard artifacts are merged into this one by the merge-assets job, which
-    # uploads nothing when no asset changed.
+    # The per-shard artifacts are merged into this one by the merge-snapshots job, which
+    # uploads nothing when no snapshot changed.
     combined_name = f"combined-{act['run_attempt']}"
     if not any(artifact["name"] == combined_name for artifact in artifacts):
-        print("No assets changed in this run")
+        print("No snapshots changed in this run")
         return
 
     delta_location = os.path.expanduser("~/Downloads/temp/delta")
@@ -31,8 +31,8 @@ def main():
         unzip_artifact(artifacts, combined_name, combined)
         copy_tree(os.path.join(combined, "delta"), delta_location)
         copy_tree(
-            os.path.join(combined, "changed_assets"),
-            os.path.join(REPO_ROOT, "reference_test_assets"),
+            os.path.join(combined, "changed_snapshots"),
+            os.path.join(REPO_ROOT, "reference_test_snapshots"),
         )
 
     # print the location of the delta as a link

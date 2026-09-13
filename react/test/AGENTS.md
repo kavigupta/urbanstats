@@ -22,10 +22,10 @@ That's the whole thing. In particular:
   shell doesn't expand it first. To narrow further, use `test.only` inside the test file.
 - Don't run the whole suite. The runner works through the matched files one at a
   time, whereas CI gives each file its own job — leave it to CI.
-- **A run that finds changed assets prints a link to the asset diff viewer**, covering only the
+- **A run that finds changed snapshots prints a link to the snapshot diff viewer**, covering only the
   tests it ran. The page needs the dev server up, since that is what serves the local
-  `changed_assets`, `delta` and `reference_test_assets`. To accept what the run produced without
-  rerunning it: `npm run update-assets -- '--test=test/mapper-ux_x1.test.ts'`.
+  `changed_snapshots`, `delta` and `reference_test_snapshots`. To accept what the run produced without
+  rerunning it: `npm run update-snapshots -- '--test=test/mapper-ux_x1.test.ts'`.
 - **Redirect to a file, as above, rather than piping through `head`, `tail`, or `grep`.**
   Runs take minutes and produce a lot of log, and a run you truncate is a run you have to
   do again. With the whole thing on disk, narrowing down costs nothing:

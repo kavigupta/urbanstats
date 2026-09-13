@@ -7,7 +7,7 @@ import { LongLoad } from '../navigation/loading'
 import { DefaultMap } from '../utils/DefaultMap'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
-/** Which run's assets to show, and which tests of it. Everything but the index the viewer navigates within. */
+/** Which run's snapshots to show, and which tests of it. Everything but the index the viewer navigates within. */
 interface Source { artifactId?: string, hash?: string, tests?: string }
 
 interface Item {
@@ -19,7 +19,7 @@ interface Item {
     delta?: Delayed
 }
 
-export function AssetDiffViewerPanel({ hash, artifactId, tests, index }: Source & { index: number }): ReactNode {
+export function SnapshotDiffViewerPanel({ hash, artifactId, tests, index }: Source & { index: number }): ReactNode {
     const source = useMemo(() => ({ artifactId, hash, tests }), [artifactId, hash, tests])
     const items = useMemo(
         () => artifactId === undefined || hash === undefined
@@ -90,7 +90,7 @@ export function AssetDiffViewerPanel({ hash, artifactId, tests, index }: Source 
     }
 }
 
-pre.asset-text {
+pre.snapshot-text {
     margin: 0;
     overflow: auto;
     max-height: 80vh;
@@ -113,7 +113,7 @@ function splitTests(tests: string | undefined): string[] | undefined {
 async function artifactItems(artifactId: string, hash: string, tests: string[] | undefined): Promise<Item[]> {
     const entries = (await (zipReader(artifactId)).getEntries()).filter(e => !e.directory)
     return entries
-        .map(entry => ({ entry, match: /changed_assets\/([^\/]+)\/([^\/]+)\/(.+)$/.exec(entry.filename) }))
+        .map(entry => ({ entry, match: /changed_snapshots\/([^\/]+)\/([^\/]+)\/(.+)$/.exec(entry.filename) }))
         .filter((item): item is { entry: FileEntry, match: RegExpExecArray } => item.match !== null)
         .filter(({ match: [, test] }) => tests === undefined || tests.includes(test))
         .sort((a, b) => a.entry.filename.localeCompare(b.entry.filename))
@@ -123,7 +123,7 @@ async function artifactItems(artifactId: string, hash: string, tests: string[] |
                 test,
                 browser,
                 file,
-                referenceUrl: encodeURI(`https://raw.githubusercontent.com/kavigupta/urbanstats/${hash}/reference_test_assets/${test}/${browser}/${file}`),
+                referenceUrl: encodeURI(`https://raw.githubusercontent.com/kavigupta/urbanstats/${hash}/reference_test_snapshots/${test}/${browser}/${file}`),
                 changed: showChanged(file, delta !== undefined) ? nodeFromEntry(entry) : undefined,
                 delta: delta === undefined ? undefined : nodeFromEntry(delta),
             }
@@ -133,8 +133,8 @@ async function artifactItems(artifactId: string, hash: string, tests: string[] |
 const manifestSchema = z.object({ changed: z.array(z.string()), delta: z.array(z.string()) })
 
 /**
- * What `writeChangedAssetsManifest` recorded of a local run, served by the dev server under
- * /local-assets. A test whose manifest is missing changed nothing.
+ * What `writeChangedSnapshotsManifest` recorded of a local run, served by the dev server under
+ * /local-snapshots. A test whose manifest is missing changed nothing.
  */
 async function localItems(tests: string[] | undefined): Promise<Item[]> {
     if (tests === undefined) {
@@ -164,10 +164,10 @@ async function localItems(tests: string[] | undefined): Promise<Item[]> {
 }
 
 function localUrl(tree: 'reference' | 'changed' | 'delta', test: string, path: string): string {
-    return encodeURI(`/local-assets/${tree}/${test}/${path}`)
+    return encodeURI(`/local-snapshots/${tree}/${test}/${path}`)
 }
 
-// A changed text asset says nothing its diff doesn't, and can run to tens of megabytes
+// A changed text snapshot says nothing its diff doesn't, and can run to tens of megabytes
 function showChanged(file: string, hasDelta: boolean): boolean {
     return isImage(file) || !hasDelta
 }
@@ -179,12 +179,12 @@ function Entries({ items, index, source }: { items: Item[], index: number, sourc
         const handleKeyDown = (event: KeyboardEvent): void => {
             if (event.key === 'ArrowLeft') {
                 if (index > 0) {
-                    void navigator.navigate({ kind: 'assetDiffViewer', ...source, index: index - 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
+                    void navigator.navigate({ kind: 'snapshotDiffViewer', ...source, index: index - 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
                 }
             }
             else if (event.key === 'ArrowRight') {
                 if (index < items.length - 1) {
-                    void navigator.navigate({ kind: 'assetDiffViewer', ...source, index: index + 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
+                    void navigator.navigate({ kind: 'snapshotDiffViewer', ...source, index: index + 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
                 }
             }
         }
@@ -230,13 +230,13 @@ function Diff({ test, file, referenceUrl, delta, changed, index, total, navigato
 
     const handleBack = (): void => {
         if (canGoBack) {
-            void navigator.navigate({ kind: 'assetDiffViewer', ...source, index: index - 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
+            void navigator.navigate({ kind: 'snapshotDiffViewer', ...source, index: index - 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
         }
     }
 
     const handleForward = (): void => {
         if (canGoForward) {
-            void navigator.navigate({ kind: 'assetDiffViewer', ...source, index: index + 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
+            void navigator.navigate({ kind: 'snapshotDiffViewer', ...source, index: index + 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
         }
     }
 
@@ -461,7 +461,7 @@ function textNode(text: string, colorize: boolean): ReactNode {
     const lines = text.split('\n')
     const shown = lines.slice(0, maxTextLines)
     return (
-        <pre className="asset-text">
+        <pre className="snapshot-text">
             {shown.map((line, lineNumber) => (
                 <div key={lineNumber} className={colorize ? diffLineClass(line) : undefined}>
                     {line === '' ? ' ' : line}

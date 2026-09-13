@@ -291,18 +291,18 @@ export async function waitForDownload(t: TestController, laterThan: number, suff
     }
 }
 
-/** Puts a file the browser never wrote in front of the asset comparison. */
-function saveAsset(t: TestController, relativePath: string, contents: Buffer | string): void {
+/** Puts a file the browser never wrote in front of the snapshot comparison. */
+function saveSnapshot(t: TestController, relativePath: string, contents: Buffer | string): void {
     // @ts-expect-error -- TestCafe doesn't have a public API for the screenshots folder
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- TestCafe doesn't have a public API for the screenshots folder
-    const assetsFolder: string = t.testRun.opts.screenshots.path ?? (() => { throw new Error() })()
-    const dest = path.join(assetsFolder, relativePath)
+    const snapshotsFolder: string = t.testRun.opts.screenshots.path ?? (() => { throw new Error() })()
+    const dest = path.join(snapshotsFolder, relativePath)
     fs.mkdirSync(path.dirname(dest), { recursive: true })
     fs.writeFileSync(dest, contents)
 }
 
 export function saveImage(t: TestController, image: Buffer): void {
-    saveAsset(t, screenshotPath(t), image)
+    saveSnapshot(t, screenshotPath(t), image)
 }
 
 async function copyMostRecentFile(t: TestController, laterThan: number, suffix: string): Promise<void> {
@@ -310,7 +310,7 @@ async function copyMostRecentFile(t: TestController, laterThan: number, suffix: 
     saveImage(t, fs.readFileSync(mrdp))
 }
 
-/** Compared against the reference of the same name by `tests/check_assets.py`. */
+/** Compared against the reference of the same name by `tests/check_snapshots.py`. */
 export function saveString(t: TestController, string: string, name: string, format: 'json' | 'xml' | 'txt' | 'csv', gzip = true): void {
     switch (format) {
         case 'json':
@@ -324,7 +324,7 @@ export function saveString(t: TestController, string: string, name: string, form
             break
     }
 
-    saveAsset(t, `${t.browser.name}/${name}.${format}${gzip ? '.gz' : ''}`, gzip ? gzipSync(string) : string)
+    saveSnapshot(t, `${t.browser.name}/${name}.${format}${gzip ? '.gz' : ''}`, gzip ? gzipSync(string) : string)
 }
 
 export async function safeClearLocalStorage(t: TestController): Promise<void> {
