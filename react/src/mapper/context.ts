@@ -93,8 +93,9 @@ export const defaultTypeEnvironment = (universe: Universe | Universe[] | undefin
     te.set('geoName', {
         type: { type: 'vector', elementType: { type: 'string' } },
         documentation: {
-            humanReadableName: 'Default Universe Geography Names',
+            humanReadableName: 'Name',
             category: 'mapper',
+            isDefault: true,
             longDescription: 'A vector containing the names of geographic units for the current universe. Each element represents a geographic unit (e.g., census block, county) and can be used for labeling and identification purposes in mapping and spatial analysis.',
         },
     })

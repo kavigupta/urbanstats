@@ -1,7 +1,7 @@
 node_modules
-test_assets
+test_snapshots
 delta
-changed_assets
+changed_snapshots
 videos
 .eslintcache
 coverage

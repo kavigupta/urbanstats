@@ -383,6 +383,8 @@ export function AutoUXEditor(props: {
     // Rendered on the header's line: the handle hangs outside to the left, the button sits to the right
     dragHandle?: ReactNode
     removeButton?: ReactNode
+    // Keeps a string constant one line tall, for a value that shares its row with other controls
+    singleLine?: boolean
 }): ReactNode {
     const ussLoc = locationOf(props.uss).start
     if (ussLoc.block.type !== 'single' || ussLoc.block.ident !== props.blockIdent) {
@@ -586,6 +588,7 @@ export function AutoUXEditor(props: {
                         type={props.type}
                         blockIdent={props.blockIdent}
                         errors={doesConsume === 'consumes-errors' ? [] : props.errors}
+                        singleLine={props.singleLine}
                     />
                 </div>
 

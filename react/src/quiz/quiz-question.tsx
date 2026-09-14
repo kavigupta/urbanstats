@@ -43,10 +43,7 @@ function Map({ longname, color, attribution }: MapProps): ReactNode {
     return (
         <div style={{ position: 'relative' }}>
             <RelativeLoader loading={firstFeatureWaiting} />
-            <CommonMaplibreMap
-                ref={setMapRef}
-                attributionControl={false}
-            >
+            <CommonMaplibreMap ref={setMapRef}>
                 <PolygonFeatureCollection features={readyFeatures} clickable={false} />
                 <FullscreenControl position="top-left" />
                 { attribution && <CustomAttributionControlComponent startShowingAttribution={false} /> }

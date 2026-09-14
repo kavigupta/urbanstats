@@ -7,14 +7,13 @@ import type { PageDescriptor } from '../navigation/PageDescriptor'
 import { StatName } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 import { numberColumnValues, orderCells, orderNonNan, Table, tableType } from '../urban-stats-script/constants/table'
-import { deriveTableColumnLabel, deriveTableLabel, tableLabel } from '../urban-stats-script/derive-human-readable-name'
-import { deriveTableColumnUnit } from '../urban-stats-script/derive-unit'
+import { deriveTableLabel, tableLabel } from '../urban-stats-script/derive-human-readable-name'
+import { tableColumnUnitAndName } from '../urban-stats-script/derive-unit'
 import { unparse } from '../urban-stats-script/parser'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { reifyString } from '../utils/human-readable-name'
 import { UnitSettings } from '../utils/quantity'
-import { unitTypeToStoredUnit } from '../utils/unit'
 
 import { StatColumn, StatData, Statistic, StatSettings, View } from './types'
 
@@ -90,14 +89,13 @@ export function statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn }
     warn: (message: string) => void
 }): StatData {
     const columns = table.columns.map((column, index): StatColumn => {
-        let name = column.name ?? deriveTableColumnLabel(mapUSS, typeEnvironment, index)
+        const written = tableColumnUnitAndName(mapUSS, typeEnvironment, index, column.unit)
+        let name = column.name ?? written.name
         if (name === undefined) {
             warn(`Name could not be derived for column ${index}, please pass name="<your name here>" to column(...)`)
             name = '[Unnamed Column]'
         }
-        const unit = column.unit === undefined
-            ? deriveTableColumnUnit(mapUSS, typeEnvironment, index)
-            : unitTypeToStoredUnit(column.unit)
+        const unit = written.unit
         const numbers = numberColumnValues(column.values)
         if (numbers === undefined || column.populationPercentiles === undefined) {
             return { value: column.values as string[] | boolean[], name, unit }

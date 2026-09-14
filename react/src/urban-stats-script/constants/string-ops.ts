@@ -23,6 +23,8 @@ function documented(
     humanReadableName: HumanReadableName,
     longDescription: HumanReadableName,
     namedArgs: USSFunctionType['namedArgs'] = {},
+    // Every two-argument function here compares its second argument against its first, so it reads between them
+    infix: HumanReadableName = humanReadableName,
 ): [string, USSValue] {
     return [name, {
         type: {
@@ -36,6 +38,7 @@ function documented(
             humanReadableName,
             category: 'string',
             longDescription,
+            infix: argCount === 2 ? infix : undefined,
         },
     }] satisfies [string, USSValue]
 }
@@ -149,7 +152,7 @@ export const stringConstants: [string, USSValue][] = [
         }
         const maxErrors = Math.max(Math.trunc(namedArgs.maxErrors as number), 0)
         return bitap(value, toBitapNeedle(token), maxErrors) <= maxErrors
-    }, 'fuzzy match', hre`Returns true if the second string occurs in the first allowing up to \`maxErrors\` single-character insertions, deletions or substitutions, so that \`fuzzyMatch(geoName, "pittsburg")\` finds Pittsburgh. The string looked for is limited to 31 characters. ${ignoresCase}`, fuzzyArgs),
+    }, 'fuzzy match', hre`Returns true if the second string occurs in the first allowing up to \`maxErrors\` single-character insertions, deletions or substitutions, so that \`fuzzyMatch(geoName, "pittsburg")\` finds Pittsburgh. The string looked for is limited to 31 characters. ${ignoresCase}`, fuzzyArgs, 'fuzzy matches'),
     documented('normalizeString', 1, 'string', (posArgs) => {
         return normalize(posArgs[0] as string)
     }, 'normalize', hre`Folds a string the way the site\'s search does, so that a comparison ignores what search ignores: it lowercases, strips accents from letters, removes \`,\`, \`(\`, \`)\`, \`[\` and \`]\`, and turns \`-\` into a space. The comparing functions do this to their arguments already; this is for seeing what they see, or for feeding \`matchesRegex\`.`),
