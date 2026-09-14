@@ -1,7 +1,9 @@
 /*
  * The slice of the Workers runtime this Worker touches, plus the module types wrangler's bundler
- * gives the bundled assets. Hand-written rather than taken from @cloudflare/workers-types, which
- * redeclares every global it shares with the DOM lib that the site's sources are typed against.
+ * gives the bundled assets. A global script rather than a module, so that the `declare module`
+ * wildcards and the `caches` augmentation below apply -- hence inline `import(...)` for the types
+ * taken from @cloudflare/workers-types, whose ambient entry point would redeclare every global it
+ * shares with the DOM lib that the site's sources are typed against.
  * Names are Worker-prefixed because these land in the app's global scope too.
  */
 
@@ -10,25 +12,19 @@ interface WorkerEnv {
     SITE_ORIGIN: string
 }
 
-interface WorkerContext {
-    waitUntil: (promise: Promise<unknown>) => void
-}
+type WorkerContext = import('@cloudflare/workers-types').ExecutionContext
 
 // The Workers-only shared cache. Everything else about `caches` matches the DOM's CacheStorage.
 interface CacheStorage {
     default: Cache
 }
 
-interface RewriterElement {
-    getAttribute: (name: string) => string | null
-    setAttribute: (name: string, value: string) => void
-    setInnerContent: (content: string) => void
-}
+type RewriterElement = import('@cloudflare/workers-types').Element
 
-interface RewriterHandler {
-    element: (element: RewriterElement) => void
-}
+type RewriterHandler = import('@cloudflare/workers-types').HTMLRewriterElementContentHandlers
 
+// Hand-written where the runtime's own HTMLRewriter is not: its `transform` takes and returns the
+// Workers Response rather than the DOM one the rest of this Worker is checked against.
 declare class HTMLRewriter {
     on: (selector: string, handler: RewriterHandler) => HTMLRewriter
     transform: (response: Response) => Response
