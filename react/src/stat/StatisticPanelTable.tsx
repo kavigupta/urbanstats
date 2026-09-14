@@ -8,7 +8,7 @@ import { ColumnIdentifier, valueOnlyColumns } from '../components/table'
 import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { useColors } from '../page_template/colors'
 import { useUnitSettings } from '../page_template/settings'
-import { useDefinedUniverse } from '../universe'
+import { useUniverse } from '../universe'
 import { TableTextValues } from '../urban-stats-script/constants/table'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { reifyReact, reifyString } from '../utils/human-readable-name'
@@ -43,9 +43,11 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
 
     const columnWidth = (100 - widthLeftHeader) / (data.table.length === 0 ? 1 : data.table.length)
 
-    const currentUniverse = useDefinedUniverse()
+    const currentUniverse = useUniverse()
 
     const onlyColumns: ColumnIdentifier[] = data.hideOrdinalsPercentiles ? valueOnlyColumns : ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
+
+    const { geographyKind } = stat.geographies[0]
 
     const allColumnRows: StatisticCellRenderingInfo[][] = data.table.map((col) => {
         if (col.ordinal === undefined) {
@@ -54,7 +56,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
                 kind: 'text',
                 statval: renderTextCell(values[actualRowIdx]),
                 statname: col.name,
-                articleType: stat.articleType,
+                articleType: geographyKind,
             } satisfies StatisticCellRenderingInfo))
         }
         const { value, ordinal, populationPercentile } = col
@@ -64,7 +66,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
             ordinal: ordinal[actualRowIdx],
             percentileByPopulation: populationPercentile[actualRowIdx],
             statname: col.name,
-            articleType: stat.articleType,
+            articleType: geographyKind,
             totalCountInClass: data.totalCountInClass,
             totalCountOverall: data.totalCountOverall,
             overallFirstLast: { isFirst: false, isLast: false },

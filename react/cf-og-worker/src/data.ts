@@ -5,7 +5,6 @@
  */
 import { ArticleStatisticRow, getHighlightIndex } from '../../src/components/load-article'
 import { shapesByName } from '../../src/consolidated-shapes'
-import validGeographies from '../../src/data/mapper/used_geographies'
 import { defaultTypeEnvironment } from '../../src/mapper/context'
 import { centroidsByName, markerArea, markerRadius, MapResult, mapVisuals, mergedByName } from '../../src/mapper/map-rendering'
 import { Basemap, computeUSS, dedupeGeographies, universesOf } from '../../src/mapper/settings/utils'
@@ -178,16 +177,13 @@ export interface StatisticCard {
 export async function statisticCard(origin: string, pageData: Extract<PageData, { kind: 'statistic' }>, settings: Settings): Promise<StatisticCard | undefined> {
     setOrigin(origin)
     const { stat, view } = pageData.settings
-    const typeEnvironment = defaultTypeEnvironment(stat.universe)
+    const { geographies } = stat
+    const typeEnvironment = defaultTypeEnvironment(universesOf(geographies))
     const mapUSS = mapUSSFromStat(stat)
     // Its own executor: each card is a page of its own, so one kept across them would only hold
     // the previous page's columns in the isolate.
     const executed = await createRequestExecutor()({
-        descriptor: {
-            kind: 'statistics',
-            geographyKind: stat.articleType as typeof validGeographies[number],
-            universe: stat.universe,
-        },
+        descriptor: { kind: 'statistics', geographies },
         stmts: toStatement(mapUSS),
     })
     const table = (executed.resultingValue?.value as { value: Table } | undefined)?.value
@@ -205,7 +201,7 @@ export async function statisticCard(origin: string, pageData: Extract<PageData, 
     const page = pageRowIndices(sortedRowIndices(data, sortColumn, view.order), view.start, view.amount)
 
     return {
-        heading: displayType(stat.universe, stat.articleType),
+        heading: displayType(geographies[0].universe, geographies[0].geographyKind),
         title: typeof data.renderedStatname === 'string'
             ? data.renderedStatname
             : data.renderedStatname.filter(element => element.type !== 'where'),
@@ -219,8 +215,8 @@ export async function statisticCard(origin: string, pageData: Extract<PageData, 
             ordinal: data.table[sortColumn].ordinal?.[index],
             values: columns.map(column => column.value[index]),
         })),
-        universe: stat.universe,
-        flag: await flagImage(stat.universe),
+        universe: geographies[0].universe,
+        flag: await flagImage(geographies[0].universe),
         units: settings.getMultiple(['use_imperial', 'temperature_unit']),
     }
 }

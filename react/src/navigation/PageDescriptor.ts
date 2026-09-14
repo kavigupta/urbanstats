@@ -31,6 +31,7 @@ import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse, Universe, universeSchema } from '../universe'
 import type { DebugEditorPanel } from '../urban-stats-script/DebugEditorPanel'
 import { constantCategories, type ConstantCategory } from '../urban-stats-script/documentation-category'
+import type { GeographySelection } from '../urban-stats-script/workerManager'
 import type { USSDocumentationPanel } from '../uss-documentation'
 import type { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
@@ -572,13 +573,14 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 start = start + 1
             }
 
+            const geographies = [{ universe: statUniverse, geographyKind: newDescriptor.article_type as GeographySelection['geographyKind'] }]
+
             const stat: Statistic = {
-                universe: statUniverse,
-                articleType: newDescriptor.article_type,
+                geographies,
                 ...('uss' in newDescriptor
                     ? {
                             type: 'uss',
-                            uss: utils.parseStatUSS(newDescriptor.uss, statUniverse),
+                            uss: utils.parseStatUSS(newDescriptor.uss, geographies),
                         }
                     : {
                             type: 'simple',

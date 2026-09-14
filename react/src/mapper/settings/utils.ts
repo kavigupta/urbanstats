@@ -9,6 +9,7 @@ import { parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
 import { GeographySelection } from '../../urban-stats-script/workerManager'
 import { reifyString } from '../../utils/human-readable-name'
 import { UnitSettings } from '../../utils/quantity'
+import { displayType } from '../../utils/text'
 import { base64Gunzip } from '../../utils/urlParamShort'
 import { defaultTypeEnvironment } from '../context'
 
@@ -66,6 +67,12 @@ export function dedupeGeographies(geographies: GeographySelection[]): GeographyS
 
 export function universesOf(geographies: GeographySelection[]): Universe[] {
     return Array.from(new Set(geographies.map(g => g.universe)))
+}
+
+/** "Counties in USA and Communes in France", as a page or a card names what it is over. */
+export function describeGeographies(geographies: GeographySelection[]): string {
+    const described = geographies.map(({ universe, geographyKind }) => `${displayType(universe, geographyKind)} in ${universe}`)
+    return described.length <= 1 ? described.join('') : `${described.slice(0, -1).join(', ')} and ${described[described.length - 1]}`
 }
 
 /** What a map is titled before it runs. */

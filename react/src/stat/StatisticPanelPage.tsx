@@ -72,7 +72,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
             {/* Only the titles are inside headersRef; the controls below it are interactive, and
                 would otherwise end up in the screenshot. */}
             <div ref={headersRef} style={{ position: 'relative' }}>
-                <StatisticPanelHead articleType={stat.articleType} universe={stat.universe} />
+                <StatisticPanelHead geography={stat.geographies[0]} />
                 <div className={subHeaderTextClass}>{reifyReact(subHeaderText, unitSettings)}</div>
             </div>
             {view.edit
@@ -138,11 +138,11 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
     )
 }
 
-function StatisticPanelHead(props: { articleType: string, universe: string }): ReactNode {
+function StatisticPanelHead({ geography }: { geography: GeographySelection }): ReactNode {
     const headerTextClass = useHeaderTextClass()
     return (
         <div className={headerTextClass}>
-            {displayType(props.universe, props.articleType)}
+            {displayType(geography.universe, geography.geographyKind)}
         </div>
     )
 }
@@ -157,8 +157,7 @@ function ConvertToMapButton({ stat, flexWidth, typeEnvironment }: { stat: Statis
     const handleConvertToMap = useCallback(async (): Promise<void> => {
         if (!mapperExpression) return
         const settingsJson = JSON.stringify({
-            geographyKind: stat.articleType,
-            universe: stat.universe,
+            geographies: stat.geographies,
             script: {
                 uss: mapperExpression,
             },
@@ -250,7 +249,7 @@ function EditPreamble({ stat, set, errors, counts, typeEnvironment, view, assign
     split: boolean
 }): ReactNode {
     const mapSettings = useMemo((): MapSettings => ({
-        geographies: [{ universe: stat.universe, geographyKind: stat.articleType as GeographySelection['geographyKind'] }],
+        geographies: stat.geographies,
         script: { uss: mapUSSFromStat(stat) },
     }), [stat])
 
@@ -262,8 +261,7 @@ function EditPreamble({ stat, set, errors, counts, typeEnvironment, view, assign
                 setMapSettings={(newMapSettings, actionOptions) => {
                     set({
                         stat: {
-                            articleType: newMapSettings.geographies[0]?.geographyKind ?? stat.articleType,
-                            universe: newMapSettings.geographies[0]?.universe ?? stat.universe,
+                            geographies: newMapSettings.geographies.length > 0 ? newMapSettings.geographies : stat.geographies,
                             type: 'uss',
                             uss: newMapSettings.script.uss,
                         },
