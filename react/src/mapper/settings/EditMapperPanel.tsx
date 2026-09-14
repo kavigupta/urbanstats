@@ -7,6 +7,7 @@ import { Navigator } from '../../navigation/Navigator'
 import { useColors } from '../../page_template/colors'
 import { useUnitSettings } from '../../page_template/settings'
 import { PageTemplate } from '../../page_template/template'
+import { statisticGeographyParams } from '../../stat/utils'
 import { universeContext } from '../../universe'
 import { Inset } from '../../urban-stats-script/constants/insets'
 import { documentLength } from '../../urban-stats-script/constants/rich-text'
@@ -395,19 +396,17 @@ function Export(props: { pngExport?: () => Promise<void>, geoJSONExport?: () => 
         saveAsFile('map.geojson', props.geoJSONExport(), 'application/geo+json')
     }
 
-    // A table is over one article type, so a map spanning several geographies has no table form
-    const tableExpression = props.mapSettings.geographies.length === 1 ? mapperToTable(props.mapSettings.script.uss, props.typeEnvironment) : undefined
+    const tableExpression = mapperToTable(props.mapSettings.script.uss, props.typeEnvironment)
 
     const handleConvertToTable = (): void => {
         if (!tableExpression) return
         void navContext.navigate({
             kind: 'statistic',
-            article_type: props.mapSettings.geographies[0].geographyKind,
+            ...statisticGeographyParams(props.mapSettings.geographies),
             uss: unparse(tableExpression),
             start: 1,
             amount: 20,
             order: 'descending',
-            universe: props.mapSettings.geographies[0].universe,
             edit: true,
             sort_column: 0,
         }, {

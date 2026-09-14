@@ -115,17 +115,20 @@ export function StatisticPanel({ settings, counts }: { settings: StatSettings, c
 
     const generator = useStatGenerator({ stat: generatorSettings.stat, typeEnvironment })
 
-    const geography = stat.geographies[0]
+    // A table spanning several geographies has no single universe for the header to switch.
+    const singleGeography = stat.geographies.length === 1 ? stat.geographies[0] : undefined
 
     return (
         <SelectionContext.Provider value={selectionContext}>
-            <universeContext.Provider value={{
-                universe: geography.universe,
-                universes: generator.universesFiltered,
-                setUniverse(newUniverse) {
-                    setSettingsStateWrapper({ stat: { ...stat, geographies: [{ ...geography, universe: newUniverse }] } }, {})
-                },
-            }}
+            <universeContext.Provider value={singleGeography === undefined
+                ? undefined
+                : {
+                        universe: singleGeography.universe,
+                        universes: generator.universesFiltered,
+                        setUniverse(newUniverse) {
+                            setSettingsStateWrapper({ stat: { ...stat, geographies: [{ ...singleGeography, universe: newUniverse }] } }, {})
+                        },
+                    }}
             >
                 <StatisticPanelPage
                     stat={stat}
@@ -135,6 +138,7 @@ export function StatisticPanel({ settings, counts }: { settings: StatSettings, c
                     errors={generator.errors}
                     counts={counts}
                     data={generator.data}
+                    universeByName={generator.universeByName}
                     assignments={generator.assignments}
                     typeEnvironment={typeEnvironment}
                 />

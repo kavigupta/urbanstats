@@ -6,6 +6,7 @@ import { attemptParseAsTopLevel, MapUSS, mapUSSFromString } from '../mapper/sett
 import { universesOf } from '../mapper/settings/utils'
 import type { PageDescriptor } from '../navigation/PageDescriptor'
 import { StatName } from '../page_template/statistic-tree'
+import { Universe } from '../universe'
 import { numberColumnValues, orderCells, orderNonNan, Table, tableType } from '../urban-stats-script/constants/table'
 import { deriveTableLabel, tableLabel } from '../urban-stats-script/derive-human-readable-name'
 import { tableColumnUnitAndName } from '../urban-stats-script/derive-unit'
@@ -18,21 +19,37 @@ import { UnitSettings } from '../utils/quantity'
 
 import { StatColumn, StatData, Statistic, StatSettings, View } from './types'
 
+/** A table over one geography keeps naming it in the scalar params every link before this one used. */
+export function statisticGeographyParams(geographies: GeographySelection[]): Pick<PageDescriptor & { kind: 'statistic' }, 'article_type' | 'universe' | 'geographies'> {
+    const single = geographies.length === 1 ? geographies[0] : undefined
+    return {
+        article_type: single?.geographyKind,
+        universe: single === undefined || single.universe === 'world' ? undefined : single.universe,
+        geographies: single === undefined ? geographies : undefined,
+    }
+}
+
 export function pageDescriptor({ stat, view }: StatSettings): PageDescriptor & { kind: 'statistic' } {
-    const { universe, geographyKind } = stat.geographies[0]
     return {
         kind: 'statistic',
-        article_type: geographyKind,
         start: view.start,
         amount: view.amount,
         order: view.order,
         highlight: view.highlight,
-        universe: universe === 'world' ? undefined : universe,
         edit: view.edit,
         sort_column: view.sortColumn,
         // Needs `undefined` since used with `Navigator.unsafeUpdateCurrentDescriptor`
+        ...statisticGeographyParams(stat.geographies),
         ...(stat.type === 'uss' ? { uss: unparse(stat.uss), statname: undefined } : { statname: stat.statName, uss: undefined }),
     }
+}
+
+/**
+ * The geographies a link names, whether as the scalar params or as the list. A kind that no longer
+ * exists is kept rather than dropped, so the page can say there are none of them.
+ */
+export function statGeographies(geographies: { universe: Universe, geographyKind: string }[] | undefined, articleType: string | undefined, universe: Universe): GeographySelection[] {
+    return (geographies ?? (articleType === undefined ? [] : [{ universe, geographyKind: articleType }])) as GeographySelection[]
 }
 
 /** @public this is included dynamically */
