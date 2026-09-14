@@ -10,7 +10,6 @@
 import './browser-shim'
 
 import { PageDescriptor, pageDescriptorFromURL } from '../../src/navigation/PageDescriptor'
-import { GeographySelection } from '../../src/urban-stats-script/workerManager'
 
 interface Embed {
     title: string
@@ -61,8 +60,8 @@ async function describeMap(settings: string | undefined): Promise<{ title: strin
 async function describeTable(descriptor: Extract<PageDescriptor, { kind: 'statistic' }> & { uss: string }): Promise<string | undefined> {
     try {
         // Deferred for the same reason as describeMap's imports.
-        const { parseStatUSS, tableTitle } = await import('../../src/stat/utils')
-        const geographies = [{ universe: descriptor.universe ?? 'world', geographyKind: descriptor.article_type } as GeographySelection]
+        const { parseStatUSS, statGeographies, tableTitle } = await import('../../src/stat/utils')
+        const geographies = statGeographies(descriptor.geographies, descriptor.article_type, descriptor.universe ?? 'world')
         return tableTitle(parseStatUSS(descriptor.uss, geographies), geographies, {})
     }
     catch {

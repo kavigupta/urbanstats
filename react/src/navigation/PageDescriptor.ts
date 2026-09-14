@@ -31,7 +31,6 @@ import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse, Universe, universeSchema } from '../universe'
 import type { DebugEditorPanel } from '../urban-stats-script/DebugEditorPanel'
 import { constantCategories, type ConstantCategory } from '../urban-stats-script/documentation-category'
-import type { GeographySelection } from '../urban-stats-script/workerManager'
 import type { USSDocumentationPanel } from '../uss-documentation'
 import type { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
@@ -72,8 +71,17 @@ const comparisonSchemaFromParams = z.object({
     s: z.optional(z.string()),
 })
 
+const statisticGeographySchema = z.object({ universe: universeSchema, geographyKind: z.string() })
+
+/** A universe that no longer exists drops its pair, rather than the whole link. */
+const statisticGeographiesFromParam = z.string()
+    .transform(value => z.array(z.optional(statisticGeographySchema).catch(undefined)).parse(JSON.parse(value)))
+    .transform(geographies => geographies.filter(geography => geography !== undefined))
+
 const statisticSchema = z.object({
-    article_type: z.string(),
+    // Absent when `geographies` names them instead, which it does for anything but a single one.
+    article_type: z.optional(z.string()),
+    geographies: z.optional(z.array(statisticGeographySchema)),
     start: z.number().int(),
     amount: z.union([z.literal('All'), z.number().int()]),
     order: z.union([z.literal('descending'), z.literal('ascending')]),
@@ -94,7 +102,8 @@ const statisticSchema = z.object({
 
 const statisticSchemaFromParams = z.union([
     z.object({
-        article_type: z.string(),
+        article_type: z.optional(z.string()),
+        geographies: z.optional(statisticGeographiesFromParam).catch(undefined),
         start: z.optional(z.coerce.number().int()).default(1),
         amount: z.union([z.literal('All'), z.coerce.number().int(), z.undefined().transform(() => 10)]),
         order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
@@ -342,6 +351,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             searchParams = {
                 ...('uss' in pageDescriptor ? { uss: pageDescriptor.uss } : { statname: pageDescriptor.statname.replaceAll('%', '__PCT__') }),
                 article_type: pageDescriptor.article_type,
+                geographies: pageDescriptor.geographies === undefined ? undefined : JSON.stringify(pageDescriptor.geographies),
                 start: pageDescriptor.start.toString(),
                 amount: pageDescriptor.amount.toString(),
                 order: pageDescriptor.order === 'descending' ? undefined : 'ascending',
@@ -563,7 +573,6 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             const utils = await import('../stat/utils')
 
             const statUniverse = newDescriptor.universe ?? 'world'
-            const displayStatUniverse = statUniverse !== 'world' ? statUniverse : undefined
 
             // Pin the start position correctly to the beginning of the page
             let start = newDescriptor.start
@@ -573,7 +582,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 start = start + 1
             }
 
-            const geographies = [{ universe: statUniverse, geographyKind: newDescriptor.article_type as GeographySelection['geographyKind'] }]
+            const geographies = utils.statGeographies(newDescriptor.geographies, newDescriptor.article_type, statUniverse)
 
             const stat: Statistic = {
                 geographies,
@@ -609,7 +618,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 newPageDescriptor: {
                     ...newDescriptor,
                     start,
-                    universe: displayStatUniverse,
+                    ...utils.statisticGeographyParams(geographies),
                     highlight: undefined,
                 },
                 effects: () => undefined,
