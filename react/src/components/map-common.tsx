@@ -7,7 +7,7 @@ import { boundingBox, extendBoxes } from '../map-partition'
 import { Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
-import { useUniverse } from '../universe'
+import { Universe, useUniverse } from '../universe'
 import { TestUtils } from '../utils/TestUtils'
 import { makeDebugLogger } from '../utils/debug-logging'
 import { assert } from '../utils/defensive'
@@ -351,9 +351,10 @@ function useClickable({ id, clickable, features }: { id: string, clickable: bool
             assert(map !== undefined, 'map is undefined')
 
             const clickFeature = (name: string): void => {
+                const feature = features.find(f => f.properties!.name === name)
                 void navigator.navigate({
                     kind: 'article',
-                    universe,
+                    universe: (feature?.properties!.universe as Universe | undefined) ?? universe,
                     longname: name,
                 }, { history: 'push', scroll: { kind: 'element', element: map.getContainer() } })
             }

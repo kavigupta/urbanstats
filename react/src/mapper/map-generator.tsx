@@ -14,6 +14,7 @@ import { OverrideTheme, useColors } from '../page_template/colors'
 import { proportionalRelativeArea } from '../syau/cluster-geometry'
 import { ClusterScaleProvider } from '../syau/cluster-scale-context'
 import { ClusterMap as SyauClusterMap } from '../syau/syau-cluster-map'
+import { Universe } from '../universe'
 import { getAllParseErrors } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color-utils'
 import { Inset } from '../urban-stats-script/constants/insets'
@@ -629,9 +630,16 @@ function filterOverlaps(inset: Inset, features: GeoJSON.Feature[]): GeoJSON.Feat
 
 interface MapCache {
     geo?: { geographies: GeographySelection[] } & (
-        { type: 'points', centroidsByName: Map<string, ICoordinate> }
-        | { type: 'polygons', polygonsByName: Map<string, GeoJSON.Geometry> }
+        { type: 'points', centroidsByName: Map<string, FromUniverse<ICoordinate>> }
+        | { type: 'polygons', polygonsByName: Map<string, FromUniverse<GeoJSON.Geometry>> }
     )
+}
+
+interface FromUniverse<T> { value: T, universe: Universe }
+
+/** Clicking a geography goes to its article in the universe it was drawn from, not the page's default. */
+function fromUniverse<T>(universe: Universe, byName: Map<string, T>): Map<string, FromUniverse<T>> {
+    return new Map(Array.from(byName, ([name, value]) => [name, { value, universe }]))
 }
 
 function sameGeographies(a: GeographySelection[] | undefined, b: GeographySelection[]): boolean {
@@ -655,18 +663,18 @@ async function pointsGeojson(geographies: GeographySelection[], points: Point[],
         cache.geo = {
             type: 'points',
             geographies,
-            centroidsByName: await mergedByName(geographies, g => centroidsByName(g.universe, g.geographyKind)),
+            centroidsByName: await mergedByName(geographies, async g => fromUniverse(g.universe, await centroidsByName(g.universe, g.geographyKind))),
         }
     }
 
     const geo = cache.geo
 
     return points.map((point) => {
-        const centroid = geo.centroidsByName.get(point.name)!
+        const { value: centroid, universe } = geo.centroidsByName.get(point.name)!
 
         return {
             type: 'Feature' as const,
-            properties: { ...point },
+            properties: { ...point, universe },
             geometry: {
                 type: 'Point',
                 coordinates: [centroid.lon!, centroid.lat!],
@@ -680,17 +688,19 @@ async function polygonsGeojson(geographies: GeographySelection[], polygons: Poly
         cache.geo = {
             type: 'polygons',
             geographies,
-            polygonsByName: await mergedByName(geographies, g => shapesByName(g.universe, g.geographyKind)),
+            polygonsByName: await mergedByName(geographies, async g => fromUniverse(g.universe, await shapesByName(g.universe, g.geographyKind))),
         }
     }
 
     const geo = cache.geo
 
     return polygons.map((polygon) => {
+        const { value: shape, universe } = geo.polygonsByName.get(polygon.name)!
+
         return {
             type: 'Feature' as const,
-            properties: { ...polygon },
-            geometry: geo.polygonsByName.get(polygon.name)!,
+            properties: { ...polygon, universe },
+            geometry: shape,
         }
     })
 }
