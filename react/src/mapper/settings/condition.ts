@@ -3,6 +3,7 @@
  *
  *     condition = condition & condition | (condition | condition)
  *               | number[] <comparison operator> (number | number[])
+ *               | <string predicate>(string[], string)
  *
  * Anything else is kept as a custom node. Groups are flattened, so `a & b & c`
  * is three operands of one group rather than nested pairs.
@@ -21,15 +22,33 @@ import { changeBlockId, createDefaultExpression, parseExpr } from './parseExpr'
 const groupOperators = ['&', '|'] as const
 export type GroupOperator = typeof groupOperators[number]
 
-export const comparisonOperators = ['==', '!=', '<', '<=', '>', '>='] as const
+const numericOperators = ['==', '!=', '<', '<=', '>', '>='] as const
+const stringPredicates = ['startsWith', 'endsWith', 'includes', 'fuzzyMatch', 'matchesRegex'] as const
+export const comparisonOperators = [...numericOperators, ...stringPredicates] as const
 export type ComparisonOperator = typeof comparisonOperators[number]
+type StringPredicate = typeof stringPredicates[number]
 
 export const conditionKinds = [...groupOperators, 'comparison', 'custom'] as const
 export type ConditionKind = typeof conditionKinds[number]
 
 const conditionTypes = [{ type: 'vector', elementType: { type: 'boolean' } }] satisfies USSType[]
-export const comparisonLhsTypes = [{ type: 'vector', elementType: { type: 'number' } }] satisfies USSType[]
-export const comparisonRhsTypes = [{ type: 'number' }, { type: 'vector', elementType: { type: 'number' } }] satisfies USSType[]
+
+export function isStringPredicate(operator: string): operator is StringPredicate {
+    return (stringPredicates as readonly string[]).includes(operator)
+}
+
+function typeOfComparisonOperator(operator: ComparisonOperator): 'number' | 'string' {
+    return isStringPredicate(operator) ? 'string' : 'number'
+}
+
+export function comparisonLhsTypes(operator: ComparisonOperator): USSType[] {
+    return [{ type: 'vector', elementType: { type: typeOfComparisonOperator(operator) } }]
+}
+
+export function comparisonRhsTypes(operator: ComparisonOperator): USSType[] {
+    const type = typeOfComparisonOperator(operator)
+    return [{ type }, { type: 'vector', elementType: { type } }]
+}
 
 export type Condition =
     { kind: GroupOperator, operands: UrbanStatsASTExpression[] } |
@@ -40,8 +59,20 @@ function isGroupOperator(op: BinaryOperatorSymbol | ConditionKind): op is GroupO
     return (groupOperators as readonly string[]).includes(op)
 }
 
-function isComparisonOperator(op: BinaryOperatorSymbol): op is ComparisonOperator {
-    return (comparisonOperators as readonly BinaryOperatorSymbol[]).includes(op)
+function isNumericOperator(op: BinaryOperatorSymbol): op is typeof numericOperators[number] {
+    return (numericOperators as readonly BinaryOperatorSymbol[]).includes(op)
+}
+
+/** The pieces of a call like `startsWith(geoName, "San")`. One carrying named arguments is not one, as the editor has nowhere to show them. */
+function asStringPredicate(expr: UrbanStatsASTExpression): (Condition & { kind: 'comparison' }) | undefined {
+    if (expr.type !== 'call' || expr.fn.type !== 'identifier' || !isStringPredicate(expr.fn.name.node) || expr.args.length !== 2) {
+        return undefined
+    }
+    const [lhs, rhs] = expr.args
+    if (lhs.type !== 'unnamed' || rhs.type !== 'unnamed') {
+        return undefined
+    }
+    return { kind: 'comparison', operator: expr.fn.name.node, lhs: lhs.value, rhs: rhs.value }
 }
 
 export function isNoCondition(expr: UrbanStatsASTExpression): boolean {
@@ -59,9 +90,13 @@ export function classifyCondition(expr: UrbanStatsASTExpression): Condition {
         if (isGroupOperator(op)) {
             return { kind: op, operands: flattenGroup(expr, op) }
         }
-        if (isComparisonOperator(op)) {
+        if (isNumericOperator(op)) {
             return { kind: 'comparison', operator: op, lhs: expr.left, rhs: expr.right }
         }
+    }
+    const predicate = asStringPredicate(expr)
+    if (predicate !== undefined) {
+        return predicate
     }
     assert(expr.type === 'customNode', `Condition expression ${unparse(expr)} is not in the condition grammar`)
     return { kind: 'custom', expr }
@@ -90,6 +125,14 @@ export function buildGroup(operator: GroupOperator, operands: { expr: UrbanStats
 }
 
 export function buildComparison(operator: ComparisonOperator, lhs: UrbanStatsASTExpression, rhs: UrbanStatsASTExpression, blockIdent: string): UrbanStatsASTExpression {
+    if (isStringPredicate(operator)) {
+        return {
+            type: 'call',
+            fn: { type: 'identifier', name: { node: operator, location: emptyLocation(blockIdent) } },
+            args: [{ type: 'unnamed', value: lhs }, { type: 'unnamed', value: rhs }],
+            entireLoc: emptyLocation(blockIdent),
+        }
+    }
     return {
         type: 'binaryOperator',
         operator: { node: operator, location: emptyLocation(blockIdent) },
@@ -98,14 +141,30 @@ export function buildComparison(operator: ComparisonOperator, lhs: UrbanStatsAST
     }
 }
 
-export function defaultComparison(blockIdent: string, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression {
-    const rhsIdent = extendBlockIdPositionalArg(blockIdent, 1)
+function comparisonWithDefaults(operator: ComparisonOperator, blockIdent: string, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression {
     return buildComparison(
-        '>',
-        createDefaultExpression(comparisonLhsTypes[0], extendBlockIdPositionalArg(blockIdent, 0), typeEnvironment),
-        { type: 'constant', value: { node: { type: 'number', value: 0 }, location: emptyLocation(rhsIdent) } },
+        operator,
+        createDefaultExpression(comparisonLhsTypes(operator)[0], extendBlockIdPositionalArg(blockIdent, 0), typeEnvironment),
+        createDefaultExpression(comparisonRhsTypes(operator)[0], extendBlockIdPositionalArg(blockIdent, 1), typeEnvironment),
         blockIdent,
     )
+}
+
+export function defaultComparison(blockIdent: string, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression {
+    return comparisonWithDefaults('>', blockIdent, typeEnvironment)
+}
+
+/** Comparing names and comparing numbers take different operands, so switching between the two starts over. */
+export function changeComparisonOperator(
+    comparison: Condition & { kind: 'comparison' },
+    newOperator: ComparisonOperator,
+    blockIdent: string,
+    typeEnvironment: TypeEnvironment,
+): UrbanStatsASTExpression {
+    if (isStringPredicate(comparison.operator) !== isStringPredicate(newOperator)) {
+        return comparisonWithDefaults(newOperator, blockIdent, typeEnvironment)
+    }
+    return buildComparison(newOperator, comparison.lhs, comparison.rhs, blockIdent)
 }
 
 function asCustomCondition(expr: UrbanStatsASTExpression, blockIdent: string): UrbanStatsASTExpression & { type: 'customNode' } {
@@ -143,19 +202,33 @@ function attemptParseCondition(
                 }))
                 return buildGroup(op, operands, blockIdent)
             }
-            if (isComparisonOperator(op)) {
-                return buildComparison(
-                    op,
-                    parseExpr(expr.left, extendBlockIdPositionalArg(blockIdent, 0), comparisonLhsTypes, typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes),
-                    parseExpr(expr.right, extendBlockIdPositionalArg(blockIdent, 1), comparisonRhsTypes, typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes),
-                    blockIdent,
-                )
+            if (isNumericOperator(op)) {
+                return parseComparison({ kind: 'comparison', operator: op, lhs: expr.left, rhs: expr.right }, blockIdent, typeEnvironment, preserveCustomNodes)
             }
             return undefined
+        }
+        case 'call': {
+            const predicate = asStringPredicate(expr)
+            return predicate === undefined ? undefined : parseComparison(predicate, blockIdent, typeEnvironment, preserveCustomNodes)
         }
         default:
             return undefined
     }
+}
+
+function parseComparison(
+    comparison: Condition & { kind: 'comparison' },
+    blockIdent: string,
+    typeEnvironment: TypeEnvironment,
+    preserveCustomNodes: boolean,
+): UrbanStatsASTExpression {
+    const { operator, lhs, rhs } = comparison
+    return buildComparison(
+        operator,
+        parseExpr(lhs, extendBlockIdPositionalArg(blockIdent, 0), comparisonLhsTypes(operator), typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes),
+        parseExpr(rhs, extendBlockIdPositionalArg(blockIdent, 1), comparisonRhsTypes(operator), typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes),
+        blockIdent,
+    )
 }
 
 export function changeConditionKind(

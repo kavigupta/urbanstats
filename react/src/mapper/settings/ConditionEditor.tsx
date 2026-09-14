@@ -13,9 +13,9 @@ import { BetterSelector, SelectorRenderResult } from './BetterSelector'
 import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
 import {
-    buildComparison, buildGroup, changeConditionKind, classifyCondition, comparisonLhsTypes, comparisonOperators,
-    comparisonRhsTypes, conditionKinds, ComparisonOperator, Condition, ConditionKind, defaultComparison, isNoCondition,
-    noCondition,
+    buildComparison, buildGroup, changeComparisonOperator, changeConditionKind, classifyCondition, comparisonLhsTypes,
+    comparisonOperators, comparisonRhsTypes, conditionKinds, ComparisonOperator, Condition, ConditionKind,
+    defaultComparison, isNoCondition, isStringPredicate, noCondition,
 } from './condition'
 
 interface NodeProps {
@@ -66,6 +66,11 @@ const operatorLabels: Record<ComparisonOperator, string> = {
     '<=': '≤',
     '>': '>',
     '>=': '≥',
+    'startsWith': 'starts with',
+    'endsWith': 'ends with',
+    'includes': 'includes',
+    'fuzzyMatch': 'fuzzy match',
+    'matchesRegex': 'matches regex',
 }
 
 function renderKind(kind: ConditionKind): SelectorRenderResult {
@@ -156,35 +161,36 @@ function ComparisonEditor({
     comparison: Condition & { kind: 'comparison' }
     setUss: (u: UrbanStatsASTExpression, o: ActionOptions) => void
 } & NodeProps): ReactNode {
-    const { blockIdent } = nodeProps
+    const { blockIdent, typeEnvironment } = nodeProps
     const { operator, lhs, rhs } = comparison
-    const rebuild = (newOperator: ComparisonOperator, newLhs: UrbanStatsASTExpression, newRhs: UrbanStatsASTExpression): UrbanStatsASTExpression =>
-        buildComparison(newOperator, newLhs, newRhs, blockIdent)
+    const rebuild = (newLhs: UrbanStatsASTExpression, newRhs: UrbanStatsASTExpression): UrbanStatsASTExpression =>
+        buildComparison(operator, newLhs, newRhs, blockIdent)
 
     return (
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5em', width: '100%' }}>
             <AutoUXEditor
                 uss={lhs}
-                setUss={(newLhs, options) => { setUss(rebuild(operator, newLhs, rhs), options) }}
-                type={comparisonLhsTypes}
+                setUss={(newLhs, options) => { setUss(rebuild(newLhs, rhs), options) }}
+                type={comparisonLhsTypes(operator)}
                 labelWidth="0px"
                 {...nodeProps}
                 blockIdent={extendBlockIdPositionalArg(blockIdent, 0)}
             />
-            <div style={{ width: '4em', flexShrink: 0, display: 'flex', margin: '0.25em 0' }}>
+            <div style={{ width: isStringPredicate(operator) ? '8em' : '4em', flexShrink: 0, display: 'flex', margin: '0.25em 0' }}>
                 <BetterSelector<ComparisonOperator>
                     value={operator}
                     possibleValues={comparisonOperators}
                     renderValue={renderOperator}
-                    onChange={(newOperator) => { setUss(rebuild(newOperator, lhs, rhs), {}) }}
+                    onChange={(newOperator) => { setUss(changeComparisonOperator(comparison, newOperator, blockIdent, typeEnvironment), {}) }}
                     inputStyle={{ textAlign: 'center' }}
                 />
             </div>
             <AutoUXEditor
                 uss={rhs}
-                setUss={(newRhs, options) => { setUss(rebuild(operator, lhs, newRhs), options) }}
-                type={comparisonRhsTypes}
+                setUss={(newRhs, options) => { setUss(rebuild(lhs, newRhs), options) }}
+                type={comparisonRhsTypes(operator)}
                 labelWidth="0px"
+                singleLine
                 {...nodeProps}
                 blockIdent={extendBlockIdPositionalArg(blockIdent, 1)}
             />

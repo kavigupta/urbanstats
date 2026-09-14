@@ -3,8 +3,9 @@ import React, { createContext, ReactNode, useCallback, useContext, useEffect, us
 import { MapInstance, MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
-import { Basemap as BasemapComponent, CommonMaplibreMap, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
-import { screencapElement, ScreenshotContext, ScreenshotContextType, withScreenshotMode } from '../components/screenshot'
+import { Basemap as BasemapComponent, CommonMaplibreMap, MapAttribution, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
+import { tileAttribution } from '../components/map-common-utils'
+import { bannerCreditBottom, bannerCreditSize, bannerLockupStart, screencapElement, ScreenshotContext, ScreenshotContextType, withScreenshotMode } from '../components/screenshot'
 import { shapesByName } from '../consolidated-shapes'
 import { boundingBox } from '../map-partition'
 import { RelativeLoader } from '../navigation/loading'
@@ -19,8 +20,7 @@ import { Inset } from '../urban-stats-script/constants/insets'
 import { CommonMap } from '../urban-stats-script/constants/map'
 import { ScaleInstance } from '../urban-stats-script/constants/scale'
 import { TextBox } from '../urban-stats-script/constants/text-box'
-import { deriveMapLabel } from '../urban-stats-script/derive-human-readable-name'
-import { mapRampUnit } from '../urban-stats-script/derive-unit'
+import { mapRampUnitAndLabel } from '../urban-stats-script/derive-unit'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
@@ -122,10 +122,11 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
     }
 
     const mapResultMain = execResult.resultingValue.value
+    const rampLabelling = mapRampUnitAndLabel(mapSettings.script.uss, typeEnvironment, mapResultMain.value.unit)
     let label: HumanReadableName
 
     if (mapResultMain.value.label === undefined) {
-        const derivedLabel = deriveMapLabel(mapSettings.script.uss, typeEnvironment)
+        const derivedLabel = rampLabelling.label
         if (derivedLabel === undefined) {
             label = '[Unlabeled Map]'
             execResult.error.push({
@@ -152,9 +153,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         }
     }
 
-    const derivedUnit = mapRampUnit(mapSettings.script.uss, typeEnvironment, mapResultMain.value.unit)
-
-    const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, geographies, cache, label, derivedUnit })
+    const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, geographies, cache, label, derivedUnit: rampLabelling.unit })
 
     function MapComponent({ props, exportImageRef }: { props: MapUIProps<{ loading: boolean }>, exportImageRef: (fn: () => Promise<HTMLCanvasElement>) => void }): ReactNode {
         const mapsRef: (MapRef | null)[] = []
@@ -255,6 +254,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
                     maps={insetMaps}
                     loading={props.loading}
                     colorbar={colorbar}
+                    attribution={mapResultMain.value.basemap.type !== 'none' && ['uss', 'view'].includes(props.mode)}
                     aspectRatio={aspectRatio}
                     mapsContainerRef={mapsContainerRef}
                     wholeRenderRef={wholeRenderRef}
@@ -289,19 +289,9 @@ function prepareMapForImageExport(map: MapInstance): () => void {
     debugLog('prepareMapForImageExport: setting pixel ratio', originalPixelRatio, '→', exportPixelRatio)
     map.setPixelRatio(exportPixelRatio)
 
-    const attrib: HTMLElement | null = map.getContainer().querySelector('.maplibregl-ctrl-attrib')
-    let resetAttrib: undefined | (() => void)
-    if (attrib !== null) {
-        debugLog('prepareMapForImageExport: hiding attribution overlay')
-        const prevDisplay = attrib.style.display
-        attrib.style.display = 'none'
-        resetAttrib = () => attrib.style.display = prevDisplay
-    }
-
     return () => {
         debugLog('prepareMapForImageExport: restoring pixel ratio', exportPixelRatio, '→', originalPixelRatio)
         map.setPixelRatio(originalPixelRatio)
-        resetAttrib?.()
     }
 }
 
@@ -336,11 +326,20 @@ async function mapImageExport(elementCanvas: HTMLCanvasElement, basemap: Basemap
         bannerHeight,
     )
 
+    if (basemap.type !== 'none') {
+        ctx.fillStyle = colors.ordinalTextColor
+        ctx.font = `${bannerHeight * bannerCreditSize}px Jost, sans-serif`
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'alphabetic'
+        const lockupLeft = resultCanvas.width - bannerWidth * (1 - bannerLockupStart)
+        ctx.fillText(tileAttribution, lockupLeft / 2, resultCanvas.height - bannerHeight * bannerCreditBottom)
+    }
+
     debugLog('mapImageExport: done compositing')
     return resultCanvas
 }
 
-function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, wholeRenderRef, textBoxes }: {
+function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, wholeRenderRef, textBoxes, attribution }: {
     maps: ReactNode
     textBoxes: ReactNode
     colorbar: ReactNode
@@ -348,6 +347,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, who
     mapsContainerRef?: React.Ref<HTMLDivElement>
     aspectRatio: number
     wholeRenderRef?: React.Ref<HTMLDivElement>
+    attribution: boolean
 }): ReactNode {
     return (
         <TransformConstantWidth width={canonicalWidth(aspectRatio)}>
@@ -379,6 +379,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, who
                 </div>
                 {colorbar}
             </div>
+            {attribution && <MapAttribution />}
         </TransformConstantWidth>
     )
 }
@@ -410,6 +411,7 @@ function EmptyMapLayout({ geographies, loading }: { geographies: GeographySelect
             textBoxes={null}
             loading={loading}
             colorbar={null}
+            attribution={true}
             aspectRatio={computeAspectRatioForInsets(insets)}
         />
     )

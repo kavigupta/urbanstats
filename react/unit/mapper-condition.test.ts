@@ -2,7 +2,7 @@ import assert from 'assert/strict'
 import { test } from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
-import { changeConditionKind, classifyCondition, parseCondition } from '../src/mapper/settings/condition'
+import { changeComparisonOperator, changeConditionKind, classifyCondition, ComparisonOperator, parseCondition } from '../src/mapper/settings/condition'
 import { attemptParseAsTopLevel, mapUSSFromString, MapUSS, validMapperOutputs } from '../src/mapper/settings/map-uss'
 import { changeBlockId } from '../src/mapper/settings/parseExpr'
 import { UrbanStatsASTExpression } from '../src/urban-stats-script/ast'
@@ -78,6 +78,59 @@ void test('an operand outside the grammar keeps the comparison', () => {
     assert.strictEqual(classified.kind, 'comparison')
     assert.strictEqual(classified.lhs.type, 'customNode')
     assert.strictEqual(simplified(condition), 'population * 2 > 1000')
+})
+
+function changeOperator(code: string, operator: ComparisonOperator): string {
+    const classified = classifyCondition(asCondition(code))
+    assert.strictEqual(classified.kind, 'comparison')
+    const changed = changeComparisonOperator(classified, operator, 'test', defaultTypeEnvironment('world'))
+    changeBlockId(changed, 'test', '')
+    return simplified(changed)
+}
+
+void test('a string predicate is a comparison', () => {
+    const classified = classifyCondition(asCondition('startsWith(geoName, "San")'))
+    assert.strictEqual(classified.kind, 'comparison')
+    assert.strictEqual(classified.operator, 'startsWith')
+    assert.strictEqual(unparse(classified.lhs), 'geoName')
+    assert.strictEqual(unparse(classified.rhs), '"San"')
+})
+
+void test('a string predicate groups with a numeric comparison', () => {
+    const classified = classifyCondition(asCondition('population > 1000 & endsWith(geoName, ", CA")'))
+    assert.strictEqual(classified.kind, '&')
+    assert.deepStrictEqual(classified.operands.map(simplified), ['population > 1000', 'endsWith(geoName, ", CA")'])
+})
+
+void test('a named argument keeps the predicate as code', () => {
+    const condition = asCondition('fuzzyMatch(geoName, "pittsburg", maxErrors=3)')
+    assert.strictEqual(classifyCondition(condition).kind, 'custom')
+    assert.strictEqual(simplified(condition), 'fuzzyMatch(geoName, "pittsburg", maxErrors=3)')
+})
+
+void test('an operand outside the grammar keeps the predicate', () => {
+    const condition = asCondition('includes(normalizeString(geoName), "san")')
+    const classified = classifyCondition(condition)
+    assert.strictEqual(classified.kind, 'comparison')
+    assert.strictEqual(classified.lhs.type, 'customNode')
+    assert.strictEqual(simplified(condition), 'includes(normalizeString(geoName), "san")')
+})
+
+void test('switching between string predicates keeps the operands', () => {
+    assert.strictEqual(changeOperator('startsWith(geoName, "San")', 'includes'), 'includes(geoName, "San")')
+})
+
+void test('switching between comparing numbers and comparing strings starts over', () => {
+    assert.strictEqual(changeOperator('population > 1000', 'matchesRegex'), 'matchesRegex(geoName, "")')
+    assert.strictEqual(changeOperator('startsWith(geoName, "San")', '<'), 'density_pw_1km < 0')
+})
+
+void test('grouping a string predicate keeps it as the first operand', () => {
+    const grouped = changeConditionKind(asCondition('startsWith(geoName, "San")'), '&', 'test', defaultTypeEnvironment('world'))
+    changeBlockId(grouped, 'test', '')
+    const classified = classifyCondition(grouped)
+    assert.strictEqual(classified.kind, '&')
+    assert.strictEqual(simplified(classified.operands[0]), 'startsWith(geoName, "San")')
 })
 
 void test('a custom operand of a group keeps its grouping', () => {

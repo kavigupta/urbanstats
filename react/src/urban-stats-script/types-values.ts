@@ -173,6 +173,10 @@ export interface Documentation {
      */
     longDescription?: HumanReadableName
     /**
+     * For a two-argument function, written between its arguments: "Name starts with 'A'".
+     */
+    infix?: HumanReadableName
+    /**
      * Used when displaying this value in a selector
      */
     selectorRendering?: SelectorRendering
@@ -203,8 +207,8 @@ export type UnitPropagation = (
     // keeps the unit
     {
         kind: 'unchanged'
-        /** Unless what it is given is a difference, the coefficient comes back unknown. */
-        unknownTimes?: boolean
+        /** Whether it takes its argument as a difference: there is no size of a temperature. */
+        takesAScalar?: boolean
     }
     | { kind: 'either' } // joins the units of two
     | { kind: 'power', exponent: number } // raises the unit

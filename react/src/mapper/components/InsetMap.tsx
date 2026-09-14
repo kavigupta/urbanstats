@@ -1,7 +1,7 @@
 import React, { HTMLAttributes, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
 import { MapRef, useMap } from 'react-map-gl/maplibre'
 
-import { CommonMapProps, CustomAttributionControlComponent, insetBorderWidth } from '../../components/map-common'
+import { CommonMapProps, insetBorderWidth } from '../../components/map-common'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from '../../components/screenshot'
 import { useColors } from '../../page_template/colors'
 import { Inset } from '../../urban-stats-script/constants/insets'
@@ -27,15 +27,12 @@ function InsetMapImpl({ inset, children, editInset, container, i, numInsets, int
     const screenshotMode = useScreenshotMode()
 
     const mapChildren = (
-        <>
-            <HandleInsets
-                inset={inset}
-                setCoordBox={(newBox) => {
-                    editInset?.modify({ coordBox: newBox })
-                }}
-            />
-            {inset.mainMap && <CustomAttributionControlComponent startShowingAttribution={true} />}
-        </>
+        <HandleInsets
+            inset={inset}
+            setCoordBox={(newBox) => {
+                editInset?.modify({ coordBox: newBox })
+            }}
+        />
     )
 
     const mapLibreProps: Partial<CommonMapProps> = {
@@ -47,7 +44,6 @@ function InsetMapImpl({ inset, children, editInset, container, i, numInsets, int
             width: undefined,
             height: undefined,
         },
-        attributionControl: false,
         interactive,
         testId: id,
     }

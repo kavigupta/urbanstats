@@ -1,7 +1,9 @@
+import indefinite from 'indefinite'
 import React, { ReactNode, useMemo, useState } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
+import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSettings } from '../page_template/settings'
@@ -11,7 +13,7 @@ import { IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 import { NormalizeProto } from '../utils/types'
 
-import { CommonMaplibreMap, Polygon, PolygonFeatureCollection, polygonFeatureCollection, useZoomFirstFeature } from './map-common'
+import { CommonMaplibreMap, MapAttribution, Polygon, PolygonFeatureCollection, polygonFeatureCollection, useZoomFirstFeature } from './map-common'
 
 interface ArticleMapProps {
     articleType: string
@@ -31,15 +33,29 @@ export function ArticleMap(props: ArticleMapProps): ReactNode {
     const firstFeatureWaiting = features.length > 0 && features[0] === waiting
 
     return (
-        <div style={{ position: 'relative' }}>
-            <RelativeLoader loading={firstFeatureWaiting} />
-            <CommonMaplibreMap
-                ref={setMapRef}
-            >
-                <PolygonFeatureCollection features={readyFeatures} clickable={true} />
-                <FullscreenControl position="top-left" />
-            </CommonMaplibreMap>
-        </div>
+        <>
+            <div style={{ position: 'relative' }}>
+                <RelativeLoader loading={firstFeatureWaiting} />
+                <CommonMaplibreMap
+                    ref={setMapRef}
+                >
+                    <PolygonFeatureCollection features={readyFeatures} clickable={true} />
+                    <FullscreenControl position="top-left" />
+                </CommonMaplibreMap>
+            </div>
+            <MapAttribution>
+                <a
+                    href={urlFromPageDescriptor({ kind: 'dataCredit', hash: `#shapefile_${props.articleType}` }).toString()}
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    What is
+                    {' '}
+                    {indefinite(props.articleType)}
+                    ?
+                </a>
+            </MapAttribution>
+        </>
     )
 }
 

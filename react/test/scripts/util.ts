@@ -40,7 +40,7 @@ export const testHistorySchema = z.array(z.object({
     result: z.discriminatedUnion('status', [
         z.object({ status: z.literal('timeout'), timeLimitSeconds: z.number() }),
         z.object({ status: z.literal('success'), duration: z.number() }),
-        z.object({ status: z.literal('failure'), duration: z.number(), reason: z.enum(['assertions', 'assets']) }),
+        z.object({ status: z.literal('failure'), duration: z.number(), reason: z.enum(['assertions', 'snapshots']) }),
     ]),
     retries: z.number(),
     github: z.optional(z.object({
@@ -83,33 +83,33 @@ export function testsFromGlobs(globs: string[]): string[] {
     return testFiles.map(file => /test\/(.+)\.test\.ts/.exec(file)![1])
 }
 
-const changedAssetsManifest = 'manifest.json'
+const changedSnapshotsManifest = 'manifest.json'
 
 /** Paths relative to the test's directory, so they resolve against the reference and delta trees too. */
-export function changedAssets(test: string): string[] {
-    return globSync(`changed_assets/${test}/**`, { nodir: true })
-        .map(file => path.relative(`changed_assets/${test}`, file))
-        .filter(file => file !== changedAssetsManifest && !file.endsWith('.error.png'))
+export function changedSnapshots(test: string): string[] {
+    return globSync(`changed_snapshots/${test}/**`, { nodir: true })
+        .map(file => path.relative(`changed_snapshots/${test}`, file))
+        .filter(file => file !== changedSnapshotsManifest && !file.endsWith('.error.png'))
 }
 
-/** The asset diff viewer's index of a local run, since it can't list the directories itself. */
-export async function writeChangedAssetsManifest(test: string): Promise<void> {
-    const changed = changedAssets(test)
+/** The snapshot diff viewer's index of a local run, since it can't list the directories itself. */
+export async function writeChangedSnapshotsManifest(test: string): Promise<void> {
+    const changed = changedSnapshots(test)
     if (changed.length === 0) {
         return
     }
     const delta = globSync(`delta/${test}/**`, { nodir: true }).map(file => path.relative(`delta/${test}`, file))
-    await fs.writeFile(path.join('changed_assets', test, changedAssetsManifest), JSON.stringify({ changed, delta }))
+    await fs.writeFile(path.join('changed_snapshots', test, changedSnapshotsManifest), JSON.stringify({ changed, delta }))
 }
 
 export async function updateReferences(test: string): Promise<void> {
-    const changed = changedAssets(test)
+    const changed = changedSnapshots(test)
     await Promise.all(changed.map(async (file) => {
-        const destination = path.join('..', 'reference_test_assets', test, file)
+        const destination = path.join('..', 'reference_test_snapshots', test, file)
         await fs.mkdir(path.dirname(destination), { recursive: true })
-        await fs.copyFile(path.join('changed_assets', test, file), destination)
+        await fs.copyFile(path.join('changed_snapshots', test, file), destination)
     }))
     // The deltas are against references that no longer exist, so leaving them would only mislead.
-    await Promise.all([`changed_assets/${test}`, `delta/${test}`].map(dir => fs.rm(dir, { recursive: true, force: true })))
-    console.warn(chalkTemplate`{green ${testFile(test)} updated ${changed.length} reference assets}`)
+    await Promise.all([`changed_snapshots/${test}`, `delta/${test}`].map(dir => fs.rm(dir, { recursive: true, force: true })))
+    console.warn(chalkTemplate`{green ${testFile(test)} updated ${changed.length} reference snapshots}`)
 }
