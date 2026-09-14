@@ -12,7 +12,7 @@ export interface GeographySelection {
     geographyKind: typeof validGeographies[number]
 }
 
-export type USSExecutionDescriptor = { kind: 'generic' } | { kind: 'mapper', geographies: GeographySelection[] } | { kind: 'statistics', geographyKind: typeof validGeographies[number], universe: Universe }
+export type USSExecutionDescriptor = { kind: 'generic' } | { kind: 'mapper', geographies: GeographySelection[] } | { kind: 'statistics', geographies: GeographySelection[] }
 export interface USSExecutionRequest { descriptor: USSExecutionDescriptor, stmts: UrbanStatsASTStatement }
 export type AsyncInterpretationError = EditorError[]
 
@@ -42,7 +42,7 @@ export interface USSExecutionResult<Value extends USSValue = USSValue> {
 }
 
 export function executeAsync(request: { descriptor: { kind: 'mapper', geographies: GeographySelection[] }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' | 'clusterMap' } }>>
-export function executeAsync(request: { descriptor: { kind: 'statistics', geographyKind: typeof validGeographies[number], universe: Universe }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: USSOpaqueValue & { opaqueType: 'table' } }>>
+export function executeAsync(request: { descriptor: { kind: 'statistics', geographies: GeographySelection[] }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: USSOpaqueValue & { opaqueType: 'table' } }>>
 export function executeAsync(request: USSExecutionRequest): Promise<USSExecutionResult>
 export async function executeAsync(request: USSExecutionRequest): Promise<USSExecutionResult> {
     sharedUSSWorker ??= createUSSWorker()

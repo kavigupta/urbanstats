@@ -3,14 +3,15 @@ import statistic_name_list from '../data/statistic_name_list'
 import statistic_variables_info from '../data/statistic_variables_info'
 import { defaultTypeEnvironment } from '../mapper/context'
 import { attemptParseAsTopLevel, MapUSS, mapUSSFromString } from '../mapper/settings/map-uss'
+import { universesOf } from '../mapper/settings/utils'
 import type { PageDescriptor } from '../navigation/PageDescriptor'
 import { StatName } from '../page_template/statistic-tree'
-import { Universe } from '../universe'
 import { numberColumnValues, orderCells, orderNonNan, Table, tableType } from '../urban-stats-script/constants/table'
 import { deriveTableLabel, tableLabel } from '../urban-stats-script/derive-human-readable-name'
 import { tableColumnUnitAndName } from '../urban-stats-script/derive-unit'
 import { unparse } from '../urban-stats-script/parser'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
+import { GeographySelection } from '../urban-stats-script/workerManager'
 import { assert } from '../utils/defensive'
 import { reifyString } from '../utils/human-readable-name'
 import { UnitSettings } from '../utils/quantity'
@@ -18,14 +19,15 @@ import { UnitSettings } from '../utils/quantity'
 import { StatColumn, StatData, Statistic, StatSettings, View } from './types'
 
 export function pageDescriptor({ stat, view }: StatSettings): PageDescriptor & { kind: 'statistic' } {
+    const { universe, geographyKind } = stat.geographies[0]
     return {
         kind: 'statistic',
-        article_type: stat.articleType,
+        article_type: geographyKind,
         start: view.start,
         amount: view.amount,
         order: view.order,
         highlight: view.highlight,
-        universe: stat.universe === 'world' ? undefined : stat.universe,
+        universe: universe === 'world' ? undefined : universe,
         edit: view.edit,
         sort_column: view.sortColumn,
         // Needs `undefined` since used with `Navigator.unsafeUpdateCurrentDescriptor`
@@ -34,13 +36,13 @@ export function pageDescriptor({ stat, view }: StatSettings): PageDescriptor & {
 }
 
 /** @public this is included dynamically */
-export function parseStatUSS(uss: string, universe: Universe): MapUSS {
-    return attemptParseAsTopLevel(mapUSSFromString(uss), defaultTypeEnvironment(universe), true, [tableType])
+export function parseStatUSS(uss: string, geographies: GeographySelection[]): MapUSS {
+    return attemptParseAsTopLevel(mapUSSFromString(uss), defaultTypeEnvironment(universesOf(geographies)), true, [tableType])
 }
 
 /** @public this is included dynamically */
-export function tableTitle(uss: MapUSS, universe: Universe, settings: UnitSettings): string | undefined {
-    const label = tableLabel(uss, defaultTypeEnvironment(universe))
+export function tableTitle(uss: MapUSS, geographies: GeographySelection[], settings: UnitSettings): string | undefined {
+    const label = tableLabel(uss, defaultTypeEnvironment(universesOf(geographies)))
     return label === undefined ? undefined : reifyString(label, settings)
 }
 
@@ -49,13 +51,13 @@ export function statPageTitle(stat: Statistic, settings: UnitSettings): string {
     if (stat.type === 'simple') {
         return stat.statName
     }
-    return tableTitle(stat.uss, stat.universe, settings) ?? 'Urban Stats: Custom Table'
+    return tableTitle(stat.uss, stat.geographies, settings) ?? 'Urban Stats: Custom Table'
 }
 
 export function mapUSSFromStat(stat: Statistic): MapUSS {
     return stat.type === 'uss'
         ? stat.uss
-        : parseStatUSS(`customNode(""); condition (true); table(columns=[column(values=${variable(stat.statName).varName})])`, stat.universe)
+        : parseStatUSS(`customNode(""); condition (true); table(columns=[column(values=${variable(stat.statName).varName})])`, stat.geographies)
 }
 
 export function variable(statname: StatName): typeof statistic_variables_info['variableNames'][number] {

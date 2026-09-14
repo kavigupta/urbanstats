@@ -6,8 +6,10 @@ import { parseStatUSS } from '../src/stat/utils'
 import { Universe } from '../src/universe'
 import { addColumn } from '../src/urban-stats-script/add-column'
 import { parseNoErrorAsCustomNode, unparse } from '../src/urban-stats-script/parser'
+import { GeographySelection } from '../src/urban-stats-script/workerManager'
 
 const universe: Universe = 'world'
+const geographies: GeographySelection[] = [{ universe, geographyKind: 'Country' }]
 const typeEnvironment = defaultTypeEnvironment(universe)
 
 const standardPrefix = `customNode("");
@@ -15,14 +17,14 @@ condition (true)
 `
 
 void test('simple table call adds column correctly', (): void => {
-    const ast = parseStatUSS(`${standardPrefix}table(columns=[column(values=population)])`, universe)
+    const ast = parseStatUSS(`${standardPrefix}table(columns=[column(values=population)])`, geographies)
     const colAdder = addColumn(ast, typeEnvironment)
     assert.ok(colAdder, 'addColumn should return a function for table call')
     assert.strictEqual(unparse(colAdder('density_pw_1km')), `${standardPrefix}table(columns=[column(values=population), column(values=density_pw_1km)])`)
 })
 
 void test('table call with multiple columns adds column correctly', (): void => {
-    const ast = parseStatUSS(`${standardPrefix}table(columns=[column(values=population), column(values=density_pw_1km)])`, universe)
+    const ast = parseStatUSS(`${standardPrefix}table(columns=[column(values=population), column(values=density_pw_1km)])`, geographies)
     const colAdder = addColumn(ast, typeEnvironment)
     assert.ok(colAdder, 'addColumn should return a function for table call')
     assert.strictEqual(unparse(colAdder('area')), `${standardPrefix}table(
@@ -35,31 +37,31 @@ void test('table call with multiple columns adds column correctly', (): void => 
 })
 
 void test('table call without columns argument returns undefined', (): void => {
-    const ast = parseStatUSS('table(population=[100, 200, 300])', universe)
+    const ast = parseStatUSS('table(population=[100, 200, 300])', geographies)
     const colAdder = addColumn(ast, typeEnvironment)
     assert.strictEqual(colAdder, undefined, 'addColumn should return undefined when columns argument is missing')
 })
 
 void test('table call with non-vector columns returns undefined', (): void => {
-    const ast = parseStatUSS('table(columns=population)', universe)
+    const ast = parseStatUSS('table(columns=population)', geographies)
     const colAdder = addColumn(ast, typeEnvironment)
     assert.strictEqual(colAdder, undefined, 'addColumn should return undefined when columns is not a vector literal')
 })
 
 void test('non-table call returns undefined', (): void => {
-    const ast = parseStatUSS('linearScale(min=0, max=100)', universe)
+    const ast = parseStatUSS('linearScale(min=0, max=100)', geographies)
     const colAdder = addColumn(ast, typeEnvironment)
     assert.strictEqual(colAdder, undefined, 'addColumn should return undefined for non-table calls')
 })
 
 void test('customNode wrapping table call adds column correctly', (): void => {
-    const customNodeAst = parseStatUSS('1; table(columns=[column(values=population)])', universe)
+    const customNodeAst = parseStatUSS('1; table(columns=[column(values=population)])', geographies)
     const colAdder = addColumn(customNodeAst, typeEnvironment)
     assert.ok(colAdder, 'addColumn should work through customNode')
 
     const result = colAdder('density_pw_1km')
     const unparsed = unparse(result)
-    assert.strictEqual(unparsed, unparse(parseStatUSS('1;table(columns=[column(values=population), column(values=density_pw_1km)])', universe)))
+    assert.strictEqual(unparsed, unparse(parseStatUSS('1;table(columns=[column(values=population), column(values=density_pw_1km)])', geographies)))
 })
 
 void test('statements with table call as last statement adds column correctly', (): void => {
@@ -90,7 +92,7 @@ void test('condition with table call in rest adds column correctly', (): void =>
 })
 
 void test('table call with other named arguments preserves them', (): void => {
-    const ast = parseStatUSS(`${standardPrefix}table(columns=[column(values=population)], population=[100, 200, 300])`, universe)
+    const ast = parseStatUSS(`${standardPrefix}table(columns=[column(values=population)], population=[100, 200, 300])`, geographies)
     const colAdder = addColumn(ast, typeEnvironment)
     assert.ok(colAdder, 'addColumn should return a function for table call')
 
