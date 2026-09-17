@@ -62,7 +62,7 @@ async function describeTable(descriptor: Extract<PageDescriptor, { kind: 'statis
     try {
         // Deferred for the same reason as describeMap's imports.
         const { parseStatUSS, tableTitle } = await import('../../src/stat/utils')
-        const geographies = [{ universe: descriptor.universe ?? 'world', geographyKind: descriptor.article_type } as GeographySelection]
+        const geographies = descriptor.geographies as GeographySelection[]
         return tableTitle(parseStatUSS(descriptor.uss, geographies), geographies, {})
     }
     catch {

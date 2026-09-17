@@ -136,9 +136,8 @@ function AlternativeLink({ stat, view, alternative, footnote }: {
             style={{ color: colors.blueLink }}
             {...navContext.link({
                 kind: 'statistic',
-                universe,
+                geographies: [{ universe, geographyKind: articleType }],
                 statname,
-                article_type: articleType,
                 start: 1,
                 amount: view.amount,
                 order: view.order,

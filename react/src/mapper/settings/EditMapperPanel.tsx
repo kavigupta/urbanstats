@@ -402,12 +402,11 @@ function Export(props: { pngExport?: () => Promise<void>, geoJSONExport?: () => 
         if (!tableExpression) return
         void navContext.navigate({
             kind: 'statistic',
-            article_type: props.mapSettings.geographies[0].geographyKind,
+            geographies: [props.mapSettings.geographies[0]],
             uss: unparse(tableExpression),
             start: 1,
             amount: 20,
             order: 'descending',
-            universe: props.mapSettings.geographies[0].universe,
             edit: true,
             sort_column: 0,
         }, {

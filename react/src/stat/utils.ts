@@ -19,15 +19,13 @@ import { UnitSettings } from '../utils/quantity'
 import { StatColumn, StatData, Statistic, StatSettings, View } from './types'
 
 export function pageDescriptor({ stat, view }: StatSettings): PageDescriptor & { kind: 'statistic' } {
-    const { universe, geographyKind } = stat.geographies[0]
     return {
         kind: 'statistic',
-        article_type: geographyKind,
+        geographies: stat.geographies,
         start: view.start,
         amount: view.amount,
         order: view.order,
         highlight: view.highlight,
-        universe: universe === 'world' ? undefined : universe,
         edit: view.edit,
         sort_column: view.sortColumn,
         // Needs `undefined` since used with `Navigator.unsafeUpdateCurrentDescriptor`

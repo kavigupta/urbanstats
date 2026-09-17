@@ -1014,9 +1014,8 @@ function StatisticName(props: {
                         className="underline_on_hover"
                         {...navContext.link({
                             kind: 'statistic',
-                            universe: props.currentUniverse,
+                            geographies: [{ universe: props.currentUniverse ?? 'world', geographyKind: props.row.articleType }],
                             statname: props.row.statname,
-                            article_type: props.row.articleType,
                             start: props.row.ordinal,
                             amount: 20,
                             order: 'descending',
