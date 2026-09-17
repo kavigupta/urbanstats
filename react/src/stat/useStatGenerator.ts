@@ -51,7 +51,7 @@ export interface StatGenerator {
     data: StatData | undefined
     errors: EditorError[]
     universesFiltered: readonly Universe[]
-    /** Only loaded where the rows come from several universes, the page's own answering otherwise. */
+    /** The universe each row's geography came from. Undefined when the page has just one. */
     universeByName: Map<string, Universe> | undefined
     assignments: AssignmentsResult
 }
@@ -134,10 +134,9 @@ async function makeStatGenerator({ stat, typeEnvironment, previousGenerator }: {
     }
 }
 
-/** Kept across the edits that rerun the generator, since every one of them would load it again. */
+/** The generator reruns on every edit, and each rerun would otherwise load the indices again. */
 let loadedUniverseByName: { key: string, universeByName: Promise<Map<string, Universe>> } | undefined
 
-/** Undefined where one universe covers every row, which the page already knows its name for. */
 async function universeOfEachRow(geographies: GeographySelection[]): Promise<Map<string, Universe> | undefined> {
     if (geographies.length <= 1) {
         return undefined

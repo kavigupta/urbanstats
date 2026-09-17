@@ -60,8 +60,8 @@ async function describeMap(settings: string | undefined): Promise<{ title: strin
 async function describeTable(descriptor: Extract<PageDescriptor, { kind: 'statistic' }> & { uss: string }): Promise<string | undefined> {
     try {
         // Deferred for the same reason as describeMap's imports.
-        const { parseStatUSS, statGeographies, tableTitle } = await import('../../src/stat/utils')
-        const geographies = statGeographies(descriptor.geographies, descriptor.article_type, descriptor.universe ?? 'world')
+        const { parseStatUSS, tableTitle } = await import('../../src/stat/utils')
+        const { geographies } = descriptor
         return tableTitle(parseStatUSS(descriptor.uss, geographies), geographies, {})
     }
     catch {

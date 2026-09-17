@@ -142,7 +142,7 @@ export function StatisticPanelPage({ view, stat, data, universeByName, set, load
 
 function StatisticPanelHead({ geographies }: { geographies: GeographySelection[] }): ReactNode {
     const headerTextClass = useHeaderTextClass()
-    // One geography names its universe in the header's flag rather than in the heading.
+    // With one geography the header's flag already shows the universe.
     const single = geographies.length === 1 ? geographies[0] : undefined
     return (
         <div className={headerTextClass}>

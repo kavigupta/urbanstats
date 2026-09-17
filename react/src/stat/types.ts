@@ -7,7 +7,7 @@ import { HumanReadableName } from '../utils/human-readable-element'
 import { StoredUnit } from '../utils/quantity'
 
 export type Statistic = {
-    /** A simple statistic ranks one geography; a custom table may span several. */
+    /** A simple statistic always has exactly one; a custom table may have several. */
     geographies: GeographySelection[]
 } & ({
     type: 'uss'

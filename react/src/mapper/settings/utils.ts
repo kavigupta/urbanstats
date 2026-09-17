@@ -69,7 +69,7 @@ export function universesOf(geographies: GeographySelection[]): Universe[] {
     return Array.from(new Set(geographies.map(g => g.universe)))
 }
 
-/** "Counties in USA and Communes in France", as a page or a card names what it is over. */
+/** e.g. "Counties in USA and Communes in France". */
 export function describeGeographies(geographies: GeographySelection[]): string {
     const described = geographies.map(({ universe, geographyKind }) => `${displayType(universe, geographyKind)} in ${universe}`)
     return described.length <= 1 ? described.join('') : `${described.slice(0, -1).join(', ')} and ${described[described.length - 1]}`

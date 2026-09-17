@@ -33,7 +33,7 @@ export async function mergedByName<T>(geographies: GeographySelection[], load: (
     return new Map(loaded.flatMap(byName => Array.from(byName.entries())))
 }
 
-/** Which universe each geography was drawn from, so a row or a shape can link to its own article. */
+/** The universe each geography came from, keyed by longname. */
 export async function universesByName(geographies: GeographySelection[]): Promise<Map<string, Universe>> {
     return mergedByName(geographies, async (g) => {
         const ordering = await loadProtobuf(indexLink(g.universe, g.geographyKind), 'ArticleOrderingList')

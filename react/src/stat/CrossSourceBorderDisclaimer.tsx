@@ -3,6 +3,7 @@ import React, { ReactNode, useContext, useMemo } from 'react'
 import { CountsByUT } from '../components/countsByArticleType'
 import { useScreenshotMode } from '../components/screenshot'
 import { Navigator } from '../navigation/Navigator'
+import { statisticGeographies } from '../navigation/PageDescriptor'
 import { useColors } from '../page_template/colors'
 import { displayType, separateNumber } from '../utils/text'
 
@@ -136,9 +137,8 @@ function AlternativeLink({ stat, view, alternative, footnote }: {
             style={{ color: colors.blueLink }}
             {...navContext.link({
                 kind: 'statistic',
-                universe,
+                geographies: statisticGeographies(universe, articleType),
                 statname,
-                article_type: articleType,
                 start: 1,
                 amount: view.amount,
                 order: view.order,

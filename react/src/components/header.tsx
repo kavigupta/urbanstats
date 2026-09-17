@@ -4,7 +4,7 @@ import '../common.css'
 import flag_dimensions from '../data/flag_dimensions'
 import statistic_name_list from '../data/statistic_name_list'
 import { Navigator } from '../navigation/Navigator'
-import { ExceptionalPageDescriptor } from '../navigation/PageDescriptor'
+import { ExceptionalPageDescriptor, statisticGeographies } from '../navigation/PageDescriptor'
 import { universePath } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { useHeaderLogoKey, useHideSidebarDesktop } from '../page_template/utils'
@@ -116,9 +116,8 @@ export function Header(props: {
                                 const currentDescriptor = navContext.currentDescriptor
                                 return navContext.link({
                                     kind: 'statistic',
-                                    universe,
+                                    geographies: statisticGeographies(universe, articleType),
                                     statname: statistic_name_list[statisticIndex],
-                                    article_type: articleType,
                                     start: 1,
                                     // Preserve the amount if we're already on a statistics page
                                     amount: currentDescriptor.kind === 'statistic'

@@ -48,7 +48,7 @@ export function StatisticPanelTable({ view, stat, data, universeByName, set, tab
 
     const onlyColumns: ColumnIdentifier[] = data.hideOrdinalsPercentiles ? valueOnlyColumns : ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
 
-    // Only read where ordinals are written out in full, which the panel never does.
+    // Only used to write an ordinal out in full, which the panel never does.
     const geographyKind = stat.geographies[0]?.geographyKind ?? ''
 
     const allColumnRows: StatisticCellRenderingInfo[][] = data.table.map((col) => {

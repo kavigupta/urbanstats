@@ -6,6 +6,7 @@ import type { ComparisonPanel } from '../components/comparison-panel'
 import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
 import { ArticleRow, loadArticles } from '../components/load-article'
 import type { QuizPanel } from '../components/quiz-panel'
+import valid_geographies from '../data/mapper/used_geographies'
 import statnames from '../data/statistic_name_list'
 import type { DataCreditPanel } from '../data-credit'
 import type { EmbedPreviewPanel } from '../dev/EmbedPreviewPanel'
@@ -31,6 +32,7 @@ import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse, Universe, universeSchema } from '../universe'
 import type { DebugEditorPanel } from '../urban-stats-script/DebugEditorPanel'
 import { constantCategories, type ConstantCategory } from '../urban-stats-script/documentation-category'
+import type { GeographySelection } from '../urban-stats-script/workerManager'
 import type { USSDocumentationPanel } from '../uss-documentation'
 import type { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
@@ -71,12 +73,9 @@ const comparisonSchemaFromParams = z.object({
     s: z.optional(z.string()),
 })
 
-const statisticGeographySchema = z.object({ universe: universeSchema, geographyKind: z.string() })
+const statisticGeographySchema = z.object({ universe: universeSchema, geographyKind: z.enum(valid_geographies) })
 
-/**
- * A universe that no longer exists drops its pair, rather than the whole link. The parse has to
- * report an issue rather than throw, so that a malformed param is caught the way the others are.
- */
+/** A geography that no longer exists is dropped, as are all of them if the param is not a list. */
 const statisticGeographiesFromParam = z.string()
     .transform((value, ctx): unknown => {
         try {
@@ -90,15 +89,18 @@ const statisticGeographiesFromParam = z.string()
     .pipe(z.array(z.optional(statisticGeographySchema).catch(undefined)))
     .transform(geographies => geographies.filter(geography => geography !== undefined))
 
+/** The one geography a link names, dropped if it is not a kind the site ranks. */
+export function statisticGeographies(universe: Universe, geographyKind: string | undefined): GeographySelection[] {
+    const geography = statisticGeographySchema.safeParse({ universe, geographyKind })
+    return geography.success ? [geography.data] : []
+}
+
 const statisticSchema = z.object({
-    // Absent when `geographies` names them instead, which it does for anything but a single one.
-    article_type: z.optional(z.string()),
-    geographies: z.optional(z.array(statisticGeographySchema)),
+    geographies: z.array(statisticGeographySchema),
     start: z.number().int(),
     amount: z.union([z.literal('All'), z.number().int()]),
     order: z.union([z.literal('descending'), z.literal('ascending')]),
     highlight: z.optional(z.string()),
-    universe: z.optional(universeSchema),
     edit: z.optional(z.boolean()),
     sort_column: z.optional(z.number().int()),
 }).and(
@@ -130,14 +132,16 @@ const statisticSchemaFromParams = z.union([
         z.object({
             uss: z.string(),
         }),
-    ])),
+    ])).transform(({ article_type, universe, geographies, ...rest }) => ({
+        ...rest,
+        geographies: geographies ?? statisticGeographies(universe ?? 'world', article_type),
+    })),
     z.object({}).transform(() => ({
-        article_type: 'Subnational Region',
+        geographies: [{ universe: 'USA', geographyKind: 'Subnational Region' } as const],
         uss: 'customNode(""); condition (true); table(columns=[column(values=density_pw_1km)])',
         start: 1,
         amount: 20,
         order: 'descending' as const,
-        universe: 'USA' as const,
         edit: true,
         sort_column: 0,
     })),
@@ -360,15 +364,17 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             break
         case 'statistic':
             pathname = '/statistic.html'
+            // One geography keeps naming itself in the scalar params that every older link uses.
+            const statisticGeography = pageDescriptor.geographies.length === 1 ? pageDescriptor.geographies[0] : undefined
             searchParams = {
                 ...('uss' in pageDescriptor ? { uss: pageDescriptor.uss } : { statname: pageDescriptor.statname.replaceAll('%', '__PCT__') }),
-                article_type: pageDescriptor.article_type,
-                geographies: pageDescriptor.geographies === undefined ? undefined : JSON.stringify(pageDescriptor.geographies),
+                article_type: statisticGeography?.geographyKind,
+                geographies: statisticGeography === undefined ? JSON.stringify(pageDescriptor.geographies) : undefined,
                 start: pageDescriptor.start.toString(),
                 amount: pageDescriptor.amount.toString(),
                 order: pageDescriptor.order === 'descending' ? undefined : 'ascending',
                 highlight: pageDescriptor.highlight,
-                universe: pageDescriptor.universe,
+                universe: statisticGeography === undefined || statisticGeography.universe === 'world' ? undefined : statisticGeography.universe,
                 edit: pageDescriptor.edit ? 'true' : undefined,
                 sort_column: pageDescriptor.sort_column === undefined || pageDescriptor.sort_column === 0
                     ? undefined
@@ -584,8 +590,6 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             const panel = import('../stat/StatisticPanel')
             const utils = await import('../stat/utils')
 
-            const statUniverse = newDescriptor.universe ?? 'world'
-
             // Pin the start position correctly to the beginning of the page
             let start = newDescriptor.start
             if (newDescriptor.amount !== 'All') {
@@ -594,7 +598,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 start = start + 1
             }
 
-            const geographies = utils.statGeographies(newDescriptor.geographies, newDescriptor.article_type, statUniverse)
+            const { geographies } = newDescriptor
 
             const stat: Statistic = {
                 geographies,
@@ -630,7 +634,6 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 newPageDescriptor: {
                     ...newDescriptor,
                     start,
-                    ...utils.statisticGeographyParams(geographies),
                     highlight: undefined,
                 },
                 effects: () => undefined,

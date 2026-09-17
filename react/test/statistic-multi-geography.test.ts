@@ -86,6 +86,15 @@ test('a link whose geographies are malformed falls back to the scalars', async (
     await t.expect(getErrors()).eql([])
 })
 
+urbanstatsFixture('a link naming a universe that no longer exists', `${target}/statistic.html?uss=${encodeURIComponent(uss)}&start=1&amount=5&edit=true&geographies=${encodeURIComponent(JSON.stringify([{ universe: 'USA', geographyKind: 'Subnational Region' }, { universe: 'Cascadia', geographyKind: 'Subnational Region' }]))}`)
+
+test('a geography that no longer exists is dropped rather than failing the link', async (t) => {
+    await waitForLoading()
+    await t.expect(Selector('[data-test-id=test-geography-row]').count).eql(1)
+    await t.expect(rowInput(0, 0).value).eql('USA')
+    await t.expect(getErrors()).eql([])
+})
+
 // The form every link made before a table could span several geographies is in.
 urbanstatsFixture('a link naming its geography as scalars', `${target}/statistic.html?uss=${encodeURIComponent(uss)}&article_type=County&universe=USA&start=1&amount=5&edit=true`)
 

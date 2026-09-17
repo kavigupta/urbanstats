@@ -6,7 +6,7 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useStat
 import { ArticleOrderingListInternal, loadOrdering, loadStatisticsPage } from '../load_json'
 import './table.css'
 import { NavLink, Navigator } from '../navigation/Navigator'
-import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
+import { statisticGeographies, urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings, useUnitSettings } from '../page_template/settings'
@@ -1014,9 +1014,8 @@ function StatisticName(props: {
                         className="underline_on_hover"
                         {...navContext.link({
                             kind: 'statistic',
-                            universe: props.currentUniverse,
+                            geographies: statisticGeographies(props.currentUniverse ?? 'world', props.row.articleType),
                             statname: props.row.statname,
-                            article_type: props.row.articleType,
                             start: props.row.ordinal,
                             amount: 20,
                             order: 'descending',

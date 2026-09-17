@@ -163,7 +163,7 @@ export interface StatisticCard {
     filter: HumanReadableName | undefined
     /** One per row of the page, in the order the page sorts them. */
     rows: { longname: string, ordinal: number | undefined, values: TableCellValue[] }[]
-    /** Absent where the rows come from several universes, which no one flag stands for. */
+    /** Undefined when the rows span several universes, which no one flag stands for. */
     universe: string | undefined
     /** The flag as a data URI, or undefined if it could not be read. */
     flag: string | undefined

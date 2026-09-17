@@ -115,7 +115,7 @@ export function StatisticPanel({ settings, counts }: { settings: StatSettings, c
 
     const generator = useStatGenerator({ stat: generatorSettings.stat, typeEnvironment })
 
-    // A table spanning several geographies has no single universe for the header to switch.
+    // With several geographies there is no single universe for the header to switch.
     const singleGeography = stat.geographies.length === 1 ? stat.geographies[0] : undefined
 
     return (

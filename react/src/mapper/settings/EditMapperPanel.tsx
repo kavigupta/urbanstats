@@ -7,7 +7,6 @@ import { Navigator } from '../../navigation/Navigator'
 import { useColors } from '../../page_template/colors'
 import { useUnitSettings } from '../../page_template/settings'
 import { PageTemplate } from '../../page_template/template'
-import { statisticGeographyParams } from '../../stat/utils'
 import { universeContext } from '../../universe'
 import { Inset } from '../../urban-stats-script/constants/insets'
 import { documentLength } from '../../urban-stats-script/constants/rich-text'
@@ -402,7 +401,7 @@ function Export(props: { pngExport?: () => Promise<void>, geoJSONExport?: () => 
         if (!tableExpression) return
         void navContext.navigate({
             kind: 'statistic',
-            ...statisticGeographyParams(props.mapSettings.geographies),
+            geographies: props.mapSettings.geographies,
             uss: unparse(tableExpression),
             start: 1,
             amount: 20,
