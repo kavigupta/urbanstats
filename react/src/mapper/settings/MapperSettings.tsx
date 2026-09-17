@@ -23,7 +23,6 @@ export function MapperSettings({
     counts,
     typeEnvironment,
     targetOutputTypes,
-    singleGeography = false,
     assignments,
 }: {
     mapSettings: MapSettings
@@ -32,7 +31,6 @@ export function MapperSettings({
     counts: CountsByUT
     typeEnvironment: TypeEnvironment
     targetOutputTypes: USSType[]
-    singleGeography?: boolean
     assignments: AssignmentsResult
 }): ReactNode {
     const uss = mapSettings.script.uss
@@ -43,9 +41,7 @@ export function MapperSettings({
 
     return (
         <>
-            {singleGeography
-                ? <SingleGeographyEditor geography={mapSettings.geographies[0]} setGeographies={setGeographies} counts={counts} />
-                : <GeographyListEditor geographies={mapSettings.geographies} setGeographies={setGeographies} counts={counts} />}
+            <GeographyListEditor geographies={mapSettings.geographies} setGeographies={setGeographies} counts={counts} />
             <TopLevelEditor
                 uss={uss}
                 setUss={(newUss, options) => {
@@ -59,43 +55,6 @@ export function MapperSettings({
                 targetOutputTypes={targetOutputTypes}
                 assignments={assignments}
             />
-        </>
-    )
-}
-
-/** Blanking the universe selects no geography at all, which is how a map says it has nothing to draw. */
-function SingleGeographyEditor({ geography, setGeographies, counts }: {
-    geography: GeographySelection | undefined
-    setGeographies: (g: GeographySelection[]) => void
-    counts: CountsByUT
-}): ReactNode {
-    const universes = useMemo(() => [undefined, ...universes_ordered], [])
-
-    return (
-        <>
-            <div style={settingNameStyle}>
-                Universe
-            </div>
-            <BetterSelector
-                possibleValues={universes}
-                value={geography?.universe}
-                renderValue={renderUniverse}
-                onChange={(newUniverse) => {
-                    setGeographies(newUniverse === undefined ? [] : [withUniverse(geography ?? defaultGeography, newUniverse, counts)])
-                }}
-            />
-            {geography !== undefined && (
-                <>
-                    <div style={settingNameStyle}>
-                        Geography Kind
-                    </div>
-                    <GeographyKindSelector
-                        geography={geography}
-                        counts={counts}
-                        onChange={(newGeography) => { setGeographies([newGeography]) }}
-                    />
-                </>
-            )}
         </>
     )
 }

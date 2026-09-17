@@ -32,7 +32,6 @@ import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse, Universe, universeSchema } from '../universe'
 import type { DebugEditorPanel } from '../urban-stats-script/DebugEditorPanel'
 import { constantCategories, type ConstantCategory } from '../urban-stats-script/documentation-category'
-import type { GeographySelection } from '../urban-stats-script/workerManager'
 import type { USSDocumentationPanel } from '../uss-documentation'
 import type { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
@@ -75,6 +74,20 @@ const comparisonSchemaFromParams = z.object({
 
 const statisticGeographySchema = z.object({ universe: universeSchema, geographyKind: z.enum(valid_geographies) })
 
+/** A geography that no longer exists is dropped, as are all of them if the param is not a list. */
+const statisticGeographiesFromParam = z.string()
+    .transform((value, ctx): unknown => {
+        try {
+            return JSON.parse(value)
+        }
+        catch {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'geographies is not JSON' })
+            return z.NEVER
+        }
+    })
+    .pipe(z.array(z.optional(statisticGeographySchema).catch(undefined)))
+    .transform(geographies => geographies.filter(geography => geography !== undefined))
+
 const statisticSchema = z.object({
     geographies: z.array(statisticGeographySchema),
     start: z.number().int(),
@@ -96,7 +109,8 @@ const statisticSchema = z.object({
 
 const statisticSchemaFromParams = z.union([
     z.object({
-        article_type: z.enum(valid_geographies),
+        article_type: z.optional(z.enum(valid_geographies)).catch(undefined),
+        geographies: z.optional(statisticGeographiesFromParam).catch(undefined),
         start: z.optional(z.coerce.number().int()).default(1),
         amount: z.union([z.literal('All'), z.coerce.number().int(), z.undefined().transform(() => 10)]),
         order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
@@ -111,9 +125,9 @@ const statisticSchemaFromParams = z.union([
         z.object({
             uss: z.string(),
         }),
-    ])).transform(({ article_type, universe, ...rest }) => ({
+    ])).transform(({ article_type, universe, geographies, ...rest }) => ({
         ...rest,
-        geographies: [{ universe: universe ?? 'world', geographyKind: article_type }],
+        geographies: geographies ?? (article_type === undefined ? [] : [{ universe: universe ?? 'world', geographyKind: article_type }]),
     })),
     z.object({}).transform(() => ({
         geographies: [{ universe: 'USA', geographyKind: 'Subnational Region' } as const],
@@ -343,15 +357,17 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             break
         case 'statistic':
             pathname = '/statistic.html'
-            const [statisticGeography] = pageDescriptor.geographies
+            // One geography keeps naming itself in the scalar params that every older link uses.
+            const statisticGeography = pageDescriptor.geographies.length === 1 ? pageDescriptor.geographies[0] : undefined
             searchParams = {
                 ...('uss' in pageDescriptor ? { uss: pageDescriptor.uss } : { statname: pageDescriptor.statname.replaceAll('%', '__PCT__') }),
-                article_type: statisticGeography.geographyKind,
+                article_type: statisticGeography?.geographyKind,
+                geographies: statisticGeography === undefined ? JSON.stringify(pageDescriptor.geographies) : undefined,
                 start: pageDescriptor.start.toString(),
                 amount: pageDescriptor.amount.toString(),
                 order: pageDescriptor.order === 'descending' ? undefined : 'ascending',
                 highlight: pageDescriptor.highlight,
-                universe: statisticGeography.universe === 'world' ? undefined : statisticGeography.universe,
+                universe: statisticGeography === undefined || statisticGeography.universe === 'world' ? undefined : statisticGeography.universe,
                 edit: pageDescriptor.edit ? 'true' : undefined,
                 sort_column: pageDescriptor.sort_column === undefined || pageDescriptor.sort_column === 0
                     ? undefined
@@ -575,7 +591,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 start = start + 1
             }
 
-            const geographies = newDescriptor.geographies as GeographySelection[]
+            const { geographies } = newDescriptor
 
             const stat: Statistic = {
                 geographies,

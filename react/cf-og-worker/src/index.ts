@@ -10,7 +10,6 @@
 import './browser-shim'
 
 import { PageDescriptor, pageDescriptorFromURL } from '../../src/navigation/PageDescriptor'
-import { GeographySelection } from '../../src/urban-stats-script/workerManager'
 
 interface Embed {
     title: string
@@ -62,7 +61,7 @@ async function describeTable(descriptor: Extract<PageDescriptor, { kind: 'statis
     try {
         // Deferred for the same reason as describeMap's imports.
         const { parseStatUSS, tableTitle } = await import('../../src/stat/utils')
-        const geographies = descriptor.geographies as GeographySelection[]
+        const { geographies } = descriptor
         return tableTitle(parseStatUSS(descriptor.uss, geographies), geographies, {})
     }
     catch {

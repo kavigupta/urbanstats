@@ -7,7 +7,7 @@ import { ArticleStatisticRow, getHighlightIndex } from '../../src/components/loa
 import { shapesByName } from '../../src/consolidated-shapes'
 import { defaultTypeEnvironment } from '../../src/mapper/context'
 import { centroidsByName, markerArea, markerRadius, MapResult, mapVisuals, mergedByName } from '../../src/mapper/map-rendering'
-import { Basemap, computeUSS, dedupeGeographies, universesOf } from '../../src/mapper/settings/utils'
+import { Basemap, computeUSS, dedupeGeographies, describeGeographies, universesOf } from '../../src/mapper/settings/utils'
 import { loadPageDescriptor, PageData, PageDescriptor } from '../../src/navigation/PageDescriptor'
 import { universePath } from '../../src/navigation/links'
 import { Settings, SettingsDictionary } from '../../src/page_template/settings'
@@ -30,7 +30,6 @@ import { reifyString } from '../../src/utils/human-readable-name'
 import { Feature } from '../../src/utils/protos'
 import { StoredUnit } from '../../src/utils/quantity'
 import { loadFeatureFromPossibleSymlink } from '../../src/utils/symlinks'
-import { displayType } from '../../src/utils/text'
 import { NormalizeProto } from '../../src/utils/types'
 
 import { Ring } from './map-layout'
@@ -164,7 +163,8 @@ export interface StatisticCard {
     filter: HumanReadableName | undefined
     /** One per row of the page, in the order the page sorts them. */
     rows: { longname: string, ordinal: number | undefined, values: TableCellValue[] }[]
-    universe: string
+    /** Undefined when the rows span several universes, which no one flag stands for. */
+    universe: string | undefined
     /** The flag as a data URI, or undefined if it could not be read. */
     flag: string | undefined
     units: Units
@@ -177,8 +177,9 @@ export interface StatisticCard {
 export async function statisticCard(origin: string, pageData: Extract<PageData, { kind: 'statistic' }>, settings: Settings): Promise<StatisticCard | undefined> {
     setOrigin(origin)
     const { stat, view } = pageData.settings
-    const { geographies } = stat
-    const typeEnvironment = defaultTypeEnvironment(universesOf(geographies))
+    const geographies = dedupeGeographies(stat.geographies)
+    const universes = universesOf(geographies)
+    const typeEnvironment = defaultTypeEnvironment(universes)
     const mapUSS = mapUSSFromStat(stat)
     // Its own executor: each card is a page of its own, so one kept across them would only hold
     // the previous page's columns in the isolate.
@@ -201,7 +202,7 @@ export async function statisticCard(origin: string, pageData: Extract<PageData, 
     const page = pageRowIndices(sortedRowIndices(data, sortColumn, view.order), view.start, view.amount)
 
     return {
-        heading: displayType(geographies[0].universe, geographies[0].geographyKind),
+        heading: describeGeographies(geographies),
         title: typeof data.renderedStatname === 'string'
             ? data.renderedStatname
             : data.renderedStatname.filter(element => element.type !== 'where'),
@@ -215,8 +216,8 @@ export async function statisticCard(origin: string, pageData: Extract<PageData, 
             ordinal: data.table[sortColumn].ordinal?.[index],
             values: columns.map(column => column.value[index]),
         })),
-        universe: geographies[0].universe,
-        flag: await flagImage(geographies[0].universe),
+        universe: universes.length === 1 ? universes[0] : undefined,
+        flag: universes.length === 1 ? await flagImage(universes[0]) : undefined,
         units: settings.getMultiple(['use_imperial', 'temperature_unit']),
     }
 }

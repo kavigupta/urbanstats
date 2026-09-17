@@ -33,6 +33,14 @@ export async function mergedByName<T>(geographies: GeographySelection[], load: (
     return new Map(loaded.flatMap(byName => Array.from(byName.entries())))
 }
 
+/** The universe each geography came from, keyed by longname. */
+export async function universesByName(geographies: GeographySelection[]): Promise<Map<string, Universe>> {
+    return mergedByName(geographies, async (g) => {
+        const ordering = await loadProtobuf(indexLink(g.universe, g.geographyKind), 'ArticleOrderingList')
+        return new Map(ordering.longnames.map(longname => [longname, g.universe]))
+    })
+}
+
 /** Keyed by longname, which is how a map's result names its geographies. */
 export async function centroidsByName(universe: Universe, geographyKind: string): Promise<Map<string, ICoordinate>> {
     const ordering = await loadProtobuf(indexLink(universe, geographyKind), 'ArticleOrderingList')
