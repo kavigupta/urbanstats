@@ -6,12 +6,11 @@ import type_ordering_idx from '../src/data/type_ordering_idx'
 import './util/fetch'
 import { createIndex, SearchResult, simulateSlowSearchDelayMs } from '../src/search'
 import { Universe } from '../src/universe'
-import { GeographyKind } from '../src/urban-stats-script/workerManager'
 import { DefaultMap } from '../src/utils/DefaultMap'
 
 const search = new DefaultMap<Universe | AllUniverses | undefined, ReturnType<typeof createIndex>>(statsUniverse => createIndex({ cacheKey: undefined, statsUniverse }, () => Promise.resolve()))
 
-const computeNthResult = async (n: number, query: string, prioritizeType: GeographyKind | undefined, statsUniverse: Universe | AllUniverses | undefined): Promise<SearchResult> => (await search.get(statsUniverse))({
+const computeNthResult = async (n: number, query: string, prioritizeType: string | undefined, statsUniverse: Universe | AllUniverses | undefined): Promise<SearchResult> => (await search.get(statsUniverse))({
     unnormalizedPattern: query,
     maxResults: 10,
     showSettings: {
@@ -22,7 +21,7 @@ const computeNthResult = async (n: number, query: string, prioritizeType: Geogra
 })[n]
 
 // We curry based on testFn so we can use test.only, test.skip, etc
-const nthResult = (testFn: (name: string, testBlock: () => void) => void) => (n: number, query: string, result: string, prioritizeType?: GeographyKind, statsUniverse?: Universe | AllUniverses): void => {
+const nthResult = (testFn: (name: string, testBlock: () => void) => void) => (n: number, query: string, result: string, prioritizeType?: string, statsUniverse?: Universe | AllUniverses): void => {
     const parentheticalElements = []
     if (prioritizeType !== undefined) {
         parentheticalElements.push(`Prioritizing ${prioritizeType}`)

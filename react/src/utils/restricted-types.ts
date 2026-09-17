@@ -18,14 +18,14 @@ const populationCircles = Object.entries(type_ordering_idx).filter(([name]) => n
 
 function isHistoricalCD(typeOrTypeIndex: number | string): boolean {
     if (typeof typeOrTypeIndex === 'string') {
-        return historicalCongressionals.some(key => key === typeOrTypeIndex)
+        return historicalCongressionals.includes(typeOrTypeIndex)
     }
     return historicalCongressionalsIdx.includes(typeOrTypeIndex)
 }
 
 function isPopulationCircle(typeOrTypeIndex: number | string): boolean {
     if (typeof typeOrTypeIndex === 'string') {
-        return Object.keys(type_ordering_idx).some(name => name.endsWith('Person Circle') && name === typeOrTypeIndex)
+        return Object.keys(type_ordering_idx).filter(name => name.endsWith('Person Circle')).includes(typeOrTypeIndex)
     }
     return populationCircles.includes(typeOrTypeIndex)
 }

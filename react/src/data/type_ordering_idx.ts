@@ -1,8 +1,4 @@
-import used_geographies from './mapper/used_geographies'
-
-type GeographyKind = typeof used_geographies[number]
-
-const value: Record<GeographyKind, number> = {
+const value: Record<string, number> = {
     "Continent": 0,
     "Country": 1,
     "Subnational Region": 2,

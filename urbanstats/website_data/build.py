@@ -63,6 +63,14 @@ from ..utils import output_typescript
 from .colors import hue_colors, related_button_colors
 
 
+GEOGRAPHY_KIND_IMPORT = (
+    "import used_geographies from './mapper/used_geographies'\n"
+    "\n"
+    "type GeographyKind = typeof used_geographies[number]\n"
+    "\n"
+)
+
+
 def check_proto_hash() -> None:
     with open("data_files.proto", "rb") as f:
         h = hashlib.sha256(f.read()).hexdigest()
@@ -97,7 +105,12 @@ def create_react_jsons() -> None:
         output_typescript(type_to_type_category, f, data_type="Record<string, string>")
 
     with open("react/src/data/type_ordering_idx.ts", "w") as f:
-        output_typescript(type_ordering_idx, f, data_type="Record<string, number>")
+        output_typescript(
+            type_ordering_idx,
+            f,
+            data_type="Record<GeographyKind, number>",
+            imports=GEOGRAPHY_KIND_IMPORT,
+        )
 
     with open("react/src/data/type_to_priority.ts", "w") as f:
         output_typescript(type_to_priority_list(), f, data_type="number[]")
@@ -145,7 +158,16 @@ def create_react_jsons() -> None:
         output_typescript(syau_regions(), f)
 
     with open("react/src/data/cross_source_border_types.ts", "w") as f:
-        output_typescript(cross_source_border_types(), f)
+        output_typescript(
+            cross_source_border_types(),
+            f,
+            data_type=(
+                "Partial<Record<GeographyKind, { alternativeGeographyTypes:"
+                " GeographyKind[],"
+                " reasonForNoAlternatives: string | null }>>"
+            ),
+            imports=GEOGRAPHY_KIND_IMPORT,
+        )
 
     with open("react/src/data/universe_data_source_country.ts", "w") as f:
         output_typescript(
