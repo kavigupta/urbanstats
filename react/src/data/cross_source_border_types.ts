@@ -1,4 +1,8 @@
-const value: Record<string, { alternativeGeographyTypes: string[], reasonForNoAlternatives: string | null }> = {
+import used_geographies from './mapper/used_geographies'
+
+type GeographyKind = typeof used_geographies[number]
+
+const value: Partial<Record<GeographyKind, { alternativeGeographyTypes: GeographyKind[], reasonForNoAlternatives: string | null }>> = {
     "Urban Center": {
         "alternativeGeographyTypes": [
             "Urban Area",

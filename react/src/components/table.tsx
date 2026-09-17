@@ -28,7 +28,7 @@ import { percentileSuffix, percentileText, Statistic } from './display-stats'
 import { EditModeButton, EditModeTopLeftHeader, useEnterEditModeButton } from './edit-mode-header'
 import { EditableNumber } from './editable-field'
 import { footnoteSymbol } from './footnote-symbol'
-import { ArticleRow, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
+import { ArticleRow, FirstLastStatus, missingRowType, StatisticCellRenderingInfo } from './load-article'
 import { percentileBucketIndex } from './percentile-navigation'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
@@ -1008,7 +1008,7 @@ function StatisticName(props: {
                     {reifyReact(props.displayName, unitSettings)}
                 </a>
             )
-        : props.row?.kind === 'statistic'
+        : props.row?.kind === 'statistic' && props.row.articleType !== missingRowType
             ? (
                     <a
                         className="underline_on_hover"

@@ -7,9 +7,11 @@ import { UrbanStatsASTStatement } from './ast'
 import { EditorError } from './editor-utils'
 import { USSOpaqueType, USSOpaqueValue, USSValue } from './types-values'
 
+export type GeographyKind = typeof validGeographies[number]
+
 export interface GeographySelection {
     universe: Universe
-    geographyKind: typeof validGeographies[number]
+    geographyKind: GeographyKind
 }
 
 export type USSExecutionDescriptor = { kind: 'generic' } | { kind: 'mapper', geographies: GeographySelection[] } | { kind: 'statistics', geographies: GeographySelection[] }
