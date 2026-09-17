@@ -1,5 +1,6 @@
 import explanation_page from '../data/explanation_page'
 import extra_stats from '../data/extra_stats'
+import validGeographies from '../data/mapper/used_geographies'
 import metadata from '../data/metadata'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list'
@@ -8,6 +9,7 @@ import units from '../data/statistic_unit_list'
 import { loadProtobuf } from '../load_json'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
+import { GeographyKind } from '../urban-stats-script/workerManager'
 import { assert } from '../utils/defensive'
 import { HumanReadableName } from '../utils/human-readable-element'
 import { Article, CongressionalRepresentativeTable, ICongressionalRepresentative, ICongressionalRepresentativePointer, IFirstOrLast, IMetadata } from '../utils/protos'
@@ -77,7 +79,7 @@ export interface ArticleStatisticRow {
     statcol: StatCol
     statpath: StatPath
     explanationPage: string
-    articleType: string
+    articleType: GeographyKind | typeof missingRowType
     totalCountInClass: number
     totalCountOverall: number
     index: number
@@ -93,7 +95,7 @@ export interface MetadataArticleRow {
     statname: string
     statpath: StatPath
     renderedStatname: string
-    articleType: string
+    articleType: GeographyKind | typeof missingRowType
     statval: MetadataStatValue
     extraStats: []
     disclaimer: undefined
@@ -112,7 +114,7 @@ const dataCreditExplanationPageByMetadataIndex = new Map<number, string>(
 )
 
 interface StatisticCellRenderingInfoCommon {
-    articleType: string
+    articleType: GeographyKind | typeof missingRowType
     statname: HumanReadableName
     statpath?: StatPath
 }
@@ -233,6 +235,15 @@ function metadataValueByIndex(
     return values
 }
 
+/** Stands in for an article that lacks the statistic, so it names no geography. */
+export const missingRowType = 'none'
+
+function geographyKindOf(article: Article): GeographyKind {
+    const kind = validGeographies.find(geography => geography === article.articleType)
+    assert(kind !== undefined, `unknown article type ${article.articleType}`)
+    return kind
+}
+
 function metadataRowsForArticle(
     article: Article,
     enabledMetadataPaths: StatPath[],
@@ -255,7 +266,7 @@ function metadataRowsForArticle(
             statpath: path,
             statname: parent.groupYearName,
             renderedStatname: parent.groupYearName,
-            articleType: article.articleType,
+            articleType: geographyKindOf(article),
             statval,
             extraStats: [],
             disclaimer: undefined,
@@ -290,7 +301,7 @@ function unpackBytes(bytes: Uint8Array): number[] {
 function loadSingleArticle(data: Article, counts: CountsByUT, universe: string): ArticleStatisticRow[] {
     // index of universe in data.universes
     const universeIndex = data.universes.indexOf(universe)
-    const articleType = data.articleType
+    const articleType = geographyKindOf(data)
 
     const extraStatIdxToCol: number[] = extra_stats.map(xy => xy[0])
 
@@ -441,7 +452,7 @@ function insertMissing(rows: ArticleRow[][]): ArticleRow[][] {
                     emptyRowExample.get(idx)![key] = []
                 }
             }
-            emptyRowExample.get(idx)!.articleType = 'none' // doesn't matter since we are using simple mode
+            emptyRowExample.get(idx)!.articleType = missingRowType
         }
     }
 

@@ -6,6 +6,7 @@ import type { ComparisonPanel } from '../components/comparison-panel'
 import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
 import { ArticleRow, loadArticles } from '../components/load-article'
 import type { QuizPanel } from '../components/quiz-panel'
+import valid_geographies from '../data/mapper/used_geographies'
 import statnames from '../data/statistic_name_list'
 import type { DataCreditPanel } from '../data-credit'
 import type { EmbedPreviewPanel } from '../dev/EmbedPreviewPanel'
@@ -72,7 +73,7 @@ const comparisonSchemaFromParams = z.object({
     s: z.optional(z.string()),
 })
 
-const statisticGeographySchema = z.object({ universe: universeSchema, geographyKind: z.string() })
+const statisticGeographySchema = z.object({ universe: universeSchema, geographyKind: z.enum(valid_geographies) })
 
 const statisticSchema = z.object({
     geographies: z.array(statisticGeographySchema),
@@ -95,7 +96,7 @@ const statisticSchema = z.object({
 
 const statisticSchemaFromParams = z.union([
     z.object({
-        article_type: z.string(),
+        article_type: z.enum(valid_geographies),
         start: z.optional(z.coerce.number().int()).default(1),
         amount: z.union([z.literal('All'), z.coerce.number().int(), z.undefined().transform(() => 10)]),
         order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
@@ -115,7 +116,7 @@ const statisticSchemaFromParams = z.union([
         geographies: [{ universe: universe ?? 'world', geographyKind: article_type }],
     })),
     z.object({}).transform(() => ({
-        geographies: [{ universe: 'USA' as const, geographyKind: 'Subnational Region' }],
+        geographies: [{ universe: 'USA', geographyKind: 'Subnational Region' } as const],
         uss: 'customNode(""); condition (true); table(columns=[column(values=density_pw_1km)])',
         start: 1,
         amount: 20,
