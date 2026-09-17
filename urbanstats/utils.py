@@ -48,8 +48,11 @@ def compute_bins(
     return values
 
 
-def output_typescript(data: Any, file: Any, data_type: str = "const") -> None:
+def output_typescript(
+    data: Any, file: Any, data_type: str = "const", imports: str = ""
+) -> None:
     content = json.dumps(data, indent=4)
+    file.write(imports)
     if data_type == "const":
         file.write(f"export default {content} as const")
     else:

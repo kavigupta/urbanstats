@@ -319,9 +319,12 @@ export function Related(props: { articleType: string, related: { relationshipTyp
         }
     }
 
+    // Button types come from the protobuf, so they are not narrowed to geography kinds.
+    const ordering: Record<string, number> = type_ordering_idx
+
     // get a sorted list of keys of buttons
     const buttonKeys = Array.from(buttons.keys())
-        .sort((a, b) => type_ordering_idx[a] - type_ordering_idx[b])
+        .sort((a, b) => ordering[a] - ordering[b])
         .filter(buttonKey => isAllowedToBeShown(buttonKey, showSettings))
 
     const elements = buttonKeys.map((key, i) => (

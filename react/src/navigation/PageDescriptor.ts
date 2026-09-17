@@ -32,7 +32,6 @@ import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse, Universe, universeSchema } from '../universe'
 import type { DebugEditorPanel } from '../urban-stats-script/DebugEditorPanel'
 import { constantCategories, type ConstantCategory } from '../urban-stats-script/documentation-category'
-import type { GeographySelection } from '../urban-stats-script/workerManager'
 import type { USSDocumentationPanel } from '../uss-documentation'
 import type { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
@@ -89,12 +88,6 @@ const statisticGeographiesFromParam = z.string()
     .pipe(z.array(z.optional(statisticGeographySchema).catch(undefined)))
     .transform(geographies => geographies.filter(geography => geography !== undefined))
 
-/** The one geography a link names, dropped if it is not a kind the site ranks. */
-export function statisticGeographies(universe: Universe, geographyKind: string | undefined): GeographySelection[] {
-    const geography = statisticGeographySchema.safeParse({ universe, geographyKind })
-    return geography.success ? [geography.data] : []
-}
-
 const statisticSchema = z.object({
     geographies: z.array(statisticGeographySchema),
     start: z.number().int(),
@@ -116,7 +109,7 @@ const statisticSchema = z.object({
 
 const statisticSchemaFromParams = z.union([
     z.object({
-        article_type: z.optional(z.string()),
+        article_type: z.optional(z.enum(valid_geographies)).catch(undefined),
         geographies: z.optional(statisticGeographiesFromParam).catch(undefined),
         start: z.optional(z.coerce.number().int()).default(1),
         amount: z.union([z.literal('All'), z.coerce.number().int(), z.undefined().transform(() => 10)]),
@@ -134,7 +127,7 @@ const statisticSchemaFromParams = z.union([
         }),
     ])).transform(({ article_type, universe, geographies, ...rest }) => ({
         ...rest,
-        geographies: geographies ?? statisticGeographies(universe ?? 'world', article_type),
+        geographies: geographies ?? (article_type === undefined ? [] : [{ universe: universe ?? 'world', geographyKind: article_type }]),
     })),
     z.object({}).transform(() => ({
         geographies: [{ universe: 'USA', geographyKind: 'Subnational Region' } as const],

@@ -6,7 +6,7 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useStat
 import { ArticleOrderingListInternal, loadOrdering, loadStatisticsPage } from '../load_json'
 import './table.css'
 import { NavLink, Navigator } from '../navigation/Navigator'
-import { statisticGeographies, urlFromPageDescriptor } from '../navigation/PageDescriptor'
+import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings, useUnitSettings } from '../page_template/settings'
@@ -28,7 +28,7 @@ import { percentileSuffix, percentileText, Statistic } from './display-stats'
 import { EditModeButton, EditModeTopLeftHeader, useEnterEditModeButton } from './edit-mode-header'
 import { EditableNumber } from './editable-field'
 import { footnoteSymbol } from './footnote-symbol'
-import { ArticleRow, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
+import { ArticleRow, FirstLastStatus, missingRowType, StatisticCellRenderingInfo } from './load-article'
 import { percentileBucketIndex } from './percentile-navigation'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
@@ -1008,13 +1008,13 @@ function StatisticName(props: {
                     {reifyReact(props.displayName, unitSettings)}
                 </a>
             )
-        : props.row?.kind === 'statistic'
+        : props.row?.kind === 'statistic' && props.row.articleType !== missingRowType
             ? (
                     <a
                         className="underline_on_hover"
                         {...navContext.link({
                             kind: 'statistic',
-                            geographies: statisticGeographies(props.currentUniverse ?? 'world', props.row.articleType),
+                            geographies: [{ universe: props.currentUniverse ?? 'world', geographyKind: props.row.articleType }],
                             statname: props.row.statname,
                             start: props.row.ordinal,
                             amount: 20,

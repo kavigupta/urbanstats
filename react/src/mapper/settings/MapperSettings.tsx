@@ -1,20 +1,17 @@
 import React, { ReactNode, useCallback, useMemo } from 'react'
 
 import { articleTypes, CountsByUT } from '../../components/countsByArticleType'
-import valid_geographies from '../../data/mapper/used_geographies'
 import universes_ordered from '../../data/universes_ordered'
 import { humanReadableUniverse, Universe } from '../../universe'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
-import { AssignmentsResult, GeographySelection } from '../../urban-stats-script/workerManager'
+import { AssignmentsResult, GeographyKind, GeographySelection } from '../../urban-stats-script/workerManager'
 import { settingNameStyle } from '../style'
 
 import { BetterSelector } from './BetterSelector'
 import { ActionOptions } from './EditMapperPanel'
 import { TopLevelEditor } from './TopLevelEditor'
 import { defaultGeography, MapSettings } from './utils'
-
-type GeographyKind = typeof valid_geographies[number]
 
 const renderUniverse = (universe: Universe | undefined): { text: string } => ({ text: universe === undefined ? '' : humanReadableUniverse(universe) })
 const renderGeographyKind = (geographyKind: string | undefined): { text: string } => ({ text: geographyKind ?? '' })
