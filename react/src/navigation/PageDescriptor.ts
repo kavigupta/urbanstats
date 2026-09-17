@@ -73,9 +73,21 @@ const comparisonSchemaFromParams = z.object({
 
 const statisticGeographySchema = z.object({ universe: universeSchema, geographyKind: z.string() })
 
-/** A universe that no longer exists drops its pair, rather than the whole link. */
+/**
+ * A universe that no longer exists drops its pair, rather than the whole link. The parse has to
+ * report an issue rather than throw, so that a malformed param is caught the way the others are.
+ */
 const statisticGeographiesFromParam = z.string()
-    .transform(value => z.array(z.optional(statisticGeographySchema).catch(undefined)).parse(JSON.parse(value)))
+    .transform((value, ctx): unknown => {
+        try {
+            return JSON.parse(value)
+        }
+        catch {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'geographies is not JSON' })
+            return z.NEVER
+        }
+    })
+    .pipe(z.array(z.optional(statisticGeographySchema).catch(undefined)))
     .transform(geographies => geographies.filter(geography => geography !== undefined))
 
 const statisticSchema = z.object({

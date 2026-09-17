@@ -77,6 +77,15 @@ test('removing every geography says so rather than showing an empty table', asyn
     await t.expect(getErrors()).eql(['There are no geographies to tabulate. Add one to the list above.'])
 })
 
+urbanstatsFixture('a link whose geographies are malformed', `${target}/statistic.html?uss=${encodeURIComponent(uss)}&article_type=County&universe=USA&start=1&amount=5&edit=true&geographies=not-json`)
+
+test('a link whose geographies are malformed falls back to the scalars', async (t) => {
+    await waitForLoading()
+    await t.expect(rowInput(0, 0).value).eql('USA')
+    await t.expect(rowInput(0, 1).value).eql('County')
+    await t.expect(getErrors()).eql([])
+})
+
 // The form every link made before a table could span several geographies is in.
 urbanstatsFixture('a link naming its geography as scalars', `${target}/statistic.html?uss=${encodeURIComponent(uss)}&article_type=County&universe=USA&start=1&amount=5&edit=true`)
 
