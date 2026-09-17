@@ -10,8 +10,7 @@
 import './browser-shim'
 
 import { PageDescriptor, pageDescriptorFromURL } from '../../src/navigation/PageDescriptor'
-import { Universe } from '../../src/universe'
-import { displayType } from '../../src/utils/text'
+import { GeographySelection } from '../../src/urban-stats-script/workerManager'
 
 interface Embed {
     title: string
@@ -36,17 +35,16 @@ async function describeMap(settings: string | undefined): Promise<{ title: strin
     try {
         // Deferred for the same reason as render.ts: reading a script pulls in every USS constant,
         // which is most of what is left of startup once the drawing half is out of it.
-        const { dedupeGeographies, mapSettingsFromURLParam, mapTitle } = await import('../../src/mapper/settings/utils')
+        const { dedupeGeographies, describeGeographies, mapSettingsFromURLParam, mapTitle } = await import('../../src/mapper/settings/utils')
         const mapSettings = await mapSettingsFromURLParam(settings)
         const title = mapTitle(mapSettings, {})
         const geographies = dedupeGeographies(mapSettings.geographies)
         if (title === undefined || geographies.length === 0) {
             return undefined
         }
-        const over = geographies.map(({ universe, geographyKind }) => `${displayType(universe, geographyKind)} in ${universe}`)
         return {
             title,
-            description: `${title} mapped over ${over.length === 1 ? over[0] : `${over.slice(0, -1).join(', ')} and ${over[over.length - 1]}`}, on Urban Stats.`,
+            description: `${title} mapped over ${describeGeographies(geographies)}, on Urban Stats.`,
         }
     }
     catch {
@@ -60,11 +58,12 @@ async function describeMap(settings: string | undefined): Promise<{ title: strin
  * tags are rewritten on every HTML request, browsers included, and running the table means loading
  * a geography's worth of statistics.
  */
-async function describeTable(uss: string, universe: Universe): Promise<string | undefined> {
+async function describeTable(descriptor: Extract<PageDescriptor, { kind: 'statistic' }> & { uss: string }): Promise<string | undefined> {
     try {
         // Deferred for the same reason as describeMap's imports.
         const { parseStatUSS, tableTitle } = await import('../../src/stat/utils')
-        return tableTitle(parseStatUSS(uss, universe), universe, {})
+        const geographies = descriptor.geographies as GeographySelection[]
+        return tableTitle(parseStatUSS(descriptor.uss, geographies), geographies, {})
     }
     catch {
         // Any script we cannot read a title out of falls back to the generic one.
@@ -94,11 +93,9 @@ async function describe(url: URL): Promise<Embed | undefined> {
                 image: new URL(`/og${url.pathname}${url.search}`, url.origin).toString(),
             }
         case 'statistic': {
-            // The universe the page defaults to when the link names none.
-            const universe = descriptor.universe ?? 'world'
             const title = 'statname' in descriptor
                 ? descriptor.statname
-                : await describeTable(descriptor.uss, universe) ?? 'Urban Stats: Custom Table'
+                : await describeTable(descriptor) ?? 'Urban Stats: Custom Table'
             return {
                 title,
                 description: `${title} rankings on Urban Stats.`,

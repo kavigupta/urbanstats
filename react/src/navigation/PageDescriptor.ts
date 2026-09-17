@@ -6,6 +6,7 @@ import type { ComparisonPanel } from '../components/comparison-panel'
 import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
 import { ArticleRow, loadArticles } from '../components/load-article'
 import type { QuizPanel } from '../components/quiz-panel'
+import valid_geographies from '../data/mapper/used_geographies'
 import statnames from '../data/statistic_name_list'
 import type { DataCreditPanel } from '../data-credit'
 import type { EmbedPreviewPanel } from '../dev/EmbedPreviewPanel'
@@ -31,6 +32,7 @@ import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse, Universe, universeSchema } from '../universe'
 import type { DebugEditorPanel } from '../urban-stats-script/DebugEditorPanel'
 import { constantCategories, type ConstantCategory } from '../urban-stats-script/documentation-category'
+import type { GeographySelection } from '../urban-stats-script/workerManager'
 import type { USSDocumentationPanel } from '../uss-documentation'
 import type { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
@@ -71,13 +73,14 @@ const comparisonSchemaFromParams = z.object({
     s: z.optional(z.string()),
 })
 
+const statisticGeographySchema = z.object({ universe: universeSchema, geographyKind: z.enum(valid_geographies) })
+
 const statisticSchema = z.object({
-    article_type: z.string(),
+    geographies: z.array(statisticGeographySchema),
     start: z.number().int(),
     amount: z.union([z.literal('All'), z.number().int()]),
     order: z.union([z.literal('descending'), z.literal('ascending')]),
     highlight: z.optional(z.string()),
-    universe: z.optional(universeSchema),
     edit: z.optional(z.boolean()),
     sort_column: z.optional(z.number().int()),
 }).and(
@@ -93,7 +96,7 @@ const statisticSchema = z.object({
 
 const statisticSchemaFromParams = z.union([
     z.object({
-        article_type: z.string(),
+        article_type: z.enum(valid_geographies),
         start: z.optional(z.coerce.number().int()).default(1),
         amount: z.union([z.literal('All'), z.coerce.number().int(), z.undefined().transform(() => 10)]),
         order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
@@ -108,14 +111,16 @@ const statisticSchemaFromParams = z.union([
         z.object({
             uss: z.string(),
         }),
-    ])),
+    ])).transform(({ article_type, universe, ...rest }) => ({
+        ...rest,
+        geographies: [{ universe: universe ?? 'world', geographyKind: article_type }],
+    })),
     z.object({}).transform(() => ({
-        article_type: 'Subnational Region',
+        geographies: [{ universe: 'USA', geographyKind: 'Subnational Region' } as const],
         uss: 'customNode(""); condition (true); table(columns=[column(values=density_pw_1km)])',
         start: 1,
         amount: 20,
         order: 'descending' as const,
-        universe: 'USA' as const,
         edit: true,
         sort_column: 0,
     })),
@@ -338,14 +343,15 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             break
         case 'statistic':
             pathname = '/statistic.html'
+            const [statisticGeography] = pageDescriptor.geographies
             searchParams = {
                 ...('uss' in pageDescriptor ? { uss: pageDescriptor.uss } : { statname: pageDescriptor.statname.replaceAll('%', '__PCT__') }),
-                article_type: pageDescriptor.article_type,
+                article_type: statisticGeography.geographyKind,
                 start: pageDescriptor.start.toString(),
                 amount: pageDescriptor.amount.toString(),
                 order: pageDescriptor.order === 'descending' ? undefined : 'ascending',
                 highlight: pageDescriptor.highlight,
-                universe: pageDescriptor.universe,
+                universe: statisticGeography.universe === 'world' ? undefined : statisticGeography.universe,
                 edit: pageDescriptor.edit ? 'true' : undefined,
                 sort_column: pageDescriptor.sort_column === undefined || pageDescriptor.sort_column === 0
                     ? undefined
@@ -561,9 +567,6 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             const panel = import('../stat/StatisticPanel')
             const utils = await import('../stat/utils')
 
-            const statUniverse = newDescriptor.universe ?? 'world'
-            const displayStatUniverse = statUniverse !== 'world' ? statUniverse : undefined
-
             // Pin the start position correctly to the beginning of the page
             let start = newDescriptor.start
             if (newDescriptor.amount !== 'All') {
@@ -572,13 +575,14 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 start = start + 1
             }
 
+            const geographies = newDescriptor.geographies as GeographySelection[]
+
             const stat: Statistic = {
-                universe: statUniverse,
-                articleType: newDescriptor.article_type,
+                geographies,
                 ...('uss' in newDescriptor
                     ? {
                             type: 'uss',
-                            uss: utils.parseStatUSS(newDescriptor.uss, statUniverse),
+                            uss: utils.parseStatUSS(newDescriptor.uss, geographies),
                         }
                     : {
                             type: 'simple',
@@ -607,7 +611,6 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 newPageDescriptor: {
                     ...newDescriptor,
                     start,
-                    universe: displayStatUniverse,
                     highlight: undefined,
                 },
                 effects: () => undefined,

@@ -10,6 +10,7 @@ import '../common.css'
 import { SearchResult, SearchParams, getIndexCacheKey, SearchIndexConfig } from '../search'
 import type { SearchWorkerInputMessage, SearchWorkerOutputMessage, SearchWorkerStatus } from '../searchWorker'
 import { Universe, useUniverse } from '../universe'
+import { GeographyKind } from '../urban-stats-script/workerManager'
 import { Property } from '../utils/Property'
 import { TestUtils } from '../utils/TestUtils'
 import { withButtonRole } from '../utils/a11y'
@@ -21,11 +22,14 @@ const defaultWorkerStatusProperty = new Property<SearchWorkerStatus>({ status: '
 
 const debugPerformance = makeDebugLogger('searchPerformance')
 
+// Prioritizing a type is a search hint, so it takes whatever type name the caller has.
+const typeOrdering: Record<string, number> = type_ordering_idx
+
 export function SearchBox(props: {
     onChange?: (inp: string) => void
     articleLink: (inp: string) => ReturnType<Navigator['link']>
     compareLink?: (inp: string) => ReturnType<Navigator['link']> | undefined
-    statisticLink?: (statIdx: number, articleType: string, universe: Universe) => ReturnType<Navigator['link']>
+    statisticLink?: (statIdx: number, articleType: GeographyKind, universe: Universe) => ReturnType<Navigator['link']>
     autoFocus: boolean
     placeholder: string
     style: CSSProperties
@@ -64,7 +68,7 @@ export function SearchBox(props: {
                 unnormalizedPattern: sq,
                 maxResults: 10,
                 showSettings,
-                prioritizeTypeIndex: props.prioritizeArticleType !== undefined ? type_ordering_idx[props.prioritizeArticleType] : undefined,
+                prioritizeTypeIndex: props.prioritizeArticleType !== undefined ? typeOrdering[props.prioritizeArticleType] : undefined,
             })
             void TestUtils.shared.finishLoading('doSearch')
             return result

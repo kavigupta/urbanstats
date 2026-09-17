@@ -109,9 +109,8 @@ async function contextForRequest(request: USSExecutionRequest, cache: ExecutorCa
         case 'generic':
             return [emptyContext(effects), getWarnings]
         case 'mapper':
-            return [await mapperContextForRequest(request.stmts, request.descriptor.geographies, effects, cache), getWarnings]
         case 'statistics':
-            return [await mapperContextForRequest(request.stmts, [{ universe: request.descriptor.universe, geographyKind: request.descriptor.geographyKind }], effects, cache), getWarnings]
+            return [await mapperContextForRequest(request.stmts, request.descriptor.geographies, effects, cache), getWarnings]
     }
 }
 
