@@ -1,8 +1,4 @@
-import used_geographies from './mapper/used_geographies'
-
-type GeographyKind = typeof used_geographies[number]
-
-const value: Partial<Record<GeographyKind, { alternativeGeographyTypes: GeographyKind[], reasonForNoAlternatives: string | null }>> = {
+export default {
     "Urban Center": {
         "alternativeGeographyTypes": [
             "Urban Area",
@@ -49,5 +45,4 @@ const value: Partial<Record<GeographyKind, { alternativeGeographyTypes: Geograph
         "alternativeGeographyTypes": [],
         "reasonForNoAlternatives": "Circles are drawn around a point without regard to national borders, and no region type defined by a statistics agency resembles them."
     }
-}
-export default value
+} as const
