@@ -296,7 +296,7 @@ def data_credit_for_redistricting(file_name):
                 result.append(
                     {
                         **dc,
-                        "linkText": f"{state} redistricting ({year}): {dc['linkText']}",
+                        "linkText": f"{state} redistricting (for {year-1} election): {dc['linkText']}",
                     }
                 )
     return result
