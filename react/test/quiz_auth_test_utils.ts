@@ -26,13 +26,6 @@ const nextButton = Selector('button').withExactText('Next')
 const emailInput = Selector('input[type=text][aria-label*=email i]:not([aria-hidden="true"])')
 const passwordInput = Selector('input[type=password]')
 
-// Headers is not iterable under our tsconfig's lib (DOM without DOM.Iterable)
-function headersJSON(headers: Headers): string {
-    const entries: Record<string, string> = {}
-    headers.forEach((value, key) => { entries[key] = value })
-    return JSON.stringify(entries)
-}
-
 // eslint-disable-next-line no-restricted-syntax -- Reporting on Google's pages, which have no page descriptor
 const pageURL = ClientFunction(() => window.location.href)
 
@@ -50,42 +43,16 @@ async function expectOrWarn(t: TestController, selector: Selector, what: string,
     }
 }
 
-// https://script.google.com/u/2/home/projects/1CWDP4eezFo8fMhQb327VfSm3DnThl-8xg1fmg4cl9gHnK0NGB8XSz094/edit
-// Apps Script runs the script at /exec, then 302s to a script.googleusercontent.com URL that
-// serves the output. The hops are followed by hand so a failure says which one broke.
-async function popTOTPSlot(): Promise<number | undefined> {
-    const exec = await fetch('https://script.google.com/macros/s/AKfycbxLMtid0yZ_JiX5Ymm02FXfbRXYrpF1AE9nUaDM8P9dhP7uOWJpMRH8SpG5TbCQCRc/exec', { redirect: 'manual' })
-    const location = exec.headers.get('location')
-    if (location === null) {
-        console.warn(`TOTP exec hop did not redirect: ${exec.status} ${exec.statusText}`)
-        console.warn(`headers: ${headersJSON(exec.headers)}`)
-        console.warn(`body: ${await exec.text()}`)
-        return undefined
-    }
-    const echo = await fetch(location, { redirect: 'manual' })
-    const body = await echo.text()
+// A slot is a 30-second TOTP step nobody else has been given. See ../totp-worker.
+async function popTOTP(t: TestController): Promise<string> {
+    const response = await fetch('https://dev-totp.urbanstats.org/totp-slot')
+    const body = await response.text()
+    let useAfter: number
     try {
-        return z.object({ useAfter: z.number() }).parse(JSON.parse(body)).useAfter
+        useAfter = z.object({ useAfter: z.number() }).parse(JSON.parse(body)).useAfter
     }
     catch {
-        console.warn(`TOTP echo hop failed: ${echo.status} ${echo.statusText} for ${location}`)
-        console.warn(`headers: ${headersJSON(echo.headers)}`)
-        console.warn(`body: ${body}`)
-        return undefined
-    }
-}
-
-async function popTOTP(t: TestController): Promise<string> {
-    // A content key Google won't serve stays unservable, so a retry re-runs exec for a fresh one,
-    // spending a TOTP slot to do it.
-    let useAfter = await popTOTPSlot()
-    for (let attempt = 1; attempt <= 2 && useAfter === undefined; attempt++) {
-        console.warn(`TOTP retry ${attempt}`)
-        await t.wait(1000)
-        useAfter = await popTOTPSlot()
-    }
-    if (useAfter === undefined) {
-        throw new Error('TOTP endpoint failed')
+        throw new Error(`TOTP endpoint failed: ${response.status} ${response.statusText}: ${body}`)
     }
     const wait = useAfter - Date.now()
     if (wait > 0) {

@@ -5,7 +5,7 @@ import { Selector } from 'testcafe'
 
 import { getErrors, settingsFromURL } from './mapper-utils'
 import { tempfileName } from './quiz_test_utils'
-import { getLocation, screencap, target, urbanstatsFixture, waitForDownload, waitForLoading } from './test_utils'
+import { clickMapFeature, flaky, getLocation, screencap, target, urbanstatsFixture, waitForDownload, waitForLoading } from './test_utils'
 
 const code = 'cMap(data=population, scale=linearScale(), ramp=rampUridis, basemap=noBasemap())'
 
@@ -40,6 +40,16 @@ urbanstatsFixture('neighbouring geographies', url({ geographies: geographies('US
 test('neighbouring geographies', async (t) => {
     await t.expect(getErrors()).eql([])
     await screencap(t, { removeEntireMap: false })
+})
+
+urbanstatsFixture('clicking a geography goes to its own universe', url({ geographies: geographies('USA', 'France') }))
+
+test('clicking a geography goes to its own universe', async (t) => {
+    await waitForLoading()
+    await flaky(t, async () => {
+        await clickMapFeature(/, France$/)
+    })
+    await t.expect(getLocation()).contains('universe=France')
 })
 
 urbanstatsFixture('the header keeps a universe only while there is one', url({ geographies: geographies('USA') }))
