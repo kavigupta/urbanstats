@@ -317,6 +317,11 @@ function tableColumnLabels(factored: MapUSS<UnitInferenceMetadata>, typeEnvironm
     return labels.every(label => label !== undefined) ? labels : undefined
 }
 
+/** What to call an expression: the same reading a map's label or a column's name comes from. */
+export function nameOfExpression(expr: Expression, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
+    return humanReadableElements(expr, typeEnvironment)
+}
+
 /** The filter a script applies, or undefined for the `condition (true)` that keeps every row. */
 export function deriveConditionLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
     const factored = unitCheck(uss, typeEnvironment)

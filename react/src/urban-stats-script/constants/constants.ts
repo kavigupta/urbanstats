@@ -8,7 +8,8 @@ import { hsv, renderColor, rgb, colorConstants } from './color'
 import { toNumber, toString } from './convert'
 import { constructInsetValue, constructInsetsValue, insetConsts } from './insets'
 import { cMap, cMapRGB, clusterMap, constructMissingData, constructOutline, pMap } from './map'
-import { constructRampValue, reverseRampValue, rampConsts, divergingRampValue } from './ramp'
+import { axis, bars, colorbar, genericPlot, histogram, line, points, regressionLine, scatterPlot, sideBySide, stacked } from './plot'
+import { constructRampValue, reverseRampValue, rampConsts, divergingRampValue, rampApplyValue } from './ramp'
 import { regression } from './regr'
 import { richTextConstants } from './rich-text'
 import { linearScaleValue, logScaleValue } from './scale'
@@ -291,6 +292,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['constructRamp', constructRampValue],
     ['reverseRamp', reverseRampValue],
     ['divergingRamp', divergingRampValue],
+    ['rampApply', rampApplyValue],
     ...rampConsts,
     ['constructInset', constructInsetValue],
     ['constructInsets', constructInsetsValue],
@@ -303,6 +305,17 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['clusterMap', clusterMap],
     ['column', column],
     ['table', table],
+    ['points', points],
+    ['line', line],
+    ['regressionLine', regressionLine],
+    ['bars', bars],
+    ['histogram', histogram],
+    ['colorbar', colorbar],
+    ['axis', axis],
+    ['genericPlot', genericPlot],
+    ['scatterPlot', scatterPlot],
+    ['sideBySide', sideBySide],
+    ['stacked', stacked],
     ['constructOutline', constructOutline],
     ['constructMissingData', constructMissingData],
     ['osmBasemap', osmBasemap],

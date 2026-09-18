@@ -4,7 +4,7 @@ import test from 'node:test'
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { mapUSSFromString } from '../src/mapper/settings/map-uss'
 import { deriveTableLabel, mapLabel, tableLabel } from '../src/urban-stats-script/derive-human-readable-name'
-import { mapRampUnitAndLabel, tableColumnUnitAndName } from '../src/urban-stats-script/derive-unit'
+import { mapRampUnitAndLabel, plotAxisNaming, tableColumnUnitAndName } from '../src/urban-stats-script/derive-unit'
 import { TypeEnvironment } from '../src/urban-stats-script/types-values'
 import { HumanReadableName } from '../src/utils/human-readable-element'
 import { reifyString } from '../src/utils/human-readable-name'
@@ -425,3 +425,32 @@ for (const [values, declared, expected] of [
         assert.equal(reifyString(table, {}), expected)
     })
 }
+
+function axisNames(code: string): string[][] {
+    return plotAxisNaming(mapUSSFromString(code), getTypeEnvironment()).map(
+        panel => [panel.x, panel.y].map(axis => axis.name === undefined ? '' : reifyString(axis.name, {})),
+    )
+}
+
+void test('a plot names its axes after the data drawn against them', () => {
+    assert.deepStrictEqual(axisNames('scatterPlot(x=density_pw_1km, y=population)'), [['PW Density (r=1km)', 'Population']])
+    assert.deepStrictEqual(axisNames('genericPlot(elements=[points(x=population, y=area)])'), [['Population', 'Area']])
+    // a histogram counts along its own values, and nothing is drawn against its other axis
+    assert.deepStrictEqual(axisNames('genericPlot(elements=[histogram(values=high_temp)])'), [['Mean high temp', '']])
+    // named bars are labelled by the categories themselves
+    assert.deepStrictEqual(axisNames('genericPlot(elements=[bars(category=["a"], y=[1])])'), [['', '']])
+})
+
+void test('each panel of a stack is named in the order it is drawn', () => {
+    assert.deepStrictEqual(
+        axisNames(`sideBySide(plots=[
+            scatterPlot(x=density_pw_1km, y=population),
+            stacked(plots=[genericPlot(elements=[points(x=area, y=high_temp)]), genericPlot(elements=[histogram(values=population)])])
+        ])`),
+        [['PW Density (r=1km)', 'Population'], ['Area', 'Mean high temp'], ['Population', '']],
+    )
+})
+
+void test('a mark drawn with an expression is named as the expression reads', () => {
+    assert.deepStrictEqual(axisNames('scatterPlot(x=population / area, y=ln(density_pw_1km))'), [['Population ÷ Area', 'ln(PW Density (r=1km) [in /km^{2}])']])
+})

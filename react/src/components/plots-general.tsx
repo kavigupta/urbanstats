@@ -627,14 +627,31 @@ export interface DetailedPlotSpec {
     xlabel: string | null
     ylabel: string
     ydomain?: [number, number]
+    xdomain?: [number, number]
+    /** Linear unless said otherwise; a log axis reads its ticks as powers. */
+    xtype?: 'linear' | 'log'
+    ytype?: 'linear' | 'log'
+    /** Takes a mark's radius as the pixels it is drawn at, rather than a value to be scaled. */
+    identityRadius?: boolean
+    /** How a tick is written, for an axis whose numbers carry a unit. */
+    xtickFormat?: (value: number) => string
+    ytickFormat?: (value: number) => string
+    /** Fewer ticks than Plot would fit, for labels it has no way to know the size of. */
+    xticks?: number
+    yticks?: number
+    /** The height to draw at, in the same units as the width, for a plot filling a given box. */
+    height?: number
     legend?: { legend: boolean, range: string[], domain: string[] }
 }
 
 export function PlotComponent(props: {
     plotSpec: (transpose: boolean, leftLabelOffset: number, pinnedTips: PinnedTips) => DetailedPlotSpec
     settingsElement: (makePlot: () => HTMLElement) => ReactElement
+    /** Overrides the reader's setting, for a plot whose axes are not interchangeable. */
+    transpose?: boolean
 }): ReactElement {
-    const transpose = useTranspose()
+    const setting = useTranspose()
+    const transpose = props.transpose ?? setting
     // the theme reaches the plot through plotSpec, which closes over it; nothing here needs it
     const plotRef = useRef<HTMLDivElement>(null)
 
@@ -651,11 +668,15 @@ export function PlotComponent(props: {
     const plotSpec = props.plotSpec
 
     const plotConfig = useCallback((transposeConfig: boolean, leftAxis: LeftAxisLayout): Plot.PlotOptions => {
-        const { marks, xlabel, ylabel, ydomain, legend } = plotSpec(transposeConfig, leftAxis.labelOffset, pinnedTips)
+        const { marks, xlabel, ylabel, ydomain, xdomain, xtype, ytype, identityRadius, xtickFormat, ytickFormat, xticks, yticks, height, legend } = plotSpec(transposeConfig, leftAxis.labelOffset, pinnedTips)
         const result: Plot.PlotOptions = {
             marks,
             x: {
                 label: xlabel,
+                domain: xdomain,
+                type: xtype,
+                tickFormat: xtickFormat,
+                ticks: xticks,
                 labelAnchor: 'center',
                 labelArrow: 'none',
                 labelOffset: transposeConfig ? bottomLabelOffsetTranspose : bottomLabelOffset,
@@ -663,13 +684,17 @@ export function PlotComponent(props: {
             y: {
                 label: ylabel,
                 domain: ydomain,
+                type: ytype,
+                tickFormat: ytickFormat,
+                ticks: yticks,
                 labelAnchor: 'center',
                 labelArrow: 'none',
                 labelOffset: leftAxis.labelOffset,
             },
             grid: false,
+            r: identityRadius === true ? { type: 'identity' } : undefined,
             width: transposeConfig ? undefined : 1000,
-            height: transposeConfig ? 1000 : undefined,
+            height: transposeConfig ? 1000 : height,
             style: {
                 fontSize: transposeConfig ? '2em' : '1em',
                 fontFamily: 'Jost, Arial, sans-serif',
@@ -683,12 +708,17 @@ export function PlotComponent(props: {
             result.x = {
                 label: ylabel,
                 domain: ydomain,
+                type: ytype,
+                tickFormat: ytickFormat,
                 labelAnchor: 'center',
                 labelArrow: 'none',
                 labelOffset: bottomLabelOffsetTranspose,
             }
             result.y = {
                 label: xlabel,
+                domain: xdomain,
+                type: xtype,
+                tickFormat: xtickFormat,
                 reverse: true,
                 labelAnchor: 'center',
                 labelArrow: 'none',
