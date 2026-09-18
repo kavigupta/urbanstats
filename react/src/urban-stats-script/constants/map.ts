@@ -403,7 +403,8 @@ export const clusterMap: USSValue = {
     },
 } satisfies USSValue
 
-function normalizeRelativeArea(relativeArea: number[] | null, amount: number): number[] {
+/** Relative areas as a fraction of the largest, which is what a radius is worked out from. */
+export function normalizeRelativeArea(relativeArea: number[] | null, amount: number): number[] {
     if (relativeArea === null) {
         return Array.from({ length: amount }, () => 1)
     }

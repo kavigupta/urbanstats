@@ -41,7 +41,7 @@ export async function centroidsByName(universe: Universe, geographyKind: string)
 }
 
 /** The stops the colourbar shows, which are also the bins a cluster map's categories are counted in. */
-function rampTicks(scale: ScaleInstance): number[] {
+export function rampTicks(scale: ScaleInstance): number[] {
     return [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
 }
 
@@ -69,21 +69,19 @@ function rampBin(value: number, scale: ScaleInstance, bins: number): number {
 }
 
 /** Marker areas are what the data scales, so the radius drawn is the root of one. */
-export function markerRadius(relativeArea: number, maxRadius: number): number {
-    return Math.sqrt(relativeArea) * maxRadius
-}
-
-/** The area a marker's radius stands for, which is what clustering sums. */
-export function markerArea(radius: number): number {
-    return radius ** 2
-}
-
 /*
  * The map result as a mapper request produces it. `executeRequest` is typed for any USS value;
  * asking for a mapper descriptor is what makes it one of these, the same narrowing `executeAsync`
  * states in its overloads.
  */
 export type MapResult = USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' | 'clusterMap' }
+
+/** What a mapper request comes back with: a map, or a plot drawn from the same data. */
+export type MapperResult = MapResult | (USSOpaqueValue & { opaqueType: 'plot' })
+
+export function isPlotResult(result: MapperResult): result is USSOpaqueValue & { opaqueType: 'plot' } {
+    return result.opaqueType === 'plot'
+}
 
 export interface MapVisuals {
     /** One fill per geography, in the order the result names them. */

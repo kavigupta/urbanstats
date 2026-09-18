@@ -7,6 +7,7 @@ import { UnitType } from '../utils/unit'
 import { UrbanStatsASTExpression } from './ast'
 import { Color, deconstructColor, hexToColor } from './constants/color-utils'
 import { CMap, CMapRGB, ClusterMap, MissingData, Outline, PMap } from './constants/map'
+import { Plot, PlotAxisSpec, PlotElement } from './constants/plot'
 import { RampT } from './constants/ramp'
 import { RichTextAttributes, RichTextDocument, RichTextSegment } from './constants/rich-text'
 import { Scale } from './constants/scale'
@@ -32,6 +33,9 @@ export type USSOpaqueValue =
     | { type: 'opaque', opaqueType: 'pMap', value: PMap }
     | { type: 'opaque', opaqueType: 'clusterMap', value: ClusterMap }
     | { type: 'opaque', opaqueType: 'table', value: Table }
+    | { type: 'opaque', opaqueType: 'plotElement', value: PlotElement }
+    | { type: 'opaque', opaqueType: 'plotAxis', value: PlotAxisSpec }
+    | { type: 'opaque', opaqueType: 'plot', value: Plot }
     | { type: 'opaque', opaqueType: 'column', value: TableColumn }
     | { type: 'opaque', opaqueType: 'outline', value: Outline }
     | { type: 'opaque', opaqueType: 'missingData', value: MissingData }
@@ -460,6 +464,9 @@ export function renderValue(input: USSValue): string {
                     case 'clusterMap':
                     case 'table':
                     case 'column':
+                    case 'plotElement':
+                    case 'plotAxis':
+                    case 'plot':
                     case 'basemap':
                     case 'inset':
                     case 'insets':

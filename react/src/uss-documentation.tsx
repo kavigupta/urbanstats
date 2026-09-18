@@ -763,6 +763,8 @@ function getCategoryTitle(category: ConstantCategory): string {
             return 'Unit Types'
         case 'map':
             return 'Map and Visualization'
+        case 'plot':
+            return 'Plots and Charts'
         case 'scale':
             return 'Scaling Functions'
         case 'ramp':
@@ -796,6 +798,8 @@ function getCategoryDescription(category: ConstantCategory): ReactNode {
             return 'Unit type constants for specifying measurement units in data visualization.'
         case 'map':
             return 'Functions for creating choropleth maps, point maps, and map styling.'
+        case 'plot':
+            return 'Marks to plot — points, lines, bars, histograms — the axes they are drawn against, and the plots that hold them.'
         case 'scale':
             return 'Functions for scaling numeric data to visualization ranges.'
         case 'ramp':
