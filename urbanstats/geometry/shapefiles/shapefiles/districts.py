@@ -107,12 +107,77 @@ mid_district_redistricting_for_2025 = {
     ),
 }
 
+ca_leg = dict(
+    linkText="CA Assembly",
+    link="https://aelc.assembly.ca.gov/proposed-congressional-map",
+)
+
+ut_gov = dict(
+    linkText="UT UGRIC",
+    link="https://opendata.gis.utah.gov/datasets/utah-us-congress-districts-2026-to-2032/about",
+)
+
+tx_capitol = dict(
+    linkText="TX Capitol",
+    link="https://data.capitol.texas.gov/dataset/planc2308",
+)
+
+oh_sos_2 = dict(
+    linkText="OH Secretary of State",
+    link="https://www.ohiosos.gov/elections/district-maps#fed-congress-district-2026-2032",
+)
+
+tn_gov = dict(
+    linkText="TN GeoData",
+    link="https://geodata.tn.gov/datasets/tn-congressional-districts/explore?location=35.801050%2C-86.022500%2C7",
+)
+
+nc_leg_2 = dict(
+    linkText="NC Legislature",
+    link="https://www.ncleg.gov/Redistricting/C2025E",
+    text="Enacted 2025 (to be used for 2026 election)",
+)
+
+la_gov = dict(
+    linkText="LA Legislature",
+    link="https://redist.legis.la.gov/",
+    text="The relevant file is SB_121_Enrolled",
+)
+
+al_sos_2 = dict(
+    linkText="AL SOS",
+    link="https://www.sos.alabama.gov/alabama-votes/state-district-maps",
+)
+
+fl_sen = dict(
+    linkText="FL Senate",
+    link="https://www.flsenate.gov/Session/Redistricting/Congressional",
+)
+
+mid_district_redistricting_for_2027 = {
+    "cd118": dict(
+        states_and_sources={
+            "CA": ca_leg,
+            "UT": ut_gov,
+            "TX": tx_capitol,
+            "OH": oh_sos_2,
+            "TN": tn_gov,
+            "NC": nc_leg_2,
+            "LA": la_gov,
+            "AL": al_sos_2,
+            "FL": fl_sen,
+        },
+        prefix="named_region_shapefiles/redistricting/2027/CD-",
+    ),
+}
+
 all_redistricting = {
     2025: mid_district_redistricting_for_2025,
+    2027: mid_district_redistricting_for_2027,
 }
 
 version_tag_by_file_name = {
-    "cd118": "_6",
+    "cd118": "_7",
     "sldl": "_6.1",
     "sldu": "_6.1",
 }
