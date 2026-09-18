@@ -199,47 +199,47 @@ const value: {names: string[], dataCredits: {text: string | null, linkText: stri
             },
             {
                 "text": "Under \"House Districts- As passed Dec. 5, 2023- House Committee Chair- House Bill 1EX\".",
-                "linkText": "GA redistricting: GA Legislature",
+                "linkText": "GA redistricting (for 2024 election): GA Legislature",
                 "link": "https://www.legis.ga.gov/joint-office/reapportionment"
             },
             {
                 "text": null,
-                "linkText": "MI redistricting: MI CRC",
+                "linkText": "MI redistricting (for 2024 election): MI CRC",
                 "link": "https://www.michigan.gov/micrc/mapping-process-2024/final-remedial-state-house-plan"
             },
             {
                 "text": null,
-                "linkText": "MT redistricting: MT Legislature",
+                "linkText": "MT redistricting (for 2024 election): MT Legislature",
                 "link": "https://mtredistricting.gov/state-legislative-maps-proposed-by-the-commission"
             },
             {
                 "text": "Using \"Current District Plans (used for 2022 election).\"",
-                "linkText": "NC redistricting: NC Legislature",
+                "linkText": "NC redistricting (for 2024 election): NC Legislature",
                 "link": "https://www.ncleg.gov/redistricting"
             },
             {
                 "text": "Shapefiles are not directly linked, but can be found by searching for the specific state.",
-                "linkText": "ND redistricting: DRA",
+                "linkText": "ND redistricting (for 2024 election): DRA",
                 "link": "https://davesredistricting.org/"
             },
             {
                 "text": null,
-                "linkText": "OH redistricting: OH Secretary of State",
+                "linkText": "OH redistricting (for 2024 election): OH Secretary of State",
                 "link": "https://www.ohiosos.gov/elections/ohio-candidates/district-maps/"
             },
             {
                 "text": "Shapefiles are not directly linked, but can be found by searching for the specific state.",
-                "linkText": "SC redistricting: DRA",
+                "linkText": "SC redistricting (for 2024 election): DRA",
                 "link": "https://davesredistricting.org/"
             },
             {
                 "text": null,
-                "linkText": "WA redistricting: WA Government",
+                "linkText": "WA redistricting (for 2024 election): WA Government",
                 "link": "https://geo.wa.gov/datasets/wa-ofm::washington-state-legislative-districts-2024/explore?location=46.911788%2C-120.933109%2C7.59"
             },
             {
                 "text": "Shapefiles are not directly linked, but can be found by searching for the specific state.",
-                "linkText": "WI redistricting: DRA",
+                "linkText": "WI redistricting (for 2024 election): DRA",
                 "link": "https://davesredistricting.org/"
             }
         ]
@@ -256,42 +256,42 @@ const value: {names: string[], dataCredits: {text: string | null, linkText: stri
             },
             {
                 "text": "Under \"House Districts- As passed Dec. 5, 2023- House Committee Chair- House Bill 1EX\".",
-                "linkText": "GA redistricting: GA Legislature",
+                "linkText": "GA redistricting (for 2024 election): GA Legislature",
                 "link": "https://www.legis.ga.gov/joint-office/reapportionment"
             },
             {
                 "text": null,
-                "linkText": "MI redistricting: MI CRC",
+                "linkText": "MI redistricting (for 2024 election): MI CRC",
                 "link": "https://www.michigan.gov/micrc/mapping-process-2024/final-remedial-state-senate-plan"
             },
             {
                 "text": null,
-                "linkText": "MT redistricting: MT Legislature",
+                "linkText": "MT redistricting (for 2024 election): MT Legislature",
                 "link": "https://mtredistricting.gov/state-legislative-maps-proposed-by-the-commission"
             },
             {
                 "text": "Using \"Current District Plans (used for 2022 election).\"",
-                "linkText": "NC redistricting: NC Legislature",
+                "linkText": "NC redistricting (for 2024 election): NC Legislature",
                 "link": "https://www.ncleg.gov/redistricting"
             },
             {
                 "text": "Shapefiles are not directly linked, but can be found by searching for the specific state.",
-                "linkText": "ND redistricting: DRA",
+                "linkText": "ND redistricting (for 2024 election): DRA",
                 "link": "https://davesredistricting.org/"
             },
             {
                 "text": null,
-                "linkText": "OH redistricting: OH Secretary of State",
+                "linkText": "OH redistricting (for 2024 election): OH Secretary of State",
                 "link": "https://www.ohiosos.gov/elections/ohio-candidates/district-maps/"
             },
             {
                 "text": null,
-                "linkText": "WA redistricting: WA Government",
+                "linkText": "WA redistricting (for 2024 election): WA Government",
                 "link": "https://geo.wa.gov/datasets/wa-ofm::washington-state-legislative-districts-2024/explore?location=46.911788%2C-120.933109%2C7.59"
             },
             {
                 "text": "Shapefiles are not directly linked, but can be found by searching for the specific state.",
-                "linkText": "WI redistricting: DRA",
+                "linkText": "WI redistricting (for 2024 election): DRA",
                 "link": "https://davesredistricting.org/"
             }
         ]
@@ -308,27 +308,27 @@ const value: {names: string[], dataCredits: {text: string | null, linkText: stri
             },
             {
                 "text": "Under \"Shape files\" under \"Court ordered Congressional Districts\".",
-                "linkText": "AL redistricting: AL Secretary of State",
+                "linkText": "AL redistricting (for 2024 election): AL Secretary of State",
                 "link": "https://www.sos.alabama.gov/alabama-votes/state-district-maps"
             },
             {
                 "text": "Under \"House Districts- As passed Dec. 5, 2023- House Committee Chair- House Bill 1EX\".",
-                "linkText": "GA redistricting: GA Legislature",
+                "linkText": "GA redistricting (for 2024 election): GA Legislature",
                 "link": "https://www.legis.ga.gov/joint-office/reapportionment"
             },
             {
                 "text": "Under \"Enacted Plans From the 2024 1st Extraordinary Session\"",
-                "linkText": "LA redistricting: LA Legislature",
+                "linkText": "LA redistricting (for 2024 election): LA Legislature",
                 "link": "https://redist.legis.la.gov/"
             },
             {
                 "text": "Using \"Current District Plans (used for 2022 election).\"",
-                "linkText": "NC redistricting: NC Legislature",
+                "linkText": "NC redistricting (for 2024 election): NC Legislature",
                 "link": "https://www.ncleg.gov/redistricting"
             },
             {
                 "text": "Shapefiles are not directly linked, but can be found by searching for the specific state.",
-                "linkText": "NY redistricting: DRA",
+                "linkText": "NY redistricting (for 2024 election): DRA",
                 "link": "https://davesredistricting.org/"
             }
         ]
