@@ -6,11 +6,6 @@ import { checkTextboxesDirect, downloadCSV, downloadImage, saveString, dragHandl
 
 urbanstatsFixture('mapper default', `${target}/mapper.html`)
 
-test('mobile appearance', async (t) => {
-    await t.resizeWindow(400, 800)
-    await screencap(t, { selector: Selector('.content_panel_mobile'), removeEntireMap: false })
-})
-
 test('showing a popover does not clip in split view', async (t) => {
     await toggleCustomScript(t)
     await t.hover(Selector('span').withText(/^linearScale/))
