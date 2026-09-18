@@ -223,13 +223,16 @@ def get_shortname(district_abbrev, x, include_date=True):
 
 def data_credit_for_redistricting(file_name):
     result = []
-    for redistricted in all_redistricting.values():
+    for year, redistricted in all_redistricting.items():
         if file_name in redistricted:
             for state, dc in sorted(
                 redistricted[file_name]["states_and_sources"].items()
             ):
                 result.append(
-                    {**dc, "linkText": f"{state} redistricting: {dc['linkText']}"}
+                    {
+                        **dc,
+                        "linkText": f"{state} redistricting (for {year-1} election): {dc['linkText']}",
+                    }
                 )
     return result
 
