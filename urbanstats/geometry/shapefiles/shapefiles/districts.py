@@ -166,7 +166,7 @@ def load_districts_all_2020s(file_name, *, minimum_district_length):
     result["start_date"] = 2023
     result["end_date"] = 2032
 
-    for year, redistricted in all_redistricting.items():
+    for year, redistricted in sorted(all_redistricting.items()):
         if file_name in redistricted:
             result = _handle_redistricting(redistricted[file_name], result, year)
 
