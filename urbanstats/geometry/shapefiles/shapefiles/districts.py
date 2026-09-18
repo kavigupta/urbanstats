@@ -107,6 +107,10 @@ mid_district_redistricting_for_2025 = {
     ),
 }
 
+all_redistricting = {
+    2025: mid_district_redistricting_for_2025,
+}
+
 version_tag_by_file_name = {
     "cd118": "_6",
     "sldl": "_6.1",
@@ -162,27 +166,36 @@ def load_districts_all_2020s(file_name, *, minimum_district_length):
     result["start_date"] = 2023
     result["end_date"] = 2032
 
-    redistricted = mid_district_redistricting_for_2025[file_name]
+    for year, redistricted in all_redistricting.items():
+        if file_name in redistricted:
+            result = _handle_redistricting(redistricted[file_name], result, year)
 
+    result.district = consistent_district_padding(
+        result.state, result.district.apply(str), minimum_length=minimum_district_length
+    )
+    result = collapse_unchanged(result, identity_columns=("state", "district"))
+    return result
+
+
+def _handle_redistricting(redistricted, result, year_start):
     for state in redistricted["states_and_sources"]:
         for_state = read_shapefile(f"{redistricted['prefix']}{state}.zip").to_crs(
             "epsg:4326"
         )
         for_state["district"] = get_district_column(for_state)
         for_state["state"] = state
-        for_state["start_date"] = 2025
+        for_state["start_date"] = year_start
         for_state["end_date"] = 2032
-        [state_idxs] = np.where(result["state"] == state)
-        result.loc[state_idxs, "end_date"] = 2024
+        # only the ones that haven't already been redistricted
+        [state_idxs] = np.where(
+            (result["state"] == state) & (result["end_date"] == 2032)
+        )
+        result.loc[state_idxs, "end_date"] = year_start - 1
         result = result.copy()
         for_state = for_state[list(result)]
         result = pd.concat(
             [result.to_crs("epsg:4326"), for_state.to_crs("epsg:4326")]
         ).reset_index(drop=True)
-    result.district = consistent_district_padding(
-        result.state, result.district.apply(str), minimum_length=minimum_district_length
-    )
-    result = collapse_unchanged(result, identity_columns=("state", "district"))
     return result
 
 
@@ -206,6 +219,19 @@ def get_shortname(district_abbrev, x, include_date=True):
     if include_date:
         return f'{dist_name} ({x["start_date"]})'
     return dist_name
+
+
+def data_credit_for_redistricting(file_name):
+    result = []
+    for redistricted in all_redistricting.values():
+        if file_name in redistricted:
+            for state, dc in sorted(
+                redistricted[file_name]["states_and_sources"].items()
+            ):
+                result.append(
+                    {**dc, "linkText": f"{state} redistricting: {dc['linkText']}"}
+                )
+    return result
 
 
 # pylint: disable-next=too-many-arguments
@@ -243,15 +269,7 @@ def districts(
         subset_masks={"USA": SelfSubset()},
         special_data_sources=special_data_sources,
         abbreviation=abbreviation,
-        data_credit=[data_credit]
-        + [
-            {**dc, "linkText": f"{state} redistricting: {dc['linkText']}"}
-            for state, dc in sorted(
-                mid_district_redistricting_for_2025[file_name][
-                    "states_and_sources"
-                ].items()
-            )
-        ],
+        data_credit=[data_credit] + data_credit_for_redistricting(file_name),
         start_date=lambda x: x["start_date"],
         end_date=lambda x: x["end_date"],
         start_date_overall=2023,
