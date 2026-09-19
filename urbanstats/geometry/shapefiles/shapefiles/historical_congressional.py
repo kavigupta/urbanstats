@@ -109,7 +109,7 @@ HISTORICAL_CONGRESSIONALs = {
 }
 
 HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = Shapefile(
-    hash_key="historical_congressional_2020_2",
+    hash_key="historical_congressional_2020_3",
     path=lambda: load_shapefile("cd118", only_keep="past", minimum_district_length=2),
     shortname_extractor=historical_shortname,
     longname_extractor=lambda x: historical_shortname(x) + ", USA",
@@ -135,7 +135,7 @@ HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = Shapefile(
     start_date=lambda x: x["start_date"],
     end_date=lambda x: x["end_date"],
     start_date_overall=2023,
-    end_date_overall=2024,
+    end_date_overall=2026,
     include_in_syau=False,
     wikidata_sourcer=CongressionalDistrictWikidataSourcer(),
 )
