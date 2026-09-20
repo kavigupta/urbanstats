@@ -51,6 +51,9 @@ function usaMap(geographyKind: string, uss: string): string {
     })).toString('base64'))}`
 }
 
+/** Rows from two universes, which the card names in place of the one universe and its flag. */
+const multiGeographyStatistic = `/statistic.html?uss=${encodeURIComponent('customNode(""); condition (true); table(columns=[column(values=density_pw_1km), column(values=population)])')}&geographies=${encodeURIComponent(JSON.stringify([{ universe: 'USA', geographyKind: 'Subnational Region' }, { universe: 'Canada', geographyKind: 'Subnational Region' }]))}&start=1&amount=20&order=descending`
+
 /** Two universes too far apart to share a main map, so the card lays out two side by side. */
 const multiGeographyMap = `/mapper.html?settings=${encodeURIComponent(gzipSync(JSON.stringify({
     geographies: [{ universe: 'USA', geographyKind: 'Subnational Region' }, { universe: 'France', geographyKind: 'Subnational Region' }],
@@ -162,6 +165,10 @@ test('embed-worker-long-named-statistic-card', async (t) => {
 
 test('embed-worker-late-sorted-statistic-card', async (t) => {
     await snapshotCard(t, lateSortedStatistic)
+})
+
+test('embed-worker-multi-geography-statistic-card', async (t) => {
+    await snapshotCard(t, multiGeographyStatistic)
 })
 
 test('embed-worker-multi-geography-map-card', async (t) => {

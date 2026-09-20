@@ -7,6 +7,7 @@ import { HumanReadableName } from '../utils/human-readable-element'
 import { StoredUnit } from '../utils/quantity'
 
 export type Statistic = {
+    /** A simple statistic always has exactly one; a custom table may have several. */
     geographies: GeographySelection[]
 } & ({
     type: 'uss'
