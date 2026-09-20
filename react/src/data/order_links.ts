@@ -358,10 +358,10 @@ const value: Record<string, number[]> = {
         22
     ],
     "County Cross CD": [
-        137,
-        137,
-        137,
-        88
+        136,
+        136,
+        136,
+        91
     ],
     "Hospital Service Area": [
         149,
