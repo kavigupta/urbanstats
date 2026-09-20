@@ -529,25 +529,34 @@ function processRawSearchIndex(searchIndex: { elements: string[], metadata: ISea
     return result
 }
 
-export async function getIndexCacheKey(): Promise<string | undefined> {
+let indexCacheKey: Promise<string | undefined> | undefined
+
+export function getIndexCacheKey(): Promise<string | undefined> {
+    indexCacheKey ??= computeIndexCacheKey()
+    return indexCacheKey
+}
+
+async function computeIndexCacheKey(): Promise<string | undefined> {
     try {
         const start = performance.now()
-        // location is sometimes a worker
-        const resources = ['/scripts/index.js', '/index/pages_all.gz', location.href]
-        const etags = await Promise.all(resources.map(async (resource) => {
+        // The bundle is in the key because it decides the cached index's layout.
+        const resources = ['/scripts/index.js', '/index/pages_all.gz']
+        const lengths = await Promise.all(resources.map(async (resource) => {
             const response = await fetch(resource, { method: 'HEAD' })
             if (!response.ok) {
                 throw new Error(`${resource} is not OK`)
             }
-            const etag = response.headers.get('etag')
-            if (etag === null) {
-                throw new Error(`${resource} does not have etag`)
+            // Not the etag: GitHub Pages derives it from the mtime, which differs
+            // between nodes serving identical content.
+            const length = response.headers.get('content-length')
+            if (length === null) {
+                throw new Error(`${resource} does not have content-length`)
             }
-            return etag
+            return length
         }))
 
         debugPerformance(`Took ${performance.now() - start} to get search cache key`)
-        return etags.join(',')
+        return lengths.join(',')
     }
     catch (error) {
         console.warn('Getting search cache key failed', error)

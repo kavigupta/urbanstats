@@ -39,7 +39,7 @@ export function SearchBox(props: {
     const statsUniverse = props.statisticLink && (universe ?? 'allUniverses')
 
     // Keep these in sync
-    const cacheKeyPromise = useMemo(() => getIndexCacheKey(), [])
+    const cacheKeyPromise = getIndexCacheKey()
     const searchWorker = useRef<SearchWorker | undefined>()
     const searchWorkerConfig = useRef<AsyncConfig | undefined>()
 
