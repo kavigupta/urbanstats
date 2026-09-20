@@ -6,6 +6,7 @@ import { getCountsByArticleType } from '../src/components/countsByArticleType'
 import { StatName } from '../src/page_template/statistic-tree'
 import { crossSourceBorderExclusion } from '../src/stat/crossSourceBorder'
 import { Universe } from '../src/universe'
+import { GeographyKind } from '../src/urban-stats-script/workerManager'
 
 const usCensusPopulation = 'Population' satisfies StatName
 const statCanPopulation = 'Population [StatCan]' satisfies StatName
@@ -19,7 +20,7 @@ const usCensusRace = 'White %' satisfies StatName
 // data-loading unit tests.
 const countsPromise = getCountsByArticleType()
 
-async function exclusion(statName: StatName, articleType: string, universe: Universe): Promise<ReturnType<typeof crossSourceBorderExclusion>> {
+async function exclusion(statName: StatName, articleType: GeographyKind, universe: Universe): Promise<ReturnType<typeof crossSourceBorderExclusion>> {
     return crossSourceBorderExclusion({ statName, articleType, universe, counts: await countsPromise })
 }
 

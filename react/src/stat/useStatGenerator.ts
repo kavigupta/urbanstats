@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { CountsByUT, forType, getCountsByArticleType } from '../components/countsByArticleType'
-import validGeographies from '../data/mapper/used_geographies'
 import stats from '../data/statistic_list'
 import statistic_name_list from '../data/statistic_name_list'
 import universes_ordered from '../data/universes_ordered'
@@ -63,9 +62,10 @@ async function makeStatGenerator({ stat, typeEnvironment, previousGenerator }: {
     }
 
     const counts = await getCountsByArticleType()
+    const { geographies } = stat
 
     // Check if there are no geographic entities using counts before executing
-    const countErrors = checkArticleCount(counts, stat.universe, stat.articleType)
+    const countErrors = checkArticleCount(counts, geographies[0].universe, geographies[0].geographyKind)
     if (countErrors.length > 0) {
         return {
             ...(await previousGenerator()),
@@ -78,8 +78,7 @@ async function makeStatGenerator({ stat, typeEnvironment, previousGenerator }: {
         const mapUSS = mapUSSFromStat(stat)
         const exec = await executeAsync({ descriptor: {
             kind: 'statistics',
-            geographyKind: stat.articleType as (typeof validGeographies)[number], // Verified above in `checkArticleCount`
-            universe: stat.universe,
+            geographies,
         }, stmts: toStatement(mapUSS) })
 
         const execErrors = exec.error
@@ -118,7 +117,7 @@ async function makeStatGenerator({ stat, typeEnvironment, previousGenerator }: {
             errors: execErrors,
             universesFiltered: statIndex !== undefined
                 ? universes_ordered.filter(
-                    universe => forType(counts, universe, stats[statIndex], stat.articleType) > 0)
+                    universe => forType(counts, universe, stats[statIndex], geographies[0].geographyKind) > 0)
                 : universes_ordered,
             assignments: exec.assignments,
         }

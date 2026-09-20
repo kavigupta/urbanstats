@@ -3,6 +3,7 @@ import React, { ReactNode, useCallback, useContext, useEffect, useMemo, useRef, 
 import { CountsByUT } from '../components/countsByArticleType'
 import { defaultTypeEnvironment } from '../mapper/context'
 import { Selection, SelectionContext } from '../mapper/settings/SelectionContext'
+import { universesOf } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { useUnitSettings } from '../page_template/settings'
 import { universeContext } from '../universe'
@@ -110,17 +111,19 @@ export function StatisticPanel({ settings, counts }: { settings: StatSettings, c
         document.title = statPageTitle(stat, unitSettings)
     }, [stat, unitSettings])
 
-    const typeEnvironment = useMemo(() => defaultTypeEnvironment(stat.universe), [stat.universe])
+    const typeEnvironment = useMemo(() => defaultTypeEnvironment(universesOf(stat.geographies)), [stat.geographies])
 
     const generator = useStatGenerator({ stat: generatorSettings.stat, typeEnvironment })
+
+    const geography = stat.geographies[0]
 
     return (
         <SelectionContext.Provider value={selectionContext}>
             <universeContext.Provider value={{
-                universe: stat.universe,
+                universe: geography.universe,
                 universes: generator.universesFiltered,
                 setUniverse(newUniverse) {
-                    setSettingsStateWrapper({ stat: { ...stat, universe: newUniverse } }, {})
+                    setSettingsStateWrapper({ stat: { ...stat, geographies: [{ ...geography, universe: newUniverse }] } }, {})
                 },
             }}
             >

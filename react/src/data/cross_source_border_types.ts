@@ -1,4 +1,4 @@
-const value: Record<string, { alternativeGeographyTypes: string[], reasonForNoAlternatives: string | null }> = {
+export default {
     "Urban Center": {
         "alternativeGeographyTypes": [
             "Urban Area",
@@ -45,5 +45,4 @@ const value: Record<string, { alternativeGeographyTypes: string[], reasonForNoAl
         "alternativeGeographyTypes": [],
         "reasonForNoAlternatives": "Circles are drawn around a point without regard to national borders, and no region type defined by a statistics agency resembles them."
     }
-}
-export default value
+} as const
