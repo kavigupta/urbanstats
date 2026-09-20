@@ -1,5 +1,5 @@
 import { CountsByUT, forTypeByIndex, totalForType } from '../components/countsByArticleType'
-import crossSourceBorderTypes from '../data/cross_source_border_types'
+import crossSourceBorderTypesData from '../data/cross_source_border_types'
 import geographyDataSourceCountry from '../data/geography_data_source_country'
 import statisticDataSourceCountry from '../data/statistic_data_source_country'
 import statNames from '../data/statistic_name_list'
@@ -8,6 +8,10 @@ import universeDataSourceCountry from '../data/universe_data_source_country'
 import { multiSourceStatisticByPath, StatName } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 import { GeographyKind } from '../urban-stats-script/workerManager'
+
+interface BorderInfo { alternativeGeographyTypes: readonly GeographyKind[], reasonForNoAlternatives: string | null }
+
+const crossSourceBorderTypes: Partial<Record<GeographyKind, BorderInfo>> = crossSourceBorderTypesData
 
 export type CrossSourceBorderAlternative =
     /** The same statistic from a source that covers every region, e.g. Population [GHS-POP]. */
@@ -94,7 +98,7 @@ function computeAlternative({ statIndex, shownCount, articleType, universe, coun
     articleType: GeographyKind
     universe: Universe
     counts: CountsByUT
-    borderInfo: (typeof crossSourceBorderTypes)[GeographyKind]
+    borderInfo: BorderInfo | undefined
 }): CrossSourceBorderAlternative | undefined {
     const broaderVariant = findBroaderVariant({ statIndex, shownCount, articleType, universe, counts })
     if (broaderVariant !== undefined) {
