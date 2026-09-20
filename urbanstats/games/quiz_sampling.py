@@ -6,7 +6,9 @@ import pandas as pd
 
 from urbanstats.games.fit_distribution.distribution import QuizQuestionPossibilities
 from urbanstats.games.quiz_question_distribution import MIN_POP, MIN_POP_INTERNATIONAL
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.utils import DiscreteDistribution
+from urbanstats.website_data.centroids import compute_all_centroids
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 from .quiz_question_distribution import collections_index, quiz_question_weights
@@ -30,6 +32,9 @@ def compute_quiz_question_distribution() -> (
 def compute_geographies_by_type() -> Dict[str, QuizTable]:
     t = shapefile_without_ordinals().copy()
     t["local_region_mask"] = t.universes.apply(lambda x: "Canada" in x or "USA" in x)
+    centroids = compute_all_centroids(shapefiles).loc[t.longname]
+    t["centroid_lat"] = [c.y for c in centroids]
+    t["centroid_lon"] = [c.x for c in centroids]
     filtered_for_pop = t[
         t.best_population_estimate
         > t.local_region_mask.apply(lambda x: MIN_POP if x else MIN_POP_INTERNATIONAL)
