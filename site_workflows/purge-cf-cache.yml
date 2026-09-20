@@ -1,0 +1,35 @@
+name: Purge CF Cache
+
+# Cloudflare's edge caches the site's assets and, in `caches.default`, the preview cards the OG
+# Worker draws — cards whose contents come from whatever data the site was serving when they were
+# rendered, and which otherwise sit there for a day. Purging the zone on every Pages deploy keeps
+# both from outliving the build they were made from.
+#
+# This doesn't wait for Deploy CF OG Worker, which the same event starts: a card re-rendered in
+# between is drawn by the old Worker against the new data, and the next deploy clears it.
+on:
+  page_build:
+  workflow_dispatch:
+
+concurrency: purge-cf-cache
+
+jobs:
+  purge:
+    runs-on: ubuntu-22.04
+    if: github.event_name != 'page_build' || github.event.build.status == 'built'
+    steps:
+      - name: Purge everything
+        env:
+          # Needs Zone / Cache Purge: Purge on urbanstats.org, on top of the scopes the other
+          # workflows use this token for.
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: |
+          set -euo pipefail
+          result=$(curl -sS -X POST \
+            -H "Authorization: Bearer $CF_TOKEN" \
+            -H 'content-type: application/json' \
+            --data '{"purge_everything":true}' \
+            "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/purge_cache")
+          [ "$(jq -r .success <<<"$result")" = true ] || { echo "$result"; exit 1; }
+          echo "Purged."
