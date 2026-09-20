@@ -142,7 +142,7 @@ async function universeOfEachRow(geographies: GeographySelection[]): Promise<Map
     if (geographies.length <= 1) {
         return undefined
     }
-    const key = stableStringify(geographies)
+    const key = stableStringify(geographies)!
     if (loadedUniverseByName?.key !== key) {
         loadedUniverseByName = { key, universeByName: universesByName(geographies) }
     }
