@@ -439,7 +439,8 @@ function insertMissing(rows: ArticleRow[][]): ArticleRow[][] {
     for (const dataI of rows.keys()) {
         for (const rowI of rows[dataI].keys()) {
             const idx = idxs[dataI][rowI]
-            emptyRowExample.set(idx, JSON.parse(JSON.stringify(rows[dataI][rowI])) as typeof rows[number][number])
+            // structuredClone rather than a JSON round trip, which turns an infinite statval into null
+            emptyRowExample.set(idx, structuredClone(rows[dataI][rowI]))
             for (const key of Object.keys(emptyRowExample.get(idx)!) as (keyof ArticleRow)[]) {
                 if (typeof emptyRowExample.get(idx)![key] === 'number') {
                     // @ts-expect-error Typescript is fucking up this assignment
