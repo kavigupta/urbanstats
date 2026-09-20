@@ -95,7 +95,7 @@ test('a geography that no longer exists is dropped rather than failing the link'
     await t.expect(getErrors()).eql([])
 })
 
-// The form every link made before a table could span several geographies is in.
+// Backwards compatiblity test
 urbanstatsFixture('a link naming its geography as scalars', `${target}/statistic.html?uss=${encodeURIComponent(uss)}&article_type=County&universe=USA&start=1&amount=5&edit=true`)
 
 test('a link naming its geography as scalars', async (t) => {

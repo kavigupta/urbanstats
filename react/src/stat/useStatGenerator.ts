@@ -1,3 +1,4 @@
+import stableStringify from 'json-stable-stringify'
 import { useCallback } from 'react'
 
 import { CountsByUT, forType, getCountsByArticleType } from '../components/countsByArticleType'
@@ -141,7 +142,7 @@ async function universeOfEachRow(geographies: GeographySelection[]): Promise<Map
     if (geographies.length <= 1) {
         return undefined
     }
-    const key = geographies.map(({ universe, geographyKind }) => `${universe}|${geographyKind}`).join(',')
+    const key = stableStringify(geographies)
     if (loadedUniverseByName?.key !== key) {
         loadedUniverseByName = { key, universeByName: universesByName(geographies) }
     }

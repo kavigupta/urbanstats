@@ -85,6 +85,7 @@ const statisticGeographiesFromParam = z.string()
             return z.NEVER
         }
     })
+    // We drop invalid geographies for backwards compatibility
     .pipe(z.array(z.optional(statisticGeographySchema).catch(undefined)))
     .transform(geographies => geographies.filter(geography => geography !== undefined))
 
