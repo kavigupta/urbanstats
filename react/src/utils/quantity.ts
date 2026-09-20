@@ -75,6 +75,7 @@ export interface UnitSettings {
 }
 
 const missingValue = 'N/A'
+const infiniteValue = '∞'
 
 export interface Representation {
     /** E.g., for cm this is x => x * 100 */
@@ -436,8 +437,11 @@ export interface WrittenQuantity {
 }
 
 export function writeQuantity(value: number, stored: StoredUnit, settings: UnitSettings, placement: UnitPlacement): WrittenQuantity {
-    if (!isFinite(value)) {
+    if (isNaN(value)) {
         return { renderedValue: missingValue, unitName: [] }
+    }
+    if (!isFinite(value)) {
+        return { renderedValue: `${value < 0 ? '-' : ''}${infiniteValue}`, unitName: [] }
     }
     const { unit } = stored
     let inBaseUnits = value * stored.toBaseUnits

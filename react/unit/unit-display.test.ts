@@ -201,6 +201,19 @@ for (const unitType of ['population', 'usd', 'density', 'area', 'time', 'minutes
     })
 }
 
+// A quantity that ran off the end of the scale says so, rather than passing for one we never had
+for (const [unitType, value, expected] of [
+    ['population', Infinity, '∞'],
+    ['population', -Infinity, '-∞'],
+    ['density', Infinity, '∞'],
+    ['temperature', -Infinity, '-∞'],
+    ['democraticMargin', Infinity, '∞'],
+] as const) {
+    void test(`${unitType} renders ${value} as ${expected}, with no unit`, () => {
+        assert.deepEqual(writeQuantity(value, storedUnits[unitType], {}, 'byItself'), { renderedValue: expected, unitName: [] })
+    })
+}
+
 // How large a number is, rather than which side of zero it falls, decides the unit it is
 // written in and the places it is written to
 for (const [unitType, value, expected] of [
