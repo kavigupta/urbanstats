@@ -26,7 +26,8 @@ export default env => ({
     },
     output: {
         filename: '[name].js',
-        // Hashed so a stale index.js can never load a chunk built against different module ids
+        // Hashed so a stale index.js can never load a chunk built against different module ids.
+        // The search index cache key also relies on this: see createIndex in src/search.ts
         chunkFilename: '[name].[contenthash].js',
         path: path.resolve(import.meta.dirname, '..', 'dist'),
         clean: true,

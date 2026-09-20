@@ -442,10 +442,11 @@ export async function createIndex(config: SearchIndexConfig, reportStatus: Repor
 
     let index: NormalizedSearchIndex | undefined
     try {
-        const cacheKey = config.cacheKey
-        if (cacheKey === undefined) {
+        if (config.cacheKey === undefined) {
             throw new Error('No cache key specified')
         }
+        // This runs in the search worker, so location is its content-hashed script url
+        const cacheKey = `${config.cacheKey},${location.href}`
 
         await reportStatus('Accessing search cache database...') // Checkpoint after since this can introduce artificial delay
         let checkpoint = performance.now()
@@ -532,8 +533,7 @@ function processRawSearchIndex(searchIndex: { elements: string[], metadata: ISea
 export async function getIndexCacheKey(): Promise<string | undefined> {
     try {
         const start = performance.now()
-        // location is sometimes a worker
-        const resources = ['/scripts/index.js', '/index/pages_all.gz', location.href]
+        const resources = ['/scripts/index.js', '/index/pages_all.gz']
         const etags = await Promise.all(resources.map(async (resource) => {
             const response = await fetch(resource, { method: 'HEAD' })
             if (!response.ok) {
