@@ -364,6 +364,7 @@ def build_urbanstats(
         "update-retrostat.yml",
         "deploy-cf-og-worker.yml",
         "sync-cf-proxy.yml",
+        "purge-cf-cache.yml",
     ]:
         with open(f"site_workflows/{workflow}") as f_workflow:
             contents = f_workflow.read()
