@@ -14,6 +14,8 @@ class QuizTable:
     universes: pd.Series
     local_region_mask: pd.Series
     weight_internal: pd.Series
+    centroid_lat: pd.Series
+    centroid_lon: pd.Series
     regions: List[str]
 
     def __permacache_hash__(self):
@@ -23,6 +25,8 @@ class QuizTable:
                 universes=self.universes,
                 local_region_mask=self.local_region_mask,
                 weight_internal=self.weight_internal,
+                centroid_lat=self.centroid_lat,
+                centroid_lon=self.centroid_lon,
                 regions=self.regions,
             )
         )
@@ -50,6 +54,8 @@ class QuizRegion:
             result["universes"],
             result["local_region_mask"],
             result.apply(self.internal_weighting_function, axis=1),
+            result["centroid_lat"],
+            result["centroid_lon"],
             self.regions,
         )
 

@@ -66,6 +66,33 @@ def _compute_difficulty_multipliers(
     return diffmults
 
 
+def excessively_north_south(qt: Any, restrict_dlat_over_dlon: float) -> np.ndarray:
+    """
+    Pairs of geographies violating
+
+        |Δlat| / |Δlon| < restrict_dlat_over_dlon
+    """
+    lat = np.array(qt.centroid_lat)
+    lon = np.array(qt.centroid_lon)
+    delta_lat = np.abs(lat[:, None] - lat[None, :])
+    delta_lon = np.abs(lon[:, None] - lon[None, :])
+    delta_lon = np.minimum(delta_lon, 360 - delta_lon)
+    return delta_lat >= restrict_dlat_over_dlon * delta_lon
+
+
+def _apply_north_south_restrictions(
+    raw_pct_diff: np.ndarray, qt: Any, descriptors: List[Any]
+) -> None:
+    masks: Dict[float, np.ndarray] = {}
+    for i, descriptor in enumerate(descriptors):
+        max_ratio = descriptor.collection.restrict_dlat_over_dlon
+        if max_ratio is None:
+            continue
+        if max_ratio not in masks:
+            masks[max_ratio] = excessively_north_south(qt, max_ratio)
+        raw_pct_diff[i][masks[max_ratio]] = np.inf
+
+
 def invalid_values(values: np.ndarray) -> np.ndarray:
     values = np.abs(values)
     values = values / values.max(axis=1, keepdims=True)
@@ -97,6 +124,7 @@ def _compute_adjusted_difficulties(
     raw_pct_diff[raw_pct_diff > max_pct_diff] = np.inf
     if any(excluded_cols):
         raw_pct_diff[excluded_cols, :, :] = np.inf
+    _apply_north_south_restrictions(raw_pct_diff, qt, descriptors)
 
     adj_pct_diff = raw_pct_diff / _compute_difficulty_multipliers(
         qt, col_to_difficulty, intl_difficulty, excluded_universes

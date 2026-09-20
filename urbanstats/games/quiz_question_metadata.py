@@ -6,6 +6,7 @@ class QuizQuestionCollection:
     name: str
     weight_entire_collection: float = 1.0
     difficulty_multiplier: float = 1.0
+    restrict_dlat_over_dlon: float | None = None
 
 
 @dataclass(frozen=True)
@@ -82,5 +83,7 @@ COMMUTE_TIME = QuizQuestionCollection(
 COMMUTE_MODE = QuizQuestionCollection("Commute Mode", difficulty_multiplier=3)
 VEHICLE_OWNERSHIP = QuizQuestionCollection("Vehicle Ownership", difficulty_multiplier=3)
 ELECTION = QuizQuestionCollection("Election", difficulty_multiplier=3)
-WEATHER = QuizQuestionCollection("Weather", difficulty_multiplier=0.3)
+WEATHER = QuizQuestionCollection(
+    "Weather", difficulty_multiplier=0.3, restrict_dlat_over_dlon=0.2
+)
 POLLUTION = QuizQuestionCollection("Pollution", 0.5)
