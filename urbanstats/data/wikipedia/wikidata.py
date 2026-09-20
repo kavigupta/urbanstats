@@ -70,6 +70,17 @@ def fetch_sparql(query):
             yield entity_id
 
 
+def backoff_delay(response, attempt):
+    """Seconds to wait before retrying, doubling each attempt absent a Retry-After."""
+    # a 429/503 is falsy, so this must not test `response` for truthiness
+    retry_after = response.headers.get("Retry-After") if response is not None else None
+    try:
+        # Retry-After is legally either seconds or an HTTP-date
+        return float(retry_after)
+    except (TypeError, ValueError):
+        return 2**attempt
+
+
 @permacache(
     "urbanstats/data/wikipedia/wikidata/fetch_sparql_bindings",
     key_function=dict(version=drop_if_equal(0)),
@@ -98,8 +109,7 @@ def fetch_sparql_bindings(query, version=0):
             # pages with a 200, which is why a decode failure is retried too
             if attempt == WDQS_ATTEMPTS - 1:
                 raise
-        retry_after = response.headers.get("Retry-After") if response else None
-        time.sleep(float(retry_after) if retry_after else 2**attempt)
+        time.sleep(backoff_delay(response, attempt))
     raise AssertionError("unreachable")
 
 
