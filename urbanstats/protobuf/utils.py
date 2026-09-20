@@ -84,3 +84,9 @@ def write_gzip_bytes(bytestring: bytes, path: str) -> None:
     ensure_writeable(path)
     with gzip.GzipFile(path, "wb", mtime=0) as f:
         f.write(bytestring)
+
+
+def read_gzip(proto: Any, path: str) -> Any:
+    with gzip.open(path, "rb") as f:
+        proto.ParseFromString(f.read())
+    return proto
