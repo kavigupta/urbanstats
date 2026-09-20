@@ -10,7 +10,6 @@
 import './browser-shim'
 
 import { PageDescriptor, pageDescriptorFromURL } from '../../src/navigation/PageDescriptor'
-import { GeographySelection } from '../../src/urban-stats-script/workerManager'
 
 interface Embed {
     title: string
