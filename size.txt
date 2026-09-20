@@ -528,3 +528,12 @@ Temperature plots (#2056)
 788     order
 1412    data
 3289    total
+
+2026 redistricting (#2506)
+
+125     consolidated
+178     quiz_sampling_info
+691     shape
+788     order
+1414    data
+3326    total
