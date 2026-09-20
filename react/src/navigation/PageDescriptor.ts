@@ -575,7 +575,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 start = start + 1
             }
 
-            const geographies = newDescriptor.geographies
+            const { geographies } = newDescriptor
 
             const stat: Statistic = {
                 geographies,
