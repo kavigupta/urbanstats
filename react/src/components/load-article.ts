@@ -114,7 +114,8 @@ const dataCreditExplanationPageByMetadataIndex = new Map<number, string>(
 )
 
 interface StatisticCellRenderingInfoCommon {
-    articleType: GeographyKind | typeof missingRowType
+    /** Undefined where no single geography kind covers the rows, which rules out full ordinals. */
+    articleType: GeographyKind | typeof missingRowType | undefined
     statname: HumanReadableName
     statpath?: StatPath
 }

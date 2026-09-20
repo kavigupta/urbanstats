@@ -47,8 +47,6 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
 
     const onlyColumns: ColumnIdentifier[] = data.hideOrdinalsPercentiles ? valueOnlyColumns : ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
 
-    const { geographyKind } = stat.geographies[0]
-
     const allColumnRows: StatisticCellRenderingInfo[][] = data.table.map((col) => {
         if (col.ordinal === undefined) {
             const values = col.value
@@ -56,7 +54,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
                 kind: 'text',
                 statval: renderTextCell(values[actualRowIdx]),
                 statname: col.name,
-                articleType: geographyKind,
+                articleType: undefined,
             } satisfies StatisticCellRenderingInfo))
         }
         const { value, ordinal, populationPercentile } = col
@@ -66,7 +64,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
             ordinal: ordinal[actualRowIdx],
             percentileByPopulation: populationPercentile[actualRowIdx],
             statname: col.name,
-            articleType: geographyKind,
+            articleType: undefined,
             totalCountInClass: data.totalCountInClass,
             totalCountOverall: data.totalCountOverall,
             overallFirstLast: { isFirst: false, isLast: false },

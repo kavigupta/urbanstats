@@ -644,17 +644,20 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: StatisticCel
     const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_in_class',
-        content: () => (
-            <span key="pointer_in_class" className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
-                <PointerButtonsIndex
-                    ordinal={ordinal}
-                    statpath={statpath}
-                    type={articleType}
-                    total={totalCountInClass}
-                    longname={props.longname}
-                />
-            </span>
-        ),
+        content: () => {
+            assert(articleType !== undefined, 'stepping through a ranking needs one geography kind')
+            return (
+                <span key="pointer_in_class" className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
+                    <PointerButtonsIndex
+                        ordinal={ordinal}
+                        statpath={statpath}
+                        type={articleType}
+                        total={totalCountInClass}
+                        longname={props.longname}
+                    />
+                </span>
+            )
+        },
         style: { textAlign: 'right' },
     }
 
@@ -1206,7 +1209,7 @@ function measureTextWidthEm(text: string, fontSizeEm: number = 1): number {
     return widthPx / 16
 }
 
-function ordinalWidthInEm(ordinal: number, total: number, type: string, universe: string | undefined, simpleOrdinals: boolean): [number, number] {
+function ordinalWidthInEm(ordinal: number, total: number, type: string | undefined, universe: string | undefined, simpleOrdinals: boolean): [number, number] {
     if (ordinal > total) {
         return [0, 0]
     }
@@ -1222,6 +1225,7 @@ function ordinalWidthInEm(ordinal: number, total: number, type: string, universe
     }
     else {
         assert(universe !== undefined, 'writing an ordinal out in full needs a universe to name its geographies in')
+        assert(type !== undefined, 'writing an ordinal out in full needs one geography kind to name')
         const suffixText = ` of ${total} ${displayType(universe, type)}`
         const suffixWidth = measureTextWidthEm(suffixText)
         return [ordinalWidth + suffixWidth + padding, padding]
@@ -1266,7 +1270,7 @@ function Percentile(props: {
     ordinal: number
     total: number
     percentileByPopulation: number
-    type: string
+    type: string | undefined
     statpath?: string
     simpleOrdinals: boolean
     onNavigate?: (newArticle: string) => void
@@ -1281,6 +1285,7 @@ function Percentile(props: {
         }
         assert(props.statpath !== undefined, 'statpath must be defined if onNavigate is provided')
         assert(currentUniverse !== undefined, 'a navigable percentile is only shown on a page with a universe')
+        assert(props.type !== undefined, 'a navigable percentile ranks one geography kind')
         const [data, articleNames] = await loadStatisticsPage(currentUniverse, props.statpath, props.type)
         const bestIndex = percentileBucketIndex(data.populationPercentile, target)
         const currentIndex = props.ordinal - 1
@@ -1343,7 +1348,7 @@ function Percentile(props: {
 function Ordinal(props: {
     ordinal: number
     total: number
-    type: string
+    type: string | undefined
     statpath?: string
     simpleOrdinals: boolean
     onNavigate?: (newArticle: string) => void
@@ -1355,6 +1360,7 @@ function Ordinal(props: {
         }
         assert(props.statpath !== undefined, 'statpath must be defined if onNavigate is provided')
         assert(currentUniverse !== undefined, 'a navigable ordinal is only shown on a page with a universe')
+        assert(props.type !== undefined, 'a navigable ordinal ranks one geography kind')
         let num = number
         if (num < 0) {
             // -1 -> props.total, -2 -> props.total - 1, etc.
@@ -1378,6 +1384,7 @@ function Ordinal(props: {
     let outOf: ReactNode
     if (!props.simpleOrdinals) {
         assert(currentUniverse !== undefined, 'an ordinal written out in full names its geographies in a universe')
+        assert(type !== undefined, 'an ordinal written out in full names one geography kind')
         outOf = (
             <>
                 {' of '}
