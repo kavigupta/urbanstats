@@ -330,6 +330,51 @@ const value: {names: string[], dataCredits: {text: string | null, linkText: stri
                 "text": "Shapefiles are not directly linked, but can be found by searching for the specific state.",
                 "linkText": "NY redistricting (for 2024 election): DRA",
                 "link": "https://davesredistricting.org/"
+            },
+            {
+                "text": null,
+                "linkText": "AL redistricting (for 2026 election): AL SOS",
+                "link": "https://www.sos.alabama.gov/alabama-votes/state-district-maps"
+            },
+            {
+                "text": null,
+                "linkText": "CA redistricting (for 2026 election): CA Assembly",
+                "link": "https://aelc.assembly.ca.gov/proposed-congressional-map"
+            },
+            {
+                "text": null,
+                "linkText": "FL redistricting (for 2026 election): FL Senate",
+                "link": "https://www.flsenate.gov/Session/Redistricting/Congressional"
+            },
+            {
+                "text": "The relevant file is SB_121_Enrolled",
+                "linkText": "LA redistricting (for 2026 election): LA Legislature",
+                "link": "https://redist.legis.la.gov/"
+            },
+            {
+                "text": "Enacted 2025 (to be used for 2026 election)",
+                "linkText": "NC redistricting (for 2026 election): NC Legislature",
+                "link": "https://www.ncleg.gov/Redistricting/C2025E"
+            },
+            {
+                "text": null,
+                "linkText": "OH redistricting (for 2026 election): OH Secretary of State",
+                "link": "https://www.ohiosos.gov/elections/district-maps#fed-congress-district-2026-2032"
+            },
+            {
+                "text": null,
+                "linkText": "TN redistricting (for 2026 election): TN GeoData",
+                "link": "https://geodata.tn.gov/datasets/tn-congressional-districts/explore?location=35.801050%2C-86.022500%2C7"
+            },
+            {
+                "text": null,
+                "linkText": "TX redistricting (for 2026 election): TX Capitol",
+                "link": "https://data.capitol.texas.gov/dataset/planc2308"
+            },
+            {
+                "text": null,
+                "linkText": "UT redistricting (for 2026 election): UT UGRIC",
+                "link": "https://opendata.gis.utah.gov/datasets/utah-us-congress-districts-2026-to-2032/about"
             }
         ]
     },
