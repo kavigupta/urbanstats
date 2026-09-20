@@ -1,3 +1,4 @@
+import atexit
 import json
 import os
 import shutil
@@ -9,6 +10,7 @@ from permacache import stable_hash
 
 from urbanstats.games.fit_distribution.distribution import QuizQuestionPossibilities
 from urbanstats.games.fit_distribution.questions import ValidQuizQuestions
+from urbanstats.games.infinite.stored import juxta_version
 from urbanstats.games.quiz_columns import stat_to_quiz_name
 from urbanstats.games.quiz_question_distribution import quiz_question_weights
 from urbanstats.games.quiz_sampling import (
@@ -63,11 +65,12 @@ def output_quiz_question(
 
 
 def output_quiz_sampling_info(site_folder: str, subfolder: str) -> None:
-    qfd = quiz_sampling_data()
-    juxta_version = output_quiz_sampling_probabilities_locally()
-    write_gzip(qfd, f"stored_quizzes/quiz_sampling_info/{juxta_version}/data.gz")
+    if quiz_data_matches_version():
+        generate_stored_quiz_sampling_data()
+    else:
+        report_juxta_version_out_of_date()
     by_version = []
-    for version in range(1, len(get_juxta_version_info())):
+    for version in range(1, juxta_version + 1):
         dest = os.path.join(site_folder, subfolder, str(version))
         shutil.rmtree(dest, ignore_errors=True)
         shutil.copytree(
@@ -117,15 +120,8 @@ def compute_order(q: ValidQuizQuestions) -> np.ndarray:
     return idxs
 
 
-def output_quiz_sampling_probabilities_locally() -> int:
+def output_quiz_sampling_probabilities_locally() -> None:
     ps, qqp = quiz_data()
-    hash_value = stable_hash((ps, qqp, "v1"))
-    info = get_juxta_version_info()
-    if hash_value not in dict(get_juxta_version_info()):
-        info.append((hash_value, len(info)))
-        with open(version_info, "w") as f_ver:
-            json.dump(info, f_ver)
-    juxta_version = dict(info)[hash_value]
     descriptors = []
     for i, (q, p) in enumerate(zip(qqp.questions_by_number, ps), start=1):
         q, p = filter_for_prob_over_threshold(q, p, threshold=0.05)
@@ -150,7 +146,53 @@ def output_quiz_sampling_probabilities_locally() -> int:
             ),
             f_info,
         )
-    return juxta_version
+
+
+def quiz_data_matches_version() -> bool:
+    """A version that has just been bumped matches by definition, and records its hash."""
+    info = get_juxta_version_info()
+    hash_for_version = {version: h for h, version in info}
+    if juxta_version in hash_for_version:
+        return hash_for_version[juxta_version] == quiz_data_hash()
+    assert juxta_version == len(
+        info
+    ), f"juxta_version goes up one at a time; expected {len(info)}"
+    info.append((quiz_data_hash(), juxta_version))
+    with open(version_info, "w") as f_ver:
+        json.dump(info, f_ver)
+    return True
+
+
+def generate_stored_quiz_sampling_data() -> None:
+    output_quiz_sampling_probabilities_locally()
+    write_gzip(
+        quiz_sampling_data(),
+        f"stored_quizzes/quiz_sampling_info/{juxta_version}/data.gz",
+    )
+
+
+def report_juxta_version_out_of_date() -> None:
+    warn_juxta_version_out_of_date()
+    # the rest of the build buries this, so repeat it once the build is done
+    atexit.register(warn_juxta_version_out_of_date)
+
+
+def quiz_data_hash() -> str:
+    ps, qqp = quiz_data()
+    return stable_hash((ps, qqp, "v1"))
+
+
+def warn_juxta_version_out_of_date() -> None:
+    banner = "*" * 80
+    print(
+        f"\n{banner}\n"
+        f"WARNING: juxta version {juxta_version} is out of date. The quiz data has\n"
+        f"changed since that version was generated, so both the daily and the infinite\n"
+        f"quizzes are being built from the stored version {juxta_version} data rather than\n"
+        f"from the current data. Bump juxta_version in urbanstats/games/infinite/stored.py\n"
+        f"to generate a new version from the current data.\n"
+        f"{banner}\n"
+    )
 
 
 def get_juxta_version_info() -> List[Tuple[str, int]]:
