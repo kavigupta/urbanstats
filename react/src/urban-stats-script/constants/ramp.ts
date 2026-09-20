@@ -1,11 +1,14 @@
 import { round } from 'mathjs'
 
 import { getRamps } from '../../mapper/ramps'
+import { interpolateColor } from '../../utils/color'
+import { hre } from '../../utils/human-readable-template'
 import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
 import { Documentation, USSRawValue, USSType, USSValue } from '../types-values'
 
 import { Color, hexToColor, rgbColorExpression, doRender } from './color-utils'
+import { instantiate, Scale, ScaleDescriptor } from './scale'
 
 export type RampT = [number, string][]
 
@@ -160,3 +163,49 @@ export const rampConsts: [string, USSValue][] = Object.entries(getRamps()).map((
         } satisfies Documentation,
     },
 ])
+
+/** What a value with nothing to show is painted, on a plot that draws it anyway. */
+// eslint-disable-next-line no-restricted-syntax -- the absence of a colour rather than one of the theme's
+const missingColor = '#cccccc'
+
+/** Each value's colour, read off the ramp at the position the scale puts it. */
+export function rampColors(ramp: RampT, scale: ScaleDescriptor, values: number[]): string[] {
+    const instance = instantiate(scale)
+    return values.map(value => interpolateColor(ramp, instance.forward(value), missingColor))
+}
+
+export const rampApplyValue: USSValue = {
+    type: {
+        type: 'function',
+        posArgs: [],
+        namedArgs: {
+            data: { type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } } },
+            ramp: {
+                type: { type: 'concrete', value: rampType },
+                defaultValue: parseNoErrorAsExpression('rampUridis', ''),
+            },
+            scale: {
+                type: { type: 'concrete', value: { type: 'opaque', name: 'scale' } },
+                defaultValue: parseNoErrorAsExpression('linearScale()', ''),
+            },
+        },
+        returnType: { type: 'concrete', value: { type: 'vector', elementType: { type: 'opaque', name: 'color' } } },
+    },
+    value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
+        const data = namedArgs.data as number[]
+        const ramp = (namedArgs.ramp as { type: 'opaque', opaqueType: 'ramp', value: RampT }).value
+        const scale = (namedArgs.scale as { type: 'opaque', opaqueType: 'scale', value: Scale }).value
+        return rampColors(ramp, scale(data), data).map(color => ({
+            type: 'opaque',
+            opaqueType: 'color',
+            value: hexToColor(color),
+        }))
+    },
+    documentation: {
+        humanReadableName: 'Apply Ramp',
+        category: 'ramp',
+        namedArgs: { data: 'Data', ramp: 'Ramp', scale: 'Scale' },
+        longDescription: hre`Turns numbers into colours, one per value, by placing each on the scale and reading the ramp there — what a choropleth map does to colour a region, for anything that takes colours. \`points(x=..., y=..., color=rampApply(data=population))\` colours a scatter by population.`,
+        selectorRendering: { kind: 'subtitleLongDescription' },
+    },
+} satisfies USSValue

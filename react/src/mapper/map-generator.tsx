@@ -21,7 +21,7 @@ import { Inset } from '../urban-stats-script/constants/insets'
 import { CommonMap } from '../urban-stats-script/constants/map'
 import { ScaleInstance } from '../urban-stats-script/constants/scale'
 import { TextBox } from '../urban-stats-script/constants/text-box'
-import { mapRampUnitAndLabel } from '../urban-stats-script/derive-unit'
+import { mapRampUnitAndLabel, plotAxisNaming } from '../urban-stats-script/derive-unit'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
@@ -31,6 +31,7 @@ import { editIndex, EditSeq } from '../utils/array-edits'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { makeDebugLogger } from '../utils/debug-logging'
 import { HumanReadableName } from '../utils/human-readable-element'
+import { markerArea, markerRadius } from '../utils/marker-size'
 import { ICoordinate } from '../utils/protos'
 import { StoredUnit } from '../utils/quantity'
 import { plainNumber } from '../utils/unit'
@@ -40,7 +41,8 @@ import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar
 import { InsetMap } from './components/InsetMap'
 import { AddTextBox, MapTextBoxComponent } from './components/MapTextBox'
 import { loadInsets } from './context'
-import { canonicalWidth, centroidsByName, markerArea, markerRadius, MapResult, mapVisuals, mergedByName } from './map-rendering'
+import { canonicalWidth, centroidsByName, isPlotResult, MapperResult, MapResult, mapVisuals, mergedByName } from './map-rendering'
+import { plotCSVData, plotUI } from './plot-generator'
 import { Basemap, computeUSS, dedupeGeographies, MapSettings, universesOf } from './settings/utils'
 
 const mapUpdateInterval = 500
@@ -122,7 +124,23 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         }
     }
 
-    const mapResultMain = execResult.resultingValue.value
+    const result: MapperResult = execResult.resultingValue.value
+
+    if (isPlotResult(result)) {
+        const plot = result.value
+        return {
+            errors: execResult.error,
+            exportCSV: () => ({
+                csvData: plotCSVData(plot),
+                csvFilename: `${geographies.map(g => `${g.geographyKind}-${g.universe}`).join('-')}-plot.csv`,
+            }),
+            // a plot has no geography to write out, so the GeoJSON export stays greyed out
+            ui: plotUI(plot, plotAxisNaming(mapSettings.script.uss, typeEnvironment)),
+            assignments: execResult.assignments,
+        }
+    }
+
+    const mapResultMain = result
     const rampLabelling = mapRampUnitAndLabel(mapSettings.script.uss, typeEnvironment, mapResultMain.value.unit)
     let label: HumanReadableName
 

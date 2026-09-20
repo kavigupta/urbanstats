@@ -32,8 +32,9 @@ const cMap = { type: 'opaque', name: 'cMap', allowCustomExpression: false } sati
 const cMapRGB = { type: 'opaque', name: 'cMapRGB', allowCustomExpression: false } satisfies USSType
 const pMap = { type: 'opaque', name: 'pMap', allowCustomExpression: false } satisfies USSType
 const clusterMap = { type: 'opaque', name: 'clusterMap', allowCustomExpression: false } satisfies USSType
+const plot = { type: 'opaque', name: 'plot', allowCustomExpression: false } satisfies USSType
 
-export const validMapperOutputs = [cMap, cMapRGB, pMap, clusterMap] satisfies USSType[]
+export const validMapperOutputs = [cMap, cMapRGB, pMap, clusterMap, plot] satisfies USSType[]
 
 function parsePreambleCustomNodeAsMapUSS(stmt: UrbanStatsASTStatement): PreambleNode | undefined {
     if (stmt.type !== 'expression') {
@@ -202,4 +203,88 @@ function tableColumns<M>(): (uss: MapUSS<M>, typeEnvironment: TypeEnvironment) =
 export function tableColumnExpression<M>(uss: MapUSS<M>, typeEnvironment: TypeEnvironment, columnIndex: number): UrbanStatsASTExpression<M> | undefined {
     const columns = read(tableColumns<M>(), uss, typeEnvironment)?.namedArgs.columns
     return columns === undefined || columnIndex >= columns.length ? undefined : columns[columnIndex].namedArgs.values
+}
+
+/** What a plot's panel draws against each axis, which is what the axis is named after. */
+export interface PanelExpressions<M> {
+    x: UrbanStatsASTExpression<M> | undefined
+    y: UrbanStatsASTExpression<M> | undefined
+    /** What its colours stand for, where a colourbar reads them off. */
+    color: UrbanStatsASTExpression<M> | undefined
+}
+
+function namedArgument<M>(call: UrbanStatsASTExpression<M> & { type: 'call' }, name: string): UrbanStatsASTExpression<M> | undefined {
+    return call.args.find(arg => arg.type === 'named' && arg.name.node === name)?.value
+}
+
+function calledFunction<M>(expr: UrbanStatsASTExpression<M>): { name: string, call: UrbanStatsASTExpression<M> & { type: 'call' } } | undefined {
+    if (expr.type === 'customNode') {
+        return expr.expr.type === 'expression' ? calledFunction(expr.expr.value) : undefined
+    }
+    if (expr.type === 'autoUXNode') {
+        return calledFunction(expr.expr)
+    }
+    if (expr.type !== 'call' || expr.fn.type !== 'identifier') {
+        return undefined
+    }
+    return { name: expr.fn.name.node, call: expr }
+}
+
+/** The data one mark draws, whichever kind of mark it is: a histogram counts along its own x. */
+function markExpressions<M>(expr: UrbanStatsASTExpression<M>): PanelExpressions<M> | undefined {
+    const called = calledFunction(expr)
+    switch (called?.name) {
+        case 'points':
+        case 'line':
+            return { x: namedArgument(called.call, 'x'), y: namedArgument(called.call, 'y'), color: undefined }
+        case 'bars':
+            // named bars sit on a categorical axis, which is labelled by the categories themselves
+            return { x: undefined, y: namedArgument(called.call, 'y'), color: undefined }
+        case 'histogram':
+            return { x: namedArgument(called.call, 'values'), y: undefined, color: undefined }
+        case 'colorbar':
+            return { x: undefined, y: undefined, color: namedArgument(called.call, 'data') }
+        default:
+            return undefined
+    }
+}
+
+function elementsOf<M>(expr: UrbanStatsASTExpression<M> | undefined): UrbanStatsASTExpression<M>[] {
+    return expr?.type === 'vectorLiteral' ? expr.elements : []
+}
+
+/**
+ * The expressions behind each panel's axes, in the order the panels are drawn — the same order the
+ * plot's own value is laid out in, so the two line up by position.
+ */
+export function plotPanelExpressions<M>(uss: MapUSS<M>, typeEnvironment: TypeEnvironment): PanelExpressions<M>[] {
+    const output = read(mapUssParser(l.passthrough<M>(), 'dont-reparse'), uss, typeEnvironment)
+    return output === undefined ? [] : panelsOfExpression(output)
+}
+
+function panelsOfExpression<M>(expr: UrbanStatsASTExpression<M>): PanelExpressions<M>[] {
+    const called = calledFunction(expr)
+    switch (called?.name) {
+        case 'sideBySide':
+        case 'stacked':
+            return elementsOf(namedArgument(called.call, 'plots')).flatMap(panelsOfExpression)
+        case 'genericPlot': {
+            // the first mark that draws data names the axes; the rest are drawn against the same ones
+            const marks = elementsOf(namedArgument(called.call, 'elements'))
+            const named = marks.map(markExpressions).filter(mark => mark !== undefined)
+            return [{
+                x: named.find(mark => mark.x !== undefined)?.x,
+                y: named.find(mark => mark.y !== undefined)?.y,
+                color: named.find(mark => mark.color !== undefined)?.color,
+            }]
+        }
+        case 'scatterPlot':
+            return [{
+                x: namedArgument(called.call, 'x'),
+                y: namedArgument(called.call, 'y'),
+                color: namedArgument(called.call, 'colorValues'),
+            }]
+        default:
+            return []
+    }
 }

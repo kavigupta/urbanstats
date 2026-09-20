@@ -626,6 +626,40 @@ void test('constant listing', (): void => {
                 'listBullet',
                 'listNone',
             ],
+            '(; data: [number], ramp: ramp = rampUridis, scale: scale = linearScale()) -> [color]': [
+                'rampApply',
+            ],
+            '(; x: [number], y: [number], name: [string] = null, color: [color] = [colorBlue], size: [number] = [3], opacity: [number] = [1], label: string = null) -> plotElement': [
+                'points',
+            ],
+            '(; x: [number], y: [number], color: [color] = [colorBlue], width: [number] = [2], dash: [number] = [0], label: string = null) -> plotElement': [
+                'line',
+            ],
+            '(; category: [string] = null, x: [number] = null, y: [number], color: [color] = [colorBlue], label: string = null) -> plotElement': [
+                'bars',
+            ],
+            '(; values: [number], bins: number = 20, color: [color] = [colorBlue], label: string = null) -> plotElement': [
+                'histogram',
+            ],
+            '(; data: [number], ramp: ramp = rampUridis, scale: scale = linearScale(), label: string = null) -> plotElement': [
+                'colorbar',
+            ],
+            '(; scale: scale = linearScale(), unit: Unit = null, label: string = null, min: number = null, max: number = null) -> plotAxis': [
+                'axis',
+            ],
+            '(; elements: [plotElement], xAxis: plotAxis = axis(), yAxis: plotAxis = axis(), title: string = null) -> plot': [
+                'genericPlot',
+            ],
+            '(; x: [number], y: [number], name: [string] = geoName, color: color = null, colorValues: [number] = null, ramp: ramp = rampUridis, scale: scale = linearScale(), size: [number] = null, maxSize: number = 6, regressionLine: boolean = false, regressionColor: [color] = [colorBlack], regressionWidth: [number] = [2], regressionDash: [number] = [0], xAxis: plotAxis = axis(), yAxis: plotAxis = axis(), title: string = null) -> plot': [
+                'scatterPlot',
+            ],
+            '(; x: [number], y: [number], color: [color] = [colorBlack], width: [number] = [2], dash: [number] = [0], label: string = null) -> plotElement': [
+                'regressionLine',
+            ],
+            '(; plots: [plot]) -> plot': [
+                'sideBySide',
+                'stacked',
+            ],
         },
     )
 })
