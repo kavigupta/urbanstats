@@ -42,8 +42,7 @@ export function AddColumnSearchBox({ stat, set, typeEnvironment }: {
     const handleAddColumn = (variable: VariableSearchResult): void => {
         set({
             stat: {
-                universe: stat.universe,
-                articleType: stat.articleType,
+                geographies: stat.geographies,
                 type: 'uss',
                 uss: colAdder(variable.name),
             },

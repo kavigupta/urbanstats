@@ -395,19 +395,17 @@ function Export(props: { pngExport?: () => Promise<void>, geoJSONExport?: () => 
         saveAsFile('map.geojson', props.geoJSONExport(), 'application/geo+json')
     }
 
-    // A table is over one article type, so a map spanning several geographies has no table form
-    const tableExpression = props.mapSettings.geographies.length === 1 ? mapperToTable(props.mapSettings.script.uss, props.typeEnvironment) : undefined
+    const tableExpression = mapperToTable(props.mapSettings.script.uss, props.typeEnvironment)
 
     const handleConvertToTable = (): void => {
         if (!tableExpression) return
         void navContext.navigate({
             kind: 'statistic',
-            article_type: props.mapSettings.geographies[0].geographyKind,
+            geographies: props.mapSettings.geographies,
             uss: unparse(tableExpression),
             start: 1,
             amount: 20,
             order: 'descending',
-            universe: props.mapSettings.geographies[0].universe,
             edit: true,
             sort_column: 0,
         }, {

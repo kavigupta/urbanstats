@@ -1,3 +1,4 @@
+import validGeographies from '../data/mapper/used_geographies'
 import type_ordering_idx from '../data/type_ordering_idx'
 import { loadProtobuf } from '../load_json'
 import { sanitize } from '../utils/paths'
@@ -14,7 +15,7 @@ async function getShardIndexData(): Promise<Int32Array> {
     return new Int32Array(idx.startingHashes)
 }
 
-export const typesInOrder = Object.fromEntries(Object.entries(type_ordering_idx).map(([k, v]) => [v, k]))
+export const typesInOrder = [...validGeographies].sort((a, b) => type_ordering_idx[a] - type_ordering_idx[b])
 
 /** Binary search: largest i such that (index[i] >>> 0) <= hash. Index stores signed int32; compare as unsigned. */
 function findShardIndex(hash: number, index: Int32Array): number {

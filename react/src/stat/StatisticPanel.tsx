@@ -3,6 +3,7 @@ import React, { ReactNode, useCallback, useContext, useEffect, useMemo, useRef, 
 import { CountsByUT } from '../components/countsByArticleType'
 import { defaultTypeEnvironment } from '../mapper/context'
 import { Selection, SelectionContext } from '../mapper/settings/SelectionContext'
+import { universesOf } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { useUnitSettings } from '../page_template/settings'
 import { universeContext } from '../universe'
@@ -110,19 +111,24 @@ export function StatisticPanel({ settings, counts }: { settings: StatSettings, c
         document.title = statPageTitle(stat, unitSettings)
     }, [stat, unitSettings])
 
-    const typeEnvironment = useMemo(() => defaultTypeEnvironment(stat.universe), [stat.universe])
+    const typeEnvironment = useMemo(() => defaultTypeEnvironment(universesOf(stat.geographies)), [stat.geographies])
 
     const generator = useStatGenerator({ stat: generatorSettings.stat, typeEnvironment })
 
+    // With several geographies there is no single universe for the header to switch.
+    const singleGeography = stat.geographies.length === 1 ? stat.geographies[0] : undefined
+
     return (
         <SelectionContext.Provider value={selectionContext}>
-            <universeContext.Provider value={{
-                universe: stat.universe,
-                universes: generator.universesFiltered,
-                setUniverse(newUniverse) {
-                    setSettingsStateWrapper({ stat: { ...stat, universe: newUniverse } }, {})
-                },
-            }}
+            <universeContext.Provider value={singleGeography === undefined
+                ? undefined
+                : {
+                        universe: singleGeography.universe,
+                        universes: generator.universesFiltered,
+                        setUniverse(newUniverse) {
+                            setSettingsStateWrapper({ stat: { ...stat, geographies: [{ ...singleGeography, universe: newUniverse }] } }, {})
+                        },
+                    }}
             >
                 <StatisticPanelPage
                     stat={stat}
@@ -132,6 +138,7 @@ export function StatisticPanel({ settings, counts }: { settings: StatSettings, c
                     errors={generator.errors}
                     counts={counts}
                     data={generator.data}
+                    universeByName={generator.universeByName}
                     assignments={generator.assignments}
                     typeEnvironment={typeEnvironment}
                 />

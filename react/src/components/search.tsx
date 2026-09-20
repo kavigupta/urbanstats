@@ -10,6 +10,7 @@ import '../common.css'
 import { SearchResult, SearchParams, getIndexCacheKey, SearchIndexConfig } from '../search'
 import type { SearchWorkerInputMessage, SearchWorkerOutputMessage, SearchWorkerStatus } from '../searchWorker'
 import { Universe, useUniverse } from '../universe'
+import { GeographyKind } from '../urban-stats-script/workerManager'
 import { Property } from '../utils/Property'
 import { TestUtils } from '../utils/TestUtils'
 import { withButtonRole } from '../utils/a11y'
@@ -25,7 +26,7 @@ export function SearchBox(props: {
     onChange?: (inp: string) => void
     articleLink: (inp: string) => ReturnType<Navigator['link']>
     compareLink?: (inp: string) => ReturnType<Navigator['link']> | undefined
-    statisticLink?: (statIdx: number, articleType: string, universe: Universe) => ReturnType<Navigator['link']>
+    statisticLink?: (statIdx: number, articleType: GeographyKind, universe: Universe) => ReturnType<Navigator['link']>
     autoFocus: boolean
     placeholder: string
     style: CSSProperties

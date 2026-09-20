@@ -799,14 +799,14 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
         ? sizeToFit(statistic.columns.map(column => reifyString(column.name, readerOf(statistic.units))), valueColumn - cellPadding * 2, 2, 30, 14, boldCharacterWidth)
         : undefined
     // Which geographies these are, and which of them: what neither the title nor the headers say.
-    const note = `${statistic.heading} in ${statistic.universe}${statistic.filter === undefined ? '' : ` where ${reifyString(statistic.filter, readerOf(statistic.units))}`}`
+    const note = `${statistic.heading}${statistic.filter === undefined ? '' : ` where ${reifyString(statistic.filter, readerOf(statistic.units))}`}`
     const noteSize = columnHeaders === undefined
         // Under the title, in whatever the flag beside it leaves.
         ? sizeToFit([note], content - 140, 1, 26, 14)
         // Over the names, which are what it qualifies.
         : sizeToFit([note], rankColumn + nameColumn - cellPadding, 2, 30, 14, boldCharacterWidth)
     const noteElements = [
-        `${statistic.heading} in ${statistic.universe}`,
+        statistic.heading,
         ...(statistic.filter === undefined ? [] : ['\u00a0where\u00a0', ...humanReadable(statistic.filter, noteSize, statistic.units)]),
     ]
 
@@ -831,7 +831,7 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
                                 <div style={{ display: 'flex', fontSize: titleSize, fontWeight: 600, alignItems: 'flex-start' }}>{humanReadable(statistic.title, titleSize, statistic.units)}</div>
                                 <div style={{ display: 'flex', fontSize: noteSize, color: colors.muted }}>{noteElements}</div>
                             </div>
-                            {flag(statistic.universe, statistic.flag)}
+                            {statistic.universe === undefined ? <div style={{ display: 'flex' }}></div> : flag(statistic.universe, statistic.flag)}
                         </div>
                     )}
             <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>

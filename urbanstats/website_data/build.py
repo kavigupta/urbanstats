@@ -145,14 +145,7 @@ def create_react_jsons() -> None:
         output_typescript(syau_regions(), f)
 
     with open("react/src/data/cross_source_border_types.ts", "w") as f:
-        output_typescript(
-            cross_source_border_types(),
-            f,
-            data_type=(
-                "Record<string, { alternativeGeographyTypes: string[],"
-                " reasonForNoAlternatives: string | null }>"
-            ),
-        )
+        output_typescript(cross_source_border_types(), f)
 
     with open("react/src/data/universe_data_source_country.ts", "w") as f:
         output_typescript(
