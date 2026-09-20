@@ -5,11 +5,12 @@ import { generateStatisticsPanelCSVData } from '../components/csv-export'
 import { createScreenshot } from '../components/screenshot'
 import { MaybeSplitLayout } from '../components/split-layout'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
-import { MapSettings } from '../mapper/settings/utils'
+import { describeGeographies, MapSettings } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { RelativeLoader } from '../navigation/loading'
 import { useUnitSettings } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
+import { Universe } from '../universe'
 import { DisplayResults } from '../urban-stats-script/Editor'
 import { tableType } from '../urban-stats-script/constants/table'
 import { EditorError } from '../urban-stats-script/editor-utils'
@@ -28,10 +29,11 @@ import { StatisticPanelTable } from './StatisticPanelTable'
 import { StatData, Statistic, StatSetter, View } from './types'
 import { mapUSSFromStat, variable } from './utils'
 
-export function StatisticPanelPage({ view, stat, data, set, loading, counts, errors, assignments, typeEnvironment }: {
+export function StatisticPanelPage({ view, stat, data, universeByName, set, loading, counts, errors, assignments, typeEnvironment }: {
     view: View
     stat: Statistic
     data: StatData | undefined
+    universeByName: Map<string, Universe> | undefined
     set: StatSetter
     loading: boolean
     counts: CountsByUT
@@ -72,7 +74,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
             {/* Only the titles are inside headersRef; the controls below it are interactive, and
                 would otherwise end up in the screenshot. */}
             <div ref={headersRef} style={{ position: 'relative' }}>
-                <StatisticPanelHead articleType={stat.articleType} universe={stat.universe} />
+                <StatisticPanelHead geographies={stat.geographies} />
                 <div className={subHeaderTextClass}>{reifyReact(subHeaderText, unitSettings)}</div>
             </div>
             {view.edit
@@ -87,7 +89,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
         <>
             {!view.edit && <DisplayResults results={errors.filter(error => error.kind === 'error')} editor={false} />}
             {data
-                ? <StatisticPanelTable view={view} stat={stat} data={data} set={set} tableRef={tableRef} loading={loading} typeEnvironment={typeEnvironment} />
+                ? <StatisticPanelTable view={view} stat={stat} data={data} universeByName={universeByName} set={set} tableRef={tableRef} loading={loading} typeEnvironment={typeEnvironment} />
                 : (
                         <div style={{ position: 'relative', width: '100%', height: '200px' }}>
                             <RelativeLoader loading={loading} />
@@ -138,11 +140,13 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
     )
 }
 
-function StatisticPanelHead(props: { articleType: string, universe: string }): ReactNode {
+function StatisticPanelHead({ geographies }: { geographies: GeographySelection[] }): ReactNode {
     const headerTextClass = useHeaderTextClass()
+    // With one geography the header's flag already shows the universe.
+    const single = geographies.length === 1 ? geographies[0] : undefined
     return (
         <div className={headerTextClass}>
-            {displayType(props.universe, props.articleType)}
+            {single === undefined ? describeGeographies(geographies) : displayType(single.universe, single.geographyKind)}
         </div>
     )
 }
@@ -157,8 +161,7 @@ function ConvertToMapButton({ stat, flexWidth, typeEnvironment }: { stat: Statis
     const handleConvertToMap = useCallback(async (): Promise<void> => {
         if (!mapperExpression) return
         const settingsJson = JSON.stringify({
-            geographyKind: stat.articleType,
-            universe: stat.universe,
+            geographies: stat.geographies,
             script: {
                 uss: mapperExpression,
             },
@@ -250,20 +253,18 @@ function EditPreamble({ stat, set, errors, counts, typeEnvironment, view, assign
     split: boolean
 }): ReactNode {
     const mapSettings = useMemo((): MapSettings => ({
-        geographies: [{ universe: stat.universe, geographyKind: stat.articleType as GeographySelection['geographyKind'] }],
+        geographies: stat.geographies,
         script: { uss: mapUSSFromStat(stat) },
     }), [stat])
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1em', padding: split ? undefined : '1em' }}>
+        <div style={{ padding: split ? undefined : '1em' }}>
             <MapperSettings
                 mapSettings={mapSettings}
-                singleGeography
                 setMapSettings={(newMapSettings, actionOptions) => {
                     set({
                         stat: {
-                            articleType: newMapSettings.geographies[0]?.geographyKind ?? stat.articleType,
-                            universe: newMapSettings.geographies[0]?.universe ?? stat.universe,
+                            geographies: newMapSettings.geographies,
                             type: 'uss',
                             uss: newMapSettings.script.uss,
                         },
@@ -275,7 +276,11 @@ function EditPreamble({ stat, set, errors, counts, typeEnvironment, view, assign
                 targetOutputTypes={[tableType]}
                 assignments={assignments}
             />
-            {!split && <EditHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} inline={false} />}
+            {!split && (
+                <div style={{ marginTop: '1em' }}>
+                    <EditHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} inline={false} />
+                </div>
+            )}
         </div>
     )
 }

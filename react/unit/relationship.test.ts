@@ -323,7 +323,7 @@ void test('10th-judicial-circuit-relationships', async () => {
 })
 
 void test('ca-sd23-relationship-to-congressional-districts', async () => {
-    const districtRelationships = await getRelationships('CA-SD23 (2023), USA', 'Congressional District')
+    const districtRelationships = await getRelationships('CA-SD23 (2023), USA', 'Congressional District (2020s)')
 
     const expectedRelationships = new Set<[string, string]>([
         ['CA-20 (2023), USA', 'borders'],

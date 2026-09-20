@@ -1,14 +1,14 @@
 import { StatCol } from '../components/load-article'
 import statnames from '../data/statistic_name_list'
 import { MapUSS } from '../mapper/settings/map-uss'
-import { Universe } from '../universe'
 import { TableTextValues } from '../urban-stats-script/constants/table'
+import { GeographySelection } from '../urban-stats-script/workerManager'
 import { HumanReadableName } from '../utils/human-readable-element'
 import { StoredUnit } from '../utils/quantity'
 
 export type Statistic = {
-    universe: Universe
-    articleType: string
+    /** A simple statistic always has exactly one; a custom table may have several. */
+    geographies: GeographySelection[]
 } & ({
     type: 'uss'
     uss: MapUSS

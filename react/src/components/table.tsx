@@ -28,7 +28,7 @@ import { percentileSuffix, percentileText, Statistic } from './display-stats'
 import { EditModeButton, EditModeTopLeftHeader, useEnterEditModeButton } from './edit-mode-header'
 import { EditableNumber } from './editable-field'
 import { footnoteSymbol } from './footnote-symbol'
-import { ArticleRow, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
+import { ArticleRow, FirstLastStatus, missingRowType, StatisticCellRenderingInfo } from './load-article'
 import { percentileBucketIndex } from './percentile-navigation'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
@@ -644,17 +644,20 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: StatisticCel
     const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_in_class',
-        content: () => (
-            <span key="pointer_in_class" className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
-                <PointerButtonsIndex
-                    ordinal={ordinal}
-                    statpath={statpath}
-                    type={articleType}
-                    total={totalCountInClass}
-                    longname={props.longname}
-                />
-            </span>
-        ),
+        content: () => {
+            assert(articleType !== undefined, 'stepping through a ranking needs one geography kind')
+            return (
+                <span key="pointer_in_class" className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
+                    <PointerButtonsIndex
+                        ordinal={ordinal}
+                        statpath={statpath}
+                        type={articleType}
+                        total={totalCountInClass}
+                        longname={props.longname}
+                    />
+                </span>
+            )
+        },
         style: { textAlign: 'right' },
     }
 
@@ -985,7 +988,7 @@ function ExpansionButton(props: { row: ArticleRow }): ReactNode {
 function StatisticName(props: {
     row?: ArticleRow
     longname: string
-    currentUniverse: Universe
+    currentUniverse: Universe | undefined
     center?: boolean
     displayName: HumanReadableName
     footnoteSymbol?: string
@@ -1008,15 +1011,14 @@ function StatisticName(props: {
                     {reifyReact(props.displayName, unitSettings)}
                 </a>
             )
-        : props.row?.kind === 'statistic'
+        : props.row?.kind === 'statistic' && props.row.articleType !== missingRowType
             ? (
                     <a
                         className="underline_on_hover"
                         {...navContext.link({
                             kind: 'statistic',
-                            universe: props.currentUniverse,
+                            geographies: [{ universe: props.currentUniverse ?? 'world', geographyKind: props.row.articleType }],
                             statname: props.row.statname,
-                            article_type: props.row.articleType,
                             start: props.row.ordinal,
                             amount: 20,
                             order: 'descending',
@@ -1207,7 +1209,7 @@ function measureTextWidthEm(text: string, fontSizeEm: number = 1): number {
     return widthPx / 16
 }
 
-function ordinalWidthInEm(ordinal: number, total: number, type: string, universe: string, simpleOrdinals: boolean): [number, number] {
+function ordinalWidthInEm(ordinal: number, total: number, type: string | undefined, universe: string | undefined, simpleOrdinals: boolean): [number, number] {
     if (ordinal > total) {
         return [0, 0]
     }
@@ -1222,13 +1224,15 @@ function ordinalWidthInEm(ordinal: number, total: number, type: string, universe
         return [ordinalWidth + padding, padding]
     }
     else {
+        assert(universe !== undefined, 'writing an ordinal out in full needs a universe to name its geographies in')
+        assert(type !== undefined, 'writing an ordinal out in full needs one geography kind to name')
         const suffixText = ` of ${total} ${displayType(universe, type)}`
         const suffixWidth = measureTextWidthEm(suffixText)
         return [ordinalWidth + suffixWidth + padding, padding]
     }
 }
 
-function computeSizesForRow(row: StatisticCellRenderingInfo, universe: string, simpleOrdinals: boolean): CommonLayoutInformation {
+function computeSizesForRow(row: StatisticCellRenderingInfo, universe: string | undefined, simpleOrdinals: boolean): CommonLayoutInformation {
     // Compute the size of the ordinal and percentile text
     if (row.kind !== 'statistic') {
         return {
@@ -1251,7 +1255,7 @@ function computeSizesForRow(row: StatisticCellRenderingInfo, universe: string, s
     }
 }
 
-export function maxLayoutInformation(rows: StatisticCellRenderingInfo[], universe: string, simpleOrdinals: boolean): CommonLayoutInformation {
+export function maxLayoutInformation(rows: StatisticCellRenderingInfo[], universe: string | undefined, simpleOrdinals: boolean): CommonLayoutInformation {
     return rows.reduce<CommonLayoutInformation>((acc, row) => {
         const curr = computeSizesForRow(row, universe, simpleOrdinals)
         return {
@@ -1266,12 +1270,12 @@ function Percentile(props: {
     ordinal: number
     total: number
     percentileByPopulation: number
-    type: string
+    type: string | undefined
     statpath?: string
     simpleOrdinals: boolean
     onNavigate?: (newArticle: string) => void
 }): ReactNode {
-    const currentUniverse = useDefinedUniverse()
+    const currentUniverse = useUniverse()
     const inScreenshot = useScreenshotMode()
     // Bump to reset if we navigate back to the same page
     const [editableFieldKey, setEditableFieldKey] = useState(0)
@@ -1280,6 +1284,8 @@ function Percentile(props: {
             return
         }
         assert(props.statpath !== undefined, 'statpath must be defined if onNavigate is provided')
+        assert(currentUniverse !== undefined, 'a navigable percentile is only shown on a page with a universe')
+        assert(props.type !== undefined, 'a navigable percentile ranks one geography kind')
         const [data, articleNames] = await loadStatisticsPage(currentUniverse, props.statpath, props.type)
         const bestIndex = percentileBucketIndex(data.populationPercentile, target)
         const currentIndex = props.ordinal - 1
@@ -1342,17 +1348,19 @@ function Percentile(props: {
 function Ordinal(props: {
     ordinal: number
     total: number
-    type: string
+    type: string | undefined
     statpath?: string
     simpleOrdinals: boolean
     onNavigate?: (newArticle: string) => void
 }): ReactNode {
-    const currentUniverse = useDefinedUniverse()
+    const currentUniverse = useUniverse()
     const onNewNumber = async (number: number): Promise<void> => {
         if (props.onNavigate === undefined) {
             return
         }
         assert(props.statpath !== undefined, 'statpath must be defined if onNavigate is provided')
+        assert(currentUniverse !== undefined, 'a navigable ordinal is only shown on a page with a universe')
+        assert(props.type !== undefined, 'a navigable ordinal ranks one geography kind')
         let num = number
         if (num < 0) {
             // -1 -> props.total, -2 -> props.total - 1, etc.
@@ -1373,6 +1381,19 @@ function Ordinal(props: {
     if (ordinal > total) {
         return <span></span>
     }
+    let outOf: ReactNode
+    if (!props.simpleOrdinals) {
+        assert(currentUniverse !== undefined, 'an ordinal written out in full names its geographies in a universe')
+        assert(type !== undefined, 'an ordinal written out in full names one geography kind')
+        outOf = (
+            <>
+                {' of '}
+                {total}
+                {' '}
+                {displayType(currentUniverse, type)}
+            </>
+        )
+    }
     const en = props.onNavigate
         ? (
                 <EditableNumber
@@ -1391,16 +1412,7 @@ function Ordinal(props: {
             style={{ textAlign: 'right', marginRight: props.simpleOrdinals ? '5px' : 0 }}
         >
             {en}
-            {props.simpleOrdinals
-                ? <></>
-                : (
-                        <>
-                            {' of '}
-                            {total}
-                            {' '}
-                            {displayType(currentUniverse, type)}
-                        </>
-                    )}
+            {outOf}
 
         </div>
     )

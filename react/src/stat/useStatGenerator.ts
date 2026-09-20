@@ -1,16 +1,18 @@
+import stableStringify from 'json-stable-stringify'
 import { useCallback } from 'react'
 
 import { CountsByUT, forType, getCountsByArticleType } from '../components/countsByArticleType'
-import validGeographies from '../data/mapper/used_geographies'
 import stats from '../data/statistic_list'
 import statistic_name_list from '../data/statistic_name_list'
 import universes_ordered from '../data/universes_ordered'
+import { universesByName } from '../mapper/map-rendering'
+import { dedupeGeographies } from '../mapper/settings/utils'
 import { Universe } from '../universe'
 import { toStatement } from '../urban-stats-script/ast'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { renderType, TypeEnvironment } from '../urban-stats-script/types-values'
-import { AssignmentsResult, executeAsync, useClearPreviousAssignments } from '../urban-stats-script/workerManager'
+import { AssignmentsResult, executeAsync, GeographySelection, useClearPreviousAssignments } from '../urban-stats-script/workerManager'
 import { assert } from '../utils/defensive'
 import { pluralize } from '../utils/text'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
@@ -31,6 +33,7 @@ export function useStatGenerator({ stat, typeEnvironment }: { stat: Statistic, t
                 data: undefined,
                 errors: [],
                 universesFiltered: universes_ordered,
+                universeByName: undefined,
                 assignments: { variables: new Map(), blockValues: new Map() },
             },
             ui: (generator, loading) => ({
@@ -49,6 +52,8 @@ export interface StatGenerator {
     data: StatData | undefined
     errors: EditorError[]
     universesFiltered: readonly Universe[]
+    /** The universe each row's geography came from. Undefined when the page has just one. */
+    universeByName: Map<string, Universe> | undefined
     assignments: AssignmentsResult
 }
 
@@ -63,9 +68,10 @@ async function makeStatGenerator({ stat, typeEnvironment, previousGenerator }: {
     }
 
     const counts = await getCountsByArticleType()
+    const geographies = dedupeGeographies(stat.geographies)
 
     // Check if there are no geographic entities using counts before executing
-    const countErrors = checkArticleCount(counts, stat.universe, stat.articleType)
+    const countErrors = checkArticleCount(counts, geographies)
     if (countErrors.length > 0) {
         return {
             ...(await previousGenerator()),
@@ -78,8 +84,7 @@ async function makeStatGenerator({ stat, typeEnvironment, previousGenerator }: {
         const mapUSS = mapUSSFromStat(stat)
         const exec = await executeAsync({ descriptor: {
             kind: 'statistics',
-            geographyKind: stat.articleType as (typeof validGeographies)[number], // Verified above in `checkArticleCount`
-            universe: stat.universe,
+            geographies,
         }, stmts: toStatement(mapUSS) })
 
         const execErrors = exec.error
@@ -118,8 +123,9 @@ async function makeStatGenerator({ stat, typeEnvironment, previousGenerator }: {
             errors: execErrors,
             universesFiltered: statIndex !== undefined
                 ? universes_ordered.filter(
-                    universe => forType(counts, universe, stats[statIndex], stat.articleType) > 0)
+                    universe => forType(counts, universe, stats[statIndex], geographies[0].geographyKind) > 0)
                 : universes_ordered,
+            universeByName: await universeOfEachRow(geographies),
             assignments: exec.assignments,
         }
     }
@@ -129,16 +135,27 @@ async function makeStatGenerator({ stat, typeEnvironment, previousGenerator }: {
     }
 }
 
-function checkArticleCount(counts: CountsByUT, universe: Universe, articleType: string): EditorError[] {
-    let maxCount = 0
-    for (const statcol of stats) {
-        const count = forType(counts, universe, statcol, articleType)
-        if (count > maxCount) {
-            maxCount = count
-        }
+/** The generator reruns on every edit, and each rerun would otherwise load the indices again. */
+let loadedUniverseByName: { key: string, universeByName: Promise<Map<string, Universe>> } | undefined
+
+async function universeOfEachRow(geographies: GeographySelection[]): Promise<Map<string, Universe> | undefined> {
+    if (geographies.length <= 1) {
+        return undefined
     }
-    if (maxCount === 0) {
-        return [{ type: 'error', value: `There are no ${pluralize(articleType)} in ${universe}. Either adjust your universe or geography kind.`, location: noLocation, kind: 'error' }]
+    const key = stableStringify(geographies)!
+    if (loadedUniverseByName?.key !== key) {
+        loadedUniverseByName = { key, universeByName: universesByName(geographies) }
     }
-    return []
+    return await loadedUniverseByName.universeByName
+}
+
+function checkArticleCount(counts: CountsByUT, geographies: GeographySelection[]): EditorError[] {
+    const error = (value: string): EditorError => ({ type: 'error', value, location: noLocation, kind: 'error' })
+    if (geographies.length === 0) {
+        return [error('There are no geographies to tabulate. Add one to the list above.')]
+    }
+    return geographies.flatMap(({ universe, geographyKind }) => {
+        const populated = stats.some(statcol => forType(counts, universe, statcol, geographyKind) > 0)
+        return populated ? [] : [error(`There are no ${pluralize(geographyKind)} in ${universe}. Either adjust your universe or geography kind.`)]
+    })
 }

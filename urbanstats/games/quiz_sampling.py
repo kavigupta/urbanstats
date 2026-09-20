@@ -5,6 +5,10 @@ import numpy as np
 import pandas as pd
 
 from urbanstats.games.fit_distribution.distribution import QuizQuestionPossibilities
+from urbanstats.games.infinite.stored import (
+    juxta_version,
+    stored_quiz_question_distribution,
+)
 from urbanstats.games.quiz_question_distribution import MIN_POP, MIN_POP_INTERNATIONAL
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.utils import DiscreteDistribution
@@ -47,7 +51,7 @@ def compute_geographies_by_type() -> Dict[str, QuizTable]:
 
 
 def sample_quiz_indices(rng: Any) -> np.ndarray:
-    _, qqp, ps = compute_quiz_question_distribution()
+    _, qqp, ps = stored_quiz_question_distribution(juxta_version)
     while True:
         indices = np.array([pi.sample(rng, 10) for pi in ps])
         stat_indices = np.array(
@@ -59,7 +63,7 @@ def sample_quiz_indices(rng: Any) -> np.ndarray:
 
 
 def sample_quiz(rng: Any) -> List[Dict[str, Any]]:
-    data, qqp, _ = compute_quiz_question_distribution()
+    data, qqp, _ = stored_quiz_question_distribution(juxta_version)
     indices = sample_quiz_indices(rng)
     quiz = []
     for qs, idx in zip(qqp.questions_by_number, indices):

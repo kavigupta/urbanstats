@@ -2,7 +2,7 @@ import React, { CSSProperties, Fragment, ReactNode, useMemo } from 'react'
 
 import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
-import { Universe, useDefinedUniverse } from '../universe'
+import { Universe, useUniverse } from '../universe'
 import { HumanReadableName } from '../utils/human-readable-element'
 import { Article } from '../utils/protos'
 
@@ -55,7 +55,7 @@ export interface MeasuredTableLayout extends TableLayout {
  * header's text at no width at all. Separate from `measuredLayout` so the edit table can
  * memoize it: it measures every statistic rather than the selected ones.
  */
-export function measureColumns(columnRows: StatisticCellRenderingInfo[][], universe: Universe, simpleOrdinals: boolean): (CommonLayoutInformation | undefined)[] {
+export function measureColumns(columnRows: StatisticCellRenderingInfo[][], universe: Universe | undefined, simpleOrdinals: boolean): (CommonLayoutInformation | undefined)[] {
     return columnRows.map(rows => rows.length === 0 ? undefined : maxLayoutInformation(rows, universe, simpleOrdinals))
 }
 
@@ -93,7 +93,7 @@ export interface TableContentsProps {
 }
 
 export function TableContents(props: TableContentsProps): ReactNode {
-    const universe = useDefinedUniverse()
+    const universe = useUniverse()
     const colors = useColors()
     const screenshotMode = useScreenshotMode()
     const { widthLeftHeader, columnWidth, simpleOrdinals } = props.layout
@@ -461,14 +461,14 @@ export interface ComparisonLongnameCellProps {
 
 export interface StatisticPanelLongnameCellProps {
     longname: string
-    currentUniverse: Universe
+    currentUniverse: Universe | undefined
 }
 
 export interface StatisticNameCellProps {
     row?: ArticleRow
     renderedStatname: HumanReadableName
     longname: string
-    currentUniverse: Universe
+    currentUniverse: Universe | undefined
     center?: boolean
     highlightIndex?: number
     transpose?: boolean

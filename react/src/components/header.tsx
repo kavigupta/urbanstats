@@ -116,9 +116,8 @@ export function Header(props: {
                                 const currentDescriptor = navContext.currentDescriptor
                                 return navContext.link({
                                     kind: 'statistic',
-                                    universe,
+                                    geographies: [{ universe, geographyKind: articleType }],
                                     statname: statistic_name_list[statisticIndex],
-                                    article_type: articleType,
                                     start: 1,
                                     // Preserve the amount if we're already on a statistics page
                                     amount: currentDescriptor.kind === 'statistic'
