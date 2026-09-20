@@ -1,7 +1,11 @@
+import time
 from typing import Optional
 
 import requests
 from permacache import drop_if_equal, permacache
+
+WDQS_TIMEOUT = 300
+WDQS_ATTEMPTS = 5
 
 
 @permacache("election_data_by_county/historic_wiki/wikidata_to_wikipage")
@@ -80,12 +84,23 @@ def fetch_sparql_bindings(query, version=0):
 
     params = {"query": query, "format": "json"}
 
-    response = requests.get(sparql_url, params=params, headers=headers, timeout=10)
-    response.raise_for_status()
-    data = response.json()
-
-    bindings = data.get("results", {}).get("bindings", [])
-    return bindings
+    for attempt in range(WDQS_ATTEMPTS):
+        response = None
+        try:
+            response = requests.get(
+                sparql_url, params=params, headers=headers, timeout=WDQS_TIMEOUT
+            )
+            response.raise_for_status()
+            data = response.json()
+            return data.get("results", {}).get("bindings", [])
+        except (requests.RequestException, ValueError):
+            # under load WDQS stalls past the timeout, and also serves error
+            # pages with a 200, which is why a decode failure is retried too
+            if attempt == WDQS_ATTEMPTS - 1:
+                raise
+        retry_after = response.headers.get("Retry-After") if response else None
+        time.sleep(float(retry_after) if retry_after else 2**attempt)
+    raise AssertionError("unreachable")
 
 
 @permacache("urbanstats/data/wikipedia/wikidata/fetch_sparql_as_list")
