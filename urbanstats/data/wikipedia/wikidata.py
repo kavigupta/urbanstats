@@ -1,7 +1,11 @@
+import time
 from typing import Optional
 
 import requests
 from permacache import drop_if_equal, permacache
+
+WDQS_TIMEOUT = 300
+WDQS_ATTEMPTS = 5
 
 
 @permacache("election_data_by_county/historic_wiki/wikidata_to_wikipage")
@@ -66,6 +70,17 @@ def fetch_sparql(query):
             yield entity_id
 
 
+def backoff_delay(response, attempt):
+    """Seconds to wait before retrying, doubling each attempt absent a Retry-After."""
+    # a 429/503 is falsy, so this must not test `response` for truthiness
+    retry_after = response.headers.get("Retry-After") if response is not None else None
+    try:
+        # Retry-After is legally either seconds or an HTTP-date
+        return float(retry_after)
+    except (TypeError, ValueError):
+        return 2**attempt
+
+
 @permacache(
     "urbanstats/data/wikipedia/wikidata/fetch_sparql_bindings",
     key_function=dict(version=drop_if_equal(0)),
@@ -80,12 +95,22 @@ def fetch_sparql_bindings(query, version=0):
 
     params = {"query": query, "format": "json"}
 
-    response = requests.get(sparql_url, params=params, headers=headers, timeout=10)
-    response.raise_for_status()
-    data = response.json()
-
-    bindings = data.get("results", {}).get("bindings", [])
-    return bindings
+    for attempt in range(WDQS_ATTEMPTS):
+        response = None
+        try:
+            response = requests.get(
+                sparql_url, params=params, headers=headers, timeout=WDQS_TIMEOUT
+            )
+            response.raise_for_status()
+            data = response.json()
+            return data.get("results", {}).get("bindings", [])
+        except (requests.RequestException, ValueError):
+            # under load WDQS stalls past the timeout, and also serves error
+            # pages with a 200, which is why a decode failure is retried too
+            if attempt == WDQS_ATTEMPTS - 1:
+                raise
+        time.sleep(backoff_delay(response, attempt))
+    raise AssertionError("unreachable")
 
 
 @permacache("urbanstats/data/wikipedia/wikidata/fetch_sparql_as_list")
