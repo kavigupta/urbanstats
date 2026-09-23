@@ -9,10 +9,9 @@ import { USSType, USSValue, USSRawValue, OriginalFunctionArgs, NamedFunctionArgu
 /** A column's cells: the USS primitives less null, homogeneous as any USS vector is. */
 export type TableColumnValues = number[] | string[] | boolean[]
 
-/** What one of those cells holds. */
 export type TableCellValue = TableColumnValues[number]
 
-/** The cells of a column with no scale to place a row on, which are shown as they read. */
+/** Cells with no scale to place a row on, shown as they read. */
 export type TableTextValues = Exclude<TableColumnValues, number[]>
 
 export interface TableColumn {
@@ -210,11 +209,9 @@ export function orderNonNan(a: number, b: number): number {
     return a - b
 }
 
-// Pinned rather than left to the reader's locale, which would order the same table two ways on
-// two devices, and the embed card's server-side ordering a third.
+// Pinned rather than the reader's locale, so every device and the embed card sort alike.
 const cellCollator = new Intl.Collator('en')
 
-/** How a column sorts, whichever of the three kinds of value it holds. */
 export function orderCells(a: TableCellValue, b: TableCellValue): number {
     if (typeof a === 'string' && typeof b === 'string') {
         return cellCollator.compare(a, b)

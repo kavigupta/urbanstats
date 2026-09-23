@@ -725,9 +725,7 @@ export function PlotComponent(props: {
         // where and when a touch began, so that the lift can tell a tap from a scroll
         let touchStart: { time: number, x: number, y: number } | null = null
         const handlePointerDown = (event: PointerEvent): void => {
-            // Plot has a click-to-stick tooltip of its own (mouse only), which would double up with
-            // the pinned ones we draw; suppressing it here (before the event reaches the plot)
-            // leaves us in sole charge of what a click does
+            // Plot's own click-to-stick tooltip would double up with the pinned ones we draw
             event.stopPropagation()
             if (event.pointerType === 'touch') {
                 touchStart = { time: event.timeStamp, x: event.clientX, y: event.clientY }
@@ -735,9 +733,8 @@ export function PlotComponent(props: {
             }
             act(event.target)
         }
-        // A touch that starts on the plot is most often the start of a scroll down the page, which
-        // would otherwise pin a tooltip on the way past (kavigupta/urbanstats#2239). So a touch acts
-        // when it lifts, and only if it stayed still and lifted soon enough to have been a tap.
+        // A touch on the plot is usually a scroll (kavigupta/urbanstats#2239), so only a short, still
+        // touch pins a tooltip.
         const handlePointerUp = (event: PointerEvent): void => {
             const start = touchStart
             touchStart = null
@@ -785,10 +782,8 @@ export function PlotComponent(props: {
                         height: transpose ? `calc(100% - ${transposeTopMargin})` : undefined,
                         position: transpose ? 'relative' : undefined,
                         top: transpose ? transposeTopMargin : undefined,
-                        // a drag scrubs the tooltip along the x-axis, so the page is left only the
-                        // other axis to scroll with -- given both, it takes the touch away at the
-                        // first vertical drift. A transposed plot scrubs the way the page scrolls,
-                        // so it has no axis to spare.
+                        // horizontal drags scrub the tooltip, leaving vertical ones to scroll the page;
+                        // a transposed plot scrubs vertically
                         touchAction: transpose ? undefined : 'pan-y',
                     }
                 }

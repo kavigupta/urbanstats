@@ -36,7 +36,6 @@ export function ScreenshotButton(props: { onClick: () => void, loading: boolean 
             <img src="/screenshot.png" alt="" style={{ height: '100%' }} />
         </button>
     )
-    // while a capture is running, put a loading circle over the image
     if (props.loading) {
         const pad = 10 // pct
         const loadingCircle = (
@@ -189,11 +188,7 @@ export interface ScreenshotContextType {
     wait: Set<ScreenshotSubscriber>
 }
 
-/**
- * Settles the wait for a subscriber a capture is currently blocked on. Entering screenshot mode
- * changes what is rendered -- that is the point of it -- so a subscriber can unmount before it
- * ever signals ready, and its unregistering has to settle the wait or the capture hangs forever.
- */
+/** Lets unregistering settle a pending wait, since screenshot mode can unmount a subscriber before it's ready. */
 const settleWaitForSubscriber = new WeakMap<ScreenshotSubscriber, () => void>()
 
 function unregisterSubscriber(subscribers: Set<ScreenshotSubscriber>, subscriber: ScreenshotSubscriber): void {
@@ -201,18 +196,10 @@ function unregisterSubscriber(subscribers: Set<ScreenshotSubscriber>, subscriber
     settleWaitForSubscriber.get(subscriber)?.()
 }
 
-/**
- * Guards against a pathological tree that mounts a fresh subscriber every time it is put into
- * screenshot mode, which would otherwise loop forever.
- */
+/** Guards against a tree that mounts a fresh subscriber every round. */
 const maxNotifyRounds = 10
 
-/**
- * Entering screenshot mode is what mounts some of the subscribers -- the footnotes below a table,
- * or a map layer rebuilt at full resolution -- so this keeps going until a round adds nobody new.
- * Notifying only whoever was registered up front would render those components interactively into
- * the screenshot, and would capture without waiting for them.
- */
+/** Repeats until a round adds no subscribers, since screenshot mode mounts some itself (e.g. table footnotes). */
 async function notifySubscribers(subscribers: Set<ScreenshotSubscriber>, phase: string): Promise<void> {
     const notified = new Set<ScreenshotSubscriber>()
     for (let round = 1; ; round++) {

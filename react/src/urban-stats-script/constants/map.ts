@@ -410,8 +410,7 @@ function normalizeRelativeArea(relativeArea: number[] | null, amount: number): n
     if (relativeArea.length !== amount) {
         throw new Error(`relativeArea must have the same length as geo: ${relativeArea.length} and ${amount}`)
     }
-    // A geography the data misses draws at nothing, as a negative one already does; its NaN
-    // would otherwise carry into the maximum below and flatten every marker to one size.
+    // Missing values draw at zero, like negative ones. A NaN would otherwise make every marker one size.
     const sanitizedRelativeArea = relativeArea.map(area => Number.isFinite(area) ? Math.max(0, area) : 0)
     const maxRelativeArea = sanitizedRelativeArea.reduce((largest, area) => Math.max(largest, area), 0)
     if (maxRelativeArea > 0) {

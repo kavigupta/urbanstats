@@ -8,8 +8,7 @@ env:
 
 jobs:
   update-snapshots:
-    # !updateAssets and !updateScreenshots are what the command used to be called, and older
-    # comments still say them.
+    # !updateAssets and !updateScreenshots are the command's old names.
     if: github.event.issue.pull_request && (contains(github.event.comment.body, '!updateSnapshots') || contains(github.event.comment.body, '!updateAssets') || contains(github.event.comment.body, '!updateScreenshots'))
     runs-on: ubuntu-22.04
     permissions:
@@ -102,7 +101,6 @@ jobs:
           unzip combined.zip -d combined_temp/
           mv combined_temp/changed_snapshots changed_snapshots_temp
 
-          # Check if there are any snapshots to copy
           if [ ! -d "changed_snapshots_temp" ] || [ -z "$(find changed_snapshots_temp -type f ! -name '*.error.png' ! -name 'manifest.json' 2>/dev/null)" ]; then
             echo "No snapshot files found in artifact"
             exit 0
@@ -111,14 +109,10 @@ jobs:
           # Create reference directory if it doesn't exist
           mkdir -p reference_test_snapshots
 
-          # Copy all snapshot files recursively, preserving directory structure
           # manifest.json is the snapshot diff viewer's index of the run, not a snapshot.
           find changed_snapshots_temp -type f ! -name "*.error.png" ! -name "manifest.json" -exec sh -c '         for file do
-              # Get relative path from changed_snapshots_temp
               rel_path="${file#changed_snapshots_temp/}"
-              # Create directory structure in reference_test_snapshots
               mkdir -p "reference_test_snapshots/$(dirname "$rel_path")"
-              # Copy the file
               cp "$file" "reference_test_snapshots/$rel_path"
               echo "Copied: $rel_path"
             done

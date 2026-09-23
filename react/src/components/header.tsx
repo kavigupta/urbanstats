@@ -237,7 +237,7 @@ function UniverseSelector(): ReactNode {
         }
     }, [])
 
-    // We need to do some programmatic placement of the dropdown to prevent it from expanding the page on mobile
+    // Placed programmatically so it doesn't widen the page on mobile
     const [dropdownPlacement, setDropdownPlacement] = useState<{ left: number, width: number }>()
 
     useLayoutEffect(() => {

@@ -1,12 +1,8 @@
-/*
- * The drawing half, kept behind a dynamic import in index.ts: evaluating satori is most of this
- * Worker's startup, and rewriting a page's tags has no use for it.
- */
+/* Dynamically imported, since evaluating satori is most of startup and rewriting tags doesn't need it. */
 import { Resvg, initWasm } from '@resvg/resvg-wasm'
 import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm'
-// The default satori build compiles Yoga from base64 as it evaluates, which throws under a dynamic
-// import because Workers only permit compiling wasm while the global scope runs. The standalone
-// build takes the binary as a module wrangler compiled at deploy time instead.
+// Standalone satori, since the default build compiles wasm on import, which Workers only allow while
+// the global scope evaluates.
 import { ReactElement } from 'react'
 import satori, { init as initYoga } from 'satori/standalone'
 import yogaWasm from 'satori/yoga.wasm'

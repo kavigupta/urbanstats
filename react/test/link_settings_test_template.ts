@@ -3,11 +3,7 @@ import { Selector } from 'testcafe'
 import { ensureCategoryExpanded, enterEditMode, withEditMode } from './edit_mode_test_utils'
 import { arrayFromSelector, getLocation, safeReload, screencap, target, urbanstatsFixture } from './test_utils'
 
-/**
- * Main has to be expanded to reach the Population group whenever Population is unselected (a
- * selected group is shown either way). Needed again after leaving staging, since the
- * Discard/Apply buttons double as Done.
- */
+/** Expands Main so Population is reachable when unselected. Needed again after leaving staging, which exits edit mode. */
 async function openTree(t: TestController): Promise<void> {
     await enterEditMode(t)
     await ensureCategoryExpanded(t, 'main')

@@ -6,13 +6,11 @@ cd ..
 python create_website.py --mode dev --target scripts --site-folder $1
 cd react
 
-# Copy the watcher's output to dev-server.log so that it can be read after the
-# fact, without the color escapes. Once the log reaches max lines, drop all but
-# the last keep lines.
+# Mirrors output to dev-server.log without color escapes, trimmed to the last
+# `keep` lines once it reaches `max`.
 log_tail() {
-    # ^C reaches every process in the pipeline. Ignoring it here keeps awk alive
-    # to drain the last of rspack's output, and keeps the pipeline's exit status
-    # off 130, which would otherwise take this script down with it.
+    # ^C reaches the whole pipeline. Ignoring it lets awk drain rspack's last
+    # output and keeps the exit status off 130, which would end this script.
     trap '' INT
     awk -v f=dev-server.log -v max=4000 -v keep=2000 '
         BEGIN { ansi = sprintf("%c", 27) "\\[[0-9;?]*[a-zA-Z]" }

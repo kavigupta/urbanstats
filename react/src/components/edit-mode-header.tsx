@@ -33,10 +33,7 @@ export function EditModeTopLeftHeader({ header, width }: { header: EditModeOpenH
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '1px', width: `${width}%` }}>
             {header.onDone !== undefined && <HeaderButton onClick={header.onDone} testId="edit-mode-done">Done</HeaderButton>}
-            {/*
-              * `stretch` and the button's own font size line the box up with the Done button,
-              * which its padding otherwise makes the taller of the two.
-              */}
+            {/* `stretch` and the button's font size match the Done button's height. */}
             <div style={{ position: 'relative', display: 'flex', flex: '1 1 auto', minWidth: 0, alignSelf: 'stretch' }}>
                 <input
                     type="text"
