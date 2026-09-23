@@ -20,8 +20,8 @@ class CCDWikidataSourcer(WikidataSourcer):
 
 
 CCDs = Shapefile(
-    hash_key="census_cousub_8",
-    path="named_region_shapefiles/cb_2022_us_cousub_500k.zip",
+    hash_key="census_cousub_9",
+    path="named_region_shapefiles/cb_2023_us_cousub_500k.zip",
     shortname_extractor=lambda x: f"{x.NAMELSAD}",
     longname_extractor=lambda x: f"{x.NAMELSAD} [CCD], {x.NAMELSADCO}, {x.STATE_NAME}, USA",
     additional_columns_computer={"geoid": lambda x: x.GEOID},

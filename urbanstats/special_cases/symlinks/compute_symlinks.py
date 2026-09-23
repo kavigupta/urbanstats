@@ -8,6 +8,7 @@ from typing import Dict
 
 from urbanstats.website_data.table import shapefile_without_ordinals
 
+from .symlinks_from_ccd_rename import symlinks_from_ccd_rename
 from .symlinks_from_country_rename import symlinks_from_country_rename
 from .symlinks_from_district_rename import symlinks_from_district_rename
 from .symlinks_from_historical_congressional_rename import (
@@ -49,6 +50,7 @@ def compute_symlinks() -> Dict[str, str]:
         }
     )
 
+    symlinks.update(symlinks_from_ccd_rename)
     symlinks.update(symlinks_from_country_rename)
     symlinks.update(symlinks_from_subnational_usa_fixes)
     symlinks.update(symlinks_from_historical_congressional_rename)
