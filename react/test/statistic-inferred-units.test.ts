@@ -58,8 +58,7 @@ urbanstatsFixture('the size of a reading and of a difference', tableOf('abs(high
 
 test('the size of a reading is the size of the number it is written as', async (t) => {
     await waitForLoading()
-    // ten degrees below freezing is one number in Fahrenheit and another in Celsius, so the size
-    // of a reading is of neither scale, and the column is of the Fahrenheit numbers as written
+    // a reading's size doesn't convert between scales, so the column keeps the Fahrenheit numbers as written
     await t.expect(await rows()).eql(['78.3', '77.5', '69.5'])
 })
 

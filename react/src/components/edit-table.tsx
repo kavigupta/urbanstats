@@ -201,11 +201,7 @@ function AnimatedCollapse({ expanded, children }: { expanded: boolean, children:
     )
 }
 
-/**
- * A group the year and source selection leaves with no statistics is a header row alone: a
- * checkbox and no value. It exists for this geography, so dropping it from the tree would
- * leave no way to reach it; its warning stands where the value would be.
- */
+/** A group the year and source selection leaves empty keeps its row, with its warning in place of a value, so it stays reachable. */
 function groupBodyRows(
     { group, enabled, setEnabled, highlight }: GroupTreeState,
     indent: number,
@@ -301,12 +297,8 @@ interface EditBodySegment {
 }
 
 /**
- * Splits a category's rows into runs of selected rows, which are shown whether or not the
- * category is expanded, and runs of unselected ones, each belonging to the category's or a
- * subcategory's collapse.
- *
- * Rows are striped by the position they end up at, counting only the rows currently on
- * display, so the alternation is unbroken in either state. The category header is row 0.
+ * Splits rows into runs of selected rows, which are always shown, and runs of unselected ones, which collapse.
+ * Stripes count only visible rows, so they alternate in either state.
  */
 function editBodySegments(bodyRows: EditBodyRow[]): EditBodySegment[] {
     const segments: EditBodySegment[] = []
@@ -502,10 +494,8 @@ export interface EditModeState {
 }
 
 /**
- * Edit mode is deliberately not a setting, so it resets on navigation or reload. It opens on
- * its own whenever the page enters staging mode (e.g. from a settings link) so the pending
- * changes are visible on the table. Leaving staging only closes it when the user does so via
- * the Discard/Apply buttons, which double as Done.
+ * Not a setting, so it resets on navigation. Opens when the page enters staging mode, so pending changes
+ * are visible, and closes when the user leaves staging with Discard/Apply.
  */
 export function useEditModeState(): EditModeState {
     const staged = useIsStaged()

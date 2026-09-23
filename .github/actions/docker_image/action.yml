@@ -39,19 +39,15 @@ runs:
     - name: Check for existing image
       id: existing-image
       run: |
-        # -w0 because base64 otherwise wraps at 76 columns, and a newline in the header
-        # value makes ghcr.io answer 400 to every query, which reads as "image missing".
+        # -w0 because base64 wraps at 76 columns by default, and ghcr.io answers 400 to a header with a newline.
         GHCR_TOKEN=$(echo -n "${{ inputs.token }}" | base64 -w0)
-        # --http1.1 because ghcr.io intermittently kills the HTTP/2 stream, which curl
-        # reports as exit 92. If curl fails anyway, the step fails here rather than
-        # guessing about the registry's contents.
+        # --http1.1 because ghcr.io intermittently kills HTTP/2 streams (curl exit 92).
         response=$(curl -s -o /dev/null -w "%{http_code}" --http1.1 --retry 3 --retry-all-errors -H "Authorization: Bearer ${GHCR_TOKEN}" https://${{ inputs.registry }}/v2/${{ inputs.repository }}/manifests/${{ steps.tag.outputs.tag }})
         echo "Manifest query returned $response"
         case "$response" in
           200) echo "exists=true" >> $GITHUB_OUTPUT ;;
           404) echo "exists=false" >> $GITHUB_OUTPUT ;;
-          # Treating an unrecognized response as "missing" is how the 400 above went
-          # unnoticed: every run rebuilt, and nothing failed to say so.
+          # Treating this as "missing" once hid a 400 that made every run rebuild the image.
           *) echo "Unexpected response from the registry"; exit 1 ;;
         esac
       shell: bash

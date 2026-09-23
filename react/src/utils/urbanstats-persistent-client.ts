@@ -11,9 +11,8 @@ const authenticatesSomethingElse = '/juxtastat/associate_email'
 
 export const persistentClient = createClient<paths>({ baseUrl: TestUtils.shared.isTesting ? 'http://localhost:54579' : 'https://persistent.urbanstats.org', async fetch(input) {
     const response = await globalThis.fetch(input)
-    // A 401 on a request carrying our identity means the server holds a different secure id for our
-    // persistent id, so somebody else is playing as us. Requests without those headers cannot tell
-    // us either way, so they leave the flag alone.
+    // A 401 here means the server holds a different secure id for our persistent id, so someone
+    // else is playing as us. Requests without our identity headers can't tell.
     if (input.headers.has('x-secure-id') && new URL(input.url).pathname !== authenticatesSomethingElse) {
         QuizModel.shared.authenticationError.value = response.status === 401
     }

@@ -30,7 +30,6 @@ export function DivThatTakesUpTheRestOfThePage({ divRef, ...props }: ComponentPr
         }
     }, [])
 
-    // This is ultimately the simplest way to set the height
     useLayoutEffect(() => {
         updateHeight()
         window.addEventListener('resize', updateHeight)

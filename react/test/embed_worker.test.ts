@@ -21,10 +21,7 @@ const filteredSingleColumnStatistic = `/statistic.html?uss=${encodeURIComponent(
 // A name too long for one line of the names column, which takes two rather than shrinking the
 // whole column's text to fit it.
 const longNamedStatistic = filteredStatistic.replaceAll('order=descending', 'order=ascending')
-/*
- * A table sorted by a column past the few the card fits: the rows carry that column's rank, so it
- * takes the last of the card's slots rather than being cut off along with the columns after it.
- */
+// Sorted by a column past the few the card fits, which takes the last slot since the rows show its rank.
 const lateSortedStatistic = `/statistic.html?uss=${encodeURIComponent('customNode(""); condition (true); table(columns=[column(values=density_pw_1km), column(values=population), column(values=area, name="Area"), column(values=elevation)])')}&article_type=City&start=1&amount=20&order=descending&universe=USA&sort_column=3`
 // A link that carries several statistic categories, which the article shows more of than fit.
 const manyStats = `${article}&s=29ZqGgHgeNSXMA9`
@@ -64,10 +61,7 @@ const multiGeographyMap = `/mapper.html?settings=${encodeURIComponent(gzipSync(J
 const labelledMap = usaMap('County', 'cMap(data=density_pw_1km, label="How dense is it")')
 // A circle per geography rather than a filled shape, sized by population so the radii differ.
 const pointMap = usaMap('Urban Center', 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, relativeArea=population)')
-/*
- * Those circles merged by proximity, which the card reruns supercluster to reproduce. Counties,
- * because a geography sparse enough to leave every marker alone would exercise none of that.
- */
+// Counties, dense enough that markers actually merge.
 const clusterMap = usaMap('County', 'clusterMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)')
 
 // Nothing here goes through the dev panel, which is embed_preview's; the browser is barely used.
@@ -76,10 +70,7 @@ urbanstatsFixture('embed worker', '/index.html', async () => {
     await runOgWorkerForTest()
 })
 
-/**
- * The card itself, rather than a browser's picture of one: a shot taken through the preview panel
- * would be drawn from whatever URL the panel had followed the frame to by then.
- */
+/** Fetched directly, since the preview panel may have followed its frame elsewhere by then. */
 async function cardPng(target: string, tiles?: string): Promise<Buffer> {
     const url = new URL(`/og${target}`, workerOrigin)
     if (tiles !== undefined) {
@@ -91,10 +82,7 @@ async function cardPng(target: string, tiles?: string): Promise<Buffer> {
     return Buffer.from(await response.arrayBuffer())
 }
 
-/**
- * Screenshots elsewhere drop the map, which is maplibre's to get right. This one is basemap.ts's,
- * so the shots keep it, drawn from tiles openfreemap's next planet build cannot move.
- */
+/** Unlike other screenshots, keeps the basemap, drawn from a pinned tile snapshot. */
 async function snapshotCard(t: TestController, target: string): Promise<void> {
     saveImage(t, await cardPng(target, snapshotTiles))
 }
@@ -245,10 +233,7 @@ test('embed-worker-crawler-tags', async (t) => {
         ogDescription: 'PW Density (r=1km), Population, Area rankings on Urban Stats.',
         ogImage: `${workerOrigin}/og${multiColumnStatistic}`,
     })
-    /*
-     * Both halves of a map's label, read off the script rather than out of a run of it: the default
-     * map states none, so its label is derived from the statistic it maps.
-     */
+    // The default map states no label, so it's derived from the statistic.
     await t.expect(await crawlerTags('/mapper.html')).eql({
         title: 'PW Density (r=1km)',
         ogTitle: 'PW Density (r=1km)',

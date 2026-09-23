@@ -1,7 +1,6 @@
 /*
- * Everything an embed needs, read through the site's own routing and loading code, so an embed
- * cannot drift from the page it describes. Only the origin handling is ours: those modules fetch
- * root-relative paths, which a Worker has no base URL for.
+ * Loads an embed's data through the site's own routing and loading code, so it can't drift from the page.
+ * Only the origin handling is ours, since those modules fetch root-relative paths.
  */
 import { ArticleStatisticRow, getHighlightIndex } from '../../src/components/load-article'
 import { shapesByName } from '../../src/consolidated-shapes'
@@ -65,11 +64,7 @@ export interface Page {
     settings: Settings
 }
 
-/**
- * Runs the navigation the descriptor describes, stopping short of rendering a panel. Settings are
- * per-call rather than `Settings.shared` because `?s` mutates them, and one link's stat selection
- * must not leak into the next request's embed.
- */
+/** Settings are per call rather than `Settings.shared`, since `?s` mutates them. */
 export async function loadPage(origin: string, descriptor: PageDescriptor): Promise<Page> {
     setOrigin(origin)
     const settings = new Settings()
@@ -151,17 +146,15 @@ export function comparisonCard(pageData: Extract<PageData, { kind: 'comparison' 
 }
 
 export interface StatisticCard {
-    /** The geographies ranked, as the page heads itself: "Cities", "Counties". */
+    /** e.g. "Cities", "Counties" */
     heading: string
-    /** What is ranked, without the condition, which the card states beside the geographies. */
+    /** Without the condition, which is `filter`. */
     title: HumanReadableName
     columns: { name: HumanReadableName, unit: StoredUnit | undefined }[]
-    /** Which column the rows are in the order of, and which way, as the page's header marks it. */
     sortColumn: number
     order: 'ascending' | 'descending'
-    /** The condition the script filters the geographies by, absent when it filters none. */
+    /** Absent when the script filters nothing. */
     filter: HumanReadableName | undefined
-    /** One per row of the page, in the order the page sorts them. */
     rows: { longname: string, ordinal: number | undefined, values: TableCellValue[] }[]
     /** Undefined when the rows span several universes, which no one flag stands for. */
     universe: string | undefined
@@ -170,10 +163,7 @@ export interface StatisticCard {
     units: Units
 }
 
-/**
- * Runs the table the page would run, through the interpreter directly: the page's generator runs it
- * in a web worker, which a Worker has no equivalent of. Everything after that is the panel's own.
- */
+/** Runs the interpreter directly, since the page's generator runs it in a web worker. */
 export async function statisticCard(origin: string, pageData: Extract<PageData, { kind: 'statistic' }>, settings: Settings): Promise<StatisticCard | undefined> {
     setOrigin(origin)
     const { stat, view } = pageData.settings
@@ -181,8 +171,7 @@ export async function statisticCard(origin: string, pageData: Extract<PageData, 
     const universes = universesOf(geographies)
     const typeEnvironment = defaultTypeEnvironment(universes)
     const mapUSS = mapUSSFromStat(stat)
-    // Its own executor: each card is a page of its own, so one kept across them would only hold
-    // the previous page's columns in the isolate.
+    // A fresh executor, so the isolate doesn't keep the previous card's columns.
     const executed = await createRequestExecutor()({
         descriptor: { kind: 'statistics', geographies },
         stmts: toStatement(mapUSS),
@@ -194,8 +183,7 @@ export async function statisticCard(origin: string, pageData: Extract<PageData, 
 
     const data = statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn: () => undefined })
     const sortColumn = Math.max(0, Math.min(view.sortColumn, data.table.length - 1))
-    // The rows carry the sorted column's rank, so that column takes the last of the few slots the
-    // card has when the page sorts by one that would otherwise be cut off.
+    // The rows show the sort column's rank, so it takes the last slot if it would otherwise be cut off.
     const columns = sortColumn < maxStatisticColumns
         ? data.table.slice(0, maxStatisticColumns)
         : [...data.table.slice(0, maxStatisticColumns - 1), data.table[sortColumn]]
@@ -212,7 +200,6 @@ export async function statisticCard(origin: string, pageData: Extract<PageData, 
         filter: deriveConditionLabel(mapUSS, typeEnvironment),
         rows: page.slice(0, maxStatisticRows).map(index => ({
             longname: data.articleNames[index],
-            // Only the sorted column's, the card having one number per row rather than one per cell.
             ordinal: data.table[sortColumn].ordinal?.[index],
             values: columns.map(column => column.value[index]),
         })),
@@ -222,11 +209,7 @@ export async function statisticCard(origin: string, pageData: Extract<PageData, 
     }
 }
 
-/**
- * What the map puts on the basemap: shapes filled per geography, or a circle at each geography's
- * centroid. Cluster maps keep their points apart because the card has to merge them by proximity,
- * which needs the category and size of each rather than a colour and a radius.
- */
+/** Cluster points carry a category and size rather than a colour and radius, since the card clusters them itself. */
 export type MapContents =
     | { kind: 'shapes', shapes: { rings: Ring[], fill: string }[], outline: { color: string, weight: number } }
     | { kind: 'points', points: { lon: number, lat: number, fill: string, radius: number }[] }
@@ -249,7 +232,7 @@ export interface MapCard {
     units: Units
 }
 
-/** A multipolygon's islands and holes flatten together: the card fills them under one even-odd rule. */
+/** Islands and holes flatten together, since the card fills them with an even-odd rule. */
 function rings(shape: GeoJSON.Geometry): Ring[] {
     const polygons = shape.type === 'MultiPolygon'
         ? shape.coordinates
@@ -282,7 +265,7 @@ async function pointContents(geographies: GeographySelection[], map: PMap, fills
     }
 }
 
-/** Sizes are areas rather than radii, so that merging two points adds their areas the way the site's do. */
+/** Sizes are areas, so merging points adds their areas as the site does. */
 async function clusterContents(geographies: GeographySelection[], map: ClusterMap, bins: number[], categoryColors: string[]): Promise<MapContents> {
     const at = await mergedByName(geographies, g => centroidsByName(g.universe, g.geographyKind))
     return {

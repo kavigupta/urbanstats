@@ -28,10 +28,7 @@ function humanReadableElements(ast: Expression | UrbanStatsASTStatement<UnitInfe
     return howConverted(written, ast.converted, isAtomic(ast))
 }
 
-/**
- * Whether this renders as an unambiguous atom, needing no parentheses. Powers are unique among the
- * operators in that they render as superscripts.
- */
+/** Whether this needs no parentheses. Powers count, since they render as superscripts. */
 function isAtomic(ast: Expression | UrbanStatsASTStatement<UnitInferenceMetadata>): boolean {
     return ast.type !== 'binaryOperator' || ast.operator.node === '**'
 }
@@ -244,7 +241,7 @@ function describe(ast: Expression | UrbanStatsASTStatement<UnitInferenceMetadata
     }
 }
 
-/** The label a script states outright, which running it would otherwise be the only way to read. */
+/** A label the script states explicitly */
 const statedLabel = mapUssParser(l.call({
     fn: l.ignore(),
     namedArgs: { label: l.optional(l.string()) },
@@ -275,7 +272,7 @@ export function mapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanRe
         ?? mapLabelOf(unitCheck(uss, typeEnvironment, constructDeclaredUnitsForMapStatically(uss, typeEnvironment)), typeEnvironment)
 }
 
-/** The title a table states outright, which running it would otherwise be the only way to read. */
+/** A title the table states explicitly */
 const statedTitle = mapUssParser(l.call({
     fn: l.ignore(),
     namedArgs: { title: l.optional(l.string()) },
@@ -368,18 +365,12 @@ export function deriveTableLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, 
     return label === undefined ? undefined : ungroupUnlessWorthwhile(label, columns, columnNames.length)
 }
 
-/**
- * A label is substituted into the script inside parens, so that a filter the label itself carries
- * is not at the end for the script's own filter to consolidate with.
- */
+/** Parenthesized so the script's filter isn't consolidated with one the label carries. */
 function grouped(label: HumanReadableElement[]): HumanReadableElement[] {
     return [{ type: 'parens', value: label }]
 }
 
-/**
- * The parentheses are worth their noise only where something follows the label, and either it is a
- * list or it carries a filter that what follows would otherwise run into.
- */
+/** Keeps the parentheses only if something follows a label that is a list or carries a filter. */
 function ungroupUnlessWorthwhile(label: HumanReadableElement[], substituted: HumanReadableElement[], parts: number): HumanReadableElement[] {
     const worthwhile = label.length > 1 && (parts > 1 || substituted.some(element => element.type === 'where'))
     if (worthwhile || label[0]?.type !== 'parens') {

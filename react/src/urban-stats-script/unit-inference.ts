@@ -20,7 +20,6 @@ export interface UnitConversion {
     expectedUnit: StoredUnit
 }
 
-/** Metadata representing a unit inference result */
 export interface UnitInferenceMetadata {
     converted?: UnitConversion
     /** What the expression actually computes to. */
@@ -157,12 +156,10 @@ function inferWithFallback(ast: Expression, scope: Scope, wanted: UnitExpectatio
     }
 }
 
-// update the scope
 function after(scope: Scope, inference: { variables: Bindings }): Scope {
     return { ...scope, variables: inference.variables }
 }
 
-/** Put the computed unit on the expression. */
 function packExpression(inference: InferenceResult): Expression {
     return { ...inference.ast, computesTo: counted(inference.interp.unit, inference.interp.times) }
 }
@@ -353,7 +350,7 @@ function operation(ast: Expression & { type: 'binaryOperator' }, scope: Scope, w
     // one that takes it: the 80 of 80 < high_temp is a temperature
     const names = comparisons.includes(operator) && left.interp.flexibility !== 'artificialPreference'
     const right = inferWithFallback(ast.right, after(scope, left), names ? { unit: left.interp.unit } : noUnitExpectation)
-    // read the left again now the right says what it could not, so the 80 of 80 < high_temp is one
+    // and the other way round: the 80 of 80 < high_temp takes high_temp's unit
     const reread = left.interp.flexibility === 'artificialPreference' && right.interp.flexibility !== 'artificialPreference'
         ? inferWithFallback(ast.left, after(scope, right), { unit: right.interp.unit })
         : left
@@ -413,9 +410,8 @@ function multiplied(ast: Expression & { type: 'binaryOperator' }, scope: Scope, 
     // x * const, const * x, and x / const are all constant scalings, other multiplications aren't.
     if (scaling !== undefined && (power === 1 || right.literal !== undefined)) {
         if (wanted.unit !== undefined && right.literal !== undefined) {
-            // what the number must be in for the product to come out as wanted. It is where a
-            // conversion goes, a factor landing on the number the script already writes rather
-            // than beside the whole product: population + area * 2 reads Area × 2/km^2
+            // a conversion lands on the literal rather than the whole product: population + area * 2
+            // reads Area × 2/km^2
             const carries = power === 1
                 ? unitProduct(wanted.unit, countedUnit(scaled.interp), -1)
                 : unitProduct(countedUnit(scaled.interp), wanted.unit, -1)
@@ -490,8 +486,7 @@ function call(ast: Expression & { type: 'call' }, scope: Scope, wanted: UnitExpe
         return all
     }
     const claimed = args(wanted)
-    // where the arguments have to be in one unit, they are read again in the one they agree on
-    // rather than in whichever the first of them happened to claim
+    // arguments that must agree are reread in their unified unit, not whichever the first claimed
     const all = argumentsAgree(propagation)
         ? args({ ...wanted, unit: unifyUnits(claimed.map(({ inferred }) => inferred.interp)).unit })
         : claimed
@@ -528,8 +523,7 @@ function ofArgument(propagation: UnitPropagation | undefined, wanted: UnitExpect
             return { unit: dimensionless }
         case 'either':
         case 'rank':
-            // the caller reads these twice, so the first reading leaves each argument to say what
-            // unit it is in and the second puts them all in the one they agree on
+            // read twice by the caller: first each argument claims a unit, then all take the unified one
             return { unit: wanted.unit }
         default:
             return noUnitExpectation

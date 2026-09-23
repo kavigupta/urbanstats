@@ -199,9 +199,9 @@ function insetsFor(universe: Universe): Inset[] {
 }
 
 /**
- * Several universes share one canvas. Their main maps are grouped the way the comparison map groups
- * regions, and each group becomes one main map; every other inset moves with the main map it came
- * from, keeping its place relative to it.
+ * Puts several universes on one canvas. Main maps that are close together are merged by `partitionBoxes`,
+ * as on the comparison map, and the merged maps split the screen area the original main maps took up.
+ * Every other inset is moved and scaled with the part of the new main map that its universe covers.
  */
 function combineInsets(universes: Universe[]): Inset[] {
     const perUniverse = universes.map(universe => insetsFor(universe).map((inset, i) => ({ ...inset, name: insets[universe][i].name })))

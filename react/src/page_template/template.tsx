@@ -24,10 +24,7 @@ export function PageTemplate({
     hideSidebar = false,
 }: {
     screencap?: (currentUniverse: string | undefined, colors: Colors, screenshotContext: ScreenshotContextType) => Promise<void>
-    /**
-     * Supplied by pages that decide part of their layout from screenshot mode, and so have to sit
-     * inside the context rather than take the one created here, which is below them.
-     */
+    /** For pages whose layout depends on screenshot mode, which need the context above them. */
     screenshotContext?: ScreenshotContextType
     csvExportCallback?: CSVExportData
     children?: React.ReactNode

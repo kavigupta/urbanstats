@@ -94,8 +94,7 @@ export async function checkTextboxes(t: TestController, txts: string[]): Promise
 export async function checkIndividualStat(t: TestController, category: string, stat: string): Promise<void> {
     await withEditMode(t, async () => {
         await t.click(Selector(`[aria-label="Expand ${category} category"]`))
-        // the category's contents animate open -- give it a moment before interacting
-        // with the now-revealed checkboxes
+        // wait for the open animation
         await t.wait(collapseAnimationMs)
         await t.click(editCheckbox(stat))
     })
@@ -209,11 +208,7 @@ function screenshotPath(t: TestController): string {
     return `${t.browser.name}/${t.test.name}-${screenshotNumber}.png`
 }
 
-/**
- * A pane that scrolls on its own starts each screenshot at the top, so that where the last click
- * left it doesn't end up in the image. `scrollPaneTo` names what to scroll back into view when the
- * subject of the shot lives below that.
- */
+/** Scrolling panes start each screenshot at the top. `scrollPaneTo` scrolls a lower subject into view. */
 type ScreencapOptions = { wait?: boolean, fullPage?: boolean, removeEntireMap?: boolean, scrollPaneTo?: Selector } & ({ selector?: undefined } | ({ selector?: Selector } & TakeElementScreenshotOptions))
 
 export async function screencap(t: TestController, { fullPage = true, wait = true, selector, removeEntireMap = true, scrollPaneTo, ...options }: ScreencapOptions = {}): Promise<void> {

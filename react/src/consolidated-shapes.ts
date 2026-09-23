@@ -1,10 +1,6 @@
 /*
- * Reads a consolidated shape file into the geometries one universe contains, keyed by longname.
- *
- * Decoding the file through protobufjs costs ~130 MiB on the largest geography, because the schema
- * makes every coordinate its own message and so its own object. This walks the message instead,
- * noting where each shape's bytes start and decoding only the ones the universe holds. The field
- * numbers here are the ones in data_files.proto.
+ * Walks the message and decodes only the universe's shapes, since protobufjs makes an object per
+ * coordinate (~130 MiB on the largest geography). Field numbers are from data_files.proto.
  */
 import Pbf from 'pbf'
 
