@@ -46,7 +46,7 @@ interface ComparisonPanelProps {
 }
 
 interface ComparisonTableShape {
-    /** Whether the statistics run along the columns and the regions down the rows. */
+    /** Statistics as columns, regions as rows */
     transpose: boolean
     onlyColumns: ColumnIdentifier[]
     /** How wide the table wants to be, in the units `MaybeScroll` decides to scroll by. */
@@ -57,12 +57,7 @@ interface ComparisonTableShape {
     columnWidth: number
 }
 
-/**
- * Fits the table to the screen. A comparison of many regions is wider than one screen, and
- * there are usually more statistics than regions, so turning it on its side is what makes it
- * fit -- but only when the table is actually too wide, and only when transposing is the
- * narrower of the two.
- */
+/** Transposes when the table is too wide and transposing makes it narrower. */
 function comparisonTableShape(params: {
     numArticles: number
     numStats: number
@@ -78,8 +73,7 @@ function comparisonTableShape(params: {
     // Mobile edit mode gives up the ordinal and percentile columns, so the tree has room.
     const showOrdinalColumns = params.includeOrdinals && !(editMode && mobileLayout)
 
-    // Transposed, a warning stands in for a column, so it takes up a column's worth of width
-    // alongside the statistics that are still shown.
+    // Transposed, each warning takes a column.
     const numTransposedColumns = numStats + numWarnings
 
     const widthUntransposed = computeComparisonWidthColumns(numArticles, showOrdinalColumns)
@@ -91,7 +85,7 @@ function comparisonTableShape(params: {
         && widthUntransposed > computeMaxColumns(mobileLayout)
         && widthUntransposed > widthTransposed
 
-    // The tree needs considerably more room than a column of statistic names does.
+    // The tree needs more room than statistic names do.
     const leftMarginPercent = editMode ? (mobileLayout ? 0.55 : 0.32) : (transpose ? 0.24 : 0.18)
     const numColumns = transpose ? numTransposedColumns + numExpandedExtras : numArticles
 
@@ -120,11 +114,7 @@ function shouldIncludeOrdinals(validOrdinalsByStat: boolean[], allSameArticleTyp
     return allSameArticleType && (validOrdinalsByStat.length === 0 || validOrdinalsByStat.some(x => x))
 }
 
-/**
- * How many columns the table has depends on which statistics are missing, and warnings are left
- * out of screenshots -- so the panel has to read screenshot mode, which means providing the
- * context here rather than taking the one `PageTemplate` would otherwise make below it.
- */
+/** Provides its own screenshot context, since screenshots omit warnings, which changes the column count. */
 export function ComparisonPanel(props: ComparisonPanelProps): ReactNode {
     const screenshotContext = useRef<ScreenshotContextType>({ render: new Set(), wait: new Set() })
     return (
@@ -255,8 +245,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
 
     const includeOrdinals = shouldIncludeOrdinals(validOrdinalsByStat, allSameArticleType)
 
-    // Edit mode puts the whole statistic tree in `dataByStatArticle`, but the export still covers
-    // only the selected statistics, so it decides about ordinals from the rows it exports.
+    // From the exported rows, since in edit mode `dataByStatArticle` holds every statistic.
     const includeOrdinalsInExport = useCallback(
         (exportedRows: ArticleRow[][]) => shouldIncludeOrdinals(validOrdinals(byStatArticle(exportedRows)), allSameArticleType),
         [allSameArticleType],
@@ -410,8 +399,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
 
     const topLeftSpec: TopLeftCellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
 
-    // "Select Statistics" rather than "Select", to distinguish it from editing the regions being
-    // compared, which the column headers do.
+    // Not just "Select", to distinguish it from editing the regions, which the column headers do.
     const editStatisticsButton: TableEditButton = { open: false, onEdit: () => { setEditMode(true) }, label: 'Select Statistics', placement: 'super-header' }
 
     const longnameSuperHeaderSpec: SuperHeaderSpec = { headerSpecs: longnameHeaderSpecs, showBottomBar: true }
@@ -423,8 +411,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
         simpleOrdinals: true,
     }
 
-    // With no statistics at all there are no transposed rows to hang warning columns off, so the
-    // warnings fall back to rows there.
+    // With no statistics there are no transposed rows, so warnings fall back to rows.
     const orientedSpecs = transpose
         ? {
                 superHeaderSpec: { headerSpecs: transposedHeaderSpecs, showBottomBar: false, groupNames: transposedGroupNames },
@@ -565,10 +552,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
     )
 }
 
-/**
- * Split out so the column width measurement, which is over every statistic rather than the
- * selected ones, only happens while edit mode is actually open.
- */
+/** Separate so measuring every statistic's width only happens in edit mode. */
 function ComparisonEditTable(props: {
     universe: Universe
     longname: string

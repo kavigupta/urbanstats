@@ -1,12 +1,7 @@
 name: Purge CF Cache
 
-# Cloudflare's edge caches the site's assets and, in `caches.default`, the preview cards the OG
-# Worker draws — cards whose contents come from whatever data the site was serving when they were
-# rendered, and which otherwise sit there for a day. Purging the zone on every Pages deploy keeps
-# both from outliving the build they were made from.
-#
-# This doesn't wait for Deploy CF OG Worker, which the same event starts: a card re-rendered in
-# between is drawn by the old Worker against the new data, and the next deploy clears it.
+# Purges the zone on every Pages deploy, so cached assets and preview cards don't outlive their build.
+# Doesn't wait for the Worker to redeploy; a card rendered in between is cleared by the next deploy.
 on:
   page_build:
   workflow_dispatch:

@@ -1,6 +1,5 @@
-// Bundled only when serving. The dev-server client already prints compile and
-// type-check errors to the console; this adds what those errors don't say --
-// the page is the last bundle that compiled, and where to look for the rest.
+// Bundled only when serving. Adds what the dev server's own errors don't say: the page is the last
+// bundle that compiled, and where to look for the rest.
 
 const advice = [
     `[failtest] The dev server's build is failing, so this page is running the last bundle that compiled.`,

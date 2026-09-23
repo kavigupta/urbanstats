@@ -10,12 +10,8 @@ const statistic = `/statistic.html?uss=${encodeURIComponent(table)}&article_type
 const map = '/mapper.html'
 
 /*
- * Drawing a PNG per request costs more than a Worker usually does, and none of it is visible in the
- * page it produces, so it is worth failing a test over rather than finding on a bill. CI and a
- * laptop disagree on the CPU numbers, so the bounds sit well above today's values and catch a
- * change in kind; the logged measurements are where a smaller drift would show up.
- *
- * Its own file, and its own Worker, so that nothing else's requests land in the numbers.
+ * Render costs are invisible on the page, so they fail a test here rather than show up on a bill. Bounds
+ * are loose since CI and laptops disagree; the logs show smaller drift. Its own Worker keeps others out.
  */
 urbanstatsFixture('embed worker resources', '/index.html', async () => {
     await runOgWorkerForTest(measuredPort)
@@ -25,12 +21,9 @@ urbanstatsFixture('embed worker resources', '/index.html', async () => {
 test('embed-worker-startup-cost', async (t) => {
     const { gzipKiB, startupCpuMs } = await ogWorkerBundleCost()
     console.warn(`Embed Worker bundle: ${gzipKiB} KiB gzip, ${startupCpuMs} ms startup CPU`)
-    // Currently ~1760. Dropping the panel stubs from wrangler.toml would add roughly 900, which is
-    // what this is watching for; the plan's own ceiling is 3 MiB gzip on free, 10 on paid.
+    // Currently ~1760. Dropping the panel stubs would add ~900. Cloudflare's ceiling is 3 MiB on free.
     await t.expect(gzipKiB).lt(2_000)
-    // Cloudflare's own limit is 1000 and this is nowhere near it, so the bound is set just above
-    // what CI measures (25-42) to catch an increase; startup is paid on every cold start. index.ts
-    // defers everything only a render or a map's script needs, which is what keeps it there.
+    // Cloudflare allows 1000, but this sits just above CI's 25-42, since every cold start pays it.
     await t.expect(startupCpuMs).lt(100)
 })
 

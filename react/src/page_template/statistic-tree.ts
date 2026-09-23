@@ -22,9 +22,8 @@ export type SourceCategoryIdentifier = DataSource['category']
 export type SourceIdentifier = DataSource['name']
 
 /**
- * Neither a category nor a subcategory holds its groups: `allGroups` is the tree, in order,
- * and each group names both. Everything that narrows the tree -- what a page has, what a
- * search matches -- filters that one list, and `sectionsOf` regroups whatever survives.
+ * Categories don't hold their groups. `allGroups` is the tree in order, so narrowing it is a filter,
+ * and `sectionsOf` regroups what's left.
  */
 export interface Category {
     kind: 'Category'

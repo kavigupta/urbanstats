@@ -1,19 +1,8 @@
 name: Deploy CF OG Worker
 
-# The Worker sits in front of the site's HTML pages, rewriting their og: meta tags per query string
-# and rendering the article preview images at the edge.
-#
-# It bundles the site's page-loading code and reads its data files, so redeploying whenever
-# the Pages site is built keeps the two in step.
-#
-# build.py substitutes the urbanstats commit that built the site into the ref below when it writes
-# this file, so the Worker is built from the same code as the site it fronts rather than from
-# whatever main has drifted to. A site built from an unpushed commit fails the checkout here rather
-# than deploying a mismatched Worker.
-#
-# A push made with the default GITHUB_TOKEN triggers none of this repo's workflows, so the retrostat
-# job's commits never reach this, though Pages still builds and deploys them through GitHub's own
-# pages-build-deployment. They leave the ref alone, so the deployed Worker is already the right one.
+# Redeploys the OG Worker on every Pages build, since it bundles the site's page-loading code. build.py
+# writes the commit that built the site into the ref below, so a site from an unpushed commit fails here.
+# Pushes made with GITHUB_TOKEN (retrostat) don't trigger this, but they don't change the ref either.
 on:
   page_build:
   workflow_dispatch:

@@ -1,8 +1,4 @@
-/*
- * Merges a cluster map's points the way the page does, with the same supercluster the page's
- * maplibre source runs, configured as maplibre configures it: a radius in the pixels of a 512px
- * tile, so the grouping is the one a reader of the page would see.
- */
+/* Clusters points with supercluster configured as maplibre configures it, so the card groups them as the page does. */
 import Supercluster from 'supercluster'
 
 import { clusterMaxZoom, proportionalRelativeArea } from '../../src/syau/cluster-geometry'
@@ -26,11 +22,7 @@ export interface Marker {
     radius: number
 }
 
-/**
- * One list of markers per inset. Radii are shared rather than per-inset, since a marker's size is
- * only readable against the biggest one anywhere on the map -- the page shares them the same way,
- * through `ClusterScaleProvider`.
- */
+/** One list per inset. Radii are scaled against the largest marker on the whole map, as `ClusterScaleProvider` does. */
 export function clusterMarkers(
     contents: MapContents & { kind: 'clusters' },
     insets: { inset: Inset, layout: MapLayout }[],
@@ -41,8 +33,7 @@ export function clusterMarkers(
         radius: contents.clusterRadius,
         maxZoom: clusterMaxZoom,
         map: props => ({ byCategory: props.byCategory.slice() }),
-        // A new array, not an add in place: supercluster seeds a cluster from a shallow copy of
-        // one a zoom in, so `byCategory` is still that cluster's own array.
+        // Not in place: supercluster seeds a cluster with a shallow copy of a child, whose array this still is.
         reduce: (accumulated, props) => {
             accumulated.byCategory = accumulated.byCategory.map((size, i) => size + props.byCategory[i])
         },
@@ -55,8 +46,7 @@ export function clusterMarkers(
 
     const total = (byCategory: number[]): number => byCategory.reduce((sum, size) => sum + size, 0)
     const perInset = insets.map(({ inset, layout }) => {
-        // The zoom the page would be at: the card's box may be narrower than the page's own render,
-        // and clustering happens before that scaling rather than after it.
+        // The page's zoom, since the card is a scaled-down copy of the page's render.
         const zoom = Math.log2(layout.scale / scale / superclusterTile)
         return index.getClusters(inset.coordBox, zoom).map(feature => ({
             lon: feature.geometry.coordinates[0],

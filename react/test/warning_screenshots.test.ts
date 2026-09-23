@@ -3,11 +3,7 @@ import { Selector } from 'testcafe'
 import { categoryCheckbox, withEditMode, yearCheckbox } from './edit_mode_test_utils'
 import { comparisonPage, downloadImage, target, uncheckAllCategories, urbanstatsFixture } from './test_utils'
 
-/**
- * Warnings explain how to change a setting, which means nothing to someone looking at a shared
- * image, so screenshot mode leaves them out. These download the app's own screenshot in a state
- * full of warnings; the reference image comparison is what checks they aren't in it.
- */
+/** Screenshots should leave out warnings, which the reference images check. */
 
 /** Leaves Main selected with no year selected, so all of its yearly groups warn. */
 async function selectMainWithoutYears(t: TestController): Promise<void> {

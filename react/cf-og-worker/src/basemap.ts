@@ -1,9 +1,6 @@
 /*
- * A basemap drawn from openfreemap's vector tiles, the same source the site's own maps read.
- *
- * maplibre cannot run here: it wants a GL context, and a Worker has neither that nor a DOM. So the
- * tiles are decoded and painted by hand into SVG, which satori and resvg already speak. The styling
- * below is a reading of openfreemap's "bright", not an implementation of the maplibre style spec.
+ * Paints openfreemap's vector tiles into SVG by hand, since maplibre needs a GL context and a DOM.
+ * The styling approximates openfreemap's "bright" rather than implementing the maplibre style spec.
  */
 import { VectorTile, VectorTileLayer } from '@mapbox/vector-tile'
 import Pbf from 'pbf'
@@ -12,7 +9,7 @@ import { LineStyle } from '../../src/mapper/settings/utils'
 
 import { MapLayout, polyline } from './map-layout'
 
-/** Where openfreemap's own data stops. Anything closer in draws these tiles larger. */
+/** openfreemap has no tiles past this zoom. */
 const dataMaxZoom = 14
 
 type Props = Record<string, string | number | boolean>
@@ -102,7 +99,7 @@ interface Tile {
     px: number
 }
 
-/** More than one because a dev render may be pointed at a snapshot of the tiles. */
+/** Keyed by origin because a dev render may point at a snapshot of the tiles. */
 const tileTemplates = new Map<string, Promise<string>>()
 
 /** Read from the TileJSON because openfreemap versions its tile path by planet build. */
@@ -143,8 +140,7 @@ function tilesAt(zoom: number, layout: MapLayout, width: number, height: number)
 }
 
 async function coveringTiles(layout: MapLayout, width: number, height: number, tileOrigin: string, budget: number): Promise<Tile[]> {
-    // A card with several insets would otherwise ask for more tiles than a request may fetch at all.
-    // Each step out costs detail the shapes drawn over the basemap mostly cover anyway.
+    // A card with several insets could otherwise exceed the Worker's subrequest limit.
     let zoom = Math.min(layout.zoom, dataMaxZoom)
     while (zoom > 0 && tilesAt(zoom, layout, width, height).length > budget) {
         zoom--
@@ -167,10 +163,7 @@ async function coveringTiles(layout: MapLayout, width: number, height: number, t
     return loaded.filter(tile => tile !== undefined)
 }
 
-/**
- * Every feature a rule matches, as one path rather than one apiece: a dense tile holds thousands of
- * roads, and resvg has to parse whatever we emit.
- */
+/** One path for all matching features, since a dense tile holds thousands of roads for resvg to parse. */
 function rulePath(rule: Rule, strokeWidth: number, tiles: Tile[], width: number, height: number): string {
     const parts: string[] = []
     for (const { tile, left, top, px } of tiles) {
@@ -185,8 +178,7 @@ function rulePath(rule: Rule, strokeWidth: number, tiles: Tile[], width: number,
                 continue
             }
             for (const ring of feature.loadGeometry()) {
-                // Tiles carry a buffer of geometry beyond their own edges, which neighbouring tiles
-                // repeat. Dropping what falls outside the card keeps both out of the SVG.
+                // Tiles repeat geometry past their edges; polyline drops whatever is outside the card.
                 const points = ring.map((point): [number, number] => [left + point.x * unit, top + point.y * unit])
                 const part = polyline(points, width, height, feature.type === 3)
                 if (part !== '') {
