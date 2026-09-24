@@ -57,6 +57,17 @@ def all_universes():
     ]
 
 
+@lru_cache(None)
+def continent_sub_universes():
+    """
+    Maps each continent to the set of universes strictly contained within it.
+    """
+    return {
+        continent: set(sub_universes)
+        for continent, sub_universes in CONTINENT_TO_SUB_UNIVERSES.items()
+    }
+
+
 def check_continent_sub_universes(contained_by, present_longnames):
     """
     Check CONTINENT_TO_SUB_UNIVERSES against the strict containment relationships it was
@@ -99,3 +110,19 @@ def check_continent_sub_universes(contained_by, present_longnames):
     assert not errors, "CONTINENT_TO_SUB_UNIVERSES is out of date:\n" + "\n".join(
         errors
     )
+
+
+def is_sub_universe(sub_universe, super_universe):
+    """
+    Check if sub_universe is a sub-universe of super_universe.
+    """
+    if sub_universe == super_universe:
+        return True
+    if super_universe == "world":
+        return True
+    if super_universe in CONTINENTS:
+        return sub_universe in continent_sub_universes()[super_universe]
+    if super_universe in COUNTRIES:
+        # This is a bit hacky but does work
+        return sub_universe.split(", ")[-1] == super_universe
+    return False
