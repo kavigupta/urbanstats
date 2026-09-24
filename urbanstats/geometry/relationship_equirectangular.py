@@ -175,9 +175,6 @@ def classify_relationship(summary_a: LandRleSummary, summary_b: LandRleSummary) 
     return "borders"
 
 
-@permacache(
-    "population_density/relationship_equirectangular/compute_population_for_rle",
-)
 def compute_population_for_rle(
     rle: Dict[int, List[Tuple[int, int]]], resolution: int
 ) -> float:
