@@ -73,6 +73,9 @@ from urbanstats.statistics.collections.national_origin_language import (
 )
 from urbanstats.statistics.collections.occupation import OccupationStatistics
 from urbanstats.statistics.collections.pollution import PollutionStatistics
+from urbanstats.statistics.collections.population_median import (
+    PopulationMedianStatistics,
+)
 from urbanstats.statistics.collections.segregation import SegregationStatistics
 from urbanstats.statistics.collections.sexual_orientation_and_relationship_status import (
     SexualOrientationRelationshipStatusStatistics,
@@ -104,6 +107,7 @@ statistic_collections = (
     CensusCanada(),
     CanadaElectionStatistics(),
     GPWStatistics(),
+    PopulationMedianStatistics(),
     SegregationStatistics(),
     NationalOriginCitizenshipStatistics(),
     NationalOriginBirthplaceStatistics(),

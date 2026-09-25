@@ -73,6 +73,7 @@ export function getUnit(unit: UnitType): ReactNode {
         case 'fatalitiesPerCapita':
             return <span>fatalities per capita</span>
         case 'density':
+        case 'densityChange':
             return (
                 <span>
                     people per&nbsp;km
@@ -133,5 +134,9 @@ export function getUnit(unit: UnitType): ReactNode {
             return <span>% change</span>
         case 'leftMargin':
             return <span>% left margin</span>
+        case 'latitude':
+            return <span>degrees latitude</span>
+        case 'longitude':
+            return <span>degrees longitude</span>
     }
 }

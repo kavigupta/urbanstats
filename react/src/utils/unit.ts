@@ -5,7 +5,7 @@ import { StatName } from '../page_template/statistic-tree'
 
 import { assert } from './defensive'
 import {
-    BaseUnit, centimeter, Decoration, fatalities, Hue, hundredThousandPeople, inch, kilometer, meter, microgram, mile,
+    asADifference, Axis, BaseUnit, centimeter, Decoration, fatalities, Hue, hundredThousandPeople, inch, kilometer, meter, microgram, mile,
     inEitherSystem, minute, Party, people, StoredUnit, Unit, WrittenIn, year,
 } from './quantity'
 
@@ -14,7 +14,7 @@ export type UnitType = 'percentage' | 'percentageChange' | 'fatalities' | 'fatal
     | 'contaminantLevel' | 'number' | 'usd' | 'minutes'
     | 'partyPctBlue' | 'partyPctRed' | 'partyPctOrange' | 'partyPctTeal' | 'partyPctGreen' | 'partyPctPurple'
     | 'partyChangeBlue' | 'partyChangeRed' | 'partyChangeOrange' | 'partyChangeTeal' | 'partyChangeGreen' | 'partyChangePurple'
-    | 'leftMargin'
+    | 'leftMargin' | 'latitude' | 'longitude' | 'densityChange'
 
 // Validated list of all unit types - this ensures we have every value from UnitType
 export const allUnitTypes = [
@@ -48,6 +48,9 @@ export const allUnitTypes = [
     'partyChangeGreen',
     'partyChangePurple',
     'leftMargin',
+    'latitude',
+    'longitude',
+    'densityChange',
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- just to check that all unit types are covered
@@ -75,6 +78,16 @@ function percentage(party: Party | undefined, difference = false): StoredUnit {
 }
 
 const inParty = (hue: Hue): Party => ({ kind: 'color', hue })
+
+// twice a latitude is not a latitude
+function coordinate(axis: Axis): StoredUnit {
+    return { unit: { dimensions: [], decoration: { kind: 'coordinate', axis }, times: 1, baseIsScalar: false }, toBaseUnits: 1 }
+}
+
+const density = dimensionfull({ person: 1, m: -2 }, 1e-6, {
+    units: { metric: { person: people, m: kilometer }, imperial: { person: people, m: mile } },
+    style: { kind: 'rounded', significantDigits: 2 },
+})
 
 /* eslint-disable no-restricted-syntax -- these name the theme's hues, they are not css colors */
 export const storedUnits = {
@@ -112,10 +125,10 @@ export const storedUnits = {
         units: inEitherSystem({ fatality: fatalities, person: hundredThousandPeople }),
         style: { kind: 'fixed', places: 2 },
     }),
-    density: dimensionfull({ person: 1, m: -2 }, 1e-6, {
-        units: { metric: { person: people, m: kilometer }, imperial: { person: people, m: mile } },
-        style: { kind: 'rounded', significantDigits: 2 },
-    }),
+    density,
+    densityChange: asADifference(density),
+    latitude: coordinate('latitude'),
+    longitude: coordinate('longitude'),
     contaminantLevel: dimensionfull({ g: 1, m: -3 }, 1e-6, {
         units: inEitherSystem({ g: microgram, m: meter }),
         style: { kind: 'fixed', places: 2 },
@@ -217,6 +230,12 @@ export function getUnitName(unitType: UnitType): string {
             return 'Party Change (Purple)'
         case 'leftMargin':
             return 'Left Margin'
+        case 'latitude':
+            return 'Latitude'
+        case 'longitude':
+            return 'Longitude'
+        case 'densityChange':
+            return 'Density Change'
     }
 }
 

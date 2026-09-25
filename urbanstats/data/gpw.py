@@ -12,7 +12,12 @@ from scipy.interpolate import RegularGridInterpolator
 
 from urbanstats.data.census_blocks import RADII
 from urbanstats.geometry.ellipse import Ellipse
-from urbanstats.geometry.rasterize import exract_raster_points, rasterize_using_lines
+from urbanstats.geometry.rasterize import (
+    exract_raster_points,
+    from_row_idx,
+    rasterize_using_lines,
+)
+from urbanstats.geometry.weighted_statistics import geometric_median_by_group
 from urbanstats.utils import cached_zarr_array, compute_bins
 
 GPW_RADII = [k for k in RADII if k >= 1]
@@ -245,6 +250,21 @@ def produce_histogram(density_data, population_data):
     return compute_bins(density_data, population_data, bin_size=0.1)
 
 
+def median_from_histogram(histogram, bin_size=0.1):
+    """
+    Population-weighted median density, interpolating log10 density within the bin where the
+    cumulative population passes half. Bin i spans log10 densities (i - 0.5) * bin_size to (i + 0.5) * bin_size.
+    """
+    histogram = np.asarray(histogram, dtype=np.float64)
+    if histogram.ndim == 0 or histogram.sum() == 0:
+        return np.nan
+    half = histogram.sum() / 2
+    cumulative = np.cumsum(histogram)
+    idx = np.searchsorted(cumulative, half)
+    within = (half - (cumulative[idx] - histogram[idx])) / histogram[idx]
+    return 10 ** ((idx - 0.5 + within) * bin_size)
+
+
 def compute_gpw_weighted_for_shape(
     shape, glo_pop, gridded_statistics, *, do_histograms, resolution
 ):
@@ -410,3 +430,28 @@ def compute_gpw_data_for_shapefile(
             result_hists[k].append(v)
 
     return result, result_hists
+
+
+@permacache(
+    "urbanstats/data/gpw/compute_gpw_population_median_for_shapefile",
+    key_function=dict(shapefile=lambda x: x.hash_key),
+)
+def compute_gpw_population_median_for_shapefile(shapefile, *, resolution):
+    glo = load_full_ghs_zarr(resolution)
+    shapes = shapefile.load_file()
+    lats, lons = [], []
+    for shape in tqdm.tqdm(
+        shapes.geometry, desc=f"gpw population median for {shapefile.hash_key}"
+    ):
+        rows, cols = select_points_in_shape(shape, glo, resolution=resolution)
+        pop = np.nan_to_num(np.asarray(glo[rows, cols], dtype=np.float64), nan=0)
+        [lat], [lon] = geometric_median_by_group(
+            np.zeros(len(pop), dtype=np.int64),
+            from_row_idx(rows + 0.5, resolution),
+            lon_from_col_idx(cols + 0.5, resolution),
+            pop,
+            1,
+        )
+        lats.append(lat)
+        lons.append(lon)
+    return lats, lons
