@@ -714,12 +714,18 @@ statistics_tree = StatisticTree(
                 ),
             },
         ),
-        **just_2020_category(
-            "topography",
-            "Topography",
-            "gridded_hilliness",
-            "gridded_elevation",
-            source=elevation_aster,
+        "topography": StatisticCategory(
+            name="Geography",
+            contents={
+                **just_2020(
+                    "gridded_hilliness", "gridded_elevation", source=elevation_aster
+                ),
+                **just_2020(
+                    "population_median_lat",
+                    "population_median_lon",
+                    source=population_best_available,
+                ),
+            },
         ),
         "race": StatisticCategory(
             name="Race",
@@ -1424,13 +1430,6 @@ statistics_tree = StatisticTree(
                 ]
                 for k, v in kvs.items()
             },
-        ),
-        **just_2020_category(
-            "population_median",
-            "Population Median",
-            "population_median_lat",
-            "population_median_lon",
-            source=population_best_available,
         ),
         "deprecated": StatisticCategory(
             name="Deprecated",

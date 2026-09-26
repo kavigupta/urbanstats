@@ -40,6 +40,16 @@ export const dataSources = [
         ]
     },
     {
+        "category": "Population Median",
+        "sources": [
+            {
+                "category": "Population Median",
+                "name": "Best Available Population Data",
+                "is_default": true
+            }
+        ]
+    },
+    {
         "category": "Traffic Fatalities",
         "sources": [
             {
@@ -135,16 +145,6 @@ export const dataSources = [
             {
                 "category": "Weather",
                 "name": "ERA5",
-                "is_default": true
-            }
-        ]
-    },
-    {
-        "category": "Population Median",
-        "sources": [
-            {
-                "category": "Population Median",
-                "name": "Best Available Population Data",
                 "is_default": true
             }
         ]
@@ -584,7 +584,7 @@ export const rawStatsTree = [
     },
     {
         "id": "topography",
-        "name": "Topography",
+        "name": "Geography",
         "contents": [
             {
                 "id": "gridded_hilliness",
@@ -630,6 +630,58 @@ export const rawStatsTree = [
                                             "name": "ASTER GDEM"
                                         },
                                         "column": 282
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "population_median_lat",
+                "name": "Population Median (Latitude)",
+                "subcategory": null,
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Population Median (Latitude)",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": {
+                                            "category": "Population Median",
+                                            "name": "Best Available Population Data"
+                                        },
+                                        "column": 495
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "population_median_lon",
+                "name": "Population Median (Longitude)",
+                "subcategory": null,
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Population Median (Longitude)",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": {
+                                            "category": "Population Median",
+                                            "name": "Best Available Population Data"
+                                        },
+                                        "column": 496
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -11554,64 +11606,6 @@ export const rawStatsTree = [
                                     }
                                 ],
                                 "indentedName": "2000"
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "id": "population_median",
-        "name": "Population Median",
-        "contents": [
-            {
-                "id": "population_median_lat",
-                "name": "Population Median (Latitude)",
-                "subcategory": null,
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Population Median (Latitude)",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population Median",
-                                            "name": "Best Available Population Data"
-                                        },
-                                        "column": 495
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "population_median_lon",
-                "name": "Population Median (Longitude)",
-                "subcategory": null,
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Population Median (Longitude)",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population Median",
-                                            "name": "Best Available Population Data"
-                                        },
-                                        "column": 496
-                                    }
-                                ],
-                                "indentedName": "2020"
                             }
                         ]
                     }
