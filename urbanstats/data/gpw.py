@@ -17,7 +17,7 @@ from urbanstats.geometry.rasterize import (
     from_row_idx,
     rasterize_using_lines,
 )
-from urbanstats.geometry.weighted_statistics import geometric_median_by_group
+from urbanstats.geometry.weighted_statistics import geometric_median_of_chunks
 from urbanstats.utils import cached_zarr_array, compute_bins
 
 GPW_RADII = [k for k in RADII if k >= 1]
@@ -433,25 +433,43 @@ def compute_gpw_data_for_shapefile(
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_population_median_for_shapefile",
+    "urbanstats/data/gpw/compute_gpw_population_median_for_shapefile_2",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def compute_gpw_population_median_for_shapefile(shapefile, *, resolution):
-    glo = load_full_ghs_zarr(resolution)
+def compute_gpw_population_median_for_shapefile(
+    shapefile, *, max_coarse_cells_for_fine=10_000, chunk_size=5_000_000
+):
+    """
+    Uses the 3" grid only for shapes with at most max_coarse_cells_for_fine populated 30" cells,
+    beyond which the 3" grid is slow and its extra precision is small relative to the shape.
+    """
     shapes = shapefile.load_file()
     lats, lons = [], []
     for shape in tqdm.tqdm(
         shapes.geometry, desc=f"gpw population median for {shapefile.hash_key}"
     ):
-        rows, cols = select_points_in_shape(shape, glo, resolution=resolution)
-        pop = np.nan_to_num(np.asarray(glo[rows, cols], dtype=np.float64), nan=0)
-        [lat], [lon] = geometric_median_by_group(
-            np.zeros(len(pop), dtype=np.int64),
-            from_row_idx(rows + 0.5, resolution),
-            lon_from_col_idx(cols + 0.5, resolution),
-            pop,
-            1,
+        resolution = 120
+        rows, cols = select_points_in_shape(
+            shape, load_full_ghs_zarr(resolution), resolution=resolution
         )
+        if len(rows) <= max_coarse_cells_for_fine:
+            resolution = 1200
+            rows, cols = select_points_in_shape(
+                shape, load_full_ghs_zarr(resolution), resolution=resolution
+            )
+        pop = load_full_ghs_zarr(resolution)[rows, cols]
+
+        def chunks(rows=rows, cols=cols, pop=pop, resolution=resolution):
+            for start in range(0, len(rows), chunk_size):
+                end = start + chunk_size
+                yield (
+                    np.zeros(len(rows[start:end]), dtype=np.int64),
+                    from_row_idx(rows[start:end] + 0.5, resolution),
+                    lon_from_col_idx(cols[start:end] + 0.5, resolution),
+                    np.nan_to_num(pop[start:end].astype(np.float64), nan=0),
+                )
+
+        [lat], [lon] = geometric_median_of_chunks(chunks, 1)
         lats.append(lat)
         lons.append(lon)
     return lats, lons

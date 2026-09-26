@@ -17,7 +17,7 @@ from urbanstats.statistics.statistic_collection import InternationalStatistics
 
 
 class GPWStatistics(InternationalStatistics):
-    version = 4
+    version = 5
 
     def name_for_each_statistic(self):
         return {
@@ -109,7 +109,7 @@ class GPWStatistics(InternationalStatistics):
         (
             statistics_table["population_median_lat_gpw"],
             statistics_table["population_median_lon_gpw"],
-        ) = compute_gpw_population_median_for_shapefile(shapefile, resolution=1200)
+        ) = compute_gpw_population_median_for_shapefile(shapefile)
 
         statistics_table["gpw_aw_density"] = (
             statistics_table["gpw_population"] / existing_statistics["area"]

@@ -303,7 +303,7 @@ class CensusChange(USAStatistics):
 class Census2020(CensusForPreviousYear):
     # This isn't actually used for 2020, but it is used to just quickly source the 2020 data
     # for computing other statistics
-    version = 3
+    version = 4
 
     def year(self):
         return 2020
@@ -433,7 +433,7 @@ def aggregate_basics_of_year(shapefile, year):
 
 
 @permacache_with_remapping_pickle(
-    "urbanstats/statistics/collections/population_median_point_usa",
+    "urbanstats/statistics/collections/population_median_point_usa_2",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def population_median_point_usa(shapefile):

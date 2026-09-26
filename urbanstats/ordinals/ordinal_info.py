@@ -8,6 +8,7 @@ from cached_property import cached_property
 from permacache import permacache, stable_hash
 from scipy.sparse import csc_matrix
 
+from urbanstats.compatibility.compatibility import forget_loaded_values
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.universe.universe_list import all_universes
 
@@ -23,11 +24,66 @@ class OrdinalInfoForColumn:
 
 
 @dataclass
+class CompactOrdinalInfoForColumn:
+    """
+    An OrdinalInfoForColumn whose matrices share the sparsity pattern of the universe type masks.
+    ordinal has exactly that pattern, and percentile a subset of it, stored with 0 where it has no
+    entry, which is what indexing it returned there anyway. values is per row, being the same in
+    every universe type.
+    """
+
+    pattern: csc_matrix
+    ordinal_data: np.ndarray
+    percentile_data: np.ndarray
+    values_by_row: np.ndarray
+    counts: np.ndarray
+
+    @classmethod
+    def compact(
+        cls, info: OrdinalInfoForColumn, pattern: csc_matrix, pattern_keys: np.ndarray
+    ) -> "CompactOrdinalInfoForColumn":
+        for m in (info.ordinal, info.values):
+            assert np.array_equal(m.indptr, pattern.indptr)
+            assert np.array_equal(m.indices, pattern.indices)
+        percentile_keys = _entry_keys(info.percentile)
+        positions = np.searchsorted(pattern_keys, percentile_keys)
+        assert np.array_equal(pattern_keys[positions], percentile_keys)
+        percentile_data = np.zeros(pattern.nnz, dtype=info.percentile.dtype)
+        percentile_data[positions] = info.percentile.data
+        values_by_row = np.full(pattern.shape[0], np.nan, dtype=info.values.dtype)
+        np.put(values_by_row, pattern.indices, info.values.data)
+        return cls(
+            pattern, info.ordinal.data, percentile_data, values_by_row, info.counts
+        )
+
+    def _with_data(self, data: np.ndarray) -> csc_matrix:
+        return csc_matrix(
+            (data, self.pattern.indices, self.pattern.indptr),
+            shape=self.pattern.shape,
+            copy=False,
+        )
+
+    @property
+    def ordinal(self) -> csc_matrix:
+        return self._with_data(self.ordinal_data)
+
+    @property
+    def percentile(self) -> csc_matrix:
+        return self._with_data(self.percentile_data)
+
+
+def _entry_keys(m: csc_matrix) -> np.ndarray:
+    """col * num_rows + row for each stored entry, in storage order."""
+    cols = np.repeat(np.arange(m.shape[1], dtype=np.int64), np.diff(m.indptr))
+    return cols * m.shape[0] + m.indices
+
+
+@dataclass
 class OrdinalInfo:
     universe_type: List[Tuple[str, str]]
     universe_type_to_idx: Dict[Tuple[str, str], int]
     universe_type_masks: csc_matrix
-    by_column: Dict[str, OrdinalInfoForColumn]
+    by_column: Dict[str, CompactOrdinalInfoForColumn]
     index_order: np.ndarray
     longnames: np.ndarray
 
@@ -59,7 +115,7 @@ class OrdinalInfo:
         idx = self.universe_type_to_idx[universe, typ]
         mask = self.universe_type_masks[:, idx]
         # values selected: alphabetical index within ut -> value
-        values_selected = np.array(self.by_column[col].values[:, idx][mask])[0]
+        values_selected = self.by_column[col].values_by_row[mask.indices]
         # reindex: index in `full[filter for ut]` -> alphabetical index within ut
         index_order = np.array(self.index_order[mask.toarray()[:, 0]])
         reordering = np.argsort(index_order)
@@ -207,22 +263,31 @@ def fully_complete_ordinals(
     sorted_by_name: Any, universe_typ: List[Tuple[str, str]]
 ) -> OrdinalInfo:
     universe_type_masks = compute_universe_type_masks(sorted_by_name, universe_typ)
+    pattern_keys = _entry_keys(universe_type_masks)
+
+    def load(stat_col: str) -> CompactOrdinalInfoForColumn:
+        info = compute_ordinal_info(
+            universe_type_masks,
+            universe_typ,
+            pd.DataFrame(
+                {
+                    stat_col: sorted_by_name[stat_col],
+                    "best_population_estimate": sorted_by_name.best_population_estimate,
+                }
+            ),
+            stat_col,
+        )
+        forget_loaded_values(compute_ordinal_info)
+        return CompactOrdinalInfoForColumn.compact(
+            info, universe_type_masks, pattern_keys
+        )
+
     return OrdinalInfo(
         universe_typ,
         {ut: i for i, ut in enumerate(universe_typ)},
         universe_type_masks,
         {
-            stat_col: compute_ordinal_info(
-                universe_type_masks,
-                universe_typ,
-                pd.DataFrame(
-                    {
-                        stat_col: sorted_by_name[stat_col],
-                        "best_population_estimate": sorted_by_name.best_population_estimate,
-                    }
-                ),
-                stat_col,
-            )
+            stat_col: load(stat_col)
             for stat_col in tqdm.tqdm(internal_statistic_names())
         },
         sorted_by_name.index_order,

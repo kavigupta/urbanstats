@@ -21,7 +21,7 @@ from urbanstats.statistics.statistic_collection import CanadaStatistics
 
 
 class CensusCanada(CanadaStatistics):
-    version = 8
+    version = 9
 
     canada_years = (2021, 2011)
 
@@ -193,7 +193,7 @@ def compute_census_stats(year, shapefile):
 
 
 @permacache_with_remapping_pickle(
-    "urbanstats/statistics/collections/census_canada/compute_census_median_point",
+    "urbanstats/statistics/collections/census_canada/compute_census_median_point_2",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def compute_census_median_point(year, shapefile):
