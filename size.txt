@@ -537,3 +537,12 @@ Temperature plots (#2056)
 788     order
 1414    data
 3326    total
+
+Density medians and population centers (#2523)
+
+125     consolidated
+178     quiz_sampling_info
+691     shape
+925     order
+1562    data
+3613    total
