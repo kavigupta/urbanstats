@@ -538,7 +538,7 @@ export const rawStatsTree = [
     },
     {
         "id": "topography",
-        "name": "Topography",
+        "name": "Geography",
         "contents": [
             {
                 "id": "gridded_hilliness",
