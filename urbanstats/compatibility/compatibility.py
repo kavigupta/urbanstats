@@ -60,3 +60,12 @@ def permacache_with_remapping_pickle(*args, **kwargs):
             remapping_pickle().Unpickler
         ),
     )
+
+
+def forget_loaded_values(cached_function):
+    """
+    permacache keeps every value it reads from disk in memory for the life of the process,
+    which for large values read once is only a leak.
+    """
+    if cached_function.shelf.cache is not None:
+        cached_function.shelf.cache.clear()
