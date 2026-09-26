@@ -12,7 +12,12 @@ from scipy.interpolate import RegularGridInterpolator
 
 from urbanstats.data.census_blocks import RADII
 from urbanstats.geometry.ellipse import Ellipse
-from urbanstats.geometry.rasterize import exract_raster_points, rasterize_using_lines
+from urbanstats.geometry.rasterize import (
+    exract_raster_points,
+    from_row_idx,
+    rasterize_using_lines,
+)
+from urbanstats.geometry.weighted_statistics import geometric_median_of_chunks
 from urbanstats.utils import cached_zarr_array, compute_bins
 
 GPW_RADII = [k for k in RADII if k >= 1]
@@ -245,6 +250,21 @@ def produce_histogram(density_data, population_data):
     return compute_bins(density_data, population_data, bin_size=0.1)
 
 
+def median_from_histogram(histogram, bin_size=0.1):
+    """
+    Population-weighted median density, interpolating log10 density within the bin where the
+    cumulative population passes half. Bin i spans log10 densities (i - 0.5) * bin_size to (i + 0.5) * bin_size.
+    """
+    histogram = np.asarray(histogram, dtype=np.float64)
+    if histogram.ndim == 0 or histogram.sum() == 0:
+        return np.nan
+    half = histogram.sum() / 2
+    cumulative = np.cumsum(histogram)
+    idx = np.searchsorted(cumulative, half)
+    within = (half - (cumulative[idx] - histogram[idx])) / histogram[idx]
+    return 10 ** ((idx - 0.5 + within) * bin_size)
+
+
 def compute_gpw_weighted_for_shape(
     shape, glo_pop, gridded_statistics, *, do_histograms, resolution
 ):
@@ -410,3 +430,46 @@ def compute_gpw_data_for_shapefile(
             result_hists[k].append(v)
 
     return result, result_hists
+
+
+@permacache(
+    "urbanstats/data/gpw/compute_gpw_population_median_for_shapefile_2",
+    key_function=dict(shapefile=lambda x: x.hash_key),
+)
+def compute_gpw_population_median_for_shapefile(
+    shapefile, *, max_coarse_cells_for_fine=10_000, chunk_size=5_000_000
+):
+    """
+    Uses the 3" grid only for shapes with at most max_coarse_cells_for_fine populated 30" cells,
+    beyond which the 3" grid is slow and its extra precision is small relative to the shape.
+    """
+    shapes = shapefile.load_file()
+    lats, lons = [], []
+    for shape in tqdm.tqdm(
+        shapes.geometry, desc=f"gpw population median for {shapefile.hash_key}"
+    ):
+        resolution = 120
+        rows, cols = select_points_in_shape(
+            shape, load_full_ghs_zarr(resolution), resolution=resolution
+        )
+        if len(rows) <= max_coarse_cells_for_fine:
+            resolution = 1200
+            rows, cols = select_points_in_shape(
+                shape, load_full_ghs_zarr(resolution), resolution=resolution
+            )
+        pop = load_full_ghs_zarr(resolution)[rows, cols]
+
+        def chunks(rows=rows, cols=cols, pop=pop, resolution=resolution):
+            for start in range(0, len(rows), chunk_size):
+                end = start + chunk_size
+                yield (
+                    np.zeros(len(rows[start:end]), dtype=np.int64),
+                    from_row_idx(rows[start:end] + 0.5, resolution),
+                    lon_from_col_idx(cols[start:end] + 0.5, resolution),
+                    np.nan_to_num(pop[start:end].astype(np.float64), nan=0),
+                )
+
+        [lat], [lon] = geometric_median_of_chunks(chunks, 1)
+        lats.append(lat)
+        lons.append(lon)
+    return lats, lons

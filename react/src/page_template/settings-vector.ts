@@ -498,6 +498,19 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_source_Distance from Features_Feature Datasets', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_source_Food Access_USDA Food Access Research Atlas', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_source_Weather_ERA5', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_md_0.25', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_md_0.5', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_md_1', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_md_1.609344', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_md_2', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_md_4', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_md_8', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_md_16', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_md_32', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_md_64', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_population_median_lat', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_population_median_lon', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Population Median_Best Available Population Data', coder: booleanSettingCoder }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 

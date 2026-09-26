@@ -11,6 +11,7 @@ from urbanstats.data.census_blocks import (
     racial_demographics,
 )
 from urbanstats.data.census_histogram import census_histogram
+from urbanstats.data.gpw import median_from_histogram
 from urbanstats.games.quiz_question_metadata import (
     HOUSING,
     POPULATION,
@@ -20,7 +21,10 @@ from urbanstats.games.quiz_question_metadata import (
     QuizQuestionDescriptor,
     QuizQuestionSkip,
 )
-from urbanstats.geometry.census_aggregation import aggregate_by_census_block
+from urbanstats.geometry.census_aggregation import (
+    Crosswalk,
+    aggregate_by_census_block,
+)
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import USAStatistics
 
@@ -43,6 +47,9 @@ race_names = {
 
 ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}
 density_metrics = [f"ad_{k}" for k in RADII]
+median_density_metrics = {
+    f"md_{k}": f"PW Median Density (r={format_radius(k)})" for k in RADII
+}
 
 
 class CensusForPreviousYear(USAStatistics):
@@ -66,6 +73,7 @@ class CensusForPreviousYear(USAStatistics):
         result = {}
         result.update({"population": "Population"})
         result.update(ad)
+        result.update(median_density_metrics)
         result.update(
             {
                 "sd": "AW Density",
@@ -80,6 +88,7 @@ class CensusForPreviousYear(USAStatistics):
     def unit_for_each_statistic(self):
         result = {"population": "population", "sd": "density"}
         result.update({k: "density" for k in density_metrics})
+        result.update({k: "density" for k in median_density_metrics})
         result.update({k: "percentage" for k in race_names})
         result.update(
             {
@@ -94,6 +103,9 @@ class CensusForPreviousYear(USAStatistics):
         result = {}
         result.update({"population": "population"})
         result.update({f"ad_{k}": f"density_pw_{format_radius(k)}" for k in RADII})
+        result.update(
+            {f"md_{k}": f"density_pw_median_{format_radius(k)}" for k in RADII}
+        )
         result.update(
             {
                 "sd": "density_aw",
@@ -168,6 +180,10 @@ class CensusForPreviousYear(USAStatistics):
                 hists_year[x][f"ad_{dens}"] if x in hists_year else np.nan
                 for x in shapefile_table.longname
             ]
+            statistics_table[self.ysk(f"md_{dens}")] = [
+                median_from_histogram(h)
+                for h in statistics_table[self.ysk(f"pw_density_histogram_{dens}")]
+            ]
         return statistics_table
 
     def extra_stats(self):
@@ -196,10 +212,19 @@ class CensusChange(USAStatistics):
         result.update(
             {k: ad_change[k] for k in ad_change if k != f"ad_1_change_{year}"}
         )
+        result.update(
+            {
+                f"{k}_abs_change_{year}": f"{v} Absolute Change ({year}-2020)"
+                for k, v in ad.items()
+            }
+        )
         return result
 
     def unit_for_each_statistic(self):
-        return self.same_for_each_name("percentageChange")
+        return {
+            k: "densityChange" if "_abs_change_" in k else "percentageChange"
+            for k in self.name_for_each_statistic()
+        }
 
     def varname_for_each_statistic(self):
         year = self.year()
@@ -208,6 +233,12 @@ class CensusChange(USAStatistics):
         result.update(
             {
                 f"ad_{k}_change_{year}": f"density_pw_{format_radius(k)}_change_{year}_2020"
+                for k in RADII
+            }
+        )
+        result.update(
+            {
+                f"ad_{k}_abs_change_{year}": f"density_pw_{format_radius(k)}_abs_change_{year}_2020"
                 for k in RADII
             }
         )
@@ -233,6 +264,7 @@ class CensusChange(USAStatistics):
                 for k in density_metrics
                 if k != "ad_1"
             },
+            **{f"{k}_abs_change_{year}": QuizQuestionSkip() for k in density_metrics},
         }
 
     def dependencies(self):
@@ -254,9 +286,13 @@ class CensusChange(USAStatistics):
             - existing_statistics[f"population_{year}"]
         ) / existing_statistics[f"population_{year}"]
         for k in density_metrics:
-            statistics_table[f"{k}_change_{year}"] = (
+            statistics_table[f"{k}_abs_change_{year}"] = (
                 existing_statistics[k] - existing_statistics[f"{k}_{year}"]
-            ) / existing_statistics[f"{k}_{year}"]
+            )
+            statistics_table[f"{k}_change_{year}"] = (
+                statistics_table[f"{k}_abs_change_{year}"]
+                / existing_statistics[f"{k}_{year}"]
+            )
 
         return statistics_table
 
@@ -267,7 +303,7 @@ class CensusChange(USAStatistics):
 class Census2020(CensusForPreviousYear):
     # This isn't actually used for 2020, but it is used to just quickly source the 2020 data
     # for computing other statistics
-    version = 2
+    version = 4
 
     def year(self):
         return 2020
@@ -281,7 +317,7 @@ class Census2020(CensusForPreviousYear):
     def explanation_page_for_statistic(self, k):
         if k == "population":
             return "population"
-        if k == "sd" or k.startswith("ad_"):
+        if k == "sd" or k.startswith("ad_") or k.startswith("md_"):
             return "density"
         if k in ["housing_per_pop", "vacancy", "housing_per_person"]:
             return "housing-census"
@@ -294,6 +330,19 @@ class Census2020(CensusForPreviousYear):
             k: self.explanation_page_for_statistic(k)
             for k in self.internal_statistic_names_list()
         }
+
+    def compute_statistics_dictionary_usa(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        statistics_table = super().compute_statistics_dictionary_usa(
+            shapefile=shapefile,
+            existing_statistics=existing_statistics,
+            shapefile_table=shapefile_table,
+        )
+        median = population_median_point_usa(shapefile)
+        statistics_table["population_median_lat_usa"] = median["lat"]
+        statistics_table["population_median_lon_usa"] = median["lon"]
+        return statistics_table
 
     def quiz_question_descriptors(self):
         return {
@@ -308,6 +357,7 @@ class Census2020(CensusForPreviousYear):
             ),
             # duplicate
             **{k: QuizQuestionSkip() for k in density_metrics if k != "ad_1"},
+            **{k: QuizQuestionSkip() for k in median_density_metrics},
             # no sd because it's antithetical to the purpose of this site
             "sd": QuizQuestionSkip(),
             "white": QuizQuestionDescriptor("higher % of people who are White", RACE),
@@ -336,28 +386,28 @@ class Census2020(CensusForPreviousYear):
 
 
 class Census2010(CensusForPreviousYear):
-    version = 8
+    version = 9
 
     def year(self):
         return 2010
 
 
 class Census2000(CensusForPreviousYear):
-    version = 9
+    version = 10
 
     def year(self):
         return 2000
 
 
 class CensusChange2010(CensusChange):
-    version = 1
+    version = 2
 
     def year(self):
         return 2010
 
 
 class CensusChange2000(CensusChange):
-    version = 1
+    version = 2
 
     def year(self):
         return 2000
@@ -380,6 +430,17 @@ def aggregate_basics_of_year(shapefile, year):
     t = all_densities_gpd(year).copy()
     t.columns = [f"{k}_{year}" for k in t.columns]
     return aggregate_by_census_block(year, shapefile, t[sum_keys])
+
+
+@permacache_with_remapping_pickle(
+    "urbanstats/statistics/collections/population_median_point_usa_2",
+    key_function=dict(shapefile=lambda x: x.hash_key),
+)
+def population_median_point_usa(shapefile):
+    t = all_densities_gpd(2020)
+    return Crosswalk.compute_usa(2020, shapefile).compute_geometric_median_dataframe(
+        shapefile, t.population, t.geometry.y, t.geometry.x
+    )
 
 
 def extract_state_fips_from_geoid(geoid):

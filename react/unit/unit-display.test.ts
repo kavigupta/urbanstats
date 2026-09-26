@@ -130,6 +130,32 @@ for (const [value, imperial, expected] of [
     })
 }
 
+// A coordinate is written unsigned, followed by its hemisphere
+for (const [unitType, value, expected] of [
+    ['latitude', 40.71278, '40.7128°N'],
+    ['latitude', -33.8688, '33.8688°S'],
+    ['longitude', -74.006, '74.0060°W'],
+    ['longitude', 151.2093, '151.2093°E'],
+] as const) {
+    void test(`${unitType} renders ${value} as ${expected}`, () => {
+        assert.equal(renderValue(unitType, value), expected)
+    })
+}
+
+void test('a difference of two latitudes is signed degrees', () => {
+    const { renderedValue, unitName } = writeQuantity(-1.5, { ...storedUnits.latitude, unit: { ...storedUnits.latitude.unit, times: 0 } }, {}, 'afterNumber')
+    assert.equal(`${renderedValue}${reifyString(unitName, {})}`, '-1.5000°')
+})
+
+for (const [value, expected] of [
+    [1234, '+1 234/km2'],
+    [-56, '-56/km2'],
+] as const) {
+    void test(`densityChange renders ${value} as ${expected}`, () => {
+        assert.equal(renderValue('densityChange', value), expected)
+    })
+}
+
 // A rate is written per the number of people it is conventionally counted per, whatever its size
 for (const [value, expected] of [
     [1.2e-5, '1.20/100k'],

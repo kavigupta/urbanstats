@@ -347,6 +347,13 @@ geography = Source(
     priority=1,
     variable_suffix="geometry",
 )
+population_best_available = Source(
+    "Population Median",
+    "Best Available Population Data",
+    is_default=True,
+    priority=1,
+    variable_suffix="best_available",
+)
 elevation_aster = Source(
     "Elevation", "ASTER GDEM", is_default=True, priority=1, variable_suffix="aster"
 )
@@ -414,7 +421,9 @@ metadata_source = Source(
 )
 
 
-def census_basics(col_name: str, *, change: bool) -> Dict[str, StatisticGroup]:
+def census_basics(
+    col_name: str, *, change: bool, absolute_change: bool = False
+) -> Dict[str, StatisticGroup]:
     results: Dict[Optional[int], List[MultiSource]] = {
         2020: [MultiSource({population_census: col_name}, indented_name="2020")],
     }
@@ -429,6 +438,13 @@ def census_basics(col_name: str, *, change: bool) -> Dict[str, StatisticGroup]:
                 MultiSource(
                     {population_census: f"{col_name}_change_{year}"},
                     indented_name=f"{year}-2020 Change",
+                )
+            )
+        if absolute_change:
+            results[year].append(
+                MultiSource(
+                    {population_census: f"{col_name}_abs_change_{year}"},
+                    indented_name=f"{year}-2020 Absolute Change",
                 )
             )
     group = StatisticGroup(results)
@@ -536,9 +552,14 @@ def just_2020_category_with_canada(
 
 
 def census_basics_with_ghs_and_canada(
-    col_name: str, gpw_name: Optional[str], canada_name: str, *, change: bool
+    col_name: str,
+    gpw_name: Optional[str],
+    canada_name: str,
+    *,
+    change: bool,
+    absolute_change: bool = False,
 ) -> Dict[str, StatisticGroup]:
-    result = census_basics(col_name, change=change)
+    result = census_basics(col_name, change=change, absolute_change=absolute_change)
     by_source: Dict[Source, Union[str, Tuple[str, ...]]] = {
         population_census: col_name,
         population_canada: canada_name,
@@ -573,6 +594,19 @@ def census_basics_with_ghs_and_canada(
                 },
                 f"{col_name}_change_2010",
                 indented_name="2010-2020 Change",
+            )
+        )
+    if absolute_change:
+        result[col_name].by_year[2010].append(
+            MultiSource(
+                {
+                    population_census: f"{col_name}_abs_change_2010",
+                    population_canada: canada_2011_name.replace(
+                        "_2011_", "_abs_change_2011_"
+                    ),
+                },
+                f"{col_name}_abs_change_2010",
+                indented_name="2010-2020 Absolute Change",
             )
         )
     result[col_name].group_name_statcol = col_name
@@ -665,7 +699,11 @@ statistics_tree = StatisticTree(
                     change=True,
                 ),
                 **census_basics_with_ghs_and_canada(
-                    "ad_1", "gpw_pw_density_1", "density_2021_pw_1_canada", change=True
+                    "ad_1",
+                    "gpw_pw_density_1",
+                    "density_2021_pw_1_canada",
+                    change=True,
+                    absolute_change=True,
                 ),
                 **census_basics_with_ghs_and_canada(
                     "sd", "gpw_aw_density", "sd_2021_canada", change=False
@@ -676,12 +714,18 @@ statistics_tree = StatisticTree(
                 ),
             },
         ),
-        **just_2020_category(
-            "topography",
-            "Topography",
-            "gridded_hilliness",
-            "gridded_elevation",
-            source=elevation_aster,
+        "topography": StatisticCategory(
+            name="Geography",
+            contents={
+                **just_2020(
+                    "gridded_hilliness", "gridded_elevation", source=elevation_aster
+                ),
+                **just_2020(
+                    "population_median_lat",
+                    "population_median_lon",
+                    source=population_best_available,
+                ),
+            },
         ),
         "race": StatisticCategory(
             name="Race",
@@ -1363,14 +1407,26 @@ statistics_tree = StatisticTree(
             contents={
                 k: v
                 for kvs in [
-                    census_basics_with_ghs_and_canada(
-                        f"ad_{r}",
-                        f"gpw_pw_density_{r}" if r in GPW_RADII else None,
-                        f"density_2021_pw_{r}_canada",
-                        change=True,
-                    )
-                    for r in RADII
-                    if r != 1
+                    *[
+                        census_basics_with_ghs_and_canada(
+                            f"ad_{r}",
+                            f"gpw_pw_density_{r}" if r in GPW_RADII else None,
+                            f"density_2021_pw_{r}_canada",
+                            change=True,
+                            absolute_change=True,
+                        )
+                        for r in RADII
+                        if r != 1
+                    ],
+                    *[
+                        census_basics_with_ghs_and_canada(
+                            f"md_{r}",
+                            f"gpw_pw_median_density_{r}" if r in GPW_RADII else None,
+                            f"density_2021_pw_median_{r}_canada",
+                            change=False,
+                        )
+                        for r in RADII
+                    ],
                 ]
                 for k, v in kvs.items()
             },

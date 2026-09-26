@@ -4,20 +4,24 @@ from urbanstats.compatibility.compatibility import permacache_with_remapping_pic
 from urbanstats.data.canada.canada_density import canada_shapefile_with_densities
 from urbanstats.data.census_blocks import RADII, format_radius
 from urbanstats.data.census_histogram import census_histogram_canada
+from urbanstats.data.gpw import median_from_histogram
 from urbanstats.games.quiz_question_metadata import (
     POPULATION,
     POPULATION_DENSITY,
     QuizQuestionDescriptor,
     QuizQuestionSkip,
 )
-from urbanstats.geometry.census_aggregation import aggregate_by_census_block_canada
+from urbanstats.geometry.census_aggregation import (
+    Crosswalk,
+    aggregate_by_census_block_canada,
+)
 from urbanstats.statistics.collections.census import DENSITY_EXPLANATION_PW
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import CanadaStatistics
 
 
 class CensusCanada(CanadaStatistics):
-    version = 7
+    version = 9
 
     canada_years = (2021, 2011)
 
@@ -36,6 +40,12 @@ class CensusCanada(CanadaStatistics):
                 }
             )
             result[f"sd_{year}_canada"] = f"Area-weighted Density{label} [StatCan]"
+            result.update(
+                {
+                    f"density_{year}_pw_median_{r}_canada": f"PW Median Density ({format_radius(r)}){label} [StatCan]"
+                    for r in RADII
+                }
+            )
         return result
 
     def unit_for_each_statistic(self):
@@ -64,6 +74,11 @@ class CensusCanada(CanadaStatistics):
             "density_2011_pw_32_canada": "density",
             "density_2011_pw_64_canada": "density",
             "sd_2011_canada": "density",
+            **{
+                f"density_{year}_pw_median_{r}_canada": "density"
+                for year in self.canada_years
+                for r in RADII
+            },
         }
 
     def varname_for_each_statistic(self):
@@ -79,6 +94,10 @@ class CensusCanada(CanadaStatistics):
                         for r in RADII
                     },
                     f"sd_{year}_canada": f"density_aw{var_year_suffix}",
+                    **{
+                        f"density_{year}_pw_median_{r}_canada": f"density_pw_median_{format_radius(r)}{var_year_suffix}"
+                        for r in RADII
+                    },
                 }
             )
         return result
@@ -135,6 +154,14 @@ class CensusCanada(CanadaStatistics):
                         results[f"pw_density_{year}_histogram_{r}_canada"].append(
                             histos[longname][f"canada_density_{year}_{r}"]
                         )
+            for r in RADII:
+                results[f"density_{year}_pw_median_{r}_canada"] = [
+                    median_from_histogram(h)
+                    for h in results[f"pw_density_{year}_histogram_{r}_canada"]
+                ]
+        median = compute_census_median_point(2021, shapefile)
+        results["population_median_lat_canada"] = median["lat"]
+        results["population_median_lon_canada"] = median["lon"]
         for k in self.name_for_each_statistic():
             assert k in results, f"Missing statistic {k}"
         return results
@@ -162,4 +189,17 @@ def compute_census_stats(year, shapefile):
         year,
         shapefile,
         dens[[k for k in dens if k.startswith("canada_density")] + ["population"]],
+    )
+
+
+@permacache_with_remapping_pickle(
+    "urbanstats/statistics/collections/census_canada/compute_census_median_point_2",
+    key_function=dict(shapefile=lambda x: x.hash_key),
+)
+def compute_census_median_point(year, shapefile):
+    dens = canada_shapefile_with_densities(year)
+    return Crosswalk.compute_canada(
+        year, shapefile
+    ).compute_geometric_median_dataframe(
+        shapefile, dens.population, dens.geometry.y, dens.geometry.x
     )

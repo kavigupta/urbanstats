@@ -33,7 +33,9 @@ export function inEitherSystem(units: Partial<Record<BaseUnit, NamedUnit>>): Rec
     return { metric: units, imperial: units }
 }
 
-export type Decoration = { kind: 'none' } | { kind: 'percent', party?: Party } | { kind: 'writtenIn', in: WrittenIn }
+export type Axis = 'latitude' | 'longitude'
+
+export type Decoration = { kind: 'none' } | { kind: 'percent', party?: Party } | { kind: 'writtenIn', in: WrittenIn } | { kind: 'coordinate', axis: Axis }
 
 /**
  * How many quantities were added to make this one: a level is 1, a difference of two is 0, and the
@@ -89,6 +91,8 @@ const percent: Representation = { unitName: atom('%'), scale: value => value * 1
 /** A margin is written as the size of the lead, which is given more digits the closer it is. */
 const margin: Representation = { ...percent, format: { kind: 'rounded', significantDigits: 3, minDecimals: 1, maxDecimals: 4 } }
 
+const degrees: Representation = { unitName: atom('°'), scale: value => value, format: { kind: 'fixed', places: 4 } }
+
 const partyLabels = {
     democratic: { positive: 'D', negative: 'R' },
     // outside the US the left is drawn in red, and the right in blue
@@ -101,6 +105,11 @@ const partyHues = {
     left: { positive: 'red', negative: 'blue' },
 } as const
 /* eslint-enable no-restricted-syntax */
+
+const hemispheres = {
+    latitude: { positive: 'N', negative: 'S' },
+    longitude: { positive: 'E', negative: 'W' },
+} as const
 
 /** One of the units a quantity can be written in. An acre is one, and is not a base unit. */
 export interface NamedUnit {
@@ -398,6 +407,9 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: UnitSettin
     if (unit.decoration.kind === 'percent') {
         return unit.decoration.party?.kind === 'lead' ? margin : percent
     }
+    if (unit.decoration.kind === 'coordinate') {
+        return degrees
+    }
     const convention = conventions[renderAsKey(unit.dimensions)]
     // a statistic written in units of its own fixes them, leaving the search no choice to make
     const writtenIn = unit.decoration.kind === 'writtenIn' ? unit.decoration.in : undefined
@@ -417,9 +429,20 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: UnitSettin
     return { scale: value => scale(value - zero), unitName, format, prefix: convention?.prefix }
 }
 
-function getParty(partySystem: PartySystem, value: number): { label: string, hue: Hue } {
+/**
+ * The label that carries the sign of a lead, written before the number as in D+4.5, or of a
+ * coordinate, written after its unit as in 40.7128°N. A difference of two coordinates is signed instead.
+ */
+function signLabel(unit: Unit, value: number): { before?: string, after?: string, hue?: Hue } | undefined {
     const side = value > 0 ? 'positive' : 'negative'
-    return { label: partyLabels[partySystem][side], hue: partyHues[partySystem][side] }
+    if (unit.decoration.kind === 'percent' && unit.decoration.party?.kind === 'lead') {
+        const system = unit.decoration.party.system
+        return { before: `${partyLabels[system][side]}+`, hue: partyHues[system][side] }
+    }
+    if (unit.decoration.kind === 'coordinate' && unit.times !== 0) {
+        return { after: hemispheres[unit.decoration.axis][side] }
+    }
+    return undefined
 }
 
 function hueFor(unit: Unit): Hue | undefined {
@@ -446,20 +469,16 @@ export function writeQuantity(value: number, stored: StoredUnit, settings: UnitS
     const { unit } = stored
     let inBaseUnits = value * stored.toBaseUnits
     const representation = representationFor(inBaseUnits, unit, settings, placement)
-    const leads = unit.decoration.kind === 'percent' && unit.decoration.party?.kind === 'lead'
-        ? unit.decoration.party.system
-        : undefined
-    let party = undefined
-    if (leads !== undefined) {
-        party = getParty(leads, inBaseUnits)
+    const signed = signLabel(unit, inBaseUnits)
+    if (signed !== undefined) {
         inBaseUnits = Math.abs(inBaseUnits)
     }
     // a lead carries a plus with its party already, and a difference of two leads is not D++4.5
-    const explicitSign = party === undefined && unit.times === 0 && inBaseUnits >= 0 ? '+' : ''
+    const explicitSign = signed === undefined && unit.times === 0 && inBaseUnits >= 0 ? '+' : ''
     const written = formatNumber(representation.scale(inBaseUnits), representation.format)
     return {
-        renderedValue: `${party === undefined ? '' : `${party.label}+`}${explicitSign}${representation.prefix ?? ''}${written}`,
-        unitName: representation.unitName,
-        hue: party?.hue ?? hueFor(unit),
+        renderedValue: `${signed?.before ?? ''}${explicitSign}${representation.prefix ?? ''}${written}`,
+        unitName: signed?.after === undefined ? representation.unitName : merged([...representation.unitName, ...atom(signed.after)]),
+        hue: signed?.hue ?? hueFor(unit),
     }
 }
