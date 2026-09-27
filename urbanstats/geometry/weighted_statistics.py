@@ -58,7 +58,7 @@ def geometric_median_of_chunks(
     # the mean direction is undefined when the points cancel out, so start at one of them
     degenerate = has_weight & (norm < 1e-12)
     estimate[degenerate] = some_point[degenerate]
-    norm[degenerate] = 1
+    norm = np.where(degenerate, 1, norm)
     estimate[has_weight] /= norm[has_weight, None]
 
     active = has_weight.copy()
@@ -72,13 +72,14 @@ def geometric_median_of_chunks(
             in_active = active[group]
             g, p, w = group[in_active], points[in_active], weights[in_active]
             x = estimate[g]
-            sin_d = np.linalg.norm(np.cross(x, p), axis=1)
             cos_d = np.einsum("ij,ij->i", x, p)
+            tangent = p - cos_d[:, None] * x
+            sin_d = np.linalg.norm(tangent, axis=1)
             d = np.arctan2(sin_d, cos_d)
             # a point at the estimate pulls in no direction, but still holds the estimate in place
             far = sin_d > 1e-15
             direction = np.zeros_like(p)
-            direction[far] = (p[far] - cos_d[far, None] * x[far]) / sin_d[far, None]
+            direction[far] = tangent[far] / sin_d[far, None]
             numerator += _sum_by_group(g, direction * w[:, None], num_groups)
             denominator += np.bincount(
                 g, weights=w / np.maximum(d, 1e-15), minlength=num_groups

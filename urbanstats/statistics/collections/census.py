@@ -21,10 +21,7 @@ from urbanstats.games.quiz_question_metadata import (
     QuizQuestionDescriptor,
     QuizQuestionSkip,
 )
-from urbanstats.geometry.census_aggregation import (
-    Crosswalk,
-    aggregate_by_census_block,
-)
+from urbanstats.geometry.census_aggregation import Crosswalk, aggregate_by_census_block
 from urbanstats.statistics.extra_statistics import HistogramSpec
 from urbanstats.statistics.statistic_collection import USAStatistics
 

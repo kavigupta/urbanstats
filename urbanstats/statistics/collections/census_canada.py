@@ -198,8 +198,6 @@ def compute_census_stats(year, shapefile):
 )
 def compute_census_median_point(year, shapefile):
     dens = canada_shapefile_with_densities(year)
-    return Crosswalk.compute_canada(
-        year, shapefile
-    ).compute_geometric_median_dataframe(
+    return Crosswalk.compute_canada(year, shapefile).compute_geometric_median_dataframe(
         shapefile, dens.population, dens.geometry.y, dens.geometry.x
     )
