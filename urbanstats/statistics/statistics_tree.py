@@ -678,7 +678,7 @@ statistics_tree = StatisticTree(
         ),
         **just_2020_category(
             "topography",
-            "Topography",
+            "Geography",
             "gridded_hilliness",
             "gridded_elevation",
             source=elevation_aster,
