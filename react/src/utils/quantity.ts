@@ -417,9 +417,14 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: UnitSettin
     return { scale: value => scale(value - zero), unitName, format, prefix: convention?.prefix }
 }
 
-function getParty(partySystem: PartySystem, value: number): { label: string, hue: Hue } {
+/** The label that carries the sign of a lead, written before the number as in D+4.5. */
+function signLabel(unit: Unit, value: number): { before: string, hue: Hue } | undefined {
     const side = value > 0 ? 'positive' : 'negative'
-    return { label: partyLabels[partySystem][side], hue: partyHues[partySystem][side] }
+    if (unit.decoration.kind === 'percent' && unit.decoration.party?.kind === 'lead') {
+        const system = unit.decoration.party.system
+        return { before: `${partyLabels[system][side]}+`, hue: partyHues[system][side] }
+    }
+    return undefined
 }
 
 function hueFor(unit: Unit): Hue | undefined {
@@ -446,20 +451,16 @@ export function writeQuantity(value: number, stored: StoredUnit, settings: UnitS
     const { unit } = stored
     let inBaseUnits = value * stored.toBaseUnits
     const representation = representationFor(inBaseUnits, unit, settings, placement)
-    const leads = unit.decoration.kind === 'percent' && unit.decoration.party?.kind === 'lead'
-        ? unit.decoration.party.system
-        : undefined
-    let party = undefined
-    if (leads !== undefined) {
-        party = getParty(leads, inBaseUnits)
+    const signed = signLabel(unit, inBaseUnits)
+    if (signed !== undefined) {
         inBaseUnits = Math.abs(inBaseUnits)
     }
     // a lead carries a plus with its party already, and a difference of two leads is not D++4.5
-    const explicitSign = party === undefined && unit.times === 0 && inBaseUnits >= 0 ? '+' : ''
+    const explicitSign = signed === undefined && unit.times === 0 && inBaseUnits >= 0 ? '+' : ''
     const written = formatNumber(representation.scale(inBaseUnits), representation.format)
     return {
-        renderedValue: `${party === undefined ? '' : `${party.label}+`}${explicitSign}${representation.prefix ?? ''}${written}`,
+        renderedValue: `${signed?.before ?? ''}${explicitSign}${representation.prefix ?? ''}${written}`,
         unitName: representation.unitName,
-        hue: party?.hue ?? hueFor(unit),
+        hue: signed?.hue ?? hueFor(unit),
     }
 }

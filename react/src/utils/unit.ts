@@ -76,6 +76,11 @@ function percentage(party: Party | undefined, difference = false): StoredUnit {
 
 const inParty = (hue: Hue): Party => ({ kind: 'color', hue })
 
+const density = dimensionfull({ person: 1, m: -2 }, 1e-6, {
+    units: { metric: { person: people, m: kilometer }, imperial: { person: people, m: mile } },
+    style: { kind: 'rounded', significantDigits: 2 },
+})
+
 /* eslint-disable no-restricted-syntax -- these name the theme's hues, they are not css colors */
 export const storedUnits = {
     percentage: percentage(undefined),
@@ -112,10 +117,7 @@ export const storedUnits = {
         units: inEitherSystem({ fatality: fatalities, person: hundredThousandPeople }),
         style: { kind: 'fixed', places: 2 },
     }),
-    density: dimensionfull({ person: 1, m: -2 }, 1e-6, {
-        units: { metric: { person: people, m: kilometer }, imperial: { person: people, m: mile } },
-        style: { kind: 'rounded', significantDigits: 2 },
-    }),
+    density,
     contaminantLevel: dimensionfull({ g: 1, m: -3 }, 1e-6, {
         units: inEitherSystem({ g: microgram, m: meter }),
         style: { kind: 'fixed', places: 2 },
