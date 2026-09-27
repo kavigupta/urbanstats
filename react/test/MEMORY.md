@@ -35,7 +35,7 @@ grep -n 'bytes:' /tmp/job.log
 ```
 
 Worth pulling the same line from a few recent `main` runs before treating a number as a
-regression: the ceilings are tight, and `memory_mapper_leak` has sat at 64.5MB under a 65MB
+regression: the ceilings are tight, and `memory_mapper_leak` has sat at 65.3MB under a 66MB
 limit.
 
 To tell a leak from a page that is simply bigger now, delete the navigation the test does
