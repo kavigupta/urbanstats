@@ -278,6 +278,10 @@ for (const [unitType, value, inequality, expected] of [
     ['democraticMargin', -0.5, 'leq', '\u2265'],
     ['democraticMargin', -0.5, 'geq', '\u2264'],
     ['leftMargin', -0.5, 'geq', '\u2264'],
+    ['latitude', 40.7, 'leq', '\u2264'],
+    ['latitude', -33.9, 'leq', '\u2265'],
+    ['longitude', -124, 'leq', '\u2265'],
+    ['longitude', -124, 'geq', '\u2264'],
 ] as const) {
     void test(`${unitType} renders a ${inequality} at ${value} as ${expected}`, () => {
         assert.equal(renderInequality(value, unitTypeToStoredUnit(unitType), inequality), expected)

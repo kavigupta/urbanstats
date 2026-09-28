@@ -433,7 +433,7 @@ function representationFor(inBaseUnits: number, unit: Unit, settings: UnitSettin
  * The label that carries the sign of a lead, written before the number as in D+4.5, or of a
  * coordinate, written after its unit as in 40.7128°N. A difference of two coordinates is signed instead.
  */
-function signLabel(unit: Unit, value: number): { before?: string, after?: string, hue?: Hue } | undefined {
+export function signLabel(unit: Unit, value: number): { before?: string, after?: string, hue?: Hue } | undefined {
     const side = value > 0 ? 'positive' : 'negative'
     if (unit.decoration.kind === 'percent' && unit.decoration.party?.kind === 'lead') {
         const system = unit.decoration.party.system
