@@ -248,7 +248,8 @@ def produce_histogram(density_data, population_data):
 def median_from_histogram(histogram, bin_size=0.1):
     """
     Population-weighted median density, interpolating log10 density within the bin where the
-    cumulative population passes half. Bin i spans log10 densities (i - 0.5) * bin_size to (i + 0.5) * bin_size.
+    cumulative population passes half. Bin i spans log10 densities (i - 0.5) * bin_size to (i + 0.5) * bin_size,
+    except bin 0, which holds every lower density too, so a median there is unknown and NaN.
     """
     histogram = np.asarray(histogram, dtype=np.float64)
     if histogram.ndim == 0 or histogram.sum() == 0:
@@ -256,6 +257,8 @@ def median_from_histogram(histogram, bin_size=0.1):
     half = histogram.sum() / 2
     cumulative = np.cumsum(histogram)
     idx = np.searchsorted(cumulative, half)
+    if idx == 0:
+        return np.nan
     within = (half - (cumulative[idx] - histogram[idx])) / histogram[idx]
     return 10 ** ((idx - 0.5 + within) * bin_size)
 
