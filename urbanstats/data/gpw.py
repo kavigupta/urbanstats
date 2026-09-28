@@ -245,6 +245,21 @@ def produce_histogram(density_data, population_data):
     return compute_bins(density_data, population_data, bin_size=0.1)
 
 
+def median_from_histogram(histogram, bin_size=0.1):
+    """
+    Population-weighted median density, interpolating log10 density within the bin where the
+    cumulative population passes half. Bin i spans log10 densities (i - 0.5) * bin_size to (i + 0.5) * bin_size.
+    """
+    histogram = np.asarray(histogram, dtype=np.float64)
+    if histogram.ndim == 0 or histogram.sum() == 0:
+        return np.nan
+    half = histogram.sum() / 2
+    cumulative = np.cumsum(histogram)
+    idx = np.searchsorted(cumulative, half)
+    within = (half - (cumulative[idx] - histogram[idx])) / histogram[idx]
+    return 10 ** ((idx - 0.5 + within) * bin_size)
+
+
 def compute_gpw_weighted_for_shape(
     shape, glo_pop, gridded_statistics, *, do_histograms, resolution
 ):
