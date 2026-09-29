@@ -543,6 +543,6 @@ Density medians and population centers (#2523)
 125     consolidated
 178     quiz_sampling_info
 691     shape
-925     order
-1562    data
-3613    total
+850     order
+1488    data
+3462    total
