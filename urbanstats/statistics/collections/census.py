@@ -44,9 +44,7 @@ race_names = {
 
 ad = {f"ad_{k}": f"PW Density (r={format_radius(k)})" for k in RADII}
 density_metrics = [f"ad_{k}" for k in RADII]
-median_density_metrics = {
-    f"md_{k}": f"PW Median Density (r={format_radius(k)})" for k in RADII
-}
+median_density_metrics = {"md_1": "PW Median Density (r=1km)"}
 
 
 class CensusForPreviousYear(USAStatistics):
@@ -100,9 +98,7 @@ class CensusForPreviousYear(USAStatistics):
         result = {}
         result.update({"population": "population"})
         result.update({f"ad_{k}": f"density_pw_{format_radius(k)}" for k in RADII})
-        result.update(
-            {f"md_{k}": f"density_pw_median_{format_radius(k)}" for k in RADII}
-        )
+        result.update({"md_1": "density_pw_median_1km"})
         result.update(
             {
                 "sd": "density_aw",
@@ -177,10 +173,10 @@ class CensusForPreviousYear(USAStatistics):
                 hists_year[x][f"ad_{dens}"] if x in hists_year else np.nan
                 for x in shapefile_table.longname
             ]
-            statistics_table[self.ysk(f"md_{dens}")] = [
-                median_from_histogram(h)
-                for h in statistics_table[self.ysk(f"pw_density_histogram_{dens}")]
-            ]
+        statistics_table[self.ysk("md_1")] = [
+            median_from_histogram(h)
+            for h in statistics_table[self.ysk("pw_density_histogram_1")]
+        ]
         return statistics_table
 
     def extra_stats(self):
@@ -300,7 +296,7 @@ class CensusChange(USAStatistics):
 class Census2020(CensusForPreviousYear):
     # This isn't actually used for 2020, but it is used to just quickly source the 2020 data
     # for computing other statistics
-    version = 4
+    version = 5
 
     def year(self):
         return 2020
@@ -383,14 +379,14 @@ class Census2020(CensusForPreviousYear):
 
 
 class Census2010(CensusForPreviousYear):
-    version = 9
+    version = 10
 
     def year(self):
         return 2010
 
 
 class Census2000(CensusForPreviousYear):
-    version = 10
+    version = 11
 
     def year(self):
         return 2000

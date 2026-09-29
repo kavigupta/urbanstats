@@ -17,7 +17,7 @@ from urbanstats.statistics.statistic_collection import InternationalStatistics
 
 
 class GPWStatistics(InternationalStatistics):
-    version = 5
+    version = 6
 
     def name_for_each_statistic(self):
         return {
@@ -27,10 +27,7 @@ class GPWStatistics(InternationalStatistics):
                 for k in GPW_RADII
             },
             "gpw_aw_density": "AW Density [GHS-POP]",
-            **{
-                f"gpw_pw_median_density_{k}": f"PW Median Density (r={format_radius(k)}) [GHS-POP]"
-                for k in GPW_RADII
-            },
+            "gpw_pw_median_density_1": "PW Median Density (r=1km) [GHS-POP]",
         }
 
     def unit_for_each_statistic(self):
@@ -45,7 +42,7 @@ class GPWStatistics(InternationalStatistics):
             "gpw_pw_density_32": "density",
             "gpw_pw_density_64": "density",
             "gpw_aw_density": "density",
-            **{f"gpw_pw_median_density_{k}": "density" for k in GPW_RADII},
+            "gpw_pw_median_density_1": "density",
         }
 
     def varname_for_each_statistic(self):
@@ -56,10 +53,7 @@ class GPWStatistics(InternationalStatistics):
                 for k in GPW_RADII
             },
             "gpw_aw_density": "density_aw",
-            **{
-                f"gpw_pw_median_density_{k}": f"density_pw_median_{format_radius(k)}"
-                for k in GPW_RADII
-            },
+            "gpw_pw_median_density_1": "density_pw_median_1km",
         }
 
     def explanation_page_for_each_statistic(self):
@@ -80,9 +74,7 @@ class GPWStatistics(InternationalStatistics):
                 *[f"gpw_pw_density_{k}" for k in GPW_RADII if k not in (4,)]
             ),
             "gpw_aw_density": QuizQuestionSkip(),
-            **QuizQuestionSkip.several(
-                *[f"gpw_pw_median_density_{k}" for k in GPW_RADII]
-            ),
+            "gpw_pw_median_density_1": QuizQuestionSkip(),
         }
 
     def dependencies(self):
@@ -101,11 +93,10 @@ class GPWStatistics(InternationalStatistics):
             statistics_table[k] = rk
         for k, hk in hists.items():
             statistics_table[k] = hk
-        for k in GPW_RADII:
-            statistics_table[f"gpw_pw_median_density_{k}"] = [
-                median_from_histogram(h)
-                for h in statistics_table[f"gpw_pw_density_histogram_{k}"]
-            ]
+        statistics_table["gpw_pw_median_density_1"] = [
+            median_from_histogram(h)
+            for h in statistics_table["gpw_pw_density_histogram_1"]
+        ]
         (
             statistics_table["population_median_lat_gpw"],
             statistics_table["population_median_lon_gpw"],

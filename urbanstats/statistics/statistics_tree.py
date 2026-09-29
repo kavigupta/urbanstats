@@ -1418,15 +1418,12 @@ statistics_tree = StatisticTree(
                         for r in RADII
                         if r != 1
                     ],
-                    *[
-                        census_basics_with_ghs_and_canada(
-                            f"md_{r}",
-                            f"gpw_pw_median_density_{r}" if r in GPW_RADII else None,
-                            f"density_2021_pw_median_{r}_canada",
-                            change=False,
-                        )
-                        for r in RADII
-                    ],
+                    census_basics_with_ghs_and_canada(
+                        "md_1",
+                        "gpw_pw_median_density_1",
+                        "density_2021_pw_median_1_canada",
+                        change=False,
+                    ),
                 ]
                 for k, v in kvs.items()
             },

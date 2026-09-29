@@ -21,7 +21,7 @@ from urbanstats.statistics.statistic_collection import CanadaStatistics
 
 
 class CensusCanada(CanadaStatistics):
-    version = 9
+    version = 10
 
     canada_years = (2021, 2011)
 
@@ -40,12 +40,9 @@ class CensusCanada(CanadaStatistics):
                 }
             )
             result[f"sd_{year}_canada"] = f"Area-weighted Density{label} [StatCan]"
-            result.update(
-                {
-                    f"density_{year}_pw_median_{r}_canada": f"PW Median Density ({format_radius(r)}){label} [StatCan]"
-                    for r in RADII
-                }
-            )
+            result[
+                f"density_{year}_pw_median_1_canada"
+            ] = f"PW Median Density (1km){label} [StatCan]"
         return result
 
     def unit_for_each_statistic(self):
@@ -74,11 +71,8 @@ class CensusCanada(CanadaStatistics):
             "density_2011_pw_32_canada": "density",
             "density_2011_pw_64_canada": "density",
             "sd_2011_canada": "density",
-            **{
-                f"density_{year}_pw_median_{r}_canada": "density"
-                for year in self.canada_years
-                for r in RADII
-            },
+            "density_2021_pw_median_1_canada": "density",
+            "density_2011_pw_median_1_canada": "density",
         }
 
     def varname_for_each_statistic(self):
@@ -94,10 +88,7 @@ class CensusCanada(CanadaStatistics):
                         for r in RADII
                     },
                     f"sd_{year}_canada": f"density_aw{var_year_suffix}",
-                    **{
-                        f"density_{year}_pw_median_{r}_canada": f"density_pw_median_{format_radius(r)}{var_year_suffix}"
-                        for r in RADII
-                    },
+                    f"density_{year}_pw_median_1_canada": f"density_pw_median_1km{var_year_suffix}",
                 }
             )
         return result
@@ -154,11 +145,10 @@ class CensusCanada(CanadaStatistics):
                         results[f"pw_density_{year}_histogram_{r}_canada"].append(
                             histos[longname][f"canada_density_{year}_{r}"]
                         )
-            for r in RADII:
-                results[f"density_{year}_pw_median_{r}_canada"] = [
-                    median_from_histogram(h)
-                    for h in results[f"pw_density_{year}_histogram_{r}_canada"]
-                ]
+            results[f"density_{year}_pw_median_1_canada"] = [
+                median_from_histogram(h)
+                for h in results[f"pw_density_{year}_histogram_1_canada"]
+            ]
         median = compute_census_median_point(2021, shapefile)
         results["population_median_lat_canada"] = median["lat"]
         results["population_median_lon_canada"] = median["lon"]

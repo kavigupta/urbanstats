@@ -5,16 +5,16 @@ const value: Record<string, number[]> = {
         105,
         105,
         105,
-        64
+        12
     ],
     "20M Person Circle": [
         205,
         205,
-        179
+        127
     ],
     "50M Person Circle": [
         492,
-        97
+        45
     ],
     "5M Person Circle": [
         54,
@@ -26,17 +26,11 @@ const value: Record<string, number[]> = {
         54,
         54,
         54,
-        54,
-        49
-    ],
-    "CA CMA": [
-        537,
-        52
+        51
     ],
     "CA Census Division": [
         285,
-        285,
-        19
+        252
     ],
     "CA Census Subdivision": [
         18,
@@ -68,10 +62,7 @@ const value: Record<string, number[]> = {
         18,
         18,
         18,
-        18,
-        18,
-        18,
-        13
+        15
     ],
     "CA Population Center": [
         82,
@@ -80,13 +71,12 @@ const value: Record<string, number[]> = {
         82,
         82,
         82,
-        82,
-        15
+        45
     ],
     "CA Riding": [
         247,
         247,
-        95
+        43
     ],
     "CCD": [
         3,
@@ -267,29 +257,11 @@ const value: Record<string, number[]> = {
         3,
         3,
         3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        1
+        3
     ],
     "CSA": [
         467,
-        122
+        70
     ],
     "City": [
         3,
@@ -470,118 +442,97 @@ const value: Record<string, number[]> = {
         3,
         3,
         3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        1
+        3
     ],
     "Congressional District": [
         192,
         192,
-        192,
-        13
+        153
     ],
     "Congressional District (1800s)": [
         433,
-        156
+        104
     ],
     "Congressional District (1810s)": [
         328,
-        261
+        209
     ],
     "Congressional District (1820s)": [
         344,
-        245
+        193
     ],
     "Congressional District (1830s)": [
         288,
-        288,
-        13
+        249
     ],
     "Congressional District (1840s)": [
         230,
         230,
-        129
+        77
     ],
     "Congressional District (1850s)": [
         241,
         241,
-        107
+        55
     ],
     "Congressional District (1860s)": [
         295,
-        294
+        242
     ],
     "Congressional District (1870s)": [
         153,
         153,
         153,
-        130
+        78
     ],
     "Congressional District (1880s)": [
         140,
         140,
         140,
-        140,
-        29
+        117
     ],
     "Congressional District (1890s)": [
         169,
         169,
         169,
-        82
+        30
     ],
     "Congressional District (1900s)": [
         168,
         168,
         168,
-        85
+        33
     ],
     "Congressional District (1910s)": [
         124,
         124,
         124,
         124,
-        93
+        41
     ],
     "Congressional District (1920s)": [
         169,
         169,
         169,
-        82
+        30
     ],
     "Congressional District (1930s)": [
         168,
         168,
         168,
-        85
+        33
     ],
     "Congressional District (1940s)": [
         149,
         149,
         149,
-        142
+        90
     ],
     "Congressional District (1950s)": [
         162,
         162,
         162,
-        103
+        51
     ],
     "Congressional District (1960s)": [
         82,
@@ -590,52 +541,48 @@ const value: Record<string, number[]> = {
         82,
         82,
         82,
-        82,
-        15
+        45
     ],
     "Congressional District (1970s)": [
         152,
         152,
         152,
-        133
+        81
     ],
     "Congressional District (1980s)": [
         139,
         139,
         139,
-        139,
-        33
+        120
     ],
     "Congressional District (1990s)": [
         122,
         122,
         122,
         122,
-        101
+        49
     ],
     "Congressional District (2000s)": [
         154,
         154,
         154,
-        127
+        75
     ],
     "Congressional District (2010s)": [
         161,
         161,
         161,
-        106
+        54
     ],
     "Congressional District (2020s)": [
         407,
-        182
+        130
     ],
     "Country": [
         418,
-        171
+        119
     ],
     "County": [
-        26,
-        26,
         26,
         26,
         26,
@@ -682,14 +629,12 @@ const value: Record<string, number[]> = {
         23,
         23,
         23,
-        23,
-        23,
-        14
+        8
     ],
     "Hospital Referral Region": [
         263,
         263,
-        63
+        11
     ],
     "Hospital Service Area": [
         25,
@@ -713,9 +658,7 @@ const value: Record<string, number[]> = {
         25,
         25,
         25,
-        25,
-        25,
-        14
+        12
     ],
     "MSA": [
         88,
@@ -724,11 +667,11 @@ const value: Record<string, number[]> = {
         88,
         88,
         88,
-        61
+        9
     ],
     "Media Market": [
         379,
-        210
+        158
     ],
     "Metropolitan Cluster": [
         3,
@@ -909,41 +852,21 @@ const value: Record<string, number[]> = {
         3,
         3,
         3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        1
+        3
     ],
     "Native Area": [
         223,
         223,
-        143
+        91
     ],
     "Native Statistical Area": [
         290,
-        290,
-        9
+        247
     ],
     "Native Subdivision": [
         181,
         181,
-        181,
-        46
+        175
     ],
     "Neighborhood": [
         6,
@@ -1035,16 +958,7 @@ const value: Record<string, number[]> = {
         6,
         6,
         6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        6,
-        1
+        3
     ],
     "School District": [
         7,
@@ -1123,15 +1037,7 @@ const value: Record<string, number[]> = {
         7,
         7,
         7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        7,
-        1
+        5
     ],
     "State House District": [
         18,
@@ -1163,10 +1069,7 @@ const value: Record<string, number[]> = {
         18,
         18,
         18,
-        18,
-        18,
-        18,
-        13
+        15
     ],
     "State Senate District": [
         43,
@@ -1181,8 +1084,7 @@ const value: Record<string, number[]> = {
         43,
         43,
         43,
-        43,
-        30
+        21
     ],
     "Subnational Region": [
         25,
@@ -1206,9 +1108,7 @@ const value: Record<string, number[]> = {
         25,
         25,
         25,
-        25,
-        25,
-        14
+        12
     ],
     "Urban Area": [
         32,
@@ -1227,9 +1127,7 @@ const value: Record<string, number[]> = {
         32,
         32,
         32,
-        32,
-        32,
-        13
+        25
     ],
     "Urban Center": [
         9,
@@ -1291,13 +1189,7 @@ const value: Record<string, number[]> = {
         9,
         9,
         9,
-        9,
-        9,
-        9,
-        9,
-        9,
-        9,
-        4
+        6
     ],
     "ZIP": [
         3,
@@ -1478,25 +1370,7 @@ const value: Record<string, number[]> = {
         3,
         3,
         3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        3,
-        1
+        3
     ]
 }
 export default value
