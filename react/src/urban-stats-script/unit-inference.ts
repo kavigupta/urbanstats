@@ -116,7 +116,13 @@ function fits(want: StoredUnit, got: StoredUnit): boolean {
     // percentages are annotated.
     const justOneIsAShare = [want, got].some(({ unit }) => unit.decoration.kind === 'percent')
         && want.unit.decoration.kind !== got.unit.decoration.kind
-    return sameDimensions(want, got) && sameSize(want.toBaseUnits, got.toBaseUnits) && !justOneIsAShare
+    return sameDimensions(want, got) && sameSize(want.toBaseUnits, got.toBaseUnits) && !justOneIsAShare && sameCoordinate(want, got)
+}
+
+/** A latitude is not a longitude, nor a plain number of degrees. */
+function sameCoordinate(want: StoredUnit, got: StoredUnit): boolean {
+    const [wantAxis, gotAxis] = [want, got].map(({ unit }) => unit.decoration.kind === 'coordinate' ? unit.decoration.axis : undefined)
+    return wantAxis === gotAxis
 }
 
 function narrowed(inference: InferenceResult, wanted: UnitExpectation): InferenceResult {

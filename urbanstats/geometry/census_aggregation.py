@@ -8,6 +8,7 @@ from permacache import permacache
 
 from urbanstats.data.canada.canada_blocks import load_canada_db_shapefile
 from urbanstats.data.census_blocks import all_densities_gpd
+from urbanstats.geometry.weighted_statistics import geometric_median_by_group
 
 
 @dataclass
@@ -66,6 +67,17 @@ class Crosswalk:
                 ]
             )
         return pd.DataFrame(sum_array, columns=values.columns, index=index)
+
+    def compute_geometric_median_dataframe(self, shapefile, population, lat, lon):
+        index = shapefile.load_file().index
+        median_lat, median_lon = geometric_median_by_group(
+            self.index_shapefile,
+            np.asarray(lat)[self.index_block],
+            np.asarray(lon)[self.index_block],
+            np.asarray(population, dtype=np.float64)[self.index_block],
+            len(index),
+        )
+        return pd.DataFrame({"lat": median_lat, "lon": median_lon}, index=index)
 
 
 @permacache(

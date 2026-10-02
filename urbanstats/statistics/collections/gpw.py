@@ -1,5 +1,10 @@
 from urbanstats.data.census_blocks import format_radius
-from urbanstats.data.gpw import GPW_RADII, compute_gpw_data_for_shapefile
+from urbanstats.data.gpw import (
+    GPW_RADII,
+    compute_gpw_data_for_shapefile,
+    compute_gpw_population_median_for_shapefile,
+    median_from_histogram,
+)
 from urbanstats.games.quiz_question_metadata import (
     POPULATION,
     POPULATION_DENSITY,
@@ -12,7 +17,7 @@ from urbanstats.statistics.statistic_collection import InternationalStatistics
 
 
 class GPWStatistics(InternationalStatistics):
-    version = 3
+    version = 6
 
     def name_for_each_statistic(self):
         return {
@@ -22,6 +27,7 @@ class GPWStatistics(InternationalStatistics):
                 for k in GPW_RADII
             },
             "gpw_aw_density": "AW Density [GHS-POP]",
+            "gpw_pw_median_density_1": "PW Median Density (r=1km) [GHS-POP]",
         }
 
     def unit_for_each_statistic(self):
@@ -36,6 +42,7 @@ class GPWStatistics(InternationalStatistics):
             "gpw_pw_density_32": "density",
             "gpw_pw_density_64": "density",
             "gpw_aw_density": "density",
+            "gpw_pw_median_density_1": "density",
         }
 
     def varname_for_each_statistic(self):
@@ -46,6 +53,7 @@ class GPWStatistics(InternationalStatistics):
                 for k in GPW_RADII
             },
             "gpw_aw_density": "density_aw",
+            "gpw_pw_median_density_1": "density_pw_median_1km",
         }
 
     def explanation_page_for_each_statistic(self):
@@ -66,6 +74,7 @@ class GPWStatistics(InternationalStatistics):
                 *[f"gpw_pw_density_{k}" for k in GPW_RADII if k not in (4,)]
             ),
             "gpw_aw_density": QuizQuestionSkip(),
+            "gpw_pw_median_density_1": QuizQuestionSkip(),
         }
 
     def dependencies(self):
@@ -84,6 +93,14 @@ class GPWStatistics(InternationalStatistics):
             statistics_table[k] = rk
         for k, hk in hists.items():
             statistics_table[k] = hk
+        statistics_table["gpw_pw_median_density_1"] = [
+            median_from_histogram(h)
+            for h in statistics_table["gpw_pw_density_histogram_1"]
+        ]
+        (
+            statistics_table["population_median_lat_gpw"],
+            statistics_table["population_median_lon_gpw"],
+        ) = compute_gpw_population_median_for_shapefile(shapefile)
 
         statistics_table["gpw_aw_density"] = (
             statistics_table["gpw_population"] / existing_statistics["area"]

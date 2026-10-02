@@ -184,6 +184,18 @@ export function DataCreditPanel(): ReactNode {
                                     <a href="https://kavigupta.org/2021/09/26/Youre-calculating-population-density-incorrectly/">this page</a>
                                     .
                                 </p>
+                                <p>
+                                    The PW Median density is the density such that half of the region&apos;s population lives
+                                    in an area with a higher density and half at a lower one.
+                                </p>
+                            </div>
+                            <NRef name="population-median">Population Median</NRef>
+                            <div>
+                                <p>
+                                    The population median is the point with the smallest average great-circle distance to
+                                    the region&apos;s residents. It is computed from 2020 US Census blocks or 2021 Canada dissemination
+                                    blocks where available, and GHS-POP grid cells when not.
+                                </p>
                             </div>
                             <NRef name="race">Race</NRef>
                             <div>

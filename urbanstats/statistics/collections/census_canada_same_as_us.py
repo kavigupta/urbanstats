@@ -440,14 +440,14 @@ class CensusCanadaHouseholdSize(CensusCanadaSameAsUS):
 class CensusCanadaChange2011(CensusCanadaSameAsUS):
     """Computes 2011-2021 census changes for Canada, aligned with US 2010-2020 changes."""
 
-    version = 3
+    version = 4
 
     def remap_name(self, us_internal_name):
         if us_internal_name.startswith("population"):
             return f"{us_internal_name.replace('2010', '2011')}_canada"
-        match = re.match(r"ad_(.*)_change_2010", us_internal_name)
+        match = re.fullmatch(r"ad_(.*?)(_abs)?_change_2010", us_internal_name)
         assert match, f"Unexpected statistic name: {us_internal_name}"
-        return f"density_change_2011_pw_{match.group(1)}_canada"
+        return f"density{match.group(2) or ''}_change_2011_pw_{match.group(1)}_canada"
 
     def census_tables(self):
         raise NotImplementedError
@@ -475,10 +475,14 @@ class CensusCanadaChange2011(CensusCanadaSameAsUS):
             - existing_statistics["population_2011_canada"]
         ) / existing_statistics["population_2011_canada"]
         for r in RADII:
-            results[f"density_change_2011_pw_{r}_canada"] = (
+            results[f"density_abs_change_2011_pw_{r}_canada"] = (
                 existing_statistics[f"density_2021_pw_{r}_canada"]
                 - existing_statistics[f"density_2011_pw_{r}_canada"]
-            ) / existing_statistics[f"density_2011_pw_{r}_canada"]
+            )
+            results[f"density_change_2011_pw_{r}_canada"] = (
+                results[f"density_abs_change_2011_pw_{r}_canada"]
+                / existing_statistics[f"density_2011_pw_{r}_canada"]
+            )
         return results
 
 
