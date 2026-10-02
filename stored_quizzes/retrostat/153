@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Binge drinking among adults %",
+      "stat_path": "BINGE_cdc_2",
+      "question": "higher % of adults who binge drink",
+      "longname_a": "Greenville-New Bern-Washington NC Media Market, USA",
+      "longname_b": "Ft. Smith-Fayetteville-Springdale-Rogers AR Media Market, USA",
+      "stat_a": 0.16319405209807525,
+      "stat_b": 0.14763866406539683
+    },
+    "b": {
+      "stat_column": "Population",
+      "stat_path": "population",
+      "question": "higher population",
+      "longname_a": "Algeria",
+      "longname_b": "Burundi",
+      "stat_a": 43449972.94522454,
+      "stat_b": 12206003.771086058
+    },
+    "a_ease": 0.3155378486055777,
+    "b_ease": 0.7477973568281938
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High windspeed (>10mph) days %",
+      "stat_path": "wind_speed_over_10mph_4",
+      "question": "higher % of days with wind speed over 10mph (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Rivers, Nigeria",
+      "longname_b": "Jan\u016bb D\u0101rf\u016br, Sudan",
+      "stat_a": 0.027700930609363236,
+      "stat_b": 0.16139188569825055
+    },
+    "b": {
+      "stat_column": "Racial Homogeneity Change (2000-2020) %",
+      "stat_path": "homogeneity_250_diff_2000",
+      "question": "!FULL Which diversified less between 2000 and 2020?!TOOLTIP We define racial diversity as the average probability a person selecting a random person in a 250m radius will select someone of a different race",
+      "longname_a": "Arizona, USA",
+      "longname_b": "Hawaii, USA",
+      "stat_a": -0.11455150857683394,
+      "stat_b": -0.022063127510601077
+    },
+    "a_ease": 0.3752988047808765,
+    "b_ease": 0.7786343612334802
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High School %",
+      "stat_path": "education_high_school",
+      "question": "higher % of people who have at least a high school diploma",
+      "longname_a": "Tallahassee MSA, FL, USA",
+      "longname_b": "Salinas MSA, CA, USA",
+      "stat_a": 0.9110352727604234,
+      "stat_b": 0.7385836714415825
+    },
+    "b": {
+      "stat_column": "Silent %",
+      "stat_path": "generation_silent",
+      "question": "higher % of people who are silent generation!TOOLTIP born before 1946",
+      "longname_a": "St. Louis Urban Center, USA",
+      "longname_b": "Bradenton Urban Center, USA",
+      "stat_a": 0.06661135749399637,
+      "stat_b": 0.16653022919036947
+    },
+    "a_ease": 0.2782258064516129,
+    "b_ease": 0.7483870967741936
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Asian %",
+      "stat_path": "asian",
+      "question": "higher % of people who are Asian",
+      "longname_a": "Kitsap County, Washington, USA",
+      "longname_b": "Mercer County, New Jersey, USA",
+      "stat_a": 0.050864895914375666,
+      "stat_b": 0.12477410027366138
+    },
+    "b": {
+      "stat_column": "Household income > C$100k %",
+      "stat_path": "household_income_above_100_cad",
+      "question": "higher % of households that have household income over C$100k",
+      "longname_a": "Division No. 1, Newfoundland and Labrador, Canada",
+      "longname_b": "Halton Regional municipality, Ontario, Canada",
+      "stat_a": 0.38934360204789237,
+      "stat_b": 0.6209804166146939
+    },
+    "a_ease": 0.4061505832449629,
+    "b_ease": 0.8112449799196787
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2019-2021 Swing 2-Coalition Margin",
+      "stat_path": "2019-2021 Swing-coalition_margin",
+      "question": "!FULL Which swung less towards the right-of-center parties between the 2019 and 2021 elections?!TOOLTIP By 2-Coalition Margin, which is calculated as (Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation.",
+      "longname_a": "Hamilton Population Center, ON, Canada",
+      "longname_b": "Winnipeg Population Center, MB, Canada",
+      "stat_a": -0.11352342538884935,
+      "stat_b": 0.03631763976809149
+    },
+    "b": {
+      "stat_column": "Snowfall [rain-equivalent]",
+      "stat_path": "snowfall_4",
+      "question": "higher snowfall (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Japan",
+      "longname_b": "Italy",
+      "stat_a": 0.08159082086849312,
+      "stat_b": 0.044888791151170254
+    },
+    "a_ease": 0.4199203187250996,
+    "b_ease": 0.8282078472958643
+  }
+]
