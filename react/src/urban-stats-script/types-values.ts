@@ -97,6 +97,8 @@ interface NamedFunctionArgumentDocumentation {
     hide?: boolean
     collapsable?: boolean
     editButton?: keyof typeof ArgEditButtons
+    /** What checking the argument's box fills in, where that is not its default. */
+    whenChecked?: UrbanStatsASTExpression
 }
 
 export type USSType = (

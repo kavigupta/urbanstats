@@ -17,6 +17,7 @@ import { Decorated, ParseError, parseNoErrorAsCustomNode, unparse } from '../../
 import { argTypeOptions, renderType, TypeEnvironment, USSFunctionArgType, USSFunctionType, USSObjectType, USSType } from '../../urban-stats-script/types-values'
 import { assert } from '../../utils/defensive'
 
+import { isNoCondition, noCondition, parseCondition } from './condition'
 import { parseToNumber, Selection, toNumberAST } from './selector-classifier'
 
 export function maybeParseExpr(
@@ -66,9 +67,10 @@ function attemptParseExpr(
     preserveCustomNodes: boolean,
 ): UrbanStatsASTExpression | undefined {
     switch (expr.type) {
+        case 'if':
+            return attemptParseMaskedValue(expr, blockIdent, types, typeEnvironment, preserveCustomNodes)
         case 'condition':
         case 'binaryOperator':
-        case 'if':
         case 'assignment':
         case 'parseError':
         case 'attribute':
@@ -256,6 +258,38 @@ export function possibilities(target: USSType[], env: TypeEnvironment): Selectio
         results.push(...variables)
     }
     return results
+}
+
+/**
+ * `if (condition) { value }` with no else, which the editor shows as the condition and the value. Over
+ * a vector the condition picks out elements, so only a vector can be one.
+ */
+function attemptParseMaskedValue(
+    expr: UrbanStatsASTExpression & { type: 'if' },
+    blockIdent: string,
+    types: USSType[],
+    typeEnvironment: TypeEnvironment,
+    preserveCustomNodes: boolean,
+): UrbanStatsASTExpression | undefined {
+    if (expr.else !== undefined || !types.some(t => t.type === 'vector')) {
+        return undefined
+    }
+    const then = expr.then.type === 'statements' && expr.then.result.length === 1 ? expr.then.result[0] : expr.then
+    if (then.type !== 'expression') {
+        return undefined
+    }
+    return {
+        type: 'if',
+        entireLoc: emptyLocation(blockIdent),
+        // parseCondition would keep `true` as custom code, not read it as no condition at all
+        condition: isNoCondition(expr.condition)
+            ? noCondition(extendBlockIdPositionalArg(blockIdent, 0))
+            : parseCondition(expr.condition, extendBlockIdPositionalArg(blockIdent, 0), typeEnvironment, preserveCustomNodes),
+        then: {
+            type: 'expression',
+            value: parseExpr(then.value, extendBlockIdPositionalArg(blockIdent, 1), types, typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes),
+        },
+    }
 }
 
 export function changeBlockId(expr: UrbanStatsASTExpression, a: string, b: string): UrbanStatsASTExpression {
