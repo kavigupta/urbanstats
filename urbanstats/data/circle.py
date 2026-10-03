@@ -611,6 +611,9 @@ def circle_shapefile_object(country_shapefile, population):
             country_shapefile, population, named_populations[population] + "PC"
         ),
         shortname_extractor=lambda x: x["shortname"],
+        cleanname_extractor=lambda x: x["shortname"].removesuffix(
+            " " + named_populations[population] + "PC"
+        ),
         longname_extractor=lambda x: x["longname"],
         meta=dict(type=name, source="GHSL", type_category="Kavi"),
         filter=lambda x: True,

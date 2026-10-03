@@ -19,6 +19,7 @@ import { AssignmentsResult, GeographySelection, USSExecutionRequest, USSExecutio
 interface LoadedGeographies {
     geographies: GeographySelection[]
     longnames: string[]
+    cleannames: string[]
     /** How many of `longnames` each of `geographies` contributed, in order. */
     lengths: number[]
     dataCache: Map<string, number[]>
@@ -123,11 +124,12 @@ async function mapperContextForRequest(stmts: UrbanStatsASTStatement, geographie
         cache.loaded = {
             geographies,
             longnames: indices.flatMap(index => index.longnames),
+            cleannames: indices.flatMap(index => index.cleannames),
             lengths: indices.map(index => index.longnames.length),
             dataCache: new Map(),
         }
     }
-    const { longnames, lengths, dataCache } = cache.loaded
+    const { longnames, cleannames, lengths, dataCache } = cache.loaded
 
     const annotateType = (name: string, val: USSRawValue): USSValue => {
         const typeInfo = dte.get(name)
@@ -142,6 +144,9 @@ async function mapperContextForRequest(stmts: UrbanStatsASTStatement, geographie
     const getVariable = async (name: string): Promise<USSValue | undefined> => {
         if (name === 'geoName') {
             return annotateType('geoName', longnames)
+        }
+        if (name === 'geoCleanName') {
+            return annotateType('geoCleanName', cleannames)
         }
         if (name === 'geo') {
             return annotateType('geo', longnames.map(longname => ({ type: 'opaque', opaqueType: 'geoFeatureHandle', value: longname })))
