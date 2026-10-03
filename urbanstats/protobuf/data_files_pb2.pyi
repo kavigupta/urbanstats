@@ -330,18 +330,21 @@ class PointSeries(_message.Message):
     ) -> None: ...
 
 class ArticleOrderingList(_message.Message):
-    __slots__ = ("longnames", "types", "shortnames")
+    __slots__ = ("longnames", "types", "shortnames", "shortestnames")
     LONGNAMES_FIELD_NUMBER: _ClassVar[int]
     TYPES_FIELD_NUMBER: _ClassVar[int]
     SHORTNAMES_FIELD_NUMBER: _ClassVar[int]
+    SHORTESTNAMES_FIELD_NUMBER: _ClassVar[int]
     longnames: _containers.RepeatedScalarFieldContainer[str]
     types: _containers.RepeatedScalarFieldContainer[int]
     shortnames: _containers.RepeatedScalarFieldContainer[str]
+    shortestnames: _containers.RepeatedScalarFieldContainer[str]
     def __init__(
         self,
         longnames: _Optional[_Iterable[str]] = ...,
         types: _Optional[_Iterable[int]] = ...,
         shortnames: _Optional[_Iterable[str]] = ...,
+        shortestnames: _Optional[_Iterable[str]] = ...,
     ) -> None: ...
 
 class ArticleUniverseList(_message.Message):

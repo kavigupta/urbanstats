@@ -20,6 +20,7 @@ interface LoadedGeographies {
     geographies: GeographySelection[]
     longnames: string[]
     shortnames: string[]
+    shortestnames: string[]
     /** How many of `longnames` each of `geographies` contributed, in order. */
     lengths: number[]
     dataCache: Map<string, number[]>
@@ -125,11 +126,12 @@ async function mapperContextForRequest(stmts: UrbanStatsASTStatement, geographie
             geographies,
             longnames: indices.flatMap(index => index.longnames),
             shortnames: indices.flatMap(index => index.shortnames),
+            shortestnames: indices.flatMap(index => index.shortestnames),
             lengths: indices.map(index => index.longnames.length),
             dataCache: new Map(),
         }
     }
-    const { longnames, shortnames, lengths, dataCache } = cache.loaded
+    const { longnames, shortnames, shortestnames, lengths, dataCache } = cache.loaded
 
     const annotateType = (name: string, val: USSRawValue): USSValue => {
         const typeInfo = dte.get(name)
@@ -147,6 +149,9 @@ async function mapperContextForRequest(stmts: UrbanStatsASTStatement, geographie
         }
         if (name === 'geoShortName') {
             return annotateType('geoShortName', shortnames)
+        }
+        if (name === 'geoShortestName') {
+            return annotateType('geoShortestName', shortestnames)
         }
         if (name === 'geo') {
             return annotateType('geo', longnames.map(longname => ({ type: 'opaque', opaqueType: 'geoFeatureHandle', value: longname })))
