@@ -155,7 +155,7 @@ message ArticleOrderingList {
     repeated string longnames = 1;
     repeated int32 types = 2; // as in type_ordering_idx.ts
     repeated string shortnames = 3;
-    repeated string shortestnames = 4;
+    repeated string cleannames = 4;
 }
 
 message ArticleUniverseList {

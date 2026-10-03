@@ -3,7 +3,6 @@ import os
 from typing import Any, List, Mapping
 
 from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
-from urbanstats.website_data.shortest_names import shortest_name
 
 from . import data_files_pb2
 
@@ -13,6 +12,7 @@ def save_article_ordering_list(
     path: str,
     longname_to_type: Mapping[str, str],
     longname_to_shortname: Mapping[str, str],
+    longname_to_cleanname: Mapping[str, str],
 ) -> None:
     types = [longname_to_type[x] for x in longnames]
     res = data_files_pb2.ArticleOrderingList()
@@ -23,9 +23,7 @@ def save_article_ordering_list(
     for x in longnames:
         res.shortnames.append(longname_to_shortname[x])
     for x in longnames:
-        res.shortestnames.append(
-            shortest_name(longname_to_shortname[x], longname_to_type[x])
-        )
+        res.cleannames.append(longname_to_cleanname[x])
     write_gzip(res, path)
 
 

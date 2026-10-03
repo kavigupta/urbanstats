@@ -107,6 +107,7 @@ def output_indices(
     *,
     longname_to_type: Mapping[str, str],
     longname_to_shortname: Mapping[str, str],
+    longname_to_cleanname: Mapping[str, str],
 ) -> Dict[str, Dict[str, int]]:
     order_backmap = {}
     for typ in sorted(
@@ -116,14 +117,22 @@ def output_indices(
         path = f"{site_folder}/index/{universe}/{typ}.gz"
         ordered = ordinal_info.ordered_names(universe, typ)
         save_article_ordering_list(
-            ordered, path, longname_to_type, longname_to_shortname
+            ordered,
+            path,
+            longname_to_type,
+            longname_to_shortname,
+            longname_to_cleanname,
         )
         order_backmap[typ] = {name: i for i, name in enumerate(ordered)}
     path = f"{site_folder}/index/{universe}/overall.gz"
     if (universe, "overall") in ordinal_info.universe_type_to_idx:
         ordered = ordinal_info.ordered_names(universe, "overall")
         save_article_ordering_list(
-            ordered, path, longname_to_type, longname_to_shortname
+            ordered,
+            path,
+            longname_to_type,
+            longname_to_shortname,
+            longname_to_cleanname,
         )
         order_backmap["overall"] = {name: i for i, name in enumerate(ordered)}
 
@@ -137,6 +146,7 @@ def output_ordering_for_universe(
     *,
     longname_to_type: Mapping[str, str],
     longname_to_shortname: Mapping[str, str],
+    longname_to_cleanname: Mapping[str, str],
 ) -> Tuple[Dict[str, List[int]], Dict[str, List[int]]]:
     output_indices(
         ordinal_info,
@@ -144,6 +154,7 @@ def output_ordering_for_universe(
         universe,
         longname_to_type=longname_to_type,
         longname_to_shortname=longname_to_shortname,
+        longname_to_cleanname=longname_to_cleanname,
     )
     if universe != "world":
         return {}, {}
@@ -219,6 +230,7 @@ def output_ordering(
     *,
     longname_to_type: Mapping[str, str],
     longname_to_shortname: Mapping[str, str],
+    longname_to_cleanname: Mapping[str, str],
 ) -> None:
     order_map_all = {}
     data_map_all = {}
@@ -229,6 +241,7 @@ def output_ordering(
             universe,
             longname_to_type=longname_to_type,
             longname_to_shortname=longname_to_shortname,
+            longname_to_cleanname=longname_to_cleanname,
         )
         order_map_all.update(order_map)
         data_map_all.update(data_map)

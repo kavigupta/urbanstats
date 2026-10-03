@@ -47,6 +47,7 @@ CANADIAN_CENSUS_DIVISIONS = Shapefile(
         SUBNATIONAL_REGIONS,
     ),
     shortname_extractor=subdivision_name,
+    cleanname_extractor=lambda row: row.CDNAME.replace("  ", " "),
     longname_extractor=subdivision_longname,
     additional_columns_computer={"scgc": lambda row: row.CDUID},
     filter=lambda x: True,

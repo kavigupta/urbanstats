@@ -30,7 +30,7 @@ async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement
     const dte = defaultTypeEnvironment(universes)
     const ids = allIdentifiers(stmts, ctx)
 
-    const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geoName', 'geoShortName', 'geoShortestName', 'geo', 'geoCentroid', 'defaultInsets']
+    const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geoName', 'geoShortName', 'geoCleanName', 'geo', 'geoCentroid', 'defaultInsets']
 
     // Some variables are always loaded, regardless of whether they are used in the statements
     // This is helpful for some operations, such as CSV export
@@ -109,12 +109,12 @@ export const defaultTypeEnvironment = (universe: Universe | Universe[] | undefin
         },
     })
 
-    te.set('geoShortestName', {
+    te.set('geoCleanName', {
         type: { type: 'vector', elementType: { type: 'string' } },
         documentation: {
-            humanReadableName: 'Shortest Name',
+            humanReadableName: 'Clean Name',
             category: 'mapper',
-            longDescription: 'The short names of the geographic units without the word saying what kind of place each is, e.g. "Los Angeles" rather than "Los Angeles County". Two units can share a shortest name.',
+            longDescription: 'The short names of the geographic units without the word saying what kind of place each is, e.g. "Los Angeles" rather than "Los Angeles County". Two units can share a clean name.',
         },
     })
 

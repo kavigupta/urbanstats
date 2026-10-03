@@ -23,6 +23,7 @@ CCDs = Shapefile(
     hash_key="census_cousub_9",
     path="named_region_shapefiles/cb_2023_us_cousub_500k.zip",
     shortname_extractor=lambda x: f"{x.NAMELSAD}",
+    cleanname_extractor=lambda x: x.NAME,
     longname_extractor=lambda x: f"{x.NAMELSAD} [CCD], {x.NAMELSADCO}, {x.STATE_NAME}, USA",
     additional_columns_computer={"geoid": lambda x: x.GEOID},
     filter=lambda x: True,
