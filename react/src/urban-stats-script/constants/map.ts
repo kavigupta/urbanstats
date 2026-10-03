@@ -234,7 +234,7 @@ export function labelsArgument(): NamedFunctionArgumentWithDocumentation {
         type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'string' } } },
         defaultValue: createConstantExpression(null),
         documentation: {
-            whenChecked: parseNoErrorAsExpression('if (true) { geoName }', ''),
+            whenChecked: parseNoErrorAsExpression('if (true) { geoShortName }', ''),
         },
     }
 }
@@ -332,7 +332,7 @@ export const cMap: USSValue = {
             outline: 'Outline',
             labelEachRegion: 'Label Each Region',
         },
-        longDescription: hre`Creates a choropleth map that displays data using color-coded geographic regions. Each region is colored according to its data value using the specified scale and color ramp. \`labelEachRegion\` writes a label at each region's center, such as \`if (population > 1000000) { geoName }\`; an empty string leaves a region unlabelled. ${labelSyntaxDescription}`,
+        longDescription: hre`Creates a choropleth map that displays data using color-coded geographic regions. Each region is colored according to its data value using the specified scale and color ramp. \`labelEachRegion\` writes a label at each region's center, such as \`if (population > 1000000) { geoShortName }\`; an empty string leaves a region unlabelled. ${labelSyntaxDescription}`,
         selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
@@ -378,7 +378,7 @@ export const pMap: USSValue = {
             relativeArea: 'Relative Area',
             labelEachPoint: 'Label Each Point',
         },
-        longDescription: hre`Creates a point map that displays data using circles at geographic locations. This is like a choropleth map, but instead of coloring regions, it colors points centered on the geographic locations. The relativeArea parameter can be used to specify the relative area of the points, which determines their radius; if not specified, all points have equal area. \`labelEachPoint\` writes a label beside each point, such as \`if (population > 1000000) { geoName }\`; an empty string leaves a point unlabelled. ${labelSyntaxDescription}`,
+        longDescription: hre`Creates a point map that displays data using circles at geographic locations. This is like a choropleth map, but instead of coloring regions, it colors points centered on the geographic locations. The relativeArea parameter can be used to specify the relative area of the points, which determines their radius; if not specified, all points have equal area. \`labelEachPoint\` writes a label beside each point, such as \`if (population > 1000000) { geoShortName }\`; an empty string leaves a point unlabelled. ${labelSyntaxDescription}`,
         selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
