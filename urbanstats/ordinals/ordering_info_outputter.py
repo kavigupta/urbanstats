@@ -106,6 +106,7 @@ def output_indices(
     universe: str,
     *,
     longname_to_type: Mapping[str, str],
+    longname_to_shortname: Mapping[str, str],
 ) -> Dict[str, Dict[str, int]]:
     order_backmap = {}
     for typ in sorted(
@@ -114,12 +115,16 @@ def output_indices(
         # output a string list to /index/universe/typ.gz
         path = f"{site_folder}/index/{universe}/{typ}.gz"
         ordered = ordinal_info.ordered_names(universe, typ)
-        save_article_ordering_list(ordered, path, longname_to_type)
+        save_article_ordering_list(
+            ordered, path, longname_to_type, longname_to_shortname
+        )
         order_backmap[typ] = {name: i for i, name in enumerate(ordered)}
     path = f"{site_folder}/index/{universe}/overall.gz"
     if (universe, "overall") in ordinal_info.universe_type_to_idx:
         ordered = ordinal_info.ordered_names(universe, "overall")
-        save_article_ordering_list(ordered, path, longname_to_type)
+        save_article_ordering_list(
+            ordered, path, longname_to_type, longname_to_shortname
+        )
         order_backmap["overall"] = {name: i for i, name in enumerate(ordered)}
 
     return order_backmap
@@ -131,9 +136,14 @@ def output_ordering_for_universe(
     universe: str,
     *,
     longname_to_type: Mapping[str, str],
+    longname_to_shortname: Mapping[str, str],
 ) -> Tuple[Dict[str, List[int]], Dict[str, List[int]]]:
     output_indices(
-        ordinal_info, site_folder, universe, longname_to_type=longname_to_type
+        ordinal_info,
+        site_folder,
+        universe,
+        longname_to_type=longname_to_type,
+        longname_to_shortname=longname_to_shortname,
     )
     if universe != "world":
         return {}, {}
@@ -204,7 +214,11 @@ def create_counts_protobuf(
 
 
 def output_ordering(
-    site_folder: str, ordinal_info: Any, *, longname_to_type: Mapping[str, str]
+    site_folder: str,
+    ordinal_info: Any,
+    *,
+    longname_to_type: Mapping[str, str],
+    longname_to_shortname: Mapping[str, str],
 ) -> None:
     order_map_all = {}
     data_map_all = {}
@@ -214,6 +228,7 @@ def output_ordering(
             site_folder,
             universe,
             longname_to_type=longname_to_type,
+            longname_to_shortname=longname_to_shortname,
         )
         order_map_all.update(order_map)
         data_map_all.update(data_map)

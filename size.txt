@@ -546,3 +546,12 @@ Density medians and population centers (#2523)
 850     order
 1488    data
 3462    total
+
+Write shortnames into the per-type article index (#2532)
+
+125     consolidated
+178     quiz_sampling_info
+691     shape
+850     order
+1488    data
+3472    total
