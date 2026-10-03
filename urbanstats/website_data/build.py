@@ -262,6 +262,7 @@ def build_urbanstats(
             site_folder,
             all_ordinals(),
             longname_to_type=dict(zip(table.longname, table.type)),
+            longname_to_shortname=dict(zip(table.longname, table.shortname)),
         )
 
         full_consolidated_data(site_folder)
