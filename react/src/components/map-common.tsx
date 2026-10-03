@@ -340,6 +340,65 @@ export function PointFeatureCollection({ features, clickable }: { features: GeoJ
     )
 }
 
+export interface MapLabel {
+    lon: number
+    lat: number
+    label: string
+    /** How far the label sits beside the point, in ems, so that it clears a marker drawn there. */
+    offset: number
+}
+
+function labelsId(id: string, kind: 'source' | 'text'): string {
+    return `${urbanStatsLayerPrefix}-labels-${kind}-${id}`
+}
+
+/**
+ * Drawn above everything else; labels that would overlap are dropped, as the basemap's own are. A
+ * region's label is centered on it, and a point's sits beside its marker.
+ */
+export function LabelCollection({ labels, placement, color, haloColor }: {
+    labels: MapLabel[]
+    placement: 'centered' | 'beside'
+    color: string
+    haloColor: string
+}): ReactNode {
+    const id = useId()
+
+    const collection: GeoJSON.FeatureCollection = useMemo(() => ({
+        type: 'FeatureCollection',
+        features: labels.map(({ lon, lat, label, offset }) => ({
+            type: 'Feature',
+            properties: { label, offset },
+            geometry: { type: 'Point', coordinates: [lon, lat] },
+        })),
+    }), [labels])
+
+    return (
+        <>
+            <Source id={labelsId(id, 'source')} type="geojson" data={collection} />
+            <ScreenshotAwareLayer
+                id={labelsId(id, 'text')}
+                type="symbol"
+                source={labelsId(id, 'source')}
+                layout={{
+                    'text-field': ['get', 'label'],
+                    // the basemap style's own font, which is the only one its glyph server has
+                    'text-font': ['Noto Sans Regular'],
+                    'text-size': 12,
+                    ...(placement === 'centered'
+                        ? { 'text-anchor': 'center' }
+                        : { 'text-variable-anchor': ['left', 'right', 'top', 'bottom'], 'text-radial-offset': ['get', 'offset'], 'text-justify': 'auto' }),
+                }}
+                paint={{
+                    'text-color': color,
+                    'text-halo-color': haloColor,
+                    'text-halo-width': 1.5,
+                }}
+            />
+        </>
+    )
+}
+
 function useClickable({ id, clickable, features }: { id: string, clickable: boolean, features: GeoJSON.Feature[] }): void {
     const navigator = useContext(Navigator.Context)
     const universe = useUniverse()
