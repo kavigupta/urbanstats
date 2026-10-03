@@ -111,10 +111,10 @@ for (const other of ['France', 'Canada'] as Universe[]) {
     })
 }
 
-async function mapVariables(geographies: GeographySelection[], data: string): Promise<Map<string, USSValue>> {
+async function mapVariables(geographies: GeographySelection[], data: string, preamble = ''): Promise<Map<string, USSValue>> {
     const result = await createRequestExecutor()({
         descriptor: { kind: 'mapper', geographies },
-        stmts: toStatement(mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`)),
+        stmts: toStatement(mapUSSFromString(`${preamble}cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`)),
     })
     assert.deepEqual(result.error, [])
     return result.assignments.variables!
@@ -144,4 +144,42 @@ void test('a statistic missing from one geography falls back to a source coverin
             assert.ok(!Number.isNaN(population[i]), `population is missing for row ${i}`)
         }
     })
+})
+
+async function cleanNames(geography: GeographySelection): Promise<Map<string, string>> {
+    const variables = await mapVariables([geography], 'population', 'names = geoCleanName\n')
+    const longnames = variables.get('geoName')!.value as string[]
+    const cleannames = variables.get('geoCleanName')!.value as string[]
+    return new Map(longnames.map((longname, i) => [longname, cleannames[i]]))
+}
+
+void test('clean names drop what kind of region it is and what it is within', async () => {
+    const states = await cleanNames(usaStates)
+    assert.equal(states.get('California, USA'), 'California')
+
+    const counties = await cleanNames({ universe: 'USA', geographyKind: 'County' })
+    assert.equal(counties.get('Los Angeles County, California, USA'), 'Los Angeles')
+
+    const cities = await cleanNames({ universe: 'USA', geographyKind: 'City' })
+    assert.equal(cities.get('New York city, New York, USA'), 'New York')
+    assert.equal(cities.get('Salt Lake City city, Utah, USA'), 'Salt Lake City')
+
+    const districts = await cleanNames({ universe: 'USA', geographyKind: 'Congressional District' })
+    assert.equal(districts.get('CA-12 (2027), USA'), 'CA-12')
+})
+
+void test('clean names of international and statistical regions', async () => {
+    const clusters = await cleanNames({ universe: 'world', geographyKind: 'Metropolitan Cluster' })
+    assert.equal(clusters.get('Cairo Metropolitan Cluster, Egypt'), 'Cairo')
+    assert.equal(clusters.get('Shanghai-Suzhou Metropolitan Cluster, China'), 'Shanghai-Suzhou')
+
+    const circles = await cleanNames({ universe: 'world', geographyKind: '5M Person Circle' })
+    assert.equal(circles.get('Tokyo (Periphery) 5MPC, Japan'), 'Tokyo (Periphery)')
+
+    const subdivisions = await cleanNames({ universe: 'Canada', geographyKind: 'CA Census Subdivision' })
+    assert.equal(subdivisions.get('Toronto City, Toronto CDR, Ontario, Canada'), 'Toronto')
+
+    // the state stays, since it is part of what the area is called rather than what it is within
+    const hsas = await cleanNames({ universe: 'USA', geographyKind: 'Hospital Service Area' })
+    assert.equal(hsas.get('Houston TX HSA, Houston TX HRR, USA'), 'Houston TX')
 })
