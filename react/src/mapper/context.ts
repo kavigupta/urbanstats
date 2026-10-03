@@ -105,7 +105,7 @@ export const defaultTypeEnvironment = (universe: Universe | Universe[] | undefin
         documentation: {
             humanReadableName: 'Clean Name',
             category: 'mapper',
-            longDescription: 'The names of the geographic units without what they are within or what kind of place each is, e.g. "Los Angeles" rather than "Los Angeles County, California, USA". Two units can share a clean name.',
+            longDescription: 'The colloquial name of each region, without what kind of region it is (e.g. "County") or what region it is within (e.g. "California, USA"). For example, Los Angeles County, California, USA is just "Los Angeles".',
         },
     })
 

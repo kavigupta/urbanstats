@@ -36,7 +36,8 @@ class Shapefile:
     end_date = attr.ib(kw_only=True, default=None)
     end_date_overall = attr.ib(kw_only=True, default=float("inf"))
     longname_sans_date_extractor = attr.ib(kw_only=True, default=None)
-    # The name without the kind of place, e.g. "Los Angeles" for "Los Angeles County". Defaults to the shortname.
+    # The colloquial name, without what kind of region it is or what it is within, e.g.
+    # "Los Angeles" for "Los Angeles County". Defaults to the shortname.
     cleanname_extractor = attr.ib(kw_only=True, default=None)
     include_in_syau = attr.ib(kw_only=True)
     wikidata_sourcer = attr.ib(kw_only=True)
