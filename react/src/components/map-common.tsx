@@ -508,6 +508,7 @@ function isVisible(basemap: Basemap, layer: { id: string, type: string, source: 
         case 'none':
             return keptByNoBasemap(layer)
         case 'osm':
-            return !(basemap.noLabels && layer.type === 'symbol')
+            // our own labels are symbol layers too, and the option is only about the basemap's
+            return !(basemap.noLabels && layer.type === 'symbol' && !layer.id.startsWith(urbanStatsLayerPrefix))
     }
 }
