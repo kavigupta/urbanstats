@@ -154,6 +154,7 @@ message PointSeries {
 message ArticleOrderingList {
     repeated string longnames = 1;
     repeated int32 types = 2; // as in type_ordering_idx.ts
+    repeated string shortnames = 3;
 }
 
 message ArticleUniverseList {

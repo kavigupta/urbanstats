@@ -6038,6 +6038,7 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
      * @interface IArticleOrderingList
      * @property {Array.<string>|null} [longnames] ArticleOrderingList longnames
      * @property {Array.<number>|null} [types] ArticleOrderingList types
+     * @property {Array.<string>|null} [shortnames] ArticleOrderingList shortnames
      */
 
     /**
@@ -6051,6 +6052,7 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
     function ArticleOrderingList(properties) {
         this.longnames = [];
         this.types = [];
+        this.shortnames = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -6072,6 +6074,14 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
      * @instance
      */
     ArticleOrderingList.prototype.types = $util.emptyArray;
+
+    /**
+     * ArticleOrderingList shortnames.
+     * @member {Array.<string>} shortnames
+     * @memberof ArticleOrderingList
+     * @instance
+     */
+    ArticleOrderingList.prototype.shortnames = $util.emptyArray;
 
     /**
      * Creates a new ArticleOrderingList instance using the specified properties.
@@ -6106,6 +6116,9 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
                 writer.int32(message.types[i]);
             writer.ldelim();
         }
+        if (message.shortnames != null && message.shortnames.length)
+            for (let i = 0; i < message.shortnames.length; ++i)
+                writer.uint32(/* id 3, wireType 2 =*/26).string(message.shortnames[i]);
         return writer;
     };
 
@@ -6157,6 +6170,12 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
                         message.types.push(reader.int32());
                     break;
                 }
+            case 3: {
+                    if (!(message.shortnames && message.shortnames.length))
+                        message.shortnames = [];
+                    message.shortnames.push(reader.string());
+                    break;
+                }
             default:
                 reader.skipType(tag & 7);
                 break;
@@ -6206,6 +6225,13 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
                 if (!$util.isInteger(message.types[i]))
                     return "types: integer[] expected";
         }
+        if (message.shortnames != null && message.hasOwnProperty("shortnames")) {
+            if (!Array.isArray(message.shortnames))
+                return "shortnames: array expected";
+            for (let i = 0; i < message.shortnames.length; ++i)
+                if (!$util.isString(message.shortnames[i]))
+                    return "shortnames: string[] expected";
+        }
         return null;
     };
 
@@ -6235,6 +6261,13 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
             for (let i = 0; i < object.types.length; ++i)
                 message.types[i] = object.types[i] | 0;
         }
+        if (object.shortnames) {
+            if (!Array.isArray(object.shortnames))
+                throw TypeError(".ArticleOrderingList.shortnames: array expected");
+            message.shortnames = [];
+            for (let i = 0; i < object.shortnames.length; ++i)
+                message.shortnames[i] = String(object.shortnames[i]);
+        }
         return message;
     };
 
@@ -6254,6 +6287,7 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
         if (options.arrays || options.defaults) {
             object.longnames = [];
             object.types = [];
+            object.shortnames = [];
         }
         if (message.longnames && message.longnames.length) {
             object.longnames = [];
@@ -6264,6 +6298,11 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
             object.types = [];
             for (let j = 0; j < message.types.length; ++j)
                 object.types[j] = message.types[j];
+        }
+        if (message.shortnames && message.shortnames.length) {
+            object.shortnames = [];
+            for (let j = 0; j < message.shortnames.length; ++j)
+                object.shortnames[j] = message.shortnames[j];
         }
         return object;
     };
