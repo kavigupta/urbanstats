@@ -30,7 +30,9 @@ internal_country_to_wikipedia = {
 }
 
 
-def download_and_convert_flag(wikipedia_page: str, out_path: str) -> None:
+def download_and_convert_flag(
+    wikipedia_page: str, out_path: str, url: str | None = None
+) -> None:
     out = flags_folder + out_path + ".png"
     if os.path.exists(out):
         return
@@ -39,9 +41,14 @@ def download_and_convert_flag(wikipedia_page: str, out_path: str) -> None:
         os.makedirs(flags_folder)
     except FileExistsError:
         pass
-    url = "http://commons.wikimedia.org/wiki/Special:FilePath/" + wikipedia_page
+    if url is None:
+        url = "http://commons.wikimedia.org/wiki/Special:FilePath/" + wikipedia_page
     print(url)
-    r = requests.get(url, timeout=100)
+    # Wikimedia refuses requests without a user agent naming who is asking
+    r = requests.get(
+        url, timeout=100, headers={"User-Agent": "urbanstats (https://urbanstats.org)"}
+    )
+    r.raise_for_status()
 
     content = re.sub(b'inkscape:label="[^"]*"', b"", r.content)
 
