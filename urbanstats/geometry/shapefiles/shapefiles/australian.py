@@ -25,6 +25,7 @@ def abs_shapefile(
     version,
     in_wikidata=False,
     include_in_syau=False,
+    gridded_data=False,
 ):
     """
     `kind` is what the region is called after its name, e.g. "LGA" in "Brisbane LGA". The state is part
@@ -52,7 +53,7 @@ def abs_shapefile(
         filter=lambda row: not row[name_column].startswith(NOT_PLACES),
         meta=dict(type=type_name, source="ABS", type_category=type_category),
         does_overlap_self=False,
-        special_data_sources=["international_gridded_data"],
+        special_data_sources=["international_gridded_data"] if gridded_data else [],
         universe_provider=australia_domestic_provider(),
         subset_masks={"Australia": SelfSubset()},
         abbreviation=abbreviation,
@@ -75,6 +76,7 @@ AUSTRALIAN_LGAS = abs_shapefile(
     version=2,
     in_wikidata=True,
     include_in_syau=True,
+    gridded_data=True,
 )
 AUSTRALIAN_SA2S = abs_shapefile(
     layer="SA2",
@@ -94,6 +96,7 @@ AUSTRALIAN_SUAS = abs_shapefile(
     abbreviation="AUSU",
     version=2,
     include_in_syau=True,
+    gridded_data=True,
 )
 AUSTRALIAN_UCLS = abs_shapefile(
     layer="UCL",
@@ -136,6 +139,7 @@ AUSTRALIAN_FEDERAL_ELECTORATES = abs_shapefile(
     version=2,
     in_wikidata=True,
     include_in_syau=True,
+    gridded_data=True,
 )
 AUSTRALIAN_STATE_LOWER_HOUSE_DISTRICTS = abs_shapefile(
     layer="SEDL",
@@ -145,6 +149,7 @@ AUSTRALIAN_STATE_LOWER_HOUSE_DISTRICTS = abs_shapefile(
     type_category="Political",
     abbreviation="AUSD",
     version=1,
+    gridded_data=True,
 )
 AUSTRALIAN_STATE_UPPER_HOUSE_REGIONS = abs_shapefile(
     layer="SEDU",
@@ -154,4 +159,5 @@ AUSTRALIAN_STATE_UPPER_HOUSE_REGIONS = abs_shapefile(
     type_category="Political",
     abbreviation="AUSR",
     version=1,
+    gridded_data=True,
 )

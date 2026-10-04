@@ -164,6 +164,28 @@ class CanadaStatistics(StatisticCollection):
         pass
 
 
+class AustraliaStatistics(StatisticCollection):
+    data_source_country = "Australia"
+
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        _, result = compute_subset_statistics(
+            shapefile,
+            existing_statistics,
+            shapefile_table,
+            subset=self.data_source_country,
+            compute_function=self.compute_statistics_dictionary_australia,
+        )
+        return result
+
+    @abstractmethod
+    def compute_statistics_dictionary_australia(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        pass
+
+
 def compute_subset_statistics(
     shapefile, existing_statistics, shapefile_table, *, subset, compute_function
 ):

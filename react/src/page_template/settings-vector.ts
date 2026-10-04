@@ -502,6 +502,17 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_population_median_lat', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_population_median_lon', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_source_Population Median_Best Available Population Data', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Population_Australian Census', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2021_pw_0.25_australia', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2021_pw_0.5_australia', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2021_pw_1_australia', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2021_pw_2_australia', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2021_pw_4_australia', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2021_pw_1.609344_australia', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2021_pw_8_australia', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2021_pw_16_australia', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2021_pw_32_australia', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2021_pw_64_australia', coder: booleanSettingCoder }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 

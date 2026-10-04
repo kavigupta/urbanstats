@@ -335,6 +335,13 @@ population_canada = Source(
     priority=2,
     variable_suffix="statcan",
 )
+population_australia = Source(
+    "Population",
+    "Australian Census",
+    is_default=True,
+    priority=3,
+    variable_suffix="abs",
+)
 population_ghsl = Source(
     "Population", "GHSL", is_default=False, priority=10, variable_suffix="ghsl"
 )
@@ -563,6 +570,7 @@ def census_basics_with_ghs_and_canada(
     by_source: Dict[Source, Union[str, Tuple[str, ...]]] = {
         population_census: col_name,
         population_canada: canada_name,
+        population_australia: canada_name.replace("_canada", "_australia"),
         population_ghsl: gpw_name,
     }
     by_source = {k: v for k, v in by_source.items() if v is not None}
