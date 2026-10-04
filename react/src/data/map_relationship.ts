@@ -256,6 +256,42 @@ export default [
         "CA Riding"
     ],
     [
+        "AU LGA",
+        "AU LGA"
+    ],
+    [
+        "AU SA2",
+        "AU SA2"
+    ],
+    [
+        "AU Significant Urban Area",
+        "AU Significant Urban Area"
+    ],
+    [
+        "AU Urban Centre",
+        "AU Urban Centre"
+    ],
+    [
+        "AU Suburb",
+        "AU Suburb"
+    ],
+    [
+        "AU Postcode",
+        "AU Postcode"
+    ],
+    [
+        "AU Federal Electorate",
+        "AU Federal Electorate"
+    ],
+    [
+        "AU State Lower House District",
+        "AU State Lower House District"
+    ],
+    [
+        "AU State Upper House Region",
+        "AU State Upper House Region"
+    ],
+    [
         "Continent",
         "Continent"
     ],

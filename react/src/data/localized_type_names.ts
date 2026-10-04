@@ -32,6 +32,10 @@ const value: [string, Record<string, string>][] = [
             "500M Person Circle": "CA 500M Person Circle",
             "1B Person Circle": "CA 1B Person Circle"
         }
+    ],
+    [
+        "Australia",
+        {}
     ]
 ]
 export default value
