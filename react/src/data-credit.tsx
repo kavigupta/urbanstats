@@ -1084,6 +1084,22 @@ export function DataCreditPanel(): ReactNode {
                                 </p>
                             </div>
                         </div>
+                        <h1>Australian Data</h1>
+                        <div>
+                            <NRef name="australian-census" h="h2">Census Data</NRef>
+                            <div>
+                                For population and density, we use mesh block counts from the 2021 Australian Census, available
+                                {' '}
+                                <a href="https://www.abs.gov.au/census/guide-census-data/mesh-block-counts/2021">from the ABS</a>
+                                , computing the same metrics as for the US Census with mesh blocks in place of census blocks.
+                                For all other statistics, we use SA1-level data from the 2021 Census
+                                {' '}
+                                <a href="https://www.abs.gov.au/census/find-census-data/datapacks">DataPacks</a>
+                                . We treat these as effectively equivalent to ACS data published by census tract, disaggregating
+                                them to the mesh block level using population as a weight, and then aggregating to the geography
+                                of interest.
+                            </div>
+                        </div>
                         <h1> Flags </h1>
                         <div>
                             Every flag for the universe selector is from Wikipedia. All of them are free to use under
