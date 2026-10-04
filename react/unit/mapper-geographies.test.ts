@@ -146,12 +146,22 @@ void test('a statistic missing from one geography falls back to a source coverin
     })
 })
 
-async function cleanNames(geography: GeographySelection): Promise<Map<string, string>> {
-    const variables = await mapVariables([geography], 'population', 'names = geoCleanName\n')
+async function namesBy(variable: string, geography: GeographySelection): Promise<Map<string, string>> {
+    const variables = await mapVariables([geography], 'population', `names = ${variable}\n`)
     const longnames = variables.get('geoName')!.value as string[]
-    const cleannames = variables.get('geoCleanName')!.value as string[]
-    return new Map(longnames.map((longname, i) => [longname, cleannames[i]]))
+    const names = variables.get(variable)!.value as string[]
+    return new Map(longnames.map((longname, i) => [longname, names[i]]))
 }
+
+const cleanNames = (geography: GeographySelection): Promise<Map<string, string>> => namesBy('geoCleanName', geography)
+
+void test('short names drop what region it is within, but keep what kind of region it is', async () => {
+    const counties = await namesBy('geoShortName', { universe: 'USA', geographyKind: 'County' })
+    assert.equal(counties.get('Los Angeles County, California, USA'), 'Los Angeles County')
+
+    const cities = await namesBy('geoShortName', { universe: 'USA', geographyKind: 'City' })
+    assert.equal(cities.get('Salt Lake City city, Utah, USA'), 'Salt Lake City city')
+})
 
 void test('clean names drop what kind of region it is and what it is within', async () => {
     const states = await cleanNames(usaStates)

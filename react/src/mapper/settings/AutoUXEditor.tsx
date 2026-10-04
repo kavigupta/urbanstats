@@ -121,7 +121,10 @@ function ArgumentEditor(props: {
                                         if (checked) {
                                             const defaultExpr = props.argWDefault.defaultValue
                                             let exprToUse: UrbanStatsASTExpression
-                                            if (defaultExpr === undefined || (defaultExpr.type === 'identifier' && defaultExpr.name.node === 'null')) {
+                                            if (argDoc?.overrideTypeDefault !== undefined) {
+                                                exprToUse = argDoc.overrideTypeDefault
+                                            }
+                                            else if (defaultExpr === undefined || (defaultExpr.type === 'identifier' && defaultExpr.name.node === 'null')) {
                                                 exprToUse = createDefaultExpression(argTypes[0], subident, props.typeEnvironment)
                                             }
                                             else if (defaultExpr.type === 'identifier' && defaultExpr.name.node === 'false') {

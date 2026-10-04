@@ -320,6 +320,9 @@ export const pMap: USSValue = {
             relativeArea: {
                 type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } },
                 defaultValue: createConstantExpression(null),
+                documentation: {
+                    overrideTypeDefault: parseNoErrorAsExpression('population', ''),
+                },
             },
         }),
         returnType: { type: 'concrete', value: pMapType },

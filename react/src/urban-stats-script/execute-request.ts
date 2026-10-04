@@ -19,6 +19,7 @@ import { AssignmentsResult, GeographySelection, USSExecutionRequest, USSExecutio
 interface LoadedGeographies {
     geographies: GeographySelection[]
     longnames: string[]
+    shortnames: string[]
     cleannames: string[]
     /** How many of `longnames` each of `geographies` contributed, in order. */
     lengths: number[]
@@ -124,12 +125,13 @@ async function mapperContextForRequest(stmts: UrbanStatsASTStatement, geographie
         cache.loaded = {
             geographies,
             longnames: indices.flatMap(index => index.longnames),
+            shortnames: indices.flatMap(index => index.shortnames),
             cleannames: indices.flatMap(index => index.cleannames),
             lengths: indices.map(index => index.longnames.length),
             dataCache: new Map(),
         }
     }
-    const { longnames, cleannames, lengths, dataCache } = cache.loaded
+    const { longnames, shortnames, cleannames, lengths, dataCache } = cache.loaded
 
     const annotateType = (name: string, val: USSRawValue): USSValue => {
         const typeInfo = dte.get(name)
@@ -144,6 +146,9 @@ async function mapperContextForRequest(stmts: UrbanStatsASTStatement, geographie
     const getVariable = async (name: string): Promise<USSValue | undefined> => {
         if (name === 'geoName') {
             return annotateType('geoName', longnames)
+        }
+        if (name === 'geoShortName') {
+            return annotateType('geoShortName', shortnames)
         }
         if (name === 'geoCleanName') {
             return annotateType('geoCleanName', cleannames)
