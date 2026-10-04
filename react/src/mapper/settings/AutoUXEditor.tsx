@@ -663,8 +663,8 @@ function MaskedValueEditor(props: Parameters<typeof AutoUXEditor>[0] & { uss: Ur
                 blockIdent={extendBlockIdPositionalArg(props.blockIdent, 1)}
                 margin={false}
             />
-            {/* lined up with the value's selector, which sits after a label column */}
-            <div style={{ marginLeft: `calc(${props.labelWidth ?? '5%'} + 0.5em)` }}>
+            {/* lined up with the value's selector, which sits after the label column and, if there is a label, a gap */}
+            <div style={{ marginLeft: props.label === undefined ? (props.labelWidth ?? '5%') : `calc(${props.labelWidth ?? '5%'} + 0.5em)` }}>
                 <ConditionEditor
                     name="Only Some?"
                     condition={uss.condition}
