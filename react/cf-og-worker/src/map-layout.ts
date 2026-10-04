@@ -1,7 +1,6 @@
 /*
- * Where a shape sits on the map, shared by the basemap and the outline drawn over it. The
- * projection runs past [0, 1] for a shape crossing the antimeridian, so the fits below stay tight;
- * `coveringTiles` wraps the tile x it asks for.
+ * Projections may run past [0, 1] for shapes crossing the antimeridian, keeping fits tight.
+ * `coveringTiles` wraps the tile x.
  */
 import { project } from '../../src/utils/coordinates'
 
@@ -12,13 +11,13 @@ export interface Bounds { minX: number, maxX: number, minY: number, maxY: number
 
 const tileSize = 256
 
-/** Past this the tiles stop adding detail, so a shape smaller than the box just stays smaller. */
+/** Tiles stop adding detail past this. */
 const maxZoom = 17
 
 export interface MapLayout {
     /** Box pixels per unit of projected space, chosen so the rings fill the box. */
     scale: number
-    /** The zoom the map reads as, which line widths and label sizes are picked against. */
+    /** What line widths are picked against */
     zoom: number
     /** The box's top-left corner, in that same scaled space. */
     originX: number
@@ -36,8 +35,7 @@ function layoutAround(centerX: number, centerY: number, scale: number, width: nu
 
 /** The rings' extent in projected space, undefined if there are no points in them. */
 export function projectedBounds(rings: Ring[]): Bounds | undefined {
-    // A loop rather than Math.min(...xs): a country's outline carries more points than an argument
-    // list takes, and the RangeError would land as a card that silently fell back.
+    // Not Math.min(...xs), since a country's outline has more points than an argument list allows.
     let [minX, maxX, minY, maxY] = [Infinity, -Infinity, Infinity, -Infinity]
     for (const ring of rings) {
         for (const point of ring) {
@@ -56,17 +54,12 @@ export function fitRings(rings: Ring[], width: number, height: number): MapLayou
 
     const pad = 8
     const fit = Math.min((width - pad * 2) / (maxX - minX || 1), (height - pad * 2) / (maxY - minY || 1))
-    // A shape small enough to want more than maxZoom's detail just stays small, rather than
-    // filling the box out of tiles that have nothing more to show.
+    // A shape too small for maxZoom's detail stays small rather than filling the box.
     const scale = Math.min(fit, tileSize * 2 ** (maxZoom + 1))
     return layoutAround((minX + maxX) / 2, (minY + maxY) / 2, scale, width, height)
 }
 
-/**
- * Fits a lon/lat box inside a pixel box, as maplibre's `fitBounds` does for an inset. Unlike
- * `fitRings` the box is what the map's author chose, so it is met exactly rather than held back to
- * what the tiles can show.
- */
+/** Like maplibre's `fitBounds`. Unlike `fitRings`, the author chose this box, so it's met exactly even past maxZoom. */
 export function fitBounds([west, south, east, north]: [number, number, number, number], width: number, height: number): MapLayout {
     const [left, top] = project([west, north])
     const [right, bottom] = project([east, south])
@@ -80,11 +73,7 @@ export function place(layout: MapLayout, point: [number, number]): [number, numb
     return [x * layout.scale - layout.originX, y * layout.scale - layout.originY]
 }
 
-/**
- * A run of box pixels as SVG path data, empty if it falls outside the box. Overlap rather than a
- * point inside it: a shape larger than the box still fills it, and so does the ocean polygon a
- * small inset sits wholly inside, whose every corner is outside.
- */
+/** Empty if the points' bounds miss the box. Overlap rather than a point inside, so a shape enclosing the box counts. */
 export function polyline(points: [number, number][], width: number, height: number, close: boolean): string {
     const kept: string[] = []
     let [minX, maxX, minY, maxY] = [Infinity, -Infinity, Infinity, -Infinity]
@@ -94,8 +83,7 @@ export function polyline(points: [number, number][], width: number, height: numb
         maxX = Math.max(maxX, x)
         minY = Math.min(minY, y)
         maxY = Math.max(maxY, y)
-        // A shapefile carries far more detail than a card's pixels hold, and every point kept is
-        // path data satori and resvg both have to walk.
+        // Sub-pixel steps only cost satori and resvg time.
         if (last !== undefined && Math.abs(x - last[0]) < 0.5 && Math.abs(y - last[1]) < 0.5) {
             continue
         }

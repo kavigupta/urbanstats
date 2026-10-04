@@ -78,6 +78,9 @@ void test('constant listing', (): void => {
                 'unitPartyChangeGreen',
                 'unitPartyChangePurple',
                 'unitLeftMargin',
+                'unitLatitude',
+                'unitLongitude',
+                'unitDensityChange',
             ],
             '(number; ) -> number': [
                 'abs',

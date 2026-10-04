@@ -6038,6 +6038,8 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
      * @interface IArticleOrderingList
      * @property {Array.<string>|null} [longnames] ArticleOrderingList longnames
      * @property {Array.<number>|null} [types] ArticleOrderingList types
+     * @property {Array.<string>|null} [shortnames] ArticleOrderingList shortnames
+     * @property {Array.<string>|null} [cleannames] ArticleOrderingList cleannames
      */
 
     /**
@@ -6051,6 +6053,8 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
     function ArticleOrderingList(properties) {
         this.longnames = [];
         this.types = [];
+        this.shortnames = [];
+        this.cleannames = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -6072,6 +6076,22 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
      * @instance
      */
     ArticleOrderingList.prototype.types = $util.emptyArray;
+
+    /**
+     * ArticleOrderingList shortnames.
+     * @member {Array.<string>} shortnames
+     * @memberof ArticleOrderingList
+     * @instance
+     */
+    ArticleOrderingList.prototype.shortnames = $util.emptyArray;
+
+    /**
+     * ArticleOrderingList cleannames.
+     * @member {Array.<string>} cleannames
+     * @memberof ArticleOrderingList
+     * @instance
+     */
+    ArticleOrderingList.prototype.cleannames = $util.emptyArray;
 
     /**
      * Creates a new ArticleOrderingList instance using the specified properties.
@@ -6106,6 +6126,12 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
                 writer.int32(message.types[i]);
             writer.ldelim();
         }
+        if (message.shortnames != null && message.shortnames.length)
+            for (let i = 0; i < message.shortnames.length; ++i)
+                writer.uint32(/* id 3, wireType 2 =*/26).string(message.shortnames[i]);
+        if (message.cleannames != null && message.cleannames.length)
+            for (let i = 0; i < message.cleannames.length; ++i)
+                writer.uint32(/* id 4, wireType 2 =*/34).string(message.cleannames[i]);
         return writer;
     };
 
@@ -6157,6 +6183,18 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
                         message.types.push(reader.int32());
                     break;
                 }
+            case 3: {
+                    if (!(message.shortnames && message.shortnames.length))
+                        message.shortnames = [];
+                    message.shortnames.push(reader.string());
+                    break;
+                }
+            case 4: {
+                    if (!(message.cleannames && message.cleannames.length))
+                        message.cleannames = [];
+                    message.cleannames.push(reader.string());
+                    break;
+                }
             default:
                 reader.skipType(tag & 7);
                 break;
@@ -6206,6 +6244,20 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
                 if (!$util.isInteger(message.types[i]))
                     return "types: integer[] expected";
         }
+        if (message.shortnames != null && message.hasOwnProperty("shortnames")) {
+            if (!Array.isArray(message.shortnames))
+                return "shortnames: array expected";
+            for (let i = 0; i < message.shortnames.length; ++i)
+                if (!$util.isString(message.shortnames[i]))
+                    return "shortnames: string[] expected";
+        }
+        if (message.cleannames != null && message.hasOwnProperty("cleannames")) {
+            if (!Array.isArray(message.cleannames))
+                return "cleannames: array expected";
+            for (let i = 0; i < message.cleannames.length; ++i)
+                if (!$util.isString(message.cleannames[i]))
+                    return "cleannames: string[] expected";
+        }
         return null;
     };
 
@@ -6235,6 +6287,20 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
             for (let i = 0; i < object.types.length; ++i)
                 message.types[i] = object.types[i] | 0;
         }
+        if (object.shortnames) {
+            if (!Array.isArray(object.shortnames))
+                throw TypeError(".ArticleOrderingList.shortnames: array expected");
+            message.shortnames = [];
+            for (let i = 0; i < object.shortnames.length; ++i)
+                message.shortnames[i] = String(object.shortnames[i]);
+        }
+        if (object.cleannames) {
+            if (!Array.isArray(object.cleannames))
+                throw TypeError(".ArticleOrderingList.cleannames: array expected");
+            message.cleannames = [];
+            for (let i = 0; i < object.cleannames.length; ++i)
+                message.cleannames[i] = String(object.cleannames[i]);
+        }
         return message;
     };
 
@@ -6254,6 +6320,8 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
         if (options.arrays || options.defaults) {
             object.longnames = [];
             object.types = [];
+            object.shortnames = [];
+            object.cleannames = [];
         }
         if (message.longnames && message.longnames.length) {
             object.longnames = [];
@@ -6264,6 +6332,16 @@ export const ArticleOrderingList = $root.ArticleOrderingList = (() => {
             object.types = [];
             for (let j = 0; j < message.types.length; ++j)
                 object.types[j] = message.types[j];
+        }
+        if (message.shortnames && message.shortnames.length) {
+            object.shortnames = [];
+            for (let j = 0; j < message.shortnames.length; ++j)
+                object.shortnames[j] = message.shortnames[j];
+        }
+        if (message.cleannames && message.cleannames.length) {
+            object.cleannames = [];
+            for (let j = 0; j < message.cleannames.length; ++j)
+                object.cleannames[j] = message.cleannames[j];
         }
         return object;
     };

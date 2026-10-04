@@ -4,7 +4,7 @@ import { useColors } from '../page_template/colors'
 import { useUnitSettings } from '../page_template/settings'
 import { HumanReadableElement } from '../utils/human-readable-element'
 import { reifyReact } from '../utils/human-readable-name'
-import { Hue, UnitSettings, StoredUnit, Unit, UnitPlacement, writeQuantity } from '../utils/quantity'
+import { Hue, signLabel, StoredUnit, Unit, UnitPlacement, UnitSettings, writeQuantity } from '../utils/quantity'
 import { UnitType } from '../utils/unit'
 
 /** A quantity as it is displayed: the number and its unit, which sit in separate columns. */
@@ -15,10 +15,11 @@ export interface DisplayedQuantity {
 
 /**
  * Whether a comparison against a quantity of this unit reads as its opposite, which it does below
- * zero for a lead, since a lead is written as a size rather than as a signed number.
+ * zero wherever the sign is carried by a label, as for a lead or a coordinate, since the number is
+ * then written as a size.
  */
 function flipsInequality(unit: Unit, value: number): boolean {
-    return unit.decoration.kind === 'percent' && unit.decoration.party?.kind === 'lead' && value <= 0
+    return signLabel(unit, value) !== undefined && value <= 0
 }
 
 export function renderInequality(value: number, stored: StoredUnit, inequality: 'leq' | 'geq'): string {
@@ -73,6 +74,7 @@ export function getUnit(unit: UnitType): ReactNode {
         case 'fatalitiesPerCapita':
             return <span>fatalities per capita</span>
         case 'density':
+        case 'densityChange':
             return (
                 <span>
                     people per&nbsp;km
@@ -133,5 +135,9 @@ export function getUnit(unit: UnitType): ReactNode {
             return <span>% change</span>
         case 'leftMargin':
             return <span>% left margin</span>
+        case 'latitude':
+            return <span>degrees latitude</span>
+        case 'longitude':
+            return <span>degrees longitude</span>
     }
 }

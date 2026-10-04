@@ -19,6 +19,8 @@ import { AssignmentsResult, GeographySelection, USSExecutionRequest, USSExecutio
 interface LoadedGeographies {
     geographies: GeographySelection[]
     longnames: string[]
+    shortnames: string[]
+    cleannames: string[]
     /** How many of `longnames` each of `geographies` contributed, in order. */
     lengths: number[]
     dataCache: Map<string, number[]>
@@ -27,10 +29,7 @@ interface LoadedGeographies {
 /** Replaced whenever a request asks for geographies other than the ones already loaded. */
 interface ExecutorCache { loaded: LoadedGeographies | undefined }
 
-/**
- * The executor holds the names and columns of the geographies it last ran over, so a request over
- * those same geographies loads nothing. Its lifetime is that cache's lifetime.
- */
+/** Caches the last geographies' names and columns, so a repeat request over them loads nothing. */
 export function createRequestExecutor(): (request: USSExecutionRequest) => Promise<USSExecutionResult> {
     const cache: ExecutorCache = { loaded: undefined }
     return request => executeRequest(request, cache)
@@ -97,7 +96,7 @@ function assignments(context: Context | undefined): AssignmentsResult {
 async function contextForRequest(request: USSExecutionRequest, cache: ExecutorCache): Promise<[Context, () => EditorError[]]> {
     const effects: Effect[] = []
     const getWarnings = (): EditorError[] => {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- just so if there's additonal types, we're safe
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- just so if there's additional types, we're safe
         return effects.filter(eff => eff.type === 'warning').map(eff => ({
             type: 'error',
             value: eff.message,
@@ -126,11 +125,13 @@ async function mapperContextForRequest(stmts: UrbanStatsASTStatement, geographie
         cache.loaded = {
             geographies,
             longnames: indices.flatMap(index => index.longnames),
+            shortnames: indices.flatMap(index => index.shortnames),
+            cleannames: indices.flatMap(index => index.cleannames),
             lengths: indices.map(index => index.longnames.length),
             dataCache: new Map(),
         }
     }
-    const { longnames, lengths, dataCache } = cache.loaded
+    const { longnames, shortnames, cleannames, lengths, dataCache } = cache.loaded
 
     const annotateType = (name: string, val: USSRawValue): USSValue => {
         const typeInfo = dte.get(name)
@@ -145,6 +146,12 @@ async function mapperContextForRequest(stmts: UrbanStatsASTStatement, geographie
     const getVariable = async (name: string): Promise<USSValue | undefined> => {
         if (name === 'geoName') {
             return annotateType('geoName', longnames)
+        }
+        if (name === 'geoShortName') {
+            return annotateType('geoShortName', shortnames)
+        }
+        if (name === 'geoCleanName') {
+            return annotateType('geoCleanName', cleannames)
         }
         if (name === 'geo') {
             return annotateType('geo', longnames.map(longname => ({ type: 'opaque', opaqueType: 'geoFeatureHandle', value: longname })))
@@ -161,7 +168,6 @@ async function mapperContextForRequest(stmts: UrbanStatsASTStatement, geographie
         }
         const index = variableInfo.index
 
-        // Check cache first
         const existing = dataCache.get(name)
         if (existing !== undefined) {
             return annotateType(name, existing)

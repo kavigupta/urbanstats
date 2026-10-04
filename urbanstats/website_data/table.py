@@ -7,7 +7,10 @@ import pandas as pd
 import tqdm.auto as tqdm
 from permacache import stable_hash
 
-from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
+from urbanstats.compatibility.compatibility import (
+    forget_loaded_values,
+    permacache_with_remapping_pickle,
+)
 from urbanstats.data.wikipedia.wikidata_sourcer import compute_wikidata_and_wikipedia
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles as shapefiles_list
 from urbanstats.metadata.metadata_columns_list import (
@@ -24,7 +27,7 @@ from urbanstats.universe.universe_provider.compute_universes import (
 
 
 @permacache_with_remapping_pickle(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_52",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_53",
     key_function=dict(
         sf=lambda x: x.hash_key,
         shapefiles=lambda x: {
@@ -90,6 +93,7 @@ def combined_shapefile() -> pd.DataFrame:
     full = []
     for k in tqdm.tqdm(shapefiles_list, desc="computing statistics"):
         t = compute_statistics_for_shapefile(shapefiles_list[k], shapefiles_list)
+        forget_loaded_values(compute_statistics_for_shapefile)
 
         full.append(t)
 

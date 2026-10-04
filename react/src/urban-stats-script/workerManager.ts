@@ -24,8 +24,7 @@ export interface AssignmentsResult {
     blockValues: Map<string, USSValue> | undefined
 }
 
-// Assignments can take up a lot of memory, and also get stuck in React memoization
-// So, we should clear out the old instance once it is not longer being used
+// Assignments can be large and get held by React memoization, so clear the old ones once replaced
 export function useClearPreviousAssignments(assignments: AssignmentsResult): void {
     const prev = useRef(assignments)
     useEffect(() => {

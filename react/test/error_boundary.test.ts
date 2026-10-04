@@ -5,10 +5,8 @@ import { getLocation, goBack, screencap, target, urbanstatsFixture } from './tes
 const errorScreen = Selector('[data-test-id=uncaughtError]')
 
 /**
- * The data credit page keeps the hash in its page descriptor, so the router still sees
- * `#crashForTesting` when the hash change rerenders it. The hash also gives us a history
- * entry that the browser traverses without reloading, which is what the crashed navigator
- * has to handle.
+ * The data credit page keeps the hash in its descriptor, so the router sees it. The hash change also
+ * adds a history entry that the crashed navigator must handle.
  */
 const crash = ClientFunction(() => { location.hash = '#crashForTesting' })
 

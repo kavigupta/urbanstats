@@ -42,25 +42,24 @@ def compute_flat_ordinals(full: Any, ordering: Any) -> FlatOrdinals:
             for u in us
         ]
     ).T
-    ordinals_flat = np.array(
-        [
-            np.array(ordering.by_column[k].ordinal[idx_in_sorted, ut_idxs])[0]
-            for k in tqdm.tqdm(
-                internal_statistic_names(), desc="Computing flat ordinals"
-            )
-        ]
-    )
-    percentiles_flat = np.array(
-        [
-            np.array(ordering.by_column[k].percentile[idx_in_sorted, ut_idxs])[0]
-            for k in tqdm.tqdm(
-                internal_statistic_names(), desc="Computing flat percentiles"
-            )
-        ]
-    )
+    ordinals_flat = _gather(ordering, "ordinal", idx_in_sorted, ut_idxs)
+    percentiles_flat = _gather(ordering, "percentile", idx_in_sorted, ut_idxs)
     return FlatOrdinals(
         start_in_array_each=start_in_arry_each,
         length_each=num_universes_each,
         ordinals_flat=ordinals_flat,
         percentiles_flat=percentiles_flat,
     )
+
+
+def _gather(ordering: Any, field: str, idx_in_sorted: Any, ut_idxs: Any) -> np.ndarray:
+    names = internal_statistic_names()
+    result = np.empty(
+        (len(names), len(idx_in_sorted)),
+        dtype=getattr(ordering.by_column[names[0]], field).dtype,
+    )
+    for i, k in enumerate(tqdm.tqdm(names, desc=f"Computing flat {field}s")):
+        result[i] = np.array(
+            getattr(ordering.by_column[k], field)[idx_in_sorted, ut_idxs]
+        )[0]
+    return result

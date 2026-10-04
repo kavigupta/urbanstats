@@ -37,7 +37,6 @@ export function StatisticPanelTable({ view, stat, data, universeByName, set, tab
     const sortedIndices = useMemo(() => sortedRowIndices(data, view.sortColumn, view.order), [data, view.sortColumn, view.order])
     const count = sortedIndices.length
 
-    // The rows of the page the view is on, as indices into the data.
     const pageIndices = useMemo(() => pageRowIndices(sortedIndices, view.start, view.amount), [sortedIndices, view.start, view.amount])
 
     const widthLeftHeader = data.table.length > 1 ? 25 : 50

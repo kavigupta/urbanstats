@@ -131,6 +131,13 @@ mapper(() => test)('common non-optional named arguments saved when switching fun
     await t.expect(nthEditor(0).textContent).eql('linearScale(min=10000000)\n')
 })
 
+mapper(() => test)('ticking an argument with an overridden default fills in that default', { code: 'customNode("");\ncondition (true)\npMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    await checkBox(t, /^Relative Area/)
+    await t.expect(getInput('Population').exists).ok()
+    await toggleCustomScript(t)
+    await t.expect(getCodeFromMainField()).contains('relativeArea=population')
+})
+
 mapper(() => test)('common optional named arguments saved when switching functions', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
     await checkBox(t, /min/)
     await checkBox(t, /center/)

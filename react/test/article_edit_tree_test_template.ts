@@ -6,11 +6,9 @@ import { clickUniverseFlag, getLocation, resizeForPlatform, safeReload, screenca
 const mainCheck = categoryCheckbox('main')
 // Population is a single-stat group, so its checkbox sits directly on the Population row.
 const populationCheck = groupCheckbox('population')
-// A collapsed category keeps its unselected rows mounted (so the height transition has
-// content) but marks them inert, so clicking one needs the interactable variant.
+// Collapsed rows stay mounted but inert, so clicking one needs the interactable variant.
 const populationCheckInteractable = interactableGroupCheckbox('population')
-// Main has no toggle at all until something in it is unselected, and opens expanded since
-// its groups are selected, so the toggle it then grows offers to collapse.
+// Main has no toggle until something in it is unselected, and it opens expanded, so its toggle offers to collapse.
 const mainExpandButton = categoryToggleButton('main', 'Expand')
 const mainCollapseButton = categoryToggleButton('main', 'Collapse')
 // Housing is off by default, so it always has something behind its toggle.
@@ -47,9 +45,6 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     platformFixture('article edit tree', `${target}/article.html?longname=San+Francisco+city%2C+California%2C+USA`)
 
     test('category-check', async (t) => {
-        /**
-         * Check that the category checks and unchecks correctly.
-         */
         await enterEditMode(t)
         await t.expect(mainCheck.checked).eql(true)
         // Every group in Main is selected, so there is nothing for a toggle to reveal.
@@ -62,11 +57,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     test('checking-a-category-expands-it', async (t) => {
-        /**
-         * Checking a category selects every group, so nothing is behind the toggle at that
-         * moment -- but the category is left expanded, so the groups stay on display as soon as
-         * one of them is turned off again.
-         */
+        // Checking selects every group but leaves the category expanded, so they stay shown once one is unchecked.
         await enterEditMode(t)
         await t.expect(housingExpandButton.exists).ok()
         await t.expect(vacancyCheckInteractable.exists).notOk()
@@ -105,10 +96,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     test('unchecking-a-category-leaves-the-expansion-alone', async (t) => {
-        /**
-         * Unchecking is the one step of the cycle that doesn't expand -- it puts nothing on
-         * display that the user asked to see -- and it doesn't collapse either.
-         */
+        // Unchecking neither expands nor collapses.
         await enterEditMode(t)
         await t.click(mainCheck)
         await t.expect(mainCheck.checked).eql(false)
@@ -123,10 +111,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     test('subcategory-check-selects-its-groups', async (t) => {
-        /**
-         * The subcategory checkbox stands for its groups the way a category's does, so checking
-         * it leaves the category itself indeterminate -- the segregation groups are still off.
-         */
+        // Leaves the category indeterminate, since the segregation groups are still off.
         await enterEditMode(t)
         await setCategoryExpanded(t, 'race', true)
         await t.expect(raceCompositionCheck.checked).eql(false)
@@ -138,10 +123,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     test('subcategory-expands-independently-of-its-category', async (t) => {
-        /**
-         * An expanded category shows the subcategory header, not the groups behind it, so a
-         * category of pie charts doesn't unfold into dozens of rows at once.
-         */
+        // An expanded category shows the subcategory header, not its groups, so pie charts don't unfold into dozens of rows.
         await enterEditMode(t)
         await setCategoryExpanded(t, 'race', true)
         await t.expect(segregationCheckInteractable.exists).ok()
@@ -232,8 +214,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     test('indeterminate-cycle-collapsed', async (t) => {
         /**
          * Check that the category, when collapsed, cycles between indeterminate -> true -> false -> indeterminate states.
-         * The effect on the article is observed by leaving edit mode, since an expanded edit
-         * tree shows every row regardless of whether its group is enabled.
+         * Observed outside edit mode, since the edit tree shows every row.
          */
         const populationStat = Selector('a').withExactText('Population')
 
@@ -272,7 +253,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('indeterminate-exit-check', async (t) => {
         /**
-         * Check than when a category enters an indeterminate state, it can come out of that state when its groups become uniformly checked.
+         * Check that when a category enters an indeterminate state, it can come out of that state when its groups become uniformly checked.
          */
         await enterEditMode(t)
         await t.click(populationCheckInteractable)
@@ -292,7 +273,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('indeterminate-exit-uncheck', async (t) => {
         /**
-         * Check than when a category enters an indeterminate state, it can come out of that state when its groups become uniformly unchecked.
+         * Check that when a category enters an indeterminate state, it can come out of that state when its groups become uniformly unchecked.
          */
         await enterEditMode(t)
         await t.click(mainCheck)
@@ -333,11 +314,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     test('warning-row-placement', async (t) => {
-        /**
-         * Main's groups that have years warn, and its year-less groups still show values. On the
-         * article itself the warnings belong in the rows those statistics would have occupied --
-         * above Area -- rather than all together below the table.
-         */
+        // Main's groups with years warn in the rows they'd occupy, above Area, while its year-less groups still show values.
         await enterEditMode(t)
         await uncheckAllCategories(t)
         await t.click(mainCheck)
@@ -409,9 +386,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     test('year-selection-changes-the-edit-table-itself', async (t) => {
-        // The edit tree shows every group regardless of whether it's enabled, but it still
-        // respects the year selection. Population then spans two years, so it stops collapsing
-        // into a single row and splits into one row per year.
+        // The tree respects the year selection, so Population splits into a row per year.
         await enterEditMode(t)
         await t.expect(populationRow('2010').exists).notOk()
 
@@ -426,9 +401,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     test('staged-year-change-is-highlighted', async (t) => {
-        // The year rows are new controls on the table, so staging has to highlight them too --
-        // otherwise a settings link that only changes a year would auto-open edit mode showing
-        // nothing about what's pending.
+        // Otherwise a link changing only a year would open edit mode with nothing highlighted.
         await enterEditMode(t)
         await t.click(year2010Check)
         const linkWith2010 = await getLocation()

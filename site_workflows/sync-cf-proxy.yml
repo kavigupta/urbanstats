@@ -1,17 +1,8 @@
 name: Sync CF Proxy
 
-# Cloudflare's Worker routes only fire on proxied records, but GitHub only renews the Pages
-# certificate for urbanstats.org while the apex records resolve to GitHub's own servers — which
-# they don't while Cloudflare is proxying them. Rather than choosing, this drops the orange cloud
-# whenever GitHub stops reporting a healthy certificate and restores it once a renewal lands, so the
-# apex is proxied except for the few hours every couple of months that a renewal takes.
-#
-# Keep the zone on Full rather than Full (Strict). If a renewal is ever missed entirely, strict mode
-# refuses the expired origin with a 526, which takes the site down and blocks the challenge that
-# would fix it. Full also means an already-expired certificate is safest left proxied, so this fails
-# rather than grey-clouding in that case.
-#
-# Runs in the Pages repo, since that is where the certificate lives.
+# Worker routes need proxied records, but GitHub only renews the Pages certificate while the apex resolves
+# to GitHub. So this unproxies while GitHub reports no healthy certificate, and reproxies once it renews.
+# Keep the zone on Full: Full (Strict) would answer 526 on a missed renewal and block the fix.
 on:
   schedule:
     - cron: "17 * * * *"
@@ -26,9 +17,8 @@ permissions:
 
 env:
   RECORD_NAME: urbanstats.org
-  # Grey-cloud this far ahead of expiry even while GitHub still says `approved`, so a renewal that
-  # stalls without the state ever changing can't run the certificate down to zero. The state check
-  # should fire around 30 days out and leave this unreached.
+  # Grey-cloud this far ahead of expiry even if GitHub still says `approved`, in case a renewal stalls
+  # silently. The state check should fire first, around 30 days out.
   MIN_DAYS_LEFT: 14
 
 jobs:
@@ -78,9 +68,8 @@ jobs:
           api() { curl -sS -H "Authorization: Bearer $CF_TOKEN" -H 'content-type: application/json' "$@"; }
           base="https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records"
 
-          # A challenge served over either family has to reach GitHub, so if the apex holds real AAAA
-          # records they have to move with the A records. Cloudflare answers proxied hostnames over
-          # IPv6 whether or not the zone holds any, so finding none here is normal.
+          # AAAA records, if any, move with the A records so challenges over IPv6 reach GitHub. None is
+          # normal, since Cloudflare serves proxied hostnames over IPv6 anyway.
           found=0
           for rtype in A AAAA; do
             records=$(api "$base?type=$rtype&name=$RECORD_NAME&per_page=100")

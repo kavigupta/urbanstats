@@ -222,9 +222,8 @@ for (const [data, expected] of [
     })
 }
 
-// What a map's ramp is labelled in. Both the mapper and the link embed card ask this, and the card
-// used to answer it differently: it had no fall back to a unit derived from the data, so a map the
-// user provided no unit for was drawn with a ramp of bare numbers.
+// What a map's ramp is labelled in, shared by the mapper and the embed card. With no unit provided, it
+// falls back to the one derived from the data.
 for (const [data, userProvided, expected] of [
     ['high_temp', undefined, '1\u202f000.0\u00b0F'],
     ['population', undefined, '1\u202f000'],

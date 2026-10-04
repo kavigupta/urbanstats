@@ -10,6 +10,7 @@ def csa_or_msa(hash_key, typ, census_name, wikidata_sourcer, path):
         hash_key=hash_key,
         path=path,
         shortname_extractor=lambda x: name_components(typ, x)[0],
+        cleanname_extractor=lambda x: x.NAME.split(", ")[0],
         longname_extractor=lambda x: ", ".join(
             name_components(typ, x, abbreviate=True)
         ),

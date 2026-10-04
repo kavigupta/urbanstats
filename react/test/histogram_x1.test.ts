@@ -13,10 +13,7 @@ async function saveHistogram(t: TestController, name: string, nth = 0): Promise<
     saveString(t, output, name, 'xml')
 }
 
-// Clicking a point pins its tooltip: unlike the hover tooltip, a pinned one survives the mouse
-// leaving the chart and is drawn into the downloaded image. Any number of points can be pinned at
-// once, each dismissed with the little "x" in its corner, and the pins are per-plot component
-// state, so navigating away clears them.
+// Pinned tooltips survive the mouse leaving, appear in downloads, and clear on navigation.
 urbanstatsFixture('histogram pinned tooltip', `${target}/article.html?longname=Germany&universe=world`)
 
 const pinnedTip = Selector('.histogram-svg-panel').find('g.plot-pinned-tip')
@@ -139,9 +136,7 @@ test('histogram-pinned-tooltip-cleared-by-navigation', async (t) => {
     await t.expect(pinnedTip.exists).notOk('the pin is not persistent state, and does not survive a navigation')
 })
 
-// what a tooltip has to stay clear of: the top of the frame, taken as its highest gridline, and the
-// legend drawn inside it. `tipGroup` selects the mark the tooltip belongs to, which is either the
-// pointer-driven tip or a pinned one -- the placement they get is the same either way.
+// what a tooltip must stay clear of: the highest gridline and the legend. `tipGroup` is the hover or pinned tip.
 const tooltipGeometry = ClientFunction((tipGroup: string) => {
     const panel = document.getElementsByClassName('histogram-svg-panel')[0]
     // the tooltip proper is the mark group's child; the leader back to its point is a sibling of it
@@ -161,10 +156,8 @@ const tooltipGeometry = ClientFunction((tipGroup: string) => {
 const tooltipLeader = Selector('.histogram-svg-panel').find('g[aria-label=tip] > path')
 const pinnedTipLeader = Selector('.histogram-svg-panel').find('g.plot-pinned-tip > path')
 
-// A cumulative relative histogram is at 100% on the left, so a tooltip there is anchored at the
-// very top of the frame, and on a comparison it is several lines tall. Plot would fit such a
-// tooltip into the top margin, drawing it across the frame and under the settings bar (#2083); it
-// belongs below its point instead -- and below the legend, which is drawn in that same corner.
+// A cumulative relative histogram starts at 100%, where Plot would draw a tall tooltip under the
+// settings bar (#2083). It belongs below its point and the legend.
 urbanstatsFixture('tooltip against the top of the frame', comparisonPage(['China', 'USA', 'Japan', 'Indonesia']))
 
 test('histogram-tooltip-top-of-frame', async (t) => {
@@ -188,9 +181,7 @@ test('histogram-tooltip-top-of-frame', async (t) => {
     await screencap(t, { fullPage: false, selector: Selector('.histogram-svg-panel') })
 })
 
-// the same placement, for a tooltip that was pinned at that point rather than hovered -- a pinned
-// one outlives the pointer, so unlike the hover case it can be captured in a full-page screenshot
-// and drawn into the downloaded image
+// the same, pinned, which outlives the pointer and so can go in a full-page screenshot and the download
 urbanstatsFixture('pinned tooltip against the top of the frame', comparisonPage(['Canada', 'USA', 'Mexico', 'Germany']))
 
 test('histogram-pinned-tooltip-top-of-frame', async (t) => {
@@ -255,8 +246,6 @@ test('histogram-transpose-download', async (t) => {
 urbanstatsFixture('transpose histograms', `${target}/comparison.html?longnames=%5B"China"%2C"USA"%2C"Japan"%2C"Indonesia"%5D&s=2EoPvrZ42d9b5wf`)
 
 test('transpose-histograms', async (t) => {
-    // Capture all kinds of transposed histograms
-
     await screencap(t)
 
     await t.click('[data-test-id=histogram_relative]')
@@ -377,7 +366,6 @@ urbanstatsFixture('histogram comparison multiple years', comparisonPage([pasaden
 test('histogram-comparison-multiple-years', async (t) => {
     await t.click(Selector('.expand-toggle'))
     await screencap(t)
-    // Test with different histogram type
     const histogramTypeSelect = Selector('[data-test-id=histogram_type]')
     await t.click(histogramTypeSelect).click(histogramTypeSelect.find('option').withExactText('Bar'))
     await screencap(t)

@@ -12,8 +12,8 @@ import { target } from './test_utils'
 // Matches OG_PORT's default in cf-og-worker/preview.sh and ogPort's default in PageDescriptor.
 export const ogPort = 8787
 
-// The Worker the resources test measures, on a port of its own so that nothing else's requests
-// land in the numbers. Clear of the shared Worker's inspector and of the tile server below.
+// For the resources test, so nothing else's requests are measured. Clear of the shared Worker's
+// inspector and the tile server.
 export const measuredPort = ogPort + 10
 
 // Matches preview.sh, which derives each of them the same way.
@@ -75,9 +75,8 @@ async function isWorkerAvailable(port: number): Promise<boolean> {
 }
 
 /*
- * Vector tiles served in place of openfreemap's, so a card screenshot stays put when openfreemap
- * rebuilds its planet. The Worker fetches them itself, out of reach of the browser's CDP, so this
- * stands in as an origin rather than intercepting anything.
+ * Pinned tiles, so card screenshots don't move when openfreemap rebuilds. Served as an origin, since
+ * the Worker's own fetches are out of CDP's reach.
  */
 const tileSnapshots = join(__dirname, 'assets', 'og-tiles')
 
@@ -136,8 +135,7 @@ async function startTileServer(): Promise<void> {
         void (async (): Promise<void> => {
             const path = new URL(request.url!, snapshotTiles).pathname
             if (path === '/planet' || path === '/blank/planet') {
-                // The TileJSON basemap.ts reads the tile path out of. The blank one's tiles are all
-                // missing, since only the numbered path below serves anything.
+                // The TileJSON basemap.ts reads. The blank one's tile path serves nothing.
                 const prefix = path === '/planet' ? '' : '/blank'
                 response.writeHead(200, { 'content-type': 'application/json' })
                 response.end(JSON.stringify({ tiles: [`${snapshotTiles}${prefix}/{z}/{x}/{y}.pbf`] }))
@@ -173,10 +171,7 @@ async function startTileServer(): Promise<void> {
     server.unref()
 }
 
-/**
- * The two numbers Cloudflare checks before a Worker is allowed to run at all: the compressed
- * bundle it has to ship, and the CPU the top level of that bundle burns on a cold isolate.
- */
+/** Cloudflare's two deploy-time limits: gzipped bundle size and cold-start CPU. */
 export async function ogWorkerBundleCost(): Promise<{ gzipKiB: number, startupCpuMs: number }> {
     const { all } = await execa('npx', ['wrangler', 'check', 'startup', '--outfile', join(tmpdir(), 'cf-og-worker-startup.cpuprofile')], {
         cwd: 'cf-og-worker',
@@ -198,10 +193,7 @@ interface RenderCost {
     originBytes: number
 }
 
-/**
- * What one card render costs. `wrangler dev` reports wall time, which on a local origin is mostly
- * fetch latency; workerd's inspector is the only place the metered numbers show up.
- */
+/** Measured through workerd's inspector, since `wrangler dev` reports wall time, which locally is mostly fetch latency. */
 export async function ogRenderCost(pageUrl: string): Promise<RenderCost> {
     const socket = new WebSocket(`ws://localhost:${inspectorPort(measuredPort)}/ws`)
     let nextId = 0
@@ -265,16 +257,12 @@ export async function ogRenderCost(pageUrl: string): Promise<RenderCost> {
     }
 }
 
-/**
- * `caches.default` would serve every render after the first, and wrangler persists it across runs.
- * The page's zod schemas drop params they do not know, so the buster changes only the cache key.
- */
+/** Busts `caches.default`, which wrangler persists across runs. The schemas drop unknown params, so only the cache key changes. */
 async function render(pageUrl: string, cacheBuster: string): Promise<void> {
     const url = new URL(pageUrl, `http://localhost:${measuredPort}`)
     url.searchParams.set('renderCost', cacheBuster)
     const image = `http://localhost:${measuredPort}/og${url.pathname}${url.search}`
-    // Well above a render, and short of node's five-minute default: a Worker that stops answering
-    // mid-run should say so rather than hold the runner.
+    // Well under node's five-minute default, so a stalled Worker fails rather than holding the runner.
     const giveUp = new AbortController()
     const timer = setTimeout(() => { giveUp.abort() }, 60_000)
     try {

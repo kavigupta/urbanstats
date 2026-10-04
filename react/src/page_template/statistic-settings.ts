@@ -276,12 +276,8 @@ function searchMatch(searchTerm: string, target: string): boolean {
 }
 
 /**
-/**
- * A group matches when its own name does, or when its category's or subcategory's does. A
- * section keeps every matching group, including ones this page has no statistics for, so while
- * searching the category and subcategory checkboxes act on what the search leaves rather than
- * on what the page happens to have; a section with nothing the page has is dropped instead of
- * shown empty.
+ * A group matches on its own, its category's or its subcategory's name. Sections keep matches the page
+ * lacks, so their checkboxes act on the search results, but a section with nothing on the page is dropped.
  */
 export function sectionsMatchingSearch(searchTerm: string, availableGroups: Set<Group>): CategorySection[] {
     return categorySections(allGroups.filter(group =>
@@ -307,11 +303,7 @@ export function useSelectedYears(): Year[] {
     return availableYears.filter(year => settingsValues[`show_stat_year_${year}`])
 }
 
-/**
- * We could present something more complex like a list of subsets, but that would be confusing
- * and not very useful. So instead, we just say "enable one of these sources" or "enable all of
- * these sources".
- */
+/** Says "enable one of" or "enable all of" these sources, rather than listing subsets. */
 export interface MissingSources {
     sources: SourceIdentifier[]
     anySourceSuffices: boolean
@@ -415,10 +407,7 @@ function missingGroupReasons(
     })
 }
 
-/**
- * The same, with the groups a warning covers rolled up into their category wherever it covers all
- * of it, so a table that stands one warning in for several statistics can say so once.
- */
+/** Like `missingGroupReasons`, with groups rolled up into any category they cover entirely. */
 export function missingGroups(
     params: MissingGroupsInput & { availableGroups: Group[] },
 ): MissingGroup[] {
@@ -447,11 +436,7 @@ export function useMissingGroups(): MissingGroup[] {
     return missingGroups({ selectedGroups, selectedYears, statPathsAll, settings, availableGroups })
 }
 
-/**
- * For the edit tree, which lists every group and gives each its own row to warn in. A group's own
- * checkbox is one of the things that can leave a statistic out, so it is left out of the reckoning
- * -- what remains are the reasons the tree can act on, the years and the sources.
- */
+/** For the edit tree, which warns only about years and sources, not about a group's own checkbox. */
 export function useMissingGroupReasonsOfEveryGroup(): { group: Group, reason: MissingGroupReason }[] {
     const availableGroups = useAvailableGroups()
     const selectedYears = useSelectedYears()
@@ -550,11 +535,7 @@ export function getAvailableGroups(contextStatPaths: StatPath[]): Group[] {
     return allGroups.filter(group => intersectsPage(group.statPaths, pageStatPaths))
 }
 
-/**
- * Memoized on the page's own stat paths, which only change on navigation: edit mode puts the
- * whole tree on the table, so otherwise this would be rescanned on every checkbox click and
- * every keystroke in its filter.
- */
+/** Memoized on the stat paths, which change only on navigation, so edit mode doesn't rescan on every keystroke. */
 function useAvailableGroupSet(): Set<Group> {
     const statPathsAll = useStatPathsAll()
     return useMemo(() => new Set(getAvailableGroups(statPathsAll.flat())), [statPathsAll])

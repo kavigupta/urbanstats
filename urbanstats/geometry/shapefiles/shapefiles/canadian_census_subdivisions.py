@@ -111,6 +111,7 @@ CANADIAN_CENSUS_SUBDIVISIONS = Shapefile(
     hash_key="canadian_census_subdivisions_3",
     path=load_csd_shapefile,
     shortname_extractor=census_subdivision_name,
+    cleanname_extractor=lambda row: row.CSDNAME.replace("  ", " "),
     longname_extractor=lambda row: census_subdivision_name(row)
     + ", "
     + row.division_longname,

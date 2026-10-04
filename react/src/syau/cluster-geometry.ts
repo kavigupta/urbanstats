@@ -1,8 +1,4 @@
-/*
- * The clustering parameters the page draws with. The link-embed card replicates the page's
- * clustering with its own supercluster, so these have to come from one place or the card and the
- * page silently disagree.
- */
+/* Shared with the embed card, which runs its own supercluster and has to match the page. */
 
 /** Where clustering stops and each point is drawn on its own. */
 export const clusterMaxZoom = 14
@@ -40,9 +36,7 @@ export function pieSlicePath(cx: number, cy: number, radius: number, from: numbe
     const pad = Math.min(span * 0.01, Math.max(0, (2 * Math.PI - span) / 2 - 0.02))
     const start = point(from - pad)
     const end = point(to + pad)
-    // SVG drops an arc whose endpoints coincide, so a slice that comes back to where it started is
-    // drawn as the whole pie. An arc cannot span more than half a turn unambiguously, so a whole
-    // pie takes two of them.
+    // SVG drops an arc whose endpoints coincide, so a whole pie is two half-turn arcs.
     if (start === end && span > Math.PI) {
         return `M${point(0)}A${r},${r} 0 1,1 ${point(Math.PI)}A${r},${r} 0 1,1 ${point(0)}z`
     }

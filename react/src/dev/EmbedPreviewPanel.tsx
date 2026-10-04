@@ -26,8 +26,7 @@ async function fetchEmbed(workerOrigin: string, target: string): Promise<Status>
         html = await response.text()
     }
     catch {
-        // A dead port and a blocked cross-origin read are indistinguishable, and both mean the same
-        // thing to whoever is looking: start the Worker.
+        // A dead port looks like a blocked cross-origin read. Either way, the Worker needs starting.
         return { kind: 'down' }
     }
 
@@ -41,7 +40,7 @@ async function fetchEmbed(workerOrigin: string, target: string): Promise<Status>
         return { kind: 'down' }
     }
     const imageURL = new URL(image, workerOrigin)
-    // Busts the card's day of cache-control, which its URL does not change with the code.
+    // Busts the card's day-long cache, which code changes don't invalidate.
     imageURL.searchParams.set('__preview', Date.now().toString())
     return {
         kind: 'ready',
@@ -59,8 +58,7 @@ export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: 
     const workerOrigin = `http://localhost:${ogPort}`
 
     const [path, setPath] = useState(target)
-    // Separate from `path` so that following the frame does not reload it, undoing the navigation
-    // we just followed. Only committing the input reloads it.
+    // Separate from `path` so following the frame's navigation doesn't reload it.
     const [src, setSrc] = useState(target)
     const [status, setStatus] = useState<Status>({ kind: 'loading' })
     const [attempt, setAttempt] = useState(0)
@@ -75,11 +73,8 @@ export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: 
         navContext.unsafeUpdateCurrentDescriptor({ kind: 'embedPreview', target: newPath }, { history: 'replaceState' })
     }, [navContext])
 
-    /*
-     * The site navigates with pushState, which fires no load event on the frame, so polling is the
-     * only way to follow it. Compared against the last location seen rather than against `path`, so
-     * typing in the input is never overwritten by a poll that found nothing new.
-     */
+    // Polls, since pushState fires no load event. Compared against the last location seen rather than
+    // `path`, so a poll doesn't overwrite typing.
     useEffect(() => {
         const interval = setInterval(() => {
             let here
@@ -101,11 +96,7 @@ export function EmbedPreviewPanel({ target, ogPort }: { target: string, ogPort: 
         return () => { clearInterval(interval) }
     }, [record])
 
-    /*
-     * Editing the Worker restarts it, which the site's own hot reload never hears about. The restart
-     * drops this stream and EventSource reconnects to the new isolate, which announces its id. The
-     * first id seen is only recorded: a reload is a change from one id to another.
-     */
+    // A Worker restart drops this stream, and EventSource reconnects to the new isolate, whose id differs.
     useEffect(() => {
         const source = new EventSource(new URL('/__reload', workerOrigin))
         source.onmessage = (event) => {

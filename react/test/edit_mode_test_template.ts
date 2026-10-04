@@ -3,11 +3,7 @@ import { Selector } from 'testcafe'
 import { categoryCheckbox, clearFilterButton, doneButton, editButton, filterBox, groupCheckbox, groupWarning, interactableGroupCheckbox, yearCheckbox } from './edit_mode_test_utils'
 import { resizeForPlatform, safeReload, screencap, uncheckAllCategories, urbanstatsFixture } from './test_utils'
 
-/**
- * The parts of edit mode that behave the same on the article table and the comparison table.
- * The table-specific behavior (transposition, the per-region columns) lives in each caller's
- * file.
- */
+/** Edit mode tests shared by the article and comparison tables. */
 export function editModeSharedTests(spec: {
     /** Prefixes the fixture names, so the two callers' fixtures stay distinguishable. */
     name: string
@@ -15,10 +11,7 @@ export function editModeSharedTests(spec: {
     /** A selector for the table the edit tree lives on. */
     scope: string
     editButtonLabel: string
-    /**
-     * Names the expanded plot should carry a series for. Empty for a table with a single
-     * column, where the plot has nothing to distinguish.
-     */
+    /** Empty for a single-column table, whose plot has one unnamed series. */
     expectedPlotSeries: string[]
     congressional: { page: string, expectedRegions: string[] }
 }): void {

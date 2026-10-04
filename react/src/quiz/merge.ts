@@ -1,8 +1,4 @@
-/*
- * Merging two copies of a quiz profile. Kept apart from `sync.ts` so these stay pure functions of
- * their arguments: `sync.ts` reaches for `QuizModel.shared` and Google Drive, neither of which a
- * merge rule should need.
- */
+/* Pure merge rules, kept out of `sync.ts`, which depends on `QuizModel.shared` and Google Drive. */
 
 import stableStringify from 'json-stable-stringify'
 
@@ -43,13 +39,8 @@ export function mergeHistories(a: QuizHistory, b: QuizHistory): QuizHistory {
 }
 
 /*
- * Merge two friend lists by id, keeping the more recently touched entry for each.
- *
- * Both devices have to arrive at the same list from the same pair of inputs, or each will keep
- * uploading its own and the two will sync back and forth forever. So the result is ordered by
- * timestamp rather than by either input's order, and timestamp ties are broken on content rather
- * than on which list the entry came from. Ids are compared directly rather than with
- * `localeCompare`, whose ordering depends on the device's locale.
+ * Keeps the most recently touched entry per id. Both devices must get the same list or they sync forever,
+ * so ordering and tie-breaks depend only on content, never on input order or locale.
  */
 export function mergeFriends(a: QuizFriends, b: QuizFriends): QuizFriends {
     const byId = new Map<string, QuizFriends[number]>()

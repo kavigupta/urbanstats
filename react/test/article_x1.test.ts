@@ -180,7 +180,6 @@ test('loading indicator', async (t) => {
 urbanstatsFixture('uncheck all years', '/article.html?longname=California%2C+USA')
 
 test('uncheck all years exits staged mode', async (t) => {
-    // Check all year checkboxes, then uncheck them, and verify that staged mode is exited (staging controls disappear)
     await checkTextboxes(t, ['Geographic Identifiers'])
     await waitForLoading()
     await checkTextboxes(t, ['2020'])
@@ -229,14 +228,9 @@ async function getAllTexts(t: TestController, selector: Selector): Promise<strin
 }
 
 async function testSameOrdinalPercentile(t: TestController): Promise<void> {
-    // pull the longname from "centered_text subheadertext" div
     const longname = await Selector('div').withAttribute('class', 'centered_text subheadertext').nth(0).innerText
-    // pull the index: data-test-id="statistic-ordinal"
     const index = await Selector('div').withAttribute('data-test-id', 'statistic-ordinal').nth(0).innerText
-    // navigate to the table
     await t.click(Selector('a').withExactText('Coronary heart disease %'))
-    // // make sure a div with the text 33523, USA exists
-    // await t.expect(Selector('div').withExactText(longname).exists).ok()
     const tableLongnames = await getAllTexts(t, Selector('a').withAttribute('data-test-id', 'statistic-panel-longname-link'))
     const tableIndices = await getAllTexts(t, Selector('div').withAttribute('data-test-id', 'statistic-ordinal'))
     await t.expect(tableLongnames).contains(longname)

@@ -17,9 +17,8 @@
 
 set -uo pipefail
 
-# The re-run command printed on a conflict. Absolute, because it is run from a branch that
-# may predate this script, and re-quoted, so an argument the shell would glob-expand survives
-# the copy-paste.
+# Printed on a conflict. Absolute, since the branch may predate this script, and quoted so
+# arguments survive copy-paste.
 self="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 rerun=$(printf '%q ' "$self" "$@")
 rerun=${rerun% }

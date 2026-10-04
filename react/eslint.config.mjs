@@ -224,13 +224,7 @@ export default tseslint.config(
                     message: 'Use a color from the theme rather than a named color.',
                 },
                 {
-                    // A process signs in once, for about three TOTP codes and 45 seconds, and
-                    // then caches the Google session, so every later test and fixture in that
-                    // process reuses it for free. What costs is a new process: each test file
-                    // is its own CI job, and the code service issues one code per period, so
-                    // concurrent jobs queue behind each other. That is why this counts files
-                    // rather than fixtures -- add all the fixtures you like to the two that
-                    // exist, but a third file buys another sign-in.
+                    // Counts files, not fixtures: a process caches its Google session, so fixtures within a file are free.
                     selector: 'ImportSpecifier[imported.name=quizAuthFixture]',
                     message: 'Auth tests are limited to the two quiz_auth files, because each file is a CI job that signs in, and TOTP codes serialize across jobs.',
                 },

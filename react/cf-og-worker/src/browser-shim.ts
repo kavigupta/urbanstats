@@ -1,12 +1,8 @@
 /*
- * Enough of a browser for the site's modules to evaluate and for its router to run -- what
- * `loadPageDescriptor` touches on the way through, not an attempt at a real DOM.
- *
- * `settings.ts` reads localStorage in a static initializer, so this has to be installed before any
- * site module is imported: keep it first in the entry's import list.
+ * Just enough browser globals for `loadPageDescriptor` to run. Import this before any site module,
+ * since `settings.ts` reads localStorage as it loads.
  */
-// The DOM lib types these as things a Worker does not have, so they go in through an untyped view
-// of the global object rather than being cast one at a time.
+// Untyped, since the DOM lib types these as things a Worker doesn't have.
 const shim = globalThis as unknown as Record<string, unknown>
 
 shim.window ??= globalThis
@@ -26,8 +22,7 @@ shim.document ??= {
 // The default theme is 'System Theme', so useCurrentTheme asks the media query. Cards are light.
 shim.matchMedia ??= () => ({ matches: false, addEventListener: () => undefined, removeEventListener: () => undefined })
 
-// Always empty, so settings start from a first-time visitor's defaults. A write means that
-// assumption stopped holding; dropping it keeps requests independent.
+// Always empty, so settings are a first-time visitor's. Writes are dropped to keep requests independent.
 shim.localStorage ??= {
     getItem: () => null,
     setItem: (key: string) => { console.error(`dropped localStorage write to ${key}`) },

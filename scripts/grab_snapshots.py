@@ -35,7 +35,6 @@ def main():
             os.path.join(REPO_ROOT, "reference_test_snapshots"),
         )
 
-    # print the location of the delta as a link
     print(f"file://{delta_location}")
 
 

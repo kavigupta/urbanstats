@@ -38,9 +38,7 @@ function proportionFilled(boxes: CoordBox[]): number {
 export function partitionBoxes(boxes: CoordBox[], fillThreshold = 0.1): number[][] {
     const maxMaps = 6
 
-    // We need to sort the boxes otherwise there could be an edge case when partitioning where a box gets added in the middle of a partition two other boxes
-    // The partition of those two far partitions would not have been explored in `bestPartition`, since the hueristic would have eliminated that search space.
-    // Therefore, we need to sort the boxes
+    // Sorted so bestPartition's heuristic can't prune a partition that would skip over a box in between
     const center = (box: CoordBox, axis: 0 | 1): number => (box[axis] + box[axis + 2]) / 2
     const sortedBoxes = Array.from(boxes.entries())
         .sort(([, a], [, b]) => center(a, 1) - center(b, 1))
@@ -65,8 +63,7 @@ export function partitionBoxes(boxes: CoordBox[], fillThreshold = 0.1): number[]
             },
         )
 
-        // Un-sort the indices
-        // Also re-sort the partitions by the unsorted indices
+        // Back to the original indices and order
         return partitions.map(partition => partition.map(index => sortedBoxes[index][0])
             .sort((a, b) => a - b)).sort((a, b) => Math.min(...a) - Math.min(...b))
     }

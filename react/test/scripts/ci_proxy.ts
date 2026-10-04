@@ -17,9 +17,8 @@ import { port } from '../../port'
 import { github } from './github-utils'
 
 /**
- * jsdelivr occasionally stalls on a file and answers with a 504 a full minute later, which is
- * long enough on its own to blow a test's time limit. This is a socket inactivity timeout, so a
- * large file that is downloading slowly but steadily isn't affected.
+ * jsdelivr sometimes stalls for a minute before answering 504. An inactivity timeout, so a slow but
+ * steady download is unaffected.
  */
 const attemptTimeoutMs = 10_000
 const attempts = 3
@@ -56,10 +55,8 @@ function jsdelivrProxy(sha: string): express.RequestHandler {
 }
 
 /**
- * densitydb.github.io is around ninety times jsdelivr's 50MB package limit, so jsdelivr serves it
- * only as long as it doesn't have to weigh the package. When it does, it answers 403 and caches
- * that answer for twelve hours, which retries can't get past. raw has no size limit, and since we
- * only reach it when jsdelivr has already failed it never carries the bulk of the traffic.
+ * jsdelivr sometimes answers 403 for 12 hours, since the repo is ~90x its 50MB package limit. raw has
+ * no limit, and only carries what jsdelivr fails.
  */
 function rawGithubProxy(sha: string): express.RequestHandler {
     return proxy(`https://raw.githubusercontent.com`, {

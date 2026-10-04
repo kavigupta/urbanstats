@@ -4,9 +4,8 @@ import { categoryToggleButton, enterEditMode, filterBox, interactableGroupCheckb
 import { getLocation, target, urbanstatsFixture } from './test_utils'
 
 /**
- * Edit mode opens a category iff something in it is selected, so a settings link that turns off
- * a category's only selected group would leave it closed with nothing to show for the staged
- * change. The highlighted group counts as a reason to open too.
+ * Edit mode opens categories with a selected group, and also ones with a highlighted group, so a link
+ * turning off a category's only selected group still shows the change.
  */
 
 const californiaPage = `${target}/article.html?longname=California%2C+USA`

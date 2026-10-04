@@ -97,6 +97,8 @@ interface NamedFunctionArgumentDocumentation {
     hide?: boolean
     collapsable?: boolean
     editButton?: keyof typeof ArgEditButtons
+    /** The expression the editor inserts when this argument's checkbox is ticked, instead of the type's normal default */
+    overrideTypeDefault?: UrbanStatsASTExpression
 }
 
 export type USSType = (

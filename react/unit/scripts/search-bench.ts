@@ -1,8 +1,6 @@
 /**
- * Times `search` against the real index, for comparing a change against the branch it came from.
- *
- * Run it on both sides of the change and compare the reported ms/query; the absolute number means
- * nothing across machines. Needs a dev server, like the unit tests.
+ * Times `search` against the real index. Compare ms/query before and after a change on one machine.
+ * Needs a dev server, like the unit tests.
  */
 import '../util/fetch'
 

@@ -51,9 +51,8 @@ export interface MeasuredTableLayout extends TableLayout {
 }
 
 /**
- * A column with no rows goes unmeasured rather than measuring as zero, which would cap its
- * header's text at no width at all. Separate from `measuredLayout` so the edit table can
- * memoize it: it measures every statistic rather than the selected ones.
+ * Empty columns go unmeasured, since zero would cap the header at no width. Separate from
+ * `measuredLayout` so the edit table, which measures every statistic, can memoize it.
  */
 export function measureColumns(columnRows: StatisticCellRenderingInfo[][], universe: Universe | undefined, simpleOrdinals: boolean): (CommonLayoutInformation | undefined)[] {
     return columnRows.map(rows => rows.length === 0 ? undefined : maxLayoutInformation(rows, universe, simpleOrdinals))

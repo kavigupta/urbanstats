@@ -1,9 +1,7 @@
 # You may want to update ../../Dockerfile when updating this file
 # This version for compatibility with pandas
-# Pinned by digest because the tag moves, which invalidates the entire build cache.
-# Must stay on bookworm to match the snapshot repo below.
-# slim, because the e2e jobs only need python for tests/check_snapshots.py, and the
-# non-slim base's build toolchain is 330MB of the image every shard pulls.
+# Pinned by digest because a moving tag invalidates the build cache. bookworm to match the snapshot below.
+# slim, since the e2e jobs only need python for check_snapshots.py and the full toolchain is 330MB.
 FROM python:3.10-slim-bookworm@sha256:7ed92b32353e8d8bd865b5ba811e0315d3999c3b57b1c2df2b504a359d4a1707
 
 # One layer, because /var/lib/apt/lists is 44MB that only the build uses.
@@ -13,9 +11,8 @@ RUN apt-get -y update \
     && curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
     && apt-get -y install nodejs \
     && dpkg --add-architecture i386 \
-    # needed for window resizing in Testcafe. These come from the base image's own repo
-    # rather than the snapshot below: libc6:i386 has to match the already-installed libc6
-    # exactly, and the snapshot is older than the base image.
+    # needed for window resizing in Testcafe. From the base image's repo, since libc6:i386 must
+    # match its libc6 exactly and the snapshot is older.
     && apt-get -y update \
     && apt-get -y install libc6:i386 libx11-6:i386 \
     # Use only the snapshot repo so all packages come from the same consistent state
@@ -23,8 +20,7 @@ RUN apt-get -y update \
     # The timestamp may need to be bumped if installing newer packages
     && echo 'deb [check-valid-until=no] https://snapshot.debian.org/archive/debian/20260115T000000Z/ bookworm main' \
         > /etc/apt/sources.list \
-    # Not *.list: Debian's config is debian.sources, in deb822 format, so the old glob left
-    # deb.debian.org enabled and apt took its newer packages over the snapshot's.
+    # Not *.list, since Debian's config is debian.sources and would leave deb.debian.org enabled
     && rm -f /etc/apt/sources.list.d/* \
     && apt-get -o Acquire::Check-Valid-Until=false -y update \
     && apt-get -y install \

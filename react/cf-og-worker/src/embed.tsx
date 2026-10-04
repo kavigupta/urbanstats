@@ -1,7 +1,6 @@
 /*
- * The embed layout, as a satori element tree. Satori supports a flexbox subset of CSS and no
- * canvas, so this is a purpose-built card rather than a rendering of the real page. The values in
- * it still come from the site's own renderers.
+ * A purpose-built card rather than the real page, since satori supports only a flexbox subset of CSS.
+ * The values in it still come from the site's own renderers.
  */
 import React, { ReactElement, ReactNode, cloneElement, isValidElement } from 'react'
 
@@ -30,9 +29,8 @@ import { ArticleCard, ComparisonCard, MapCard, MapContents, StatisticCard, Units
 import { Bounds, MapLayout, Ring, fitBounds, fitRings, place, polyline, projectedBounds, withinBox } from './map-layout'
 
 /*
- * Lets satori call the site's function components: React installs a hook dispatcher only while a
- * renderer is running, so without one every hook inside them throws. These resolve the way a first
- * render with no state changes would.
+ * Lets satori call the site's function components, whose hooks throw without a renderer's dispatcher.
+ * Each hook resolves as it would on a first render.
  */
 /* eslint-disable no-restricted-syntax -- React's own names for its internals, which are deliberately absent from @types/react. */
 interface ReactInternals {
@@ -65,9 +63,7 @@ function installHooks(): void {
     }
 }
 
-// The card is a fixed image wherever it is unfurled, so it takes the light theme rather than a
-// viewer's. The rest of its palette is its own: the card has no counterpart on the site to take
-// them from.
+// The card is a fixed image, so it can't follow the viewer's theme.
 const theme = colorThemes['Light Mode']
 
 /* eslint-disable no-restricted-syntax -- Only the ones the site has no colour for. */
@@ -82,19 +78,16 @@ const colors = {
 }
 /* eslint-enable no-restricted-syntax */
 
-// insetBorderWidth in map-common and mapBorderWidth in screenshot, which the Worker cannot import:
-// they would pull maplibre in.
+// Copies of insetBorderWidth in map-common and mapBorderWidth in screenshot, which would pull in maplibre.
 const insetBorderWidth = 2
 const mapBorderWidth = 1
 
 const logoImage = `data:image/svg+xml;utf8,${encodeURIComponent(logoSvg)}`
 
-// Proportions measured off the screenshot footer, so the two lockups match. The mark stands taller
-// than the text beside it, which is what sets the height of a footer it sits in.
+// Measured off the screenshot footer, so the two match.
 const logoHeight = 1.5
 const logoGap = 0.5
 
-/** The site's name in the corner of a card, as the mark and the wordmark a PNG export carries. */
 function wordmark(fontSize: number): ReactElement {
     return (
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -113,7 +106,6 @@ function mapImage(content: string, width: number, height: number): string {
 const attributionSize = 12
 const attributionHeight = 18
 
-/** The tile credit, set against the tiles it is for. */
 function attribution(width: number): ReactElement {
     return (
         <div style={{ display: 'flex', width, height: attributionHeight, alignItems: 'center', fontSize: attributionSize, color: colors.muted }}>
@@ -145,10 +137,7 @@ function keyed(node: ReactNode, key: string | number): ReactNode {
     return isValidElement(node) ? cloneElement(node, { key }) : node
 }
 
-/**
- * Jost has no U+202F, the digit group separator, and satori renders a missing glyph as a 0.5em gap.
- * Spacer elements instead.
- */
+/** Jost has no U+202F (the digit group separator), which satori would render as a 0.5em gap. */
 function narrowSpaces(text: string): ReactNode {
     const parts = text.split('\u202f')
     if (parts.length === 1) {
@@ -157,10 +146,7 @@ function narrowSpaces(text: string): ReactNode {
     return parts.flatMap((part, index) => index === 0 ? [part] : [<div key={index} style={{ width: '0.2em' }} />, part])
 }
 
-/**
- * Satori has no user-agent stylesheet, so presentational tags arrive unstyled -- `<sup>2</sup>`
- * would render as a full-size "2". Restores the ones the site uses.
- */
+/** Satori has no user-agent stylesheet, so without this `<sup>2</sup>` renders as a full-size "2". */
 function styleBareTags(node: ReactNode, fontSize: number): ReactNode {
     if (Array.isArray(node)) {
         return (node as ReactNode[]).map((child, index) => keyed(styleBareTags(child, fontSize), index))
@@ -173,17 +159,13 @@ function styleBareTags(node: ReactNode, fontSize: number): ReactNode {
     }
     const children = styleBareTags((node.props as { children?: ReactNode }).children, fontSize)
     if (node.type === 'sup') {
-        // Satori lays smaller text out from the top of the line, which is already where a
-        // superscript goes. In px because its font size does not inherit an em.
+        // Satori already sets smaller text at the top of the line. In px because em doesn't inherit here.
         return <span style={{ fontSize: fontSize * 0.65 }}>{children}</span>
     }
     return cloneElement(node, undefined, children)
 }
 
-/**
- * A name the site renders through `reifyReact`, whose fragments satori has no equivalent of.
- * Satori lays smaller text out from the top of the line, so a subscript is dropped by hand.
- */
+/** `reifyReact` without fragments, which satori lacks. Subscripts are lowered by hand since satori top-aligns smaller text. */
 function humanReadable(name: HumanReadableName, fontSize: number, units: Units): ReactNode[] {
     if (typeof name === 'string') {
         return [narrowSpaces(name)]
@@ -192,8 +174,7 @@ function humanReadable(name: HumanReadableName, fontSize: number, units: Units):
         switch (element.type) {
             case 'atom':
             case 'code':
-                // Satori trims the whitespace where a text node meets an element, which a script
-                // beside it makes of the name.
+                // Satori trims whitespace where text meets an element, such as a neighbouring script.
                 return [narrowSpaces(element.value.replace(/^ | $/g, '\u00a0'))]
             case 'subscript':
             case 'superscript':
@@ -261,7 +242,7 @@ function row(stat: ArticleCard['stats'][number], index: number, units: Units): R
     )
 }
 
-/** A fixed height, with the site's cap on a wide flag, the way the header sizes one. */
+/** Fixed height, with the header's cap on wide flags. */
 function flagWidth(universe: string, image: string | undefined): number {
     return image === undefined ? 0 : 76 * Math.min(flagDimensions[universe], 1.8)
 }
@@ -279,7 +260,7 @@ function flag(universe: string, image: string | undefined): ReactElement {
     )
 }
 
-/** Where an inset sits in the map container, in the pixels of the card rather than fractions. */
+/** In card pixels. */
 function insetBox(inset: Inset, width: number, height: number): { left: number, top: number, width: number, height: number } {
     return {
         left: inset.bottomLeft[0] * width,
@@ -333,7 +314,7 @@ function clustersSvg(contents: MapContents & { kind: 'clusters' }, markers: Mark
         .join('')
 }
 
-/** Undefined for an inset nothing lands in, which the site leaves out rather than drawing empty. */
+/** Undefined when nothing lands in the inset, which the site omits too. */
 async function insetImage(map: MapCard, inset: Inset, box: { width: number, height: number }, layout: MapLayout, markers: Marker[], scale: number, tileOrigin: string): Promise<ReactElement | undefined> {
     const { width, height } = box
 
@@ -357,7 +338,7 @@ async function insetImage(map: MapCard, inset: Inset, box: { width: number, heig
         ? { under: `<rect width="${width}" height="${height}" fill="${map.basemap.backgroundColor}"/>`, over: '' }
         : await basemap(layout, width, height, tileOrigin, inset.mainMap ? 12 : 4, map.basemap.subnationalOutlines)
 
-    // A cluster's markers are DOM elements over the page's canvas, so no basemap line crosses them.
+    // On the page, cluster markers are DOM elements above the whole canvas, basemap lines included.
     const content = map.contents.kind === 'clusters'
         ? `${paint.under}${paint.over}${drawn}`
         : `${paint.under}${drawn}${paint.over}`
@@ -398,21 +379,20 @@ export async function mapEmbedCard(map: MapCard, { width, height }: { width: num
     const footerFontSize = 20
     const footerGap = 6
     const boxWidth = width - padding * 2
-    // Whatever the colourbar and footer leave. The label is the embed's title, not part of the card.
+    // The label is the embed's title, not part of the card.
     const boxHeight = height - padding * 2 - (map.ramp === undefined ? 0 : 55) - (footerFontSize * logoHeight + footerGap)
     const aspectRatio = computeAspectRatioForInsets(map.insets)
     const container = boxWidth / boxHeight > aspectRatio
         ? { width: boxHeight * aspectRatio, height: boxHeight }
         : { width: boxWidth, height: boxWidth / aspectRatio }
 
-    // The page lays its map out at a fixed width and scales the result; radii are in those pixels.
+    // Radii are in the pixels of the page's fixed-width layout.
     const scale = container.width / canonicalWidth(aspectRatio)
     const boxes = map.insets.map((inset) => {
         const box = insetBox(inset, container.width, container.height)
         return { inset, box, layout: fitBounds(inset.coordBox, box.width, box.height) }
     })
-    // Clustered together rather than per inset: a marker's radius is set against the largest on the
-    // whole map, so no one inset can size its own.
+    // Across all insets, since radii are scaled against the largest marker on the map.
     const markers = map.contents.kind === 'clusters' ? clusterMarkers(map.contents, boxes, scale) : undefined
 
     const insets = (await Promise.all(boxes.map(async ({ inset, box, layout }, index) => {
@@ -459,19 +439,18 @@ export async function embedCard(article: ArticleCard, rings: Ring[], { width, he
     const subtitleSize = 26
     const content = width - padding.x * 2
 
-    // Shrunk rather than wrapped: a second line of the title costs the table two of its rows.
+    // Shrunk rather than wrapped, since a second title line costs the table two rows.
     const titleWidth = content - titleGap - flagWidth(article.universe, article.flag)
     const titleSize = sizeToFit([article.shortname], titleWidth, 1, 60, 40, boldCharacterWidth)
     const titleLines = linesTaken(article.shortname, titleWidth, titleSize, boldCharacterWidth)
 
-    // What a row's name cell is left once the map, the value and the ordinal have taken theirs.
     const nameColumn = content - (rings.length === 0 ? 0 : mapSize.width) - mapGap - 170 - 60
     let budget = height - padding.y * 2 - (titleLines * titleSize + subtitleSize) * jostLineHeight
         - headerGap - footerSize * logoHeight
     const stats: ArticleCard['stats'] = []
     for (const stat of article.stats) {
         const name = linesTaken(stat.name, nameColumn, articleNameSize) * articleNameSize
-        // Plus the rule above the row, which is thicker over the first of them.
+        // Plus the rule above the row, which is thicker over the first.
         const takes = rowPadding * 2 + Math.max(name, articleValueSize) * jostLineHeight + (stats.length === 0 ? 2 : 1)
         if (takes > budget) {
             break
@@ -513,7 +492,7 @@ export async function embedCard(article: ArticleCard, rings: Ring[], { width, he
     )
 }
 
-/** The regions' names carry the card, there being no title over them. */
+/** The region names are the card's title. */
 const maxHeaderSize = 38
 
 const footerSize = 24
@@ -522,22 +501,19 @@ function qualifierSize(headerSize: number): number {
     return Math.min(18, headerSize * 0.6)
 }
 
-/** What the longname adds to the shortname -- the state and country a "Chicago city" is in. */
+/** e.g. the state and country of "Chicago city" */
 function qualifier(shortname: string, longname: string): string {
     return longname.startsWith(shortname) ? longname.slice(shortname.length).replace(/^,\s*/g, '') : longname
 }
 
 /*
- * Satori measures nothing before it lays out, so the comparison's table is fitted by hand: a column
- * per region is as narrow as the regions are many, and a row that overflowed would run through the
- * footer rather than being clipped. Jost's average character is about half its size wide.
+ * Satori can't measure text, so tables are fitted by hand from Jost's average character width.
+ * A row that overflowed would run into the footer rather than being clipped.
  */
 const characterWidth = 0.5
-// The regions' names are set semibold, whose average character is wider.
 const boldCharacterWidth = 0.56
-// What the tables set on their rows and work their heights out from.
 const lineHeight = 1.3
-// Jost's own, which text that sets none is laid out at.
+// Jost's default
 const jostLineHeight = 1.445
 
 function linesTaken(text: string, columnWidth: number, fontSize: number, charWidth = characterWidth): number {
@@ -608,9 +584,9 @@ function comparisonRow(stat: ComparisonCard['stats'][number], index: number, lay
             key={stat.name}
             style={{
                 display: 'flex',
-                // Grown to share out what the rows do not fill, so the table ends where the map does.
+                // So the table ends where the map does.
                 flex: 1,
-                // Stretched, so a shaded winner fills its row rather than only the text in it.
+                // So a shaded winner fills its row rather than only its text.
                 alignItems: 'stretch',
                 lineHeight,
                 borderTop: index === 0 ? `2px solid ${colors.text}` : `1px solid ${colors.rule}`,
@@ -627,7 +603,6 @@ function comparisonRow(stat: ComparisonCard['stats'][number], index: number, lay
                         padding: `${rowPadding}px ${cellPadding}px`,
                         alignItems: 'center',
                         justifyContent: 'flex-end',
-                        // The largest value, shaded the way the comparison table shades it.
                         backgroundColor: stat.highlight === region ? mixWithBackground(color, theme.mixPct / 100, colors.background) : 'transparent',
                     }}
                 >
@@ -655,13 +630,10 @@ function comparisonHeader(regions: ComparisonCard['regions'], layout: TableLayou
     )
 }
 
-/** More regions than this and the table would rather have the map's width than the map. */
+/** Past this, the table needs the map's width more than the card needs the map. */
 export const mappedRegions = 3
 
-/**
- * Whether the regions belong on one map, by the same measure the comparison page's partitioner
- * uses: below it they are so far apart that a map fitted around them shows none of them.
- */
+/** Whether a map fitted around the regions would show them, by the comparison page's measure. */
 function shareAMap(shapes: Ring[][]): boolean {
     const boxes = shapes.flatMap((rings) => {
         const bounds = projectedBounds(rings)
@@ -674,7 +646,7 @@ function shareAMap(shapes: Ring[][]): boolean {
     if (around === undefined || area(around) === 0) {
         return boxes.length > 0
     }
-    // partitionLongnames' own threshold, which is what decides this on the page.
+    // partitionLongnames' threshold
     return boxes.reduce((total, box) => total + area(box), 0) / area(around) >= 0.1
 }
 
@@ -682,20 +654,19 @@ export async function comparisonEmbedCard(comparison: ComparisonCard, shapes: Ri
     installHooks()
     const padding = { x: 48, y: 36 }
     const content = width - padding.x * 2
-    // The mark stands taller than the text beside it, so it is what the footer's height comes from.
+    // The logo is taller than the footer text, so it sets the footer's height.
     const body = height - padding.y * 2 - (footerSize * logoHeight + 20)
     const mapWidth = 420
     const mapGap = 32
 
-    // Past this the table has no column to spare for one; the embed's tags still name them all.
+    // More won't fit as columns. The embed's tags still name them all.
     const regions = comparison.regions.slice(0, 5)
     const cycle = regions.map((_, index) => colorFromCycle(theme.hueColors, index))
     const drawn = regions.map((_, index) => ({ rings: shapes[index] ?? [], color: cycle[index] }))
     const withMap = regions.length <= mappedRegions && shareAMap(drawn.map(shape => shape.rings))
 
     const tableWidth = content - (withMap ? mapWidth + mapGap : 0)
-    // The values take most of the table, the statistic names what is left of it. Both are capped,
-    // so a comparison of two regions is a table across the middle rather than across the card.
+    // Capped so a two-region comparison doesn't stretch across the card.
     const valueColumn = Math.min(220, tableWidth * 0.62 / regions.length)
     const layout: TableLayout = {
         colors: cycle,
@@ -749,10 +720,9 @@ export async function comparisonEmbedCard(comparison: ComparisonCard, shapes: Ri
 
 /** The rank column, wide enough for four digits at the size the names are set. */
 const rankColumn = 64
-// What a row of the statistic table takes at most.
 const maxRowHeight = 56
 
-/** The arrow the page marks its sorted column with, drawn rather than fetched: it is one triangle. */
+/** Drawn rather than fetched, being one triangle. */
 function sortArrow(order: 'ascending' | 'descending', size: number): ReactElement {
     const points = order === 'ascending'
         ? `0,${size} ${size},${size} ${size / 2},0`
@@ -769,41 +739,34 @@ function sortArrow(order: 'ascending' | 'descending', size: number): ReactElemen
     )
 }
 
-/**
- * The statistic table's top rows. Sized by hand for the same reason the comparison's is: satori
- * measures no text before it lays out.
- */
+/** Sized by hand, since satori can't measure text. */
 export function statisticEmbedCard(statistic: StatisticCard, { width, height }: { width: number, height: number }): ReactElement {
     installHooks()
     const padding = { x: 48, y: 36 }
     const content = width - padding.x * 2
-    // Room for the flag beside it, as the article card's title leaves.
+    // Leaves room for the flag.
     const titleSize = sizeToFit([reifyString(statistic.title, readerOf(statistic.units))], content - 140, 1, 54, 26, boldCharacterWidth)
 
     const valueColumn = Math.min(260, (content - rankColumn) * 0.62 / statistic.columns.length)
     const nameColumn = content - rankColumn - valueColumn * statistic.columns.length
     const names = statistic.rows.map(entry => entry.longname)
-    // A name that fits on one line only at a size the rest of the table dwarfs takes two instead,
-    // at whatever size two lines fit a row at.
+    // A name that fits one line only at a tiny size takes two lines instead.
     const nameSize = Math.max(
         sizeToFit(names, nameColumn - cellPadding, 1, 26, 14),
         sizeToFit(names, nameColumn - cellPadding, 2, Math.floor(maxRowHeight / (2 * lineHeight)), 14),
     )
     const valueSize = Math.min(28, Math.round(valueColumn / 6.5))
-    /*
-     * A table of several columns is titled by its own headers, so it drops the title and the flag
-     * over it. A single column's header would only repeat the title, so that one keeps the title
-     * and leaves the header out.
-     */
+    // Several columns are labelled by headers instead of the title. A single column's header would
+    // repeat the title, so it's left out.
     const columnHeaders = statistic.columns.length > 1
         ? sizeToFit(statistic.columns.map(column => reifyString(column.name, readerOf(statistic.units))), valueColumn - cellPadding * 2, 2, 30, 14, boldCharacterWidth)
         : undefined
-    // Which geographies these are, and which of them: what neither the title nor the headers say.
+    // The geographies and filter, which neither the title nor the headers say.
     const note = `${statistic.heading}${statistic.filter === undefined ? '' : ` where ${reifyString(statistic.filter, readerOf(statistic.units))}`}`
     const noteSize = columnHeaders === undefined
-        // Under the title, in whatever the flag beside it leaves.
+        // Under the title, beside the flag
         ? sizeToFit([note], content - 140, 1, 26, 14)
-        // Over the names, which are what it qualifies.
+        // Over the names
         : sizeToFit([note], rankColumn + nameColumn - cellPadding, 2, 30, 14, boldCharacterWidth)
     const noteElements = [
         statistic.heading,
@@ -867,9 +830,7 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
                         key={entry.longname}
                         style={{
                             display: 'flex',
-                            // Shared out over whatever the table's height leaves, up to the height
-                            // a full page of rows would take: a short table sits at the top rather
-                            // than stretching down the card.
+                            // Capped so a short table sits at the top rather than stretching down the card.
                             flex: 1,
                             maxHeight: maxRowHeight,
                             alignItems: 'center',

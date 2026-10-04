@@ -1,17 +1,13 @@
 /*
- * Hands out TOTP time slots to the e2e tests that sign in to Google.
- *
- * Google will not accept a TOTP code it has already seen, so two tests signing in at once must
- * generate their codes from different 30-second steps. Each request reserves the next unused step
- * and answers with the instant to generate at; the caller sleeps until then.
+ * Hands each e2e sign-in its own 30-second TOTP step, since Google rejects a reused code. Answers with
+ * the instant to generate the code at.
  */
 
 import type { DurableObjectId, DurableObjectState } from '@cloudflare/workers-types'
 
 const stepMs = 30_000
 
-// Nudges the choice of step forward, and with the rounding below reserves the next step unless at
-// least 20s of the current one remain -- room for the caller to generate and submit inside it.
+// Skips to the next step unless at least 20s of the current one remain for the caller to submit in.
 const leadMs = 5_000
 
 // Narrower than the runtime's own DurableObjectNamespace, which speaks its Request and Response
@@ -46,12 +42,11 @@ export class TOTPSlots {
 
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
-        // Anything else reaching the hostname -- a crawler, a scanner -- would otherwise spend a
-        // step and push every waiting test further out.
+        // Otherwise crawlers would spend steps and delay waiting tests.
         if (new URL(request.url).pathname !== '/totp-slot') {
             return new Response('Not found\n', { status: 404 })
         }
-        // One object, hence one cursor: drawing from the same sequence is the whole point.
+        // One object, so every request shares one cursor
         const id = env.TOTP_SLOTS.idFromName('slots')
         return env.TOTP_SLOTS.get(id).fetch(request)
     },

@@ -478,7 +478,7 @@ export function getDefaultVariable(selection: Selection & { type: 'variable' }, 
 
 // Returns a function that pulls named or unnamed arguments of the same type and position out of the passed `expr`
 // Returns undefined if incompatible
-// We're assuming the result will have the correct idnet, since we're using the same position, and it's hard to check
+// We're assuming the result will have the correct ident, since we're using the same position, and it's hard to check
 function extractCompatiblePreviousArgs(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): (arg: number | string, type: USSType) => UrbanStatsASTExpression | undefined {
     let type
     if (expr.type === 'call' && expr.fn.type === 'identifier' && (type = typeEnvironment.get(expr.fn.name.node)) && type.type.type === 'function') {

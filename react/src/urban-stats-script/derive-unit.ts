@@ -9,14 +9,8 @@ import { TypeEnvironment } from './types-values'
 import { unitCheck } from './unit-inference'
 
 /**
- * How to label a map's ramp: the unit it is written in, and the name of what it draws. The unit is
- * the one the user chose through the map's `unit=` argument, or where they chose none, the one the
- * data works out to.
- *
- * Both come out of a single reading of the script, and that reading is told what the user chose,
- * which is how the name comes to mention any conversion that choice caused.
- *
- * The mapper and the link embed card both label a ramp, and they have to agree on this.
+ * The unit comes from `unit=`, or the data if unset. Both come from one reading of the script, so the
+ * label mentions any conversion `unit=` causes.
  */
 export function mapRampUnitAndLabel(uss: MapUSS, typeEnvironment: TypeEnvironment, userProvided: UnitType | undefined): { unit: StoredUnit | undefined, label: HumanReadableName | undefined } {
     const factored = unitCheck(uss, typeEnvironment, constructDeclaredUnitsForMap(uss, typeEnvironment, userProvided))
@@ -40,10 +34,7 @@ export function tableColumnUnitAndName(uss: MapUSS, typeEnvironment: TypeEnviron
     }
 }
 
-/**
- * One column's unit, in the shape a whole table's declarations take. Saying nothing of the other
- * columns is safe: a column's name and unit are read off its own values and no other's.
- */
+/** Declares only one column, which is safe since a column's unit depends only on its own values. */
 function onlyColumn(columnIndex: number, unit: UnitType | undefined): (UnitType | undefined)[] {
     const units = new Array<UnitType | undefined>(columnIndex + 1).fill(undefined)
     units[columnIndex] = unit

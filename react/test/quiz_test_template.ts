@@ -252,9 +252,8 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
 
     const otherUsers = `${Array.from(Array(29).keys()).map(i => `${i + 30}|99|101`).join('\n')}\n`
 
-    // The result page fetches the audience statistics in parallel with reporting this
-    // user's own result, so whether the statistics count this user is a race. Assertions
-    // whose outcome would depend on that are made after a reload, once the report has landed.
+    // The result page fetches audience statistics while reporting this user's result, so assertions
+    // that depend on whether they count this user are made after a reload.
     test('quiz-percentage-correct', async (t) => {
         await safeReload(t)
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])

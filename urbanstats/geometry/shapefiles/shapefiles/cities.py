@@ -28,6 +28,7 @@ CITIES = Shapefile(
     hash_key="census_places_6",
     path="named_region_shapefiles/cb_2022_us_place_500k.zip",
     shortname_extractor=lambda x: x.NAMELSAD,
+    cleanname_extractor=lambda x: x.NAME,
     longname_extractor=lambda x: f"{x.NAMELSAD}, {us.states.lookup(x.STATEFP).name}, USA",
     additional_columns_computer={"geoid": lambda x: x.GEOID},
     filter=lambda x: True,

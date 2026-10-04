@@ -17,12 +17,8 @@ env:
 jobs:
   supersede-older-runs:
     runs-on: ubuntu-22.04
-    # This replaces `concurrency: cancel-in-progress`. A stacked push gives a PR above the
-    # bottom one two identical pull_request events, and Github picked arbitrarily which of
-    # the resulting runs to cancel. Cancelling the newer one leaves a check suite that
-    # never reports tests-passed, which branch protection reads as a check still pending.
-    # Ordering by run id instead means the newest run always survives.
-    # Forks get a read-only token, so they can't cancel anything.
+    # Replaces `concurrency: cancel-in-progress`, which sometimes cancelled the newer of the two runs a
+    # stacked push starts, leaving tests-passed pending forever. Forks' tokens can't cancel runs.
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository && !contains(github.event.pull_request.labels.*.name, 'keep-ci') }}
     permissions:
       actions: write
@@ -69,10 +65,8 @@ jobs:
     permissions:
       packages: write
     env:
-      # Checking out the working tree is ~30s of blob downloads, and every job that needs
-      # the image waits on it. This job only hashes the Dockerfile and hands it to docker
-      # build, so what it checks out is the build context, plus the actions it runs.
-      # Anything a Dockerfile starts COPYing has to be added here.
+      # Only the build context, since a full checkout costs ~30s that every job needing the image waits on.
+      # Anything the Dockerfile COPYs has to be listed here.
       SPARSE_CHECKOUT: |
         /Dockerfile
         /.github/actions/*
@@ -212,8 +206,7 @@ jobs:
       - *checkout
       - run: git fetch origin ${{ github.base_ref }} --depth=1 # needed so test runner can diff tests against base ref
         if: ${{ github.base_ref != '' }}
-      # No python_environment here: the image carries what check_snapshots.py needs, and the
-      # full venv is a 484MB restore that every shard would pay for.
+      # No python_environment: the image has what check_snapshots.py needs, and the venv is a 484MB restore.
       - uses: ./.github/actions/node_modules
       - uses: actions/download-artifact@v4
         with:
@@ -240,10 +233,8 @@ jobs:
         run: |
           name="${{ matrix.test-file }}"
           echo "name=${name:0:200}" >> $GITHUB_OUTPUT
-      # A re-run keeps the artifacts the earlier attempt uploaded, so these names carry the
-      # attempt and merge-snapshots takes each shard's newest one. The marker makes the delta
-      # artifact unconditional, so a shard that re-ran and passed is distinguishable from one
-      # that wasn't re-run at all; without it the earlier attempt's delta would be picked up.
+      # Names carry the attempt so merge-snapshots can take each shard's newest. The marker makes a re-run
+      # that passed still upload a delta, so the earlier attempt's isn't picked up instead.
       - if: "!cancelled()"
         run: mkdir -p react/delta && touch react/delta/shard-ran
       - uses: actions/upload-artifact@v4
@@ -256,8 +247,7 @@ jobs:
         with:
           name: changed_snapshots-${{ github.run_attempt }}-${{ steps.artifact-name.outputs.name }}
           path: react/changed_snapshots
-      # Both TestCafe's take-on-fail shots and the ones `flaky` takes per attempt land here, and
-      # a run that passes deletes them, so this only ever carries pictures of something going wrong.
+      # A passing run deletes these, so this only holds screenshots of failures.
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:

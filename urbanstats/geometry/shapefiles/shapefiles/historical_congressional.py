@@ -75,6 +75,7 @@ HISTORICAL_CONGRESSIONALs = {
         hash_key=f"historical_congressional_{decade}_{version_for_decade.get(decade, version_for_decade['default'])}",
         path=functools.partial(filter_for_decade, decade),
         shortname_extractor=historical_shortname,
+        cleanname_extractor=lambda x: historical_shortname(x, include_date=False),
         longname_extractor=lambda x: historical_shortname(x) + ", USA",
         longname_sans_date_extractor=lambda x: historical_shortname(
             x, include_date=False
@@ -112,6 +113,7 @@ HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = Shapefile(
     hash_key="historical_congressional_2020_3",
     path=lambda: load_shapefile("cd118", only_keep="past", minimum_district_length=2),
     shortname_extractor=historical_shortname,
+    cleanname_extractor=lambda x: historical_shortname(x, include_date=False),
     longname_extractor=lambda x: historical_shortname(x) + ", USA",
     longname_sans_date_extractor=lambda x: historical_shortname(x, include_date=False)
     + ", USA",

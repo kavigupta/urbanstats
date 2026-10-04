@@ -74,24 +74,12 @@ for (let t = 0; t < knownTests.length; t++) {
 }
 
 /*
- * The e2e phase takes as long as its longest job, so the job count is only a means to
- * a wall-clock time. Runner minutes are free on a public repo, so the reason not to
- * shard further is that jobs past the account's 40-slot concurrency ceiling queue
- * instead of running, which adds latency rather than removing it.
- *
- * That ceiling is shared with every other run in flight, so the best number depends on
- * how contended the pool is, and no single value wins everywhere. Replaying a trace of
- * 60 real runs: 26 costs about two minutes when the pool is free and saves two to five
- * when it is busy, breaking even at roughly a fifth of the pool occupied.
+ * Jobs past the account's shared 40-slot concurrency ceiling queue. Replaying 60 real runs, 26 costs
+ * ~2 minutes on a free pool and saves 2-5 on a busy one.
  */
 const jobBudget = 26
 
-/*
- * A single test file cannot be divided, so the longest one sets a floor under the whole
- * phase and packing below it just buys jobs that finish early while everyone waits on
- * that file anyway. The budget currently sits above that floor and is what binds, so
- * splitting up the longest test file would not on its own make the pipeline faster.
- */
+/* The longest file sets a floor on the phase, though currently the budget binds instead. */
 const durationLimit = knownTests.length === 0
     ? 0
     : Math.max(
@@ -129,11 +117,8 @@ await execa(
     [
         'test/scripts/lp.lp',
         '--solution_file', 'test/scripts/solution',
-        // Stopping early only costs us a few extra jobs: it is the duration constraint,
-        // not the objective, that decides how long the pipeline takes. The budget leaves
-        // the bins almost no slack, so the last job is usually unprovable rather than
-        // findable and the solver would otherwise spend the whole limit on it. This job
-        // is on the critical path, so that time comes straight off every run.
+        // Stopping early only costs a few extra jobs. The solver would otherwise spend the whole limit
+        // failing to prove the last one, on the critical path.
         '--time_limit', '10',
     ],
     { stderr: process.stderr, stdout: process.stderr },

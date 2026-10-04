@@ -1,8 +1,4 @@
-/*
- * What the page and the link-embed card both derive from a map's result: where its geographies
- * are, and the colours and sizes their data implies. The card draws without maplibre, so anything
- * the two share has to live here rather than in `map-generator`, which pulls the map stack in.
- */
+/* Shared by the page and the embed card, which can't import `map-generator` since it pulls in maplibre. */
 import { loadProtobuf } from '../load_json'
 import { indexLink } from '../navigation/links'
 import { loadCentroids } from '../syau/load'
@@ -17,12 +13,7 @@ import { ICoordinate } from '../utils/protos'
 
 import { Keypoints } from './ramps'
 
-/**
- * The width the mapper lays a map out at before scaling the whole thing to fit its container. Pixel
- * sizes in a map's settings, marker radii above all, are in these pixels, so anything drawing a map
- * at another width has to scale them against this. A map taller than it is wide is laid out at 1200
- * tall instead, so a narrow map gets the same number of pixels to work with as a wide one.
- */
+/** Pixel sizes in map settings, such as marker radii, are relative to this width. Tall maps are 1200 tall instead. */
 export function canonicalWidth(aspectRatio: number): number {
     return 1200 * Math.min(1, aspectRatio)
 }
@@ -61,10 +52,7 @@ const hiddenColor = '#00000000'
 // eslint-disable-next-line no-restricted-syntax -- the conventional no-data magenta
 const rgbMissingColor = '#ff00ff'
 
-/**
- * Returns a function rather than colouring a list, so the ramp's expensive contrast colour is
- * computed once per map, and only when `missingColor` leaves it to be worked out.
- */
+/** Computes the ramp's expensive contrast colour once, and only when `missingColor` is unset. */
 export function rampColorer(ramp: Keypoints, scale: ScaleInstance, missingColor?: string): (value: number) => string {
     const missing = missingColor ?? furthestColor(ramp.map(([, color]) => color))
     return value => interpolateColor(ramp, scale.forward(value), missing)
@@ -86,11 +74,7 @@ export function markerArea(radius: number): number {
     return radius ** 2
 }
 
-/*
- * The map result as a mapper request produces it. `executeRequest` is typed for any USS value;
- * asking for a mapper descriptor is what makes it one of these, the same narrowing `executeAsync`
- * states in its overloads.
- */
+/* What `executeRequest` returns for a mapper descriptor, as `executeAsync`'s overloads state. */
 export type MapResult = USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' | 'clusterMap' }
 
 export interface MapVisuals {

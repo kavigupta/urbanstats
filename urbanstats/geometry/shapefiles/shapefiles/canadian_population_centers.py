@@ -57,6 +57,7 @@ CANADIAN_CENSUS_POPULATION_CENTERS = Shapefile(
     hash_key="census_pcs_2",
     path=load_pcs,
     shortname_extractor=shortname_extractor,
+    cleanname_extractor=lambda row: row.PCNAME,
     longname_extractor=longname_extractor,
     **canadian_census_kwargs("CA Population Center", "US Subdivision"),
     abbreviation="PC",

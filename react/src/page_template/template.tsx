@@ -24,10 +24,7 @@ export function PageTemplate({
     hideSidebar = false,
 }: {
     screencap?: (currentUniverse: string | undefined, colors: Colors, screenshotContext: ScreenshotContextType) => Promise<void>
-    /**
-     * Supplied by pages that decide part of their layout from screenshot mode, and so have to sit
-     * inside the context rather than take the one created here, which is below them.
-     */
+    /** For pages whose layout depends on screenshot mode, which need the context above them. */
     screenshotContext?: ScreenshotContextType
     csvExportCallback?: CSVExportData
     children?: React.ReactNode
@@ -163,7 +160,7 @@ function TemplateFooter(): ReactNode {
 export function Version(): ReactNode {
     return (
         <span id="current-version">
-            {TestUtils.shared.isTesting ? '<VERSION>' : '32.3.0'}
+            {TestUtils.shared.isTesting ? '<VERSION>' : '32.4.2'}
         </span>
     )
 }
@@ -171,7 +168,7 @@ export function Version(): ReactNode {
 function LastUpdated(): ReactNode {
     return (
         <span id="last-updated">
-            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2026-09-20'}
+            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2026-10-03'}
         </span>
     )
 }

@@ -3,9 +3,13 @@ from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
-def hrr_shortname(x, suffix="HRR"):
+def hrr_cleanname(x):
     state, city = [x.strip() for x in [x[: x.index("-")], x[x.index("-") + 1 :]]]
-    return f"{city.title()} {state} {suffix}"
+    return f"{city.title()} {state}"
+
+
+def hrr_shortname(x, suffix="HRR"):
+    return f"{hrr_cleanname(x)} {suffix}"
 
 
 data_credit = dict(
@@ -17,6 +21,7 @@ HRRs = Shapefile(
     hash_key="hospital_referral_regions_3",
     path="named_region_shapefiles/hrr.geojson",
     shortname_extractor=lambda x: hrr_shortname(x.hrrcity),
+    cleanname_extractor=lambda x: hrr_cleanname(x.hrrcity),
     longname_extractor=lambda x: hrr_shortname(x.hrrcity) + ", USA",
     filter=lambda x: True,
     meta=dict(
@@ -37,6 +42,7 @@ HSAs = Shapefile(
     hash_key="hospital_service_areas_2",
     path="named_region_shapefiles/HsaBdry_AK_HI_unmodified.geojson",
     shortname_extractor=lambda x: hrr_shortname(x.HSANAME, "HSA"),
+    cleanname_extractor=lambda x: hrr_cleanname(x.HSANAME),
     longname_extractor=lambda x: hrr_shortname(x.HSANAME, "HSA")
     + ", "
     + hrr_shortname(x.HRR93_NAME)

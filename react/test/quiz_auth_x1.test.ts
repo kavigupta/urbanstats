@@ -56,13 +56,13 @@ test('sync friends two devices', async (t) => {
 test('merge lowest score', async (t) => {
     const state = startingState()
     await createUser(t, 'Alice', '0a', state)
-    // Play and get a low score
+    // Play and get a higher score
     await t.navigateTo(`${target}/quiz.html#date=650`)
     await clickButtons(t, ['a', 'a', 'a', 'a', 'a']) // 3 / 5
     await t.expect(Selector('div').withExactText('🟥🟩🟥🟩🟩').exists).ok()
     await urbanStatsGoogleSignIn(t)
 
-    // Simulate playing on another device with a higher score
+    // Simulate playing on another device with a lower score
     await createUser(t, 'Bob', '0b', state)
     await t.navigateTo(`${target}/quiz.html#date=650`)
     await clickButtons(t, ['b', 'b', 'b', 'b', 'b']) // 2 / 5

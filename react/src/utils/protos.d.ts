@@ -2385,6 +2385,12 @@ export interface IArticleOrderingList {
 
     /** ArticleOrderingList types */
     types?: (number[]|null);
+
+    /** ArticleOrderingList shortnames */
+    shortnames?: (string[]|null);
+
+    /** ArticleOrderingList cleannames */
+    cleannames?: (string[]|null);
 }
 
 /** Represents an ArticleOrderingList. */
@@ -2401,6 +2407,12 @@ export class ArticleOrderingList implements IArticleOrderingList {
 
     /** ArticleOrderingList types. */
     public types: number[];
+
+    /** ArticleOrderingList shortnames. */
+    public shortnames: string[];
+
+    /** ArticleOrderingList cleannames. */
+    public cleannames: string[];
 
     /**
      * Creates a new ArticleOrderingList instance using the specified properties.

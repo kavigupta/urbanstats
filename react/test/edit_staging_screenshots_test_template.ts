@@ -3,12 +3,7 @@ import { Selector } from 'testcafe'
 import { enterEditMode, yearCheckbox } from './edit_mode_test_utils'
 import { comparisonPage, downloadImage, getLocation, resizeForPlatform, target, urbanstatsFixture } from './test_utils'
 
-/**
- * The edit tree and the staging banner are both controls for changing settings, which mean
- * nothing to someone looking at a shared image, so screenshot mode leaves them out. These
- * download the app's own screenshot with each on display; the reference image comparison is
- * what checks it isn't in the result.
- */
+/** Screenshots should leave out the edit tree and staging banner, which the reference images check. */
 
 const stagingControls = Selector('[data-test-id=staging_controls]')
 

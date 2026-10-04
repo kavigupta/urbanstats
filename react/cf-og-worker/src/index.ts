@@ -1,11 +1,8 @@
 /*
- * Gives Urban Stats pages per-URL link embeds.
- *
- * Every article shares one static article.html with one fixed og:image, so a crawler asking for
- * ?longname=Chicago gets the generic preview. This rewrites the meta tags per query string on the
- * way through, and renders the image at the edge from the site's own static data files.
+ * Gives pages per-URL link embeds. Every article shares one static article.html, so this rewrites the
+ * meta tags per query string and renders the og:image from the site's static data.
  */
-// Must come first: it installs the browser globals the site's modules touch as they evaluate.
+// Must come first, since the site's modules touch browser globals as they load.
 // eslint-disable-next-line import/no-unassigned-import -- Installing those globals is the point.
 import './browser-shim'
 
@@ -17,23 +14,15 @@ interface Embed {
     image?: string
 }
 
-/**
- * Approximates the shortname. Loading the page would give the real one, but that means fetching the
- * article's data on every HTML request, browsers included, for something only a crawler reads.
- */
+/** Approximate, since loading the real one would fetch the article on every HTML request, browsers included. */
 function shortenLongname(longname: string): string {
     return longname.split(',')[0]
 }
 
-/**
- * A map read out of its script rather than out of a run of it. Running it would mean loading a
- * geography's worth of statistics on every HTML request, browsers included, for something only a
- * crawler reads.
- */
+/** Reads the script without running it, which would load statistics on every HTML request. */
 async function describeMap(settings: string | undefined): Promise<{ title: string, description: string } | undefined> {
     try {
-        // Deferred for the same reason as render.ts: reading a script pulls in every USS constant,
-        // which is most of what is left of startup once the drawing half is out of it.
+        // Deferred like render.ts, since this pulls in every USS constant.
         const { dedupeGeographies, describeGeographies, mapSettingsFromURLParam, mapTitle } = await import('../../src/mapper/settings/utils')
         const mapSettings = await mapSettingsFromURLParam(settings)
         const title = mapTitle(mapSettings, {})
@@ -52,14 +41,10 @@ async function describeMap(settings: string | undefined): Promise<{ title: strin
     }
 }
 
-/**
- * A custom table's title, read out of its script the way a map's is and for the same reason: the
- * tags are rewritten on every HTML request, browsers included, and running the table means loading
- * a geography's worth of statistics.
- */
+/** Reads the script without running it, like describeMap. */
 async function describeTable(descriptor: Extract<PageDescriptor, { kind: 'statistic' }> & { uss: string }): Promise<string | undefined> {
     try {
-        // Deferred for the same reason as describeMap's imports.
+        // Deferred like describeMap's imports.
         const { parseStatUSS, tableTitle } = await import('../../src/stat/utils')
         return tableTitle(parseStatUSS(descriptor.uss, descriptor.geographies), descriptor.geographies, {})
     }
@@ -158,13 +143,8 @@ function isolateID(): string {
 }
 
 /**
- * Deployed, the key is what the card is drawn from rather than the URL it was asked for: the page's
- * schemas drop parameters they do not know, so keying on the raw URL would let a crawler appending
- * `&x=1`, `&x=2`, ... force a fresh render for every request.
- *
- * Locally the raw URL stands instead, carrying the isolate's ID: the parameters that steer and
- * repeat a dev render live there, and an edit to the card's code starts a fresh isolate rather than
- * being hidden behind a day-old render.
+ * Deployed, keyed on the descriptor so appending `&x=1`, `&x=2`, ... can't force fresh renders.
+ * Locally, keyed on the raw URL and isolate, so dev parameters count and code changes aren't hidden.
  */
 function cacheKey(env: WorkerEnv, target: URL, descriptor: PageDescriptor): Request {
     if (!servingLocalSite(env)) {
@@ -180,10 +160,8 @@ function cacheKey(env: WorkerEnv, target: URL, descriptor: PageDescriptor): Requ
 const openfreemap = 'https://tiles.openfreemap.org'
 
 /**
- * A local render may be pointed at a snapshot of the tiles, which is how a card screenshot stays
- * put when openfreemap rebuilds the planet. Deployed, the parameter is ignored, and has to be:
- * whoever chooses the tile origin chooses what the basemap shows, and this card goes out under
- * urbanstats.org's own name.
+ * Locally, `__tiles` pins a tile snapshot for screenshots. Deployed it's ignored, or anyone could
+ * choose what a card under urbanstats.org's name shows.
  */
 function tileOrigin(env: WorkerEnv, target: URL): string {
     const snapshot = target.searchParams.get('__tiles')
@@ -191,9 +169,8 @@ function tileOrigin(env: WorkerEnv, target: URL): string {
 }
 
 /*
- * A crawler that gets anything but an image here shows no preview at all, so a failed render
- * answers with the site's generic one instead. Kept out of the cache, and cacheable downstream for
- * minutes rather than the card's day, so a passing failure is not what the next crawler sees.
+ * A crawler shows no preview at all for a non-image response. Cached briefly, so a transient
+ * failure doesn't stick.
  */
 async function staticPreview(env: WorkerEnv): Promise<Response> {
     const png = await fetch(new URL('/link-preview.png', env.SITE_ORIGIN).toString())
@@ -242,10 +219,7 @@ async function renderImage(env: WorkerEnv, target: URL, ctx: WorkerContext): Pro
     return response
 }
 
-/*
- * Lets the embed-preview dev panel read what a crawler would see: it is served by the local site on
- * one port and talks to this Worker on another. Nothing deployed is ever a localhost origin.
- */
+/* For the embed-preview dev panel, which the local site serves from another port. */
 function devCors(response: Response, request: Request): Response {
     const origin = request.headers.get('origin')
     if (origin === null || !/^http:\/\/(localhost|127\.0\.0\.1)(:|$)/.test(origin)) {
@@ -260,9 +234,8 @@ export default {
     async fetch(request: Request, env: WorkerEnv, ctx: WorkerContext): Promise<Response> {
         const url = new URL(request.url)
 
-        // Lets the preview panel see the card's code reload, which the site's own dev server knows
-        // nothing about. Held open rather than polled, so an idle panel costs one request log line
-        // per Worker restart instead of one per second.
+        // Tells the preview panel when the Worker reloads. Held open rather than polled, to keep the
+        // request log quiet.
         if (servingLocalSite(env) && url.pathname === '/__reload') {
             const encoder = new TextEncoder()
             const body = new ReadableStream({
@@ -288,11 +261,7 @@ export default {
 
         const embed = await describe(url)
 
-        /*
-         * SITE_ORIGIN is the host this Worker is installed on, and asking it for the very page we
-         * were called for is not a loop: Cloudflare sends a Worker's subrequest that matches one of
-         * its own routes to the origin server rather than invoking the Worker again.
-         */
+        // Not a loop: Cloudflare sends a Worker's subrequest matching its own routes to the origin.
         const origin = await fetch(new URL(url.pathname + url.search, env.SITE_ORIGIN).toString(), request)
         if (embed === undefined || !(origin.headers.get('content-type') ?? '').includes('text/html')) {
             return devCors(origin, request)

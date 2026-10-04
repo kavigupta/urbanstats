@@ -11,8 +11,7 @@ export const collapseAnimationMs = 400
 
 /** Edit mode is ephemeral, so it has to be reopened after any reload or navigation. */
 export async function enterEditMode(t: TestController): Promise<void> {
-    // Neither is present until the table renders, and `exists` doesn't wait, so a check
-    // straight after a navigation would otherwise read the loading page and skip the click.
+    // `exists` doesn't wait, so wait for the table first or a fresh page would skip the click.
     await t.expect(Selector('[data-test-id=edit-mode-edit], [data-test-id=edit-mode-filter]').exists).ok()
     if (await editButton.exists) {
         await t.click(editButton)
@@ -57,11 +56,7 @@ export function subcategoryCheckbox(subcategoryId: string): CheckboxSelector {
     return checkboxByTestId(`${editCheckboxPrefixes.subcategory}${subcategoryId}`)
 }
 
-/**
- * An unselected group lives inside its category's collapsible section, so it is only
- * interactable once the category is expanded -- see `interactableGroupCheckbox` and
- * `setCategoryExpanded`. Selected groups are shown whether or not their category is.
- */
+/** An unselected group is only interactable while its category is expanded; see `interactableGroupCheckbox`. */
 export function groupCheckbox(groupId: string): CheckboxSelector {
     return checkboxByTestId(`${editCheckboxPrefixes.group}${groupId}`)
 }
@@ -88,11 +83,7 @@ export function editCheckbox(txt: string): Selector {
         .find('input')
 }
 
-/**
- * Matched via the group checkbox it points at, which distinguishes these rows from the year
- * and source rows above (whose labels carry the same text). A group with a single row
- * collapses into that row, so it has none of these.
- */
+/** Matched via `for`, unlike the year and source rows with the same text. A single-row group has none. */
 export function groupMemberRow(groupId: string, name: string): Selector {
     return Selector(`label[for=edit-checkbox-${groupId}]`).withExactText(name)
 }
@@ -109,10 +100,8 @@ export const articleTableScope = '.stats_table'
 export const comparisonTableScope = '[data-test-id=comparison-table]'
 
 /**
- * Matched by the direction the toggle currently offers, so its presence also tells you which
- * state the category is in. A category with every group selected has no toggle at all, since
- * collapsing it would hide nothing. The sidebar's tree marks its categories the same way, so
- * it has to be excluded.
+ * Matched by the direction it offers, so its presence tells the category's state. A fully selected
+ * category has no toggle.
  */
 export function categoryToggleButton(categoryId: string, direction: 'Expand' | 'Collapse'): Selector {
     return Selector(`[data-category-id=${categoryId}]:not(.sidebar-section *)`).withAttribute('aria-label', new RegExp(`^${direction} `))

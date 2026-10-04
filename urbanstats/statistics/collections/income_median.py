@@ -68,15 +68,10 @@ class IncomeMedian(GeoIDStatisticsACS):
             us.states.MP,
         ]:
             return True
-        if census_level in ["county subdivision"] and state() in [us.states.AR]:
-            # For some reason some Arkansas county subdivisions are missing; this is fine
-            return True
         if name in [
             "Brentwood CDP, New York, USA",
             "Louisville city, Kentucky, USA",
             "Wyandanch CDP, New York, USA",
-            "Lee district [CCD], Fairfax County, Virginia, USA",
-            # these zips correspond to the above CCDs. Some weird consistency here
             "11717, USA",
             "11798, USA",
             "98205, USA",

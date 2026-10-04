@@ -51,11 +51,7 @@ const mapUnit = mapUssParser(l.call({
     unnamedArgs: [],
 }), 'dont-reparse')
 
-/**
- * Statically analyze a map's unit= argument. Version of constructDeclaredUnitsForMap that doesn't need to run the script.
- *
- * Limitation: this only works for unit= arguments that are constant identifiers.
- */
+/** constructDeclaredUnitsForMap without running the script. Only handles unit= arguments that are constant identifiers. */
 export function constructDeclaredUnitsForMapStatically(uss: MapUSS, typeEnvironment: TypeEnvironment): DeclaredUnits {
     const written = read(mapUnit, uss, typeEnvironment)?.namedArgs.unit
     return constructDeclaredUnitsForMap(uss, typeEnvironment, getUnitFromIdentifier(written))

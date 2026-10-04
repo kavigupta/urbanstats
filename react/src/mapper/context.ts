@@ -30,7 +30,7 @@ async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement
     const dte = defaultTypeEnvironment(universes)
     const ids = allIdentifiers(stmts, ctx)
 
-    const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geoName', 'geo', 'geoCentroid', 'defaultInsets']
+    const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geoName', 'geoShortName', 'geoCleanName', 'geo', 'geoCentroid', 'defaultInsets']
 
     // Some variables are always loaded, regardless of whether they are used in the statements
     // This is helpful for some operations, such as CSV export
@@ -97,6 +97,24 @@ export const defaultTypeEnvironment = (universe: Universe | Universe[] | undefin
             category: 'mapper',
             isDefault: true,
             longDescription: 'A vector containing the names of geographic units for the current universe. Each element represents a geographic unit (e.g., census block, county) and can be used for labeling and identification purposes in mapping and spatial analysis.',
+        },
+    })
+
+    te.set('geoShortName', {
+        type: { type: 'vector', elementType: { type: 'string' } },
+        documentation: {
+            humanReadableName: 'Short Name',
+            category: 'mapper',
+            longDescription: 'The name of each region without what region it is within, e.g. "Los Angeles County" rather than "Los Angeles County, California, USA".',
+        },
+    })
+
+    te.set('geoCleanName', {
+        type: { type: 'vector', elementType: { type: 'string' } },
+        documentation: {
+            humanReadableName: 'Clean Name',
+            category: 'mapper',
+            longDescription: 'The colloquial name of each region, without what kind of region it is (e.g. "County") or what region it is within (e.g. "California, USA"). For example, Los Angeles County, California, USA is just "Los Angeles".',
         },
     })
 
@@ -199,9 +217,9 @@ function insetsFor(universe: Universe): Inset[] {
 }
 
 /**
- * Several universes share one canvas. Their main maps are grouped the way the comparison map groups
- * regions, and each group becomes one main map; every other inset moves with the main map it came
- * from, keeping its place relative to it.
+ * Puts several universes on one canvas. Main maps that are close together are merged by `partitionBoxes`,
+ * as on the comparison map, and the merged maps split the screen area the original main maps took up.
+ * Every other inset is moved and scaled with the part of the new main map that its universe covers.
  */
 function combineInsets(universes: Universe[]): Inset[] {
     const perUniverse = universes.map(universe => insetsFor(universe).map((inset, i) => ({ ...inset, name: insets[universe][i].name })))
