@@ -7,7 +7,8 @@ import React, { ReactNode, useRef } from 'react'
 import { ExpandButton } from '../../components/ExpandButton'
 import { RenderTwiceHidden } from '../../components/RenderTwiceHidden'
 import { CheckboxSettingCustom } from '../../components/checkbox-setting'
-import { UrbanStatsASTExpression, locationOf } from '../../urban-stats-script/ast'
+import { DisplayResults } from '../../urban-stats-script/Editor'
+import { UrbanStatsASTExpression, UrbanStatsASTStatement, locationOf } from '../../urban-stats-script/ast'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
@@ -22,12 +23,14 @@ import { randomBase62ID } from '../../utils/random'
 import { useMobileLayout } from '../../utils/responsive'
 
 import * as ArgEditButtons from './ArgEditButtons'
+import { ConditionEditor } from './ConditionEditor'
 import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
 import { SelectionContext, Selection as ContextSelection } from './SelectionContext'
 import { Selector, getColor, labelPadding } from './Selector'
+import { isNoCondition, noCondition } from './condition'
 import { createDefaultExpression, getDefaultFunction, getDefaultVariable, maybeParseExpr, parseExpr, possibilities, changeBlockId } from './parseExpr'
-import { classifyExpr, maybeClassifyExpr, Selection } from './selector-classifier'
+import { maybeClassifyExpr, Selection } from './selector-classifier'
 
 function ArgumentEditor(props: {
     name: string
@@ -398,8 +401,7 @@ export function AutoUXEditor(props: {
     }
     const labelWidth = props.labelWidth ?? '5%'
     const mobileLayout = useMobileLayout()
-    // A list row's label is its index, which is short enough to keep beside the drag handle even on mobile
-    const twoLines = props.dragHandle === undefined && (mobileLayout || (props.label?.length ?? 0) > 5)
+    const twoLines = labelHasOwnRow(props, mobileLayout)
 
     if (props.uss.type === 'autoUXNode') {
         const uss = props.uss
@@ -420,6 +422,10 @@ export function AutoUXEditor(props: {
                 }}
             />
         )
+    }
+
+    if (props.uss.type === 'if') {
+        return <MaskedValueEditor {...props} />
     }
 
     const subcomponent = (): [ReactNode | undefined, 'consumes-errors' | 'does-not-consume-errors'] => {
@@ -645,6 +651,72 @@ export function AutoUXEditor(props: {
     )
 }
 
+// A list row's label is its index, which is short enough to keep beside the drag handle even on mobile
+function labelHasOwnRow(props: { label?: string, dragHandle?: ReactNode }, mobileLayout: boolean): boolean {
+    return props.dragHandle === undefined && (mobileLayout || (props.label?.length ?? 0) > 5)
+}
+
+/**
+ * A value with an optional condition: `if (condition) { value }` as `parseExpr` reads it, or a plain value
+ * with the condition unticked. Ticking wraps the value, and unticking unwraps it.
+ */
+function MaskedValueEditor(props: Parameters<typeof AutoUXEditor>[0]): ReactNode {
+    const uss = props.uss
+    const masked = uss.type === 'if'
+    assert(!masked || uss.then.type === 'expression', 'parseExpr only keeps an if whose body is one expression')
+    const valueIdent = masked ? extendBlockIdPositionalArg(props.blockIdent, 1) : props.blockIdent
+    const value = masked ? (uss.then as UrbanStatsASTStatement & { type: 'expression' }).value : uss
+    const condition = masked ? uss.condition : noCondition(extendBlockIdPositionalArg(props.blockIdent, 0))
+    const setCondition = (newCondition: UrbanStatsASTExpression, options: ActionOptions): void => {
+        if (isNoCondition(newCondition)) {
+            props.setUss(changeBlockId(value, valueIdent, props.blockIdent), options)
+        }
+        else if (masked) {
+            props.setUss({ ...uss, condition: newCondition }, options)
+        }
+        else {
+            props.setUss({
+                type: 'if',
+                entireLoc: emptyLocation(props.blockIdent),
+                condition: newCondition,
+                then: { type: 'expression', value: changeBlockId(value, props.blockIdent, extendBlockIdPositionalArg(props.blockIdent, 1)) },
+            }, options)
+        }
+    }
+    const labelWidth = props.labelWidth ?? '5%'
+    const mobileLayout = useMobileLayout()
+    // where the value's selector starts: there is a gap after the label column only when the label shares its row
+    const selectorIndent = props.label === undefined || labelHasOwnRow(props, mobileLayout) ? labelWidth : `calc(${labelWidth} + 0.5em)`
+    // e.g. merging the two sides of the mask, which is neither the value's nor the condition's. Unmasked,
+    // the value's own editor has this ident and shows them.
+    const ourErrors = masked ? props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent) : []
+    return (
+        <div style={{ width: '100%', margin: props.margin === false ? 0 : '0.25em 0' }} id={masked ? `auto-ux-editor-${props.blockIdent}` : undefined}>
+            <AutoUXEditor
+                {...props}
+                uss={value}
+                setUss={(newValue, options) => {
+                    props.setUss(masked ? { ...uss, then: { type: 'expression', value: newValue } } : newValue, options)
+                }}
+                blockIdent={valueIdent}
+                margin={false}
+            />
+            <div style={{ marginLeft: selectorIndent }}>
+                <ConditionEditor
+                    name="Only Some?"
+                    condition={condition}
+                    setCondition={setCondition}
+                    typeEnvironment={props.typeEnvironment}
+                    errors={props.errors}
+                    blockIdent={extendBlockIdPositionalArg(props.blockIdent, 0)}
+                    assignments={props.assignments}
+                />
+                {ourErrors.length > 0 && <DisplayResults editor={false} results={ourErrors} />}
+            </div>
+        </div>
+    )
+}
+
 function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment, blockIdent: string, types: USSType[], selection?: Selection): UrbanStatsASTExpression | undefined {
     switch (expr.type) {
         case 'identifier': {
@@ -660,7 +732,7 @@ function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnviron
 
             for (const equiv of reference.documentation.equivalentExpressions) {
                 const valid = maybeParseExpr(equiv, blockIdent, types, typeEnvironment)
-                if (valid !== undefined && (selection === undefined || stableStringify(classifyExpr(valid)) === stableStringify(selection))) {
+                if (valid !== undefined && (selection === undefined || stableStringify(maybeClassifyExpr(valid)) === stableStringify(selection))) {
                     return valid
                 }
             }
@@ -705,7 +777,7 @@ function defaultForSelection(
     }
 
     const parsed = maybeParseExpr(current, blockIdent, types, typeEnvironment)
-    if (parsed !== undefined && stableStringify(classifyExpr(parsed)) === stableStringify(selection)) {
+    if (parsed !== undefined && stableStringify(maybeClassifyExpr(parsed)) === stableStringify(selection)) {
         return parsed
     }
 

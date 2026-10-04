@@ -28,17 +28,19 @@ interface NodeProps {
 export function ConditionEditor({
     condition,
     setCondition,
+    name = 'Filter?',
     ...nodeProps
 }: {
     condition: UrbanStatsASTExpression
     setCondition: (conditionExpr: UrbanStatsASTExpression, options: ActionOptions) => void
+    name?: string
 } & NodeProps): ReactNode {
     const enabled = !isNoCondition(condition)
 
     return (
         <div style={{ margin: '0.5em 0' }}>
             <CheckboxSettingCustom
-                name="Filter?"
+                name={name}
                 checked={enabled}
                 onChange={(checked) => {
                     setCondition(
