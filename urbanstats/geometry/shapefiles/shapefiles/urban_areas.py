@@ -20,6 +20,9 @@ URBAN_AREAS = Shapefile(
     hash_key="urban_areas",
     path="named_region_shapefiles/tl_rd22_us_uac20.zip",
     shortname_extractor=lambda x: urban_area(x.NAMELSAD20, is_shortname=True),
+    cleanname_extractor=lambda x: urban_area(
+        x.NAMELSAD20, is_shortname=True
+    ).removesuffix(" Urban Area"),
     longname_extractor=lambda x: urban_area(x.NAMELSAD20, is_shortname=False),
     additional_columns_computer={"geoid": lambda x: x.GEOID20},
     filter=lambda x: True,

@@ -12,6 +12,7 @@ def save_article_ordering_list(
     path: str,
     longname_to_type: Mapping[str, str],
     longname_to_shortname: Mapping[str, str],
+    longname_to_cleanname: Mapping[str, str],
 ) -> None:
     types = [longname_to_type[x] for x in longnames]
     res = data_files_pb2.ArticleOrderingList()
@@ -21,6 +22,8 @@ def save_article_ordering_list(
         res.types.append(type_ordering_idx[x])
     for x in longnames:
         res.shortnames.append(longname_to_shortname[x])
+    for x in longnames:
+        res.cleannames.append(longname_to_cleanname[x])
     write_gzip(res, path)
 
 

@@ -325,6 +325,9 @@ def districts(
             minimum_district_length=minimum_district_length,
         ),
         shortname_extractor=lambda x: get_shortname(district_abbrev, x),
+        cleanname_extractor=lambda x: get_shortname(
+            district_abbrev, x, include_date=False
+        ),
         longname_extractor=lambda x: get_shortname(district_abbrev, x) + ", USA",
         longname_sans_date_extractor=lambda x: get_shortname(
             district_abbrev, x, include_date=False
