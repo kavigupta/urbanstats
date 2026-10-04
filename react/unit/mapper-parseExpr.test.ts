@@ -2,7 +2,7 @@ import assert from 'assert/strict'
 import { test } from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
-import { parseExpr } from '../src/mapper/settings/parseExpr'
+import { maybeParseExpr, parseExpr } from '../src/mapper/settings/parseExpr'
 import { UrbanStatsASTExpression } from '../src/urban-stats-script/ast'
 import { parse, unparse } from '../src/urban-stats-script/parser'
 import type { TypeEnvironment, USSType } from '../src/urban-stats-script/types-values'
@@ -133,23 +133,13 @@ void test('function parameter with invalid expression uses customNode', (): void
 
 const stringVectorType = { type: 'vector', elementType: { type: 'string' } } as const
 
-function parseMasked(code: string, types: USSType[]): UrbanStatsASTExpression | 'fallback' {
-    try {
-        return parseExpr(getExpr(code), 'test', types, createTypeEnvironment(), () => {
-            throw new Error('fallback')
-        }, false)
-    }
-    catch (e) {
-        if (e instanceof Error && e.message === 'fallback') {
-            return 'fallback'
-        }
-        throw e
-    }
+function parseMasked(code: string, types: USSType[]): UrbanStatsASTExpression | undefined {
+    return maybeParseExpr(getExpr(code), 'test', types, createTypeEnvironment())
 }
 
 void test('masked value with no condition keeps true as it is', (): void => {
     const result = parseMasked('if (true) { geoName }', [stringVectorType])
-    assert(result !== 'fallback' && result.type === 'if')
+    assert(result?.type === 'if')
     assert.strictEqual(unparse(result.condition), 'true')
     assert(result.then.type === 'expression')
     assert.strictEqual(unparse(result.then.value), 'geoName')
@@ -157,12 +147,12 @@ void test('masked value with no condition keeps true as it is', (): void => {
 
 void test('masked value with a comparison is editable as one', (): void => {
     const result = parseMasked('if (population > 1000) { geoName }', [stringVectorType])
-    assert(result !== 'fallback' && result.type === 'if')
+    assert(result?.type === 'if')
     assert.strictEqual(result.condition.type, 'binaryOperator')
     assert.strictEqual(unparse(result.condition), 'population > 1000')
 })
 
 void test('if with an else, or where one value is wanted, is left as code', (): void => {
-    assert.strictEqual(parseMasked('if (true) { geoName } else { geoName }', [stringVectorType]), 'fallback')
-    assert.strictEqual(parseMasked('if (true) { "a" }', [{ type: 'string' }]), 'fallback')
+    assert.strictEqual(parseMasked('if (true) { geoName } else { geoName }', [stringVectorType]), undefined)
+    assert.strictEqual(parseMasked('if (true) { "a" }', [{ type: 'string' }]), undefined)
 })

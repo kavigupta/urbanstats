@@ -7,6 +7,7 @@ import React, { ReactNode, useRef } from 'react'
 import { ExpandButton } from '../../components/ExpandButton'
 import { RenderTwiceHidden } from '../../components/RenderTwiceHidden'
 import { CheckboxSettingCustom } from '../../components/checkbox-setting'
+import { DisplayResults } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTExpression, locationOf } from '../../urban-stats-script/ast'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
 import { EditorError } from '../../urban-stats-script/editor-utils'
@@ -396,8 +397,7 @@ export function AutoUXEditor(props: {
     }
     const labelWidth = props.labelWidth ?? '5%'
     const mobileLayout = useMobileLayout()
-    // A list row's label is its index, which is short enough to keep beside the drag handle even on mobile
-    const twoLines = props.dragHandle === undefined && (mobileLayout || (props.label?.length ?? 0) > 5)
+    const twoLines = labelHasOwnRow(props, mobileLayout)
 
     if (props.uss.type === 'autoUXNode') {
         const uss = props.uss
@@ -647,11 +647,22 @@ export function AutoUXEditor(props: {
     )
 }
 
+// A list row's label is its index, which is short enough to keep beside the drag handle even on mobile
+function labelHasOwnRow(props: { label?: string, dragHandle?: ReactNode }, mobileLayout: boolean): boolean {
+    return props.dragHandle === undefined && (mobileLayout || (props.label?.length ?? 0) > 5)
+}
+
 /** `if (condition) { value }`, as `parseExpr` reads it. */
 function MaskedValueEditor(props: Parameters<typeof AutoUXEditor>[0] & { uss: UrbanStatsASTExpression & { type: 'if' } }): ReactNode {
     const uss = props.uss
     assert(uss.then.type === 'expression', 'parseExpr only keeps an if whose body is one expression')
     const value = uss.then.value
+    const labelWidth = props.labelWidth ?? '5%'
+    const mobileLayout = useMobileLayout()
+    // where the value's selector starts: there is a gap after the label column only when the label shares its row
+    const selectorIndent = props.label === undefined || labelHasOwnRow(props, mobileLayout) ? labelWidth : `calc(${labelWidth} + 0.5em)`
+    // e.g. merging the two sides of the mask, which is neither the value's nor the condition's
+    const ourErrors = props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent)
     return (
         <div style={{ width: '100%', margin: props.margin === false ? 0 : '0.25em 0' }} id={`auto-ux-editor-${props.blockIdent}`}>
             <AutoUXEditor
@@ -663,8 +674,7 @@ function MaskedValueEditor(props: Parameters<typeof AutoUXEditor>[0] & { uss: Ur
                 blockIdent={extendBlockIdPositionalArg(props.blockIdent, 1)}
                 margin={false}
             />
-            {/* lined up with the value's selector, which sits after the label column and, if there is a label, a gap */}
-            <div style={{ marginLeft: props.label === undefined ? (props.labelWidth ?? '5%') : `calc(${props.labelWidth ?? '5%'} + 0.5em)` }}>
+            <div style={{ marginLeft: selectorIndent }}>
                 <ConditionEditor
                     name="Only Some?"
                     condition={uss.condition}
@@ -676,6 +686,7 @@ function MaskedValueEditor(props: Parameters<typeof AutoUXEditor>[0] & { uss: Ur
                     blockIdent={extendBlockIdPositionalArg(props.blockIdent, 0)}
                     assignments={props.assignments}
                 />
+                {ourErrors.length > 0 && <DisplayResults editor={false} results={ourErrors} />}
             </div>
         </div>
     )
