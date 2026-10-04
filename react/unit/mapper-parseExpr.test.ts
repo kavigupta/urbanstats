@@ -137,12 +137,10 @@ function parseMasked(code: string, types: USSType[]): UrbanStatsASTExpression | 
     return maybeParseExpr(getExpr(code), 'test', types, createTypeEnvironment())
 }
 
-void test('masked value with no condition keeps true as it is', (): void => {
+void test('a value given everywhere reads as just the value', (): void => {
     const result = parseMasked('if (true) { geoName }', [stringVectorType])
-    assert(result?.type === 'if')
-    assert.strictEqual(unparse(result.condition), 'true')
-    assert(result.then.type === 'expression')
-    assert.strictEqual(unparse(result.then.value), 'geoName')
+    assert.strictEqual(result?.type, 'identifier')
+    assert.strictEqual(unparse(result), 'geoName')
 })
 
 void test('masked value with a comparison is editable as one', (): void => {

@@ -8,7 +8,7 @@ import { ExpandButton } from '../../components/ExpandButton'
 import { RenderTwiceHidden } from '../../components/RenderTwiceHidden'
 import { CheckboxSettingCustom } from '../../components/checkbox-setting'
 import { DisplayResults } from '../../urban-stats-script/Editor'
-import { UrbanStatsASTExpression, locationOf } from '../../urban-stats-script/ast'
+import { UrbanStatsASTExpression, UrbanStatsASTStatement, locationOf } from '../../urban-stats-script/ast'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
@@ -28,6 +28,7 @@ import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
 import { SelectionContext, Selection as ContextSelection } from './SelectionContext'
 import { Selector, getColor, labelPadding } from './Selector'
+import { isNoCondition, noCondition } from './condition'
 import { createDefaultExpression, getDefaultFunction, getDefaultVariable, maybeParseExpr, parseExpr, possibilities, changeBlockId } from './parseExpr'
 import { maybeClassifyExpr, Selection } from './selector-classifier'
 
@@ -421,7 +422,7 @@ export function AutoUXEditor(props: {
     }
 
     if (props.uss.type === 'if') {
-        return <MaskedValueEditor {...props} uss={props.uss} />
+        return <MaskedValueEditor {...props} />
     }
 
     const subcomponent = (): [ReactNode | undefined, 'consumes-errors' | 'does-not-consume-errors'] => {
@@ -652,35 +653,56 @@ function labelHasOwnRow(props: { label?: string, dragHandle?: ReactNode }, mobil
     return props.dragHandle === undefined && (mobileLayout || (props.label?.length ?? 0) > 5)
 }
 
-/** `if (condition) { value }`, as `parseExpr` reads it. */
-function MaskedValueEditor(props: Parameters<typeof AutoUXEditor>[0] & { uss: UrbanStatsASTExpression & { type: 'if' } }): ReactNode {
+/**
+ * A value with an optional condition: `if (condition) { value }` as `parseExpr` reads it, or a plain value
+ * with the condition unticked. Ticking wraps the value, and unticking unwraps it.
+ */
+function MaskedValueEditor(props: Parameters<typeof AutoUXEditor>[0]): ReactNode {
     const uss = props.uss
-    assert(uss.then.type === 'expression', 'parseExpr only keeps an if whose body is one expression')
-    const value = uss.then.value
+    const masked = uss.type === 'if'
+    assert(!masked || uss.then.type === 'expression', 'parseExpr only keeps an if whose body is one expression')
+    const valueIdent = masked ? extendBlockIdPositionalArg(props.blockIdent, 1) : props.blockIdent
+    const value = masked ? (uss.then as UrbanStatsASTStatement & { type: 'expression' }).value : uss
+    const condition = masked ? uss.condition : noCondition(extendBlockIdPositionalArg(props.blockIdent, 0))
+    const setCondition = (newCondition: UrbanStatsASTExpression, options: ActionOptions): void => {
+        if (isNoCondition(newCondition)) {
+            props.setUss(changeBlockId(value, valueIdent, props.blockIdent), options)
+        }
+        else if (masked) {
+            props.setUss({ ...uss, condition: newCondition }, options)
+        }
+        else {
+            props.setUss({
+                type: 'if',
+                entireLoc: emptyLocation(props.blockIdent),
+                condition: newCondition,
+                then: { type: 'expression', value: changeBlockId(value, props.blockIdent, extendBlockIdPositionalArg(props.blockIdent, 1)) },
+            }, options)
+        }
+    }
     const labelWidth = props.labelWidth ?? '5%'
     const mobileLayout = useMobileLayout()
     // where the value's selector starts: there is a gap after the label column only when the label shares its row
     const selectorIndent = props.label === undefined || labelHasOwnRow(props, mobileLayout) ? labelWidth : `calc(${labelWidth} + 0.5em)`
-    // e.g. merging the two sides of the mask, which is neither the value's nor the condition's
-    const ourErrors = props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent)
+    // e.g. merging the two sides of the mask, which is neither the value's nor the condition's. Unmasked,
+    // the value's own editor has this ident and shows them.
+    const ourErrors = masked ? props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent) : []
     return (
-        <div style={{ width: '100%', margin: props.margin === false ? 0 : '0.25em 0' }} id={`auto-ux-editor-${props.blockIdent}`}>
+        <div style={{ width: '100%', margin: props.margin === false ? 0 : '0.25em 0' }} id={masked ? `auto-ux-editor-${props.blockIdent}` : undefined}>
             <AutoUXEditor
                 {...props}
                 uss={value}
                 setUss={(newValue, options) => {
-                    props.setUss({ ...uss, then: { type: 'expression', value: newValue } }, options)
+                    props.setUss(masked ? { ...uss, then: { type: 'expression', value: newValue } } : newValue, options)
                 }}
-                blockIdent={extendBlockIdPositionalArg(props.blockIdent, 1)}
+                blockIdent={valueIdent}
                 margin={false}
             />
             <div style={{ marginLeft: selectorIndent }}>
                 <ConditionEditor
                     name="Only Some?"
-                    condition={uss.condition}
-                    setCondition={(condition, options) => {
-                        props.setUss({ ...uss, condition }, options)
-                    }}
+                    condition={condition}
+                    setCondition={setCondition}
                     typeEnvironment={props.typeEnvironment}
                     errors={props.errors}
                     blockIdent={extendBlockIdPositionalArg(props.blockIdent, 0)}

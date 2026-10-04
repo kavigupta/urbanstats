@@ -17,7 +17,7 @@ import { Decorated, ParseError, parseNoErrorAsCustomNode, unparse } from '../../
 import { argTypeOptions, renderType, TypeEnvironment, USSFunctionArgType, USSFunctionType, USSObjectType, USSType } from '../../urban-stats-script/types-values'
 import { assert } from '../../utils/defensive'
 
-import { isNoCondition, noCondition, parseCondition } from './condition'
+import { isNoCondition, parseCondition } from './condition'
 import { parseToNumber, Selection, toNumberAST } from './selector-classifier'
 
 export function maybeParseExpr(
@@ -262,7 +262,7 @@ export function possibilities(target: USSType[], env: TypeEnvironment): Selectio
 
 /**
  * `if (condition) { value }` with no else, which the editor shows as the condition and the value. Over
- * a vector the condition picks out elements, so only a vector can be one.
+ * a vector the condition picks out elements, so only a vector can be one. `if (true)` is just the value.
  */
 function attemptParseMaskedValue(
     expr: UrbanStatsASTExpression & { type: 'if' },
@@ -278,13 +278,13 @@ function attemptParseMaskedValue(
     if (then.type !== 'expression') {
         return undefined
     }
+    if (isNoCondition(expr.condition)) {
+        return parseExpr(then.value, blockIdent, types, typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes)
+    }
     return {
         type: 'if',
         entireLoc: emptyLocation(blockIdent),
-        // parseCondition would keep `true` as custom code, not read it as no condition at all
-        condition: isNoCondition(expr.condition)
-            ? noCondition(extendBlockIdPositionalArg(blockIdent, 0))
-            : parseCondition(expr.condition, extendBlockIdPositionalArg(blockIdent, 0), typeEnvironment, preserveCustomNodes),
+        condition: parseCondition(expr.condition, extendBlockIdPositionalArg(blockIdent, 0), typeEnvironment, preserveCustomNodes),
         then: {
             type: 'expression',
             value: parseExpr(then.value, extendBlockIdPositionalArg(blockIdent, 1), types, typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes),

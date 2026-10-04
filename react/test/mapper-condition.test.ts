@@ -192,9 +192,12 @@ mapper(() => test)('a value given only where a condition holds edits as the valu
     await t.expect(getInput('Population', 1).exists).ok()
     await t.expect(getErrors()).eql([])
 
+    // unticking drops the condition entirely, rather than leaving `if (true)` behind
     await checkBox(t, /^Only Some\?/)
+    await t.expect(checkSelector(/^Only Some\?/).exists).notOk()
     await toggleCustomScript(t)
-    await t.expect(getCodeFromMainField()).contains('relativeArea=if (true) {')
+    await t.expect(getCodeFromMainField()).contains('relativeArea=population')
+    await t.expect(getCodeFromMainField()).notContains('if (')
 })
 
 mapper(() => test)('switching custom code holding a value given only where a condition holds to a variable', { code: 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, relativeArea=population)' }, async (t) => {
