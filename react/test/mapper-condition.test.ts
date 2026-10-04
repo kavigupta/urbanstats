@@ -196,3 +196,13 @@ mapper(() => test)('a value given only where a condition holds edits as the valu
     await toggleCustomScript(t)
     await t.expect(getCodeFromMainField()).contains('relativeArea=if (true) {')
 })
+
+mapper(() => test)('switching custom code holding a value given only where a condition holds to a variable', { code: 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, relativeArea=population)' }, async (t) => {
+    await toggleCustomScript(t)
+    await replaceInput(t, 'Population', 'Custom Expression')
+    await typeInEditor(t, 0, 'if (population > 100000) { population }', true)
+    await replaceInput(t, 'Custom Expression', 'Population')
+    await t.expect(getErrors()).eql([])
+    await toggleCustomScript(t)
+    await t.expect(getCodeFromMainField()).contains('relativeArea=population')
+})

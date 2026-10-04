@@ -28,7 +28,7 @@ import { ActionOptions } from './EditMapperPanel'
 import { SelectionContext, Selection as ContextSelection } from './SelectionContext'
 import { Selector, getColor, labelPadding } from './Selector'
 import { createDefaultExpression, getDefaultFunction, getDefaultVariable, maybeParseExpr, parseExpr, possibilities, changeBlockId } from './parseExpr'
-import { classifyExpr, maybeClassifyExpr, Selection } from './selector-classifier'
+import { maybeClassifyExpr, Selection } from './selector-classifier'
 
 function ArgumentEditor(props: {
     name: string
@@ -696,7 +696,7 @@ function deconstruct(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnviron
 
             for (const equiv of reference.documentation.equivalentExpressions) {
                 const valid = maybeParseExpr(equiv, blockIdent, types, typeEnvironment)
-                if (valid !== undefined && (selection === undefined || stableStringify(classifyExpr(valid)) === stableStringify(selection))) {
+                if (valid !== undefined && (selection === undefined || stableStringify(maybeClassifyExpr(valid)) === stableStringify(selection))) {
                     return valid
                 }
             }
@@ -741,7 +741,7 @@ function defaultForSelection(
     }
 
     const parsed = maybeParseExpr(current, blockIdent, types, typeEnvironment)
-    if (parsed !== undefined && stableStringify(classifyExpr(parsed)) === stableStringify(selection)) {
+    if (parsed !== undefined && stableStringify(maybeClassifyExpr(parsed)) === stableStringify(selection)) {
         return parsed
     }
 
