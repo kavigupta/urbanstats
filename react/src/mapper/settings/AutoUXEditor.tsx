@@ -22,6 +22,7 @@ import { randomBase62ID } from '../../utils/random'
 import { useMobileLayout } from '../../utils/responsive'
 
 import * as ArgEditButtons from './ArgEditButtons'
+import { ConditionEditor } from './ConditionEditor'
 import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
 import { SelectionContext, Selection as ContextSelection } from './SelectionContext'
@@ -118,7 +119,10 @@ function ArgumentEditor(props: {
                                         if (checked) {
                                             const defaultExpr = props.argWDefault.defaultValue
                                             let exprToUse: UrbanStatsASTExpression
-                                            if (defaultExpr === undefined || (defaultExpr.type === 'identifier' && defaultExpr.name.node === 'null')) {
+                                            if (argDoc?.whenChecked !== undefined) {
+                                                exprToUse = argDoc.whenChecked
+                                            }
+                                            else if (defaultExpr === undefined || (defaultExpr.type === 'identifier' && defaultExpr.name.node === 'null')) {
                                                 exprToUse = createDefaultExpression(argTypes[0], subident, props.typeEnvironment)
                                             }
                                             else if (defaultExpr.type === 'identifier' && defaultExpr.name.node === 'false') {
@@ -419,6 +423,10 @@ export function AutoUXEditor(props: {
         )
     }
 
+    if (props.uss.type === 'if') {
+        return <MaskedValueEditor {...props} uss={props.uss} />
+    }
+
     const subcomponent = (): [ReactNode | undefined, 'consumes-errors' | 'does-not-consume-errors'] => {
         const uss = props.uss
         if (maybeClassifyExpr(uss)?.type === 'constant') {
@@ -638,6 +646,40 @@ export function AutoUXEditor(props: {
                 </div>
             )}
             {wrapped !== undefined && <div style={{ gridRow: hasHeader ? headerRow + 1 : 1, gridColumn: 1 }}>{wrapped}</div>}
+        </div>
+    )
+}
+
+/** `if (condition) { value }`, as `parseExpr` reads it. */
+function MaskedValueEditor(props: Parameters<typeof AutoUXEditor>[0] & { uss: UrbanStatsASTExpression & { type: 'if' } }): ReactNode {
+    const uss = props.uss
+    assert(uss.then.type === 'expression', 'parseExpr only keeps an if whose body is one expression')
+    const value = uss.then.value
+    return (
+        <div style={{ width: '100%', margin: props.margin === false ? 0 : '0.25em 0' }} id={`auto-ux-editor-${props.blockIdent}`}>
+            <AutoUXEditor
+                {...props}
+                uss={value}
+                setUss={(newValue, options) => {
+                    props.setUss({ ...uss, then: { type: 'expression', value: newValue } }, options)
+                }}
+                blockIdent={extendBlockIdPositionalArg(props.blockIdent, 1)}
+                margin={false}
+            />
+            {/* lined up with the value's selector, which sits after a label column */}
+            <div style={{ marginLeft: `calc(${props.labelWidth ?? '5%'} + 0.5em)` }}>
+                <ConditionEditor
+                    name="Only Some?"
+                    condition={uss.condition}
+                    setCondition={(condition, options) => {
+                        props.setUss({ ...uss, condition }, options)
+                    }}
+                    typeEnvironment={props.typeEnvironment}
+                    errors={props.errors}
+                    blockIdent={extendBlockIdPositionalArg(props.blockIdent, 0)}
+                    assignments={props.assignments}
+                />
+            </div>
         </div>
     )
 }

@@ -594,13 +594,13 @@ void test('constant listing', (): void => {
                 'linearScale',
                 'logScale',
             ],
-            '(; data: [number], scale: scale, ramp: ramp, missingData: missingData = null, label: string = null, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), opacity: number = 1, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> cMap': [
+            '(; data: [number], scale: scale, ramp: ramp, missingData: missingData = null, label: string = null, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), labelEachRegion: [string] = null, opacity: number = 1, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> cMap': [
                 'cMap',
             ],
             '(; dataR: [number], dataG: [number], dataB: [number], dataA: [number] = null, missingData: missingData = null, label: string, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), opacity: number = 1, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> cMapRGB': [
                 'cMapRGB',
             ],
-            '(; data: [number], scale: scale, ramp: ramp, missingData: missingData = null, label: string = null, unit: Unit = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 10, relativeArea: [number] = null, opacity: number = 1, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> pMap': [
+            '(; data: [number], scale: scale, ramp: ramp, missingData: missingData = null, label: string = null, unit: Unit = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 10, relativeArea: [number] = null, labelEachPoint: [string] = null, opacity: number = 1, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> pMap': [
                 'pMap',
             ],
             '(; data: [number], scale: scale, ramp: ramp, missingData: missingData = null, label: string = null, unit: Unit = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 30, relativeArea: [number] = population, clusterRadiusSpacing: number = 0, opacity: number = 1, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> clusterMap': [

@@ -1,9 +1,9 @@
 import Color from 'color'
-import React, { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { MapInstance, MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
-import { Basemap as BasemapComponent, CommonMaplibreMap, MapAttribution, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
+import { Basemap as BasemapComponent, CommonMaplibreMap, LabelCollection, MapAttribution, MapLabel, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
 import { tileAttribution } from '../components/map-common-utils'
 import { bannerCreditBottom, bannerCreditSize, bannerLockupStart, screencapElement, ScreenshotContext, ScreenshotContextType, withScreenshotMode } from '../components/screenshot'
 import { shapesByName } from '../consolidated-shapes'
@@ -503,7 +503,22 @@ async function loadMapResult({ mapResultMain, geographies, cache, label, derived
 
             features = await pointsGeojson(geographies, points, cache)
 
-            mapChildren = (fs, clickable) => <PointFeatureCollection features={fs} clickable={clickable} />
+            const pointLabels = labelsByName(value.labels, value.geo, (name) => {
+                const feature = features.find(f => f.properties!.name === name)!
+                const [lon, lat] = (feature.geometry as GeoJSON.Point).coordinates
+                return { lon, lat }
+            }, (i) => {
+                const radius = markerRadius(value.relativeArea[i], value.maxRadius)
+                // text-radial-offset is in ems of the 12px label
+                return radius / 12 + 0.2
+            })
+
+            mapChildren = (fs, clickable) => (
+                <>
+                    <PointFeatureCollection features={fs} clickable={clickable} />
+                    <MapLabels labels={pointLabels} features={fs} placement="beside" basemap={value.basemap} />
+                </>
+            )
 
             break
         case 'cMap':
@@ -531,7 +546,20 @@ async function loadMapResult({ mapResultMain, geographies, cache, label, derived
 
             features = await polygonsGeojson(geographies, polys, cache)
 
-            mapChildren = (fs, clickable) => <PolygonFeatureCollection features={fs} clickable={clickable} />
+            const regionCentroids = opaqueType === 'cMap' && value.labels !== undefined
+                ? await mergedByName(geographies, g => centroidsByName(g.universe, g.geographyKind))
+                : new Map<string, ICoordinate>()
+            const regionLabels = labelsByName(opaqueType === 'cMap' ? value.labels : undefined, value.geo, (name) => {
+                const { lon, lat } = regionCentroids.get(name)!
+                return { lon: lon!, lat: lat! }
+            }, () => 0)
+
+            mapChildren = (fs, clickable) => (
+                <>
+                    <PolygonFeatureCollection features={fs} clickable={clickable} />
+                    <MapLabels labels={regionLabels} features={fs} placement="centered" basemap={value.basemap} />
+                </>
+            )
 
             break
     }
@@ -554,6 +582,39 @@ async function loadMapResult({ mapResultMain, geographies, cache, label, derived
         ),
         ramp,
     }
+}
+
+/** Only the geographies that have a label, and so only those an inset draws are labelled in it. */
+function labelsByName(
+    labels: string[] | undefined,
+    geo: string[],
+    position: (name: string) => { lon: number, lat: number },
+    offset: (i: number) => number,
+): Map<string, MapLabel> {
+    if (labels === undefined) {
+        return new Map()
+    }
+    return new Map(geo.flatMap((name, i) => labels[i] === '' ? [] : [[name, { ...position(name), label: labels[i], offset: offset(i) }]]))
+}
+
+function MapLabels({ labels, features, placement, basemap }: {
+    labels: Map<string, MapLabel>
+    features: GeoJSON.Feature[]
+    placement: 'centered' | 'beside'
+    basemap: Basemap
+}): ReactNode {
+    const shown = useMemo(() => features.flatMap(f => labels.get(f.properties!.name as string) ?? []), [labels, features])
+    if (shown.length === 0) {
+        return null
+    }
+    return (
+        <LabelCollection
+            labels={shown}
+            placement={placement}
+            color={basemap.type === 'none' ? basemap.textColor : colorThemes['Light Mode'].textMain}
+            haloColor={basemap.type === 'none' ? basemap.backgroundColor : colorThemes['Light Mode'].background}
+        />
+    )
 }
 
 function computeRampToDisplay(value: CommonMap, label: HumanReadableName, derivedUnit: StoredUnit | undefined, { scale, ticks }: { scale: ScaleInstance, ticks: number[] }): RampToDisplay & { type: 'ramp' } {
