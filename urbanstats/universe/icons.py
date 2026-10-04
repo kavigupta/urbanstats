@@ -94,6 +94,30 @@ def download_all_canadian_province_flags() -> None:
         )
 
 
+def australian_state_flag_name(state: str) -> str:
+    name = state.replace(", Australia", "")
+    if name == "Victoria":
+        return "File:Flag_of_Victoria_(Australia).svg"
+    if name.endswith("Territory"):
+        name = "the " + name
+    return f"File:Flag_of_{name.replace(' ', '_')}.svg"
+
+
+# the current revision (2025-11-24, "Simplified file by A LOT") draws ochre over most of the hoist
+AUSTRALIAN_STATE_FLAG_REVISIONS = {
+    "Northern Territory, Australia": "https://upload.wikimedia.org/wikipedia/commons/archive/b/b7/20251124152458%21Flag_of_the_Northern_Territory.svg",  # pylint: disable=line-too-long
+}
+
+
+def download_all_australian_state_flags() -> None:
+    for state in universe_by_universe_type()["australian_state"]:
+        download_and_convert_flag(
+            australian_state_flag_name(state),
+            state,
+            url=AUSTRALIAN_STATE_FLAG_REVISIONS.get(state),
+        )
+
+
 def download_all_country_flags() -> None:
     for name in COUNTRIES:
         wikiname = internal_country_to_wikipedia.get(name, name.replace(" ", "_"))
@@ -112,6 +136,7 @@ def download_all_flags() -> None:
     download_all_country_flags()
     download_all_us_state_flags()
     download_all_canadian_province_flags()
+    download_all_australian_state_flags()
     download_and_convert_flag("File:Flag_of_the_United_States.svg", "USA")
     download_and_convert_flag("File:Flag_of_the_United_Nations.svg", "world")
     download_and_convert_flag(

@@ -125,9 +125,22 @@ tiers = [
         "CA Census Division",
         "CA Riding",
         "CA Population Center",
+        "AU LGA",
+        "AU Significant Urban Area",
+        "AU Federal Electorate",
+        "AU State Lower House District",
+        "AU State Upper House Region",
     ],
-    ["CCD", "City", "School District", "CA Census Subdivision"],
-    ["Neighborhood", "ZIP"],
+    [
+        "CCD",
+        "City",
+        "School District",
+        "CA Census Subdivision",
+        "AU SA2",
+        "AU Urban Centre",
+        "AU Suburb",
+    ],
+    ["Neighborhood", "ZIP", "AU Postcode"],
 ]
 
 type_to_type_category = {
