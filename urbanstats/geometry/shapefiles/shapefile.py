@@ -36,6 +36,9 @@ class Shapefile:
     end_date = attr.ib(kw_only=True, default=None)
     end_date_overall = attr.ib(kw_only=True, default=float("inf"))
     longname_sans_date_extractor = attr.ib(kw_only=True, default=None)
+    # The colloquial name, without what kind of region it is or what it is within, e.g.
+    # "Los Angeles" for "Los Angeles County". Defaults to the shortname.
+    cleanname_extractor = attr.ib(kw_only=True, default=None)
     include_in_syau = attr.ib(kw_only=True)
     wikidata_sourcer = attr.ib(kw_only=True)
 
@@ -92,6 +95,11 @@ class Shapefile:
         ), f"{self.end_date_overall} != {max(s.end_date)}"
 
         s["shortname"] = s.apply(self.shortname_extractor, axis=1)
+        s["cleanname"] = (
+            s["shortname"]
+            if self.cleanname_extractor is None
+            else s.apply(self.cleanname_extractor, axis=1)
+        )
         s["longname"] = s.apply(self.longname_extractor, axis=1)
         if self.longname_sans_date_extractor is not None:
             s["longname_sans_date"] = s.apply(self.longname_sans_date_extractor, axis=1)
@@ -143,6 +151,7 @@ class Shapefile:
         return [
             "longname",
             "shortname",
+            "cleanname",
             "longname_sans_date",
             "start_date",
             "end_date",

@@ -71,6 +71,7 @@ CANADIAN_CENSUS_METROPOLITAN_AREAS = Shapefile(
     hash_key="census_cmas_2",
     path=load_cmas,
     shortname_extractor=shortname_extractor,
+    cleanname_extractor=lambda row: row["CMANAME"],
     longname_extractor=longname_extractor,
     additional_columns_computer={
         "scgc": lambda row: row.CMAUID,
