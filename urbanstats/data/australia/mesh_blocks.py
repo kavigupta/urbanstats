@@ -39,3 +39,14 @@ def australia_mesh_blocks_with_densities():
             compute_density_for_radius(r, blocks.population, coords) * blocks.population
         )
     return blocks
+
+
+def disaggregated_from_sa1(sa1_table, weight):
+    """
+    Splits each SA1's counts across its mesh blocks in proportion to `weight` ("population" or
+    "dwellings"), one row per row of australia_mesh_blocks().
+    """
+    blocks = australia_mesh_blocks()
+    share = blocks[weight] / blocks.groupby("sa1_code")[weight].transform("sum")
+    per_block = sa1_table.reindex(blocks.sa1_code).fillna(0).reset_index(drop=True)
+    return per_block.mul(share.fillna(0).to_numpy(), axis=0)

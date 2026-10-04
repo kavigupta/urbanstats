@@ -514,7 +514,7 @@ def just_2020(
 
 
 def just_2020_with_canada(
-    *col_names: str, year: int = 2020
+    *col_names: str, year: int = 2020, australia: bool = False
 ) -> Dict[str, StatisticGroup]:
     return {
         col_name: StatisticGroup(
@@ -524,6 +524,11 @@ def just_2020_with_canada(
                         {
                             population_census: col_name,
                             population_canada: col_name + "_canada",
+                            **(
+                                {population_australia: col_name + "_australia"}
+                                if australia
+                                else {}
+                            ),
                         },
                         col_name,
                         indented_name="2020",
@@ -548,12 +553,16 @@ def just_2020_category(
 
 
 def just_2020_category_with_canada(
-    cat_key: str, cat_name: str, *col_names: str, year: int = 2020
+    cat_key: str,
+    cat_name: str,
+    *col_names: str,
+    year: int = 2020,
+    australia: bool = False,
 ) -> Dict[str, StatisticCategory]:
     return {
         cat_key: StatisticCategory(
             name=cat_name,
-            contents=just_2020_with_canada(*col_names, year=year),
+            contents=just_2020_with_canada(*col_names, year=year, australia=australia),
         )
     }
 
@@ -864,6 +873,7 @@ statistics_tree = StatisticTree(
             "generation_millenial",
             "generation_genz",
             "generation_genalpha",
+            australia=True,
         ),
         "income": StatisticCategory(
             name="Income",
