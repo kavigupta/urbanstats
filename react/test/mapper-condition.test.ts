@@ -1,7 +1,7 @@
 import { ClientFunction, Selector } from 'testcafe'
 
 import { nthEditor, typeInEditor } from './editor_test_utils'
-import { getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript } from './mapper-utils'
+import { checkBox, checkSelector, getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript } from './mapper-utils'
 import { checkTextboxesDirect, mapper, screencap } from './test_utils'
 
 const base = 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)'
@@ -183,4 +183,16 @@ mapper(() => test)('an error in one condition of a group is reported there', { c
 
     await t.expect(errorsWithin('condition-editor-rc_el_1')).eql(1)
     await t.expect(errorsWithin('condition-editor-rc_el_0')).eql(0)
+})
+
+mapper(() => test)('a value given only where a condition holds edits as the value and the condition', { code: 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, relativeArea=if (population > 100000) { population })' }, async (t) => {
+    await toggleCustomScript(t)
+    await t.expect(checkSelector(/^Only Some\?/).checked).ok()
+    // the value, and the comparison's left side
+    await t.expect(getInput('Population', 1).exists).ok()
+    await t.expect(getErrors()).eql([])
+
+    await checkBox(t, /^Only Some\?/)
+    await toggleCustomScript(t)
+    await t.expect(getCodeFromMainField()).contains('relativeArea=if (true) {')
 })
