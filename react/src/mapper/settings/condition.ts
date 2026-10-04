@@ -225,10 +225,16 @@ function parseComparison(
     const { operator, lhs, rhs } = comparison
     return buildComparison(
         operator,
-        parseExpr(lhs, extendBlockIdPositionalArg(blockIdent, 0), comparisonLhsTypes(operator), typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes),
-        parseExpr(rhs, extendBlockIdPositionalArg(blockIdent, 1), comparisonRhsTypes(operator), typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes),
+        parseOperand(lhs, extendBlockIdPositionalArg(blockIdent, 0), comparisonLhsTypes(operator), typeEnvironment, preserveCustomNodes),
+        parseOperand(rhs, extendBlockIdPositionalArg(blockIdent, 1), comparisonRhsTypes(operator), typeEnvironment, preserveCustomNodes),
         blockIdent,
     )
+}
+
+/** A masked value is kept as code here, since an operand's editor has no room for a condition of its own. */
+function parseOperand(expr: UrbanStatsASTExpression, blockIdent: string, types: USSType[], typeEnvironment: TypeEnvironment, preserveCustomNodes: boolean): UrbanStatsASTExpression {
+    const parsed = parseExpr(expr, blockIdent, types, typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes)
+    return parsed.type === 'if' ? parseNoErrorAsCustomNode(unparse(parsed, { simplify: 'auto-ux' }), blockIdent, types) : parsed
 }
 
 export function changeConditionKind(

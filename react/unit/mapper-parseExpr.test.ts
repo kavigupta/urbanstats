@@ -2,7 +2,7 @@ import assert from 'assert/strict'
 import { test } from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
-import { parseExpr } from '../src/mapper/settings/parseExpr'
+import { maybeParseExpr, parseExpr } from '../src/mapper/settings/parseExpr'
 import { UrbanStatsASTExpression } from '../src/urban-stats-script/ast'
 import { parse, unparse } from '../src/urban-stats-script/parser'
 import type { TypeEnvironment, USSType } from '../src/urban-stats-script/types-values'
@@ -129,4 +129,28 @@ void test('function parameter with invalid expression uses customNode', (): void
         false,
     )
     assert.strictEqual(unparse(result), `linearScale(min=0, max=${customNode('2 + 5')})`)
+})
+
+const stringVectorType = { type: 'vector', elementType: { type: 'string' } } as const
+
+function parseMasked(code: string, types: USSType[]): UrbanStatsASTExpression | undefined {
+    return maybeParseExpr(getExpr(code), 'test', types, createTypeEnvironment())
+}
+
+void test('a value given everywhere reads as just the value', (): void => {
+    const result = parseMasked('if (true) { geoName }', [stringVectorType])
+    assert.strictEqual(result?.type, 'identifier')
+    assert.strictEqual(unparse(result), 'geoName')
+})
+
+void test('masked value with a comparison is editable as one', (): void => {
+    const result = parseMasked('if (population > 1000) { geoName }', [stringVectorType])
+    assert(result?.type === 'if')
+    assert.strictEqual(result.condition.type, 'binaryOperator')
+    assert.strictEqual(unparse(result.condition), 'population > 1000')
+})
+
+void test('if with an else, or where one value is wanted, is left as code', (): void => {
+    assert.strictEqual(parseMasked('if (true) { geoName } else { geoName }', [stringVectorType]), undefined)
+    assert.strictEqual(parseMasked('if (true) { "a" }', [{ type: 'string' }]), undefined)
 })

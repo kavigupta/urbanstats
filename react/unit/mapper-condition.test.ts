@@ -216,3 +216,10 @@ void test('code outside the grammar becomes the first operand of a group', () =>
     assert.strictEqual(classified.kind, '&')
     assert.strictEqual(simplified(classified.operands[0]), '!(population < 1000)')
 })
+
+void test('a masked value compared against stays code, as an operand has no room for a condition', () => {
+    const classified = classifyCondition(asCondition('population > (if (population > 1000) { population })'))
+    assert.strictEqual(classified.kind, 'comparison')
+    assert.strictEqual(classified.rhs.type, 'customNode')
+    assert.strictEqual(simplified(classified.rhs).replace(/\s+/g, ' '), 'if (population > 1000) { population }')
+})
