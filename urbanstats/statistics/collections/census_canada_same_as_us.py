@@ -13,6 +13,7 @@ from urbanstats.statistics.collections.household_size import (
 )
 from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.marriage import MarriageStatistics
+from urbanstats.statistics.collections.same_as_us import SameAsUS
 from urbanstats.statistics.collections.transportation_commute_time import (
     TransportationCommuteTimeStatistics,
 )
@@ -24,51 +25,13 @@ from urbanstats.statistics.utils import fractionalize
 from urbanstats.utils import approximate_quantile
 
 
-class CensusCanadaSameAsUS(CanadaStatistics):
-    """
-    Represents a collection of statistics that are the same as the US statistic tables.
-    """
+class CensusCanadaSameAsUS(SameAsUS, CanadaStatistics):
+    name_suffix = "canada"
+    source_tag = "StatCan"
 
     @abstractmethod
     def census_tables(self) -> CensusTables:
         pass
-
-    @abstractmethod
-    def us_equivalent(self):
-        pass
-
-    def remap_name(self, us_internal_name):
-        return f"{us_internal_name}_canada"
-
-    def us_equivalent_fields(self):
-        return list(self.us_equivalent().internal_statistic_names_list())
-
-    def name_for_each_statistic(self):
-        return {
-            self.remap_name(k): f"{v} [StatCan]"
-            for k, v in self.us_equivalent().name_for_each_statistic().items()
-            if k in self.us_equivalent_fields()
-        }
-
-    def unit_for_each_statistic(self):
-        return {
-            self.remap_name(k): v
-            for k, v in self.us_equivalent().unit_for_each_statistic().items()
-            if k in self.us_equivalent_fields()
-        }
-
-    def varname_for_each_statistic(self):
-        return {
-            self.remap_name(k): v
-            for k, v in self.us_equivalent().varname_for_each_statistic().items()
-            if k in self.us_equivalent_fields()
-        }
-
-    def quiz_question_descriptors(self):
-        return {
-            self.remap_name(k): self.us_equivalent().quiz_question_descriptors()[k]
-            for k in self.us_equivalent_fields()
-        }
 
     def compute_statistics_dictionary_canada(
         self, *, shapefile, existing_statistics, shapefile_table
@@ -78,10 +41,6 @@ class CensusCanadaSameAsUS(CanadaStatistics):
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("canadian-census-disaggregated")
-
-    def post_process(self, statistic_table):
-        fractionalize(statistic_table, *self.internal_statistic_names_list())
-        return statistic_table
 
 
 class CensusCanadaGeneration(CensusCanadaSameAsUS):
