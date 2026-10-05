@@ -837,11 +837,15 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "education_attainment",
                     "Educational Attainment",
-                    just_2020(
+                    just_2020_with_canada(
                         "education_high_school",
+                        canada=False,
+                    ),
+                    just_2020_with_canada(
                         "education_ugrad",
                         "education_grad",
-                        source=population_census,
+                        canada=False,
+                        australia=True,
                     ),
                     just_2020(
                         "education_high_school_canada",
@@ -853,11 +857,12 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "education_field",
                     "Field of Study",
-                    just_2020(
+                    just_2020_with_canada(
                         "education_field_stem",
                         "education_field_humanities",
                         "education_field_business",
-                        source=population_census,
+                        canada=False,
+                        australia=True,
                     ),
                     just_2020(
                         "education_field_stem_canada",
