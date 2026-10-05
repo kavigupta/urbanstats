@@ -507,7 +507,7 @@ def just_2020(
 
 
 def just_2020_with_canada(
-    *col_names: str, year: int = 2020
+    *col_names: str, year: int = 2020, canada: bool = True
 ) -> Dict[str, StatisticGroup]:
     return {
         col_name: StatisticGroup(
@@ -516,7 +516,11 @@ def just_2020_with_canada(
                     MultiSource(
                         {
                             population_census: col_name,
-                            population_canada: col_name + "_canada",
+                            **(
+                                {population_canada: col_name + "_canada"}
+                                if canada
+                                else {}
+                            ),
                         },
                         col_name,
                         indented_name="2020",
@@ -810,11 +814,11 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "education_attainment",
                     "Educational Attainment",
-                    just_2020(
+                    just_2020_with_canada(
                         "education_high_school",
                         "education_ugrad",
                         "education_grad",
-                        source=population_census,
+                        canada=False,
                     ),
                     just_2020(
                         "education_high_school_canada",
@@ -826,11 +830,11 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "education_field",
                     "Field of Study",
-                    just_2020(
+                    just_2020_with_canada(
                         "education_field_stem",
                         "education_field_humanities",
                         "education_field_business",
-                        source=population_census,
+                        canada=False,
                     ),
                     just_2020(
                         "education_field_stem_canada",
