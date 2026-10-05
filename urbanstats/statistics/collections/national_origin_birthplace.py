@@ -35,7 +35,7 @@ class NationalOriginBirthplaceStatistics(ACSUSPRStatisticsColection):
         return QuizQuestionDescriptor.several(
             NATIONAL_ORIGIN,
             {
-                "birthplace_non_us": "higher % of people who were born outside the US",
+                "birthplace_non_us": "higher % of people who were born outside the country",
                 "birthplace_us_not_state": "higher % of people who were born in the US and outside their state of residence",
                 "birthplace_us_state": "higher % of people who were born in their state of residence",
             },
