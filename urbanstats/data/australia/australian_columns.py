@@ -6,9 +6,16 @@
 
 # vulture: ignore -- these are lists of cells used to track progress on
 unused = [
-    # G01 Selected Person Characteristics by Sex, counting Persons
+    # got this from the mesh blocks
+    ("G01", "Tot_P_P", "Total Persons Persons"),
+    # too transient to be useful
     ("G01", "Counted_Census_Night_home_P", "Counted on Census Night At home Persons"),
     ("G01", "Count_Census_Nt_Ewhere_Aust_P", "Counted on Census Night Elsewhere in Australia Persons"),
+    # we are not doing race for australia because there's no way to map it to US race categories
+        ("G01", "Indigenous_psns_Aboriginal_P", "Aboriginal and or Torres Strait Islander Persons Aboriginal Persons"),
+    ("G01", "Indig_psns_Torres_Strait_Is_P", "Aboriginal and or Torres Strait Islander Persons Torres Strait Islander Persons"),
+    ("G01", "Indig_Bth_Abor_Torres_St_Is_P", "Aboriginal and or Torres Strait Islander Persons Both Aboriginal and Torres Strait Islander Persons"),
+    ("G01", "Indigenous_P_Tot_P", "Aboriginal and or Torres Strait Islander Persons Total Persons"),
 ]
 
 # vulture: ignore -- these are lists of cells used to track progress on
@@ -52,6 +59,7 @@ completed = [
     ("G04", "Age_yr_90_94_P", "Age years 90 94 years Persons"),
     ("G04", "Age_yr_95_99_P", "Age years 95 99 years Persons"),
     ("G04", "Age_yr_100_yr_over_P", "Age years 100 years and over Persons"),
+    ("G01", "Age_85ov_P", "Age groups 85 years and over Persons"),
 ]
 
 # vulture: ignore -- these are lists of cells used to track progress on
@@ -60,12 +68,6 @@ get_to_these_now = []
 # vulture: ignore -- these are lists of cells used to track progress on
 unsorted = [
     # G01 Selected Person Characteristics by Sex, counting Persons
-    ("G01", "Tot_P_P", "Total Persons Persons"),
-    ("G01", "Age_85ov_P", "Age groups 85 years and over Persons"),
-    ("G01", "Indigenous_psns_Aboriginal_P", "Aboriginal and or Torres Strait Islander Persons Aboriginal Persons"),
-    ("G01", "Indig_psns_Torres_Strait_Is_P", "Aboriginal and or Torres Strait Islander Persons Torres Strait Islander Persons"),
-    ("G01", "Indig_Bth_Abor_Torres_St_Is_P", "Aboriginal and or Torres Strait Islander Persons Both Aboriginal and Torres Strait Islander Persons"),
-    ("G01", "Indigenous_P_Tot_P", "Aboriginal and or Torres Strait Islander Persons Total Persons"),
     ("G01", "Birthplace_Australia_P", "Birthplace Australia Persons"),
     ("G01", "Birthplace_Elsewhere_P", "Birthplace Elsewhere Persons"),
     ("G01", "Lang_used_home_Eng_only_P", "Language used at home English only Persons"),
