@@ -1,11 +1,18 @@
 from abc import abstractmethod
 
+import pandas as pd
 from permacache import permacache, stable_hash
 
 from urbanstats.data.australia.abs_tables import sa1_table
 from urbanstats.data.australia.mesh_blocks import disaggregated_from_sa1
 from urbanstats.geometry.census_aggregation import aggregate_by_mesh_block_australia
 from urbanstats.statistics.collections.generation import GenerationStatistics
+from urbanstats.statistics.collections.national_origin_birthplace import (
+    NationalOriginBirthplaceStatistics,
+)
+from urbanstats.statistics.collections.national_origin_language import (
+    NationalOriginLanguageStatistics,
+)
 from urbanstats.statistics.collections.same_as_us import SameAsUS
 from urbanstats.statistics.statistic_collection import AustraliaStatistics
 
@@ -19,15 +26,20 @@ class CensusAustraliaSameAsUS(SameAsUS, AustraliaStatistics):
 
     @abstractmethod
     def abs_table(self):
-        """(DataPack table, US statistic name -> short-header codes summed into it)"""
+        """
+        (DataPack table, column -> short-header codes summed into it). Columns are US statistic
+        names, unless post_process is overridden to derive the statistics from them.
+        """
 
     def compute_statistics_dictionary_australia(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
         table, remapping = self.abs_table()
-        remapping = {self.remap_name(k): v for k, v in remapping.items()}
         st = compute_sa1_stats(table, remapping, self.disagg_weight, shapefile)
         return self.post_process(st)
+
+    def post_process(self, statistic_table):
+        return super().post_process(statistic_table.rename(columns=self.remap_name))
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("australian-census")
@@ -84,6 +96,60 @@ class CensusAustraliaGeneration(CensusAustraliaSameAsUS):
         return GenerationStatistics()
 
 
+class CensusAustraliaBirthplace(CensusAustraliaSameAsUS):
+    """The DataPack has country of birth but not state, so only born-overseas is available."""
+
+    version = 1
+
+    def abs_table(self):
+        return "G01", {
+            "born_australia": ["Birthplace_Australia_P"],
+            "born_elsewhere": ["Birthplace_Elsewhere_P"],
+        }
+
+    def us_equivalent(self):
+        return NationalOriginBirthplaceStatistics()
+
+    def us_equivalent_fields(self):
+        return ["birthplace_non_us"]
+
+    def post_process(self, statistic_table):
+        born_elsewhere = statistic_table["born_elsewhere"]
+        return pd.DataFrame(
+            {
+                "birthplace_non_us_australia": born_elsewhere
+                / (statistic_table["born_australia"] + born_elsewhere)
+            }
+        )
+
+
+class CensusAustraliaLanguage(CensusAustraliaSameAsUS):
+    version = 1
+
+    def abs_table(self):
+        return "G13", {
+            "language_english_only": ["PSEO_Tot"],
+            "language_spanish": ["POL_Spanish_Tot"],
+            # POL_Tot_Tot counts everyone who uses a language other than English; language not
+            # stated is a separate cell (P_LUatH_NS_Tot) and is not included. Other is this minus
+            # Spanish, rather than a sum of the ~40 individual languages in it, which comes up 2%
+            # short because perturbation zeroes small cells.
+            "other_language": ["POL_Tot_Tot"],
+        }
+
+    def us_equivalent(self):
+        return NationalOriginLanguageStatistics()
+
+    def post_process(self, statistic_table):
+        statistic_table = statistic_table.copy()
+        statistic_table["language_other"] = (
+            statistic_table.pop("other_language") - statistic_table["language_spanish"]
+        ).clip(lower=0)
+        return super().post_process(statistic_table)
+
+
 census_australia_same_as_us = [
     CensusAustraliaGeneration(),
+    CensusAustraliaBirthplace(),
+    CensusAustraliaLanguage(),
 ]

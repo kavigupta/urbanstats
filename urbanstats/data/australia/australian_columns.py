@@ -12,10 +12,18 @@ unused = [
     ("G01", "Counted_Census_Night_home_P", "Counted on Census Night At home Persons"),
     ("G01", "Count_Census_Nt_Ewhere_Aust_P", "Counted on Census Night Elsewhere in Australia Persons"),
     # we are not doing race for australia because there's no way to map it to US race categories
-        ("G01", "Indigenous_psns_Aboriginal_P", "Aboriginal and or Torres Strait Islander Persons Aboriginal Persons"),
+    ("G01", "Indigenous_psns_Aboriginal_P", "Aboriginal and or Torres Strait Islander Persons Aboriginal Persons"),
     ("G01", "Indig_psns_Torres_Strait_Is_P", "Aboriginal and or Torres Strait Islander Persons Torres Strait Islander Persons"),
     ("G01", "Indig_Bth_Abor_Torres_St_Is_P", "Aboriginal and or Torres Strait Islander Persons Both Aboriginal and Torres Strait Islander Persons"),
     ("G01", "Indigenous_P_Tot_P", "Aboriginal and or Torres Strait Islander Persons Total Persons"),
+    # Can't get this to work properly, there's no citizen by naturalization or birth
+    ("G01", "Australian_citizen_P", "Australian citizen Persons"),
+    # Age of people in school is not something we track in urban stats
+    ("G01", "Age_psns_att_educ_inst_0_4_P", "Age of Persons attending an education institution 0 4 years Persons"),
+    ("G01", "Age_psns_att_educ_inst_5_14_P", "Age of Persons attending an education institution 5 14 years Persons"),
+    ("G01", "Age_psns_att_edu_inst_15_19_P", "Age of Persons attending an education institution 15 19 years Persons"),
+    ("G01", "Age_psns_att_edu_inst_20_24_P", "Age of Persons attending an education institution 20 24 years Persons"),
+    ("G01", "Age_psns_att_edu_inst_25_ov_P", "Age of Persons attending an education institution 25 years and over Persons"),
 ]
 
 # vulture: ignore -- these are lists of cells used to track progress on
@@ -60,6 +68,12 @@ completed = [
     ("G04", "Age_yr_95_99_P", "Age years 95 99 years Persons"),
     ("G04", "Age_yr_100_yr_over_P", "Age years 100 years and over Persons"),
     ("G01", "Age_85ov_P", "Age groups 85 years and over Persons"),
+    # Born outside australia
+    ("G01", "Birthplace_Australia_P", "Birthplace Australia Persons"),
+    ("G01", "Birthplace_Elsewhere_P", "Birthplace Elsewhere Persons"),
+    # Language spoken at home
+    ("G01", "Lang_used_home_Eng_only_P", "Language used at home English only Persons"),
+    ("G01", "Lang_used_home_Oth_Lang_P", "Language used at home Other Language Persons"),
 ]
 
 # vulture: ignore -- these are lists of cells used to track progress on
@@ -68,16 +82,6 @@ get_to_these_now = []
 # vulture: ignore -- these are lists of cells used to track progress on
 unsorted = [
     # G01 Selected Person Characteristics by Sex, counting Persons
-    ("G01", "Birthplace_Australia_P", "Birthplace Australia Persons"),
-    ("G01", "Birthplace_Elsewhere_P", "Birthplace Elsewhere Persons"),
-    ("G01", "Lang_used_home_Eng_only_P", "Language used at home English only Persons"),
-    ("G01", "Lang_used_home_Oth_Lang_P", "Language used at home Other Language Persons"),
-    ("G01", "Australian_citizen_P", "Australian citizen Persons"),
-    ("G01", "Age_psns_att_educ_inst_0_4_P", "Age of Persons attending an education institution 0 4 years Persons"),
-    ("G01", "Age_psns_att_educ_inst_5_14_P", "Age of Persons attending an education institution 5 14 years Persons"),
-    ("G01", "Age_psns_att_edu_inst_15_19_P", "Age of Persons attending an education institution 15 19 years Persons"),
-    ("G01", "Age_psns_att_edu_inst_20_24_P", "Age of Persons attending an education institution 20 24 years Persons"),
-    ("G01", "Age_psns_att_edu_inst_25_ov_P", "Age of Persons attending an education institution 25 years and over Persons"),
     ("G01", "High_yr_schl_comp_Yr_12_eq_P", "Highest year of school completed Year 12 or equivalent Persons"),
     ("G01", "High_yr_schl_comp_Yr_11_eq_P", "Highest year of school completed Year 11 or equivalent Persons"),
     ("G01", "High_yr_schl_comp_Yr_10_eq_P", "Highest year of school completed Year 10 or equivalent Persons"),

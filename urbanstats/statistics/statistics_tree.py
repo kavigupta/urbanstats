@@ -514,7 +514,7 @@ def just_2020(
 
 
 def just_2020_with_canada(
-    *col_names: str, year: int = 2020, australia: bool = False
+    *col_names: str, year: int = 2020, canada: bool = True, australia: bool = False
 ) -> Dict[str, StatisticGroup]:
     return {
         col_name: StatisticGroup(
@@ -523,7 +523,11 @@ def just_2020_with_canada(
                     MultiSource(
                         {
                             population_census: col_name,
-                            population_canada: col_name + "_canada",
+                            **(
+                                {population_canada: col_name + "_canada"}
+                                if canada
+                                else {}
+                            ),
                             **(
                                 {population_australia: col_name + "_australia"}
                                 if australia
@@ -778,8 +782,12 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "birthplace",
                     "Birthplace",
-                    just_2020(
+                    just_2020_with_canada(
                         "birthplace_non_us",
+                        canada=False,
+                        australia=True,
+                    ),
+                    just_2020(
                         "birthplace_us_not_state",
                         "birthplace_us_state",
                         source=population_census,
@@ -791,15 +799,17 @@ statistics_tree = StatisticTree(
                     just_2020_with_canada(
                         "language_english_only",
                         "language_spanish",
+                        australia=True,
                     ),
                     just_2020(
                         "language_french_canada",
                         "language_other_non_french_canada",
                         source=population_canada,
                     ),
-                    just_2020(
+                    just_2020_with_canada(
                         "language_other",
-                        source=population_census,
+                        canada=False,
+                        australia=True,
                     ),
                 ),
             },
