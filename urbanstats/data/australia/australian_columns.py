@@ -11,95 +11,6 @@ unused = [
     # too transient to be useful
     ("G01", "Counted_Census_Night_home_P", "Counted on Census Night At home Persons"),
     ("G01", "Count_Census_Nt_Ewhere_Aust_P", "Counted on Census Night Elsewhere in Australia Persons"),
-    # we are not doing race for australia because there's no way to map it to US race categories
-    ("G01", "Indigenous_psns_Aboriginal_P", "Aboriginal and or Torres Strait Islander Persons Aboriginal Persons"),
-    ("G01", "Indig_psns_Torres_Strait_Is_P", "Aboriginal and or Torres Strait Islander Persons Torres Strait Islander Persons"),
-    ("G01", "Indig_Bth_Abor_Torres_St_Is_P", "Aboriginal and or Torres Strait Islander Persons Both Aboriginal and Torres Strait Islander Persons"),
-    ("G01", "Indigenous_P_Tot_P", "Aboriginal and or Torres Strait Islander Persons Total Persons"),
-    # Can't get this to work properly, there's no citizen by naturalization or birth
-    ("G01", "Australian_citizen_P", "Australian citizen Persons"),
-    # Age of people in school is not something we track in urban stats
-    ("G01", "Age_psns_att_educ_inst_0_4_P", "Age of Persons attending an education institution 0 4 years Persons"),
-    ("G01", "Age_psns_att_educ_inst_5_14_P", "Age of Persons attending an education institution 5 14 years Persons"),
-    ("G01", "Age_psns_att_edu_inst_15_19_P", "Age of Persons attending an education institution 15 19 years Persons"),
-    ("G01", "Age_psns_att_edu_inst_20_24_P", "Age of Persons attending an education institution 20 24 years Persons"),
-    ("G01", "Age_psns_att_edu_inst_25_ov_P", "Age of Persons attending an education institution 25 years and over Persons"),
-]
-
-# vulture: ignore -- these are lists of cells used to track progress on
-get_to_these_later = []
-
-# vulture: ignore -- these are lists of cells used to track progress on
-completed = [
-    # Generation is as far as we will go with this
-    ("G01", "Age_0_4_yr_P", "Age groups 0 4 years Persons"),
-    ("G01", "Age_5_14_yr_P", "Age groups 5 14 years Persons"),
-    ("G01", "Age_15_19_yr_P", "Age groups 15 19 years Persons"),
-    ("G01", "Age_20_24_yr_P", "Age groups 20 24 years Persons"),
-    ("G01", "Age_25_34_yr_P", "Age groups 25 34 years Persons"),
-    ("G01", "Age_35_44_yr_P", "Age groups 35 44 years Persons"),
-    ("G01", "Age_45_54_yr_P", "Age groups 45 54 years Persons"),
-    ("G01", "Age_55_64_yr_P", "Age groups 55 64 years Persons"),
-    ("G01", "Age_65_74_yr_P", "Age groups 65 74 years Persons"),
-    ("G01", "Age_75_84_yr_P", "Age groups 75 84 years Persons"),
-    ("G04", "Age_yr_0_4_P", "Age years 0 4 years Persons"),
-    ("G04", "Age_yr_5_9_P", "Age years 5 9 years Persons"),
-    ("G04", "Age_yr_10_14_P", "Age years 10 14 years Persons"),
-    ("G04", "Age_yr_15_19_P", "Age years 15 19 years Persons"),
-    ("G04", "Age_yr_20_24_P", "Age years 20 24 years Persons"),
-    ("G04", "Age_yr_25_29_P", "Age years 25 29 years Persons"),
-    ("G04", "Age_yr_30_34_P", "Age years 30 34 years Persons"),
-    ("G04", "Age_yr_35_39_P", "Age years 35 39 years Persons"),
-    ("G04", "Age_yr_40_44_P", "Age years 40 44 years Persons"),
-    ("G04", "Age_yr_45_49_P", "Age years 45 49 years Persons"),
-    ("G04", "Age_yr_50_54_P", "Age years 50 54 years Persons"),
-    ("G04", "Age_yr_55_59_P", "Age years 55 59 years Persons"),
-    ("G04", "Age_yr_60_64_P", "Age years 60 64 years Persons"),
-    ("G04", "Age_yr_65_69_P", "Age years 65 69 years Persons"),
-    ("G04", "Age_yr_70_74_P", "Age years 70 74 years Persons"),
-    ("G04", "Age_yr_75_P", "Age years 75 Persons"),
-    ("G04", "Age_yr_76_P", "Age years 76 Persons"),
-    ("G04", "Age_yr_77_P", "Age years 77 Persons"),
-    ("G04", "Age_yr_78_P", "Age years 78 Persons"),
-    ("G04", "Age_yr_79_P", "Age years 79 Persons"),
-    ("G04", "Age_yr_80_84_P", "Age years 80 84 years Persons"),
-    ("G04", "Age_yr_85_89_P", "Age years 85 89 years Persons"),
-    ("G04", "Age_yr_90_94_P", "Age years 90 94 years Persons"),
-    ("G04", "Age_yr_95_99_P", "Age years 95 99 years Persons"),
-    ("G04", "Age_yr_100_yr_over_P", "Age years 100 years and over Persons"),
-    ("G01", "Age_85ov_P", "Age groups 85 years and over Persons"),
-    # Born outside australia
-    ("G01", "Birthplace_Australia_P", "Birthplace Australia Persons"),
-    ("G01", "Birthplace_Elsewhere_P", "Birthplace Elsewhere Persons"),
-    # Language spoken at home
-    ("G01", "Lang_used_home_Eng_only_P", "Language used at home English only Persons"),
-    ("G01", "Lang_used_home_Oth_Lang_P", "Language used at home Other Language Persons"),
-]
-
-# vulture: ignore -- these are lists of cells used to track progress on
-get_to_these_now = []
-
-# vulture: ignore -- these are lists of cells used to track progress on
-unsorted = [
-    # G01 Selected Person Characteristics by Sex, counting Persons
-    ("G01", "High_yr_schl_comp_Yr_12_eq_P", "Highest year of school completed Year 12 or equivalent Persons"),
-    ("G01", "High_yr_schl_comp_Yr_11_eq_P", "Highest year of school completed Year 11 or equivalent Persons"),
-    ("G01", "High_yr_schl_comp_Yr_10_eq_P", "Highest year of school completed Year 10 or equivalent Persons"),
-    ("G01", "High_yr_schl_comp_Yr_9_eq_P", "Highest year of school completed Year 9 or equivalent Persons"),
-    ("G01", "High_yr_schl_comp_Yr_8_belw_P", "Highest year of school completed Year 8 or below Persons"),
-    ("G01", "High_yr_schl_comp_D_n_g_sch_P", "Highest year of school completed Did not go to school Persons"),
-    ("G01", "Count_psns_occ_priv_dwgs_P", "Count of Persons in occupied private dwellings Persons"),
-    ("G01", "Count_Persons_other_dwgs_P", "Count of Persons in other dwellings Persons"),
-    # G02 Selected Medians and Averages
-    ("G02", "Median_age_persons", "Median age of persons"),
-    ("G02", "Median_mortgage_repay_monthly", "Median mortgage repayment monthly"),
-    ("G02", "Median_tot_prsnl_inc_weekly", "Median total personal income weekly"),
-    ("G02", "Median_rent_weekly", "Median rent weekly"),
-    ("G02", "Median_tot_fam_inc_weekly", "Median total family income weekly"),
-    ("G02", "Average_num_psns_per_bedroom", "Average number of Persons per bedroom"),
-    ("G02", "Median_tot_hhd_inc_weekly", "Median total household income weekly"),
-    ("G02", "Average_household_size", "Average household size"),
-    # G03 Place of Usual Residence by Place of Enumeration on Census Night by Age, counting Persons (excludes overseas visitors)
     ("G03", "Count_home_Census_Nt_0_14_yr", "Counted at home on Census Night Age 0 14 years"),
     ("G03", "Count_hom_Census_Nt_15_24_yr", "Counted at home on Census Night Age 15 24 years"),
     ("G03", "Count_hom_Census_Nt_25_34_yr", "Counted at home on Census Night Age 25 34 years"),
@@ -230,17 +141,78 @@ unsorted = [
     ("G03", "Vis_Tot_Visitrs_75_84_yr", "Visitor from Total visitors Age 75 84 years"),
     ("G03", "Vis_Tot_Visitrs_85ov", "Visitor from Total visitors Age 85 years and over"),
     ("G03", "Vis_Tot_Visitrs_Total", "Visitor from Total visitors Total"),
-    ("G03", "Total_0_14_yr", "Total Age 0 14 years"),
-    ("G03", "Total_15_24_yr", "Total Age 15 24 years"),
-    ("G03", "Total_25_34_yr", "Total Age 25 34 years"),
-    ("G03", "Total_35_44_yr", "Total Age 35 44 years"),
-    ("G03", "Total_45_54_yr", "Total Age 45 54 years"),
-    ("G03", "Total_55_64_yr", "Total Age 55 64 years"),
-    ("G03", "Total_65_74_yr", "Total Age 65 74 years"),
-    ("G03", "Total_75_84_yr", "Total Age 75 84 years"),
-    ("G03", "Total_85ov", "Total Age 85 years and over"),
-    ("G03", "Total_Total", "Total Total"),
-    # G04 Age by Sex, counting Persons
+    # we are not doing race for australia because there's no way to map it to US race categories
+    ("G01", "Indigenous_psns_Aboriginal_P", "Aboriginal and or Torres Strait Islander Persons Aboriginal Persons"),
+    ("G01", "Indig_psns_Torres_Strait_Is_P", "Aboriginal and or Torres Strait Islander Persons Torres Strait Islander Persons"),
+    ("G01", "Indig_Bth_Abor_Torres_St_Is_P", "Aboriginal and or Torres Strait Islander Persons Both Aboriginal and Torres Strait Islander Persons"),
+    ("G01", "Indigenous_P_Tot_P", "Aboriginal and or Torres Strait Islander Persons Total Persons"),
+    # Can't get this to work properly, there's no citizen by naturalization or birth
+    ("G01", "Australian_citizen_P", "Australian citizen Persons"),
+    # Age of people in school is not something we track in urban stats
+    ("G01", "Age_psns_att_educ_inst_0_4_P", "Age of Persons attending an education institution 0 4 years Persons"),
+    ("G01", "Age_psns_att_educ_inst_5_14_P", "Age of Persons attending an education institution 5 14 years Persons"),
+    ("G01", "Age_psns_att_edu_inst_15_19_P", "Age of Persons attending an education institution 15 19 years Persons"),
+    ("G01", "Age_psns_att_edu_inst_20_24_P", "Age of Persons attending an education institution 20 24 years Persons"),
+    ("G01", "Age_psns_att_edu_inst_25_ov_P", "Age of Persons attending an education institution 25 years and over Persons"),
+    # this doesn't map onto US education categoriees
+    ("G01", "High_yr_schl_comp_Yr_12_eq_P", "Highest year of school completed Year 12 or equivalent Persons"),
+    ("G01", "High_yr_schl_comp_Yr_11_eq_P", "Highest year of school completed Year 11 or equivalent Persons"),
+    ("G01", "High_yr_schl_comp_Yr_10_eq_P", "Highest year of school completed Year 10 or equivalent Persons"),
+    ("G01", "High_yr_schl_comp_Yr_9_eq_P", "Highest year of school completed Year 9 or equivalent Persons"),
+    ("G01", "High_yr_schl_comp_Yr_8_belw_P", "Highest year of school completed Year 8 or below Persons"),
+    ("G01", "High_yr_schl_comp_D_n_g_sch_P", "Highest year of school completed Did not go to school Persons"),
+    # medians/averages that are not used in the US version
+    ("G02", "Median_age_persons", "Median age of persons"),
+    ("G02", "Median_mortgage_repay_monthly", "Median mortgage repayment monthly"),
+    ("G02", "Median_tot_prsnl_inc_weekly", "Median total personal income weekly"),
+    ("G02", "Median_rent_weekly", "Median rent weekly"),
+    ("G02", "Median_tot_fam_inc_weekly", "Median total family income weekly"),
+    ("G02", "Average_num_psns_per_bedroom", "Average number of Persons per bedroom"),
+    ("G02", "Average_household_size", "Average household size"),
+]
+
+# vulture: ignore -- these are lists of cells used to track progress on
+get_to_these_later = []
+
+# vulture: ignore -- these are lists of cells used to track progress on
+completed = [
+    # Generation is as far as we will go with this
+    ("G01", "Age_0_4_yr_P", "Age groups 0 4 years Persons"),
+    ("G01", "Age_5_14_yr_P", "Age groups 5 14 years Persons"),
+    ("G01", "Age_15_19_yr_P", "Age groups 15 19 years Persons"),
+    ("G01", "Age_20_24_yr_P", "Age groups 20 24 years Persons"),
+    ("G01", "Age_25_34_yr_P", "Age groups 25 34 years Persons"),
+    ("G01", "Age_35_44_yr_P", "Age groups 35 44 years Persons"),
+    ("G01", "Age_45_54_yr_P", "Age groups 45 54 years Persons"),
+    ("G01", "Age_55_64_yr_P", "Age groups 55 64 years Persons"),
+    ("G01", "Age_65_74_yr_P", "Age groups 65 74 years Persons"),
+    ("G01", "Age_75_84_yr_P", "Age groups 75 84 years Persons"),
+    ("G04", "Age_yr_0_4_P", "Age years 0 4 years Persons"),
+    ("G04", "Age_yr_5_9_P", "Age years 5 9 years Persons"),
+    ("G04", "Age_yr_10_14_P", "Age years 10 14 years Persons"),
+    ("G04", "Age_yr_15_19_P", "Age years 15 19 years Persons"),
+    ("G04", "Age_yr_20_24_P", "Age years 20 24 years Persons"),
+    ("G04", "Age_yr_25_29_P", "Age years 25 29 years Persons"),
+    ("G04", "Age_yr_30_34_P", "Age years 30 34 years Persons"),
+    ("G04", "Age_yr_35_39_P", "Age years 35 39 years Persons"),
+    ("G04", "Age_yr_40_44_P", "Age years 40 44 years Persons"),
+    ("G04", "Age_yr_45_49_P", "Age years 45 49 years Persons"),
+    ("G04", "Age_yr_50_54_P", "Age years 50 54 years Persons"),
+    ("G04", "Age_yr_55_59_P", "Age years 55 59 years Persons"),
+    ("G04", "Age_yr_60_64_P", "Age years 60 64 years Persons"),
+    ("G04", "Age_yr_65_69_P", "Age years 65 69 years Persons"),
+    ("G04", "Age_yr_70_74_P", "Age years 70 74 years Persons"),
+    ("G04", "Age_yr_75_P", "Age years 75 Persons"),
+    ("G04", "Age_yr_76_P", "Age years 76 Persons"),
+    ("G04", "Age_yr_77_P", "Age years 77 Persons"),
+    ("G04", "Age_yr_78_P", "Age years 78 Persons"),
+    ("G04", "Age_yr_79_P", "Age years 79 Persons"),
+    ("G04", "Age_yr_80_84_P", "Age years 80 84 years Persons"),
+    ("G04", "Age_yr_85_89_P", "Age years 85 89 years Persons"),
+    ("G04", "Age_yr_90_94_P", "Age years 90 94 years Persons"),
+    ("G04", "Age_yr_95_99_P", "Age years 95 99 years Persons"),
+    ("G04", "Age_yr_100_yr_over_P", "Age years 100 years and over Persons"),
+    ("G01", "Age_85ov_P", "Age groups 85 years and over Persons"),
     ("G04", "Age_yr_0_P", "Age years 0 Persons"),
     ("G04", "Age_yr_1_P", "Age years 1 Persons"),
     ("G04", "Age_yr_2_P", "Age years 2 Persons"),
@@ -318,6 +290,33 @@ unsorted = [
     ("G04", "Age_yr_74_P", "Age years 74 Persons"),
     ("G04", "Age_yr_75_79_P", "Age years 75 79 years Persons"),
     ("G04", "Tot_P", "Total Persons"),
+    ("G03", "Total_0_14_yr", "Total Age 0 14 years"),
+    ("G03", "Total_15_24_yr", "Total Age 15 24 years"),
+    ("G03", "Total_25_34_yr", "Total Age 25 34 years"),
+    ("G03", "Total_35_44_yr", "Total Age 35 44 years"),
+    ("G03", "Total_45_54_yr", "Total Age 45 54 years"),
+    ("G03", "Total_55_64_yr", "Total Age 55 64 years"),
+    ("G03", "Total_65_74_yr", "Total Age 65 74 years"),
+    ("G03", "Total_75_84_yr", "Total Age 75 84 years"),
+    ("G03", "Total_85ov", "Total Age 85 years and over"),
+    ("G03", "Total_Total", "Total Total"),
+    # Born outside australia
+    ("G01", "Birthplace_Australia_P", "Birthplace Australia Persons"),
+    ("G01", "Birthplace_Elsewhere_P", "Birthplace Elsewhere Persons"),
+    # Language spoken at home
+    ("G01", "Lang_used_home_Eng_only_P", "Language used at home English only Persons"),
+    ("G01", "Lang_used_home_Oth_Lang_P", "Language used at home Other Language Persons"),
+]
+
+# vulture: ignore -- these are lists of cells used to track progress on
+get_to_these_now = []
+
+# vulture: ignore -- these are lists of cells used to track progress on
+unsorted = [
+    ("G02", "Median_tot_hhd_inc_weekly", "Median total household income weekly"),
+    # G01 Selected Person Characteristics by Sex, counting Persons
+    ("G01", "Count_psns_occ_priv_dwgs_P", "Count of Persons in occupied private dwellings Persons"),
+    ("G01", "Count_Persons_other_dwgs_P", "Count of Persons in other dwellings Persons"),
     # G05 Registered Marital Status by Age by Sex, counting Persons aged 15 years and over
     ("G05", "P_15_19_yr_Married", "PERSONS 15 19 years Married"),
     ("G05", "P_15_19_yr_Separated", "PERSONS 15 19 years Separated"),
