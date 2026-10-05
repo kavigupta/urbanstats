@@ -2,7 +2,7 @@
 
 import itertools
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from urbanstats.data.census_blocks import RADII
 from urbanstats.data.gpw import GPW_RADII
@@ -506,21 +506,25 @@ def just_2020(
     }
 
 
-def just_2020_with_canada(
-    *col_names: str, year: int = 2020, canada: bool = True
+# the suffix each source's column has on the US column's name
+COLUMN_SUFFIX = {population_census: "", population_canada: "_canada"}
+
+
+def just_2020_multi_source(
+    *col_names: str, sources: Sequence[Source], year: int = 2020
 ) -> Dict[str, StatisticGroup]:
+    """
+    Even with a single source, these are multi-source statistics named after the US column, so their
+    variable names do not change when a source is added.
+    """
     return {
         col_name: StatisticGroup(
             {
                 year: [
                     MultiSource(
                         {
-                            population_census: col_name,
-                            **(
-                                {population_canada: col_name + "_canada"}
-                                if canada
-                                else {}
-                            ),
+                            source: col_name + COLUMN_SUFFIX[source]
+                            for source in sources
                         },
                         col_name,
                         indented_name="2020",
@@ -531,6 +535,14 @@ def just_2020_with_canada(
         )
         for col_name in col_names
     }
+
+
+def just_2020_with_canada(
+    *col_names: str, year: int = 2020
+) -> Dict[str, StatisticGroup]:
+    return just_2020_multi_source(
+        *col_names, sources=[population_census, population_canada], year=year
+    )
 
 
 def just_2020_category(
@@ -814,11 +826,11 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "education_attainment",
                     "Educational Attainment",
-                    just_2020_with_canada(
+                    just_2020_multi_source(
                         "education_high_school",
                         "education_ugrad",
                         "education_grad",
-                        canada=False,
+                        sources=[population_census],
                     ),
                     just_2020(
                         "education_high_school_canada",
@@ -830,11 +842,11 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "education_field",
                     "Field of Study",
-                    just_2020_with_canada(
+                    just_2020_multi_source(
                         "education_field_stem",
                         "education_field_humanities",
                         "education_field_business",
-                        canada=False,
+                        sources=[population_census],
                     ),
                     just_2020(
                         "education_field_stem_canada",
