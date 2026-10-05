@@ -658,7 +658,7 @@ export default {
         },
         {
             "varName": "foreign_born",
-            "humanReadableName": "Born outside US %",
+            "humanReadableName": "Born outside country %",
             "comesFromMultiSourceSet": false,
             "order": 82,
             "index": 157,

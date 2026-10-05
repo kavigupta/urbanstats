@@ -8,9 +8,12 @@ from urbanstats.statistics.utils import fractionalize
 
 
 class NationalOriginBirthplaceStatistics(ACSUSPRStatisticsColection):
+    def legacy_statistic_names(self):
+        return {"Born outside US %": "Born outside country %"}
+
     def name_for_each_statistic(self):
         return {
-            "birthplace_non_us": "Born outside US %",
+            "birthplace_non_us": "Born outside country %",
             "birthplace_us_not_state": "Born in us outside state %",
             "birthplace_us_state": "Born in state of residence %",
         }
