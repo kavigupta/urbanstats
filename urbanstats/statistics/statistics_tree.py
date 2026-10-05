@@ -1196,6 +1196,7 @@ statistics_tree = StatisticTree(
                         "marriage_never_married",
                         "marriage_married_not_divorced",
                         "marriage_divorced",
+                        australia=True,
                     ),
                 ),
             },

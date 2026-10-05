@@ -7,6 +7,7 @@ from urbanstats.data.australia.abs_tables import sa1_table
 from urbanstats.data.australia.mesh_blocks import disaggregated_from_sa1
 from urbanstats.geometry.census_aggregation import aggregate_by_mesh_block_australia
 from urbanstats.statistics.collections.generation import GenerationStatistics
+from urbanstats.statistics.collections.marriage import MarriageStatistics
 from urbanstats.statistics.collections.national_origin_birthplace import (
     NationalOriginBirthplaceStatistics,
 )
@@ -185,8 +186,34 @@ class CensusAustraliaLanguage(CensusAustraliaSameAsUS):
         return super().post_process(statistic_table)
 
 
+class CensusAustraliaMarriage(CensusAustraliaSameAsUS):
+    version = 1
+
+    def abs_tables(self):
+        # Registered (legal) marital status, persons 15+. As in the US, separated people are still
+        # married and widowed people count as married.
+        return [
+            (
+                "G05",
+                {
+                    "marriage_never_married": ["P_Tot_Never_married"],
+                    "marriage_married_not_divorced": [
+                        "P_Tot_Married",
+                        "P_Tot_Separated",
+                        "P_Tot_Widowed",
+                    ],
+                    "marriage_divorced": ["P_Tot_Divorced"],
+                },
+            )
+        ]
+
+    def us_equivalent(self):
+        return MarriageStatistics()
+
+
 census_australia_same_as_us = [
     CensusAustraliaGeneration(),
     CensusAustraliaBirthplace(),
     CensusAustraliaLanguage(),
+    CensusAustraliaMarriage(),
 ]
