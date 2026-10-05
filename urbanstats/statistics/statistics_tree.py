@@ -2,7 +2,7 @@
 
 import itertools
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from urbanstats.data.census_blocks import RADII
 from urbanstats.data.gpw import GPW_RADII
@@ -506,12 +506,8 @@ def just_2020(
     }
 
 
-# the suffix each source's column has on the US column's name
-COLUMN_SUFFIX = {population_census: "", population_canada: "_canada"}
-
-
 def just_2020_multi_source(
-    *col_names: str, sources: Sequence[Source], year: int = 2020
+    *col_names: str, year: int = 2020, canada: bool = True
 ) -> Dict[str, StatisticGroup]:
     """
     Even with a single source, these are multi-source statistics named after the US column, so their
@@ -523,8 +519,12 @@ def just_2020_multi_source(
                 year: [
                     MultiSource(
                         {
-                            source: col_name + COLUMN_SUFFIX[source]
-                            for source in sources
+                            population_census: col_name,
+                            **(
+                                {population_canada: col_name + "_canada"}
+                                if canada
+                                else {}
+                            ),
                         },
                         col_name,
                         indented_name="2020",
@@ -535,14 +535,6 @@ def just_2020_multi_source(
         )
         for col_name in col_names
     }
-
-
-def just_2020_with_canada(
-    *col_names: str, year: int = 2020
-) -> Dict[str, StatisticGroup]:
-    return just_2020_multi_source(
-        *col_names, sources=[population_census, population_canada], year=year
-    )
 
 
 def just_2020_category(
@@ -562,7 +554,7 @@ def just_2020_category_with_canada(
     return {
         cat_key: StatisticCategory(
             name=cat_name,
-            contents=just_2020_with_canada(*col_names, year=year),
+            contents=just_2020_multi_source(*col_names, year=year),
         )
     }
 
@@ -768,7 +760,7 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "citizenship",
                     "Citizenship",
-                    just_2020_with_canada(
+                    just_2020_multi_source(
                         "citizenship_citizen_by_birth",
                         "citizenship_citizen_by_naturalization",
                         "citizenship_not_citizen",
@@ -787,7 +779,7 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "language",
                     "Language at Home",
-                    just_2020_with_canada(
+                    just_2020_multi_source(
                         "language_english_only",
                         "language_spanish",
                     ),
@@ -830,7 +822,7 @@ statistics_tree = StatisticTree(
                         "education_high_school",
                         "education_ugrad",
                         "education_grad",
-                        sources=[population_census],
+                        canada=False,
                     ),
                     just_2020(
                         "education_high_school_canada",
@@ -846,7 +838,7 @@ statistics_tree = StatisticTree(
                         "education_field_stem",
                         "education_field_humanities",
                         "education_field_business",
-                        sources=[population_census],
+                        canada=False,
                     ),
                     just_2020(
                         "education_field_stem_canada",
@@ -969,10 +961,10 @@ statistics_tree = StatisticTree(
                         source=population_census,
                     ),
                 ),
-                **just_2020_with_canada(
+                **just_2020_multi_source(
                     "household_size_pw",
                 ),
-                **just_2020_with_canada(
+                **just_2020_multi_source(
                     "rent_or_own_rent",
                 ),
                 **just_2020(
@@ -987,20 +979,20 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "commute_mode",
                     "Commute Mode",
-                    just_2020_with_canada(
+                    just_2020_multi_source(
                         "transportation_means_car_no_wfh",
                         "transportation_means_bike_no_wfh",
                         "transportation_means_walk_no_wfh",
                         "transportation_means_transit_no_wfh",
                     ),
                 ),
-                **just_2020_with_canada(
+                **just_2020_multi_source(
                     "transportation_commute_time_median",
                 ),
                 **in_subcategory(
                     "commute_time",
                     "Commute Time",
-                    just_2020_with_canada(
+                    just_2020_multi_source(
                         "transportation_commute_time_under_15",
                         "transportation_commute_time_15_to_29",
                         "transportation_commute_time_30_to_59",
@@ -1175,7 +1167,7 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "marital_status",
                     "Marital Status",
-                    just_2020_with_canada(
+                    just_2020_multi_source(
                         "marriage_never_married",
                         "marriage_married_not_divorced",
                         "marriage_divorced",
