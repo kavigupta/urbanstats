@@ -1616,7 +1616,7 @@ export const rawStatsTree = [
             },
             {
                 "id": "birthplace_non_us",
-                "name": "Born outside US %",
+                "name": "Born outside country %",
                 "subcategory": {
                     "id": "birthplace",
                     "name": "Birthplace"
@@ -1626,7 +1626,7 @@ export const rawStatsTree = [
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Born outside US %",
+                                "name": "Born outside country %",
                                 "stats": [
                                     {
                                         "kind": "data",

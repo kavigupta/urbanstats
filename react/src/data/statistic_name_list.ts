@@ -156,7 +156,7 @@ export default [
     "Asian % (2000)",
     "Asian % (2010)",
     "Asian % [StatCan]",
-    "Born outside US %",
+    "Born outside country %",
     "Born in us outside state %",
     "Born in state of residence %",
     "Black %",
