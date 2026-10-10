@@ -83,7 +83,7 @@ void test('a statistic that only the disabled source has names that source', () 
             ...populationGroup, ...generationGroups, 'show_stat_year_2020',
             'show_stat_source_Population_GHSL', 'show_stat_source_Population_Canadian Census',
         ]),
-        ['Generation: **US Census** is disabled. Enable it to see these statistics.'],
+        ['Generation: **National Census** is disabled. Enable it to see these statistics.'],
     )
 })
 
@@ -93,7 +93,7 @@ void test('regions missing a statistic for different sources name all of them', 
             ...populationGroup, ...generationGroups, 'show_stat_year_2020',
             'show_stat_source_Population_GHSL',
         ]),
-        ['Generation: **US Census** and **Canadian Census** are disabled. Enable them to see these statistics.'],
+        ['Generation: **National Census** and **Canadian Census** are disabled. Enable them to see these statistics.'],
     )
 })
 
@@ -105,14 +105,14 @@ void test('a comparison warns about the source one of its regions is missing', (
             ...populationGroup, ...generationGroups, 'show_stat_year_2020',
             'show_stat_source_Population_GHSL', 'show_stat_source_Population_Canadian Census',
         ]),
-        ['Generation: **US Census** is disabled. Enable it to see these statistics.'],
+        ['Generation: **National Census** is disabled. Enable it to see these statistics.'],
     )
 })
 
 void test('every source disabled says so without singling one out', () => {
     assert.deepStrictEqual(
         warnings([california, ontario], [...populationGroup, 'show_stat_year_2020']),
-        ['Population: **US Census**, **Canadian Census**, and **GHSL** are disabled. Enable one to see this statistic.'],
+        ['Population: **National Census**, **Canadian Census**, and **GHSL** are disabled. Enable one to see this statistic.'],
     )
 })
 
@@ -131,7 +131,7 @@ void test('no year selected and no source enabled asks for both', () => {
     // one of them (or, as before, warning about nothing at all) leaves the page unexplained.
     assert.deepStrictEqual(
         warnings([california], [...populationGroup, 'show_stat_source_Population_Canadian Census']),
-        ['Population: Select **2020**, **2010**, or **2000** and enable **US Census** or **GHSL** to see this statistic.'],
+        ['Population: Select **2020**, **2010**, or **2000** and enable **National Census** or **GHSL** to see this statistic.'],
     )
 })
 

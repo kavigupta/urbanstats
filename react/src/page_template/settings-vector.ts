@@ -340,7 +340,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_historical_cds', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'simple_ordinals', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'use_imperial', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_source_Population_US Census', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'show_stat_source_Population_US Census', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_source_Population_GHSL', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__ad_0.25', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__ad_0.25_2000', coder: booleanSettingCoder }),
@@ -502,6 +502,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_population_median_lat', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_population_median_lon', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_source_Population Median_Best Available Population Data', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Population_National Census', coder: booleanSettingCoder }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 
