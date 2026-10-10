@@ -64,17 +64,17 @@ test('comparison-warnings-enable-one-opens-edit-mode', async (t) => {
 })
 
 test('comparison-warnings-name-the-disabled-source', async (t) => {
-    // The generation statistics come from the two censuses only, so turning off the US one leaves
-    // Ontario's showing and California's gone -- naming the Population sources as a whole would be
-    // a lie, since enabling the others is what brings the population statistic itself back.
+    // The marital status statistics come from the two censuses only, so turning off the national one
+    // leaves Ontario's showing and California's gone -- naming the Population sources as a whole would
+    // be a lie, since enabling the others is what brings the population statistic itself back.
     await withEditMode(t, async () => {
         await uncheckAllCategories(t)
-        await t.click(categoryCheckbox('generation'))
+        await t.click(categoryCheckbox('relationships'))
         await t.click(editCheckbox('National Census'))
     })
-    await t.expect(warningNamed('National Census is disabled. Enable it to see these statistics.', 'Generation').exists).ok()
+    await t.expect(warningNamed('National Census is disabled. Enable it to see these statistics.', 'Relationships').exists).ok()
     // Ontario still has its own, from the Canadian census
-    await t.expect(Selector('a').withExactText('Silent % [StatCan]').exists).ok()
+    await t.expect(Selector('a').withExactText('Never Married % [StatCan]').exists).ok()
 })
 
 // Two US states, so the National Census and GHSL are both choosable, and GHSL only has 2020.
