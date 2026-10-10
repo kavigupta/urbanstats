@@ -3561,18 +3561,7 @@ completed = [
     ("G13c", "PSEO_Tot", "PERSONS Speaks English only Total"),
     ("G13c", "POL_Spanish_Tot", "PERSONS Uses other language Spanish Total"),
     ("G13c", "POL_Tot_Tot", "PERSONS Uses other language Total Total"),
-]
-
-# vulture: ignore -- these are lists of cells used to track progress on
-get_to_these_now = []
-
-# vulture: ignore -- these are lists of cells used to track progress on
-unsorted = [
-    ("G02", "Median_tot_hhd_inc_weekly", "Median total household income weekly"),
-    # G01 Selected Person Characteristics by Sex, counting Persons
-    ("G01", "Count_psns_occ_priv_dwgs_P", "Count of Persons in occupied private dwellings Persons"),
-    ("G01", "Count_Persons_other_dwgs_P", "Count of Persons in other dwellings Persons"),
-    # G14 Religious Affiliation by Sex, counting Persons
+    # Religion, in Canada's categories; denominations and other religions are counted through their totals
     ("G14", "Buddhism_P", "Buddhism Persons"),
     ("G14", "Christianity_Anglican_P", "Christianity Anglican Persons"),
     ("G14", "Christianity_Asyrin_Apstlic_P", "Christianity Assyrian Apostolic Persons"),
@@ -3607,6 +3596,17 @@ unsorted = [
     ("G14", "SB_OSB_NRA_Tot_P", "Secular Beliefs and Other Spiritual Beliefs and No Religious Affiliation Total Persons"),
     ("G14", "Religious_affiliation_ns_P", "Religious affiliation not stated Persons"),
     ("G14", "Tot_P", "Total Persons"),
+]
+
+# vulture: ignore -- these are lists of cells used to track progress on
+get_to_these_now = []
+
+# vulture: ignore -- these are lists of cells used to track progress on
+unsorted = [
+    ("G02", "Median_tot_hhd_inc_weekly", "Median total household income weekly"),
+    # G01 Selected Person Characteristics by Sex, counting Persons
+    ("G01", "Count_psns_occ_priv_dwgs_P", "Count of Persons in occupied private dwellings Persons"),
+    ("G01", "Count_Persons_other_dwgs_P", "Count of Persons in other dwellings Persons"),
     # G15 Type of Educational Institution Attending (Full-time/Part-Time Student Status by Age) by Sex, counting Persons attending an educational institution
     ("G15", "Preschool_P", "Preschool Persons"),
     ("G15", "Primary_Government_P", "Primary Government Persons"),
