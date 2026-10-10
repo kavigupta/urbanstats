@@ -737,73 +737,73 @@ export default {
             "deprecated": null
         },
         {
-            "varName": "religion_no",
-            "humanReadableName": "No religion % [StatCan]",
-            "comesFromMultiSourceSet": false,
+            "varName": "religion_no_statcan",
+            "humanReadableName": "No religion % [Canadian Census]",
+            "comesFromMultiSourceSet": true,
             "order": 92,
             "index": 452,
             "deprecated": null
         },
         {
-            "varName": "religion_catholic",
-            "humanReadableName": "Catholic % [StatCan]",
-            "comesFromMultiSourceSet": false,
+            "varName": "religion_catholic_statcan",
+            "humanReadableName": "Catholic % [Canadian Census]",
+            "comesFromMultiSourceSet": true,
             "order": 93,
             "index": 448,
             "deprecated": null
         },
         {
-            "varName": "religion_protestant",
-            "humanReadableName": "Protestant (non-Catholic Christian) % [StatCan]",
-            "comesFromMultiSourceSet": false,
+            "varName": "religion_protestant_statcan",
+            "humanReadableName": "Protestant (non-Catholic Christian) % [Canadian Census]",
+            "comesFromMultiSourceSet": true,
             "order": 94,
             "index": 454,
             "deprecated": null
         },
         {
-            "varName": "religion_hindu",
-            "humanReadableName": "Hindu % [StatCan]",
-            "comesFromMultiSourceSet": false,
+            "varName": "religion_hindu_statcan",
+            "humanReadableName": "Hindu % [Canadian Census]",
+            "comesFromMultiSourceSet": true,
             "order": 95,
             "index": 449,
             "deprecated": null
         },
         {
-            "varName": "religion_jewish",
-            "humanReadableName": "Jewish % [StatCan]",
-            "comesFromMultiSourceSet": false,
+            "varName": "religion_jewish_statcan",
+            "humanReadableName": "Jewish % [Canadian Census]",
+            "comesFromMultiSourceSet": true,
             "order": 96,
             "index": 450,
             "deprecated": null
         },
         {
-            "varName": "religion_muslim",
-            "humanReadableName": "Muslim % [StatCan]",
-            "comesFromMultiSourceSet": false,
+            "varName": "religion_muslim_statcan",
+            "humanReadableName": "Muslim % [Canadian Census]",
+            "comesFromMultiSourceSet": true,
             "order": 97,
             "index": 451,
             "deprecated": null
         },
         {
-            "varName": "religion_sikh",
-            "humanReadableName": "Sikh % [StatCan]",
-            "comesFromMultiSourceSet": false,
+            "varName": "religion_sikh_statcan",
+            "humanReadableName": "Sikh % [Canadian Census]",
+            "comesFromMultiSourceSet": true,
             "order": 98,
             "index": 455,
             "deprecated": null
         },
         {
-            "varName": "religion_buddhist",
-            "humanReadableName": "Buddhist % [StatCan]",
-            "comesFromMultiSourceSet": false,
+            "varName": "religion_buddhist_statcan",
+            "humanReadableName": "Buddhist % [Canadian Census]",
+            "comesFromMultiSourceSet": true,
             "order": 99,
             "index": 447,
             "deprecated": null
         },
         {
-            "varName": "religion_other",
-            "humanReadableName": "Other religion % [StatCan]",
-            "comesFromMultiSourceSet": false,
+            "varName": "religion_other_statcan",
+            "humanReadableName": "Other religion % [Canadian Census]",
+            "comesFromMultiSourceSet": true,
             "order": 100,
             "index": 453,
             "deprecated": null
@@ -4509,6 +4509,87 @@ export default {
                     "spanish_statcan"
                 ],
                 "humanReadableName": "Spanish at Home %"
+            }
+        ],
+        [
+            "religion_no",
+            {
+                "individualVariables": [
+                    "religion_no_statcan"
+                ],
+                "humanReadableName": "No religion %"
+            }
+        ],
+        [
+            "religion_catholic",
+            {
+                "individualVariables": [
+                    "religion_catholic_statcan"
+                ],
+                "humanReadableName": "Catholic %"
+            }
+        ],
+        [
+            "religion_protestant",
+            {
+                "individualVariables": [
+                    "religion_protestant_statcan"
+                ],
+                "humanReadableName": "Protestant (non-Catholic Christian) %"
+            }
+        ],
+        [
+            "religion_hindu",
+            {
+                "individualVariables": [
+                    "religion_hindu_statcan"
+                ],
+                "humanReadableName": "Hindu %"
+            }
+        ],
+        [
+            "religion_jewish",
+            {
+                "individualVariables": [
+                    "religion_jewish_statcan"
+                ],
+                "humanReadableName": "Jewish %"
+            }
+        ],
+        [
+            "religion_muslim",
+            {
+                "individualVariables": [
+                    "religion_muslim_statcan"
+                ],
+                "humanReadableName": "Muslim %"
+            }
+        ],
+        [
+            "religion_sikh",
+            {
+                "individualVariables": [
+                    "religion_sikh_statcan"
+                ],
+                "humanReadableName": "Sikh %"
+            }
+        ],
+        [
+            "religion_buddhist",
+            {
+                "individualVariables": [
+                    "religion_buddhist_statcan"
+                ],
+                "humanReadableName": "Buddhist %"
+            }
+        ],
+        [
+            "religion_other",
+            {
+                "individualVariables": [
+                    "religion_other_statcan"
+                ],
+                "humanReadableName": "Other religion %"
             }
         ],
         [

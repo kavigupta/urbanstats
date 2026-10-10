@@ -1870,14 +1870,14 @@ export const rawStatsTree = [
         "contents": [
             {
                 "id": "religion_no_religion_canada",
-                "name": "No religion % [StatCan]",
+                "name": "No religion %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "No religion % [StatCan]",
+                                "name": "No religion %",
                                 "stats": [
                                     {
                                         "kind": "data",
@@ -1896,14 +1896,14 @@ export const rawStatsTree = [
             },
             {
                 "id": "religion_catholic_canada",
-                "name": "Catholic % [StatCan]",
+                "name": "Catholic %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Catholic % [StatCan]",
+                                "name": "Catholic %",
                                 "stats": [
                                     {
                                         "kind": "data",
@@ -1922,14 +1922,14 @@ export const rawStatsTree = [
             },
             {
                 "id": "religion_protestant_canada",
-                "name": "Protestant (non-Catholic Christian) % [StatCan]",
+                "name": "Protestant (non-Catholic Christian) %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Protestant (non-Catholic Christian) % [StatCan]",
+                                "name": "Protestant (non-Catholic Christian) %",
                                 "stats": [
                                     {
                                         "kind": "data",
@@ -1948,14 +1948,14 @@ export const rawStatsTree = [
             },
             {
                 "id": "religion_hindu_canada",
-                "name": "Hindu % [StatCan]",
+                "name": "Hindu %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Hindu % [StatCan]",
+                                "name": "Hindu %",
                                 "stats": [
                                     {
                                         "kind": "data",
@@ -1974,14 +1974,14 @@ export const rawStatsTree = [
             },
             {
                 "id": "religion_jewish_canada",
-                "name": "Jewish % [StatCan]",
+                "name": "Jewish %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Jewish % [StatCan]",
+                                "name": "Jewish %",
                                 "stats": [
                                     {
                                         "kind": "data",
@@ -2000,14 +2000,14 @@ export const rawStatsTree = [
             },
             {
                 "id": "religion_muslim_canada",
-                "name": "Muslim % [StatCan]",
+                "name": "Muslim %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Muslim % [StatCan]",
+                                "name": "Muslim %",
                                 "stats": [
                                     {
                                         "kind": "data",
@@ -2026,14 +2026,14 @@ export const rawStatsTree = [
             },
             {
                 "id": "religion_sikh_canada",
-                "name": "Sikh % [StatCan]",
+                "name": "Sikh %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Sikh % [StatCan]",
+                                "name": "Sikh %",
                                 "stats": [
                                     {
                                         "kind": "data",
@@ -2052,14 +2052,14 @@ export const rawStatsTree = [
             },
             {
                 "id": "religion_buddhist_canada",
-                "name": "Buddhist % [StatCan]",
+                "name": "Buddhist %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Buddhist % [StatCan]",
+                                "name": "Buddhist %",
                                 "stats": [
                                     {
                                         "kind": "data",
@@ -2078,14 +2078,14 @@ export const rawStatsTree = [
             },
             {
                 "id": "religion_other_canada",
-                "name": "Other religion % [StatCan]",
+                "name": "Other religion %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Other religion % [StatCan]",
+                                "name": "Other religion %",
                                 "stats": [
                                     {
                                         "kind": "data",
