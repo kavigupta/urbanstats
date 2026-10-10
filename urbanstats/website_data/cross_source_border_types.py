@@ -31,9 +31,9 @@ def universe_data_source_country() -> Dict[str, str]:
     }
 
 
-def statistic_data_source_country() -> List[Optional[str]]:
+def statistic_data_source_country() -> List[Optional[List[str]]]:
     """
-    The country whose statistics agency each statistic's data comes from.
+    The countries whose statistics agencies each statistic's data comes from.
     """
     collection_by_statistic = {
         statistic: collection
@@ -41,7 +41,7 @@ def statistic_data_source_country() -> List[Optional[str]]:
         for statistic in collection.name_for_each_statistic()
     }
     return [
-        collection_by_statistic[statistic].data_source_country
+        list(collection_by_statistic[statistic].data_source_countries) or None
         for statistic in internal_statistic_names()
     ]
 

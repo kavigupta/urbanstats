@@ -26,17 +26,22 @@ const california: StatPath[] = [
     'gpw_population',
     'generation_silent', 'generation_boomer', 'generation_genx',
     'generation_millenial', 'generation_genz', 'generation_genalpha',
+    'marriage_never_married', 'marriage_married_not_divorced', 'marriage_divorced',
     'area',
 ]
 
 const massachusetts = california
 
-/** A Canadian province: the same statistics, but from the Canadian census instead of the US one. */
+/**
+ * A Canadian province: the same statistics, from the Canadian census where it is a separate source,
+ * and from the National Census where the two countries' statistics are merged.
+ */
 const alberta: StatPath[] = [
     'population_2021_canada', 'population_2011_canada', 'population_change_2011_canada',
     'gpw_population',
-    'generation_silent_canada', 'generation_boomer_canada', 'generation_genx_canada',
-    'generation_millenial_canada', 'generation_genz_canada', 'generation_genalpha_canada',
+    'generation_silent', 'generation_boomer', 'generation_genx',
+    'generation_millenial', 'generation_genz', 'generation_genalpha',
+    'marriage_never_married_canada', 'marriage_married_not_divorced_canada', 'marriage_divorced_canada',
     'area',
 ]
 
@@ -49,6 +54,10 @@ const populationGroup: EnabledKey[] = ['show_stat_group_population']
 const generationGroups: EnabledKey[] = [
     'show_stat_group_generation_silent', 'show_stat_group_generation_boomer', 'show_stat_group_generation_genx',
     'show_stat_group_generation_millenial', 'show_stat_group_generation_genz', 'show_stat_group_generation_genalpha',
+]
+
+const marriageGroups: EnabledKey[] = [
+    'show_stat_group_marriage_never_married', 'show_stat_group_marriage_married_not_divorced', 'show_stat_group_marriage_divorced',
 ]
 
 function settingsWith(enabled: EnabledKey[]): StatGroupSettings {
@@ -90,22 +99,22 @@ void test('a statistic that only the disabled source has names that source', () 
 void test('regions missing a statistic for different sources name all of them', () => {
     assert.deepStrictEqual(
         warnings([california, alberta], [
-            ...populationGroup, ...generationGroups, 'show_stat_year_2020',
+            ...populationGroup, ...marriageGroups, 'show_stat_year_2020',
             'show_stat_source_Population_GHSL',
         ]),
-        ['Generation: **National Census** and **Canadian Census** are disabled. Enable them to see these statistics.'],
+        ['Relationships: **National Census** and **Canadian Census** are disabled. Enable them to see these statistics.'],
     )
 })
 
 void test('a comparison warns about the source one of its regions is missing', () => {
-    // The Canadian census is enabled, so Alberta's generation statistics are still in the table;
+    // The Canadian census is enabled, so Alberta's marital status statistics are still in the table;
     // the warning is about the column California is no longer filling in.
     assert.deepStrictEqual(
         warnings([california, alberta], [
-            ...populationGroup, ...generationGroups, 'show_stat_year_2020',
+            ...populationGroup, ...marriageGroups, 'show_stat_year_2020',
             'show_stat_source_Population_GHSL', 'show_stat_source_Population_Canadian Census',
         ]),
-        ['Generation: **National Census** is disabled. Enable it to see these statistics.'],
+        ['Relationships: **National Census** is disabled. Enable it to see these statistics.'],
     )
 })
 

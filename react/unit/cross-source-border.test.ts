@@ -52,7 +52,7 @@ void describe('crossSourceBorderExclusion', () => {
                 kind: 'straddles-border',
                 excludedCount: 13,
                 totalCount: 337,
-                statisticCountry: 'USA',
+                statisticCountries: ['USA'],
                 alternative: { kind: 'broader-source', statName: ghslPopulation },
             })
         })
@@ -62,7 +62,7 @@ void describe('crossSourceBorderExclusion', () => {
                 kind: 'straddles-border',
                 excludedCount: 13,
                 totalCount: 337,
-                statisticCountry: 'USA',
+                statisticCountries: ['USA'],
                 alternative: { kind: 'domestic-type', articleType: 'Urban Area' },
             })
         })
@@ -74,7 +74,7 @@ void describe('crossSourceBorderExclusion', () => {
                 kind: 'straddles-border',
                 excludedCount: 16,
                 totalCount: 77,
-                statisticCountry: 'USA',
+                statisticCountries: ['USA'],
                 alternative: {
                     kind: 'no-equivalent',
                     reason: 'Circles are drawn around a point without regard to national borders, and no region type defined by a statistics agency resembles them.',
@@ -89,7 +89,7 @@ void describe('crossSourceBorderExclusion', () => {
                 kind: 'outside-jurisdiction',
                 excludedCount: 9834,
                 totalCount: 10158,
-                statisticCountry: 'USA',
+                statisticCountries: ['USA'],
                 alternative: { kind: 'broader-source', statName: ghslPopulation },
             })
         })
@@ -99,7 +99,7 @@ void describe('crossSourceBorderExclusion', () => {
                 kind: 'outside-jurisdiction',
                 excludedCount: 9834,
                 totalCount: 10158,
-                statisticCountry: 'USA',
+                statisticCountries: ['USA'],
                 alternative: { kind: 'domestic-type', articleType: 'Urban Area' },
             })
         })
@@ -112,7 +112,7 @@ void describe('crossSourceBorderExclusion', () => {
                 kind: 'outside-jurisdiction',
                 excludedCount: 3599,
                 totalCount: 3651,
-                statisticCountry: 'USA',
+                statisticCountries: ['USA'],
                 alternative: undefined,
             })
         })

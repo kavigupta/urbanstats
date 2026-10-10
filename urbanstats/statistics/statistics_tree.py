@@ -879,7 +879,7 @@ statistics_tree = StatisticTree(
                 ),
             },
         ),
-        **just_2020_category_with_canada(
+        **just_2020_category(
             "generation",
             "Generation",
             "generation_silent",
@@ -888,6 +888,7 @@ statistics_tree = StatisticTree(
             "generation_millenial",
             "generation_genz",
             "generation_genalpha",
+            source=population_census,
         ),
         "income": StatisticCategory(
             name="Income",

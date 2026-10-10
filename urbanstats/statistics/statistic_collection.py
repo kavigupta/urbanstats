@@ -17,6 +17,13 @@ from urbanstats.geometry.shapefiles.shapefile import (
 class StatisticCollection(ABC):
     data_source_country = None
 
+    @property
+    def data_source_countries(self):
+        """The countries whose statistics agencies the data comes from, if any."""
+        if self.data_source_country is None:
+            return ()
+        return (self.data_source_country,)
+
     def __init__(self):
         quiz_questions = set(self.quiz_question_descriptors())
         all_columns = set(self.internal_statistic_names_list())
