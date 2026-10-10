@@ -156,7 +156,7 @@ export default [
     null,
     null,
     null,
-    "higher % of people who were born outside the US",
+    "higher % of people who were born outside the country",
     "higher % of people who were born in the US and outside their state of residence",
     "higher % of people who were born in their state of residence",
     "higher % of people who are Black",

@@ -513,9 +513,13 @@ def just_2020(
     }
 
 
-def just_2020_with_canada(
+def just_2020_multi_source(
     *col_names: str, year: int = 2020, canada: bool = True, australia: bool = False
 ) -> Dict[str, StatisticGroup]:
+    """
+    Even with a single source, these are multi-source statistics named after the US column, so their
+    variable names do not change when a source is added.
+    """
     return {
         col_name: StatisticGroup(
             {
@@ -566,7 +570,7 @@ def just_2020_category_with_canada(
     return {
         cat_key: StatisticCategory(
             name=cat_name,
-            contents=just_2020_with_canada(*col_names, year=year, australia=australia),
+            contents=just_2020_multi_source(*col_names, year=year, australia=australia),
         )
     }
 
@@ -773,7 +777,7 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "citizenship",
                     "Citizenship",
-                    just_2020_with_canada(
+                    just_2020_multi_source(
                         "citizenship_citizen_by_birth",
                         "citizenship_citizen_by_naturalization",
                         "citizenship_not_citizen",
@@ -782,7 +786,7 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "birthplace",
                     "Birthplace",
-                    just_2020_with_canada(
+                    just_2020_multi_source(
                         "birthplace_non_us",
                         canada=False,
                         australia=True,
@@ -796,7 +800,7 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "language",
                     "Language at Home",
-                    just_2020_with_canada(
+                    just_2020_multi_source(
                         "language_english_only",
                         "language_spanish",
                         australia=True,
@@ -806,7 +810,7 @@ statistics_tree = StatisticTree(
                         "language_other_non_french_canada",
                         source=population_canada,
                     ),
-                    just_2020_with_canada(
+                    just_2020_multi_source(
                         "language_other",
                         canada=False,
                         australia=True,
@@ -837,11 +841,11 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "education_attainment",
                     "Educational Attainment",
-                    just_2020_with_canada(
+                    just_2020_multi_source(
                         "education_high_school",
                         canada=False,
                     ),
-                    just_2020_with_canada(
+                    just_2020_multi_source(
                         "education_ugrad",
                         "education_grad",
                         canada=False,
@@ -857,7 +861,7 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "education_field",
                     "Field of Study",
-                    just_2020_with_canada(
+                    just_2020_multi_source(
                         "education_field_stem",
                         "education_field_humanities",
                         "education_field_business",
@@ -986,10 +990,10 @@ statistics_tree = StatisticTree(
                         source=population_census,
                     ),
                 ),
-                **just_2020_with_canada(
+                **just_2020_multi_source(
                     "household_size_pw",
                 ),
-                **just_2020_with_canada(
+                **just_2020_multi_source(
                     "rent_or_own_rent",
                 ),
                 **just_2020(
@@ -1004,20 +1008,20 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "commute_mode",
                     "Commute Mode",
-                    just_2020_with_canada(
+                    just_2020_multi_source(
                         "transportation_means_car_no_wfh",
                         "transportation_means_bike_no_wfh",
                         "transportation_means_walk_no_wfh",
                         "transportation_means_transit_no_wfh",
                     ),
                 ),
-                **just_2020_with_canada(
+                **just_2020_multi_source(
                     "transportation_commute_time_median",
                 ),
                 **in_subcategory(
                     "commute_time",
                     "Commute Time",
-                    just_2020_with_canada(
+                    just_2020_multi_source(
                         "transportation_commute_time_under_15",
                         "transportation_commute_time_15_to_29",
                         "transportation_commute_time_30_to_59",
@@ -1192,7 +1196,7 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "marital_status",
                     "Marital Status",
-                    just_2020_with_canada(
+                    just_2020_multi_source(
                         "marriage_never_married",
                         "marriage_married_not_divorced",
                         "marriage_divorced",
