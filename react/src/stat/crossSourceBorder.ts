@@ -36,12 +36,12 @@ export type CrossSourceBorderExclusion =
      * The statistic comes from a single country's statistics agency, this universe sits
      * inside that country, and the missing regions are the ones straddling its border.
      */
-    | { kind: 'straddles-border', excludedCount: number, totalCount: number, statisticCountry: string, alternative: CrossSourceBorderAlternative | undefined }
+    | { kind: 'straddles-border', excludedCount: number, totalCount: number, statisticCountries: readonly string[], alternative: CrossSourceBorderAlternative | undefined }
     /**
      * The statistic comes from a single country's statistics agency and this universe is
      * broader, so the missing regions are the ones lying outside that country entirely.
      */
-    | { kind: 'outside-jurisdiction', excludedCount: number, totalCount: number, statisticCountry: string, alternative: CrossSourceBorderAlternative | undefined }
+    | { kind: 'outside-jurisdiction', excludedCount: number, totalCount: number, statisticCountries: readonly string[], alternative: CrossSourceBorderAlternative | undefined }
 
 export function crossSourceBorderExclusion({ statName, articleType, universe, counts }: {
     statName: StatName
@@ -60,8 +60,8 @@ export function crossSourceBorderExclusion({ statName, articleType, universe, co
 
     // A statistic computed the same way everywhere (no single-country source) can't be
     // missing regions because of a data source border.
-    const statisticCountry = statisticDataSourceCountry[statIndex]
-    if (statisticCountry === null) {
+    const statisticCountries = statisticDataSourceCountry[statIndex]
+    if (statisticCountries === null) {
         return undefined
     }
 
@@ -79,11 +79,11 @@ export function crossSourceBorderExclusion({ statName, articleType, universe, co
     const payload = {
         excludedCount,
         totalCount,
-        statisticCountry,
+        statisticCountries,
         alternative: computeAlternative({ statIndex, shownCount, articleType, universe, counts, borderInfo }),
     } as const
 
-    if (universeCountry === statisticCountry) {
+    if (universeCountry !== undefined && statisticCountries.includes(universeCountry)) {
         // Some regions must straddle the border
         return borderInfo === undefined ? undefined : { kind: 'straddles-border', ...payload }
     }

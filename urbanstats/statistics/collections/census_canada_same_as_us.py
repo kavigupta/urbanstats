@@ -6,7 +6,6 @@ import numpy as np
 from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.data.census_blocks import RADII
 from urbanstats.statistics.collections.census import CensusChange2010
-from urbanstats.statistics.collections.generation import GenerationStatistics
 from urbanstats.statistics.collections.household_size import (
     HouseholdSizeStatistics,
     compute_population_weighted_household_size,
@@ -41,62 +40,6 @@ class CensusCanadaSameAsUS(SameAsUS, CanadaStatistics):
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("canadian-census-disaggregated")
-
-
-class CensusCanadaGeneration(CensusCanadaSameAsUS):
-    version = 2
-
-    def census_tables(self) -> CensusTables:
-        # see urbanstats.collections.collections.generation.GenerationStatistics
-        return CensusTables(
-            ["Total - Age groups of the population - 100% data"],
-            {
-                None: [
-                    "Total - Age groups of the population - 100% data",
-                    "  0 to 14 years",
-                    "  15 to 64 years",
-                    "  65 years and over",
-                    "      85 to 89 years",
-                    "      90 to 94 years",
-                    "      95 to 99 years",
-                    "      100 years and over",
-                ],
-                "generation_genalpha_canada": [
-                    "    0 to 4 years",
-                    "    5 to 9 years",
-                ],
-                "generation_genz_canada": [
-                    "    10 to 14 years",
-                    "    15 to 19 years",
-                    "    20 to 24 years",
-                ],
-                "generation_millenial_canada": [
-                    "    25 to 29 years",
-                    "    30 to 34 years",
-                    "    35 to 39 years",
-                ],
-                "generation_genx_canada": [
-                    "    40 to 44 years",
-                    "    45 to 49 years",
-                    "    50 to 54 years",
-                ],
-                "generation_boomer_canada": [
-                    "    55 to 59 years",
-                    "    60 to 64 years",
-                    "    65 to 69 years",
-                    "    70 to 74 years",
-                ],
-                "generation_silent_canada": [
-                    "    75 to 79 years",
-                    "    80 to 84 years",
-                    "    85 years and over",
-                ],
-            },
-            "population",
-        )
-
-    def us_equivalent(self):
-        return GenerationStatistics()
 
 
 class CensusCanadaMarriage(CensusCanadaSameAsUS):
@@ -448,7 +391,6 @@ class CensusCanadaChange2011(CensusCanadaSameAsUS):
 census_canada_same_as_us = [
     CensusCanadaCommuteTime(),
     CensusCanadaTransportationMode(),
-    CensusCanadaGeneration(),
     CensusCanadaMarriage(),
     CensusCanadaIndustry(),
     CensusCanadaHouseholdSize(),
