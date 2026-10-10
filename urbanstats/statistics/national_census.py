@@ -3,17 +3,14 @@ from typing import Any, Dict
 
 import numpy as np
 import pandas as pd
-import shapely
-from permacache import permacache
 
 from urbanstats.acs.load import aggregated_acs_data
-from urbanstats.geometry.shapefiles.shapefile import subset_mask_key
-from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.statistics.statistic_collection import StatisticCollection
-
-# The share of a region's land that may lie in countries without the statistic. Above zero only
-# so that slivers from mismatched borders don't remove regions.
-MAX_UNCOVERED_SHARE = 0.01
+from urbanstats.universe.universe_list import universe_by_universe_type
+from urbanstats.universe.universe_provider.compute_universes import (
+    compute_universes_for_shapefile,
+)
 
 # Each country's block-level counts, summed over a shapefile's regions, from that country's input
 COUNTRY_COUNTS = {
@@ -65,37 +62,21 @@ class NationalCensusStatistics(StatisticCollection):
                 if counts is None
                 else counts.add(country_counts, fill_value=0)
             )
-        covered = covered_by_countries(shapefile, tuple(sorted(countries)))
+        covered = covered_by_countries(shapefile, countries)
         counts.loc[~covered] = np.nan
         return self.post_process(counts)
 
 
-@permacache(
-    "urbanstats/statistics/national_census/covered_by_countries",
-    key_function=dict(shapefile=lambda x: x.hash_key),
-)
 def covered_by_countries(shapefile, countries):
     """
-    Whether each region lies within the given countries, so that their counts cover all of it.
+    Whether each region lies within the given countries, so that their counts cover all of it. A
+    region is in a country if it has that country's universe.
     """
+    universes = compute_universes_for_shapefile(shapefiles, shapefile)
+    all_countries = set(universe_by_universe_type()["country"])
     table = shapefile.load_file()
-    covered = np.zeros(len(table), dtype=bool)
-    for country in countries:
-        covered |= np.array(table[subset_mask_key(country)], dtype=bool)
-    # Regions a country's mask leaves out may still straddle only covered countries
-    others = COUNTRIES.load_file()
-    is_covered_country = others.longname.isin(countries)
-    tree = shapely.STRtree(others.geometry)
-    for i in np.where(~covered)[0]:
-        region = table.geometry.iloc[i]
-        nearby = tree.query(region, predicate="intersects")
-        if not is_covered_country.iloc[nearby].any():
-            continue
-        area = {True: 0.0, False: 0.0}
-        for j in nearby:
-            area[bool(is_covered_country.iloc[j])] += region.intersection(
-                others.geometry.iloc[j]
-            ).area
-        land = area[True] + area[False]
-        covered[i] = land > 0 and area[False] / land <= MAX_UNCOVERED_SHARE
+    covered = []
+    for longname in table.longname:
+        in_countries = set(universes[longname]) & all_countries
+        covered.append(bool(in_countries) and in_countries <= set(countries))
     return pd.Series(covered, index=table.index)
