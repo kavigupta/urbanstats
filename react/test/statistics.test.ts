@@ -895,7 +895,7 @@ test('add columns starting from a statname', async (t) => {
     await toggleCustomScript(t)
     await t.expect(nthEditor(0).textContent).eql(`table(
     columns=[
-        column(values=white_us_census),
+        column(values=white_census),
         column(values=binge_drinking),
         column(values=naturalized_citizen),
         column(values=gen_z)
@@ -922,7 +922,7 @@ test('column click on element', async (t) => {
     await t.click(Selector('button[data-test-id="edit"]'))
     await waitForLoading()
     await toggleCustomScript(t)
-    await t.expect(nthEditor(0).textContent).eql('table(columns=[column(values=white_us_census), column(values=population)])\n')
+    await t.expect(nthEditor(0).textContent).eql('table(columns=[column(values=white_census), column(values=population)])\n')
 })
 
 const transit = `condition (population > 500k)
