@@ -139,14 +139,14 @@ urbanstatsFixture(
 
 test('comparison-2-non-overlapping-population-stats', async (t) => {
     // no overlap: both are forced onto the screen
-    await t.expect(await checkboxStatus(t, 'US Census')).eql('missing')
+    await t.expect(await checkboxStatus(t, 'National Census')).eql('missing')
     await t.expect(await checkboxStatus(t, 'GHSL')).eql('missing')
     await t.expect(await dataValues()).eql(['119', '420'])
     await screencap(t)
-    // heterogenous-sources disclaimer: multiple data sources (US Census vs GHSL)
+    // heterogenous-sources disclaimer: multiple data sources (National Census vs GHSL)
     await t.expect(Selector('.disclaimer-toggle').count).gte(1, 'at least one disclaimer toggle when sources differ')
     await t.click(Selector('.disclaimer-toggle').nth(0))
-    await t.expect(Selector('div').withExactText('This statistic is based on data from multiple sources (US Census, GHSL), which may not be consistent with each other.').visible).ok('heterogenous-sources disclaimer text visible after click')
+    await t.expect(Selector('div').withExactText('This statistic is based on data from multiple sources (National Census, GHSL), which may not be consistent with each other.').visible).ok('heterogenous-sources disclaimer text visible after click')
     await screencap(t)
 })
 
@@ -156,10 +156,10 @@ urbanstatsFixture(
 )
 
 test('comparison-both-american-states-population-stats', async (t) => {
-    // both are American states: only US Census is forced onto the screen
-    await t.expect(await checkboxStatus(t, 'US Census')).eql('disabled')
+    // both are American states: only National Census is forced onto the screen
+    await t.expect(await checkboxStatus(t, 'National Census')).eql('disabled')
     await t.expect(await checkboxStatus(t, 'GHSL')).eql('enabled')
-    // these are the values for the US Census
+    // these are the values for the National Census
     await t.expect(await dataValues()).eql(['119', '39.5'])
 })
 
@@ -169,17 +169,17 @@ urbanstatsFixture(
 )
 
 test('comparison-american-vs-canada-population-stats', async (t) => {
-    // forces GHSL onto the screen. US Census is only enabled by the checkbox
-    await t.expect(await checkboxStatus(t, 'US Census')).eql('enabled')
+    // forces GHSL onto the screen. National Census is only enabled by the checkbox
+    await t.expect(await checkboxStatus(t, 'National Census')).eql('enabled')
     await t.expect(await checkboxStatus(t, 'Canadian Census')).eql('enabled')
     await t.expect(await checkboxStatus(t, 'GHSL')).eql('enabled')
-    // these are the values for the US Census
+    // these are the values for the National Census
     await t.expect(await dataValues()).eql(['14.2', '39.5'])
-    await checkTextboxes(t, ['US Census'])
+    await checkTextboxes(t, ['National Census'])
     // these are the values for StatCan
     await t.expect(await dataValues()).eql(['14.2', 'N/A'])
     // enable everything
-    await checkTextboxes(t, ['US Census', 'GHSL'])
+    await checkTextboxes(t, ['National Census', 'GHSL'])
     await t.expect(await dataValues()).eql(['14.2', '39.5', '14.3', '40.4'])
 })
 
@@ -191,12 +191,12 @@ urbanstatsFixture(
 let ghslLocation: string
 
 test('comparison-american-vs-international-population-stats', async (t) => {
-    // forces GHSL onto the screen. US Census is only enabled by the checkbox
-    await t.expect(await checkboxStatus(t, 'US Census')).eql('enabled')
+    // forces GHSL onto the screen. National Census is only enabled by the checkbox
+    await t.expect(await checkboxStatus(t, 'National Census')).eql('enabled')
     await t.expect(await checkboxStatus(t, 'GHSL')).eql('disabled')
-    // these are the values for the US Census
+    // these are the values for the National Census
     await t.expect(await dataValues()).eql(['N/A', '39.5', '20.8', '40.4'])
-    await checkTextboxes(t, ['US Census'])
+    await checkTextboxes(t, ['National Census'])
     ghslLocation = await getLocation()
     // these are the values for GHSL
     await t.expect(await dataValues()).eql(['20.8', '40.4'])
@@ -208,7 +208,7 @@ test('comparison-american-vs-international-population-stats', async (t) => {
 test('settings param works correctly on url with just ghsl source checked', async (t) => {
     await t.navigateTo(ghslLocation)
     await withEditMode(t, async () => {
-        await t.expect(sourceCheckbox('Population', 'US Census').checked).eql(false)
+        await t.expect(sourceCheckbox('Population', 'National Census').checked).eql(false)
         await t.expect(sourceCheckbox('Population', 'GHSL').checked).eql(true)
     })
     await screencap(t)
@@ -221,9 +221,9 @@ urbanstatsFixture(
 
 test('comparison-usa-vs-usa', async (t) => {
     // both are American states: nothing is forced onto the screen
-    await t.expect(await checkboxStatus(t, 'US Census')).eql('enabled')
+    await t.expect(await checkboxStatus(t, 'National Census')).eql('enabled')
     await t.expect(await checkboxStatus(t, 'GHSL')).eql('enabled')
-    // these are the values for the US Census, since GHSL is disabled
+    // these are the values for the National Census, since GHSL is disabled
     await t.expect(await dataValues()).eql(['7.03', '39.5'])
 })
 

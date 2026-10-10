@@ -2,7 +2,7 @@ export default {
     "variableNames": [
         {
             "varName": "population_us_census",
-            "humanReadableName": "Population [US Census]",
+            "humanReadableName": "Population [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 0,
             "index": 435,
@@ -26,7 +26,7 @@ export default {
         },
         {
             "varName": "population_2010_us_census",
-            "humanReadableName": "Population (2010) [US Census]",
+            "humanReadableName": "Population (2010) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 3,
             "index": 437,
@@ -42,7 +42,7 @@ export default {
         },
         {
             "varName": "population_change_2010_2020_us_census",
-            "humanReadableName": "Population Change (2010-2020) [US Census]",
+            "humanReadableName": "Population Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 5,
             "index": 441,
@@ -74,7 +74,7 @@ export default {
         },
         {
             "varName": "density_pw_1km_us_census",
-            "humanReadableName": "PW Density (r=1km) [US Census]",
+            "humanReadableName": "PW Density (r=1km) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 9,
             "index": 96,
@@ -98,7 +98,7 @@ export default {
         },
         {
             "varName": "density_pw_1km_2010_us_census",
-            "humanReadableName": "PW Density (r=1km) (2010) [US Census]",
+            "humanReadableName": "PW Density (r=1km) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 12,
             "index": 112,
@@ -114,7 +114,7 @@ export default {
         },
         {
             "varName": "density_pw_1km_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=1km) Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=1km) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 14,
             "index": 116,
@@ -130,7 +130,7 @@ export default {
         },
         {
             "varName": "density_pw_1km_abs_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=1km) Absolute Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=1km) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 16,
             "index": 114,
@@ -170,7 +170,7 @@ export default {
         },
         {
             "varName": "density_aw_us_census",
-            "humanReadableName": "AW Density [US Census]",
+            "humanReadableName": "AW Density [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 21,
             "index": 468,
@@ -194,7 +194,7 @@ export default {
         },
         {
             "varName": "density_aw_2010_us_census",
-            "humanReadableName": "AW Density (2010) [US Census]",
+            "humanReadableName": "AW Density (2010) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 24,
             "index": 470,
@@ -266,7 +266,7 @@ export default {
         },
         {
             "varName": "white_us_census",
-            "humanReadableName": "White % [US Census]",
+            "humanReadableName": "White % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 33,
             "index": 522,
@@ -298,7 +298,7 @@ export default {
         },
         {
             "varName": "hispanic_us_census",
-            "humanReadableName": "Hispanic % [US Census]",
+            "humanReadableName": "Hispanic % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 37,
             "index": 269,
@@ -330,7 +330,7 @@ export default {
         },
         {
             "varName": "black_us_census",
-            "humanReadableName": "Black % [US Census]",
+            "humanReadableName": "Black % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 41,
             "index": 160,
@@ -362,7 +362,7 @@ export default {
         },
         {
             "varName": "asian_us_census",
-            "humanReadableName": "Asian % [US Census]",
+            "humanReadableName": "Asian % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 45,
             "index": 153,
@@ -394,7 +394,7 @@ export default {
         },
         {
             "varName": "native_us_census",
-            "humanReadableName": "Native % [US Census]",
+            "humanReadableName": "Native % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 49,
             "index": 389,
@@ -426,7 +426,7 @@ export default {
         },
         {
             "varName": "hawaiian_pi_us_census",
-            "humanReadableName": "Hawaiian / PI % [US Census]",
+            "humanReadableName": "Hawaiian / PI % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 53,
             "index": 259,
@@ -458,7 +458,7 @@ export default {
         },
         {
             "varName": "other_mixed_us_census",
-            "humanReadableName": "Other / Mixed % [US Census]",
+            "humanReadableName": "Other / Mixed % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 57,
             "index": 428,
@@ -610,7 +610,7 @@ export default {
         },
         {
             "varName": "citizen_by_birth_us_census",
-            "humanReadableName": "Citizen by Birth % [US Census]",
+            "humanReadableName": "Citizen by Birth % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 76,
             "index": 164,
@@ -626,7 +626,7 @@ export default {
         },
         {
             "varName": "naturalized_citizen_us_census",
-            "humanReadableName": "Citizen by Naturalization % [US Census]",
+            "humanReadableName": "Citizen by Naturalization % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 78,
             "index": 166,
@@ -642,7 +642,7 @@ export default {
         },
         {
             "varName": "non_citizen_us_census",
-            "humanReadableName": "Non-citizen % [US Census]",
+            "humanReadableName": "Non-citizen % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 80,
             "index": 168,
@@ -682,7 +682,7 @@ export default {
         },
         {
             "varName": "english_only_us_census",
-            "humanReadableName": "Only English at Home % [US Census]",
+            "humanReadableName": "Only English at Home % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 85,
             "index": 345,
@@ -698,7 +698,7 @@ export default {
         },
         {
             "varName": "spanish_us_census",
-            "humanReadableName": "Spanish at Home % [US Census]",
+            "humanReadableName": "Spanish at Home % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 87,
             "index": 350,
@@ -810,7 +810,7 @@ export default {
         },
         {
             "varName": "high_school_us_census",
-            "humanReadableName": "High School % [US Census]",
+            "humanReadableName": "High School % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 101,
             "index": 227,
@@ -818,7 +818,7 @@ export default {
         },
         {
             "varName": "undergrad_us_census",
-            "humanReadableName": "Undergrad % [US Census]",
+            "humanReadableName": "Undergrad % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 102,
             "index": 229,
@@ -826,7 +826,7 @@ export default {
         },
         {
             "varName": "graduate_us_census",
-            "humanReadableName": "Grad % [US Census]",
+            "humanReadableName": "Grad % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 103,
             "index": 225,
@@ -858,7 +858,7 @@ export default {
         },
         {
             "varName": "stem_degree_us_census",
-            "humanReadableName": "Undergrad STEM % [US Census]",
+            "humanReadableName": "Undergrad STEM % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 107,
             "index": 223,
@@ -866,7 +866,7 @@ export default {
         },
         {
             "varName": "humanities_degree_us_census",
-            "humanReadableName": "Undergrad Humanities % [US Census]",
+            "humanReadableName": "Undergrad Humanities % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 108,
             "index": 221,
@@ -874,7 +874,7 @@ export default {
         },
         {
             "varName": "business_degree_us_census",
-            "humanReadableName": "Undergrad Business % [US Census]",
+            "humanReadableName": "Undergrad Business % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 109,
             "index": 219,
@@ -930,7 +930,7 @@ export default {
         },
         {
             "varName": "silent_us_census",
-            "humanReadableName": "Silent % [US Census]",
+            "humanReadableName": "Silent % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 116,
             "index": 244,
@@ -946,7 +946,7 @@ export default {
         },
         {
             "varName": "boomer_us_census",
-            "humanReadableName": "Boomer % [US Census]",
+            "humanReadableName": "Boomer % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 118,
             "index": 234,
@@ -962,7 +962,7 @@ export default {
         },
         {
             "varName": "gen_x_us_census",
-            "humanReadableName": "Gen X % [US Census]",
+            "humanReadableName": "Gen X % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 120,
             "index": 238,
@@ -978,7 +978,7 @@ export default {
         },
         {
             "varName": "millennial_us_census",
-            "humanReadableName": "Millennial % [US Census]",
+            "humanReadableName": "Millennial % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 122,
             "index": 242,
@@ -994,7 +994,7 @@ export default {
         },
         {
             "varName": "gen_z_us_census",
-            "humanReadableName": "Gen Z % [US Census]",
+            "humanReadableName": "Gen Z % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 124,
             "index": 240,
@@ -1010,7 +1010,7 @@ export default {
         },
         {
             "varName": "gen_alpha_us_census",
-            "humanReadableName": "Gen Alpha % [US Census]",
+            "humanReadableName": "Gen Alpha % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 126,
             "index": 236,
@@ -1154,7 +1154,7 @@ export default {
         },
         {
             "varName": "housing_per_adult_us_census",
-            "humanReadableName": "Housing Units per Adult [US Census]",
+            "humanReadableName": "Housing Units per Adult [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 144,
             "index": 291,
@@ -1186,7 +1186,7 @@ export default {
         },
         {
             "varName": "housing_per_person_us_census",
-            "humanReadableName": "Housing Units per Person [US Census]",
+            "humanReadableName": "Housing Units per Person [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 148,
             "index": 287,
@@ -1362,7 +1362,7 @@ export default {
         },
         {
             "varName": "household_size_pw_us_census",
-            "humanReadableName": "PW Household Size [US Census]",
+            "humanReadableName": "PW Household Size [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 170,
             "index": 285,
@@ -1378,7 +1378,7 @@ export default {
         },
         {
             "varName": "renter_us_census",
-            "humanReadableName": "Renter % [US Census]",
+            "humanReadableName": "Renter % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 172,
             "index": 466,
@@ -1402,7 +1402,7 @@ export default {
         },
         {
             "varName": "commute_car_us_census",
-            "humanReadableName": "Commute Car % [US Census]",
+            "humanReadableName": "Commute Car % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 175,
             "index": 507,
@@ -1418,7 +1418,7 @@ export default {
         },
         {
             "varName": "commute_bike_us_census",
-            "humanReadableName": "Commute Bike % [US Census]",
+            "humanReadableName": "Commute Bike % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 177,
             "index": 504,
@@ -1434,7 +1434,7 @@ export default {
         },
         {
             "varName": "commute_walk_us_census",
-            "humanReadableName": "Commute Walk % [US Census]",
+            "humanReadableName": "Commute Walk % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 179,
             "index": 513,
@@ -1450,7 +1450,7 @@ export default {
         },
         {
             "varName": "commute_transit_us_census",
-            "humanReadableName": "Commute Transit % [US Census]",
+            "humanReadableName": "Commute Transit % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 181,
             "index": 510,
@@ -1466,7 +1466,7 @@ export default {
         },
         {
             "varName": "commute_time_median_us_census",
-            "humanReadableName": "Median Commute Time (min) [US Census]",
+            "humanReadableName": "Median Commute Time (min) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 183,
             "index": 497,
@@ -1482,7 +1482,7 @@ export default {
         },
         {
             "varName": "commute_time_under_15_us_census",
-            "humanReadableName": "Commute Time < 15 min % [US Census]",
+            "humanReadableName": "Commute Time < 15 min % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 185,
             "index": 501,
@@ -1498,7 +1498,7 @@ export default {
         },
         {
             "varName": "commute_time_15_to_29_us_census",
-            "humanReadableName": "Commute Time 15 - 29 min % [US Census]",
+            "humanReadableName": "Commute Time 15 - 29 min % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 187,
             "index": 493,
@@ -1514,7 +1514,7 @@ export default {
         },
         {
             "varName": "commute_time_30_to_59_us_census",
-            "humanReadableName": "Commute Time 30 - 59 min % [US Census]",
+            "humanReadableName": "Commute Time 30 - 59 min % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 189,
             "index": 495,
@@ -1530,7 +1530,7 @@ export default {
         },
         {
             "varName": "commute_time_over_60_us_census",
-            "humanReadableName": "Commute Time > 60 min % [US Census]",
+            "humanReadableName": "Commute Time > 60 min % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 191,
             "index": 499,
@@ -1882,7 +1882,7 @@ export default {
         },
         {
             "varName": "industry_agriculture_forestry_fishing_us_census",
-            "humanReadableName": "Employed in Agriculture, forestry, fishing and hunting % [US Census]",
+            "humanReadableName": "Employed in Agriculture, forestry, fishing and hunting % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 235,
             "index": 305,
@@ -1898,7 +1898,7 @@ export default {
         },
         {
             "varName": "industry_mining_oil_gas_us_census",
-            "humanReadableName": "Employed in Mining, quarrying, and oil and gas extraction % [US Census]",
+            "humanReadableName": "Employed in Mining, quarrying, and oil and gas extraction % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 237,
             "index": 323,
@@ -1914,7 +1914,7 @@ export default {
         },
         {
             "varName": "industry_accommodation_food_us_census",
-            "humanReadableName": "Employed in Accommodation and food services % [US Census]",
+            "humanReadableName": "Employed in Accommodation and food services % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 239,
             "index": 301,
@@ -1930,7 +1930,7 @@ export default {
         },
         {
             "varName": "industry_arts_entertainment_us_census",
-            "humanReadableName": "Employed in Arts, entertainment, and recreation % [US Census]",
+            "humanReadableName": "Employed in Arts, entertainment, and recreation % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 241,
             "index": 307,
@@ -1946,7 +1946,7 @@ export default {
         },
         {
             "varName": "industry_construction_us_census",
-            "humanReadableName": "Employed in Construction % [US Census]",
+            "humanReadableName": "Employed in Construction % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 243,
             "index": 309,
@@ -1962,7 +1962,7 @@ export default {
         },
         {
             "varName": "industry_education_us_census",
-            "humanReadableName": "Employed in Educational services % [US Census]",
+            "humanReadableName": "Employed in Educational services % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 245,
             "index": 311,
@@ -1978,7 +1978,7 @@ export default {
         },
         {
             "varName": "industry_healthcare_social_us_census",
-            "humanReadableName": "Employed in Health care and social assistance % [US Census]",
+            "humanReadableName": "Employed in Health care and social assistance % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 247,
             "index": 315,
@@ -1994,7 +1994,7 @@ export default {
         },
         {
             "varName": "industry_finance_insurance_us_census",
-            "humanReadableName": "Employed in Finance and insurance % [US Census]",
+            "humanReadableName": "Employed in Finance and insurance % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 249,
             "index": 313,
@@ -2010,7 +2010,7 @@ export default {
         },
         {
             "varName": "industry_real_estate_rental_us_census",
-            "humanReadableName": "Employed in Real estate and rental and leasing % [US Census]",
+            "humanReadableName": "Employed in Real estate and rental and leasing % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 251,
             "index": 331,
@@ -2026,7 +2026,7 @@ export default {
         },
         {
             "varName": "industry_information_us_census",
-            "humanReadableName": "Employed in Information % [US Census]",
+            "humanReadableName": "Employed in Information % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 253,
             "index": 317,
@@ -2042,7 +2042,7 @@ export default {
         },
         {
             "varName": "industry_manufacturing_us_census",
-            "humanReadableName": "Employed in Manufacturing % [US Census]",
+            "humanReadableName": "Employed in Manufacturing % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 255,
             "index": 321,
@@ -2058,7 +2058,7 @@ export default {
         },
         {
             "varName": "industry_other_services_us_census",
-            "humanReadableName": "Employed in Other services, except public administration % [US Census]",
+            "humanReadableName": "Employed in Other services, except public administration % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 257,
             "index": 325,
@@ -2074,7 +2074,7 @@ export default {
         },
         {
             "varName": "industry_admin_support_waste_mgmt_us_census",
-            "humanReadableName": "Employed in Administrative and support and waste management services % [US Census]",
+            "humanReadableName": "Employed in Administrative and support and waste management services % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 259,
             "index": 303,
@@ -2090,7 +2090,7 @@ export default {
         },
         {
             "varName": "industry_management_us_census",
-            "humanReadableName": "Employed in Management of companies and enterprises % [US Census]",
+            "humanReadableName": "Employed in Management of companies and enterprises % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 261,
             "index": 319,
@@ -2106,7 +2106,7 @@ export default {
         },
         {
             "varName": "industry_professional_scientific_technical_us_census",
-            "humanReadableName": "Employed in Professional, scientific, and technical services % [US Census]",
+            "humanReadableName": "Employed in Professional, scientific, and technical services % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 263,
             "index": 327,
@@ -2122,7 +2122,7 @@ export default {
         },
         {
             "varName": "industry_public_admin_us_census",
-            "humanReadableName": "Employed in Public administration % [US Census]",
+            "humanReadableName": "Employed in Public administration % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 265,
             "index": 329,
@@ -2138,7 +2138,7 @@ export default {
         },
         {
             "varName": "industry_retail_trade_us_census",
-            "humanReadableName": "Employed in Retail trade % [US Census]",
+            "humanReadableName": "Employed in Retail trade % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 267,
             "index": 333,
@@ -2154,7 +2154,7 @@ export default {
         },
         {
             "varName": "industry_transportation_warehousing_us_census",
-            "humanReadableName": "Employed in Transportation and warehousing % [US Census]",
+            "humanReadableName": "Employed in Transportation and warehousing % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 269,
             "index": 335,
@@ -2170,7 +2170,7 @@ export default {
         },
         {
             "varName": "industry_utilities_us_census",
-            "humanReadableName": "Employed in Utilities % [US Census]",
+            "humanReadableName": "Employed in Utilities % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 271,
             "index": 337,
@@ -2186,7 +2186,7 @@ export default {
         },
         {
             "varName": "industry_wholesale_trade_us_census",
-            "humanReadableName": "Employed in Wholesale trade % [US Census]",
+            "humanReadableName": "Employed in Wholesale trade % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 273,
             "index": 339,
@@ -2522,7 +2522,7 @@ export default {
         },
         {
             "varName": "never_married_us_census",
-            "humanReadableName": "Never Married % [US Census]",
+            "humanReadableName": "Never Married % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 315,
             "index": 363,
@@ -2538,7 +2538,7 @@ export default {
         },
         {
             "varName": "married_us_census",
-            "humanReadableName": "Married (not divorced) % [US Census]",
+            "humanReadableName": "Married (not divorced) % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 317,
             "index": 361,
@@ -2554,7 +2554,7 @@ export default {
         },
         {
             "varName": "divorced_us_census",
-            "humanReadableName": "Divorced % [US Census]",
+            "humanReadableName": "Divorced % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 319,
             "index": 359,
@@ -3330,7 +3330,7 @@ export default {
         },
         {
             "varName": "density_pw_250m_us_census",
-            "humanReadableName": "PW Density (r=250m) [US Census]",
+            "humanReadableName": "PW Density (r=250m) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 416,
             "index": 82,
@@ -3346,7 +3346,7 @@ export default {
         },
         {
             "varName": "density_pw_250m_2010_us_census",
-            "humanReadableName": "PW Density (r=250m) (2010) [US Census]",
+            "humanReadableName": "PW Density (r=250m) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 418,
             "index": 84,
@@ -3362,7 +3362,7 @@ export default {
         },
         {
             "varName": "density_pw_250m_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=250m) Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=250m) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 420,
             "index": 88,
@@ -3378,7 +3378,7 @@ export default {
         },
         {
             "varName": "density_pw_250m_abs_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=250m) Absolute Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=250m) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 422,
             "index": 86,
@@ -3418,7 +3418,7 @@ export default {
         },
         {
             "varName": "density_pw_500m_us_census",
-            "humanReadableName": "PW Density (r=500m) [US Census]",
+            "humanReadableName": "PW Density (r=500m) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 427,
             "index": 89,
@@ -3434,7 +3434,7 @@ export default {
         },
         {
             "varName": "density_pw_500m_2010_us_census",
-            "humanReadableName": "PW Density (r=500m) (2010) [US Census]",
+            "humanReadableName": "PW Density (r=500m) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 429,
             "index": 91,
@@ -3450,7 +3450,7 @@ export default {
         },
         {
             "varName": "density_pw_500m_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=500m) Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=500m) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 431,
             "index": 95,
@@ -3466,7 +3466,7 @@ export default {
         },
         {
             "varName": "density_pw_500m_abs_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=500m) Absolute Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=500m) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 433,
             "index": 93,
@@ -3506,7 +3506,7 @@ export default {
         },
         {
             "varName": "density_pw_1mi_us_census",
-            "humanReadableName": "PW Density (r=1mi) [US Census]",
+            "humanReadableName": "PW Density (r=1mi) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 438,
             "index": 97,
@@ -3530,7 +3530,7 @@ export default {
         },
         {
             "varName": "density_pw_1mi_2010_us_census",
-            "humanReadableName": "PW Density (r=1mi) (2010) [US Census]",
+            "humanReadableName": "PW Density (r=1mi) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 441,
             "index": 99,
@@ -3546,7 +3546,7 @@ export default {
         },
         {
             "varName": "density_pw_1mi_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=1mi) Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=1mi) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 443,
             "index": 103,
@@ -3562,7 +3562,7 @@ export default {
         },
         {
             "varName": "density_pw_1mi_abs_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=1mi) Absolute Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=1mi) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 445,
             "index": 101,
@@ -3602,7 +3602,7 @@ export default {
         },
         {
             "varName": "density_pw_2km_us_census",
-            "humanReadableName": "PW Density (r=2km) [US Census]",
+            "humanReadableName": "PW Density (r=2km) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 450,
             "index": 117,
@@ -3626,7 +3626,7 @@ export default {
         },
         {
             "varName": "density_pw_2km_2010_us_census",
-            "humanReadableName": "PW Density (r=2km) (2010) [US Census]",
+            "humanReadableName": "PW Density (r=2km) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 453,
             "index": 119,
@@ -3642,7 +3642,7 @@ export default {
         },
         {
             "varName": "density_pw_2km_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=2km) Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=2km) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 455,
             "index": 123,
@@ -3658,7 +3658,7 @@ export default {
         },
         {
             "varName": "density_pw_2km_abs_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=2km) Absolute Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=2km) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 457,
             "index": 121,
@@ -3698,7 +3698,7 @@ export default {
         },
         {
             "varName": "density_pw_4km_us_census",
-            "humanReadableName": "PW Density (r=4km) [US Census]",
+            "humanReadableName": "PW Density (r=4km) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 462,
             "index": 131,
@@ -3722,7 +3722,7 @@ export default {
         },
         {
             "varName": "density_pw_4km_2010_us_census",
-            "humanReadableName": "PW Density (r=4km) (2010) [US Census]",
+            "humanReadableName": "PW Density (r=4km) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 465,
             "index": 133,
@@ -3738,7 +3738,7 @@ export default {
         },
         {
             "varName": "density_pw_4km_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=4km) Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=4km) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 467,
             "index": 137,
@@ -3754,7 +3754,7 @@ export default {
         },
         {
             "varName": "density_pw_4km_abs_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=4km) Absolute Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=4km) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 469,
             "index": 135,
@@ -3794,7 +3794,7 @@ export default {
         },
         {
             "varName": "density_pw_8km_us_census",
-            "humanReadableName": "PW Density (r=8km) [US Census]",
+            "humanReadableName": "PW Density (r=8km) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 474,
             "index": 145,
@@ -3818,7 +3818,7 @@ export default {
         },
         {
             "varName": "density_pw_8km_2010_us_census",
-            "humanReadableName": "PW Density (r=8km) (2010) [US Census]",
+            "humanReadableName": "PW Density (r=8km) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 477,
             "index": 147,
@@ -3834,7 +3834,7 @@ export default {
         },
         {
             "varName": "density_pw_8km_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=8km) Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=8km) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 479,
             "index": 151,
@@ -3850,7 +3850,7 @@ export default {
         },
         {
             "varName": "density_pw_8km_abs_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=8km) Absolute Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=8km) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 481,
             "index": 149,
@@ -3890,7 +3890,7 @@ export default {
         },
         {
             "varName": "density_pw_16km_us_census",
-            "humanReadableName": "PW Density (r=16km) [US Census]",
+            "humanReadableName": "PW Density (r=16km) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 486,
             "index": 104,
@@ -3914,7 +3914,7 @@ export default {
         },
         {
             "varName": "density_pw_16km_2010_us_census",
-            "humanReadableName": "PW Density (r=16km) (2010) [US Census]",
+            "humanReadableName": "PW Density (r=16km) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 489,
             "index": 106,
@@ -3930,7 +3930,7 @@ export default {
         },
         {
             "varName": "density_pw_16km_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=16km) Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=16km) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 491,
             "index": 110,
@@ -3946,7 +3946,7 @@ export default {
         },
         {
             "varName": "density_pw_16km_abs_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=16km) Absolute Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=16km) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 493,
             "index": 108,
@@ -3986,7 +3986,7 @@ export default {
         },
         {
             "varName": "density_pw_32km_us_census",
-            "humanReadableName": "PW Density (r=32km) [US Census]",
+            "humanReadableName": "PW Density (r=32km) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 498,
             "index": 124,
@@ -4010,7 +4010,7 @@ export default {
         },
         {
             "varName": "density_pw_32km_2010_us_census",
-            "humanReadableName": "PW Density (r=32km) (2010) [US Census]",
+            "humanReadableName": "PW Density (r=32km) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 501,
             "index": 126,
@@ -4026,7 +4026,7 @@ export default {
         },
         {
             "varName": "density_pw_32km_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=32km) Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=32km) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 503,
             "index": 130,
@@ -4042,7 +4042,7 @@ export default {
         },
         {
             "varName": "density_pw_32km_abs_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=32km) Absolute Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=32km) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 505,
             "index": 128,
@@ -4082,7 +4082,7 @@ export default {
         },
         {
             "varName": "density_pw_64km_us_census",
-            "humanReadableName": "PW Density (r=64km) [US Census]",
+            "humanReadableName": "PW Density (r=64km) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 510,
             "index": 138,
@@ -4106,7 +4106,7 @@ export default {
         },
         {
             "varName": "density_pw_64km_2010_us_census",
-            "humanReadableName": "PW Density (r=64km) (2010) [US Census]",
+            "humanReadableName": "PW Density (r=64km) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 513,
             "index": 140,
@@ -4122,7 +4122,7 @@ export default {
         },
         {
             "varName": "density_pw_64km_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=64km) Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=64km) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 515,
             "index": 144,
@@ -4138,7 +4138,7 @@ export default {
         },
         {
             "varName": "density_pw_64km_abs_change_2010_2020_us_census",
-            "humanReadableName": "PW Density (r=64km) Absolute Change (2010-2020) [US Census]",
+            "humanReadableName": "PW Density (r=64km) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 517,
             "index": 142,
@@ -4178,7 +4178,7 @@ export default {
         },
         {
             "varName": "density_pw_median_1km_us_census",
-            "humanReadableName": "PW Median Density (r=1km) [US Census]",
+            "humanReadableName": "PW Median Density (r=1km) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 522,
             "index": 365,
@@ -4202,7 +4202,7 @@ export default {
         },
         {
             "varName": "density_pw_median_1km_2010_us_census",
-            "humanReadableName": "PW Median Density (r=1km) (2010) [US Census]",
+            "humanReadableName": "PW Median Density (r=1km) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 525,
             "index": 367,

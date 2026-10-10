@@ -13,9 +13,9 @@ urbanstatsFixture('statistic page title', `${target}/statistic.html?uss=${encode
 test('title follows the table', async (t) => {
     await t.expect(documentTitle()).eql('PW Density (r=1km)')
     // The title is read out of the script, so an edit that never navigates still has to move it.
-    await replaceInput(t, 'PW Density (r=1km)', 'Population [US Census]')
+    await replaceInput(t, 'PW Density (r=1km)', 'Population [National Census]')
     await waitForLoading()
-    await t.expect(documentTitle()).eql('Population [US Census]')
+    await t.expect(documentTitle()).eql('Population [National Census]')
 })
 
 urbanstatsFixture('statistic.html default page', `${target}/statistic.html`)
@@ -50,7 +50,7 @@ test('statistics-page', async (t) => {
         .withText(/Indianapolis IN HRR, USA/)
     await t.expect(count.count).gte(1, 'Need highlighting')
     await t
-        .click(Selector('a').withText(/^What is Population \[US Census\]\?$/))
+        .click(Selector('a').withText(/^What is Population \[National Census\]\?$/))
     await t.expect(getLocation())
         .eql(`${target}/data-credit.html#explanation_population`)
 })
@@ -368,7 +368,7 @@ test('edit starting from a statname page works', async (t) => {
     await t.expect(getLocation()).notContains('uss=')
     await t.expect(await dataValues()).eql(populations)
     // replace Population with White %
-    await replaceInput(t, 'Population [US Census]', 'Hispanic %')
+    await replaceInput(t, 'Population [National Census]', 'Hispanic %')
     await waitForLoading()
     // should be uss now that we've made a change
     await t.expect(getLocation()).contains('uss=')
@@ -1152,7 +1152,7 @@ test('forward back navigation works', async (t) => {
 
     async function assertCounties(): Promise<void> {
         await t.expect(Selector('.headertext').textContent).eql('Counties')
-        await t.expect(Selector('.subheadertext').textContent).eql('Population [US Census]')
+        await t.expect(Selector('.subheadertext').textContent).eql('Population [National Census]')
         await waitForLoading()
         await t.expect(await getElements()).eql([
             'Los Angeles County, California, USA',
@@ -1253,10 +1253,10 @@ test('add column then navigate', async (t) => {
     await addColumn(t, 'density')
     await goBack()
     await waitForLoading()
-    await t.expect(Selector('.subheadertext').textContent).eql('Population [US Census]')
+    await t.expect(Selector('.subheadertext').textContent).eql('Population [National Census]')
     await goForward()
     await waitForLoading()
-    await t.expect(Selector('.subheadertext').textContent).eql('Population [US Census], PW Density (r=1km)')
+    await t.expect(Selector('.subheadertext').textContent).eql('Population [National Census], PW Density (r=1km)')
 })
 
 urbanstatsFixture('custom node, x = 1', `${target}/statistic.html?uss=customNode%28%22x+%3D+1%5Cn%22%29&article_type=Subnational+Region&start=1&amount=20&universe=USA&edit=true`)
