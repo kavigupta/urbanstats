@@ -11,6 +11,9 @@ from urbanstats.statistics.collections.census_australia import CensusAustralia
 from urbanstats.statistics.collections.census_australia_education import (
     census_australia_education,
 )
+from urbanstats.statistics.collections.census_australia_income import (
+    CensusAustraliaIncomeIndividual,
+)
 from urbanstats.statistics.collections.census_australia_religion import (
     CensusAustraliaReligion,
 )
@@ -158,6 +161,7 @@ statistic_collections = (
     *census_australia_same_as_us,
     *census_australia_education,
     CensusAustraliaReligion(),
+    CensusAustraliaIncomeIndividual(),
     CensusCanadaRace(),
     CensusCanadaCitizenship(),
     CensusCanadaLanguage(),

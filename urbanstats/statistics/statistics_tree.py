@@ -970,6 +970,12 @@ statistics_tree = StatisticTree(
                         "individual_income_above_100_cad",
                         source=population_canada,
                     ),
+                    just_2020(
+                        "individual_income_under_52k_australia",
+                        "individual_income_52k_to_104k_australia",
+                        "individual_income_over_104k_australia",
+                        source=population_australia,
+                    ),
                 ),
             },
         ),
