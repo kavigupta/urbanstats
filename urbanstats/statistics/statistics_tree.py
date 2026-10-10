@@ -537,6 +537,27 @@ def just_2020_multi_source(
     }
 
 
+def just_2020_canada_multi_source(
+    *canada_col_names: str, year: int = 2020
+) -> Dict[str, StatisticGroup]:
+    """Like just_2020_multi_source, for statistics the US does not have, named after the Canadian column."""
+    return {
+        col_name: StatisticGroup(
+            {
+                year: [
+                    MultiSource(
+                        {population_canada: col_name},
+                        col_name,
+                        indented_name="2020",
+                    )
+                ]
+            },
+            group_name_statcol=col_name,
+        )
+        for col_name in canada_col_names
+    }
+
+
 def just_2020_category(
     cat_key: str, cat_name: str, *col_names: str, source: Source, year: int = 2020
 ) -> Dict[str, StatisticCategory]:
@@ -798,7 +819,7 @@ statistics_tree = StatisticTree(
         "religion": StatisticCategory(
             name="Religion",
             contents={
-                **just_2020(
+                **just_2020_canada_multi_source(
                     "religion_no_religion_canada",
                     "religion_catholic_canada",
                     "religion_protestant_canada",
@@ -808,7 +829,6 @@ statistics_tree = StatisticTree(
                     "religion_sikh_canada",
                     "religion_buddhist_canada",
                     "religion_other_canada",
-                    source=population_canada,
                 ),
             },
         ),
