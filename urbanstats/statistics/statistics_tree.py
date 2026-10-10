@@ -954,6 +954,12 @@ statistics_tree = StatisticTree(
                         "household_income_above_100_cad",
                         source=population_canada,
                     ),
+                    just_2020(
+                        "household_income_under_52k_australia",
+                        "household_income_52k_to_104k_australia",
+                        "household_income_over_104k_australia",
+                        source=population_australia,
+                    ),
                 ),
                 **in_subcategory(
                     "individual_income",
