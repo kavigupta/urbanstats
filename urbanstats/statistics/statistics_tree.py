@@ -330,8 +330,7 @@ population_census = Source(
     "National Census",
     is_default=True,
     priority=1,
-    # kept from when this was the US Census, so variable names don't change
-    variable_suffix="us_census",
+    variable_suffix="census",
 )
 population_canada = Source(
     "Population",
