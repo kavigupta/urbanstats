@@ -1,4 +1,4 @@
-export type LegacyStatName = never | "Born outside US %" | "Commute Car %" | "Commute Bike %" | "Commute Walk %" | "Commute Transit %" | "Commute Work From Home %" | "Agriculture, forestry, fishing and hunting %" | "Mining, quarrying, and oil and gas extraction %" | "Accommodation and food services %" | "Arts, entertainment, and recreation %" | "Construction %" | "Educational services %" | "Health care and social assistance %" | "Finance and insurance %" | "Real estate and rental and leasing %" | "Information %" | "Manufacturing %" | "Other services, except public administration %" | "Administrative and support and waste management services %" | "Management of companies and enterprises %" | "Professional, scientific, and technical services %" | "Public administration %" | "Retail trade %" | "Transportation and warehousing %" | "Utilities %" | "Wholesale trade %" | "Non-humid days (50\u00b0F < dewpt < 70\u00b0F) %";
+export type LegacyStatName = never | "Born outside US %" | "Commute Car %" | "Commute Bike %" | "Commute Walk %" | "Commute Transit %" | "Commute Work From Home %" | "Agriculture, forestry, fishing and hunting %" | "Mining, quarrying, and oil and gas extraction %" | "Accommodation and food services %" | "Arts, entertainment, and recreation %" | "Construction %" | "Educational services %" | "Health care and social assistance %" | "Finance and insurance %" | "Real estate and rental and leasing %" | "Information %" | "Manufacturing %" | "Other services, except public administration %" | "Administrative and support and waste management services %" | "Management of companies and enterprises %" | "Professional, scientific, and technical services %" | "Public administration %" | "Retail trade %" | "Transportation and warehousing %" | "Utilities %" | "Wholesale trade %" | "Non-humid days (50\u00b0F < dewpt < 70\u00b0F) %" | "Catholic % [StatCan]" | "Protestant (non-Catholic Christian) % [StatCan]" | "Hindu % [StatCan]" | "Jewish % [StatCan]" | "Muslim % [StatCan]" | "Sikh % [StatCan]" | "Buddhist % [StatCan]" | "No religion % [StatCan]" | "Other religion % [StatCan]";
 export const whatOldQuizzesMeantBy: Record<LegacyStatName, string> = {
     "Born outside US %": "Born outside country %",
     "Commute Car %": "Commute Car % (incl WFH)",
@@ -26,5 +26,14 @@ export const whatOldQuizzesMeantBy: Record<LegacyStatName, string> = {
     "Transportation and warehousing %": "Employed in Transportation and warehousing %",
     "Utilities %": "Employed in Utilities %",
     "Wholesale trade %": "Employed in Wholesale trade %",
-    "Non-humid days (50\u00b0F < dewpt < 70\u00b0F) %": "Non-humid, Non-dry days (50\u00b0F < dewpt < 70\u00b0F) %"
+    "Non-humid days (50\u00b0F < dewpt < 70\u00b0F) %": "Non-humid, Non-dry days (50\u00b0F < dewpt < 70\u00b0F) %",
+    "Catholic % [StatCan]": "Catholic %",
+    "Protestant (non-Catholic Christian) % [StatCan]": "Protestant (non-Catholic Christian) %",
+    "Hindu % [StatCan]": "Hindu %",
+    "Jewish % [StatCan]": "Jewish %",
+    "Muslim % [StatCan]": "Muslim %",
+    "Sikh % [StatCan]": "Sikh %",
+    "Buddhist % [StatCan]": "Buddhist %",
+    "No religion % [StatCan]": "No religion %",
+    "Other religion % [StatCan]": "Other religion %"
 };

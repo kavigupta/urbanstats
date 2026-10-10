@@ -738,7 +738,7 @@ export default {
         },
         {
             "varName": "religion_no",
-            "humanReadableName": "No religion % [StatCan]",
+            "humanReadableName": "No religion %",
             "comesFromMultiSourceSet": false,
             "order": 92,
             "index": 452,
@@ -746,7 +746,7 @@ export default {
         },
         {
             "varName": "religion_catholic",
-            "humanReadableName": "Catholic % [StatCan]",
+            "humanReadableName": "Catholic %",
             "comesFromMultiSourceSet": false,
             "order": 93,
             "index": 448,
@@ -754,7 +754,7 @@ export default {
         },
         {
             "varName": "religion_protestant",
-            "humanReadableName": "Protestant (non-Catholic Christian) % [StatCan]",
+            "humanReadableName": "Protestant (non-Catholic Christian) %",
             "comesFromMultiSourceSet": false,
             "order": 94,
             "index": 454,
@@ -762,7 +762,7 @@ export default {
         },
         {
             "varName": "religion_hindu",
-            "humanReadableName": "Hindu % [StatCan]",
+            "humanReadableName": "Hindu %",
             "comesFromMultiSourceSet": false,
             "order": 95,
             "index": 449,
@@ -770,7 +770,7 @@ export default {
         },
         {
             "varName": "religion_jewish",
-            "humanReadableName": "Jewish % [StatCan]",
+            "humanReadableName": "Jewish %",
             "comesFromMultiSourceSet": false,
             "order": 96,
             "index": 450,
@@ -778,7 +778,7 @@ export default {
         },
         {
             "varName": "religion_muslim",
-            "humanReadableName": "Muslim % [StatCan]",
+            "humanReadableName": "Muslim %",
             "comesFromMultiSourceSet": false,
             "order": 97,
             "index": 451,
@@ -786,7 +786,7 @@ export default {
         },
         {
             "varName": "religion_sikh",
-            "humanReadableName": "Sikh % [StatCan]",
+            "humanReadableName": "Sikh %",
             "comesFromMultiSourceSet": false,
             "order": 98,
             "index": 455,
@@ -794,7 +794,7 @@ export default {
         },
         {
             "varName": "religion_buddhist",
-            "humanReadableName": "Buddhist % [StatCan]",
+            "humanReadableName": "Buddhist %",
             "comesFromMultiSourceSet": false,
             "order": 99,
             "index": 447,
@@ -802,7 +802,7 @@ export default {
         },
         {
             "varName": "religion_other",
-            "humanReadableName": "Other religion % [StatCan]",
+            "humanReadableName": "Other religion %",
             "comesFromMultiSourceSet": false,
             "order": 100,
             "index": 453,
