@@ -810,24 +810,24 @@ export default {
         },
         {
             "varName": "high_school_us_census",
-            "humanReadableName": "High School %",
-            "comesFromMultiSourceSet": false,
+            "humanReadableName": "High School % [US Census]",
+            "comesFromMultiSourceSet": true,
             "order": 101,
             "index": 227,
             "deprecated": null
         },
         {
             "varName": "undergrad_us_census",
-            "humanReadableName": "Undergrad %",
-            "comesFromMultiSourceSet": false,
+            "humanReadableName": "Undergrad % [US Census]",
+            "comesFromMultiSourceSet": true,
             "order": 102,
             "index": 229,
             "deprecated": null
         },
         {
             "varName": "graduate_us_census",
-            "humanReadableName": "Grad %",
-            "comesFromMultiSourceSet": false,
+            "humanReadableName": "Grad % [US Census]",
+            "comesFromMultiSourceSet": true,
             "order": 103,
             "index": 225,
             "deprecated": null
@@ -857,25 +857,25 @@ export default {
             "deprecated": null
         },
         {
-            "varName": "stem_degree",
-            "humanReadableName": "Undergrad STEM %",
-            "comesFromMultiSourceSet": false,
+            "varName": "stem_degree_us_census",
+            "humanReadableName": "Undergrad STEM % [US Census]",
+            "comesFromMultiSourceSet": true,
             "order": 107,
             "index": 223,
             "deprecated": null
         },
         {
-            "varName": "humanities_degree",
-            "humanReadableName": "Undergrad Humanities %",
-            "comesFromMultiSourceSet": false,
+            "varName": "humanities_degree_us_census",
+            "humanReadableName": "Undergrad Humanities % [US Census]",
+            "comesFromMultiSourceSet": true,
             "order": 108,
             "index": 221,
             "deprecated": null
         },
         {
-            "varName": "business_degree",
-            "humanReadableName": "Undergrad Business %",
-            "comesFromMultiSourceSet": false,
+            "varName": "business_degree_us_census",
+            "humanReadableName": "Undergrad Business % [US Census]",
+            "comesFromMultiSourceSet": true,
             "order": 109,
             "index": 219,
             "deprecated": null
@@ -4509,6 +4509,60 @@ export default {
                     "spanish_statcan"
                 ],
                 "humanReadableName": "Spanish at Home %"
+            }
+        ],
+        [
+            "high_school",
+            {
+                "individualVariables": [
+                    "high_school_us_census"
+                ],
+                "humanReadableName": "High School %"
+            }
+        ],
+        [
+            "undergrad",
+            {
+                "individualVariables": [
+                    "undergrad_us_census"
+                ],
+                "humanReadableName": "Undergrad %"
+            }
+        ],
+        [
+            "graduate",
+            {
+                "individualVariables": [
+                    "graduate_us_census"
+                ],
+                "humanReadableName": "Grad %"
+            }
+        ],
+        [
+            "stem_degree",
+            {
+                "individualVariables": [
+                    "stem_degree_us_census"
+                ],
+                "humanReadableName": "Undergrad STEM %"
+            }
+        ],
+        [
+            "humanities_degree",
+            {
+                "individualVariables": [
+                    "humanities_degree_us_census"
+                ],
+                "humanReadableName": "Undergrad Humanities %"
+            }
+        ],
+        [
+            "business_degree",
+            {
+                "individualVariables": [
+                    "business_degree_us_census"
+                ],
+                "humanReadableName": "Undergrad Business %"
             }
         ],
         [

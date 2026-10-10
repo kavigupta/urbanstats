@@ -256,7 +256,9 @@ def multi_source_statistics() -> Iterable[Any]:
         for group in cat.contents.values():
             for by_year in group.by_year.values():
                 for stat in by_year:
-                    if len(stat.by_source) == 1:
+                    # a single source can still be named as a multi-source statistic, so that
+                    # its variable names do not change when another source is added
+                    if len(stat.by_source) == 1 and stat.multi_source_colname is None:
                         continue
                     yield stat
 
