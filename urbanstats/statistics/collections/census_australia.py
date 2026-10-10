@@ -14,7 +14,7 @@ class CensusAustralia(CensusBasicsMixin, AustraliaStatistics):
     version = 1
 
     suffix = "australia"
-    source_name = "ABS"
+    source_name = "AuBS"
     explanation_page = "australian-census"
     census_years = (2021,)
     varname_year_suffix = {2021: ""}

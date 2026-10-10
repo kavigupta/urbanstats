@@ -50,17 +50,24 @@ class CensusCanadaReligion(CanadaStatistics):
             "population",
         )
 
-    def name_for_each_statistic(self):
+    def legacy_statistic_names(self):
         return {
-            "religion_catholic_canada": "Catholic % [StatCan]",
-            "religion_protestant_canada": "Protestant (non-Catholic Christian) % [StatCan]",
-            "religion_hindu_canada": "Hindu % [StatCan]",
-            "religion_jewish_canada": "Jewish % [StatCan]",
-            "religion_muslim_canada": "Muslim % [StatCan]",
-            "religion_sikh_canada": "Sikh % [StatCan]",
-            "religion_buddhist_canada": "Buddhist % [StatCan]",
-            "religion_no_religion_canada": "No religion % [StatCan]",
-            "religion_other_canada": "Other religion % [StatCan]",
+            f"{name} [StatCan]": name
+            for name in self.name_for_each_statistic().values()
+        }
+
+    def name_for_each_statistic(self):
+        # no source tag, as these name rows that other countries' sources share
+        return {
+            "religion_catholic_canada": "Catholic %",
+            "religion_protestant_canada": "Protestant (non-Catholic Christian) %",
+            "religion_hindu_canada": "Hindu %",
+            "religion_jewish_canada": "Jewish %",
+            "religion_muslim_canada": "Muslim %",
+            "religion_sikh_canada": "Sikh %",
+            "religion_buddhist_canada": "Buddhist %",
+            "religion_no_religion_canada": "No religion %",
+            "religion_other_canada": "Other religion %",
         }
 
     def unit_for_each_statistic(self):

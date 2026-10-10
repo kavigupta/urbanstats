@@ -54,7 +54,7 @@ class CensusAustraliaSameAsUS(SameAsUS, CensusAustraliaSA1):
     """Columns are US statistic names, unless post_process is overridden to derive them."""
 
     name_suffix = "australia"
-    source_tag = "ABS"
+    source_tag = "AuBS"
 
     def post_process(self, statistic_table):
         return super().post_process(statistic_table.rename(columns=self.remap_name))

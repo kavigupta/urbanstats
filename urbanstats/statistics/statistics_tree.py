@@ -340,7 +340,7 @@ population_australia = Source(
     "Australian Census",
     is_default=True,
     priority=3,
-    variable_suffix="abs",
+    variable_suffix="aubs",
 )
 population_ghsl = Source(
     "Population", "GHSL", is_default=False, priority=10, variable_suffix="ghsl"
@@ -546,6 +546,38 @@ def just_2020_multi_source(
             group_name_statcol=col_name,
         )
         for col_name in col_names
+    }
+
+
+def just_2020_canada_multi_source(
+    *canada_col_names: str, year: int = 2020, australia: bool = False
+) -> Dict[str, StatisticGroup]:
+    """Like just_2020_multi_source, for statistics the US does not have, named after the Canadian column."""
+    return {
+        col_name: StatisticGroup(
+            {
+                year: [
+                    MultiSource(
+                        {
+                            population_canada: col_name,
+                            **(
+                                {
+                                    population_australia: col_name.replace(
+                                        "_canada", "_australia"
+                                    )
+                                }
+                                if australia
+                                else {}
+                            ),
+                        },
+                        col_name,
+                        indented_name="2020",
+                    )
+                ]
+            },
+            group_name_statcol=col_name,
+        )
+        for col_name in canada_col_names
     }
 
 
@@ -821,7 +853,7 @@ statistics_tree = StatisticTree(
         "religion": StatisticCategory(
             name="Religion",
             contents={
-                **just_2020(
+                **just_2020_canada_multi_source(
                     "religion_no_religion_canada",
                     "religion_catholic_canada",
                     "religion_protestant_canada",
@@ -831,7 +863,7 @@ statistics_tree = StatisticTree(
                     "religion_sikh_canada",
                     "religion_buddhist_canada",
                     "religion_other_canada",
-                    source=population_canada,
+                    australia=True,
                 ),
             },
         ),
