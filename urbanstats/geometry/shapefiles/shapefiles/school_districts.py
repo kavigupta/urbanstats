@@ -5,8 +5,8 @@ import pandas as pd
 from permacache import permacache
 
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
@@ -48,7 +48,7 @@ SCHOOL_DISTRICTS = Shapefile(
     # So e.g., elementary districts can overlap with high school districts
     does_overlap_self=True,
     universe_provider=us_domestic_provider(),
-    subset_masks={"USA": SelfSubset()},
+    source_countries=InCountry("USA"),
     abbreviation="SCLD",
     data_credit=dict(
         linkText="US Census",

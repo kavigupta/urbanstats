@@ -167,7 +167,7 @@ class CanadaStatistics(StatisticCollection):
 def compute_subset_statistics(
     shapefile, existing_statistics, shapefile_table, *, subset, compute_function
 ):
-    if subset not in shapefile.subset_masks:
+    if subset not in shapefile.source_country_list:
         return False, {}
 
     shapefile_subset = shapefile.subset_shapefile(subset)

@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional
 
-from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset, SelfSubset
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
+from urbanstats.geometry.shapefiles.source_countries import ByRow, InCountry
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.universe.universe_list import all_universes
@@ -13,7 +13,11 @@ def data_source_countries() -> List[str]:
     shapefile can be subsetted to.
     """
     return sorted(
-        {name for shapefile in shapefiles.values() for name in shapefile.subset_masks}
+        {
+            name
+            for shapefile in shapefiles.values()
+            for name in shapefile.source_country_list
+        }
     )
 
 
@@ -54,18 +58,15 @@ def geography_data_source_country() -> Dict[str, str]:
     countries = set(data_source_countries())
     result = {}
     for shapefile in shapefiles.values():
-        masks = shapefile.subset_masks
-        if len(masks) == 1 and all(
-            isinstance(subset, SelfSubset) for subset in masks.values()
-        ):
-            [country] = masks
+        if isinstance(shapefile.source_countries, InCountry):
+            country = shapefile.source_countries.country
             assert country in countries, country
             result[shapefile.meta["type"]] = country
     return result
 
 
 def cross_source_border_types() -> Dict[str, Dict[str, Any]]:
-    _check_declarations_match_subset_masks()
+    _check_declarations_match_source_countries()
     result = {
         shapefile.meta["type"]: {
             "alternativeGeographyTypes": list(
@@ -89,23 +90,19 @@ def _can_straddle(shapefile) -> bool:
     )
 
 
-def _has_filtering_subset(shapefile) -> bool:
-    return any(
-        isinstance(subset, FilteringSubset)
-        for subset in shapefile.subset_masks.values()
-    )
+def _has_source_countries_by_row(shapefile) -> bool:
+    return isinstance(shapefile.source_countries, ByRow)
 
 
-def _check_declarations_match_subset_masks() -> None:
+def _check_declarations_match_source_countries() -> None:
     """
-    A region can only go missing from a statistic if that statistic is computed on a
-    *filtered* subset of the shapefile: where the subset mask covers the whole shapefile,
-    every region is inside the country and nothing is dropped.
+    A region can only go missing from a statistic if its source countries vary by region:
+    where every region is in one country (InCountry), nothing is dropped.
     """
     for shapefile in shapefiles.values():
         typ = shapefile.meta["type"]
         declared = shapefile.cross_source_borders is not None
-        if _has_filtering_subset(shapefile):
+        if _has_source_countries_by_row(shapefile):
             assert declared, (
                 f"{typ} computes single-country statistics on a filtered subset of itself,"
                 f" so it must set cross_source_borders to say whether that can leave one of"
@@ -113,8 +110,8 @@ def _check_declarations_match_subset_masks() -> None:
             )
         else:
             assert not declared, (
-                f"{typ} sets cross_source_borders, but none of its subset masks filter"
-                f" anything out, so no region of this type can go missing"
+                f"{typ} sets cross_source_borders, but all of its regions are in one country,"
+                f" so no region of this type can go missing"
             )
 
 

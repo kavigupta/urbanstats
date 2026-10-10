@@ -1,11 +1,11 @@
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
     extract_country_longname,
 )
+from urbanstats.geometry.shapefiles.source_countries import ByRow, source_countries_from
 from urbanstats.special_cases.country import countries
 from urbanstats.special_cases.country_names import iso_to_country
 from urbanstats.universe.universe_provider.combined_universe_provider import (
@@ -31,12 +31,10 @@ COUNTRIES = Shapefile(
             SelfUniverseProvider(),
         ]
     ),
-    subset_masks={
-        "USA": FilteringSubset("USA", lambda x: extract_country_longname(x) == "USA"),
-        "Canada": FilteringSubset(
-            "Canada", lambda x: extract_country_longname(x) == "Canada"
-        ),
-    },
+    source_countries=ByRow(
+        {"USA": "USA", "Canada": "Canada"},
+        lambda x: source_countries_from([extract_country_longname(x)]),
+    ),
     cross_source_borders=CrossSourceBorders(can_straddle=False),
     abbreviation="CTRY",
     data_credit=SUBNATIONAL_REGIONS.data_credit,

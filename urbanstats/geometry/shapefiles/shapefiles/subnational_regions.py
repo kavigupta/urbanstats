@@ -3,7 +3,7 @@ import us
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
+from urbanstats.geometry.shapefiles.source_countries import ByRow, source_countries_from
 from urbanstats.special_cases.country import subnational_regions
 from urbanstats.special_cases.country_names import iso_to_country
 from urbanstats.universe.universe_provider.combined_universe_provider import (
@@ -45,6 +45,14 @@ def compute_geoid(row):
     return st.fips
 
 
+def subnational_source_countries(x):
+    """US territories, e.g. Puerto Rico, are not in the USA's statistics."""
+    country = extract_country_longname(x)
+    if country == "USA" and not valid_state(x.NAME):
+        return None
+    return source_countries_from([country])
+
+
 SUBNATIONAL_REGIONS = Shapefile(
     hash_key="subnational_regions_15",
     path=subnational_regions,
@@ -65,15 +73,10 @@ SUBNATIONAL_REGIONS = Shapefile(
     universe_provider=CombinedUniverseProvider(
         [*INTERNATIONAL_PROVIDERS, STATE_PROVIDER, PROVINCE_PROVIDER]
     ),
-    subset_masks={
-        "USA": FilteringSubset(
-            "State",
-            lambda x: extract_country_longname(x) == "USA" and valid_state(x.NAME),
-        ),
-        "Canada": FilteringSubset(
-            "Province", lambda x: extract_country_longname(x) == "Canada"
-        ),
-    },
+    source_countries=ByRow(
+        {"USA": "State", "Canada": "Province"},
+        subnational_source_countries,
+    ),
     cross_source_borders=CrossSourceBorders(can_straddle=False),
     abbreviation="SUBN",
     data_credit=[

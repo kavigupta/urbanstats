@@ -1,6 +1,6 @@
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.geometry.shapefiles.utils import name_components
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
@@ -19,7 +19,7 @@ def csa_or_msa(hash_key, typ, census_name, wikidata_sourcer, path):
         meta=dict(type=typ, source="Census", type_category="Census"),
         does_overlap_self=False,
         universe_provider=us_domestic_provider(),
-        subset_masks={"USA": SelfSubset()},
+        source_countries=InCountry("USA"),
         abbreviation=typ,
         data_credit=dict(
             linkText="US Census",

@@ -25,7 +25,8 @@ class Shapefile:
     chunk_size = attr.ib(default=None)
     special_data_sources = attr.ib(default=attr.Factory(dict))
     universe_provider = attr.ib(kw_only=True)
-    subset_masks = attr.ib(default=attr.Factory(dict))
+    # Optional[SourceCountries], for shapefiles with regions a source country's statistics cover
+    source_countries = attr.ib(default=None)
     cross_source_borders: Optional[CrossSourceBorders] = attr.ib(
         kw_only=True, default=None
     )
@@ -69,8 +70,8 @@ class Shapefile:
         s = s[s.apply(self.filter, axis=1)]
         if s.shape[0] == 0:
             raise EmptyShapefileError
-        for subset_name, subset in self.subset_masks.items():
-            subset.mutate_table(subset_name, s)
+        for country in self.source_country_list:
+            s[subset_mask_key(country)] = self.source_countries.mask(s, country)
         for k, v in self.additional_columns_computer.items():
             s[k] = s.apply(v, axis=1)
 
@@ -133,19 +134,23 @@ class Shapefile:
         s.longname_sans_date = s.longname_sans_date.fillna(s.longname)
         return s
 
-    def subset_shapefile(self, subset_name):
-        subset = self.subset_masks[subset_name]
-        return subset.apply_to_shapefile(subset_name, self)
+    @property
+    def source_country_list(self):
+        if self.source_countries is None:
+            return ()
+        return self.source_countries.countries
+
+    def subset_shapefile(self, country):
+        return self.source_countries.subset_shapefile(self, country)
 
     @property
     def subset_mask_keys(self):
-        return [subset_mask_key(k) for k in self.subset_masks]
+        return [subset_mask_key(k) for k in self.source_country_list]
 
     def localized_type_names(self):
-        return {
-            subset_name: subset.localized_type_names(self.meta["type"])
-            for subset_name, subset in self.subset_masks.items()
-        }
+        if self.source_countries is None:
+            return {}
+        return self.source_countries.localized_type_names(self.meta["type"])
 
     def available_columns(self, *, include_intermediates):
         return [
