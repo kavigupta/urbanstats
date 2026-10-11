@@ -117,21 +117,12 @@ class ContainedWithinCountries(VariesByRegion):
         # the subnational regions themselves use ContainedWithinCountries
         from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
             SUBNATIONAL_REGIONS,
-            extract_country_longname,
-            valid_state,
         )
 
-        # each subnational region's source countries, like a region's
-        subnational_countries = {}
-        for row in SUBNATIONAL_REGIONS.load_file().itertuples():
-            country = extract_country_longname(row)
-            if country == "USA" and valid_state(row.NAME):
-                subnational_countries[row.longname] = ("USA",)
-            elif country == "Canada":
-                subnational_countries[row.longname] = ("Canada",)
-            else:
-                # including the US territories other than Puerto Rico, which aren't in the census
-                subnational_countries[row.longname] = None
+        subnational_countries = {
+            row.longname: _subnational_source_countries(row)
+            for row in SUBNATIONAL_REGIONS.load_file().itertuples()
+        }
 
         related = related_subnationals(shapefile, SUBNATIONAL_REGIONS)
         table = shapefile.load_file()
@@ -143,6 +134,23 @@ class ContainedWithinCountries(VariesByRegion):
             else:
                 result.append(tuple(sorted({c for cs in countries for c in cs})))
         return pd.Series(result, index=table.index)
+
+
+def _subnational_source_countries(subnational):
+    """A subnational region's source countries, e.g. ("USA",) for California."""
+    # pylint: disable=import-outside-toplevel,cyclic-import
+    from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
+        extract_country_longname,
+        valid_state,
+    )
+
+    country = extract_country_longname(subnational)
+    if country == "USA" and valid_state(subnational.NAME):
+        return ("USA",)
+    if country == "Canada":
+        return ("Canada",)
+    # including the US territories other than Puerto Rico, which aren't in the census
+    return None
 
 
 @permacache(
