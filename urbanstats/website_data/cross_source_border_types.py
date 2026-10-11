@@ -1,10 +1,7 @@
 from typing import Any, Dict, List, Optional
 
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
-from urbanstats.geometry.shapefiles.source_countries import (
-    ContainedWithinCountries,
-    InCountry,
-)
+from urbanstats.geometry.shapefiles.source_countries import InCountry, VariesByRegion
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.universe.universe_list import all_universes
@@ -94,7 +91,7 @@ def _can_straddle(shapefile) -> bool:
 
 
 def _has_source_countries_by_region(shapefile) -> bool:
-    return isinstance(shapefile.source_countries, ContainedWithinCountries)
+    return isinstance(shapefile.source_countries, VariesByRegion)
 
 
 def _check_declarations_match_source_countries() -> None:

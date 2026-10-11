@@ -5,7 +5,7 @@ from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
     extract_country_longname,
 )
-from urbanstats.geometry.shapefiles.source_countries import ContainedWithinCountries
+from urbanstats.geometry.shapefiles.source_countries import IsCountry
 from urbanstats.special_cases.country import countries
 from urbanstats.special_cases.country_names import iso_to_country
 from urbanstats.universe.universe_provider.combined_universe_provider import (
@@ -31,7 +31,7 @@ COUNTRIES = Shapefile(
             SelfUniverseProvider(),
         ]
     ),
-    source_countries=ContainedWithinCountries({"USA": "USA", "Canada": "Canada"}),
+    source_countries=IsCountry({"USA": "USA", "Canada": "Canada"}),
     cross_source_borders=CrossSourceBorders(can_straddle=False),
     abbreviation="CTRY",
     data_credit=SUBNATIONAL_REGIONS.data_credit,
