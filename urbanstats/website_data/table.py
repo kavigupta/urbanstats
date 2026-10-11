@@ -29,10 +29,10 @@ from urbanstats.universe.universe_provider.compute_universes import (
 @permacache_with_remapping_pickle(
     "population_density/stats_for_shapefile/compute_statistics_for_shapefile_53",
     key_function=dict(
-        # which regions get which country's statistics depends on the source countries
-        sf=lambda x: (x.hash_key, repr(x.source_countries)),
+        sf=lambda x: x.hash_key,
         shapefiles=lambda x: {
-            k: (v.hash_key, v.universe_provider) for k, v in x.items()
+            k: (v.hash_key, v.universe_provider, v.source_countries)
+            for k, v in x.items()
         },
         metadata_providers=stable_hash,
         statistic_collections=stable_hash,
