@@ -70,8 +70,6 @@ class Shapefile:
         s = s[s.apply(self.filter, axis=1)]
         if s.shape[0] == 0:
             raise EmptyShapefileError
-        for country in self.source_country_list:
-            s[subset_mask_key(country)] = self.source_countries.mask(s, country)
         for k, v in self.additional_columns_computer.items():
             s[k] = s.apply(v, axis=1)
 
@@ -143,10 +141,6 @@ class Shapefile:
     def subset_shapefile(self, country):
         return self.source_countries.subset_shapefile(self, country)
 
-    @property
-    def subset_mask_keys(self):
-        return [subset_mask_key(k) for k in self.source_country_list]
-
     def localized_type_names(self):
         if self.source_countries is None:
             return {}
@@ -162,7 +156,6 @@ class Shapefile:
             "end_date",
             *self.additional_columns_computer,
             *(self.intermediate_computation_columns if include_intermediates else []),
-            *self.subset_mask_keys,
         ]
 
     @property
@@ -172,10 +165,6 @@ class Shapefile:
             for x in self.special_data_sources
             if isinstance(x, tuple) and x[0] == "census"
         ]
-
-
-def subset_mask_key(subset_name):
-    return f"subset_mask_{subset_name}"
 
 
 class EmptyShapefileError(Exception):

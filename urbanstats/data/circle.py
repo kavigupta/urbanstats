@@ -20,7 +20,7 @@ from urbanstats.data.population_overlays import (
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
-from urbanstats.geometry.shapefiles.source_countries import ByRow, source_countries_from
+from urbanstats.geometry.shapefiles.source_countries import ContainedWithinCountries
 from urbanstats.universe.universe_provider.combined_universe_provider import (
     CombinedUniverseProvider,
 )
@@ -626,10 +626,8 @@ def circle_shapefile_object(country_shapefile, population):
                 PROVINCE_PROVIDER,
             ]
         ),
-        source_countries=ByRow(
-            {"USA": "US " + name, "Canada": "CA " + name},
-            # the longname ends with the countries the circle overlaps
-            lambda x: source_countries_from(x.longname.rsplit(", ", 1)[-1].split("-")),
+        source_countries=ContainedWithinCountries(
+            {"USA": "US " + name, "Canada": "CA " + name}
         ),
         cross_source_borders=CrossSourceBorders(
             can_straddle=True,

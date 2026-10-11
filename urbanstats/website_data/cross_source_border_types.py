@@ -1,7 +1,10 @@
 from typing import Any, Dict, List, Optional
 
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
-from urbanstats.geometry.shapefiles.source_countries import ByRow, InCountry
+from urbanstats.geometry.shapefiles.source_countries import (
+    ContainedWithinCountries,
+    InCountry,
+)
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.universe.universe_list import all_universes
@@ -90,8 +93,8 @@ def _can_straddle(shapefile) -> bool:
     )
 
 
-def _has_source_countries_by_row(shapefile) -> bool:
-    return isinstance(shapefile.source_countries, ByRow)
+def _has_source_countries_by_region(shapefile) -> bool:
+    return isinstance(shapefile.source_countries, ContainedWithinCountries)
 
 
 def _check_declarations_match_source_countries() -> None:
@@ -102,7 +105,7 @@ def _check_declarations_match_source_countries() -> None:
     for shapefile in shapefiles.values():
         typ = shapefile.meta["type"]
         declared = shapefile.cross_source_borders is not None
-        if _has_source_countries_by_row(shapefile):
+        if _has_source_countries_by_region(shapefile):
             assert declared, (
                 f"{typ} computes single-country statistics on a filtered subset of itself,"
                 f" so it must set cross_source_borders to say whether that can leave one of"

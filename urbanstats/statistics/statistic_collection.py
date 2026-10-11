@@ -8,10 +8,7 @@ from urbanstats.acs.load import (
     aggregated_acs_data,
     aggregated_acs_data_us_pr,
 )
-from urbanstats.geometry.shapefiles.shapefile import (
-    EmptyShapefileError,
-    subset_mask_key,
-)
+from urbanstats.geometry.shapefiles.shapefile import EmptyShapefileError
 
 
 class StatisticCollection(ABC):
@@ -181,7 +178,8 @@ def compute_subset_statistics(
         shapefile_subset.load_file()
     except EmptyShapefileError:
         return False, {}
-    mask = shapefile_table[subset_mask_key(subset)]
+    by_region = shapefile.source_countries.by_region(shapefile)
+    mask = np.array([cs == (subset,) for cs in by_region.loc[shapefile_table.index]])
     [idxs] = np.where(mask)
     for_subset = compute_function(
         shapefile=shapefile_subset,
