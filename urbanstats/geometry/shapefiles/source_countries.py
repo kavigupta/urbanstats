@@ -11,9 +11,6 @@ from urbanstats.geometry.relationship_equirectangular import compute_relationshi
 # The countries whose statistics agencies are data sources
 SOURCE_COUNTRIES = ("USA", "Canada")
 
-# A part of the USA without US census data, e.g. Guam
-US_TERRITORY = "US territory"
-
 
 class SourceCountries(ABC):
     """
@@ -98,24 +95,33 @@ class ContainedWithinCountries(SourceCountries):
             valid_state,
         )
 
-        coverage = {}
+        # each subnational region's source countries, like a region's
+        subnational_countries = {}
+        # e.g. Guam, which is in the USA but not in the US census
+        uncovered_parts_of_source_countries = set()
         for row in SUBNATIONAL_REGIONS.load_file().itertuples():
             country = extract_country_longname(row)
-            if country == "USA":
-                # states, DC, and Puerto Rico are in the US census; the other territories are not
-                coverage[row.longname] = (
-                    "USA" if valid_state(row.NAME) else US_TERRITORY
-                )
+            if country == "USA" and valid_state(row.NAME):
+                subnational_countries[row.longname] = ("USA",)
+            elif country == "USA":
+                subnational_countries[row.longname] = None
+                uncovered_parts_of_source_countries.add(row.longname)
             elif country == "Canada":
-                coverage[row.longname] = "Canada"
+                subnational_countries[row.longname] = ("Canada",)
             else:
-                coverage[row.longname] = None
+                subnational_countries[row.longname] = None
 
         related = related_subnationals(shapefile, SUBNATIONAL_REGIONS)
         table = shapefile.load_file()
         result = []
         for longname in table.longname:
-            result.append(_source_countries(related.get(longname, {}), coverage))
+            result.append(
+                _source_countries(
+                    related.get(longname, {}),
+                    subnational_countries,
+                    uncovered_parts_of_source_countries,
+                )
+            )
         return pd.Series(result, index=table.index)
 
     def subset_shapefile(self, shapefile, country):
@@ -130,13 +136,17 @@ class ContainedWithinCountries(SourceCountries):
         )
 
 
-def _source_countries(related, coverage):
+def _source_countries(
+    related, subnational_countries, uncovered_parts_of_source_countries
+):
     countries = set()
     for subnational, relationship in related.items():
-        covered_by = coverage[subnational]
-        if covered_by in SOURCE_COUNTRIES:
-            countries.add(covered_by)
-        elif covered_by == US_TERRITORY and relationship == "a_contains_b":
+        if subnational_countries[subnational] is not None:
+            countries.update(subnational_countries[subnational])
+        elif (
+            subnational in uncovered_parts_of_source_countries
+            and relationship == "a_contains_b"
+        ):
             # the USA itself contains Guam etc., which doesn't put any of it outside the USA
             continue
         else:
