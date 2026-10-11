@@ -4,7 +4,7 @@ import { downloadImage, safeReload, screencap, target, urbanstatsFixture, waitFo
 
 const onlyUSAndCanadaCensus = 'AkWGLJMDBPzz5'
 
-// Heterogenous-sources: shown when comparing articles with different data sources (e.g. US Census vs GHSL)
+// Heterogenous-sources: shown when comparing articles with different data sources (e.g. National Census vs GHSL)
 urbanstatsFixture(
     'disclaimers heterogenous-sources',
     `${target}/comparison.html?longnames=%5B"Cambridge+city%2C+Massachusetts%2C+USA"%2C"Chinandega%2C+Nicaragua"%5D&s=${onlyUSAndCanadaCensus}`,
@@ -15,7 +15,7 @@ test('heterogenous-sources disclaimer shows when comparing different sources', a
     await t.expect(Selector('.disclaimer-toggle').count).eql(1, 'one disclaimer when sources differ')
     await t.expect(Selector('[data-test-id=statistic-link]').withExactText('Population').exists).ok('no single source can label the collapsed row')
     const toggle = Selector('.disclaimer-toggle').nth(0)
-    const popover = Selector('div').withExactText('This statistic is based on data from multiple sources (US Census, GHSL), which may not be consistent with each other.')
+    const popover = Selector('div').withExactText('This statistic is based on data from multiple sources (National Census, GHSL), which may not be consistent with each other.')
     await t.click(toggle)
     await t.expect(popover.visible).ok('heterogenous-sources disclaimer text visible after click')
     const toggleBox = await toggle.boundingClientRect
