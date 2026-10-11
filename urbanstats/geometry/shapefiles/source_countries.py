@@ -11,6 +11,9 @@ from urbanstats.geometry.relationship_equirectangular import compute_relationshi
 # The countries whose statistics agencies are data sources
 SOURCE_COUNTRIES = ("USA", "Canada")
 
+# A part of the USA without US census data, e.g. Guam
+US_TERRITORY = "US territory"
+
 
 class SourceCountries(ABC):
     """
@@ -91,30 +94,28 @@ class ContainedWithinCountries(SourceCountries):
         # the subnational regions themselves use ContainedWithinCountries
         from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
             SUBNATIONAL_REGIONS,
+            extract_country_longname,
+            valid_state,
         )
 
-        subnationals = SUBNATIONAL_REGIONS.load_file()
-        source_country = dict(zip(subnationals.longname, subnationals.source_country))
-        country = dict(zip(subnationals.longname, subnationals.country))
+        coverage = {}
+        for row in SUBNATIONAL_REGIONS.load_file().itertuples():
+            country = extract_country_longname(row)
+            if country == "USA":
+                # states, DC, and Puerto Rico are in the US census; the other territories are not
+                coverage[row.longname] = (
+                    "USA" if valid_state(row.NAME) else US_TERRITORY
+                )
+            elif country == "Canada":
+                coverage[row.longname] = "Canada"
+            else:
+                coverage[row.longname] = None
+
         related = related_subnationals(shapefile, SUBNATIONAL_REGIONS)
         table = shapefile.load_file()
         result = []
         for longname in table.longname:
-            countries = set()
-            for subnational, kind in related.get(longname, {}).items():
-                if source_country[subnational] is not None:
-                    countries.add(source_country[subnational])
-                elif (
-                    kind != "a_contains_b"
-                    or country[subnational] not in SOURCE_COUNTRIES
-                ):
-                    # A part of a source country without its data, e.g. Guam, only puts the region
-                    # elsewhere if the region is (partly) in it, rather than containing it
-                    countries.add(None)
-            if not countries or None in countries:
-                result.append(None)
-            else:
-                result.append(tuple(sorted(countries)))
+            result.append(_source_countries(related.get(longname, {}), coverage))
         return pd.Series(result, index=table.index)
 
     def subset_shapefile(self, shapefile, country):
@@ -127,6 +128,20 @@ class ContainedWithinCountries(SourceCountries):
         return attr.evolve(
             shapefile, filter=new_filter, hash_key=f"{shapefile.hash_key}_{country}"
         )
+
+
+def _source_countries(related, coverage):
+    countries = set()
+    for subnational, relationship in related.items():
+        covered_by = coverage[subnational]
+        if covered_by in SOURCE_COUNTRIES:
+            countries.add(covered_by)
+        elif covered_by == US_TERRITORY and relationship == "a_contains_b":
+            # the USA itself contains Guam etc., which doesn't put any of it outside the USA
+            continue
+        else:
+            return None
+    return tuple(sorted(countries)) or None
 
 
 @permacache(

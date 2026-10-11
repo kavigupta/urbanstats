@@ -3,10 +3,7 @@ import us
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.source_countries import (
-    SOURCE_COUNTRIES,
-    ContainedWithinCountries,
-)
+from urbanstats.geometry.shapefiles.source_countries import ContainedWithinCountries
 from urbanstats.special_cases.country import subnational_regions
 from urbanstats.special_cases.country_names import iso_to_country
 from urbanstats.universe.universe_provider.combined_universe_provider import (
@@ -39,13 +36,6 @@ def valid_state(x):
     return extract_state(x) is not None
 
 
-def compute_source_country(row):
-    country = extract_country_longname(row)
-    if country == "USA" and not valid_state(row.NAME):
-        return None
-    return country if country in SOURCE_COUNTRIES else None
-
-
 def compute_geoid(row):
     if extract_country_longname(row) != "USA":
         return None
@@ -64,9 +54,8 @@ SUBNATIONAL_REGIONS = Shapefile(
     additional_columns_computer={
         "geoid": compute_geoid,
         "iso": lambda x: x.ISO_CC + "-" + x.ISO_SUB if x.ISO_SUB is not None else None,
-        "country": extract_country_longname,
-        "source_country": compute_source_country,
     },
+    intermediate_computation_columns=["NAME", "ISO_CC"],
     meta=dict(type="Subnational Region", source="ESRI", type_category="US Subdivision"),
     does_overlap_self=False,
     special_data_sources=[
