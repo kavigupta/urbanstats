@@ -340,7 +340,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_historical_cds', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'simple_ordinals', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'use_imperial', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_source_Population_US Census', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Population_National Census', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_source_Population_GHSL', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__ad_0.25', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__ad_0.25_2000', coder: booleanSettingCoder }),

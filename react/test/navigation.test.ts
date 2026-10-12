@@ -26,7 +26,7 @@ test('maintain and restore scroll position back-forward', async (t) => {
     await t.scroll(0, 200)
     await t.click(Selector('a').withExactText('Population'))
     await screencap(t) // For debugging why the next step fails sometimes
-    await t.expect(Selector('.subheadertext').withExactText('Population [US Census]').exists).ok()
+    await t.expect(Selector('.subheadertext').withExactText('Population [National Census]').exists).ok()
     await t.expect(getScroll()).eql(0) // Resets scroll on different page type
     await t.scroll(0, 100)
     await t.click(Selector('a').withText(/New York/))
@@ -44,19 +44,19 @@ test('maintain and restore scroll position back-forward', async (t) => {
     await t.expect(Selector('.headertext').withText(/New York/).exists).ok()
     await t.expect(getScroll()).eql(400)
     await goBack()
-    await t.expect(Selector('.subheadertext').withExactText('Population [US Census]').exists).ok()
+    await t.expect(Selector('.subheadertext').withExactText('Population [National Census]').exists).ok()
     await t.expect(getScroll()).eql(100)
     await goForward()
     await t.expect(Selector('.headertext').withText(/New York/).exists).ok()
     await t.expect(getScroll()).eql(400)
     await goBack()
-    await t.expect(Selector('.subheadertext').withExactText('Population [US Census]').exists).ok()
+    await t.expect(Selector('.subheadertext').withExactText('Population [National Census]').exists).ok()
     await t.expect(getScroll()).eql(100)
     await goBack()
     await t.expect(Selector('.headertext').withText(/Texas/).exists).ok()
     await t.expect(getScroll()).eql(200)
     await goForward()
-    await t.expect(Selector('.subheadertext').withExactText('Population [US Census]').exists).ok()
+    await t.expect(Selector('.subheadertext').withExactText('Population [National Census]').exists).ok()
     await t.expect(getScroll()).eql(100)
 })
 
@@ -85,7 +85,7 @@ test('navigates to hash 2', async (t) => {
 urbanstatsFixture('stats page', '/statistic.html?statname=Population&article_type=Judicial+District&start=1&amount=20&universe=USA')
 
 test('data credit hash from stats page', async (t) => {
-    await t.click(Selector('a').withExactText('What is Population [US Census]?'))
+    await t.click(Selector('a').withExactText('What is Population [National Census]?'))
     await t.expect(getLocation()).eql(`${target}/data-credit.html#explanation_population`)
     await screencap(t, { fullPage: false })
 })

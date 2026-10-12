@@ -326,7 +326,11 @@ class StatisticTree:
 
 
 population_census = Source(
-    "Population", "US Census", is_default=True, priority=1, variable_suffix="us_census"
+    "Population",
+    "National Census",
+    is_default=True,
+    priority=1,
+    variable_suffix="census",
 )
 population_canada = Source(
     "Population",
