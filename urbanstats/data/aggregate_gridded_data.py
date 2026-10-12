@@ -11,7 +11,7 @@ from urbanstats.data.canada.canada_blocks import load_canada_db_shapefile
 from urbanstats.data.census_blocks import load_raw_census
 from urbanstats.data.gpw import compute_gpw_weighted_for_shape, load_full_ghs_30_arcsec
 from urbanstats.geometry.census_aggregation import (
-    aggregate_by_census_block,
+    Crosswalk,
     aggregate_by_census_block_canada,
 )
 from urbanstats.statistics.statistic_collection import compute_subset_statistics
@@ -113,16 +113,38 @@ def statistics_for_shapefile(gridded_data_sources, shapefile):
     key_function=dict(sf=lambda x: x.hash_key),
 )
 def statistics_for_american_shapefile(gridded_data_sources, sf):
-    _, population_2020, *_ = load_raw_census(2020)
-    stats_times_population = (
-        stats_by_blocks(gridded_data_sources, 2020) * population_2020
+    return population_weighted_by_census_block(
+        stats_by_blocks(gridded_data_sources, 2020), sf
     )
-    stats_times_population["population"] = population_2020[:, 0]
-    result = aggregate_by_census_block(2020, sf, stats_times_population)
-    for k in result.columns[:-1]:
-        result[k] = result[k] / result.population
-    del result["population"]
-    return result
+
+
+def population_weighted_by_census_block(stats, sf, chunk_size=5):
+    """
+    Each region's population-weighted mean of each column of stats, which has a row per 2020
+    block. Columns are done a few at a time, since stats can have over 100 columns for every US
+    block.
+    """
+    _, population, *_ = load_raw_census(2020)
+    population = population[:, 0].astype(np.float64)
+    crosswalk = Crosswalk.compute_usa(2020, sf)
+    index = sf.load_file().index
+    total_population = _pad(
+        crosswalk.compute_sum_by_shapefile(population[:, None]), len(index)
+    )[:, 0]
+    result = {}
+    for start in range(0, stats.shape[1], chunk_size):
+        columns = stats.columns[start : start + chunk_size]
+        values = stats[columns].to_numpy(dtype=np.float64) * population[:, None]
+        values[np.isnan(values)] = 0
+        sums = _pad(crosswalk.compute_sum_by_shapefile(values), len(index))
+        for i, column in enumerate(columns):
+            result[column] = sums[:, i] / total_population
+    return pd.DataFrame(result, index=index)
+
+
+def _pad(sums, length):
+    """Regions with no blocks come after the last region with any, so get no row."""
+    return np.concatenate([sums, np.zeros((length - len(sums), *sums.shape[1:]))])
 
 
 @permacache_with_remapping_pickle(
