@@ -4,7 +4,7 @@ from typing import Dict, Tuple
 
 import attr
 import pandas as pd
-from permacache import permacache
+from permacache import permacache, stable_hash
 
 from urbanstats.geometry.relationship_equirectangular import compute_relationships
 
@@ -89,8 +89,13 @@ class VariesByRegion(SourceCountries):
         def new_filter(row):
             return shapefile.filter(row) and row.name in in_country
 
+        # cached per-country results line up with the subset's rows, so a subset with different
+        # regions needs a different key
+        regions = stable_hash(sorted(in_country))[:8]
         return attr.evolve(
-            shapefile, filter=new_filter, hash_key=f"{shapefile.hash_key}_{country}"
+            shapefile,
+            filter=new_filter,
+            hash_key=f"{shapefile.hash_key}_{country}_{regions}",
         )
 
 
