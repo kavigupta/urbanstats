@@ -97,7 +97,6 @@ def census_block_points(year=2020):
     )
 
 
-@lru_cache(None)
 def all_densities_gpd(year=2020):
     geoid, population, pop_18, stats, coordinates = load_raw_census(year)
     densities = all_densities(year)
