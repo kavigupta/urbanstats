@@ -60,6 +60,9 @@ class InCountry(SourceCountries):
         return shapefile
 
 
+_BY_REGION = {}
+
+
 @dataclass(frozen=True)
 class VariesByRegion(SourceCountries):
     """
@@ -82,6 +85,17 @@ class VariesByRegion(SourceCountries):
             for country, name in self.names_in_country.items()
         }
 
+    def by_region(self, shapefile):
+        # computing it reads other shapefiles, and every per-country statistic collection asks
+        key = (self, shapefile.hash_key)
+        if key not in _BY_REGION:
+            _BY_REGION[key] = self.compute_by_region(shapefile)
+        return _BY_REGION[key]
+
+    @abstractmethod
+    def compute_by_region(self, shapefile) -> pd.Series:
+        pass
+
     def subset_shapefile(self, shapefile, country):
         by_region = self.by_region(shapefile)
         in_country = {i for i, cs in by_region.items() if cs == (country,)}
@@ -102,7 +116,7 @@ class VariesByRegion(SourceCountries):
 class IsCountry(VariesByRegion):
     """Each region is a country, so lies within just itself."""
 
-    def by_region(self, shapefile):
+    def compute_by_region(self, shapefile):
         table = shapefile.load_file()
         return pd.Series(
             [(c,) if c in SOURCE_COUNTRIES else None for c in table.longname],
@@ -117,7 +131,7 @@ class ContainedWithinCountries(VariesByRegion):
     relationships count an overlap above 5% of the region's land or population.
     """
 
-    def by_region(self, shapefile):
+    def compute_by_region(self, shapefile):
         # pylint: disable=import-outside-toplevel,cyclic-import
         # the subnational regions themselves use ContainedWithinCountries
         from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
