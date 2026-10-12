@@ -7,7 +7,7 @@ import tqdm
 from permacache import permacache
 
 from urbanstats.data.canada.canada_blocks import load_canada_db_shapefile
-from urbanstats.data.census_blocks import all_densities_gpd
+from urbanstats.data.census_blocks import census_block_points
 from urbanstats.geometry.weighted_statistics import geometric_median_by_group
 
 
@@ -85,7 +85,7 @@ class Crosswalk:
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def _compute_crosswalk(year, shapefile):
-    geometry_row = all_densities_gpd(year)[["geometry"]].fillna(0)
+    geometry_row = census_block_points(year).fillna(0)
     return _compute_crosswalk_for_geometry_row(geometry_row, shapefile)
 
 
