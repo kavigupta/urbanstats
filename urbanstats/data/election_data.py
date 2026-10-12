@@ -12,7 +12,7 @@ import tqdm.auto as tqdm
 import us
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
-from urbanstats.data.census_blocks import all_densities_gpd
+from urbanstats.data.census_blocks import all_densities_gpd, load_raw_census
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.geometry.disaggregate import disaggregate_by_area
 
@@ -164,7 +164,10 @@ def load_block_shapefiles(state_abbr, year=2020):
         )
 
     # Load all dense data to get the index structure
-    dense = all_densities_gpd(year)[["geoid", "population"]].copy()
+    geoid, population, *_ = load_raw_census(year)
+    dense = pd.DataFrame(
+        dict(geoid=geoid, population=population[:, 0]), index=np.arange(len(geoid))
+    )
     backmap = {x[len("7500000US") :]: y for x, y in zip(dense.geoid, dense.index)}
 
     # Filter dense to only blocks from this state
