@@ -27,7 +27,7 @@ from urbanstats.universe.universe_provider.compute_universes import (
 
 
 @permacache_with_remapping_pickle(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_53",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_54",
     key_function=dict(
         sf=lambda x: x.hash_key,
         shapefiles=lambda x: {
