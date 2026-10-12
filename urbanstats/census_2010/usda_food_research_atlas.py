@@ -1,9 +1,8 @@
-import numpy as np
 import pandas as pd
 
 from urbanstats.census_2010.cdc import disaggregate_to_2010
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
-from urbanstats.data.census_blocks import all_densities_gpd
+from urbanstats.data.census_blocks import load_raw_census
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 
 
@@ -42,11 +41,11 @@ def usda_fra_block():
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def aggregated_usda_fra(shapefile):
-    census_2010_pop = all_densities_gpd(2010).population
+    _, census_2010_pop, _, _, _ = load_raw_census(2010)
 
     print("Aggregating USDA FRA for", shapefile.hash_key)
     usda_fra = usda_fra_block().reset_index(drop=True).copy()
     usda_fra.columns = [x + "_usda_fra_1" for x in usda_fra.columns]
-    usda_fra = usda_fra * np.array(census_2010_pop)[:, None]
+    usda_fra = usda_fra * census_2010_pop[:, :1]
 
     return aggregate_by_census_block(2010, shapefile, usda_fra)

@@ -87,6 +87,16 @@ def all_densities(year):
     return {radius: density_in_radius(radius, year)[:, 0] for radius in RADII}
 
 
+def census_block_points(year=2020):
+    """Each block's point, indexed like all_densities_gpd, without building the rest of it."""
+    *_, coordinates = load_raw_census(year)
+    return gpd.GeoDataFrame(
+        index=np.arange(len(coordinates)),
+        geometry=gpd.points_from_xy(coordinates[:, 1], coordinates[:, 0]),
+        crs="EPSG:4326",
+    )
+
+
 @lru_cache(None)
 def all_densities_gpd(year=2020):
     geoid, population, pop_18, stats, coordinates = load_raw_census(year)
