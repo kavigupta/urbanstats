@@ -11,7 +11,10 @@ import pandas as pd
 import tqdm.auto as tqdm
 import us
 
-from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
+from urbanstats.compatibility.compatibility import (
+    permacache_with_remapping_pickle,
+    without_loaded_values,
+)
 from urbanstats.data.census_blocks import all_densities_gpd, load_raw_census
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.geometry.disaggregate import disaggregate_by_area
@@ -228,6 +231,7 @@ def disaggregate_to_blocks_for_state(state_abbr, election, block_year=2020):
     return {idx: row.values for idx, row in disaggregated.iterrows()}
 
 
+@without_loaded_values
 @permacache_with_remapping_pickle(
     "election_data/disaggregate_to_blocks_7",
     key_function=dict(election=lambda x: x.key),

@@ -40,8 +40,13 @@ housing_units = {
 }
 
 
-@lru_cache(None)
 def load_raw_census(year=2020, filter_zero_pop=True):
+    # lru_cache keys on how the arguments are spelled, so normalize them to share one copy
+    return _load_raw_census(year, filter_zero_pop)
+
+
+@lru_cache(None)
+def _load_raw_census(year, filter_zero_pop):
     census_blocks = f"outputs/census_blocks/raw_census_{year}.csv"
 
     if not os.path.exists(census_blocks):
