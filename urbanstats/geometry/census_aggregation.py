@@ -56,16 +56,24 @@ class Crosswalk:
         np.add.at(result, self.index_shapefile, values[self.index_block])
         return result
 
-    def compute_sum_by_shapefile_dataframe(self, shapefile, values):
-        sum_array = self.compute_sum_by_shapefile(np.array(values.fillna(0)))
-        index = shapefile.load_file().index
-        if len(index) > len(sum_array):
+    def compute_sum_by_region(self, values, num_regions):
+        """
+        Like compute_sum_by_shapefile, with a row for each of the num_regions regions, including
+        regions after the last one with any blocks.
+        """
+        sum_array = self.compute_sum_by_shapefile(values)
+        if num_regions > len(sum_array):
             sum_array = np.concatenate(
                 [
                     sum_array,
-                    np.zeros((len(index) - len(sum_array), *sum_array.shape[1:])),
+                    np.zeros((num_regions - len(sum_array), *sum_array.shape[1:])),
                 ]
             )
+        return sum_array
+
+    def compute_sum_by_shapefile_dataframe(self, shapefile, values):
+        index = shapefile.load_file().index
+        sum_array = self.compute_sum_by_region(np.array(values.fillna(0)), len(index))
         return pd.DataFrame(sum_array, columns=values.columns, index=index)
 
     def compute_geometric_median_dataframe(self, shapefile, population, lat, lon):

@@ -6,7 +6,10 @@ import shapely
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
-from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
+from urbanstats.compatibility.compatibility import (
+    permacache_with_remapping_pickle,
+    without_loaded_values,
+)
 from urbanstats.data.canada.canada_blocks import load_canada_db_shapefile
 from urbanstats.data.census_blocks import load_raw_census
 from urbanstats.data.gpw import compute_gpw_weighted_for_shape, load_full_ghs_30_arcsec
@@ -114,37 +117,34 @@ def statistics_for_shapefile(gridded_data_sources, shapefile):
 )
 def statistics_for_american_shapefile(gridded_data_sources, sf):
     return population_weighted_by_census_block(
-        stats_by_blocks(gridded_data_sources, 2020), sf
+        list(gridded_data_sources),
+        lambda columns: stats_by_blocks_columns(gridded_data_sources, 2020, columns),
+        sf,
     )
 
 
-def population_weighted_by_census_block(stats, sf, chunk_size=5):
+def population_weighted_by_census_block(columns, load_columns, sf, chunk_size=5):
     """
-    Each region's population-weighted mean of each column of stats, which has a row per 2020
-    block. Columns are done a few at a time, since stats can have over 100 columns for every US
-    block.
+    Each region's population-weighted mean of each of the columns, where load_columns gives a
+    list of arrays with a value per 2020 block. Columns are loaded a few at a time, since there
+    can be over 100 of them for every US block.
     """
     _, population, *_ = load_raw_census(2020)
     population = population[:, 0].astype(np.float64)
     crosswalk = Crosswalk.compute_usa(2020, sf)
     index = sf.load_file().index
-    total_population = _pad(
-        crosswalk.compute_sum_by_shapefile(population[:, None]), len(index)
-    )[:, 0]
+    total_population = crosswalk.compute_sum_by_region(population[:, None], len(index))[
+        :, 0
+    ]
     result = {}
-    for start in range(0, stats.shape[1], chunk_size):
-        columns = stats.columns[start : start + chunk_size]
-        values = stats[columns].to_numpy(dtype=np.float64) * population[:, None]
+    for start in range(0, len(columns), chunk_size):
+        chunk = columns[start : start + chunk_size]
+        values = np.array(load_columns(chunk), dtype=np.float64).T * population[:, None]
         values[np.isnan(values)] = 0
-        sums = _pad(crosswalk.compute_sum_by_shapefile(values), len(index))
-        for i, column in enumerate(columns):
+        sums = crosswalk.compute_sum_by_region(values, len(index))
+        for i, column in enumerate(chunk):
             result[column] = sums[:, i] / total_population
     return pd.DataFrame(result, index=index)
-
-
-def _pad(sums, length):
-    """Regions with no blocks come after the last region with any, so get no row."""
-    return np.concatenate([sums, np.zeros((length - len(sums), *sums.shape[1:]))])
 
 
 @permacache_with_remapping_pickle(
@@ -169,14 +169,21 @@ def statistics_for_canada_shapefile(gridded_data_sources, sf, year=2021):
     return agg
 
 
+@without_loaded_values
 @permacache_with_remapping_pickle(
-    "urbanstats/data/aggregate_gridded_data/stats_by_blocks"
+    "urbanstats/data/aggregate_gridded_data/stats_by_blocks_columns",
+    parallel=("columns",),
 )
-def stats_by_blocks(gridded_data_sources, year):
+def stats_by_blocks_columns(gridded_data_sources, year, columns):
+    """Each column's value at each block, cached separately so they can be loaded a few at a time"""
     _, _, _, _, coordinates = load_raw_census(year)
-    return disaggregate_both_to_blocks(gridded_data_sources, coordinates)
+    return [
+        disaggregate_to_blocks(gridded_data_sources[column], coordinates)
+        for column in columns
+    ]
 
 
+@without_loaded_values
 @permacache_with_remapping_pickle(
     "urbanstats/data/aggregate_gridded_data/stats_by_canada_blocks"
 )

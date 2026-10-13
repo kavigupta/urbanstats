@@ -3,11 +3,15 @@ import pandas as pd
 import tqdm.auto as tqdm
 
 from urbanstats.acs.load import extract_tract_geoid
-from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
+from urbanstats.compatibility.compatibility import (
+    permacache_with_remapping_pickle,
+    without_loaded_values,
+)
 from urbanstats.data.census_blocks import load_raw_census
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 
 
+@without_loaded_values
 @permacache_with_remapping_pickle("urbanstats/census_2010/cdc_table")
 def cdc_table():
     cdc = pd.read_csv(
