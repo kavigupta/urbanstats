@@ -1,2 +1,2 @@
-juxtastat = 1140
-retrostat = 153
+juxtastat = 1138
+retrostat = 155
