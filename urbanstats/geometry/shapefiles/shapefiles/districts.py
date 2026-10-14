@@ -12,7 +12,7 @@ from urbanstats.data.wikipedia.congressional_wikidata import (
 )
 from urbanstats.geometry.districts import consistent_district_padding
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.geometry.temporal_stacking import collapse_unchanged
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
@@ -337,7 +337,7 @@ def districts(
         filter=lambda x: True,
         does_overlap_self=does_overlap_self,
         universe_provider=us_domestic_provider(overrides),
-        subset_masks={"USA": SelfSubset()},
+        source_countries=InCountry("USA"),
         special_data_sources=special_data_sources,
         abbreviation=abbreviation,
         data_credit=[data_credit] + data_credit_for_redistricting(file_name),

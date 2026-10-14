@@ -2,6 +2,7 @@
 Sadly, this class is necessary because certain module upgrades break pickles.
 """
 
+import functools
 import pickle
 
 from permacache import permacache, swap_unpickler_context_manager
@@ -69,3 +70,16 @@ def forget_loaded_values(cached_function):
     """
     if cached_function.shelf.cache is not None:
         cached_function.shelf.cache.clear()
+
+
+def without_loaded_values(cached_function):
+    """Forgets the permacached function's values after every call, for values only needed briefly."""
+
+    @functools.wraps(cached_function)
+    def wrapper(*args, **kwargs):
+        try:
+            return cached_function(*args, **kwargs)
+        finally:
+            forget_loaded_values(cached_function)
+
+    return wrapper

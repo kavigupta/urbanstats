@@ -2,7 +2,7 @@ import geopandas as gpd
 import us
 
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
@@ -31,7 +31,7 @@ JUDICIAL_DISTRICTS = Shapefile(
     meta=dict(type="Judicial District", source="HIFLD", type_category="Oddball"),
     does_overlap_self=False,
     universe_provider=us_domestic_provider(),
-    subset_masks={"USA": SelfSubset()},
+    source_countries=InCountry("USA"),
     abbreviation="JDIS",
     data_credit=data_credit,
     include_in_syau=False,
@@ -69,7 +69,7 @@ JUDICIAL_CIRCUITS = Shapefile(
     meta=dict(type="Judicial Circuit", source="HIFLD", type_category="Oddball"),
     does_overlap_self=False,
     universe_provider=us_domestic_provider(),
-    subset_masks={"USA": SelfSubset()},
+    source_countries=InCountry("USA"),
     abbreviation="JCIR",
     data_credit=data_credit,
     include_in_syau=False,

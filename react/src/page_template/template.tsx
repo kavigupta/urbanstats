@@ -160,7 +160,7 @@ function TemplateFooter(): ReactNode {
 export function Version(): ReactNode {
     return (
         <span id="current-version">
-            {TestUtils.shared.isTesting ? '<VERSION>' : '32.4.2'}
+            {TestUtils.shared.isTesting ? '<VERSION>' : '32.4.3'}
         </span>
     )
 }
@@ -168,7 +168,7 @@ export function Version(): ReactNode {
 function LastUpdated(): ReactNode {
     return (
         <span id="last-updated">
-            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2026-10-03'}
+            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2026-10-14'}
         </span>
     )
 }

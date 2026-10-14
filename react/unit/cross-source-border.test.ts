@@ -72,7 +72,7 @@ void describe('crossSourceBorderExclusion', () => {
             // they carry a reason instead of an alternative to link to
             assert.deepEqual(await exclusion(usCensusOnly, '5M Person Circle', 'USA'), {
                 kind: 'straddles-border',
-                excludedCount: 16,
+                excludedCount: 20,
                 totalCount: 77,
                 statisticCountries: ['USA'],
                 alternative: {

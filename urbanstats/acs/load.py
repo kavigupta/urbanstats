@@ -9,7 +9,10 @@ import us
 from cached_property import cached_property
 from permacache import drop_if_equal, permacache, stable_hash
 
-from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
+from urbanstats.compatibility.compatibility import (
+    permacache_with_remapping_pickle,
+    without_loaded_values,
+)
 from urbanstats.data.census_blocks import all_densities_gpd
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
@@ -288,6 +291,7 @@ class ACSDataEntityForMultipleLevels:
         return pd.concat([geoid.rename("geoid"), data], axis=1).set_index("geoid")
 
 
+@without_loaded_values
 @permacache_with_remapping_pickle(
     "population_density/acs/get_acs_data_3",
     key_function=dict(acs_data_entity=stable_hash),

@@ -8,8 +8,8 @@ from urbanstats.data.wikipedia.congressional_wikidata import (
     CongressionalDistrictWikidataSourcer,
 )
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.geometry.shapefiles.shapefiles.districts import load_shapefile
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 decades = range(1780, 2010 + 1, 10)
@@ -91,7 +91,7 @@ HISTORICAL_CONGRESSIONALs = {
         does_overlap_self=True,
         abbreviation="CONG",
         universe_provider=us_domestic_provider(),
-        subset_masks={"USA": SelfSubset()},
+        source_countries=InCountry("USA"),
         special_data_sources=["congressional_representatives"],
         data_credit=dict(
             text="We adapt Jeffrey B. Lewis, Brandon DeVine, and Lincoln Pritcher with Kenneth C. Martis"
@@ -127,7 +127,7 @@ HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = Shapefile(
     does_overlap_self=True,
     abbreviation="CONG",
     universe_provider=us_domestic_provider(),
-    subset_masks={"USA": SelfSubset()},
+    source_countries=InCountry("USA"),
     special_data_sources=["congressional_representatives"],
     data_credit=dict(
         text="2020s data is from the US Census Bureau.",

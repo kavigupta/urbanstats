@@ -1,6 +1,7 @@
 from abc import abstractmethod
 
 import numpy as np
+import pandas as pd
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.census_blocks import (
@@ -8,6 +9,7 @@ from urbanstats.data.census_blocks import (
     all_densities_gpd,
     format_radius,
     housing_units,
+    load_raw_census,
     racial_demographics,
 )
 from urbanstats.data.census_histogram import census_histogram
@@ -420,7 +422,7 @@ def aggregate_basics_of_year(shapefile, year):
         *[f"{k}" for k in density_metrics],
     ]
     sum_keys = [f"{k}_{year}" for k in sum_keys]
-    t = all_densities_gpd(year).copy()
+    t = all_densities_gpd(year)
     t.columns = [f"{k}_{year}" for k in t.columns]
     return aggregate_by_census_block(year, shapefile, t[sum_keys])
 
@@ -430,9 +432,9 @@ def aggregate_basics_of_year(shapefile, year):
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def population_median_point_usa(shapefile):
-    t = all_densities_gpd(2020)
+    _, population, _, _, coordinates = load_raw_census(2020)
     return Crosswalk.compute_usa(2020, shapefile).compute_geometric_median_dataframe(
-        shapefile, t.population, t.geometry.y, t.geometry.x
+        shapefile, population[:, 0], coordinates[:, 0], coordinates[:, 1]
     )
 
 
@@ -450,7 +452,10 @@ def compute_population_for_year(shapefile, *, no_pr):
     """
     Compute the population for a shapefile for a given year
     """
-    t = all_densities_gpd(2020)[["geoid", "population"]].copy()
+    geoid, population, *_ = load_raw_census(2020)
+    t = pd.DataFrame(
+        dict(geoid=geoid, population=population[:, 0]), index=np.arange(len(geoid))
+    )
     if no_pr:
         mask = t.geoid.apply(extract_state_fips_from_geoid) == "72"
         t.loc[mask, "population"] = 0

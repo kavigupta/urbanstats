@@ -7,9 +7,9 @@ import us
 from permacache import permacache, stable_hash
 
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
 from urbanstats.geometry.shapefiles.shapefiles.districts import CONGRESSIONAL_DISTRICTS
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
@@ -74,7 +74,7 @@ COUNTY_CROSS_CD = Shapefile(
     special_data_sources=["congressional_representatives_indirect"],
     chunk_size=100,
     universe_provider=us_domestic_provider(),
-    subset_masks={"USA": SelfSubset()},
+    source_countries=InCountry("USA"),
     abbreviation="CXCD",
     data_credit=dict(
         text="We take the intersection of the county and congressional district shapefiles.",

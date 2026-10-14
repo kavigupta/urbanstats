@@ -3,7 +3,6 @@ from permacache import permacache
 from urbanstats.data.wikipedia.wikidata_sourcer import CANADA_WIKIDATA_SOURCER
 from urbanstats.geometry.shapefiles.load_canada_shapefile import load_canadian_shapefile
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.geometry.shapefiles.shapefiles.canadian_census_divisions import (
     CANADIAN_CENSUS_DIVISIONS,
     subdivision_longname,
@@ -12,6 +11,7 @@ from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
 )
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import canada_domestic_provider
 
 cdtype = {
@@ -124,7 +124,7 @@ CANADIAN_CENSUS_SUBDIVISIONS = Shapefile(
     ),
     does_overlap_self=False,
     universe_provider=canada_domestic_provider(),
-    subset_masks={"Canada": SelfSubset()},
+    source_countries=InCountry("Canada"),
     abbreviation="CSUB",
     data_credit=dict(
         linkText="Canadian Census",

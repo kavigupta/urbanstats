@@ -11,7 +11,20 @@ from urbanstats.compatibility.compatibility import (
     forget_loaded_values,
     permacache_with_remapping_pickle,
 )
+from urbanstats.data.canada.canada_density import canada_shapefile_with_densities
+from urbanstats.data.canada_election_data import election_results_by_block_canada
+from urbanstats.data.census_blocks import _load_raw_census
+from urbanstats.data.election_data import election_results_by_block
 from urbanstats.data.wikipedia.wikidata_sourcer import compute_wikidata_and_wikipedia
+from urbanstats.geometry.census_aggregation import (
+    _compute_crosswalk,
+    _compute_crosswalk_canada,
+)
+from urbanstats.geometry.segregation import (
+    compute_homogenity_info_by_block,
+    compute_race_data,
+    local_segregation_by_block,
+)
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles as shapefiles_list
 from urbanstats.metadata.metadata_columns_list import (
     metadata_column_providers as default_metadata_column_providers,
@@ -27,11 +40,12 @@ from urbanstats.universe.universe_provider.compute_universes import (
 
 
 @permacache_with_remapping_pickle(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_53",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_54",
     key_function=dict(
         sf=lambda x: x.hash_key,
         shapefiles=lambda x: {
-            k: (v.hash_key, v.universe_provider) for k, v in x.items()
+            k: (v.hash_key, v.universe_provider, v.source_countries)
+            for k, v in x.items()
         },
         metadata_providers=stable_hash,
         statistic_collections=stable_hash,
@@ -94,8 +108,11 @@ def combined_shapefile() -> pd.DataFrame:
     for k in tqdm.tqdm(shapefiles_list, desc="computing statistics"):
         t = compute_statistics_for_shapefile(shapefiles_list[k], shapefiles_list)
         forget_loaded_values(compute_statistics_for_shapefile)
+        forget_loaded_values(_compute_crosswalk)
+        forget_loaded_values(_compute_crosswalk_canada)
 
         full.append(t)
+    _forget_block_data()
 
     full_df = pd.concat(full)
     full_df = full_df.reset_index(drop=True)
@@ -109,6 +126,20 @@ def combined_shapefile() -> pd.DataFrame:
     # assert not duplicates, str(duplicates)
     del full_df["type_category"]
     return full_df
+
+
+def _forget_block_data() -> None:
+    """Each holds data for every block; anything after the statistics that needs one reloads it."""
+    for cached_function in [
+        _load_raw_census,
+        compute_race_data,
+        compute_homogenity_info_by_block,
+        local_segregation_by_block,
+        election_results_by_block,
+        election_results_by_block_canada,
+        canada_shapefile_with_densities,
+    ]:
+        cached_function.cache_clear()
 
 
 def _check_universes(full_df: pd.DataFrame) -> None:

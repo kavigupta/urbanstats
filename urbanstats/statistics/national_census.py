@@ -5,12 +5,7 @@ import numpy as np
 import pandas as pd
 
 from urbanstats.acs.load import aggregated_acs_data
-from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.statistics.statistic_collection import StatisticCollection
-from urbanstats.universe.universe_list import universe_by_universe_type
-from urbanstats.universe.universe_provider.compute_universes import (
-    compute_universes_for_shapefile,
-)
 
 # Each country's block-level counts, summed over a shapefile's regions, from that country's input
 COUNTRY_COUNTS = {
@@ -50,7 +45,7 @@ class NationalCensusStatistics(StatisticCollection):
     ):
         inputs = self.country_inputs()
         assert set(inputs) == set(self.version), (set(inputs), set(self.version))
-        countries = [c for c in inputs if c in shapefile.subset_masks]
+        countries = [c for c in inputs if c in shapefile.source_country_list]
         if not countries:
             return {}
         counts = None
@@ -62,21 +57,7 @@ class NationalCensusStatistics(StatisticCollection):
                 if counts is None
                 else counts.add(country_counts, fill_value=0)
             )
-        covered = covered_by_countries(shapefile, countries)
+        by_region = shapefile.source_countries.by_region(shapefile)
+        covered = by_region.map(lambda cs: cs is not None and set(cs) <= set(countries))
         counts.loc[~covered] = np.nan
         return self.post_process(counts)
-
-
-def covered_by_countries(shapefile, countries):
-    """
-    Whether each region lies within the given countries, so that their counts cover all of it. A
-    region is in a country if it has that country's universe.
-    """
-    universes = compute_universes_for_shapefile(shapefiles, shapefile)
-    all_countries = set(universe_by_universe_type()["country"])
-    table = shapefile.load_file()
-    covered = []
-    for longname in table.longname:
-        in_countries = set(universes[longname]) & all_countries
-        covered.append(bool(in_countries) and in_countries <= set(countries))
-    return pd.Series(covered, index=table.index)
