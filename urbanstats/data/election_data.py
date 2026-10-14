@@ -140,6 +140,7 @@ def read_full_vest_data(path):
     return gpd.GeoDataFrame(pd.concat(frames, ignore_index=True))
 
 
+@without_loaded_values
 @permacache_with_remapping_pickle("election_data/load_block_shapefiles_5")
 def load_block_shapefiles(state_abbr, year=2020):
     """
@@ -191,6 +192,7 @@ def load_block_shapefiles(state_abbr, year=2020):
     return gpd.GeoDataFrame(dense_state, geometry="geometry", crs="epsg:4326")
 
 
+@without_loaded_values
 @permacache_with_remapping_pickle(
     "urbanstats/data/election_data/disaggregate_to_blocks_for_state_2",
     key_function=dict(state_abbr=lambda x: x, election=lambda x: x.key),
