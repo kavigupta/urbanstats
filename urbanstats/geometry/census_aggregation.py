@@ -7,7 +7,7 @@ import tqdm
 from permacache import permacache
 
 from urbanstats.data.canada.canada_blocks import load_canada_db_shapefile
-from urbanstats.data.census_blocks import all_densities_gpd
+from urbanstats.data.census_blocks import census_block_points
 from urbanstats.geometry.weighted_statistics import geometric_median_by_group
 
 
@@ -56,16 +56,24 @@ class Crosswalk:
         np.add.at(result, self.index_shapefile, values[self.index_block])
         return result
 
-    def compute_sum_by_shapefile_dataframe(self, shapefile, values):
-        sum_array = self.compute_sum_by_shapefile(np.array(values.fillna(0)))
-        index = shapefile.load_file().index
-        if len(index) > len(sum_array):
+    def compute_sum_by_region(self, values, num_regions):
+        """
+        Like compute_sum_by_shapefile, with a row for each of the num_regions regions, including
+        regions after the last one with any blocks.
+        """
+        sum_array = self.compute_sum_by_shapefile(values)
+        if num_regions > len(sum_array):
             sum_array = np.concatenate(
                 [
                     sum_array,
-                    np.zeros((len(index) - len(sum_array), *sum_array.shape[1:])),
+                    np.zeros((num_regions - len(sum_array), *sum_array.shape[1:])),
                 ]
             )
+        return sum_array
+
+    def compute_sum_by_shapefile_dataframe(self, shapefile, values):
+        index = shapefile.load_file().index
+        sum_array = self.compute_sum_by_region(np.array(values.fillna(0)), len(index))
         return pd.DataFrame(sum_array, columns=values.columns, index=index)
 
     def compute_geometric_median_dataframe(self, shapefile, population, lat, lon):
@@ -85,7 +93,7 @@ class Crosswalk:
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def _compute_crosswalk(year, shapefile):
-    geometry_row = all_densities_gpd(year)[["geometry"]].fillna(0)
+    geometry_row = census_block_points(year).fillna(0)
     return _compute_crosswalk_for_geometry_row(geometry_row, shapefile)
 
 

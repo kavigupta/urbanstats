@@ -3,11 +3,15 @@ import pandas as pd
 import tqdm.auto as tqdm
 
 from urbanstats.acs.load import extract_tract_geoid
-from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
-from urbanstats.data.census_blocks import all_densities_gpd, load_raw_census
+from urbanstats.compatibility.compatibility import (
+    permacache_with_remapping_pickle,
+    without_loaded_values,
+)
+from urbanstats.data.census_blocks import load_raw_census
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 
 
+@without_loaded_values
 @permacache_with_remapping_pickle("urbanstats/census_2010/cdc_table")
 def cdc_table():
     cdc = pd.read_csv(
@@ -55,8 +59,8 @@ def compute_disaggregated_geoids(tracts, blocks, ignore_pr=False):
 )
 def aggregated_cdc_table(shapefile):
     print("aggregating cdc for", shapefile.hash_key)
-    census = all_densities_gpd(2010).copy()
+    _, _, population_18, _, _ = load_raw_census(2010)
     cdc = cdc_table().reset_index(drop=True).copy()
     cdc.columns = [x + "_cdc_2" for x in cdc.columns]
-    cdc = cdc * np.array(census.population_18)[:, None]
+    cdc = cdc * np.array(population_18)[:, None]
     return aggregate_by_census_block(2010, shapefile, cdc)

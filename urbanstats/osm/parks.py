@@ -5,7 +5,10 @@ import shapely
 import tqdm.auto as tqdm
 import us
 
-from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
+from urbanstats.compatibility.compatibility import (
+    permacache_with_remapping_pickle,
+    without_loaded_values,
+)
 
 from ..features.within_distance import census_block_coordinates, point_to_radius
 from ..geometry.deduplicate import deduplicate_polygons
@@ -76,6 +79,7 @@ def park_overlaps(blocks, parks_df, r):
     return park_area
 
 
+@without_loaded_values
 @permacache_with_remapping_pickle("urbanstats/osm/query/park_overlap_percentages_2")
 def park_overlap_percentages(r):
     chunk_size = 10_000
@@ -90,6 +94,7 @@ def park_overlap_percentages(r):
     return pd.concat(results)
 
 
+@without_loaded_values
 @permacache_with_remapping_pickle("urbanstats/osm/query/park_overlap_percentages_all_2")
 def park_overlap_percentages_all(r):
     census_blocks = census_block_coordinates()
