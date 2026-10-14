@@ -422,7 +422,7 @@ def aggregate_basics_of_year(shapefile, year):
         *[f"{k}" for k in density_metrics],
     ]
     sum_keys = [f"{k}_{year}" for k in sum_keys]
-    t = all_densities_gpd(year).copy()
+    t = all_densities_gpd(year)
     t.columns = [f"{k}_{year}" for k in t.columns]
     return aggregate_by_census_block(year, shapefile, t[sum_keys])
 

@@ -79,6 +79,7 @@ def park_overlaps(blocks, parks_df, r):
     return park_area
 
 
+@without_loaded_values
 @permacache_with_remapping_pickle("urbanstats/osm/query/park_overlap_percentages_2")
 def park_overlap_percentages(r):
     chunk_size = 10_000
