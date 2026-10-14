@@ -21,7 +21,6 @@ import { github } from './github-utils'
  * steady download is unaffected.
  */
 const attemptTimeoutMs = 10_000
-const attempts = 3
 
 const upstream: proxy.ProxyOptions = {
     timeout: attemptTimeoutMs,
@@ -44,11 +43,10 @@ function jsdelivrProxy(sha: string): express.RequestHandler {
             // We must get by SHA, since if we used branch name jsdelvir would cache the result for 12 hours and we couldn't get new changes from the branch
             return `/gh/densitydb/densitydb.github.io@${sha}${req.path}`
         },
-        // A 404 is jsdelivr telling us the file isn't there, which is an answer. Anything else means
-        // it didn't answer, so hand off to the next attempt and eventually to raw.githubusercontent.
+        // jsdelivr has answered 404 for files that exist at the commit, so only raw's 404 is trusted
         skipToNextHandlerFilter: (proxyRes) => {
             const status = proxyRes.statusCode ?? 500
-            return status !== 404 && (status < 200 || status > 299)
+            return status < 200 || status > 299
         },
         proxyErrorHandler: (error, res, next) => { next() },
     })
@@ -91,23 +89,15 @@ export async function startProxy(): Promise<void> {
 
     app.use(compression({ enforceEncoding: 'gzip' }))
 
-    const handlers: express.RequestHandler[] = []
-    for (let attempt = 1; attempt <= attempts; attempt++) {
-        if (attempt > 1) {
-            handlers.push((req, res, next) => {
-                console.warn(`jsdelivr did not serve ${req.path}; starting attempt ${attempt}`)
-                next()
-            })
-        }
-        handlers.push(jsdelivrProxy(branch.commit.sha))
-    }
-    handlers.push((req, res, next) => {
-        console.warn(`jsdelivr did not serve ${req.path}; falling back to raw.githubusercontent`)
-        next()
-    })
-    handlers.push(rawGithubProxy(branch.commit.sha))
-
-    app.use(express.static('test/density-db'), ...handlers)
+    app.use(
+        express.static('test/density-db'),
+        jsdelivrProxy(branch.commit.sha),
+        (req, res, next) => {
+            console.warn(`jsdelivr did not serve ${req.path}; falling back to raw.githubusercontent`)
+            next()
+        },
+        rawGithubProxy(branch.commit.sha),
+    )
 
     app.listen(port())
 }
