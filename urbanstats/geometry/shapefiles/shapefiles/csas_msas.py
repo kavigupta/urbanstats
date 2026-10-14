@@ -1,5 +1,11 @@
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import (
+    Geometry,
+    Identifiers,
+    Metadata,
+    Naming,
+    Shapefile,
+)
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.geometry.shapefiles.utils import name_components
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
@@ -7,31 +13,39 @@ from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 def csa_or_msa(hash_key, typ, census_name, wikidata_sourcer, path):
     return Shapefile(
-        hash_key=hash_key,
-        path=path,
-        shortname_extractor=lambda x: name_components(typ, x)[0],
-        cleanname_extractor=lambda x: x.NAME.split(", ")[0],
-        longname_extractor=lambda x: ", ".join(
-            name_components(typ, x, abbreviate=True)
+        geometry=Geometry(
+            key=hash_key,
+            path=path,
+            filter=lambda x: True,
         ),
-        additional_columns_computer={"geoid": lambda x: x.GEOID},
-        filter=lambda x: True,
-        meta=dict(type=typ, source="Census", type_category="Census"),
-        does_overlap_self=False,
+        identifiers=Identifiers(
+            additional_columns_computer={"geoid": lambda x: x.GEOID},
+        ),
+        naming=Naming(
+            shortname_extractor=lambda x: name_components(typ, x)[0],
+            longname_extractor=lambda x: ", ".join(
+                name_components(typ, x, abbreviate=True)
+            ),
+            cleanname_extractor=lambda x: x.NAME.split(", ")[0],
+        ),
+        metadata=Metadata(
+            meta=dict(type=typ, source="Census", type_category="Census"),
+            does_overlap_self=False,
+            abbreviation=typ,
+            data_credit=dict(
+                linkText="US Census",
+                link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
+            ),
+            include_in_syau=True,
+            wikidata_sourcer=wikidata_sourcer,
+        ),
         universe_provider=us_domestic_provider(),
-        source_countries=InCountry("USA"),
-        abbreviation=typ,
-        data_credit=dict(
-            linkText="US Census",
-            link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
-        ),
-        include_in_syau=True,
         special_data_sources=[
             "composed_of_counties",
             ("census", census_name),
             "congressional_representatives_indirect",
         ],
-        wikidata_sourcer=wikidata_sourcer,
+        source_countries=InCountry("USA"),
     )
 
 

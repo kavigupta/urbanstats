@@ -3,7 +3,13 @@
 import geopandas as gpd
 from permacache import permacache
 
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import (
+    Geometry,
+    Identifiers,
+    Metadata,
+    Naming,
+    Shapefile,
+)
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
@@ -14,67 +20,93 @@ def is_native_statistical_area(row):
 
 
 NATIVE_AREAS = Shapefile(
-    hash_key="native_areas_2",
-    path="named_region_shapefiles/cb_2022_us_aiannh_500k.zip",
-    shortname_extractor=lambda x: f"{x.NAMELSAD}",
-    cleanname_extractor=lambda x: x.NAME,
-    longname_extractor=lambda x: f"{x.NAMELSAD}, USA",
-    additional_columns_computer={"geoid": lambda x: x.GEOID},
-    filter=lambda x: not is_native_statistical_area(x),
-    meta=dict(type="Native Area", source="Census", type_category="Native"),
-    does_overlap_self=False,
-    universe_provider=us_domestic_provider(),
-    source_countries=InCountry("USA"),
-    abbreviation="NAAR",
-    data_credit=dict(
-        linkText="US Census",
-        link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
+    geometry=Geometry(
+        key="native_areas_2",
+        path="named_region_shapefiles/cb_2022_us_aiannh_500k.zip",
+        filter=lambda x: not is_native_statistical_area(x),
     ),
-    include_in_syau=True,
-    wikidata_sourcer=None,
+    identifiers=Identifiers(
+        additional_columns_computer={"geoid": lambda x: x.GEOID},
+    ),
+    naming=Naming(
+        shortname_extractor=lambda x: f"{x.NAMELSAD}",
+        longname_extractor=lambda x: f"{x.NAMELSAD}, USA",
+        cleanname_extractor=lambda x: x.NAME,
+    ),
+    metadata=Metadata(
+        meta=dict(type="Native Area", source="Census", type_category="Native"),
+        does_overlap_self=False,
+        abbreviation="NAAR",
+        data_credit=dict(
+            linkText="US Census",
+            link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
+        ),
+        include_in_syau=True,
+        wikidata_sourcer=None,
+    ),
+    universe_provider=us_domestic_provider(),
     special_data_sources=["congressional_representatives_indirect"],
+    source_countries=InCountry("USA"),
 )
 NATIVE_STATISTICAL_AREAS = Shapefile(
-    hash_key="native_statistical_areas",
-    path="named_region_shapefiles/cb_2022_us_aiannh_500k.zip",
-    shortname_extractor=lambda x: f"{x.NAMELSAD}",
-    cleanname_extractor=lambda x: x.NAME,
-    longname_extractor=lambda x: f"{x.NAMELSAD}, USA",
-    additional_columns_computer={"geoid": lambda x: x.GEOID},
-    filter=is_native_statistical_area,
-    meta=dict(type="Native Statistical Area", source="Census", type_category="Native"),
-    does_overlap_self=False,
-    universe_provider=us_domestic_provider(),
-    source_countries=InCountry("USA"),
-    abbreviation="NASA",
-    data_credit=dict(
-        linkText="US Census",
-        link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
+    geometry=Geometry(
+        key="native_statistical_areas",
+        path="named_region_shapefiles/cb_2022_us_aiannh_500k.zip",
+        filter=is_native_statistical_area,
     ),
-    include_in_syau=True,
-    wikidata_sourcer=None,
+    identifiers=Identifiers(
+        additional_columns_computer={"geoid": lambda x: x.GEOID},
+    ),
+    naming=Naming(
+        shortname_extractor=lambda x: f"{x.NAMELSAD}",
+        longname_extractor=lambda x: f"{x.NAMELSAD}, USA",
+        cleanname_extractor=lambda x: x.NAME,
+    ),
+    metadata=Metadata(
+        meta=dict(
+            type="Native Statistical Area", source="Census", type_category="Native"
+        ),
+        does_overlap_self=False,
+        abbreviation="NASA",
+        data_credit=dict(
+            linkText="US Census",
+            link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
+        ),
+        include_in_syau=True,
+        wikidata_sourcer=None,
+    ),
+    universe_provider=us_domestic_provider(),
     special_data_sources=["congressional_representatives_indirect"],
+    source_countries=InCountry("USA"),
 )
 NATIVE_SUBDIVISIONS = Shapefile(
-    hash_key="native_subdivisions_2",
-    path="named_region_shapefiles/cb_2022_us_aitsn_500k.zip",
-    shortname_extractor=lambda x: f"{x.NAMELSAD}",
-    cleanname_extractor=lambda x: x.NAME,
-    longname_extractor=lambda x: f"{x.NAMELSAD}, {ce_to_name()[x.AIANNHCE]}, USA",
-    additional_columns_computer={"geoid": lambda x: x.GEOID},
-    filter=lambda x: True,
-    meta=dict(type="Native Subdivision", source="Census", type_category="Native"),
-    does_overlap_self=False,
-    universe_provider=us_domestic_provider(),
-    source_countries=InCountry("USA"),
-    abbreviation="NASD",
-    data_credit=dict(
-        linkText="US Census",
-        link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
+    geometry=Geometry(
+        key="native_subdivisions_2",
+        path="named_region_shapefiles/cb_2022_us_aitsn_500k.zip",
+        filter=lambda x: True,
     ),
-    include_in_syau=True,
-    wikidata_sourcer=None,
+    identifiers=Identifiers(
+        additional_columns_computer={"geoid": lambda x: x.GEOID},
+    ),
+    naming=Naming(
+        shortname_extractor=lambda x: f"{x.NAMELSAD}",
+        longname_extractor=lambda x: f"{x.NAMELSAD}, {ce_to_name()[x.AIANNHCE]}, USA",
+        cleanname_extractor=lambda x: x.NAME,
+    ),
+    metadata=Metadata(
+        meta=dict(type="Native Subdivision", source="Census", type_category="Native"),
+        does_overlap_self=False,
+        abbreviation="NASD",
+        data_credit=dict(
+            linkText="US Census",
+            link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
+        ),
+        include_in_syau=True,
+        wikidata_sourcer=None,
+    ),
+    universe_provider=us_domestic_provider(),
     special_data_sources=["congressional_representatives_indirect"],
+    source_countries=InCountry("USA"),
 )
 
 

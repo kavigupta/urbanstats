@@ -108,8 +108,11 @@ class VariesByRegion(SourceCountries):
         regions = stable_hash(sorted(in_country))[:8]
         return attr.evolve(
             shapefile,
-            filter=new_filter,
-            hash_key=f"{shapefile.hash_key}_{country}_{regions}",
+            geometry=attr.evolve(
+                shapefile.geometry,
+                filter=new_filter,
+                key=f"{shapefile.hash_key}_{country}_{regions}",
+            ),
         )
 
 

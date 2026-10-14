@@ -2,7 +2,13 @@ from permacache import permacache
 
 from urbanstats.data.wikipedia.wikidata_sourcer import CANADA_WIKIDATA_SOURCER
 from urbanstats.geometry.shapefiles.load_canada_shapefile import load_canadian_shapefile
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import (
+    Geometry,
+    Identifiers,
+    Metadata,
+    Naming,
+    Shapefile,
+)
 from urbanstats.geometry.shapefiles.shapefiles.canadian_census_divisions import (
     CANADIAN_CENSUS_DIVISIONS,
     subdivision_longname,
@@ -108,28 +114,36 @@ def census_subdivision_name(row):
 
 
 CANADIAN_CENSUS_SUBDIVISIONS = Shapefile(
-    hash_key="canadian_census_subdivisions_3",
-    path=load_csd_shapefile,
-    shortname_extractor=census_subdivision_name,
-    cleanname_extractor=lambda row: row.CSDNAME.replace("  ", " "),
-    longname_extractor=lambda row: census_subdivision_name(row)
-    + ", "
-    + row.division_longname,
-    additional_columns_computer={"scgc": lambda row: row.CSDUID},
-    filter=lambda x: True,
-    meta=dict(
-        type="CA Census Subdivision",
-        source="StatCan",
-        type_category="Census",
+    geometry=Geometry(
+        key="canadian_census_subdivisions_3",
+        path=load_csd_shapefile,
+        filter=lambda x: True,
     ),
-    does_overlap_self=False,
+    identifiers=Identifiers(
+        additional_columns_computer={"scgc": lambda row: row.CSDUID},
+    ),
+    naming=Naming(
+        shortname_extractor=census_subdivision_name,
+        longname_extractor=lambda row: census_subdivision_name(row)
+        + ", "
+        + row.division_longname,
+        cleanname_extractor=lambda row: row.CSDNAME.replace("  ", " "),
+    ),
+    metadata=Metadata(
+        meta=dict(
+            type="CA Census Subdivision",
+            source="StatCan",
+            type_category="Census",
+        ),
+        does_overlap_self=False,
+        abbreviation="CSUB",
+        data_credit=dict(
+            linkText="Canadian Census",
+            link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lcsd000a21a_e.zip",
+        ),
+        include_in_syau=True,
+        wikidata_sourcer=CANADA_WIKIDATA_SOURCER,
+    ),
     universe_provider=canada_domestic_provider(),
     source_countries=InCountry("Canada"),
-    abbreviation="CSUB",
-    data_credit=dict(
-        linkText="Canadian Census",
-        link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lcsd000a21a_e.zip",
-    ),
-    include_in_syau=True,
-    wikidata_sourcer=CANADA_WIKIDATA_SOURCER,
 )

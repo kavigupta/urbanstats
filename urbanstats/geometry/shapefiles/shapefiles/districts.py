@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 import os
 import tempfile
 import zipfile
@@ -11,7 +12,13 @@ from urbanstats.data.wikipedia.congressional_wikidata import (
     CongressionalDistrictWikidataSourcer,
 )
 from urbanstats.geometry.districts import consistent_district_padding
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import (
+    Geometry,
+    Metadata,
+    Naming,
+    Shapefile,
+    Temporal,
+)
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.geometry.temporal_stacking import collapse_unchanged
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
@@ -317,36 +324,44 @@ def districts(
     wikidata_sourcer=None,
 ):
     return Shapefile(
-        hash_key=f"current_districts_{file_name}"
-        + version_tag_by_file_name.get(file_name, ""),
-        path=lambda: load_shapefile(
-            file_name,
-            only_keep="up-to-date",
-            minimum_district_length=minimum_district_length,
+        geometry=Geometry(
+            key=f"current_districts_{file_name}"
+            + version_tag_by_file_name.get(file_name, ""),
+            path=lambda: load_shapefile(
+                file_name,
+                only_keep="up-to-date",
+                minimum_district_length=minimum_district_length,
+            ),
+            filter=lambda x: True,
         ),
-        shortname_extractor=lambda x: get_shortname(district_abbrev, x),
-        cleanname_extractor=lambda x: get_shortname(
-            district_abbrev, x, include_date=False
+        temporal=Temporal(
+            start_date=lambda x: x["start_date"],
+            start_date_overall=2023,
+            end_date=lambda x: x["end_date"],
+            end_date_overall=2032,
         ),
-        longname_extractor=lambda x: get_shortname(district_abbrev, x) + ", USA",
-        longname_sans_date_extractor=lambda x: get_shortname(
-            district_abbrev, x, include_date=False
-        )
-        + ", USA",
-        meta=dict(type=district_type, source="Census", type_category="Political"),
-        filter=lambda x: True,
-        does_overlap_self=does_overlap_self,
+        naming=Naming(
+            shortname_extractor=lambda x: get_shortname(district_abbrev, x),
+            longname_extractor=lambda x: get_shortname(district_abbrev, x) + ", USA",
+            cleanname_extractor=lambda x: get_shortname(
+                district_abbrev, x, include_date=False
+            ),
+            longname_sans_date_extractor=lambda x: get_shortname(
+                district_abbrev, x, include_date=False
+            )
+            + ", USA",
+        ),
+        metadata=Metadata(
+            meta=dict(type=district_type, source="Census", type_category="Political"),
+            does_overlap_self=does_overlap_self,
+            abbreviation=abbreviation,
+            data_credit=[data_credit] + data_credit_for_redistricting(file_name),
+            include_in_syau=False,
+            wikidata_sourcer=wikidata_sourcer,
+        ),
         universe_provider=us_domestic_provider(overrides),
-        source_countries=InCountry("USA"),
         special_data_sources=special_data_sources,
-        abbreviation=abbreviation,
-        data_credit=[data_credit] + data_credit_for_redistricting(file_name),
-        start_date=lambda x: x["start_date"],
-        end_date=lambda x: x["end_date"],
-        start_date_overall=2023,
-        end_date_overall=2032,
-        include_in_syau=False,
-        wikidata_sourcer=wikidata_sourcer,
+        source_countries=InCountry("USA"),
     )
 
 

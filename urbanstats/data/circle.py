@@ -18,7 +18,12 @@ from urbanstats.data.population_overlays import (
     relevant_regions,
 )
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import (
+    Geometry,
+    Metadata,
+    Naming,
+    Shapefile,
+)
 from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
 from urbanstats.geometry.shapefiles.source_countries import ContainedWithinCountries
 from urbanstats.universe.universe_provider.combined_universe_provider import (
@@ -606,19 +611,33 @@ def circle_shapefile_object(country_shapefile, population):
     name = named_populations[population] + " Person Circle"
     version = 27
     return Shapefile(
-        hash_key=f"population_circle_{named_populations[population]}_{version}",
-        path=lambda: overlapping_circles_frame(
-            country_shapefile, population, named_populations[population] + "PC"
+        geometry=Geometry(
+            key=f"population_circle_{named_populations[population]}_{version}",
+            path=lambda: overlapping_circles_frame(
+                country_shapefile, population, named_populations[population] + "PC"
+            ),
+            filter=lambda x: True,
         ),
-        shortname_extractor=lambda x: x["shortname"],
-        cleanname_extractor=lambda x: x["shortname"].removesuffix(
-            " " + named_populations[population] + "PC"
+        naming=Naming(
+            shortname_extractor=lambda x: x["shortname"],
+            longname_extractor=lambda x: x["longname"],
+            cleanname_extractor=lambda x: x["shortname"].removesuffix(
+                " " + named_populations[population] + "PC"
+            ),
         ),
-        longname_extractor=lambda x: x["longname"],
-        meta=dict(type=name, source="GHSL", type_category="Kavi"),
-        filter=lambda x: True,
-        does_overlap_self=False,
-        special_data_sources=["international_gridded_data"],
+        metadata=Metadata(
+            meta=dict(type=name, source="GHSL", type_category="Kavi"),
+            does_overlap_self=False,
+            abbreviation=named_populations[population],
+            data_credit=dict(
+                text="The population circles were defined using the GHS-POP dataset,"
+                " using an algorithm hand-coded for the purpose of this website",
+                linkText="Detailed maps and JSON files",
+                link="https://github.com/kavigupta/urbanstats/tree/main/outputs/population_circles",
+            ),
+            include_in_syau=False,
+            wikidata_sourcer=None,
+        ),
         universe_provider=CombinedUniverseProvider(
             [
                 *INTERNATIONAL_PROVIDERS,
@@ -626,6 +645,7 @@ def circle_shapefile_object(country_shapefile, population):
                 PROVINCE_PROVIDER,
             ]
         ),
+        special_data_sources=["international_gridded_data"],
         source_countries=ContainedWithinCountries(
             {"USA": "US " + name, "Canada": "CA " + name}
         ),
@@ -635,13 +655,4 @@ def circle_shapefile_object(country_shapefile, population):
             " to national borders, and no region type defined by a statistics agency"
             " resembles them.",
         ),
-        abbreviation=named_populations[population],
-        data_credit=dict(
-            text="The population circles were defined using the GHS-POP dataset,"
-            " using an algorithm hand-coded for the purpose of this website",
-            linkText="Detailed maps and JSON files",
-            link="https://github.com/kavigupta/urbanstats/tree/main/outputs/population_circles",
-        ),
-        include_in_syau=False,
-        wikidata_sourcer=None,
     )

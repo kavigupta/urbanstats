@@ -1,7 +1,12 @@
 import geopandas as gpd
 import us
 
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import (
+    Geometry,
+    Metadata,
+    Naming,
+    Shapefile,
+)
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
@@ -20,23 +25,31 @@ data_credit = dict(
 
 
 JUDICIAL_DISTRICTS = Shapefile(
-    hash_key="judicial_districts",
-    path=judicial_districts,
-    shortname_extractor=lambda x: x["NAME"] + ", " + us.states.lookup(x["STATE"]).abbr,
-    longname_extractor=lambda x: x["NAME"]
-    + ", "
-    + us.states.lookup(x["STATE"]).abbr
-    + ", USA",
-    filter=lambda x: True,
-    meta=dict(type="Judicial District", source="HIFLD", type_category="Oddball"),
-    does_overlap_self=False,
+    geometry=Geometry(
+        key="judicial_districts",
+        path=judicial_districts,
+        filter=lambda x: True,
+    ),
+    naming=Naming(
+        shortname_extractor=lambda x: x["NAME"]
+        + ", "
+        + us.states.lookup(x["STATE"]).abbr,
+        longname_extractor=lambda x: x["NAME"]
+        + ", "
+        + us.states.lookup(x["STATE"]).abbr
+        + ", USA",
+    ),
+    metadata=Metadata(
+        meta=dict(type="Judicial District", source="HIFLD", type_category="Oddball"),
+        does_overlap_self=False,
+        abbreviation="JDIS",
+        data_credit=data_credit,
+        include_in_syau=False,
+        wikidata_sourcer=None,
+    ),
     universe_provider=us_domestic_provider(),
-    source_countries=InCountry("USA"),
-    abbreviation="JDIS",
-    data_credit=data_credit,
-    include_in_syau=False,
     special_data_sources=["composed_of_counties"],
-    wikidata_sourcer=None,
+    source_countries=InCountry("USA"),
 )
 
 
@@ -61,20 +74,26 @@ def judicial_circuits():
 
 
 JUDICIAL_CIRCUITS = Shapefile(
-    hash_key="judicial_circuits_2",
-    path=judicial_circuits,
-    shortname_extractor=lambda x: x["shortname"],
-    longname_extractor=lambda x: x["shortname"] + ", USA",
-    filter=lambda x: True,
-    meta=dict(type="Judicial Circuit", source="HIFLD", type_category="Oddball"),
-    does_overlap_self=False,
+    geometry=Geometry(
+        key="judicial_circuits_2",
+        path=judicial_circuits,
+        filter=lambda x: True,
+    ),
+    naming=Naming(
+        shortname_extractor=lambda x: x["shortname"],
+        longname_extractor=lambda x: x["shortname"] + ", USA",
+    ),
+    metadata=Metadata(
+        meta=dict(type="Judicial Circuit", source="HIFLD", type_category="Oddball"),
+        does_overlap_self=False,
+        abbreviation="JCIR",
+        data_credit=data_credit,
+        include_in_syau=False,
+        wikidata_sourcer=None,
+    ),
     universe_provider=us_domestic_provider(),
-    source_countries=InCountry("USA"),
-    abbreviation="JCIR",
-    data_credit=data_credit,
-    include_in_syau=False,
     special_data_sources=["composed_of_counties"],
-    wikidata_sourcer=None,
+    source_countries=InCountry("USA"),
 )
 judicial_shapefiles = dict(
     judicial_districts=JUDICIAL_DISTRICTS,

@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 import functools
 import pickle
 from functools import lru_cache
@@ -7,7 +8,13 @@ import numpy as np
 from urbanstats.data.wikipedia.congressional_wikidata import (
     CongressionalDistrictWikidataSourcer,
 )
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import (
+    Geometry,
+    Metadata,
+    Naming,
+    Shapefile,
+    Temporal,
+)
 from urbanstats.geometry.shapefiles.shapefiles.districts import load_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
@@ -72,72 +79,92 @@ version_for_decade = {"default": 0.2}
 
 HISTORICAL_CONGRESSIONALs = {
     f"historical_congressional_{decade}": Shapefile(
-        hash_key=f"historical_congressional_{decade}_{version_for_decade.get(decade, version_for_decade['default'])}",
-        path=functools.partial(filter_for_decade, decade),
-        shortname_extractor=historical_shortname,
-        cleanname_extractor=lambda x: historical_shortname(x, include_date=False),
-        longname_extractor=lambda x: historical_shortname(x) + ", USA",
-        longname_sans_date_extractor=lambda x: historical_shortname(
-            x, include_date=False
-        )
-        + ", USA",
-        filter=lambda x: True,
-        meta=dict(
-            type=f"Congressional District ({decade}s)",
-            source="UCLA",
-            type_category="Political",
+        geometry=Geometry(
+            key=f"historical_congressional_{decade}_{version_for_decade.get(decade, version_for_decade['default'])}",
+            path=functools.partial(filter_for_decade, decade),
+            filter=lambda x: True,
         ),
-        # Historical congressional districts do not overlap themselves, because we group together everything in a decade
-        does_overlap_self=True,
-        abbreviation="CONG",
+        temporal=Temporal(
+            start_date=lambda x: to_year(x.start),
+            start_date_overall=decade + 3 if decade != 1780 else 1789,
+            end_date=lambda x: to_year(x.end) + 1,
+            end_date_overall=decade + 12,
+        ),
+        naming=Naming(
+            shortname_extractor=historical_shortname,
+            longname_extractor=lambda x: historical_shortname(x) + ", USA",
+            cleanname_extractor=lambda x: historical_shortname(x, include_date=False),
+            longname_sans_date_extractor=lambda x: historical_shortname(
+                x, include_date=False
+            )
+            + ", USA",
+        ),
+        metadata=Metadata(
+            meta=dict(
+                type=f"Congressional District ({decade}s)",
+                source="UCLA",
+                type_category="Political",
+            ),
+            # Historical congressional districts do not overlap themselves, because we group together everything in a decade
+            does_overlap_self=True,
+            abbreviation="CONG",
+            data_credit=dict(
+                text="We adapt Jeffrey B. Lewis, Brandon DeVine, and Lincoln Pritcher with Kenneth C. Martis"
+                " to unclip the coastlines.",
+                linkText="Explanation of unclipping, and changes",
+                link="https://github.com/kavigupta/historical-congressional-unclipped",
+            ),
+            include_in_syau=False,
+            wikidata_sourcer=CongressionalDistrictWikidataSourcer(),
+        ),
         universe_provider=us_domestic_provider(),
-        source_countries=InCountry("USA"),
         special_data_sources=["congressional_representatives"],
-        data_credit=dict(
-            text="We adapt Jeffrey B. Lewis, Brandon DeVine, and Lincoln Pritcher with Kenneth C. Martis"
-            " to unclip the coastlines.",
-            linkText="Explanation of unclipping, and changes",
-            link="https://github.com/kavigupta/historical-congressional-unclipped",
-        ),
-        start_date=lambda x: to_year(x.start),
-        end_date=lambda x: to_year(x.end) + 1,
-        start_date_overall=decade + 3 if decade != 1780 else 1789,
-        end_date_overall=decade + 12,
-        include_in_syau=False,
-        wikidata_sourcer=CongressionalDistrictWikidataSourcer(),
+        source_countries=InCountry("USA"),
     )
     for decade in decades
 }
 
 HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = Shapefile(
-    hash_key="historical_congressional_2020_3",
-    path=lambda: load_shapefile("cd118", only_keep="past", minimum_district_length=2),
-    shortname_extractor=historical_shortname,
-    cleanname_extractor=lambda x: historical_shortname(x, include_date=False),
-    longname_extractor=lambda x: historical_shortname(x) + ", USA",
-    longname_sans_date_extractor=lambda x: historical_shortname(x, include_date=False)
-    + ", USA",
-    filter=lambda x: True,
-    meta=dict(
-        type="Congressional District (2020s)",
-        source="Census",
-        type_category="Political",
+    geometry=Geometry(
+        key="historical_congressional_2020_3",
+        path=lambda: load_shapefile(
+            "cd118", only_keep="past", minimum_district_length=2
+        ),
+        filter=lambda x: True,
     ),
-    # See above
-    does_overlap_self=True,
-    abbreviation="CONG",
+    temporal=Temporal(
+        start_date=lambda x: x["start_date"],
+        start_date_overall=2023,
+        end_date=lambda x: x["end_date"],
+        end_date_overall=2026,
+    ),
+    naming=Naming(
+        shortname_extractor=historical_shortname,
+        longname_extractor=lambda x: historical_shortname(x) + ", USA",
+        cleanname_extractor=lambda x: historical_shortname(x, include_date=False),
+        longname_sans_date_extractor=lambda x: historical_shortname(
+            x, include_date=False
+        )
+        + ", USA",
+    ),
+    metadata=Metadata(
+        meta=dict(
+            type="Congressional District (2020s)",
+            source="Census",
+            type_category="Political",
+        ),
+        # See above
+        does_overlap_self=True,
+        abbreviation="CONG",
+        data_credit=dict(
+            text="2020s data is from the US Census Bureau.",
+            linkText="US Census",
+            link="https://www2.census.gov/geo/tiger/TIGER2020/CD/",
+        ),
+        include_in_syau=False,
+        wikidata_sourcer=CongressionalDistrictWikidataSourcer(),
+    ),
     universe_provider=us_domestic_provider(),
-    source_countries=InCountry("USA"),
     special_data_sources=["congressional_representatives"],
-    data_credit=dict(
-        text="2020s data is from the US Census Bureau.",
-        linkText="US Census",
-        link="https://www2.census.gov/geo/tiger/TIGER2020/CD/",
-    ),
-    start_date=lambda x: x["start_date"],
-    end_date=lambda x: x["end_date"],
-    start_date_overall=2023,
-    end_date_overall=2026,
-    include_in_syau=False,
-    wikidata_sourcer=CongressionalDistrictWikidataSourcer(),
+    source_countries=InCountry("USA"),
 )
