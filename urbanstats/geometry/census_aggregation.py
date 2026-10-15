@@ -97,10 +97,6 @@ def _compute_crosswalk_canada(year, shapefile):
 
 def _compute_crosswalk_for_geometry_row(geometry_row, shapefile):
     s = shapefile.geometry.load_rows().reset_index(drop=True)
-    return _compute_crosswalk_direct(geometry_row, s)
-
-
-def _compute_crosswalk_direct(geometry_row, s):
     c = s.sjoin(
         geometry_row,
         how="inner",

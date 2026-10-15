@@ -28,12 +28,7 @@ def census_histogram_canada(shap, year):
 
 
 def generic_histogram(shap, table, density_keys):
-    return generic_histogram_direct(
-        shap.hash_key, shap.load_file(), table, density_keys
-    )
-
-
-def generic_histogram_direct(desc, s, table, density_keys):
+    s = shap.load_file()
     j = gpd.sjoin(
         s,
         gpd.GeoDataFrame(table[density_keys + ["population", "geometry"]]).to_crs(
@@ -42,7 +37,7 @@ def generic_histogram_direct(desc, s, table, density_keys):
     )
     rows_by_name = dict(list(j.groupby("longname", sort=False)))
     result = {}
-    for longname in tqdm.tqdm(s.longname, desc=desc):
+    for longname in tqdm.tqdm(s.longname, desc=shap.hash_key):
         if longname not in rows_by_name:
             continue
         rows = rows_by_name[longname]
