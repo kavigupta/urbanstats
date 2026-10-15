@@ -2,7 +2,7 @@ from permacache import permacache
 
 from urbanstats.data.wikipedia.wikidata_sourcer import CANADA_WIKIDATA_SOURCER
 from urbanstats.geometry.shapefiles.load_canada_shapefile import load_canadian_shapefile
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.canadian_census_divisions import (
     CANADIAN_CENSUS_DIVISIONS,
     subdivision_longname,
@@ -107,7 +107,7 @@ def census_subdivision_name(row):
     return name
 
 
-CANADIAN_CENSUS_SUBDIVISIONS = Shapefile(
+CANADIAN_CENSUS_SUBDIVISIONS = make_shapefile(
     hash_key="canadian_census_subdivisions_3",
     path=load_csd_shapefile,
     shortname_extractor=census_subdivision_name,

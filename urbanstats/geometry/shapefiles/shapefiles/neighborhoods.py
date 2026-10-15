@@ -1,10 +1,10 @@
 import us
 
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
-NEIGHBORHOODS = Shapefile(
+NEIGHBORHOODS = make_shapefile(
     hash_key="zillow_neighborhoods_6",
     path="named_region_shapefiles/Zillow_Neighborhoods/zillow.shp",
     shortname_extractor=lambda x: x["Name"] + ", " + x["City"],

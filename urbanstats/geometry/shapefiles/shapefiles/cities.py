@@ -4,7 +4,7 @@ import us
 
 from urbanstats.data.wikipedia.wikidata import query_sparlql
 from urbanstats.data.wikipedia.wikidata_sourcer import WikidataSourcer
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
@@ -24,7 +24,7 @@ class CityWikidataSourcer(WikidataSourcer):
         return query_sparlql("wdt:P774", geoid)
 
 
-CITIES = Shapefile(
+CITIES = make_shapefile(
     hash_key="census_places_6",
     path="named_region_shapefiles/cb_2022_us_place_500k.zip",
     shortname_extractor=lambda x: x.NAMELSAD,

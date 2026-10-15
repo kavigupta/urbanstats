@@ -18,7 +18,7 @@ from urbanstats.data.population_overlays import (
     relevant_regions,
 )
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
 from urbanstats.geometry.shapefiles.source_countries import ContainedWithinCountries
 from urbanstats.universe.universe_provider.combined_universe_provider import (
@@ -605,7 +605,7 @@ def produce_image(population):
 def circle_shapefile_object(country_shapefile, population):
     name = named_populations[population] + " Person Circle"
     version = 27
-    return Shapefile(
+    return make_shapefile(
         hash_key=f"population_circle_{named_populations[population]}_{version}",
         path=lambda: overlapping_circles_frame(
             country_shapefile, population, named_populations[population] + "PC"

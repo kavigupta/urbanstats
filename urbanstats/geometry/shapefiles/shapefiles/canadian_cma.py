@@ -4,7 +4,7 @@ from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     load_canadian_shapefile,
     pruid_to_province_abbr,
 )
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
@@ -67,7 +67,7 @@ def canadian_census_kwargs(typ, category):
     )
 
 
-CANADIAN_CENSUS_METROPOLITAN_AREAS = Shapefile(
+CANADIAN_CENSUS_METROPOLITAN_AREAS = make_shapefile(
     hash_key="census_cmas_2",
     path=load_cmas,
     shortname_extractor=shortname_extractor,

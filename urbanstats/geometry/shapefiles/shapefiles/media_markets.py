@@ -1,8 +1,8 @@
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
-MEDIA_MARKETS = Shapefile(
+MEDIA_MARKETS = make_shapefile(
     hash_key="media_markets_2",
     path="named_region_shapefiles/NatDMA.zip",
     shortname_extractor=lambda x: x["NAME"] + " Media Market",

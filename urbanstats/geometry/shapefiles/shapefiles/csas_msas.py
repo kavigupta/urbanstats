@@ -1,12 +1,12 @@
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.geometry.shapefiles.utils import name_components
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
 def csa_or_msa(hash_key, typ, census_name, wikidata_sourcer, path):
-    return Shapefile(
+    return make_shapefile(
         hash_key=hash_key,
         path=path,
         shortname_extractor=lambda x: name_components(typ, x)[0],

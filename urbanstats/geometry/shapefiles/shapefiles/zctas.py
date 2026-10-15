@@ -1,8 +1,8 @@
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
-ZCTAs = Shapefile(
+ZCTAs = make_shapefile(
     hash_key="census_zctas",
     path="named_region_shapefiles/cb_2018_us_zcta510_500k.zip",
     shortname_extractor=lambda x: f"{x.ZCTA5CE10}",

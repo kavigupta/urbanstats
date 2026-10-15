@@ -4,7 +4,7 @@ from attr import dataclass
 
 from urbanstats.data.wikipedia.wikidata import query_sparlql
 from urbanstats.data.wikipedia.wikidata_sourcer import WikidataSourcer
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
@@ -19,7 +19,7 @@ class CCDWikidataSourcer(WikidataSourcer):
         return query_sparlql("wdt:P774", f"{statefp}-{cousubfp}")
 
 
-CCDs = Shapefile(
+CCDs = make_shapefile(
     hash_key="census_cousub_9",
     path="named_region_shapefiles/cb_2023_us_cousub_500k.zip",
     shortname_extractor=lambda x: f"{x.NAMELSAD}",

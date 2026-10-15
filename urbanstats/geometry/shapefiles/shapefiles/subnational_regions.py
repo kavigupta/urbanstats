@@ -2,7 +2,7 @@ import us
 
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import ContainedWithinCountries
 from urbanstats.special_cases.country import subnational_regions
 from urbanstats.special_cases.country_names import iso_to_country
@@ -45,7 +45,7 @@ def compute_geoid(row):
     return st.fips
 
 
-SUBNATIONAL_REGIONS = Shapefile(
+SUBNATIONAL_REGIONS = make_shapefile(
     hash_key="subnational_regions_15",
     path=subnational_regions,
     shortname_extractor=lambda x: x["NAME"],

@@ -1,7 +1,7 @@
 import us
 
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
@@ -17,7 +17,7 @@ def compute_geoid(row):
     return row.STATEFP + row.COUNTYFP
 
 
-COUNTIES = Shapefile(
+COUNTIES = make_shapefile(
     hash_key="census_counties_7",
     path="named_region_shapefiles/cb_2022_us_county_500k.zip",
     shortname_extractor=county_name,

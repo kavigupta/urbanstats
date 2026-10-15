@@ -5,7 +5,7 @@ from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     load_canadian_shapefile,
     pruid_to_province_abbr,
 )
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.canadian_cma import (
     canadian_census_kwargs,
 )
@@ -53,7 +53,7 @@ def longname_extractor(row):
     return f"{shortname_extractor(row)}, {provinces}, Canada"
 
 
-CANADIAN_CENSUS_POPULATION_CENTERS = Shapefile(
+CANADIAN_CENSUS_POPULATION_CENTERS = make_shapefile(
     hash_key="census_pcs_2",
     path=load_pcs,
     shortname_extractor=shortname_extractor,

@@ -1,4 +1,4 @@
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
@@ -17,7 +17,7 @@ data_credit = dict(
     link="https://data.dartmouthatlas.org/supplemental/#boundaries",
 )
 
-HRRs = Shapefile(
+HRRs = make_shapefile(
     hash_key="hospital_referral_regions_3",
     path="named_region_shapefiles/hrr.geojson",
     shortname_extractor=lambda x: hrr_shortname(x.hrrcity),
@@ -38,7 +38,7 @@ HRRs = Shapefile(
     wikidata_sourcer=None,
     special_data_sources=["congressional_representatives_indirect"],
 )
-HSAs = Shapefile(
+HSAs = make_shapefile(
     hash_key="hospital_service_areas_2",
     path="named_region_shapefiles/HsaBdry_AK_HI_unmodified.geojson",
     shortname_extractor=lambda x: hrr_shortname(x.HSANAME, "HSA"),

@@ -11,7 +11,7 @@ from urbanstats.data.wikipedia.congressional_wikidata import (
     CongressionalDistrictWikidataSourcer,
 )
 from urbanstats.geometry.districts import consistent_district_padding
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.geometry.temporal_stacking import collapse_unchanged
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
@@ -316,7 +316,7 @@ def districts(
     special_data_sources=(),
     wikidata_sourcer=None,
 ):
-    return Shapefile(
+    return make_shapefile(
         hash_key=f"current_districts_{file_name}"
         + version_tag_by_file_name.get(file_name, ""),
         path=lambda: load_shapefile(

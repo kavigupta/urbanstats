@@ -1,5 +1,5 @@
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
@@ -16,7 +16,7 @@ def urban_area(name, *, is_shortname):
     return name
 
 
-URBAN_AREAS = Shapefile(
+URBAN_AREAS = make_shapefile(
     hash_key="urban_areas",
     path="named_region_shapefiles/tl_rd22_us_uac20.zip",
     shortname_extractor=lambda x: urban_area(x.NAMELSAD20, is_shortname=True),

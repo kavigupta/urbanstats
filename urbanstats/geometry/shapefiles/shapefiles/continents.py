@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.special_cases.country import continents
 from urbanstats.universe.universe_provider.combined_universe_provider import (
@@ -31,7 +31,7 @@ class ContinentsWikidataSourcer:
         return mapping[iso]
 
 
-CONTINENTS = Shapefile(
+CONTINENTS = make_shapefile(
     hash_key="continents_9",
     path=continents,
     shortname_extractor=lambda x: x.name_1,

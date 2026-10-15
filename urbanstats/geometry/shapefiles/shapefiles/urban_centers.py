@@ -1,5 +1,5 @@
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import ContainedWithinCountries
 from urbanstats.special_cases.ghsl_urban_center import load_ghsl_urban_center
 from urbanstats.universe.universe_provider.combined_universe_provider import (
@@ -12,7 +12,7 @@ from urbanstats.universe.universe_provider.universe_provider import (
 
 
 def create_urban_center_like_shapefile(**kwargs):
-    return Shapefile(
+    return make_shapefile(
         shortname_extractor=lambda x: x["shortname"],
         longname_extractor=lambda x: x["longname"],
         cleanname_extractor=lambda x: x["shortname"].removesuffix(

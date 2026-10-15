@@ -7,7 +7,7 @@ import numpy as np
 from urbanstats.data.wikipedia.congressional_wikidata import (
     CongressionalDistrictWikidataSourcer,
 )
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.districts import load_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
@@ -71,7 +71,7 @@ def historical_shortname(x, include_date=True):
 version_for_decade = {"default": 0.2}
 
 HISTORICAL_CONGRESSIONALs = {
-    f"historical_congressional_{decade}": Shapefile(
+    f"historical_congressional_{decade}": make_shapefile(
         hash_key=f"historical_congressional_{decade}_{version_for_decade.get(decade, version_for_decade['default'])}",
         path=functools.partial(filter_for_decade, decade),
         shortname_extractor=historical_shortname,
@@ -109,7 +109,7 @@ HISTORICAL_CONGRESSIONALs = {
     for decade in decades
 }
 
-HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = Shapefile(
+HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = make_shapefile(
     hash_key="historical_congressional_2020_3",
     path=lambda: load_shapefile("cd118", only_keep="past", minimum_district_length=2),
     shortname_extractor=historical_shortname,

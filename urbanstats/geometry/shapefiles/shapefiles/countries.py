@@ -1,6 +1,6 @@
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
     extract_country_longname,
@@ -14,7 +14,7 @@ from urbanstats.universe.universe_provider.combined_universe_provider import (
 from urbanstats.universe.universe_provider.constants import INTERNATIONAL_PROVIDERS
 from urbanstats.universe.universe_provider.self_provider import SelfUniverseProvider
 
-COUNTRIES = Shapefile(
+COUNTRIES = make_shapefile(
     hash_key="countries_12",
     path=countries,
     shortname_extractor=extract_country_longname,

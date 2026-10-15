@@ -6,7 +6,7 @@ import tqdm.auto as tqdm
 import us
 from permacache import permacache, stable_hash
 
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
 from urbanstats.geometry.shapefiles.shapefiles.districts import CONGRESSIONAL_DISTRICTS
 from urbanstats.geometry.shapefiles.source_countries import InCountry
@@ -61,7 +61,7 @@ def county_cross_cd(cds_sf=CONGRESSIONAL_DISTRICTS, counties_sf=COUNTIES):
     return db
 
 
-COUNTY_CROSS_CD = Shapefile(
+COUNTY_CROSS_CD = make_shapefile(
     hash_key="county_cross_cd_4_"
     + stable_hash((COUNTIES.hash_key, CONGRESSIONAL_DISTRICTS.hash_key))[:6],
     path=county_cross_cd,

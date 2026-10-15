@@ -2,7 +2,7 @@ import geopandas as gpd
 import pandas as pd
 from permacache import permacache
 
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
@@ -27,7 +27,7 @@ def usda_county_type():
     return regions
 
 
-USDA_COUNTY_TYPE = Shapefile(
+USDA_COUNTY_TYPE = make_shapefile(
     hash_key="usda_county_type",
     path=usda_county_type,
     shortname_extractor=lambda x: x.name + " [USDA County Type]",

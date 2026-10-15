@@ -3,7 +3,7 @@
 import geopandas as gpd
 from permacache import permacache
 
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
@@ -13,7 +13,7 @@ def is_native_statistical_area(row):
     return "OTSA" in x or "SDTSA" in x or "ANVSA" in x or "TDSA" in x
 
 
-NATIVE_AREAS = Shapefile(
+NATIVE_AREAS = make_shapefile(
     hash_key="native_areas_2",
     path="named_region_shapefiles/cb_2022_us_aiannh_500k.zip",
     shortname_extractor=lambda x: f"{x.NAMELSAD}",
@@ -34,7 +34,7 @@ NATIVE_AREAS = Shapefile(
     wikidata_sourcer=None,
     special_data_sources=["congressional_representatives_indirect"],
 )
-NATIVE_STATISTICAL_AREAS = Shapefile(
+NATIVE_STATISTICAL_AREAS = make_shapefile(
     hash_key="native_statistical_areas",
     path="named_region_shapefiles/cb_2022_us_aiannh_500k.zip",
     shortname_extractor=lambda x: f"{x.NAMELSAD}",
@@ -55,7 +55,7 @@ NATIVE_STATISTICAL_AREAS = Shapefile(
     wikidata_sourcer=None,
     special_data_sources=["congressional_representatives_indirect"],
 )
-NATIVE_SUBDIVISIONS = Shapefile(
+NATIVE_SUBDIVISIONS = make_shapefile(
     hash_key="native_subdivisions_2",
     path="named_region_shapefiles/cb_2022_us_aitsn_500k.zip",
     shortname_extractor=lambda x: f"{x.NAMELSAD}",

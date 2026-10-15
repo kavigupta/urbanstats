@@ -3,7 +3,7 @@ from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     load_canadian_shapefile,
     pruid_to_province,
 )
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.canadian_cma import (
     canadian_census_kwargs,
 )
@@ -12,7 +12,7 @@ from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
 )
 
-CANADIAN_DISTRICTS = Shapefile(
+CANADIAN_DISTRICTS = make_shapefile(
     hash_key="canadian_districts_2",
     path=lambda: load_canadian_shapefile(
         "named_region_shapefiles/canada/lfed000a21a_e.zip",

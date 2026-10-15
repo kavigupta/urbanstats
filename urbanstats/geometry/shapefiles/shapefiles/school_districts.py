@@ -4,7 +4,7 @@ import geopandas as gpd
 import pandas as pd
 from permacache import permacache
 
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
@@ -37,7 +37,7 @@ def school_district_shapefiles():
     return frame
 
 
-SCHOOL_DISTRICTS = Shapefile(
+SCHOOL_DISTRICTS = make_shapefile(
     hash_key="school_districts_2",
     path=school_district_shapefiles,
     shortname_extractor=lambda x: x["NAME"],
