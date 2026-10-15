@@ -17,7 +17,7 @@ class CensusTables:
     disagg_universe: str
 
     def compute(self, year, shapefile):
-        return compute_other_census_stats(self, year, shapefile)
+        return compute_other_census_stats(self, year, shapefile.geometry)
 
 
 @permacache_with_remapping_pickle(
@@ -34,11 +34,11 @@ def get_da_table_for_census_tables(census_tables: CensusTables, year):
 
 @permacache_with_remapping_pickle(
     "urbanstats/data/canada/canadian_da_data/compute_other_census_stats",
-    key_function=dict(census_tables=stable_hash, shapefile=lambda x: x.hash_key),
+    key_function=dict(census_tables=stable_hash),
 )
-def compute_other_census_stats(census_tables, year, shapefile):
+def compute_other_census_stats(census_tables, year, geometry):
     data = get_da_table_for_census_tables(census_tables, year)
-    return aggregate_by_census_block_canada(year, shapefile, data)
+    return aggregate_by_census_block_canada(year, geometry, data)
 
 
 def get_da_table(table_names, remapping, year, disagg_universe):

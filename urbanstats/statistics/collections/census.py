@@ -133,7 +133,7 @@ class CensusForPreviousYear(USAStatistics):
     ):
         statistics_table = {}
         year = self.year()
-        table = aggregate_basics_of_year(shapefile, year)
+        table = aggregate_basics_of_year(shapefile.geometry, year)
         for k in table:
             suffix = f"_{year}"
             assert k.endswith(suffix)
@@ -334,7 +334,7 @@ class Census2020(CensusForPreviousYear):
             existing_statistics=existing_statistics,
             shapefile_table=shapefile_table,
         )
-        median = population_median_point_usa(shapefile)
+        median = population_median_point_usa(shapefile.geometry)
         statistics_table["population_median_lat_usa"] = median["lat"]
         statistics_table["population_median_lon_usa"] = median["lon"]
         return statistics_table
@@ -410,10 +410,9 @@ class CensusChange2000(CensusChange):
 
 @permacache_with_remapping_pickle(
     "urbanstats/statistics/collections/aggregate_basics_of_year_4",
-    key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def aggregate_basics_of_year(shapefile, year):
-    print("aggregating basics of", year, "for", shapefile.hash_key)
+def aggregate_basics_of_year(geometry, year):
+    print("aggregating basics of", year, "for", geometry.key)
     sum_keys = [
         "population",
         "population_18",
@@ -424,17 +423,16 @@ def aggregate_basics_of_year(shapefile, year):
     sum_keys = [f"{k}_{year}" for k in sum_keys]
     t = all_densities_gpd(year)
     t.columns = [f"{k}_{year}" for k in t.columns]
-    return aggregate_by_census_block(year, shapefile, t[sum_keys])
+    return aggregate_by_census_block(year, geometry, t[sum_keys])
 
 
 @permacache_with_remapping_pickle(
     "urbanstats/statistics/collections/population_median_point_usa_2",
-    key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def population_median_point_usa(shapefile):
+def population_median_point_usa(geometry):
     _, population, _, _, coordinates = load_raw_census(2020)
-    return Crosswalk.compute_usa(2020, shapefile).compute_geometric_median_dataframe(
-        shapefile, population[:, 0], coordinates[:, 0], coordinates[:, 1]
+    return Crosswalk.compute_usa(2020, geometry).compute_geometric_median_dataframe(
+        geometry, population[:, 0], coordinates[:, 0], coordinates[:, 1]
     )
 
 
@@ -446,11 +444,10 @@ def extract_state_fips_from_geoid(geoid):
 
 @permacache_with_remapping_pickle(
     "urbanstats/statistics/collections/compute_population_for_year_3",
-    key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def compute_population_for_year(shapefile, *, no_pr):
+def compute_population_for_year(geometry, *, no_pr):
     """
-    Compute the population for a shapefile for a given year
+    Compute the population for a geometry for a given year
     """
     geoid, population, *_ = load_raw_census(2020)
     t = pd.DataFrame(
@@ -460,21 +457,20 @@ def compute_population_for_year(shapefile, *, no_pr):
         mask = t.geoid.apply(extract_state_fips_from_geoid) == "72"
         t.loc[mask, "population"] = 0
     t = t[["population"]]
-    agg = aggregate_by_census_block(2020, shapefile, t)
+    agg = aggregate_by_census_block(2020, geometry, t)
     return agg["population"]
 
 
 @permacache_with_remapping_pickle(
     "urbanstats/statistics/collections/population_by_year_4",
-    key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def population_by_year(shapefile, *, no_pr):
+def population_by_year(geometry, *, no_pr):
     """
     If no_pr is True, then Puerto Rico is not included in the population statistics
     """
-    statistics_table = pd.DataFrame(index=shapefile.geometry.load_rows().index)
+    statistics_table = pd.DataFrame(index=geometry.load_rows().index)
     for year in [2000, 2010, 2020]:
-        statistics_table[year] = compute_population_for_year(shapefile, no_pr=no_pr)
+        statistics_table[year] = compute_population_for_year(geometry, no_pr=no_pr)
     return statistics_table[[2000, 2010, 2020]]
 
 

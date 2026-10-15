@@ -27,9 +27,7 @@ def compute_population_overlay(shapefile, frame):
 def direct_population_overlay(frame, sh):
     overlays = gpd.overlay(frame, sh)
     res, _ = compute_gpw_data_for_shapefile.function(
-        SimpleNamespace(
-            load_file=lambda: overlays, hash_key="overlays " + uuid.uuid4().hex
-        ),
+        SimpleNamespace(load_rows=lambda: overlays, key="overlays " + uuid.uuid4().hex),
         collect_density=False,
         log=False,
         resolution_by_radius={k: 120 for k in GPW_RADII},

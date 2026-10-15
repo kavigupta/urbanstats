@@ -157,7 +157,7 @@ class CanadaElectionStatistics(CanadaStatistics):
         self, *, shapefile, existing_statistics, shapefile_table
     ):
         # pylint: disable=too-many-locals
-        table = aggregated_election_results_canada(shapefile)
+        table = aggregated_election_results_canada(shapefile.geometry)
         result = {}
 
         # Track which elections actually have data

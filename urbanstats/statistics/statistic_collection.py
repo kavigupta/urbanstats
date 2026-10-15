@@ -222,7 +222,7 @@ class ACSStatisticsColection(USAStatistics):
     ):
         result = {}
         for entity in self.acs_entity_dict().values():
-            acs_data = aggregated_acs_data(self.year(), entity, shapefile)
+            acs_data = aggregated_acs_data(self.year(), entity, shapefile.geometry)
             for column in acs_data.columns:
                 result[column] = acs_data[column]
         result = pd.DataFrame(result)
@@ -256,7 +256,7 @@ class ACSUSPRStatisticsColection(USAStatistics):
         for entities in self.acs_entity_dict().values():
             entity_us, entity_pr = entities
             acs_data = aggregated_acs_data_us_pr(
-                self.year(), entity_us, entity_pr, shapefile
+                self.year(), entity_us, entity_pr, shapefile.geometry
             )
             for column in acs_data.columns:
                 result[column] = acs_data[column]

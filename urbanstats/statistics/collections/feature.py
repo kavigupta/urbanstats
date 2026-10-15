@@ -91,7 +91,7 @@ class USFeatureDistanceStatistics(USAStatistics):
         self, *, shapefile, existing_statistics, shapefile_table
     ):
         statistics_table = {}
-        feats = features_by_region(shapefile)
+        feats = features_by_region(shapefile.geometry)
         for feat in feature_columns:
             statistics_table[feat] = feats[feat]
 
@@ -109,14 +109,13 @@ class USFeatureDistanceStatistics(USAStatistics):
 
 @permacache_with_remapping_pickle(
     "urbanstats/statistics/collections/feature/features_by_region",
-    key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def features_by_region(shapefile):
+def features_by_region(geometry):
     feats = feature_data()
     _, population, *_ = load_raw_census(2020)
     return aggregate_by_census_block(
         2020,
-        shapefile,
+        geometry,
         pd.DataFrame(
             {
                 **feats,

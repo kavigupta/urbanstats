@@ -17,7 +17,7 @@ class IMHELifeExpectancyStatistics(USAStatisticsCounties):
         self, *, shapefile, existing_statistics, shapefile_table
     ):
         population = np.array(existing_statistics["population"])
-        agg, doi = aggregate_to_suos(shapefile, ihme_2019)
+        agg, doi = aggregate_to_suos(shapefile.geometry, ihme_2019)
         agg = agg.copy()
         agg[doi > 0.001] = np.nan
         res = agg / (population[:, None] + 1e-9)

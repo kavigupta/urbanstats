@@ -68,8 +68,8 @@ class NHTSAAccidentStatistics(USAStatistics):
     def compute_statistics_dictionary_usa(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
-        acc_raw_all = accidents_by_region(shapefile)
-        pop = population_by_year(shapefile, no_pr=True)
+        acc_raw_all = accidents_by_region(shapefile.geometry)
+        pop = population_by_year(shapefile.geometry, no_pr=True)
         acc_per_cap_all = {
             y: {
                 k: for_year_and_key / compute_population(pop, y)

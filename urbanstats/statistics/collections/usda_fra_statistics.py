@@ -59,7 +59,7 @@ class USDAFRAStatistics(USAStatistics):
     ):
         statistics_table = {}
 
-        t = aggregated_usda_fra(shapefile)
+        t = aggregated_usda_fra(shapefile.geometry)
         for column in t.columns:
             statistics_table[column] = t[column]
 

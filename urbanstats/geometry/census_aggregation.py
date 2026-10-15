@@ -16,12 +16,12 @@ class Crosswalk:
     index_block: np.ndarray
 
     @staticmethod
-    def compute_usa(year, shapefile):
-        return _compute_crosswalk(year, shapefile)
+    def compute_usa(year, geometry):
+        return _compute_crosswalk(year, geometry)
 
     @staticmethod
-    def compute_canada(year, shapefile):
-        return _compute_crosswalk_canada(year, shapefile)
+    def compute_canada(year, geometry):
+        return _compute_crosswalk_canada(year, geometry)
 
     def compute_sum_by_shapefile(self, values):
         """
@@ -60,13 +60,13 @@ class Crosswalk:
             )
         return sum_array
 
-    def compute_sum_by_shapefile_dataframe(self, shapefile, values):
-        index = shapefile.geometry.load_rows().index
+    def compute_sum_by_shapefile_dataframe(self, geometry, values):
+        index = geometry.load_rows().index
         sum_array = self.compute_sum_by_region(np.array(values.fillna(0)), len(index))
         return pd.DataFrame(sum_array, columns=values.columns, index=index)
 
-    def compute_geometric_median_dataframe(self, shapefile, population, lat, lon):
-        index = shapefile.geometry.load_rows().index
+    def compute_geometric_median_dataframe(self, geometry, population, lat, lon):
+        index = geometry.load_rows().index
         median_lat, median_lon = geometric_median_by_group(
             self.index_shapefile,
             np.asarray(lat)[self.index_block],
@@ -77,26 +77,20 @@ class Crosswalk:
         return pd.DataFrame({"lat": median_lat, "lon": median_lon}, index=index)
 
 
-@permacache(
-    "urbanstats/geometry/census_aggregation/_compute_crosswalk_3",
-    key_function=dict(shapefile=lambda x: x.hash_key),
-)
-def _compute_crosswalk(year, shapefile):
+@permacache("urbanstats/geometry/census_aggregation/_compute_crosswalk_3")
+def _compute_crosswalk(year, geometry):
     geometry_row = census_block_points(year).fillna(0)
-    return _compute_crosswalk_for_geometry_row(geometry_row, shapefile)
+    return _compute_crosswalk_for_geometry_row(geometry_row, geometry)
 
 
-@permacache(
-    "urbanstats/geometry/census_aggregation/_compute_crosswalk_canada_2",
-    key_function=dict(shapefile=lambda x: x.hash_key),
-)
-def _compute_crosswalk_canada(year, shapefile):
+@permacache("urbanstats/geometry/census_aggregation/_compute_crosswalk_canada_2")
+def _compute_crosswalk_canada(year, geometry):
     geometry_row = load_canada_db_shapefile(year)[["geometry"]]
-    return _compute_crosswalk_for_geometry_row(geometry_row, shapefile)
+    return _compute_crosswalk_for_geometry_row(geometry_row, geometry)
 
 
-def _compute_crosswalk_for_geometry_row(geometry_row, shapefile):
-    s = shapefile.geometry.load_rows().reset_index(drop=True)
+def _compute_crosswalk_for_geometry_row(geometry_row, geometry):
+    s = geometry.load_rows().reset_index(drop=True)
     return _compute_crosswalk_direct(geometry_row, s)
 
 
@@ -110,11 +104,11 @@ def _compute_crosswalk_direct(geometry_row, s):
     return Crosswalk(index_shapefile, index_block)
 
 
-def aggregate_by_census_block(year, shapefile, values):
-    crosswalk = Crosswalk.compute_usa(year, shapefile)
-    return crosswalk.compute_sum_by_shapefile_dataframe(shapefile, values)
+def aggregate_by_census_block(year, geometry, values):
+    crosswalk = Crosswalk.compute_usa(year, geometry)
+    return crosswalk.compute_sum_by_shapefile_dataframe(geometry, values)
 
 
-def aggregate_by_census_block_canada(year, shapefile, values):
-    crosswalk = Crosswalk.compute_canada(year, shapefile)
-    return crosswalk.compute_sum_by_shapefile_dataframe(shapefile, values)
+def aggregate_by_census_block_canada(year, geometry, values):
+    crosswalk = Crosswalk.compute_canada(year, geometry)
+    return crosswalk.compute_sum_by_shapefile_dataframe(geometry, values)

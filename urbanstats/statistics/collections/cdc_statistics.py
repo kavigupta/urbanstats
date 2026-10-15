@@ -146,7 +146,7 @@ class CDCStatistics(USAStatistics):
         self, *, shapefile, existing_statistics, shapefile_table
     ):
         result = {}
-        cdc_table = aggregated_cdc_table(shapefile)
+        cdc_table = aggregated_cdc_table(shapefile.geometry)
         for cdc in self.internal_statistic_names_list():
             result[cdc] = cdc_table[cdc]
         for cdc in self.internal_statistic_names_list():
