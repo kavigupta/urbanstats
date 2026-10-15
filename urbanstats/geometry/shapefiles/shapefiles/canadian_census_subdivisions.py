@@ -2,10 +2,12 @@ from permacache import permacache
 
 from urbanstats.data.wikipedia.wikidata_sourcer import CANADA_WIKIDATA_SOURCER
 from urbanstats.geometry.shapefiles.load_canada_shapefile import load_canadian_shapefile
+from urbanstats.geometry.shapefiles.row_functions import column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.canadian_census_divisions import (
     CANADIAN_CENSUS_DIVISIONS,
-    subdivision_longname,
+    CENSUS_DIVISION_LONGNAME,
+    CensusDivisionName,
 )
 from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
@@ -94,28 +96,20 @@ def load_csd_shapefile():
         SUBNATIONAL_REGIONS,
     )
     cd = CANADIAN_CENSUS_DIVISIONS.path()
-    cdid_to_name = dict(zip(cd.CDUID, cd.apply(subdivision_longname, axis=1)))
+    cdid_to_name = dict(zip(cd.CDUID, cd.apply(CENSUS_DIVISION_LONGNAME, axis=1)))
     data["division_longname"] = data.CSDUID.apply(lambda x: cdid_to_name[x[:4]])
     return data
-
-
-def census_subdivision_name(row):
-    name = row.CSDNAME
-    name = name.replace("  ", " ")
-    if not name.startswith("Division"):
-        name += " " + cdtype[row.CSDTYPE]
-    return name
 
 
 CANADIAN_CENSUS_SUBDIVISIONS = make_shapefile(
     hash_key="canadian_census_subdivisions_3",
     path=load_csd_shapefile,
-    shortname_extractor=census_subdivision_name,
-    cleanname_extractor=lambda row: row.CSDNAME.replace("  ", " "),
-    longname_extractor=lambda row: census_subdivision_name(row)
+    shortname_extractor=CensusDivisionName("CSDNAME", "CSDTYPE", cdtype),
+    cleanname_extractor=(column("CSDNAME")).replace("  ", " "),
+    longname_extractor=CensusDivisionName("CSDNAME", "CSDTYPE", cdtype)
     + ", "
-    + row.division_longname,
-    additional_columns_computer={"scgc": lambda row: row.CSDUID},
+    + column("division_longname"),
+    additional_columns_computer={"scgc": column("CSDUID")},
     filter=lambda x: True,
     meta=dict(
         type="CA Census Subdivision",

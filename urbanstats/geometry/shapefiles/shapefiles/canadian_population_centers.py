@@ -1,12 +1,11 @@
 import geopandas as gpd
 from permacache import permacache
 
-from urbanstats.geometry.shapefiles.load_canada_shapefile import (
-    load_canadian_shapefile,
-    pruid_to_province_abbr,
-)
+from urbanstats.geometry.shapefiles.load_canada_shapefile import load_canadian_shapefile
+from urbanstats.geometry.shapefiles.row_functions import column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.canadian_cma import (
+    ProvinceAbbreviations,
     canadian_census_kwargs,
 )
 from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
@@ -44,21 +43,15 @@ def load_pcs():
     return table
 
 
-def shortname_extractor(row):
-    return row.PCNAME + " Population Center"
-
-
-def longname_extractor(row):
-    provinces = "-".join([pruid_to_province_abbr[x] for x in row.PRUID])
-    return f"{shortname_extractor(row)}, {provinces}, Canada"
-
-
 CANADIAN_CENSUS_POPULATION_CENTERS = make_shapefile(
     hash_key="census_pcs_2",
     path=load_pcs,
-    shortname_extractor=shortname_extractor,
-    cleanname_extractor=lambda row: row.PCNAME,
-    longname_extractor=longname_extractor,
+    shortname_extractor=column("PCNAME") + " Population Center",
+    cleanname_extractor=column("PCNAME"),
+    longname_extractor=column("PCNAME")
+    + " Population Center, "
+    + ProvinceAbbreviations(column("PRUID"))
+    + ", Canada",
     **canadian_census_kwargs("CA Population Center", "US Subdivision"),
     abbreviation="PC",
     data_credit=dict(

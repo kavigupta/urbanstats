@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from urbanstats.geometry.shapefiles.row_functions import column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.special_cases.country import continents
@@ -34,8 +35,8 @@ class ContinentsWikidataSourcer:
 CONTINENTS = make_shapefile(
     hash_key="continents_9",
     path=continents,
-    shortname_extractor=lambda x: x.name_1,
-    longname_extractor=lambda x: x.name_1,
+    shortname_extractor=column("name_1"),
+    longname_extractor=column("name_1"),
     filter=lambda x: x.name_1 != "Antarctica",
     meta=dict(type="Continent", source="OpenDataSoft", type_category="International"),
     does_overlap_self=False,

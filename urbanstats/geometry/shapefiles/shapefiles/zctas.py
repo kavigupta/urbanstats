@@ -1,3 +1,4 @@
+from urbanstats.geometry.shapefiles.row_functions import column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
@@ -5,10 +6,10 @@ from urbanstats.universe.universe_provider.constants import us_domestic_provider
 ZCTAs = make_shapefile(
     hash_key="census_zctas",
     path="named_region_shapefiles/cb_2018_us_zcta510_500k.zip",
-    shortname_extractor=lambda x: f"{x.ZCTA5CE10}",
-    longname_extractor=lambda x: f"{x.ZCTA5CE10}, USA",
+    shortname_extractor=column("ZCTA5CE10"),
+    longname_extractor=column("ZCTA5CE10") + ", USA",
     filter=lambda x: True,
-    additional_columns_computer={"geoid": lambda x: x.GEOID10},
+    additional_columns_computer={"geoid": column("GEOID10")},
     meta=dict(type="ZIP", source="Census", type_category="Small"),
     does_overlap_self=False,
     special_data_sources=[

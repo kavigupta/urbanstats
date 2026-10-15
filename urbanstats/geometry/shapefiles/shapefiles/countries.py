@@ -1,9 +1,10 @@
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
+from urbanstats.geometry.shapefiles.row_functions import column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
-    extract_country_longname,
+    CountryName,
 )
 from urbanstats.geometry.shapefiles.source_countries import IsCountry
 from urbanstats.special_cases.country import countries
@@ -17,9 +18,9 @@ from urbanstats.universe.universe_provider.self_provider import SelfUniverseProv
 COUNTRIES = make_shapefile(
     hash_key="countries_12",
     path=countries,
-    shortname_extractor=extract_country_longname,
-    longname_extractor=extract_country_longname,
-    additional_columns_computer={"iso": lambda x: x.ISO_CC},
+    shortname_extractor=CountryName(column("ISO_CC")),
+    longname_extractor=CountryName(column("ISO_CC")),
+    additional_columns_computer={"iso": column("ISO_CC")},
     filter=lambda x: iso_to_country(x.ISO_CC) is not None,
     meta=dict(type="Country", source="OpenDataSoft", type_category="International"),
     does_overlap_self=False,

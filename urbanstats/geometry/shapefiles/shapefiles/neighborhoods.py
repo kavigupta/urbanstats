@@ -1,5 +1,4 @@
-import us
-
+from urbanstats.geometry.shapefiles.row_functions import UsState, column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
@@ -7,12 +6,12 @@ from urbanstats.universe.universe_provider.constants import us_domestic_provider
 NEIGHBORHOODS = make_shapefile(
     hash_key="zillow_neighborhoods_6",
     path="named_region_shapefiles/Zillow_Neighborhoods/zillow.shp",
-    shortname_extractor=lambda x: x["Name"] + ", " + x["City"],
-    longname_extractor=lambda x: x["Name"]
+    shortname_extractor=column("Name") + ", " + column("City"),
+    longname_extractor=column("Name")
     + " Neighborhood, "
-    + x["City"]
+    + column("City")
     + " City, "
-    + us.states.lookup(x["State"]).name
+    + UsState(column("State"))
     + ", USA",
     filter=lambda x: True,
     meta=dict(type="Neighborhood", source="Zillow", type_category="Small"),

@@ -1,9 +1,12 @@
+from dataclasses import dataclass
+
 import pandas as pd
 
 from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     load_canadian_shapefile,
     pruid_to_province_abbr,
 )
+from urbanstats.geometry.shapefiles.row_functions import RowFunction, column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
@@ -42,15 +45,14 @@ def load_cmas():
     return data
 
 
-def shortname_extractor(row):
-    return row["CMANAME"] + " CMA"
+@dataclass(frozen=True)
+class ProvinceAbbreviations(RowFunction):
+    """The abbreviations of the provinces whose PRUIDs inner lists, joined by "-"."""
 
+    inner: RowFunction
 
-def longname_extractor(row):
-    sh = shortname_extractor(row)
-    provinces = [pruid_to_province_abbr[x] for x in row["PRUID"]]
-    provinces_render = "-".join(provinces)
-    return f"{sh}, {provinces_render}, Canada"
+    def __call__(self, row):
+        return "-".join(pruid_to_province_abbr[x] for x in self.inner(row))
 
 
 def canadian_census_kwargs(typ, category):
@@ -70,11 +72,14 @@ def canadian_census_kwargs(typ, category):
 CANADIAN_CENSUS_METROPOLITAN_AREAS = make_shapefile(
     hash_key="census_cmas_2",
     path=load_cmas,
-    shortname_extractor=shortname_extractor,
-    cleanname_extractor=lambda row: row["CMANAME"],
-    longname_extractor=longname_extractor,
+    shortname_extractor=column("CMANAME") + " CMA",
+    cleanname_extractor=column("CMANAME"),
+    longname_extractor=column("CMANAME")
+    + " CMA, "
+    + ProvinceAbbreviations(column("PRUID"))
+    + ", Canada",
     additional_columns_computer={
-        "scgc": lambda row: row.CMAUID,
+        "scgc": column("CMAUID"),
     },
     **canadian_census_kwargs("CA CMA", "Census"),
     abbreviation="CMA",
