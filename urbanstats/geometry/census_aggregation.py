@@ -91,10 +91,6 @@ def _compute_crosswalk_canada(year, geometry):
 
 def _compute_crosswalk_for_geometry_row(geometry_row, geometry):
     s = geometry.load_rows().reset_index(drop=True)
-    return _compute_crosswalk_direct(geometry_row, s)
-
-
-def _compute_crosswalk_direct(geometry_row, s):
     c = s.sjoin(
         geometry_row,
         how="inner",
