@@ -1,11 +1,20 @@
+import geopandas as gpd
+
 from urbanstats.geometry.shapefiles.row_functions import UsState, column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
+
+def load_neighborhoods():
+    table = gpd.read_file("named_region_shapefiles/Zillow_Neighborhoods/zillow.shp")
+    # Zillow lists some neighborhoods more than once, with the same name and shape
+    return table[~table.geometry.to_wkb().duplicated()].reset_index(drop=True)
+
+
 NEIGHBORHOODS = make_shapefile(
     hash_key="zillow_neighborhoods_6",
-    path="named_region_shapefiles/Zillow_Neighborhoods/zillow.shp",
+    path=load_neighborhoods,
     shortname_extractor=column("Name") + ", " + column("City"),
     longname_extractor=column("Name")
     + " Neighborhood, "

@@ -49,7 +49,6 @@ class Naming:
     cleanname_extractor = attr.ib(default=None)
     longname_sans_date_extractor = attr.ib(default=None)
     # The key of the shapefile whose regions tell duplicated longnames apart, e.g. "counties".
-    # Regions duplicated in both name and shape are dropped, so this affects which rows exist.
     drop_dup = attr.ib(default=None)
 
 
@@ -121,7 +120,7 @@ class Shapefile:
         This should be the only circular dependency related to shapefiles.
         """
         # pylint: disable=import-outside-toplevel,cyclic-import,too-many-branches
-        from urbanstats.special_cases.deduplicate_longnames import drop_duplicate
+        from urbanstats.special_cases.deduplicate_longnames import rename_duplicates
 
         if isinstance(self.path, list):
             s = gpd.GeoDataFrame(pd.concat([gpd.read_file(p) for p in self.path]))
@@ -186,7 +185,7 @@ class Shapefile:
                 .to_dict()
             )
             duplicates = {k: v for k, v in longname_to_indices.items() if len(v) > 1}
-            s = drop_duplicate(s, duplicates, self.drop_dup)
+            s = rename_duplicates(s, duplicates, self.drop_dup)
         if s.crs is None:
             s.crs = "EPSG:4326"
         s = s.to_crs("EPSG:4326")
