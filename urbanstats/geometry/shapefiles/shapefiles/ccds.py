@@ -5,7 +5,7 @@ from attr import dataclass
 from urbanstats.data.wikipedia.wikidata import query_sparlql
 from urbanstats.data.wikipedia.wikidata_sourcer import WikidataSourcer
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
@@ -34,7 +34,7 @@ CCDs = Shapefile(
         "congressional_representatives_indirect",
     ],
     universe_provider=us_domestic_provider(),
-    subset_masks={"USA": SelfSubset()},
+    source_countries=InCountry("USA"),
     abbreviation="CCD",
     data_credit=dict(
         linkText="US Census",

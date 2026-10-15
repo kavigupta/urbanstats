@@ -4,7 +4,7 @@ import geopandas as gpd
 from permacache import permacache
 
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
@@ -24,7 +24,7 @@ NATIVE_AREAS = Shapefile(
     meta=dict(type="Native Area", source="Census", type_category="Native"),
     does_overlap_self=False,
     universe_provider=us_domestic_provider(),
-    subset_masks={"USA": SelfSubset()},
+    source_countries=InCountry("USA"),
     abbreviation="NAAR",
     data_credit=dict(
         linkText="US Census",
@@ -45,7 +45,7 @@ NATIVE_STATISTICAL_AREAS = Shapefile(
     meta=dict(type="Native Statistical Area", source="Census", type_category="Native"),
     does_overlap_self=False,
     universe_provider=us_domestic_provider(),
-    subset_masks={"USA": SelfSubset()},
+    source_countries=InCountry("USA"),
     abbreviation="NASA",
     data_credit=dict(
         linkText="US Census",
@@ -66,7 +66,7 @@ NATIVE_SUBDIVISIONS = Shapefile(
     meta=dict(type="Native Subdivision", source="Census", type_category="Native"),
     does_overlap_self=False,
     universe_provider=us_domestic_provider(),
-    subset_masks={"USA": SelfSubset()},
+    source_countries=InCountry("USA"),
     abbreviation="NASD",
     data_credit=dict(
         linkText="US Census",

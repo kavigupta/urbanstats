@@ -8,10 +8,7 @@ from urbanstats.acs.load import (
     aggregated_acs_data,
     aggregated_acs_data_us_pr,
 )
-from urbanstats.geometry.shapefiles.shapefile import (
-    EmptyShapefileError,
-    subset_mask_key,
-)
+from urbanstats.geometry.shapefiles.shapefile import EmptyShapefileError
 
 
 class StatisticCollection(ABC):
@@ -167,7 +164,7 @@ class CanadaStatistics(StatisticCollection):
 def compute_subset_statistics(
     shapefile, existing_statistics, shapefile_table, *, subset, compute_function
 ):
-    if subset not in shapefile.subset_masks:
+    if subset not in shapefile.source_country_list:
         return False, {}
 
     shapefile_subset = shapefile.subset_shapefile(subset)
@@ -181,7 +178,8 @@ def compute_subset_statistics(
         shapefile_subset.load_file()
     except EmptyShapefileError:
         return False, {}
-    mask = shapefile_table[subset_mask_key(subset)]
+    by_region = shapefile.source_countries.by_region(shapefile)
+    mask = np.array([cs == (subset,) for cs in by_region.loc[shapefile_table.index]])
     [idxs] = np.where(mask)
     for_subset = compute_function(
         shapefile=shapefile_subset,
@@ -193,6 +191,10 @@ def compute_subset_statistics(
 
     full = {}
     for k in for_subset:
+        assert len(for_subset[k]) == len(idxs), (
+            f"{k} has {len(for_subset[k])} values for the {len(idxs)} regions of"
+            f" {shapefile_subset.hash_key}"
+        )
         result = [np.nan] * len(shapefile_table)
         for idx, value in zip(idxs, for_subset[k]):
             result[idx] = value

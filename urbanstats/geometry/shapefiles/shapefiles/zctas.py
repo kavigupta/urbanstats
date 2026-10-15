@@ -1,5 +1,5 @@
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 ZCTAs = Shapefile(
@@ -16,7 +16,7 @@ ZCTAs = Shapefile(
         "congressional_representatives_indirect",
     ],
     universe_provider=us_domestic_provider(),
-    subset_masks={"USA": SelfSubset()},
+    source_countries=InCountry("USA"),
     abbreviation="ZIP",
     data_credit=dict(
         linkText="US Census",

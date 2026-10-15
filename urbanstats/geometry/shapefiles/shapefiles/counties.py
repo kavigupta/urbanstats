@@ -2,7 +2,7 @@ import us
 
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
@@ -31,7 +31,7 @@ COUNTIES = Shapefile(
     meta=dict(type="County", source="Census", type_category="US Subdivision"),
     does_overlap_self=False,
     universe_provider=us_domestic_provider(),
-    subset_masks={"USA": SelfSubset()},
+    source_countries=InCountry("USA"),
     abbreviation="COU",
     data_credit=dict(
         linkText="US Census",

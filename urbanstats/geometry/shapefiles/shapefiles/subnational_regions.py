@@ -3,7 +3,7 @@ import us
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
+from urbanstats.geometry.shapefiles.source_countries import ContainedWithinCountries
 from urbanstats.special_cases.country import subnational_regions
 from urbanstats.special_cases.country_names import iso_to_country
 from urbanstats.universe.universe_provider.combined_universe_provider import (
@@ -55,6 +55,7 @@ SUBNATIONAL_REGIONS = Shapefile(
         "geoid": compute_geoid,
         "iso": lambda x: x.ISO_CC + "-" + x.ISO_SUB if x.ISO_SUB is not None else None,
     },
+    intermediate_computation_columns=["NAME", "ISO_CC"],
     meta=dict(type="Subnational Region", source="ESRI", type_category="US Subdivision"),
     does_overlap_self=False,
     special_data_sources=[
@@ -65,15 +66,7 @@ SUBNATIONAL_REGIONS = Shapefile(
     universe_provider=CombinedUniverseProvider(
         [*INTERNATIONAL_PROVIDERS, STATE_PROVIDER, PROVINCE_PROVIDER]
     ),
-    subset_masks={
-        "USA": FilteringSubset(
-            "State",
-            lambda x: extract_country_longname(x) == "USA" and valid_state(x.NAME),
-        ),
-        "Canada": FilteringSubset(
-            "Province", lambda x: extract_country_longname(x) == "Canada"
-        ),
-    },
+    source_countries=ContainedWithinCountries({"USA": "State", "Canada": "Province"}),
     cross_source_borders=CrossSourceBorders(can_straddle=False),
     abbreviation="SUBN",
     data_credit=[

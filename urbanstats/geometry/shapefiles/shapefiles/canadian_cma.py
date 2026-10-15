@@ -5,11 +5,11 @@ from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     pruid_to_province_abbr,
 )
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
 )
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import canada_domestic_provider
 
 
@@ -63,7 +63,7 @@ def canadian_census_kwargs(typ, category):
         ),
         does_overlap_self=False,
         universe_provider=canada_domestic_provider(),
-        subset_masks={"Canada": SelfSubset()},
+        source_countries=InCountry("Canada"),
     )
 
 
