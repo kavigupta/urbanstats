@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad Business [25-64] % [StatCan]",
+      "stat_path": "education_field_business_canada",
+      "question": "higher % of people between 25 and 64 who have a business degree, as a percentage of the overall population",
+      "longname_a": "Qu\u00e9bec Territory, Quebec, Canada",
+      "longname_b": "Fraser Valley Regional district, British Columbia, Canada",
+      "stat_a": 0.08755984902381897,
+      "stat_b": 0.03771046921610832
+    },
+    "b": {
+      "stat_column": "Racial Homogeneity Change (2000-2020) %",
+      "stat_path": "homogeneity_250_diff_2000",
+      "question": "!FULL Which diversified less between 2000 and 2020?!TOOLTIP We define racial diversity as the average probability a person selecting a random person in a 250m radius will select someone of a different race",
+      "longname_a": "Queens County, New York, USA",
+      "longname_b": "Jefferson Parish, Louisiana, USA",
+      "stat_a": -0.03691060096025467,
+      "stat_b": -0.1742658019065857
+    },
+    "a_ease": 0.7195233730522457,
+    "b_ease": 0.2694466720128308
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2015-2019 Swing 2-Coalition Margin",
+      "stat_path": "2015-2019 Swing-coalition_margin",
+      "question": "!FULL Which swung less towards the right-of-center parties between the 2015 and 2019 elections?!TOOLTIP By 2-Coalition Margin, which is calculated as (Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation.",
+      "longname_a": "Vancouver CMA, BC, Canada",
+      "longname_b": "Montr\u00e9al CMA, QC, Canada",
+      "stat_a": -0.06599479913711548,
+      "stat_b": -0.08065429329872131
+    },
+    "b": {
+      "stat_column": "Health technologists and technicians %",
+      "stat_path": "occupation_health_technologists_and_technicians",
+      "question": "higher % of workers employed as health technologists and technicians!TOOLTIP radiology technicians, lab technicians, hospital machinery technicians, etc.",
+      "longname_a": "Gulfport-Biloxi-Pascagoula MSA, MS, USA",
+      "longname_b": "Salt Lake City MSA, UT, USA",
+      "stat_a": 0.035256292670965195,
+      "stat_b": 0.017788518220186234
+    },
+    "a_ease": 0.6282183316168898,
+    "b_ease": 0.21972734562951082
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Graduate degree [25-64] %",
+      "stat_path": "education_grad_canada",
+      "question": "higher % of people between 25 and 64 who have a graduate degree",
+      "longname_a": "Halifax Regional Municipality, Halifax County, Nova Scotia, Canada",
+      "longname_b": "Hamilton City, Hamilton CDR, Ontario, Canada",
+      "stat_a": 0.11382303386926651,
+      "stat_b": 0.08180300146341324
+    },
+    "b": {
+      "stat_column": "Boomer %",
+      "stat_path": "generation_boomer",
+      "question": "higher % of people who are boomers!TOOLTIP born between 1946 and 1966",
+      "longname_a": "CA-04 (2023), USA",
+      "longname_b": "CO-06 (2023), USA",
+      "stat_a": 0.23810790479183197,
+      "stat_b": 0.20727932453155518
+    },
+    "a_ease": 0.1869313482216708,
+    "b_ease": 0.6327543424317618
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Muslim % [StatCan]",
+      "stat_path": "religion_muslim_canada",
+      "question": "higher % of people who are Muslim",
+      "longname_a": "Calgary City, Division No. 6, Alberta, Canada",
+      "longname_b": "Qu\u00e9bec Ville, Qu\u00e9bec Territory, Quebec, Canada",
+      "stat_a": 0.07130692154169083,
+      "stat_b": 0.028228413313627243
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Airport",
+      "stat_path": "mean_dist_Airport_updated",
+      "question": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
+      "longname_a": "Norwich-New London MSA, CT, USA",
+      "longname_b": "Trenton MSA, NJ, USA",
+      "stat_a": 58.40709686279297,
+      "stat_b": 11.753108024597168
+    },
+    "a_ease": 0.4195634599838319,
+    "b_ease": 0.8312958435207825
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Housing Cost/Income > 30% [StatCan]",
+      "stat_path": "rent_burden_over_30_canada",
+      "question": "higher % of households spending 30% or more of income on shelter costs",
+      "longname_a": "Qu\u00e9bec CMA, QC, Canada",
+      "longname_b": "London CMA, ON, Canada",
+      "stat_a": 0.1374959647655487,
+      "stat_b": 0.2197236269712448
+    },
+    "b": {
+      "stat_column": "2020 Presidential Election",
+      "stat_path": "2020 Presidential Election-margin",
+      "question": "!FULL Which voted more for Biden in the 2020 presidential election?",
+      "longname_a": "TX-04 (2023), USA",
+      "longname_b": "IN-01 (2023), USA",
+      "stat_a": -0.25879159569740295,
+      "stat_b": 0.08355790376663208
+    },
+    "a_ease": 0.4188817598533456,
+    "b_ease": 0.8520614389652384
+  }
+]
