@@ -110,7 +110,7 @@ def pull_data(year, substr):
     key_function=dict(shapefile=lambda x: x.hash_key, years=list),
 )
 def accidents_by_region(shapefile, years=accident_years):
-    sf = shapefile.load_file().reset_index(drop=True)
+    sf = shapefile.geometry.load_rows().reset_index(drop=True)
     result = {}
     for year in tqdm.tqdm(years, desc="aggregating accidents"):
         joined = gpd.sjoin(sf[["geometry"]], accidents_dataframe_for_year(year))[

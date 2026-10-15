@@ -407,19 +407,19 @@ def compute_gpw_data_for_shapefile(
     Compute the GHS-POP data for a shapefile.
     """
 
-    shapes = shapefile.load_file()
+    shapes = shapefile.geometry.load_rows()
 
     result = {"gpw_population": [], **{f"gpw_pw_density_{k}": [] for k in GPW_RADII}}
 
     result_hists = {f"gpw_pw_density_histogram_{k}": [] for k in GPW_RADII}
 
-    for longname, shape in tqdm.tqdm(
-        zip(shapes.longname, shapes.geometry),
+    for row, shape in tqdm.tqdm(
+        zip(shapes.index, shapes.geometry),
         desc=f"gpw for {shapefile.hash_key}",
         total=len(shapes),
     ):
         if log:
-            print(longname)
+            print(row)
         res, hists = compute_gpw_for_shape_raster(
             shape,
             collect_density=collect_density,
@@ -446,7 +446,7 @@ def compute_gpw_population_median_for_shapefile(
     Uses the 3" grid only for shapes with at most max_coarse_cells_for_fine populated 30" cells,
     beyond which the 3" grid is slow and its extra precision is small relative to the shape.
     """
-    shapes = shapefile.load_file()
+    shapes = shapefile.geometry.load_rows()
     lats, lons = [], []
     for shape in tqdm.tqdm(
         shapes.geometry, desc=f"gpw population median for {shapefile.hash_key}"

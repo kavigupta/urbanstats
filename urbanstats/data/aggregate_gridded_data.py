@@ -102,7 +102,7 @@ def statistics_for_shape(gridded_data_sources, shape):
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def statistics_for_shapefile(gridded_data_sources, shapefile):
-    sf = shapefile.load_file()
+    sf = shapefile.geometry.load_rows()
     result = {k: [] for k in gridded_data_sources}
     for shape in tqdm.tqdm(sf.geometry):
         stats, _ = statistics_for_shape(gridded_data_sources, shape)
@@ -132,7 +132,7 @@ def population_weighted_by_census_block(columns, load_columns, sf, chunk_size=5)
     _, population, *_ = load_raw_census(2020)
     population = population[:, 0].astype(np.float64)
     crosswalk = Crosswalk.compute_usa(2020, sf)
-    index = sf.load_file().index
+    index = sf.geometry.load_rows().index
     total_population = crosswalk.compute_sum_by_region(population[:, None], len(index))[
         :, 0
     ]
