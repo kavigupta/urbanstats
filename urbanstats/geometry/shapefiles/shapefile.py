@@ -109,19 +109,11 @@ class Shapefile:
     include_in_syau = _from_layer("metadata", "include_in_syau")
     wikidata_sourcer = _from_layer("metadata", "wikidata_sourcer")
 
-    def load_file(self):
+    def load_rows(self):
         """
-        Load the shapefile and apply the filters and extractors.
-
-        This has a circular dependency with the deduplicate_longnames module, which
-        needs to load other shapefiles to figure out how to disambiguate duplicated
-        longnames.
-
-        This should be the only circular dependency related to shapefiles.
+        The geometry's regions: the loaded file after the filter, with its own columns, in
+        EPSG:4326. load_file's rows and index are the same.
         """
-        # pylint: disable=import-outside-toplevel,cyclic-import,too-many-branches
-        from urbanstats.special_cases.deduplicate_longnames import rename_duplicates
-
         if isinstance(self.path, list):
             s = gpd.GeoDataFrame(pd.concat([gpd.read_file(p) for p in self.path]))
             s = s.reset_index(drop=True)
@@ -136,6 +128,25 @@ class Shapefile:
         s = s[s.apply(self.filter, axis=1)]
         if s.shape[0] == 0:
             raise EmptyShapefileError
+        s = gpd.GeoDataFrame(s, geometry="geometry")
+        if s.crs is None:
+            s = s.set_crs("EPSG:4326")
+        return s.to_crs("EPSG:4326")
+
+    def load_file(self):
+        """
+        Load the shapefile and apply the filters and extractors.
+
+        This has a circular dependency with the deduplicate_longnames module, which
+        needs to load other shapefiles to figure out how to disambiguate duplicated
+        longnames.
+
+        This should be the only circular dependency related to shapefiles.
+        """
+        # pylint: disable=import-outside-toplevel,cyclic-import,too-many-branches
+        from urbanstats.special_cases.deduplicate_longnames import rename_duplicates
+
+        s = self.load_rows()
         for k, v in self.additional_columns_computer.items():
             s[k] = s.apply(v, axis=1)
 
@@ -186,9 +197,6 @@ class Shapefile:
             )
             duplicates = {k: v for k, v in longname_to_indices.items() if len(v) > 1}
             s = rename_duplicates(s, duplicates, self.disambiguate_with)
-        if s.crs is None:
-            s.crs = "EPSG:4326"
-        s = s.to_crs("EPSG:4326")
         # Handles both situations where longname_sans_date_extractor is None
         # (we do this here so we can get the updated longnames)
         # and ones where it produces NaNs for some entries (we want to fill those with longname)
