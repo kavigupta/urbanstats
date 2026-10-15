@@ -68,10 +68,13 @@ def _from_layer(layer, name):
 @attr.s
 class Shapefile:
     geometry = attr.ib()
+    # vulture: ignore -- read through _from_layer
     naming = attr.ib()
     metadata = attr.ib()
     universe_provider = attr.ib()
+    # vulture: ignore -- read through _from_layer
     temporal = attr.ib(default=attr.Factory(Temporal))
+    # vulture: ignore -- read through _from_layer
     identifiers = attr.ib(default=attr.Factory(Identifiers))
     special_data_sources = attr.ib(default=attr.Factory(dict))
     # Optional[SourceCountries], for shapefiles with regions a source country's statistics cover
@@ -118,66 +121,60 @@ class Shapefile:
         # pylint: disable=import-outside-toplevel,cyclic-import,too-many-branches
         from urbanstats.special_cases.deduplicate_longnames import drop_duplicate
 
-        if isinstance(self.geometry.path, list):
-            s = gpd.GeoDataFrame(
-                pd.concat([gpd.read_file(p) for p in self.geometry.path])
-            )
+        if isinstance(self.path, list):
+            s = gpd.GeoDataFrame(pd.concat([gpd.read_file(p) for p in self.path]))
             s = s.reset_index(drop=True)
-        elif isinstance(self.geometry.path, str):
-            if self.geometry.path.endswith(".pkl"):
-                with open(self.geometry.path, "rb") as f:
+        elif isinstance(self.path, str):
+            if self.path.endswith(".pkl"):
+                with open(self.path, "rb") as f:
                     s = pickle.load(f).reset_index(drop=True)
             else:
-                s = gpd.read_file(self.geometry.path)
+                s = gpd.read_file(self.path)
         else:
-            s = self.geometry.path()
-        s = s[s.apply(self.geometry.filter, axis=1)]
+            s = self.path()
+        s = s[s.apply(self.filter, axis=1)]
         if s.shape[0] == 0:
             raise EmptyShapefileError
-        for k, v in self.identifiers.additional_columns_computer.items():
+        for k, v in self.additional_columns_computer.items():
             s[k] = s.apply(v, axis=1)
 
-        if self.temporal.start_date is not None:
-            assert self.naming.longname_sans_date_extractor is not None
-            s["start_date"] = s.apply(self.temporal.start_date, axis=1)
+        if self.start_date is not None:
+            assert self.longname_sans_date_extractor is not None
+            s["start_date"] = s.apply(self.start_date, axis=1)
         else:
             s["start_date"] = -float("inf")
 
-        if self.temporal.end_date is not None:
-            assert self.naming.longname_sans_date_extractor is not None
-            s["end_date"] = s.apply(self.temporal.end_date, axis=1)
+        if self.end_date is not None:
+            assert self.longname_sans_date_extractor is not None
+            s["end_date"] = s.apply(self.end_date, axis=1)
         else:
             s["end_date"] = float("inf")
 
-        assert self.temporal.start_date_overall == min(
+        assert self.start_date_overall == min(
             s.start_date
-        ), f"{self.temporal.start_date_overall} != {min(s.start_date)}"
+        ), f"{self.start_date_overall} != {min(s.start_date)}"
 
-        assert self.temporal.end_date_overall == max(
+        assert self.end_date_overall == max(
             s.end_date
-        ), f"{self.temporal.end_date_overall} != {max(s.end_date)}"
+        ), f"{self.end_date_overall} != {max(s.end_date)}"
 
-        s["shortname"] = s.apply(self.naming.shortname_extractor, axis=1)
+        s["shortname"] = s.apply(self.shortname_extractor, axis=1)
         s["cleanname"] = (
             s["shortname"]
-            if self.naming.cleanname_extractor is None
-            else s.apply(self.naming.cleanname_extractor, axis=1)
+            if self.cleanname_extractor is None
+            else s.apply(self.cleanname_extractor, axis=1)
         )
-        s["longname"] = s.apply(self.naming.longname_extractor, axis=1)
-        if self.naming.longname_sans_date_extractor is not None:
-            s["longname_sans_date"] = s.apply(
-                self.naming.longname_sans_date_extractor, axis=1
-            )
+        s["longname"] = s.apply(self.longname_extractor, axis=1)
+        if self.longname_sans_date_extractor is not None:
+            s["longname_sans_date"] = s.apply(self.longname_sans_date_extractor, axis=1)
         else:
             s["longname_sans_date"] = None
         s = gpd.GeoDataFrame(
             {col: s[col] for col in self.available_columns(include_intermediates=True)},
             geometry=s.geometry,
         )
-        if self.geometry.drop_dup:
-            assert (
-                self.naming.longname_sans_date_extractor is None
-            ), "Currently not supported"
+        if self.drop_dup:
+            assert self.longname_sans_date_extractor is None, "Currently not supported"
             longname_to_indices = (
                 s["longname"]
                 .reset_index(drop=True)
@@ -187,10 +184,10 @@ class Shapefile:
                 .to_dict()
             )
             duplicates = {k: v for k, v in longname_to_indices.items() if len(v) > 1}
-            if self.geometry.drop_dup is True:
+            if self.drop_dup is True:
                 s = s[s.longname.apply(lambda x: x not in duplicates)]
             else:
-                s = drop_duplicate(s, duplicates, self.geometry.drop_dup)
+                s = drop_duplicate(s, duplicates, self.drop_dup)
         if s.crs is None:
             s.crs = "EPSG:4326"
         s = s.to_crs("EPSG:4326")
@@ -222,12 +219,8 @@ class Shapefile:
             "longname_sans_date",
             "start_date",
             "end_date",
-            *self.identifiers.additional_columns_computer,
-            *(
-                self.identifiers.intermediate_computation_columns
-                if include_intermediates
-                else []
-            ),
+            *self.additional_columns_computer,
+            *(self.intermediate_computation_columns if include_intermediates else []),
         ]
 
     @property
