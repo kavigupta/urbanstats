@@ -232,23 +232,78 @@ class Shapefile:
         ]
 
 
-def make_shapefile(*, hash_key, **kwargs):
-    """
-    A Shapefile from its layers' fields, each passed by name. hash_key is the geometry's key; fields
-    that belong to no layer go to the Shapefile itself.
-    """
-    kwargs["key"] = hash_key
-    layers = {}
-    for name, layer in [
-        ("geometry", Geometry),
-        ("temporal", Temporal),
-        ("identifiers", Identifiers),
-        ("naming", Naming),
-        ("metadata", Metadata),
-    ]:
-        fields = attr.fields_dict(layer).keys() & kwargs.keys()
-        layers[name] = layer(**{k: kwargs.pop(k) for k in fields})
-    return Shapefile(**layers, **kwargs)
+# pylint: disable-next=too-many-arguments,too-many-locals
+def make_shapefile(
+    *,
+    hash_key,
+    path,
+    filter,  # pylint: disable=redefined-builtin
+    shortname_extractor,
+    longname_extractor,
+    meta,
+    does_overlap_self,
+    universe_provider,
+    abbreviation,
+    data_credit,
+    include_in_syau,
+    wikidata_sourcer,
+    drop_dup=False,
+    chunk_size=None,
+    start_date=None,
+    start_date_overall=-float("inf"),
+    end_date=None,
+    end_date_overall=float("inf"),
+    additional_columns_computer=None,
+    intermediate_computation_columns=(),
+    cleanname_extractor=None,
+    longname_sans_date_extractor=None,
+    special_data_sources=None,
+    source_countries=None,
+    cross_source_borders=None,
+):
+    return Shapefile(
+        geometry=Geometry(
+            key=hash_key,
+            path=path,
+            filter=filter,
+            drop_dup=drop_dup,
+            chunk_size=chunk_size,
+        ),
+        temporal=Temporal(
+            start_date=start_date,
+            start_date_overall=start_date_overall,
+            end_date=end_date,
+            end_date_overall=end_date_overall,
+        ),
+        identifiers=Identifiers(
+            additional_columns_computer=(
+                {}
+                if additional_columns_computer is None
+                else additional_columns_computer
+            ),
+            intermediate_computation_columns=intermediate_computation_columns,
+        ),
+        naming=Naming(
+            shortname_extractor=shortname_extractor,
+            longname_extractor=longname_extractor,
+            cleanname_extractor=cleanname_extractor,
+            longname_sans_date_extractor=longname_sans_date_extractor,
+        ),
+        metadata=Metadata(
+            meta=meta,
+            does_overlap_self=does_overlap_self,
+            abbreviation=abbreviation,
+            data_credit=data_credit,
+            include_in_syau=include_in_syau,
+            wikidata_sourcer=wikidata_sourcer,
+        ),
+        universe_provider=universe_provider,
+        special_data_sources={}
+        if special_data_sources is None
+        else special_data_sources,
+        source_countries=source_countries,
+        cross_source_borders=cross_source_borders,
+    )
 
 
 class EmptyShapefileError(Exception):
