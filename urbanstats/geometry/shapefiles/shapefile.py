@@ -18,6 +18,10 @@ class Geometry:
     filter = attr.ib()
     does_overlap_self = attr.ib()
 
+    def __permacache_hash__(self):
+        # path and filter are functions, which stable_hash can't hash, so the key stands in for them
+        return self.key
+
 
 @attr.s(frozen=True)
 class Temporal:

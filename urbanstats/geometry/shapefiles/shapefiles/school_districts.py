@@ -4,6 +4,7 @@ import geopandas as gpd
 import pandas as pd
 from permacache import permacache
 
+from urbanstats.geometry.shapefiles.row_functions import column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
 from urbanstats.geometry.shapefiles.source_countries import InCountry
@@ -40,8 +41,12 @@ def school_district_shapefiles():
 SCHOOL_DISTRICTS = make_shapefile(
     hash_key="school_districts_2",
     path=school_district_shapefiles,
-    shortname_extractor=lambda x: x["NAME"],
-    longname_extractor=lambda x: f"{x['NAME']}{x['suffix']}, {x['STATE_NAME']}, USA",
+    shortname_extractor=column("NAME"),
+    longname_extractor=column("NAME")
+    + column("suffix")
+    + ", "
+    + column("STATE_NAME")
+    + ", USA",
     filter=lambda x: True,
     meta=dict(type="School District", source="Census", type_category="School"),
     # This has all kinds of districts, some of which are not unified

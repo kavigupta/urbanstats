@@ -1,5 +1,6 @@
 import functools
 import pickle
+from dataclasses import dataclass
 from functools import lru_cache
 
 import numpy as np
@@ -7,6 +8,7 @@ import numpy as np
 from urbanstats.data.wikipedia.congressional_wikidata import (
     CongressionalDistrictWikidataSourcer,
 )
+from urbanstats.geometry.shapefiles.row_functions import RowFunction, column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.districts import load_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
@@ -50,22 +52,36 @@ def filter_for_decade(decade):
     return filt
 
 
-def historical_shortname(x, include_date=True):
-    if "start" in x:
-        year = to_year(x.start)
-    else:
-        year = x.start_date
-    district = int(x["district"])
-    if district == -1:
-        district = "NA"
-    elif district == 0:
-        district = "AL"
-    else:
-        district = f"{district:02d}"
-    name = f'{x["state"]}-{district}'
-    if include_date:
-        return f"{name} ({year})"
-    return name
+@dataclass(frozen=True)
+class CongressYear(RowFunction):
+    """The year the congress whose number inner gives started."""
+
+    inner: RowFunction
+
+    def __call__(self, row):
+        return to_year(self.inner(row))
+
+
+@dataclass(frozen=True)
+class HistoricalShortname(RowFunction):
+    include_date: bool = True
+
+    def __call__(self, row):
+        if "start" in row:
+            year = to_year(row.start)
+        else:
+            year = row.start_date
+        district = int(row["district"])
+        if district == -1:
+            district = "NA"
+        elif district == 0:
+            district = "AL"
+        else:
+            district = f"{district:02d}"
+        name = f'{row["state"]}-{district}'
+        if self.include_date:
+            return f"{name} ({year})"
+        return name
 
 
 version_for_decade = {"default": 0.2}
@@ -74,13 +90,10 @@ HISTORICAL_CONGRESSIONALs = {
     f"historical_congressional_{decade}": make_shapefile(
         hash_key=f"historical_congressional_{decade}_{version_for_decade.get(decade, version_for_decade['default'])}",
         path=functools.partial(filter_for_decade, decade),
-        shortname_extractor=historical_shortname,
-        cleanname_extractor=lambda x: historical_shortname(x, include_date=False),
-        longname_extractor=lambda x: historical_shortname(x) + ", USA",
-        longname_sans_date_extractor=lambda x: historical_shortname(
-            x, include_date=False
-        )
-        + ", USA",
+        shortname_extractor=HistoricalShortname(),
+        cleanname_extractor=HistoricalShortname(include_date=False),
+        longname_extractor=HistoricalShortname() + ", USA",
+        longname_sans_date_extractor=HistoricalShortname(include_date=False) + ", USA",
         filter=lambda x: True,
         meta=dict(
             type=f"Congressional District ({decade}s)",
@@ -99,8 +112,8 @@ HISTORICAL_CONGRESSIONALs = {
             linkText="Explanation of unclipping, and changes",
             link="https://github.com/kavigupta/historical-congressional-unclipped",
         ),
-        start_date=lambda x: to_year(x.start),
-        end_date=lambda x: to_year(x.end) + 1,
+        start_date=CongressYear(column("start")),
+        end_date=CongressYear(column("end")) + 1,
         start_date_overall=decade + 3 if decade != 1780 else 1789,
         end_date_overall=decade + 12,
         include_in_syau=False,
@@ -112,11 +125,10 @@ HISTORICAL_CONGRESSIONALs = {
 HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = make_shapefile(
     hash_key="historical_congressional_2020_3",
     path=lambda: load_shapefile("cd118", only_keep="past", minimum_district_length=2),
-    shortname_extractor=historical_shortname,
-    cleanname_extractor=lambda x: historical_shortname(x, include_date=False),
-    longname_extractor=lambda x: historical_shortname(x) + ", USA",
-    longname_sans_date_extractor=lambda x: historical_shortname(x, include_date=False)
-    + ", USA",
+    shortname_extractor=HistoricalShortname(),
+    cleanname_extractor=HistoricalShortname(include_date=False),
+    longname_extractor=HistoricalShortname() + ", USA",
+    longname_sans_date_extractor=HistoricalShortname(include_date=False) + ", USA",
     filter=lambda x: True,
     meta=dict(
         type="Congressional District (2020s)",
@@ -134,8 +146,8 @@ HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = make_shapefile(
         linkText="US Census",
         link="https://www2.census.gov/geo/tiger/TIGER2020/CD/",
     ),
-    start_date=lambda x: x["start_date"],
-    end_date=lambda x: x["end_date"],
+    start_date=column("start_date"),
+    end_date=column("end_date"),
     start_date_overall=2023,
     end_date_overall=2026,
     include_in_syau=False,

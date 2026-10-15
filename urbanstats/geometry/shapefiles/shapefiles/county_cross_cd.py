@@ -6,6 +6,7 @@ import tqdm.auto as tqdm
 import us
 from permacache import permacache, stable_hash
 
+from urbanstats.geometry.shapefiles.row_functions import column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
 from urbanstats.geometry.shapefiles.shapefiles.districts import CONGRESSIONAL_DISTRICTS
@@ -65,9 +66,9 @@ COUNTY_CROSS_CD = make_shapefile(
     hash_key="county_cross_cd_4_"
     + stable_hash((COUNTIES.hash_key, CONGRESSIONAL_DISTRICTS.hash_key))[:6],
     path=county_cross_cd,
-    shortname_extractor=lambda x: x["shortname"],
-    longname_extractor=lambda x: x["longname"],
-    longname_sans_date_extractor=lambda x: x["longname_sans_date"],
+    shortname_extractor=column("shortname"),
+    longname_extractor=column("longname"),
+    longname_sans_date_extractor=column("longname_sans_date"),
     filter=lambda x: True,
     meta=dict(type="County Cross CD", source="Census", type_category="Political"),
     does_overlap_self=False,

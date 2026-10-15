@@ -1,3 +1,4 @@
+from urbanstats.geometry.shapefiles.row_functions import column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
@@ -5,9 +6,9 @@ from urbanstats.universe.universe_provider.constants import us_domestic_provider
 MEDIA_MARKETS = make_shapefile(
     hash_key="media_markets_2",
     path="named_region_shapefiles/NatDMA.zip",
-    shortname_extractor=lambda x: x["NAME"] + " Media Market",
-    cleanname_extractor=lambda x: x["NAME"],
-    longname_extractor=lambda x: x["NAME"] + " Media Market, USA",
+    shortname_extractor=column("NAME") + " Media Market",
+    cleanname_extractor=column("NAME"),
+    longname_extractor=column("NAME") + " Media Market, USA",
     filter=lambda x: x.NAME != "National",
     meta=dict(
         type="Media Market",

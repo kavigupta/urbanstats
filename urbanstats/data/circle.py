@@ -18,6 +18,7 @@ from urbanstats.data.population_overlays import (
     relevant_regions,
 )
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
+from urbanstats.geometry.shapefiles.row_functions import column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
 from urbanstats.geometry.shapefiles.source_countries import ContainedWithinCountries
@@ -610,11 +611,11 @@ def circle_shapefile_object(country_shapefile, population):
         path=lambda: overlapping_circles_frame(
             country_shapefile, population, named_populations[population] + "PC"
         ),
-        shortname_extractor=lambda x: x["shortname"],
-        cleanname_extractor=lambda x: x["shortname"].removesuffix(
+        shortname_extractor=column("shortname"),
+        cleanname_extractor=(column("shortname")).removesuffix(
             " " + named_populations[population] + "PC"
         ),
-        longname_extractor=lambda x: x["longname"],
+        longname_extractor=column("longname"),
         meta=dict(type=name, source="GHSL", type_category="Kavi"),
         filter=lambda x: True,
         does_overlap_self=False,
