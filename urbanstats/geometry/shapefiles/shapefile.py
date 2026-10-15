@@ -20,6 +20,7 @@ class Geometry:
     key = attr.ib()
     path = attr.ib()
     filter = attr.ib()
+    does_overlap_self = attr.ib()
     drop_dup = attr.ib(default=False)
     chunk_size = attr.ib(default=None)
 
@@ -54,7 +55,6 @@ class Naming:
 @attr.s(frozen=True)
 class Metadata:
     meta = attr.ib()
-    does_overlap_self = attr.ib()
     abbreviation = attr.ib()
     data_credit = attr.ib()
     include_in_syau = attr.ib()
@@ -102,7 +102,7 @@ class Shapefile:
     cleanname_extractor = _from_layer("naming", "cleanname_extractor")
     longname_sans_date_extractor = _from_layer("naming", "longname_sans_date_extractor")
     meta = _from_layer("metadata", "meta")
-    does_overlap_self = _from_layer("metadata", "does_overlap_self")
+    does_overlap_self = _from_layer("geometry", "does_overlap_self")
     abbreviation = _from_layer("metadata", "abbreviation")
     data_credit = _from_layer("metadata", "data_credit")
     include_in_syau = _from_layer("metadata", "include_in_syau")
@@ -266,6 +266,7 @@ def make_shapefile(
             key=hash_key,
             path=path,
             filter=filter,
+            does_overlap_self=does_overlap_self,
             drop_dup=drop_dup,
             chunk_size=chunk_size,
         ),
@@ -291,7 +292,6 @@ def make_shapefile(
         ),
         metadata=Metadata(
             meta=meta,
-            does_overlap_self=does_overlap_self,
             abbreviation=abbreviation,
             data_credit=data_credit,
             include_in_syau=include_in_syau,
