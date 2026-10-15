@@ -51,7 +51,10 @@ export async function startProxy(): Promise<void> {
             proxyReqOpts.headers = { ...proxyReqOpts.headers as OutgoingHttpHeaders, authorization: `Bearer ${token}` }
             return proxyReqOpts
         },
-        userResHeaderDecorator(headers, userReq) {
+        userResHeaderDecorator(headers, userReq, userRes, proxyReq, proxyRes) {
+            if ((proxyRes.statusCode ?? 500) >= 400) {
+                console.warn(`raw.githubusercontent answered ${proxyRes.statusCode} for ${userReq.path}`)
+            }
             const fileExtension = (/\.(.+)$/.exec(userReq.path))?.[1]
             const mimeType = fileExtension ? { html: 'text/html', js: 'text/javascript' }[fileExtension] : undefined
             // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-restricted-syntax -- We're removing the context-security-policy header via destructuring
