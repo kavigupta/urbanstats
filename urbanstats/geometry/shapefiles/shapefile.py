@@ -49,8 +49,7 @@ class Naming:
     cleanname_extractor = attr.ib(default=None)
     longname_sans_date_extractor = attr.ib(default=None)
     # The key of the shapefile whose regions tell duplicated longnames apart, e.g. "counties".
-    # Regions duplicated in both name and shape are dropped, so this affects which rows exist.
-    drop_dup = attr.ib(default=None)
+    disambiguate_with = attr.ib(default=None)
 
 
 @attr.s(frozen=True)
@@ -88,7 +87,7 @@ class Shapefile:
     hash_key = _from_layer("geometry", "key")
     path = _from_layer("geometry", "path")
     filter = _from_layer("geometry", "filter")
-    drop_dup = _from_layer("naming", "drop_dup")
+    disambiguate_with = _from_layer("naming", "disambiguate_with")
     start_date = _from_layer("temporal", "start_date")
     start_date_overall = _from_layer("temporal", "start_date_overall")
     end_date = _from_layer("temporal", "end_date")
@@ -121,7 +120,7 @@ class Shapefile:
         This should be the only circular dependency related to shapefiles.
         """
         # pylint: disable=import-outside-toplevel,cyclic-import,too-many-branches
-        from urbanstats.special_cases.deduplicate_longnames import drop_duplicate
+        from urbanstats.special_cases.deduplicate_longnames import rename_duplicates
 
         if isinstance(self.path, list):
             s = gpd.GeoDataFrame(pd.concat([gpd.read_file(p) for p in self.path]))
@@ -175,7 +174,7 @@ class Shapefile:
             {col: s[col] for col in self.available_columns(include_intermediates=True)},
             geometry=s.geometry,
         )
-        if self.drop_dup is not None:
+        if self.disambiguate_with is not None:
             assert self.longname_sans_date_extractor is None, "Currently not supported"
             longname_to_indices = (
                 s["longname"]
@@ -186,7 +185,7 @@ class Shapefile:
                 .to_dict()
             )
             duplicates = {k: v for k, v in longname_to_indices.items() if len(v) > 1}
-            s = drop_duplicate(s, duplicates, self.drop_dup)
+            s = rename_duplicates(s, duplicates, self.disambiguate_with)
         if s.crs is None:
             s.crs = "EPSG:4326"
         s = s.to_crs("EPSG:4326")
@@ -246,7 +245,7 @@ def make_shapefile(
     data_credit,
     include_in_syau,
     wikidata_sourcer,
-    drop_dup=None,
+    disambiguate_with=None,
     chunk_size=None,
     start_date=None,
     start_date_overall=-float("inf"),
@@ -286,7 +285,7 @@ def make_shapefile(
             longname_extractor=longname_extractor,
             cleanname_extractor=cleanname_extractor,
             longname_sans_date_extractor=longname_sans_date_extractor,
-            drop_dup=drop_dup,
+            disambiguate_with=disambiguate_with,
         ),
         metadata=Metadata(
             meta=meta,

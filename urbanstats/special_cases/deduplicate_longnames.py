@@ -37,8 +37,8 @@ def strip_suffix(name):
     raise ValueError(f"Unknown suffix in {name}")
 
 
-def compute_additional_name(geometry, drop_dup_shapefile_key):
-    counties_in = locate_rows(geometry, drop_dup_shapefile_key)[
+def compute_additional_name(geometry, disambiguate_with):
+    counties_in = locate_rows(geometry, disambiguate_with)[
         ["longname", "shortname", "overlap_pct"]
     ].copy()
     counties_in.sort_values("overlap_pct", inplace=True, ascending=False)
@@ -65,28 +65,10 @@ def compute_new_longname(addtl_name, longname, shortname):
     return new_longname
 
 
-def remove_total_duplicates(s, indices):
-    first_row = s.iloc[indices[0]]
-    hash_geo = stable_hash(first_row.geometry.__geo_interface__)
-    kept = [indices[0]]
-    duplicates = []
-    for idx in indices[1:]:
-        if stable_hash(s.iloc[idx].geometry.__geo_interface__) == hash_geo:
-            duplicates.append(idx)
-        else:
-            kept.append(idx)
-    return kept, duplicates
-
-
-def drop_duplicate(s, duplicates, drop_dup_shapefile_key):
-    all_delete_indices = set()
+def rename_duplicates(s, duplicates, disambiguate_with):
     for longname, indices in tqdm.tqdm(list(duplicates.items())):
-        indices, delete_indices = remove_total_duplicates(s, indices)
-        all_delete_indices.update(delete_indices)
-        if len(indices) == 1:
-            continue
         addtl_name_each = [
-            compute_additional_name(s.iloc[idx].geometry, drop_dup_shapefile_key)
+            compute_additional_name(s.iloc[idx].geometry, disambiguate_with)
             for idx in indices
         ]
         addtl_name_each = naive_directions_for_rows_with_names(
@@ -97,13 +79,12 @@ def drop_duplicate(s, duplicates, drop_dup_shapefile_key):
                 addtl_name, longname, s.iloc[idx].shortname
             )
             s.loc[idx, "longname"] = new_longname
-    s = s.drop(index=all_delete_indices).reset_index(drop=True)
     return s
 
 
 @lru_cache(None)
-def load_shapefile_cached(drop_dup_shapefile_key):
-    return shapefiles[drop_dup_shapefile_key].load_file()
+def load_shapefile_cached(shapefile_key):
+    return shapefiles[shapefile_key].load_file()
 
 
 def shapefile_hash_key(sf_key):
