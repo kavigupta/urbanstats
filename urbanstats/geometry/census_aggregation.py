@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List
 
 import numpy as np
 import pandas as pd
@@ -13,18 +12,8 @@ from urbanstats.geometry.weighted_statistics import geometric_median_by_group
 
 @dataclass
 class Crosswalk:
-    shapefile_index_actual: List[object]
     index_shapefile: np.ndarray
     index_block: np.ndarray
-
-    @classmethod
-    def combine(cls, crosswalks):
-        shapefile_index_actual = [
-            idx for c in crosswalks for idx in c.shapefile_index_actual
-        ]
-        index_shapefile = np.concatenate([c.index_shapefile for c in crosswalks])
-        index_block = np.concatenate([c.index_block for c in crosswalks])
-        return cls(shapefile_index_actual, index_shapefile, index_block)
 
     @staticmethod
     def compute_usa(year, shapefile):
@@ -108,16 +97,7 @@ def _compute_crosswalk_canada(year, shapefile):
 
 def _compute_crosswalk_for_geometry_row(geometry_row, shapefile):
     s = shapefile.geometry.load_rows().reset_index(drop=True)
-    if shapefile.chunk_size is None:
-        return _compute_crosswalk_direct(geometry_row, s)
-    crosswalks = []
-    for chunk in tqdm.trange(0, len(s), shapefile.chunk_size):
-        crosswalks.append(
-            _compute_crosswalk_direct(
-                geometry_row, s[chunk : chunk + shapefile.chunk_size]
-            )
-        )
-    return Crosswalk.combine(crosswalks)
+    return _compute_crosswalk_direct(geometry_row, s)
 
 
 def _compute_crosswalk_direct(geometry_row, s):
@@ -127,7 +107,7 @@ def _compute_crosswalk_direct(geometry_row, s):
         predicate="intersects",
     )
     index_shapefile, index_block = np.array(c.index), np.array(c.index_right)
-    return Crosswalk(s.index, index_shapefile, index_block)
+    return Crosswalk(index_shapefile, index_block)
 
 
 def aggregate_by_census_block(year, shapefile, values):

@@ -41,7 +41,6 @@ CONTINENTS = make_shapefile(
     meta=dict(type="Continent", source="OpenDataSoft", type_category="International"),
     does_overlap_self=False,
     special_data_sources=["international_gridded_data", "composed_of_counties"],
-    chunk_size=1,
     universe_provider=CombinedUniverseProvider(
         [ConstantUniverseProvider(["world"]), SelfUniverseProvider()]
     ),

@@ -82,9 +82,4 @@ def compute_contained_in(shapefile, universe_shapefile, longname_filter=None):
         if missing:
             raise ValueError(f"Missing longnames in universe shapefile: {missing}")
         universe_df = universe_df[universe_df.longname.isin(longname_filter)]
-    return compute_contained_in_direct(
-        shapefile.load_file(),
-        universe_df,
-        universe_shapefile.chunk_size,
-        shapefile.chunk_size,
-    )
+    return compute_contained_in_direct(shapefile.load_file(), universe_df)
