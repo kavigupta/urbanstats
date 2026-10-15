@@ -4,13 +4,7 @@ from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     load_canadian_shapefile,
     pruid_to_province_abbr,
 )
-from urbanstats.geometry.shapefiles.shapefile import (
-    Geometry,
-    Identifiers,
-    Metadata,
-    Naming,
-    Shapefile,
-)
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
@@ -59,39 +53,35 @@ def longname_extractor(row):
     return f"{sh}, {provinces_render}, Canada"
 
 
-def canadian_census_metadata(typ, category, **kwargs):
-    return Metadata(
+def canadian_census_kwargs(typ, category):
+    return dict(
+        filter=lambda x: True,
         meta=dict(
             type=typ,
             source="StatCan",
             type_category=category,
         ),
         does_overlap_self=False,
-        **kwargs,
+        universe_provider=canada_domestic_provider(),
+        source_countries=InCountry("Canada"),
     )
 
 
-CANADIAN_CENSUS_METROPOLITAN_AREAS = Shapefile(
-    geometry=Geometry(key="census_cmas_2", path=load_cmas, filter=lambda x: True),
-    identifiers=Identifiers(
-        additional_columns_computer={"scgc": lambda row: row.CMAUID}
+CANADIAN_CENSUS_METROPOLITAN_AREAS = make_shapefile(
+    hash_key="census_cmas_2",
+    path=load_cmas,
+    shortname_extractor=shortname_extractor,
+    cleanname_extractor=lambda row: row["CMANAME"],
+    longname_extractor=longname_extractor,
+    additional_columns_computer={
+        "scgc": lambda row: row.CMAUID,
+    },
+    **canadian_census_kwargs("CA CMA", "Census"),
+    abbreviation="CMA",
+    data_credit=dict(
+        linkText="Canadian Census",
+        link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lcma000a21a_e.zip",
     ),
-    naming=Naming(
-        shortname_extractor=shortname_extractor,
-        longname_extractor=longname_extractor,
-        cleanname_extractor=lambda row: row["CMANAME"],
-    ),
-    metadata=canadian_census_metadata(
-        "CA CMA",
-        "Census",
-        abbreviation="CMA",
-        data_credit=dict(
-            linkText="Canadian Census",
-            link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lcma000a21a_e.zip",
-        ),
-        include_in_syau=True,
-        wikidata_sourcer=None,
-    ),
-    universe_provider=canada_domestic_provider(),
-    source_countries=InCountry("Canada"),
+    include_in_syau=True,
+    wikidata_sourcer=None,
 )

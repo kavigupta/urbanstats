@@ -1,16 +1,10 @@
-# pylint: disable=duplicate-code
 from collections import Counter
 
 import geopandas as gpd
 import pandas as pd
 from permacache import permacache
 
-from urbanstats.geometry.shapefiles.shapefile import (
-    Geometry,
-    Metadata,
-    Naming,
-    Shapefile,
-)
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
@@ -43,30 +37,24 @@ def school_district_shapefiles():
     return frame
 
 
-SCHOOL_DISTRICTS = Shapefile(
-    geometry=Geometry(
-        key="school_districts_2",
-        path=school_district_shapefiles,
-        filter=lambda x: True,
-    ),
-    naming=Naming(
-        shortname_extractor=lambda x: x["NAME"],
-        longname_extractor=lambda x: f"{x['NAME']}{x['suffix']}, {x['STATE_NAME']}, USA",
-    ),
-    metadata=Metadata(
-        meta=dict(type="School District", source="Census", type_category="School"),
-        # This has all kinds of districts, some of which are not unified
-        # So e.g., elementary districts can overlap with high school districts
-        does_overlap_self=True,
-        abbreviation="SCLD",
-        data_credit=dict(
-            linkText="US Census",
-            link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
-        ),
-        include_in_syau=True,
-        wikidata_sourcer=None,
-    ),
+SCHOOL_DISTRICTS = make_shapefile(
+    hash_key="school_districts_2",
+    path=school_district_shapefiles,
+    shortname_extractor=lambda x: x["NAME"],
+    longname_extractor=lambda x: f"{x['NAME']}{x['suffix']}, {x['STATE_NAME']}, USA",
+    filter=lambda x: True,
+    meta=dict(type="School District", source="Census", type_category="School"),
+    # This has all kinds of districts, some of which are not unified
+    # So e.g., elementary districts can overlap with high school districts
+    does_overlap_self=True,
     universe_provider=us_domestic_provider(),
-    special_data_sources=["congressional_representatives_indirect"],
     source_countries=InCountry("USA"),
+    abbreviation="SCLD",
+    data_credit=dict(
+        linkText="US Census",
+        link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
+    ),
+    include_in_syau=True,
+    wikidata_sourcer=None,
+    special_data_sources=["congressional_representatives_indirect"],
 )

@@ -2,12 +2,7 @@ import geopandas as gpd
 import pandas as pd
 from permacache import permacache
 
-from urbanstats.geometry.shapefiles.shapefile import (
-    Geometry,
-    Metadata,
-    Naming,
-    Shapefile,
-)
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
@@ -32,29 +27,23 @@ def usda_county_type():
     return regions
 
 
-USDA_COUNTY_TYPE = Shapefile(
-    geometry=Geometry(
-        key="usda_county_type",
-        path=usda_county_type,
-        filter=lambda x: True,
-    ),
-    naming=Naming(
-        shortname_extractor=lambda x: x.name + " [USDA County Type]",
-        longname_extractor=lambda x: x.name + " [USDA County Type], USA",
-        cleanname_extractor=lambda x: x.name,
-    ),
-    metadata=Metadata(
-        meta=dict(type="USDA County Type", source="Census", type_category="Oddball"),
-        does_overlap_self=False,
-        abbreviation="USDA",
-        data_credit=dict(
-            linkText="USDA",
-            link="https://www.ers.usda.gov/data-products/county-typology-codes/",
-        ),
-        include_in_syau=True,
-        wikidata_sourcer=None,
-    ),
+USDA_COUNTY_TYPE = make_shapefile(
+    hash_key="usda_county_type",
+    path=usda_county_type,
+    shortname_extractor=lambda x: x.name + " [USDA County Type]",
+    cleanname_extractor=lambda x: x.name,
+    longname_extractor=lambda x: x.name + " [USDA County Type], USA",
+    filter=lambda x: True,
+    meta=dict(type="USDA County Type", source="Census", type_category="Oddball"),
+    does_overlap_self=False,
     universe_provider=us_domestic_provider(),
-    special_data_sources=["composed_of_counties"],
     source_countries=InCountry("USA"),
+    abbreviation="USDA",
+    data_credit=dict(
+        linkText="USDA",
+        link="https://www.ers.usda.gov/data-products/county-typology-codes/",
+    ),
+    include_in_syau=True,
+    special_data_sources=["composed_of_counties"],
+    wikidata_sourcer=None,
 )

@@ -239,6 +239,25 @@ class Shapefile:
         ]
 
 
+def make_shapefile(*, hash_key, **kwargs):
+    """
+    A Shapefile from its layers' fields, each passed by name. hash_key is the geometry's key; fields
+    that belong to no layer go to the Shapefile itself.
+    """
+    kwargs["key"] = hash_key
+    layers = {}
+    for name, layer in [
+        ("geometry", Geometry),
+        ("temporal", Temporal),
+        ("identifiers", Identifiers),
+        ("naming", Naming),
+        ("metadata", Metadata),
+    ]:
+        fields = attr.fields_dict(layer).keys() & kwargs.keys()
+        layers[name] = layer(**{k: kwargs.pop(k) for k in fields})
+    return Shapefile(**layers, **kwargs)
+
+
 class EmptyShapefileError(Exception):
     pass
 

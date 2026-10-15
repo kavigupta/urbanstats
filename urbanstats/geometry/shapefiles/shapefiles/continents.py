@@ -1,11 +1,6 @@
 from dataclasses import dataclass
 
-from urbanstats.geometry.shapefiles.shapefile import (
-    Geometry,
-    Metadata,
-    Naming,
-    Shapefile,
-)
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.special_cases.country import continents
 from urbanstats.universe.universe_provider.combined_universe_provider import (
@@ -36,29 +31,21 @@ class ContinentsWikidataSourcer:
         return mapping[iso]
 
 
-CONTINENTS = Shapefile(
-    geometry=Geometry(
-        key="continents_9",
-        path=continents,
-        filter=lambda x: x.name_1 != "Antarctica",
-        chunk_size=1,
-    ),
-    naming=Naming(
-        shortname_extractor=lambda x: x.name_1,
-        longname_extractor=lambda x: x.name_1,
-    ),
-    metadata=Metadata(
-        meta=dict(
-            type="Continent", source="OpenDataSoft", type_category="International"
-        ),
-        does_overlap_self=False,
-        abbreviation="CONT",
-        data_credit=COUNTRIES.data_credit,
-        include_in_syau=True,
-        wikidata_sourcer=ContinentsWikidataSourcer(),
-    ),
+CONTINENTS = make_shapefile(
+    hash_key="continents_9",
+    path=continents,
+    shortname_extractor=lambda x: x.name_1,
+    longname_extractor=lambda x: x.name_1,
+    filter=lambda x: x.name_1 != "Antarctica",
+    meta=dict(type="Continent", source="OpenDataSoft", type_category="International"),
+    does_overlap_self=False,
+    special_data_sources=["international_gridded_data", "composed_of_counties"],
+    chunk_size=1,
     universe_provider=CombinedUniverseProvider(
         [ConstantUniverseProvider(["world"]), SelfUniverseProvider()]
     ),
-    special_data_sources=["international_gridded_data", "composed_of_counties"],
+    abbreviation="CONT",
+    data_credit=COUNTRIES.data_credit,
+    include_in_syau=True,
+    wikidata_sourcer=ContinentsWikidataSourcer(),
 )

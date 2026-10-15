@@ -5,16 +5,14 @@ from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     load_canadian_shapefile,
     pruid_to_province_abbr,
 )
-from urbanstats.geometry.shapefiles.shapefile import Geometry, Naming, Shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.canadian_cma import (
-    canadian_census_metadata,
+    canadian_census_kwargs,
 )
 from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
 )
-from urbanstats.geometry.shapefiles.source_countries import InCountry
-from urbanstats.universe.universe_provider.constants import canada_domestic_provider
 
 
 @permacache(
@@ -55,24 +53,18 @@ def longname_extractor(row):
     return f"{shortname_extractor(row)}, {provinces}, Canada"
 
 
-CANADIAN_CENSUS_POPULATION_CENTERS = Shapefile(
-    geometry=Geometry(key="census_pcs_2", path=load_pcs, filter=lambda x: True),
-    naming=Naming(
-        shortname_extractor=shortname_extractor,
-        longname_extractor=longname_extractor,
-        cleanname_extractor=lambda row: row.PCNAME,
+CANADIAN_CENSUS_POPULATION_CENTERS = make_shapefile(
+    hash_key="census_pcs_2",
+    path=load_pcs,
+    shortname_extractor=shortname_extractor,
+    cleanname_extractor=lambda row: row.PCNAME,
+    longname_extractor=longname_extractor,
+    **canadian_census_kwargs("CA Population Center", "US Subdivision"),
+    abbreviation="PC",
+    data_credit=dict(
+        linkText="Canadian Census",
+        link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lpc_000a21a_e.zip",
     ),
-    metadata=canadian_census_metadata(
-        "CA Population Center",
-        "US Subdivision",
-        abbreviation="PC",
-        data_credit=dict(
-            linkText="Canadian Census",
-            link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lpc_000a21a_e.zip",
-        ),
-        include_in_syau=True,
-        wikidata_sourcer=None,
-    ),
-    universe_provider=canada_domestic_provider(),
-    source_countries=InCountry("Canada"),
+    include_in_syau=True,
+    wikidata_sourcer=None,
 )

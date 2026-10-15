@@ -1,12 +1,6 @@
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
-from urbanstats.geometry.shapefiles.shapefile import (
-    Geometry,
-    Identifiers,
-    Metadata,
-    Naming,
-    Shapefile,
-)
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
     extract_country_longname,
@@ -20,35 +14,27 @@ from urbanstats.universe.universe_provider.combined_universe_provider import (
 from urbanstats.universe.universe_provider.constants import INTERNATIONAL_PROVIDERS
 from urbanstats.universe.universe_provider.self_provider import SelfUniverseProvider
 
-COUNTRIES = Shapefile(
-    geometry=Geometry(
-        key="countries_12",
-        path=countries,
-        filter=lambda x: iso_to_country(x.ISO_CC) is not None,
-        chunk_size=1,
-    ),
-    identifiers=Identifiers(
-        additional_columns_computer={"iso": lambda x: x.ISO_CC},
-    ),
-    naming=Naming(
-        shortname_extractor=extract_country_longname,
-        longname_extractor=extract_country_longname,
-    ),
-    metadata=Metadata(
-        meta=dict(type="Country", source="OpenDataSoft", type_category="International"),
-        does_overlap_self=False,
-        abbreviation="CTRY",
-        data_credit=SUBNATIONAL_REGIONS.data_credit,
-        include_in_syau=True,
-        wikidata_sourcer=SimpleWikidataSourcer("wdt:P297", "iso"),
-    ),
+COUNTRIES = make_shapefile(
+    hash_key="countries_12",
+    path=countries,
+    shortname_extractor=extract_country_longname,
+    longname_extractor=extract_country_longname,
+    additional_columns_computer={"iso": lambda x: x.ISO_CC},
+    filter=lambda x: iso_to_country(x.ISO_CC) is not None,
+    meta=dict(type="Country", source="OpenDataSoft", type_category="International"),
+    does_overlap_self=False,
+    special_data_sources=["international_gridded_data", "composed_of_counties"],
+    chunk_size=1,
     universe_provider=CombinedUniverseProvider(
         [
             *INTERNATIONAL_PROVIDERS,
             SelfUniverseProvider(),
         ]
     ),
-    special_data_sources=["international_gridded_data", "composed_of_counties"],
     source_countries=IsCountry({"USA": "USA", "Canada": "Canada"}),
     cross_source_borders=CrossSourceBorders(can_straddle=False),
+    abbreviation="CTRY",
+    data_credit=SUBNATIONAL_REGIONS.data_credit,
+    include_in_syau=True,
+    wikidata_sourcer=SimpleWikidataSourcer("wdt:P297", "iso"),
 )
