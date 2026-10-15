@@ -37,8 +37,8 @@ def strip_suffix(name):
     raise ValueError(f"Unknown suffix in {name}")
 
 
-def compute_additional_name(geometry, drop_dup_shapefile_key):
-    counties_in = locate_rows(geometry, drop_dup_shapefile_key)[
+def compute_additional_name(geometry, disambiguate_with):
+    counties_in = locate_rows(geometry, disambiguate_with)[
         ["longname", "shortname", "overlap_pct"]
     ].copy()
     counties_in.sort_values("overlap_pct", inplace=True, ascending=False)
@@ -65,10 +65,10 @@ def compute_new_longname(addtl_name, longname, shortname):
     return new_longname
 
 
-def rename_duplicates(s, duplicates, drop_dup_shapefile_key):
+def rename_duplicates(s, duplicates, disambiguate_with):
     for longname, indices in tqdm.tqdm(list(duplicates.items())):
         addtl_name_each = [
-            compute_additional_name(s.iloc[idx].geometry, drop_dup_shapefile_key)
+            compute_additional_name(s.iloc[idx].geometry, disambiguate_with)
             for idx in indices
         ]
         addtl_name_each = naive_directions_for_rows_with_names(
@@ -83,8 +83,8 @@ def rename_duplicates(s, duplicates, drop_dup_shapefile_key):
 
 
 @lru_cache(None)
-def load_shapefile_cached(drop_dup_shapefile_key):
-    return shapefiles[drop_dup_shapefile_key].load_file()
+def load_shapefile_cached(shapefile_key):
+    return shapefiles[shapefile_key].load_file()
 
 
 def shapefile_hash_key(sf_key):

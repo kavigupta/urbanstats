@@ -37,7 +37,7 @@ CITIES = make_shapefile(
         ("census", "place"),
         "congressional_representatives_indirect",
     ],
-    drop_dup="counties",
+    disambiguate_with="counties",
     universe_provider=us_domestic_provider(),
     source_countries=InCountry("USA"),
     abbreviation="CITY",

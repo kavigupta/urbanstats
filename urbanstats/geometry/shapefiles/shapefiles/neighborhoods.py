@@ -25,7 +25,7 @@ NEIGHBORHOODS = make_shapefile(
     filter=lambda x: True,
     meta=dict(type="Neighborhood", source="Zillow", type_category="Small"),
     does_overlap_self=False,
-    drop_dup="cousub",
+    disambiguate_with="cousub",
     universe_provider=us_domestic_provider(
         {
             "Freeman Island Neighborhood, Long Beach City, California, USA": [
