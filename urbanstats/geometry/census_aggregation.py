@@ -72,12 +72,12 @@ class Crosswalk:
         return sum_array
 
     def compute_sum_by_shapefile_dataframe(self, shapefile, values):
-        index = shapefile.load_rows().index
+        index = shapefile.geometry.load_rows().index
         sum_array = self.compute_sum_by_region(np.array(values.fillna(0)), len(index))
         return pd.DataFrame(sum_array, columns=values.columns, index=index)
 
     def compute_geometric_median_dataframe(self, shapefile, population, lat, lon):
-        index = shapefile.load_rows().index
+        index = shapefile.geometry.load_rows().index
         median_lat, median_lon = geometric_median_by_group(
             self.index_shapefile,
             np.asarray(lat)[self.index_block],
@@ -107,7 +107,7 @@ def _compute_crosswalk_canada(year, shapefile):
 
 
 def _compute_crosswalk_for_geometry_row(geometry_row, shapefile):
-    s = shapefile.load_rows().reset_index(drop=True)
+    s = shapefile.geometry.load_rows().reset_index(drop=True)
     if shapefile.chunk_size is None:
         return _compute_crosswalk_direct(geometry_row, s)
     crosswalks = []

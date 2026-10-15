@@ -472,7 +472,7 @@ def population_by_year(shapefile, *, no_pr):
     """
     If no_pr is True, then Puerto Rico is not included in the population statistics
     """
-    statistics_table = pd.DataFrame(index=shapefile.load_rows().index)
+    statistics_table = pd.DataFrame(index=shapefile.geometry.load_rows().index)
     for year in [2000, 2010, 2020]:
         statistics_table[year] = compute_population_for_year(shapefile, no_pr=no_pr)
     return statistics_table[[2000, 2010, 2020]]

@@ -22,6 +22,30 @@ class Geometry:
         # path and filter are functions, which stable_hash can't hash, so the key stands in for them
         return self.key
 
+    def load_rows(self):
+        """
+        The regions: the loaded file after the filter, with its own columns, in EPSG:4326.
+        Shapefile.load_file's rows and index are the same.
+        """
+        if isinstance(self.path, list):
+            s = gpd.GeoDataFrame(pd.concat([gpd.read_file(p) for p in self.path]))
+            s = s.reset_index(drop=True)
+        elif isinstance(self.path, str):
+            if self.path.endswith(".pkl"):
+                with open(self.path, "rb") as f:
+                    s = pickle.load(f).reset_index(drop=True)
+            else:
+                s = gpd.read_file(self.path)
+        else:
+            s = self.path()
+        s = s[s.apply(self.filter, axis=1)]
+        if s.shape[0] == 0:
+            raise EmptyShapefileError
+        s = gpd.GeoDataFrame(s, geometry="geometry")
+        if s.crs is None:
+            s = s.set_crs("EPSG:4326")
+        return s.to_crs("EPSG:4326")
+
 
 @attr.s(frozen=True)
 class Temporal:
@@ -109,30 +133,6 @@ class Shapefile:
     include_in_syau = _from_layer("metadata", "include_in_syau")
     wikidata_sourcer = _from_layer("metadata", "wikidata_sourcer")
 
-    def load_rows(self):
-        """
-        The geometry's regions: the loaded file after the filter, with its own columns, in
-        EPSG:4326. load_file's rows and index are the same.
-        """
-        if isinstance(self.path, list):
-            s = gpd.GeoDataFrame(pd.concat([gpd.read_file(p) for p in self.path]))
-            s = s.reset_index(drop=True)
-        elif isinstance(self.path, str):
-            if self.path.endswith(".pkl"):
-                with open(self.path, "rb") as f:
-                    s = pickle.load(f).reset_index(drop=True)
-            else:
-                s = gpd.read_file(self.path)
-        else:
-            s = self.path()
-        s = s[s.apply(self.filter, axis=1)]
-        if s.shape[0] == 0:
-            raise EmptyShapefileError
-        s = gpd.GeoDataFrame(s, geometry="geometry")
-        if s.crs is None:
-            s = s.set_crs("EPSG:4326")
-        return s.to_crs("EPSG:4326")
-
     def load_file(self):
         """
         Load the shapefile and apply the filters and extractors.
@@ -146,7 +146,7 @@ class Shapefile:
         # pylint: disable=import-outside-toplevel,cyclic-import,too-many-branches
         from urbanstats.special_cases.deduplicate_longnames import rename_duplicates
 
-        s = self.load_rows()
+        s = self.geometry.load_rows()
         for k, v in self.additional_columns_computer.items():
             s[k] = s.apply(v, axis=1)
 

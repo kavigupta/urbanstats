@@ -35,7 +35,7 @@ def aggregate_to_suos(shapefile, suo_data_source):
     suos = list(data.suos)
     suo_to_index = {s: i for i, suo in enumerate(suos) for s in suo}
     data = np.array(data[suo_data_source.data_columns])
-    geo = shapefile.load_rows()
+    geo = shapefile.geometry.load_rows()
     joined = join_with_suos(geo)
     contents = [
         compute_county_contents(region_suos, suos, suo_to_index)
