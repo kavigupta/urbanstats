@@ -169,11 +169,10 @@ class CensusForPreviousYear(USAStatistics):
         del statistics_table[self.ysk("total")]
         del statistics_table[self.ysk("occupied")]
 
-        hists_year = census_histogram(shapefile, year)
+        hists_year = census_histogram(shapefile.geometry, year)
         for dens in RADII:
             statistics_table[self.ysk(f"pw_density_histogram_{dens}")] = [
-                hists_year[x][f"ad_{dens}"] if x in hists_year else np.nan
-                for x in shapefile_table.longname
+                np.nan if h is None else h[f"ad_{dens}"] for h in hists_year
             ]
         statistics_table[self.ysk("md_1")] = [
             median_from_histogram(h)

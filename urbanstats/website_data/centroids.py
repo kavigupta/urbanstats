@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import pandas as pd
 import tqdm.auto as tqdm
@@ -26,22 +26,25 @@ def compute_internal_point(geo: Any) -> Any:
 
 @permacache_with_remapping_pickle(
     "urbanstats/website_data/centroids/compute_centroids_4",
-    key_function=dict(sf=lambda x: x.hash_key),
     multiprocess_safe=True,
 )
-def compute_centroids(sf: Any) -> pd.Series:
-    sf_fr = sf.load_file()
-    sf_fr = sf_fr.set_index("longname")
-    centroids = [
+def compute_centroids(geometry: Any) -> List[Any]:
+    """Each region's centroid, in row order."""
+    return [
         compute_internal_point(geo)
-        for geo in tqdm.tqdm(sf_fr.geometry.values, desc=f"centroids for {sf.hash_key}")
+        for geo in tqdm.tqdm(
+            geometry.load_rows().geometry.values, desc=f"centroids for {geometry.key}"
+        )
     ]
-    return pd.Series(centroids, index=sf_fr.index)
 
 
 def compute_all_centroids(shapefiles: Dict[str, Any]) -> pd.Series:
     return pd.concat(
-        [compute_centroids(sf) for sf in tqdm.tqdm(shapefiles.values())], axis=0
+        [
+            pd.Series(compute_centroids(sf.geometry), index=sf.load_file().longname)
+            for sf in tqdm.tqdm(shapefiles.values())
+        ],
+        axis=0,
     )
 
 
