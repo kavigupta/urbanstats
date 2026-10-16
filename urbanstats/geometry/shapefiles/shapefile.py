@@ -104,8 +104,6 @@ class Shapefile:
     # Optional[SourceCountries], for shapefiles with regions a source country's statistics cover
     source_countries = attr.ib(default=None)
     cross_source_borders: Optional[CrossSourceBorders] = attr.ib(default=None)
-    # How many regions the heaviest spatial computations take at once, to bound their memory
-    chunk_size = attr.ib(default=None)
 
     # the attributes from before shapefiles were split into layers
     hash_key = _from_layer("geometry", "key")
@@ -254,7 +252,6 @@ def make_shapefile(
     include_in_syau,
     wikidata_sourcer,
     disambiguate_with=None,
-    chunk_size=None,
     start_date=None,
     start_date_overall=-float("inf"),
     end_date=None,
@@ -308,7 +305,6 @@ def make_shapefile(
         else special_data_sources,
         source_countries=source_countries,
         cross_source_borders=cross_source_borders,
-        chunk_size=chunk_size,
     )
 
 

@@ -73,7 +73,6 @@ COUNTY_CROSS_CD = make_shapefile(
     meta=dict(type="County Cross CD", source="Census", type_category="Political"),
     does_overlap_self=False,
     special_data_sources=["congressional_representatives_indirect"],
-    chunk_size=100,
     universe_provider=us_domestic_provider(),
     source_countries=InCountry("USA"),
     abbreviation="CXCD",

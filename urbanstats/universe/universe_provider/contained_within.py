@@ -1,10 +1,11 @@
 from dataclasses import dataclass, field
 from typing import List
 
+import geopandas as gpd
+import numpy as np
 from permacache import drop_if_equal
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
-from urbanstats.geometry.shapefile_geometry import compute_contained_in_direct
 from urbanstats.universe.universe_list import universe_by_universe_type
 from urbanstats.universe.universe_provider.universe_provider import UniverseProvider
 
@@ -82,9 +83,14 @@ def compute_contained_in(shapefile, universe_shapefile, longname_filter=None):
         if missing:
             raise ValueError(f"Missing longnames in universe shapefile: {missing}")
         universe_df = universe_df[universe_df.longname.isin(longname_filter)]
-    return compute_contained_in_direct(
-        shapefile.load_file(),
-        universe_df,
-        universe_shapefile.chunk_size,
-        shapefile.chunk_size,
-    )
+    a_df = shapefile.load_file()
+    a_df["idx"] = np.arange(a_df.shape[0])
+    over = gpd.overlay(universe_df, a_df, how="intersection", keep_geom_type=True)
+    area = over.geometry.to_crs("EPSG:2163").area
+    area_elem = a_df.set_index("idx").geometry.to_crs("EPSG:2163").area
+    pct = area / np.array(area_elem[over.idx])
+    over = over[pct > 0.05]
+    result = {k: [] for k in a_df.longname}
+    for st, reg in zip(over.longname_1, over.longname_2):
+        result[reg].append(st)
+    return result
