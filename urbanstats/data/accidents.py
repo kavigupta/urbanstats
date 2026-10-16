@@ -107,10 +107,10 @@ def pull_data(year, substr):
 
 @permacache_with_remapping_pickle(
     "urbanstats/data/accidents/accidents_by_region_4",
-    key_function=dict(shapefile=lambda x: x.hash_key, years=list),
+    key_function=dict(years=list),
 )
-def accidents_by_region(shapefile, years=accident_years):
-    sf = shapefile.geometry.load_rows().reset_index(drop=True)
+def accidents_by_region(geometry, years=accident_years):
+    sf = geometry.load_rows().reset_index(drop=True)
     result = {}
     for year in tqdm.tqdm(years, desc="aggregating accidents"):
         joined = gpd.sjoin(sf[["geometry"]], accidents_dataframe_for_year(year))[

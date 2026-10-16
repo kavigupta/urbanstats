@@ -14,7 +14,7 @@ class USCountyLevelElectionsStatistics(USAStatisticsCounties):
     ):
         results = {}
         for election_name, suo_data_source in tonmcg_elections.items():
-            agg, doi = aggregate_to_suos(shapefile, suo_data_source)
+            agg, doi = aggregate_to_suos(shapefile.geometry, suo_data_source)
             agg = agg.copy()
             agg[doi > 0.001] = np.nan
             margin = (agg[:, 0] - agg[:, 1]) / (agg[:, 2] + 1e-9)

@@ -271,10 +271,9 @@ def disaggregate_to_blocks(election, block_year=2020):
 
 @permacache_with_remapping_pickle(
     "election_data/aggregated_election_results_5",
-    key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def aggregated_election_results(shapefile):
-    return aggregate_by_census_block(2020, shapefile, election_results_by_block())
+def aggregated_election_results(geometry):
+    return aggregate_by_census_block(2020, geometry, election_results_by_block())
 
 
 @lru_cache(None)

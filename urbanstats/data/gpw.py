@@ -395,19 +395,18 @@ def select_points_in_shape(shape, glo, *, resolution):
 @permacache(
     "urbanstats/data/gpw/compute_gpw_data_for_shapefile_7",
     key_function=dict(
-        shapefile=lambda x: x.hash_key,
         collect_density=drop_if_equal(True),
         log=drop_if_equal(True),
     ),
 )
 def compute_gpw_data_for_shapefile(
-    shapefile, collect_density=True, log=True, *, resolution_by_radius
+    geometry, collect_density=True, log=True, *, resolution_by_radius
 ):
     """
-    Compute the GHS-POP data for a shapefile.
+    Compute the GHS-POP data for a geometry.
     """
 
-    shapes = shapefile.geometry.load_rows()
+    shapes = geometry.load_rows()
 
     result = {"gpw_population": [], **{f"gpw_pw_density_{k}": [] for k in GPW_RADII}}
 
@@ -415,7 +414,7 @@ def compute_gpw_data_for_shapefile(
 
     for row, shape in tqdm.tqdm(
         zip(shapes.index, shapes.geometry),
-        desc=f"gpw for {shapefile.hash_key}",
+        desc=f"gpw for {geometry.key}",
         total=len(shapes),
     ):
         if log:
@@ -437,19 +436,18 @@ def compute_gpw_data_for_shapefile(
 
 @permacache(
     "urbanstats/data/gpw/compute_gpw_population_median_for_shapefile_2",
-    key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def compute_gpw_population_median_for_shapefile(
-    shapefile, *, max_coarse_cells_for_fine=10_000, chunk_size=5_000_000
+    geometry, *, max_coarse_cells_for_fine=10_000, chunk_size=5_000_000
 ):
     """
     Uses the 3" grid only for shapes with at most max_coarse_cells_for_fine populated 30" cells,
     beyond which the 3" grid is slow and its extra precision is small relative to the shape.
     """
-    shapes = shapefile.geometry.load_rows()
+    shapes = geometry.load_rows()
     lats, lons = [], []
     for shape in tqdm.tqdm(
-        shapes.geometry, desc=f"gpw population median for {shapefile.hash_key}"
+        shapes.geometry, desc=f"gpw population median for {geometry.key}"
     ):
         resolution = 120
         rows, cols = select_points_in_shape(
