@@ -2,8 +2,6 @@ import geopandas as gpd
 import shapely
 from permacache import permacache, stable_hash
 
-from urbanstats.geometry.shapefiles.shapefile import keyed_on
-
 pruid_to_province = {
     "48": "Alberta, Canada",
     "59": "British Columbia, Canada",
@@ -43,20 +41,20 @@ province_abbr_to_province = {
 
 @permacache(
     "urbanstats/geometry/shapefiles/load_canada_shapefile/canada_shape",
-    key_function=dict(countries_shapefile=keyed_on("longname")),
+    key_function=dict(countries=stable_hash),
 )
-def compute_canada_shape(countries_shapefile):
-    sh = countries_shapefile.load_file()
+def compute_canada_shape(countries):
+    sh = countries.load()
     sh = sh[sh.longname == "Canada"]
     return sh.iloc[0].geometry
 
 
 @permacache(
     "urbanstats/geometry/shapefiles/load_canada_shapefile/compute_qconmt",
-    key_function=dict(subnationals_shapefile=keyed_on("longname")),
+    key_function=dict(subnationals=stable_hash),
 )
-def compute_qconmt(subnationals_shapefile):
-    sh = subnationals_shapefile.load_file()
+def compute_qconmt(subnationals):
+    sh = subnationals.load()
     geos = [
         sh[sh.longname == province].geometry.iloc[0]
         for province in ["Quebec, Canada", "Ontario, Canada", "Manitoba, Canada"]
@@ -89,8 +87,8 @@ def load_canadian_shapefile_with_canada_shape(
 def load_canadian_shapefile(
     shapefile_path, countries_shapefile, subnationals_shapefile
 ):
-    canada_shape = compute_canada_shape(countries_shapefile)
-    qtconmt_shape = compute_qconmt(subnationals_shapefile)
+    canada_shape = compute_canada_shape(countries_shapefile.names)
+    qtconmt_shape = compute_qconmt(subnationals_shapefile.names)
     return load_canadian_shapefile_with_canada_shape(
         shapefile_path, canada_shape, qtconmt_shape
     )

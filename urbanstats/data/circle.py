@@ -19,7 +19,7 @@ from urbanstats.data.population_overlays import (
 )
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
 from urbanstats.geometry.shapefiles.row_functions import column
-from urbanstats.geometry.shapefiles.shapefile import keyed_on, make_shapefile
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
 from urbanstats.geometry.shapefiles.source_countries import ContainedWithinCountries
 from urbanstats.universe.universe_provider.combined_universe_provider import (
@@ -371,10 +371,10 @@ def specify_duplicates(frame, long_to_short):
 
 @permacache(
     "urbanstats/data/circle/overlapping_circles_frame_8",
-    key_function=dict(country_shapefile=keyed_on("longname")),
+    key_function=dict(country_names=stable_hash),
 )
 def overlapping_circles_frame(
-    country_shapefile, population, suffix, max_radius_in_chunks=20
+    country_names, population, suffix, max_radius_in_chunks=20
 ):
     print(f"population circles being computed for {suffix}")
     ghs = load_full_ghs_30_arcsec()
@@ -384,7 +384,7 @@ def overlapping_circles_frame(
     frame = to_basic_geopandas_frame(ghs.shape, circles)
     frame, long_to_short = attach_urban_centers_to_frame(frame)
     specify_duplicates(frame, long_to_short)
-    countries = relevant_regions(country_shapefile, frame, 3, 0.9)
+    countries = relevant_regions(country_names, frame, 3, 0.9)
     frame["suffix"] = frame.id.apply(lambda x: "-".join(countries[x]))
     frame["shortname"] = frame.shortname + " " + suffix
     frame["longname"] = frame["shortname"] + ", " + frame.suffix
@@ -609,7 +609,7 @@ def circle_shapefile_object(country_shapefile, population):
     return make_shapefile(
         hash_key=f"population_circle_{named_populations[population]}_{version}",
         path=lambda: overlapping_circles_frame(
-            country_shapefile, population, named_populations[population] + "PC"
+            country_shapefile.names, population, named_populations[population] + "PC"
         ),
         shortname_extractor=column("shortname"),
         cleanname_extractor=(column("shortname")).removesuffix(

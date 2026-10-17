@@ -1,12 +1,10 @@
-from permacache import permacache
-
-from urbanstats.geometry.shapefiles.shapefile import keyed_on
+from permacache import permacache, stable_hash
 
 
 @permacache(
     "urbanstats/geometry/shapefiles/longnames/shapefile_longnames",
-    key_function=dict(shapefile=keyed_on("longname")),
+    key_function=dict(names=stable_hash),
 )
-def shapefile_longnames(shapefile):
+def shapefile_longnames(names):
     """Each region's longname, in row order."""
-    return list(shapefile.load_file().longname)
+    return list(names.load().longname)

@@ -4,6 +4,7 @@ from urbanstats.data.wikipedia.wikidata import query_sparlql
 from urbanstats.data.wikipedia.wikidata_sourcer import WikidataSourcer
 from urbanstats.geometry.shapefiles.row_functions import UsState, column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
+from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
@@ -37,7 +38,7 @@ CITIES = make_shapefile(
         ("census", "place"),
         "congressional_representatives_indirect",
     ],
-    disambiguate_with="counties",
+    disambiguate_with=COUNTIES.names,
     universe_provider=us_domestic_provider(),
     source_countries=InCountry("USA"),
     abbreviation="CITY",

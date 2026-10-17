@@ -5,7 +5,6 @@ from typing import Optional
 import attr
 import geopandas as gpd
 import pandas as pd
-from permacache import stable_hash
 
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
 
@@ -73,7 +72,7 @@ class Naming:
     # "Los Angeles" for "Los Angeles County". Defaults to the shortname.
     cleanname_extractor = attr.ib(default=None)
     longname_sans_date_extractor = attr.ib(default=None)
-    # The key of the shapefile whose regions tell duplicated longnames apart, e.g. "counties".
+    # Optional[Names], whose regions tell duplicated longnames apart
     disambiguate_with = attr.ib(default=None)
 
 
@@ -86,19 +85,127 @@ class Metadata:
     wikidata_sourcer = attr.ib()
 
 
-NAME_AND_DATE_COLUMNS = {
+NAME_COLUMNS = [
     "longname",
     "shortname",
     "cleanname",
     "longname_sans_date",
     "start_date",
     "end_date",
-}
+]
 
 
-def keyed_on(*columns):
-    """A permacache key function for a shapefile argument of which only these columns are used."""
-    return lambda shapefile: stable_hash(shapefile.key_for_columns(columns))
+@attr.s(frozen=True)
+class Names:
+    geometry = attr.ib()
+    temporal = attr.ib()
+    naming = attr.ib()
+
+    def load(self):
+        return self.load_from_rows(self.geometry.load_rows())
+
+    def load_from_rows(self, rows):
+        """The NAME_COLUMNS and geometry of rows, which are geometry.load_rows()."""
+        # pylint: disable=import-outside-toplevel,cyclic-import
+        from urbanstats.special_cases.deduplicate_longnames import rename_duplicates
+
+        s = rows.copy(deep=False)
+        if self.temporal.start_date is not None:
+            assert self.naming.longname_sans_date_extractor is not None
+            s["start_date"] = s.apply(self.temporal.start_date, axis=1)
+        else:
+            s["start_date"] = -float("inf")
+
+        if self.temporal.end_date is not None:
+            assert self.naming.longname_sans_date_extractor is not None
+            s["end_date"] = s.apply(self.temporal.end_date, axis=1)
+        else:
+            s["end_date"] = float("inf")
+
+        assert self.temporal.start_date_overall == min(
+            s.start_date
+        ), f"{self.temporal.start_date_overall} != {min(s.start_date)}"
+
+        assert self.temporal.end_date_overall == max(
+            s.end_date
+        ), f"{self.temporal.end_date_overall} != {max(s.end_date)}"
+
+        s["shortname"] = s.apply(self.naming.shortname_extractor, axis=1)
+        s["cleanname"] = (
+            s["shortname"]
+            if self.naming.cleanname_extractor is None
+            else s.apply(self.naming.cleanname_extractor, axis=1)
+        )
+        s["longname"] = s.apply(self.naming.longname_extractor, axis=1)
+        if self.naming.longname_sans_date_extractor is not None:
+            s["longname_sans_date"] = s.apply(
+                self.naming.longname_sans_date_extractor, axis=1
+            )
+        else:
+            s["longname_sans_date"] = None
+        s = gpd.GeoDataFrame(
+            {col: s[col] for col in NAME_COLUMNS},
+            geometry=s.geometry,
+        )
+        if self.naming.disambiguate_with is not None:
+            assert (
+                self.naming.longname_sans_date_extractor is None
+            ), "Currently not supported"
+            longname_to_indices = (
+                s["longname"]
+                .reset_index(drop=True)
+                .reset_index()
+                .groupby("longname")["index"]
+                .apply(list)
+                .to_dict()
+            )
+            duplicates = {k: v for k, v in longname_to_indices.items() if len(v) > 1}
+            s = rename_duplicates(s, duplicates, self.naming.disambiguate_with)
+        # Handles both situations where longname_sans_date_extractor is None
+        # (we do this here so we can get the updated longnames)
+        # and ones where it produces NaNs for some entries (we want to fill those with longname)
+        s.longname_sans_date = s.longname_sans_date.fillna(s.longname)
+        return s
+
+
+@attr.s(frozen=True)
+class Identified:
+    geometry = attr.ib()
+    identifiers = attr.ib()
+
+    def load(self):
+        return self.load_from_rows(self.geometry.load_rows())
+
+    def load_from_rows(self, rows):
+        """The additional and intermediate columns of rows, which are geometry.load_rows()."""
+        s = rows.copy(deep=False)
+        for k, v in self.identifiers.additional_columns_computer.items():
+            s[k] = s.apply(v, axis=1)
+        return pd.DataFrame(
+            {
+                col: s[col]
+                for col in [
+                    *self.identifiers.additional_columns_computer,
+                    *self.identifiers.intermediate_computation_columns,
+                ]
+            },
+            index=s.index,
+        )
+
+
+def load_names_and_identifiers(names, identified):
+    """Shapefile.load_file, for the regions of names and identified, which share a geometry."""
+    assert names.geometry == identified.geometry
+    rows = names.geometry.load_rows()
+    names_table = names.load_from_rows(rows)
+    identifiers_table = identified.load_from_rows(rows)
+    return gpd.GeoDataFrame(
+        {
+            **{col: names_table[col] for col in NAME_COLUMNS},
+            **{col: identifiers_table[col] for col in identifiers_table.columns},
+        },
+        geometry=names_table.geometry,
+    )
 
 
 def _from_layer(layer, name):
@@ -108,13 +215,10 @@ def _from_layer(layer, name):
 @attr.s
 class Shapefile:
     geometry = attr.ib()
-    # vulture: ignore -- read through _from_layer
     naming = attr.ib()
     metadata = attr.ib()
     universe_provider = attr.ib()
-    # vulture: ignore -- read through _from_layer
     temporal = attr.ib(default=attr.Factory(Temporal))
-    # vulture: ignore -- read through _from_layer
     identifiers = attr.ib(default=attr.Factory(Identifiers))
     special_data_sources = attr.ib(default=attr.Factory(dict))
     # Optional[SourceCountries], for shapefiles with regions a source country's statistics cover
@@ -125,7 +229,6 @@ class Shapefile:
     hash_key = _from_layer("geometry", "key")
     path = _from_layer("geometry", "path")
     filter = _from_layer("geometry", "filter")
-    disambiguate_with = _from_layer("naming", "disambiguate_with")
     start_date = _from_layer("temporal", "start_date")
     start_date_overall = _from_layer("temporal", "start_date_overall")
     end_date = _from_layer("temporal", "end_date")
@@ -147,101 +250,16 @@ class Shapefile:
     include_in_syau = _from_layer("metadata", "include_in_syau")
     wikidata_sourcer = _from_layer("metadata", "wikidata_sourcer")
 
+    @property
+    def names(self):
+        return Names(geometry=self.geometry, temporal=self.temporal, naming=self.naming)
+
+    @property
+    def identified(self):
+        return Identified(geometry=self.geometry, identifiers=self.identifiers)
+
     def load_file(self):
-        """
-        Load the shapefile and apply the filters and extractors.
-
-        This has a circular dependency with the deduplicate_longnames module, which
-        needs to load other shapefiles to figure out how to disambiguate duplicated
-        longnames.
-
-        This should be the only circular dependency related to shapefiles.
-        """
-        # pylint: disable=import-outside-toplevel,cyclic-import,too-many-branches
-        from urbanstats.special_cases.deduplicate_longnames import rename_duplicates
-
-        s = self.geometry.load_rows()
-        for k, v in self.additional_columns_computer.items():
-            s[k] = s.apply(v, axis=1)
-
-        if self.start_date is not None:
-            assert self.longname_sans_date_extractor is not None
-            s["start_date"] = s.apply(self.start_date, axis=1)
-        else:
-            s["start_date"] = -float("inf")
-
-        if self.end_date is not None:
-            assert self.longname_sans_date_extractor is not None
-            s["end_date"] = s.apply(self.end_date, axis=1)
-        else:
-            s["end_date"] = float("inf")
-
-        assert self.start_date_overall == min(
-            s.start_date
-        ), f"{self.start_date_overall} != {min(s.start_date)}"
-
-        assert self.end_date_overall == max(
-            s.end_date
-        ), f"{self.end_date_overall} != {max(s.end_date)}"
-
-        s["shortname"] = s.apply(self.shortname_extractor, axis=1)
-        s["cleanname"] = (
-            s["shortname"]
-            if self.cleanname_extractor is None
-            else s.apply(self.cleanname_extractor, axis=1)
-        )
-        s["longname"] = s.apply(self.longname_extractor, axis=1)
-        if self.longname_sans_date_extractor is not None:
-            s["longname_sans_date"] = s.apply(self.longname_sans_date_extractor, axis=1)
-        else:
-            s["longname_sans_date"] = None
-        s = gpd.GeoDataFrame(
-            {col: s[col] for col in self.available_columns(include_intermediates=True)},
-            geometry=s.geometry,
-        )
-        if self.disambiguate_with is not None:
-            assert self.longname_sans_date_extractor is None, "Currently not supported"
-            longname_to_indices = (
-                s["longname"]
-                .reset_index(drop=True)
-                .reset_index()
-                .groupby("longname")["index"]
-                .apply(list)
-                .to_dict()
-            )
-            duplicates = {k: v for k, v in longname_to_indices.items() if len(v) > 1}
-            s = rename_duplicates(s, duplicates, self.disambiguate_with)
-        # Handles both situations where longname_sans_date_extractor is None
-        # (we do this here so we can get the updated longnames)
-        # and ones where it produces NaNs for some entries (we want to fill those with longname)
-        s.longname_sans_date = s.longname_sans_date.fillna(s.longname)
-        return s
-
-    def key_for_columns(self, columns):
-        """
-        The layers that determine these columns of load_file, for keying a cache of what is
-        computed from them: the geometry (which decides the rows) and whichever layers make the
-        columns.
-        """
-        # pylint: disable=import-outside-toplevel,cyclic-import
-        from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
-
-        key = {"geometry": self.geometry}
-        identifier_columns = {
-            *self.identifiers.additional_columns_computer,
-            *self.identifiers.intermediate_computation_columns,
-        }
-        if set(columns) & identifier_columns:
-            key["identifiers"] = self.identifiers
-        if set(columns) & NAME_AND_DATE_COLUMNS:
-            key["temporal"] = self.temporal
-            key["naming"] = self.naming
-            if self.naming.disambiguate_with is not None:
-                # duplicated longnames are told apart by the regions of this shapefile
-                key["disambiguated_by"] = shapefiles[
-                    self.naming.disambiguate_with
-                ].key_for_columns(["longname", "shortname"])
-        return key
+        return load_names_and_identifiers(self.names, self.identified)
 
     @property
     def source_country_list(self):
@@ -259,12 +277,7 @@ class Shapefile:
 
     def available_columns(self, *, include_intermediates):
         return [
-            "longname",
-            "shortname",
-            "cleanname",
-            "longname_sans_date",
-            "start_date",
-            "end_date",
+            *NAME_COLUMNS,
             *self.additional_columns_computer,
             *(self.intermediate_computation_columns if include_intermediates else []),
         ]

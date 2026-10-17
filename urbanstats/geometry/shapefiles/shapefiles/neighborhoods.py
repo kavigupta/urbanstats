@@ -2,6 +2,7 @@ import geopandas as gpd
 
 from urbanstats.geometry.shapefiles.row_functions import UsState, column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
+from urbanstats.geometry.shapefiles.shapefiles.ccds import CCDs
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
@@ -25,7 +26,7 @@ NEIGHBORHOODS = make_shapefile(
     filter=lambda x: True,
     meta=dict(type="Neighborhood", source="Zillow", type_category="Small"),
     does_overlap_self=False,
-    disambiguate_with="cousub",
+    disambiguate_with=CCDs.names,
     universe_provider=us_domestic_provider(
         {
             "Freeman Island Neighborhood, Long Beach City, California, USA": [

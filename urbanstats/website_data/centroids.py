@@ -42,7 +42,9 @@ def compute_centroids(geometry: Any) -> List[Any]:
 def compute_all_centroids(shapefiles: Dict[str, Any]) -> pd.Series:
     return pd.concat(
         [
-            pd.Series(compute_centroids(sf.geometry), index=shapefile_longnames(sf))
+            pd.Series(
+                compute_centroids(sf.geometry), index=shapefile_longnames(sf.names)
+            )
             for sf in tqdm.tqdm(shapefiles.values())
         ],
         axis=0,

@@ -174,7 +174,7 @@ def merge_all_boxes(bounding_boxes):
 
 def automatically_compute_insets(name_to_type, swo_subnats, u):
     shapefile = shapefiles_by_type[name_to_type[u]]
-    geo = load_geo(shapefile.geometry, shapefile_longnames(shapefile).index(u))
+    geo = load_geo(shapefile.geometry, shapefile_longnames(shapefile.names).index(u))
 
     filt_table = (
         swo_subnats[swo_subnats.universes.apply(lambda x: u in x)]

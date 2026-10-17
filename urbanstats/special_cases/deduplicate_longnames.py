@@ -1,13 +1,10 @@
 import re
-from functools import lru_cache
 
 import tqdm.auto as tqdm
 from permacache import stable_hash
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.circle import naive_directions_for_rows_with_names
-from urbanstats.geometry.shapefiles.shapefile import keyed_on
-from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
 
 def strip_suffix(name):
@@ -83,24 +80,24 @@ def rename_duplicates(s, duplicates, disambiguate_with):
     return s
 
 
-@lru_cache(None)
-def load_shapefile_cached(shapefile_key):
-    return shapefiles[shapefile_key].load_file()
+_LOADED_NAMES = {}
 
 
-def names_key_of(sf_key):
-    return keyed_on("longname", "shortname")(shapefiles[sf_key])
+def load_names_cached(names):
+    key = stable_hash(names)
+    if key not in _LOADED_NAMES:
+        _LOADED_NAMES[key] = names.load()
+    return _LOADED_NAMES[key]
 
 
 @permacache_with_remapping_pickle(
     "stats_for_shapefile/locate_rows_3",
     key_function=dict(
-        shape=lambda g: stable_hash(g.__geo_interface__),
-        shapefile_key=names_key_of,
+        shape=lambda g: stable_hash(g.__geo_interface__), names=stable_hash
     ),
 )
-def locate_rows(shape, shapefile_key):
-    shapefile = load_shapefile_cached(shapefile_key)
+def locate_rows(shape, names):
+    shapefile = load_names_cached(names)
     result = shapefile[
         shapefile.apply(lambda x: x.geometry.intersects(shape), axis=1)
     ].copy()

@@ -7,21 +7,20 @@ import numpy as np
 from permacache import permacache, stable_hash
 
 from urbanstats.data.gpw import GPW_RADII, compute_gpw_data_for_shapefile
-from urbanstats.geometry.shapefiles.shapefile import keyed_on
 
 
 @permacache(
     "urbanstats/data/population_overlays/compute_population_overlay",
     key_function=dict(
-        shapefile=keyed_on("longname"),
+        names=stable_hash,
         frame=lambda frame: stable_hash(frame.geometry.to_json()),
     ),
 )
-def compute_population_overlay(shapefile, frame):
+def compute_population_overlay(names, frame):
     frame = frame[["geometry"]].copy().reset_index(drop=True)
     frame["original_iloc"] = np.arange(len(frame))
 
-    countries = shapefile.load_file()[["longname", "geometry"]]
+    countries = names.load()[["longname", "geometry"]]
     return direct_population_overlay(frame, countries)
 
 
@@ -37,14 +36,14 @@ def direct_population_overlay(frame, sh):
     return overlays
 
 
-def relevant_regions(shapefile, frame, max_elements, min_pct):
+def relevant_regions(names, frame, max_elements, min_pct):
     """
     Get a map from the original iloc to a list of longnames of regions that
        whose population adds to at least min_pct of the total population,
        sorted from largest overlap to smallest overlap, limited to max_elements
        if necessary.
     """
-    overlays = compute_population_overlay(shapefile, frame).copy()
+    overlays = compute_population_overlay(names, frame).copy()
     population_by_iloc = (
         overlays[["original_iloc", "population"]].groupby("original_iloc").sum()
     )

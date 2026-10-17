@@ -14,8 +14,8 @@ class RelationshipTest(unittest.TestCase):
         relationships = compute_relationships(
             shapefiles[k1].geometry, shapefiles[k2].geometry
         )
-        names_1 = shapefile_longnames(shapefiles[k1])
-        names_2 = shapefile_longnames(shapefiles[k2])
+        names_1 = shapefile_longnames(shapefiles[k1].names)
+        names_2 = shapefile_longnames(shapefiles[k2].names)
         relationships_flat = {
             (names_1[i], names_2[j], rel)
             for rel, pairs in relationships.items()
