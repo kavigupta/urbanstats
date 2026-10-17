@@ -379,7 +379,9 @@ function Diff({ test, file, referenceUrl, delta, changed, index, total, navigato
 }
 
 function LazyNode({ node }: { node: Promise<ReactNode> }): ReactNode {
-    const { result, loading } = useOrderedResolve(node, 'LazyNode')
+    // useOrderedResolve treats a rejection as still loading, which would hide e.g. a mistyped git ref
+    const shown = useMemo(() => node.catch((error: unknown) => <pre>{String(error)}</pre>), [node])
+    const { result, loading } = useOrderedResolve(shown, 'LazyNode')
 
     if (result === undefined || loading) {
         return <LongLoad />
