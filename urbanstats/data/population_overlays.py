@@ -7,12 +7,13 @@ import numpy as np
 from permacache import permacache, stable_hash
 
 from urbanstats.data.gpw import GPW_RADII, compute_gpw_data_for_shapefile
+from urbanstats.geometry.shapefiles.shapefile import keyed_on
 
 
 @permacache(
     "urbanstats/data/population_overlays/compute_population_overlay",
     key_function=dict(
-        shapefile=lambda x: x.hash_key,
+        shapefile=keyed_on("longname"),
         frame=lambda frame: stable_hash(frame.geometry.to_json()),
     ),
 )

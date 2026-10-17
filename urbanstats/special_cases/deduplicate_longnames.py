@@ -6,6 +6,7 @@ from permacache import stable_hash
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.circle import naive_directions_for_rows_with_names
+from urbanstats.geometry.shapefiles.shapefile import keyed_on
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
 
@@ -88,7 +89,7 @@ def load_shapefile_cached(shapefile_key):
 
 
 def shapefile_hash_key(sf_key):
-    return shapefiles[sf_key].hash_key
+    return keyed_on("longname", "shortname")(shapefiles[sf_key])
 
 
 @permacache_with_remapping_pickle(

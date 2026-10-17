@@ -5,6 +5,7 @@ from typing import Optional
 import attr
 import geopandas as gpd
 import pandas as pd
+from permacache import stable_hash
 
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
 
@@ -83,6 +84,21 @@ class Metadata:
     data_credit = attr.ib()
     include_in_syau = attr.ib()
     wikidata_sourcer = attr.ib()
+
+
+NAME_AND_DATE_COLUMNS = {
+    "longname",
+    "shortname",
+    "cleanname",
+    "longname_sans_date",
+    "start_date",
+    "end_date",
+}
+
+
+def keyed_on(*columns):
+    """A permacache key function for a shapefile argument of which only these columns are used."""
+    return lambda shapefile: stable_hash(shapefile.key_for_columns(columns))
 
 
 def _from_layer(layer, name):
@@ -200,6 +216,32 @@ class Shapefile:
         # and ones where it produces NaNs for some entries (we want to fill those with longname)
         s.longname_sans_date = s.longname_sans_date.fillna(s.longname)
         return s
+
+    def key_for_columns(self, columns):
+        """
+        The layers that determine these columns of load_file, for keying a cache of what is
+        computed from them: the geometry (which decides the rows) and whichever layers make the
+        columns.
+        """
+        # pylint: disable=import-outside-toplevel,cyclic-import
+        from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
+
+        key = {"geometry": self.geometry}
+        identifier_columns = {
+            *self.identifiers.additional_columns_computer,
+            *self.identifiers.intermediate_computation_columns,
+        }
+        if set(columns) & identifier_columns:
+            key["identifiers"] = self.identifiers
+        if set(columns) & NAME_AND_DATE_COLUMNS:
+            key["temporal"] = self.temporal
+            key["naming"] = self.naming
+            if self.naming.disambiguate_with is not None:
+                # duplicated longnames are told apart by the regions of this shapefile
+                key["disambiguated_by"] = shapefiles[
+                    self.naming.disambiguate_with
+                ].key_for_columns(["longname", "shortname"])
+        return key
 
     @property
     def source_country_list(self):

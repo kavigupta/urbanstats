@@ -8,6 +8,7 @@ from permacache import permacache, stable_hash
 
 from urbanstats.geometry.relationship_equirectangular import compute_relationships
 from urbanstats.geometry.shapefiles.longnames import shapefile_longnames
+from urbanstats.geometry.shapefiles.shapefile import keyed_on
 
 # The countries whose statistics agencies are data sources
 SOURCE_COUNTRIES = ("USA", "Canada")
@@ -179,7 +180,7 @@ def _subnational_source_countries(subnational):
 @permacache(
     "urbanstats/geometry/shapefiles/source_countries/related_subnationals_3",
     key_function=dict(
-        shapefile=lambda x: x.hash_key, subnational_regions=lambda x: x.hash_key
+        shapefile=keyed_on("longname"), subnational_regions=keyed_on("longname")
     ),
 )
 def related_subnationals(shapefile, subnational_regions):

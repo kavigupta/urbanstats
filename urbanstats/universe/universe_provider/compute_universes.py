@@ -1,4 +1,7 @@
+from permacache import stable_hash
+
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
+from urbanstats.geometry.shapefiles.shapefile import keyed_on
 
 
 def compute_universes_for_shapefile(shapefiles, shapefile):
@@ -21,8 +24,15 @@ def compute_universes_for_shapefile(shapefiles, shapefile):
     "urbanstats/universe/universe_provider/universe_provider/_compute_universes_for_shapefile_cached_3",
     key_function=dict(
         provider=lambda provider: provider.hash_key(),
-        shapefiles=lambda shapefiles: {k: v.hash_key for k, v in shapefiles.items()},
-        shapefile=lambda shapefile: shapefile.hash_key,
+        shapefiles=lambda shapefiles: {
+            k: keyed_on("longname")(v) for k, v in shapefiles.items()
+        },
+        # providers read the longnames and the intermediate columns
+        shapefile=lambda shapefile: stable_hash(
+            shapefile.key_for_columns(
+                ["longname", *shapefile.intermediate_computation_columns]
+            )
+        ),
     ),
 )
 def _compute_universes_for_shapefile_cached(provider, shapefiles, shapefile):

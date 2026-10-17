@@ -10,7 +10,7 @@ import tqdm.auto as tqdm
 import us
 from permacache import permacache
 
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import Shapefile, keyed_on
 from urbanstats.geometry.shapefiles.shapefiles.historical_congressional import to_year
 from urbanstats.metadata.metadata_columns import (
     MetadataColumnProvider,
@@ -142,7 +142,7 @@ def representatives_for_district(
 
 @permacache(
     "urbanstats/metadata/congressional_representatives/compute_representatives_for_shapefile_6",
-    key_function=dict(sf=lambda x: x.hash_key),
+    key_function=dict(sf=keyed_on("longname", "shortname", "start_date", "end_date")),
 )
 def compute_representatives_for_shapefile(
     sf: Shapefile, *, representatives_csv_version: str

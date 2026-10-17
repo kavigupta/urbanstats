@@ -19,7 +19,7 @@ from urbanstats.data.population_overlays import (
 )
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
 from urbanstats.geometry.shapefiles.row_functions import column
-from urbanstats.geometry.shapefiles.shapefile import make_shapefile
+from urbanstats.geometry.shapefiles.shapefile import keyed_on, make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
 from urbanstats.geometry.shapefiles.source_countries import ContainedWithinCountries
 from urbanstats.universe.universe_provider.combined_universe_provider import (
@@ -371,7 +371,7 @@ def specify_duplicates(frame, long_to_short):
 
 @permacache(
     "urbanstats/data/circle/overlapping_circles_frame_8",
-    key_function=dict(country_shapefile=lambda x: x.hash_key),
+    key_function=dict(country_shapefile=keyed_on("longname")),
 )
 def overlapping_circles_frame(
     country_shapefile, population, suffix, max_radius_in_chunks=20

@@ -7,7 +7,7 @@ import us
 from permacache import permacache, stable_hash
 
 from urbanstats.geometry.shapefiles.row_functions import column
-from urbanstats.geometry.shapefiles.shapefile import make_shapefile
+from urbanstats.geometry.shapefiles.shapefile import keyed_on, make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
 from urbanstats.geometry.shapefiles.shapefiles.districts import CONGRESSIONAL_DISTRICTS
 from urbanstats.geometry.shapefiles.source_countries import InCountry
@@ -17,8 +17,8 @@ from urbanstats.universe.universe_provider.constants import us_domestic_provider
 @permacache(
     "population_density/shapefiles/county_cross_cd_3",
     key_function=dict(
-        cds_sf=lambda cds_sf: cds_sf.hash_key,
-        counties_sf=lambda counties_sf: counties_sf.hash_key,
+        cds_sf=keyed_on("longname", "shortname", "start_date", "end_date"),
+        counties_sf=keyed_on("longname", "shortname", "start_date", "end_date"),
     ),
 )
 def county_cross_cd(cds_sf=CONGRESSIONAL_DISTRICTS, counties_sf=COUNTIES):

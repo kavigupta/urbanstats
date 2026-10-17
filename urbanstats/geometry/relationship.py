@@ -5,13 +5,17 @@ from permacache import permacache, stable_hash
 
 from urbanstats.geometry.relationship_equirectangular import compute_relationships
 from urbanstats.geometry.shapefiles.longnames import shapefile_longnames
+from urbanstats.geometry.shapefiles.shapefile import keyed_on
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 
 @permacache(
     "population_density/relationship/create_relationships_15",
-    key_function=dict(x=lambda x: x.hash_key, y=lambda y: y.hash_key),
+    key_function=dict(
+        x=keyed_on("longname", "start_date", "end_date"),
+        y=keyed_on("longname", "start_date", "end_date"),
+    ),
 )
 def create_relationships(x, y, check_temporal=True):
     """
@@ -228,7 +232,10 @@ def full_relationships(long_to_type):
     key_function=dict(
         long_to_type=stable_hash,
         shapefiles_to_use=lambda shapefiles_to_use: stable_hash(
-            {k: v.hash_key for k, v in shapefiles_to_use.items()}
+            {
+                k: v.key_for_columns(["longname", "start_date", "end_date"])
+                for k, v in shapefiles_to_use.items()
+            }
         ),
     ),
 )
