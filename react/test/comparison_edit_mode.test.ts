@@ -2,7 +2,7 @@ import { Selector } from 'testcafe'
 
 import { editModeSharedTests } from './edit_mode_test_template'
 import { comparisonTableScope, doneButton, editButton, filterBox, groupCheckbox, groupMemberRow, yearCheckbox } from './edit_mode_test_utils'
-import { comparisonPage, downloadCSV, screencap, target, urbanstatsFixture } from './test_utils'
+import { comparisonPage, downloadCSV, screencap, target, urbanstatsFixture, withHamburgerMenu } from './test_utils'
 
 /** What the comparison table's edit mode does that the article table's doesn't. */
 
@@ -98,7 +98,9 @@ test('editing a transposed comparison pops out of transpose', async (t) => {
 
 urbanstatsFixture('comparison edit mode staging while scrolling', scrollingRegions, async (t) => {
     // Save a setting first, so the link enters staging instead of silently applying.
-    await t.click(Selector('input[data-test-id=use_imperial]'))
+    await withHamburgerMenu(t, async () => {
+        await t.click(Selector('input[data-test-id=use_imperial]'))
+    })
     await t.navigateTo(`${scrollingRegions}&s=29ZqGgHgeNSXMA9`)
 })
 
