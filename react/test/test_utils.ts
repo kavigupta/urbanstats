@@ -305,7 +305,7 @@ async function copyMostRecentFile(t: TestController, laterThan: number, suffix: 
     saveImage(t, fs.readFileSync(mrdp))
 }
 
-/** Compared against the reference of the same name by `tests/check_snapshots.py`. */
+/** Compared against the reference of the same name by `checkSnapshots`. */
 export function saveString(t: TestController, string: string, name: string, format: 'json' | 'xml' | 'txt' | 'csv', gzip = true): void {
     switch (format) {
         case 'json':

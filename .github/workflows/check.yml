@@ -112,7 +112,6 @@ jobs:
       # As above: this is the docker build context, not a working tree.
       SPARSE_CHECKOUT: |
         /react/test/Dockerfile
-        /requirements*.txt
         /.github/actions/*
     steps:
       - *checkout
@@ -120,7 +119,6 @@ jobs:
       - uses: ./.github/actions/docker_image
         with:
           dockerfile: react/test/Dockerfile
-          extra-hash-files: requirements_screenshots.txt
           token: ${{ secrets.GITHUB_TOKEN }}
         id: image
 
@@ -206,7 +204,6 @@ jobs:
       - *checkout
       - run: git fetch origin ${{ github.base_ref }} --depth=1 # needed so test runner can diff tests against base ref
         if: ${{ github.base_ref != '' }}
-      # No python_environment: the image has what check_snapshots.py needs, and the venv is a 484MB restore.
       - uses: ./.github/actions/node_modules
       - uses: actions/download-artifact@v4
         with:

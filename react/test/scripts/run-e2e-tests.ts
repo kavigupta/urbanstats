@@ -9,6 +9,7 @@ import { argumentParser } from 'zodcli'
 
 import { port } from '../../port'
 
+import { checkSnapshots } from './check-snapshots'
 import { startProxy } from './ci_proxy'
 import { github } from './github-utils'
 import { runE2eTestsDocker } from './run-e2e-tests-docker'
@@ -238,10 +239,10 @@ async function maybeCompare(test: string, success: boolean): Promise<boolean> {
             await Promise.all(globSync(`test_snapshots/${test}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
         }
 
-        const snapshotComparison = await execa('python', ['tests/check_snapshots.py', `--test=${test}`], {
-            cwd: '..',
-            stdio: 'inherit',
-            reject: false,
+        // A test that times out can leave a half-written PNG, which shouldn't take the runner down with it
+        const snapshotsMatch = await checkSnapshots(test).catch((error: unknown) => {
+            console.error(error)
+            return false
         })
 
         if (options.write) {
@@ -254,7 +255,7 @@ async function maybeCompare(test: string, success: boolean): Promise<boolean> {
 
         await writeChangedSnapshotsManifest(test)
 
-        if (snapshotComparison.failed) {
+        if (!snapshotsMatch) {
             return false
         }
     }
