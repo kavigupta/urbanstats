@@ -504,7 +504,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
                                 {/* Outside the scroll and tableRef, so its buttons stay on screen and out of screenshots. */}
                                 <StagingControls onExitStaging={editState.exitEditMode} />
 
-                                <MaybeScroll widthColumns={widthColumns}>
+                                <MaybeScroll widthColumns={widthColumns} scale={fullWidth ? desktopContentWidth(windowWidth, true) / desktopContentWidth(windowWidth, false) : 1}>
                                     <div ref={tableRef} data-test-id="comparison-table">
                                         {editMode
                                             ? (
