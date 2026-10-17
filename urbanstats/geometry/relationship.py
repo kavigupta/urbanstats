@@ -4,6 +4,7 @@ import numpy as np
 from permacache import permacache, stable_hash
 
 from urbanstats.geometry.relationship_equirectangular import compute_relationships
+from urbanstats.geometry.shapefiles.longnames import shapefile_longnames
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.website_data.table import shapefile_without_ordinals
 
@@ -17,13 +18,18 @@ def create_relationships(x, y, check_temporal=True):
     Get the relationships between the two shapefiles x and y.
     Delegates to relationship_equirectangular.compute_relationships.
     """
-    rels = compute_relationships(x, y)
+    rels = compute_relationships(x.geometry, y.geometry)
+    names_x, names_y = shapefile_longnames(x), shapefile_longnames(y)
+    rels = {
+        kind: {(names_x[i], names_y[j]) for i, j in pairs}
+        for kind, pairs in rels.items()
+    }
     a = x.load_file()
     b = y.load_file()
-    a_contains_b = set(rels["a_contains_b"]) | set(rels["same_geography"])
-    b_contains_a = set(rels["a_contained_by_b"]) | set(rels["same_geography"])
-    intersects = set(rels["intersects"])
-    borders = set(rels["borders"])
+    a_contains_b = rels["a_contains_b"] | rels["same_geography"]
+    b_contains_a = rels["a_contained_by_b"] | rels["same_geography"]
+    intersects = rels["intersects"]
+    borders = rels["borders"]
     return [
         sorted(filter_temporal_overlaps(a, b, s) if check_temporal else s)
         for s in [a_contains_b, b_contains_a, intersects, borders]
