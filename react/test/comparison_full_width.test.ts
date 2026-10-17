@@ -1,9 +1,8 @@
 import { ClientFunction, Selector } from 'testcafe'
 
-import { comparisonPage, urbanstatsFixture } from './test_utils'
+import { comparisonPage, hamburgerMenu, urbanstatsFixture } from './test_utils'
 
 const sidebar = Selector('.left_panel')
-const hamburgerMenu = Selector('div').withAttribute('class', 'hamburgermenu')
 
 const tableScrolls = ClientFunction(() => {
     for (let element = document.querySelector('[data-test-id=comparison-table]'); element !== null; element = element.parentElement) {
