@@ -181,7 +181,7 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
             return <ErrorScreen data={pageData} />
         case 'initialLoad':
             return (
-                <PageTemplate showFooter={false}>
+                <PageTemplate showFooter={false} fullWidth={pageData.descriptor.kind === 'mapper' || (pageData.descriptor.kind === 'statistic' && pageData.descriptor.edit === true)}>
                     <InitialLoad />
                 </PageTemplate>
             )

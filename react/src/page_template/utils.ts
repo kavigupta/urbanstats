@@ -1,24 +1,19 @@
-import { useContext } from 'react'
+import { createContext, useContext } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
-import { ExceptionalPageDescriptor, PageData, PageDescriptor } from '../navigation/PageDescriptor'
+import { PageData, PageDescriptor } from '../navigation/PageDescriptor'
 
-function hideSidebarDesktop(page: ExceptionalPageDescriptor): boolean {
-    switch (page.kind) {
-        case 'initialLoad':
-            return hideSidebarDesktop(page.descriptor)
-        case 'mapper':
-            return true
-        case 'statistic':
-            return page.edit === true
-        default:
-            return false
-    }
+export const fullWidthContext = createContext(false)
+
+export const desktopLayout = {
+    maxWidthEm: 80,
+    sidebarPercent: 20,
+    sidebarContentPaddingEm: 2,
+    fullWidthPaddingEm: 1,
 }
 
-export function useHideSidebarDesktop(): boolean {
-    const navigator = useContext(Navigator.Context)
-    return hideSidebarDesktop(navigator.usePageState().current.descriptor)
+export function useFullWidth(): boolean {
+    return useContext(fullWidthContext)
 }
 
 function headerLogoKey(page: PageData | PageDescriptor): 'bannerURL' | 'mapperBannerURL' {

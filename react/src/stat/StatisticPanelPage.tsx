@@ -103,6 +103,7 @@ export function StatisticPanelPage({ view, stat, data, universeByName, set, load
 
     return (
         <PageTemplate
+            fullWidth={view.edit}
             showFooter={!splitLayout}
             screencap={data && ((...args) => createScreenshot(() => ({
                 path: `${sanitize(reifyString(data.renderedStatname, unitSettings))}.png`,
