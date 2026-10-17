@@ -4,6 +4,7 @@ import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import NodePolyfillPlugin from 'node-polyfill-webpack-plugin'
 import { rspack } from "@rspack/core"
 import { port } from "./port.js"
+import { setupGitSnapshotMiddlewares } from "./git-snapshots.js"
 
 const isProduction = process.env.NODE_ENV === 'production'
 
@@ -85,6 +86,7 @@ export default env => ({
                 watch: false,
             })),
         ],
+        setupMiddlewares: setupGitSnapshotMiddlewares,
         compress: true,
         port: port(),
         devMiddleware: {

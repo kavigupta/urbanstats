@@ -213,10 +213,13 @@ const editorSchema = z.object({
     mode: z.optional(z.enum(['uss', 'mapper'])),
 })
 
-// Without artifactId and hash, the viewer reads a local test run through the dev server instead of a CI artifact.
+// With base, the viewer compares the references at git refs base and head, or base and the working tree.
+// Otherwise, without artifactId and hash, it reads a local test run through the dev server instead of a CI artifact.
 const snapshotDiffViewerSchema = z.object({
     artifactId: z.optional(z.string()),
     hash: z.optional(z.string()),
+    base: z.optional(z.string()),
+    head: z.optional(z.string()),
     // Comma-separated. Restricts the viewer to these tests.
     tests: z.optional(z.string()),
     index: z.optional(z.coerce.number()),
@@ -279,7 +282,7 @@ export type PageData =
         descriptor?: PageDescriptor // If descriptor is not present, we could not parse it
     }
     | { kind: 'initialLoad', descriptor: PageDescriptor }
-    | { kind: 'snapshotDiffViewer', artifactId?: string, hash?: string, tests?: string, index: number, panel: typeof SnapshotDiffViewerPanel }
+    | { kind: 'snapshotDiffViewer', artifactId?: string, hash?: string, base?: string, head?: string, tests?: string, index: number, panel: typeof SnapshotDiffViewerPanel }
     | { kind: 'embedPreview', target: string, ogPort: number, panel: typeof EmbedPreviewPanel }
 
 export function pageDescriptorFromURL(url: URL): PageDescriptor {
@@ -462,6 +465,8 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             searchParams = {
                 artifactId: pageDescriptor.artifactId,
                 hash: pageDescriptor.hash,
+                base: pageDescriptor.base,
+                head: pageDescriptor.head,
                 tests: pageDescriptor.tests,
                 index: pageDescriptor.index?.toString(),
             }

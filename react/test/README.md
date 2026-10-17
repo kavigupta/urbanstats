@@ -31,6 +31,12 @@
   enumerate the tests; with `artifactId` and `hash` instead, it reads a CI artifact as before,
   and `tests` narrows that too.
 
+- Compare the references at two git refs, computing the deltas in the page with the same
+  tolerances CI applies. Leave out `head` to compare against the working tree, which includes
+  untracked references:
+
+  `http://localhost:8000/snapshot-diff-viewer.html?base=main&head=HEAD`
+
 - Take a run's output as the new references, without rerunning it:
 
   `npm run update-snapshots -- '--test=test/mapper-edit-text-boxes-desktop.test.ts'`
