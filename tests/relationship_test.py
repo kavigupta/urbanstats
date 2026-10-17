@@ -1,6 +1,7 @@
 import unittest
 
 from urbanstats.geometry.relationship_equirectangular import compute_relationships
+from urbanstats.geometry.shapefiles.longnames import shapefile_longnames
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
 
@@ -10,12 +11,16 @@ from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 )
 class RelationshipTest(unittest.TestCase):
     def relationshipsFlat(self, k1, k2, filter_geos=lambda _: True):
-        relationships = compute_relationships(shapefiles[k1], shapefiles[k2])
+        relationships = compute_relationships(
+            shapefiles[k1].geometry, shapefiles[k2].geometry
+        )
+        names_1 = shapefile_longnames(shapefiles[k1])
+        names_2 = shapefile_longnames(shapefiles[k2])
         relationships_flat = {
-            (a, b, rel)
-            for rel, a_b_s in relationships.items()
-            for a, b in a_b_s
-            if filter_geos(a) or filter_geos(b)
+            (names_1[i], names_2[j], rel)
+            for rel, pairs in relationships.items()
+            for i, j in pairs
+            if filter_geos(names_1[i]) or filter_geos(names_2[j])
         }
         print(relationships_flat)
         return relationships_flat
