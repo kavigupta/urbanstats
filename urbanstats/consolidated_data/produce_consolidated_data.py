@@ -26,7 +26,12 @@ def produce_results(row_geo: Any) -> data_files_pb2.Feature:
 @permacache(
     "urbanstats/consolidated_data/produce_consolidated_data/produce_all_results_from_tables_5",
     key_function=dict(
-        loaded_shapefile=lambda x: x.hash_key,
+        loaded_shapefile=lambda x: stable_hash(
+            {
+                **x.key_for_columns(["longname"]),
+                "does_overlap_self": x.does_overlap_self,
+            }
+        ),
         longnames=stable_hash,
         universes=stable_hash,
     ),

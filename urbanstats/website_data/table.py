@@ -42,11 +42,19 @@ from urbanstats.universe.universe_provider.compute_universes import (
 @permacache_with_remapping_pickle(
     "population_density/stats_for_shapefile/compute_statistics_for_shapefile_54",
     key_function=dict(
-        sf=lambda x: x.hash_key,
-        shapefiles=lambda x: {
-            k: (v.hash_key, v.universe_provider, v.source_countries)
-            for k, v in x.items()
-        },
+        sf=stable_hash,
+        # the other shapefiles are read for universes, source countries and representatives
+        shapefiles=lambda x: stable_hash(
+            {
+                k: (
+                    v.key_for_columns(v.available_columns(include_intermediates=True)),
+                    v.universe_provider,
+                    v.source_countries,
+                    v.special_data_sources,
+                )
+                for k, v in x.items()
+            }
+        ),
         metadata_providers=stable_hash,
         statistic_collections=stable_hash,
     ),
