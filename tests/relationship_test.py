@@ -442,33 +442,21 @@ class RelationshipTest(unittest.TestCase):
                 lambda g: g.startswith("CA-SD23 (2023), USA"),
             ),
             {
-                ("CA-SD23 (2023), USA", "CA-20 (2023), USA", "borders"),  # north
-                ("CA-SD23 (2023), USA", "CA-26 (2023), USA", "borders"),  # west
-                ("CA-SD23 (2023), USA", "CA-29 (2023), USA", "borders"),  # southwest
+                ("CA-SD23 (2023), USA", "CA-20 (2027), USA", "borders"),  # northwest
+                ("CA-SD23 (2023), USA", "CA-29 (2027), USA", "borders"),  # southwest
+                ("CA-SD23 (2023), USA", "CA-32 (2027), USA", "borders"),  # southwest
+                ("CA-SD23 (2023), USA", "CA-23 (2027), USA", "intersects"),  # east, 35%
+                ("CA-SD23 (2023), USA", "CA-27 (2027), USA", "intersects"),  # west, 31%
+                ("CA-SD23 (2023), USA", "CA-26 (2027), USA", "intersects"),  # west, 21%
                 (
                     "CA-SD23 (2023), USA",
-                    "CA-32 (2023), USA",
-                    "borders",
-                ),  # also southwest
-                (
-                    "CA-SD23 (2023), USA",
-                    "CA-23 (2023), USA",
+                    "CA-30 (2027), USA",
                     "intersects",
-                ),  # east/overlaps
+                ),  # southwest, 7%
                 (
                     "CA-SD23 (2023), USA",
-                    "CA-27 (2023), USA",
+                    "CA-28 (2027), USA",
                     "intersects",
-                ),  # more or less the same district
-                (
-                    "CA-SD23 (2023), USA",
-                    "CA-28 (2023), USA",
-                    "intersects",
-                ),  # southeast/overlaps
-                (
-                    "CA-SD23 (2023), USA",
-                    "CA-30 (2023), USA",
-                    "intersects",
-                ),  # south/overlaps
+                ),  # southeast, 6%
             },
         )
