@@ -1,6 +1,6 @@
 import { ClientFunction, Selector } from 'testcafe'
 
-import { comparisonPage, hamburgerMenu, urbanstatsFixture } from './test_utils'
+import { comparisonPage, hamburgerMenu, screencap, urbanstatsFixture } from './test_utils'
 
 const sidebar = Selector('.left_panel')
 
@@ -50,4 +50,14 @@ test('a comparison too wide for full width scrolls', async (t) => {
     await t.expect(sidebar.exists).notOk()
     await t.expect(hamburgerMenu.exists).ok()
     await t.expect(tableScrolls()).ok()
+})
+
+urbanstatsFixture('wide comparison on a wide screen', comparisonPage(cities.slice(0, 4)), async (t) => {
+    await t.resizeWindow(2200, 1600)
+})
+
+test('a wide comparison on a wide screen only takes the room it needs', async (t) => {
+    await t.expect(sidebar.exists).notOk()
+    await t.expect(Selector('[data-test-id=comparison-table]').offsetWidth).lt(1400)
+    await screencap(t)
 })

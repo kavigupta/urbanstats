@@ -11,13 +11,14 @@ import { Navigator } from '../navigation/Navigator'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { StatGroupSettings, useVisibleRows } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
+import { desktopContentWidth } from '../page_template/utils'
 import { compareArticleRows } from '../sorting'
 import { Universe, universeContext } from '../universe'
 import { mixWithBackground } from '../utils/color'
 import { sanitize } from '../utils/paths'
 import { notWaiting, waiting } from '../utils/promiseStream'
 import { Article } from '../utils/protos'
-import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
+import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass, useWindowWidth } from '../utils/responsive'
 import { TransposeContext } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
@@ -435,6 +436,9 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
                 warningRows: warningPlacements,
             }
 
+    const windowWidth = useWindowWidth()
+    const fullWidth = !mobileLayout && widthColumns > computeMaxColumns(mobileLayout)
+
     const csvExportCallback = useCSVExport(localArticlesToUse, props.rows, includeOrdinalsInExport, joinedString)
 
     return (
@@ -459,7 +463,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
                     screencap={(...args) => createScreenshot(screencapElements, ...args)}
                     screenshotContext={props.screenshotContext}
                     csvExportCallback={csvExportCallback}
-                    fullWidth={!mobileLayout && widthColumns > computeMaxColumns(mobileLayout)}
+                    fullWidth={fullWidth}
                 >
                     <DndContext
                         sensors={sensors}
@@ -468,7 +472,8 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
                         collisionDetection={closestCenter}
                     >
                         <SortableContext items={localArticlesToUse.map(a => a.shortname)} strategy={transpose ? verticalListSortingStrategy : horizontalListSortingStrategy}>
-                            <div>
+                            {/* As wide as the table needs, at the narrowest columns the sidebar layout allows */}
+                            <div style={fullWidth ? { maxWidth: widthColumns / computeMaxColumns(false) * desktopContentWidth(windowWidth, false), marginInline: 'auto' } : undefined}>
                                 <div className={headerTextClass}>Comparison</div>
                                 <div className={subHeaderTextClass}>{joinedString}</div>
                                 <div style={{ marginBlockEnd: '16px' }}></div>
