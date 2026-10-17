@@ -40,6 +40,12 @@ That's the whole thing. In particular:
   A `PreToolUse` hook in [`.claude/settings.json`](../../.claude/settings.json) rejects
   the piped form.
 
+## The snapshot diff viewer test
+
+`snapshot-diff-viewer.test.ts` also starts a server of its own: a second dev server on a free port,
+with its own output path and a local run it builds in a temporary directory, so it leaves the
+running dev server and your `changed_snapshots` alone.
+
 ## The embed Worker tests
 
 These are the exception to the rule above: they need a second server, the embed Worker, and they
