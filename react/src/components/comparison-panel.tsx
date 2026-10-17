@@ -459,6 +459,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
                     screencap={(...args) => createScreenshot(screencapElements, ...args)}
                     screenshotContext={props.screenshotContext}
                     csvExportCallback={csvExportCallback}
+                    fullWidth={!mobileLayout && widthColumns > computeMaxColumns(mobileLayout)}
                 >
                     <DndContext
                         sensors={sensors}
