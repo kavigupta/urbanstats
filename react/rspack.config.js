@@ -1,3 +1,4 @@
+import { createRequire } from 'module'
 import path from 'path'
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
@@ -36,6 +37,8 @@ export default env => ({
     resolve: {
         alias: {
             react$: path.resolve(import.meta.dirname, 'src/react-duplicate-keys.cjs'),
+            // Resolved as Node would, so it follows NODE_PATH to the e2e container's /node_modules
+            'react-without-key-check$': createRequire(import.meta.url).resolve('react'),
         },
         // Add '.ts' and '.tsx' as resolvable extensions.
         extensions: ['', '.webpack.js', '.web.js', '.ts', '.tsx', '.js'],

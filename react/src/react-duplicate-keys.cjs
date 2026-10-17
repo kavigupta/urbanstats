@@ -1,6 +1,6 @@
 // Aliased over `react` by rspack.config.js, so every element passes through here.
 // React only checks keys in its development build.
-const React = require('../node_modules/react/index.js') // By path, since `react` resolves back to this file
+const React = require('react-without-key-check') // Not `react`, which resolves back to this file
 
 const elementType = Symbol.for('react.element')
 

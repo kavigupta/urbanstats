@@ -1,131 +1,118 @@
-import http from 'http'
-import { AddressInfo } from 'net'
+import fs from 'fs/promises'
+import os from 'os'
+import path from 'path'
 
-import sharp from 'sharp'
-import { ClientFunction, RequestMock, Selector } from 'testcafe'
+import { execa, ExecaChildProcess } from 'execa'
+import { ClientFunction, Selector } from 'testcafe'
 
+import { freePort } from './scripts/run-e2e-tests-docker'
 import { getLocation, target, urbanstatsFixture } from './test_utils'
 
-// The git endpoints only exist on the dev server, and CI's checkout has no history to compare anyway.
+// The git endpoints live on the dev server, which CI doesn't otherwise run. Its own output path
+// keeps it from overwriting the scripts of a dev server that's already running.
 
-const width = 20
-const height = 10
+// From before "String comparisons" (#2489), which adds references, through "Rename the US Census
+// source to National Census" (#2546), which modifies them. Removing a flaky test (#2496) deletes one.
+const base = '44d49491777ce774894cde06c2ee517a4bfc6fb2'
+const head = '8c062719de55217ad619d1096de5e93fd040a41c'
 
-function png(paint: (x: number, y: number) => [number, number, number]): Promise<Buffer> {
-    const data = new Uint8Array(width * height * 4)
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            data.set([...paint(x, y), 255], (y * width + x) * 4)
-        }
-    }
-    return sharp(data, { raw: { width, height, channels: 4 } }).png().toBuffer()
-}
-
-const white = png(() => [255, 255, 255])
-const redSquare = png((x, y) => x >= 5 && x < 9 && y >= 2 && y < 6 ? [255, 0, 0] : [255, 255, 255])
-const offByOne = png((x, y) => x === 0 && y === 0 ? [254, 255, 255] : [255, 255, 255])
-
-const files: Record<string, { status: string, base?: Promise<Buffer> | string, head?: Promise<Buffer> | string }> = {
-    't1/Chrome/added.png': { status: 'A', head: white },
-    't1/Chrome/changed.png': { status: 'M', base: white, head: redSquare },
-    't1/Chrome/deleted.png': { status: 'D', base: white },
-    't1/Chrome/tiny.png': { status: 'M', base: white, head: offByOne },
-    't1/Chrome/values.csv': { status: 'M', base: 'a,1\nb,2\n', head: 'a,2\nb,2\n' },
-    't2/Chrome/other.png': { status: 'A', head: white },
-}
-
-// TestCafe stringifies a mocked body, which mangles a PNG, so the mock redirects files to this instead
-const fileServer = http.createServer((req, res) => {
-    void (async () => {
-        const url = new URL(req.url!, 'http://localhost')
-        const file = files[url.searchParams.get('path')!]
-        res.setHeader('access-control-allow-origin', '*')
-        res.end(await (url.searchParams.get('ref') === 'base' ? file.base : file.head))
-    })()
-}).listen(0)
-fileServer.unref()
-
-const gitMock = RequestMock()
-    .onRequestTo(/\/local-snapshots\/git\//)
-    .respond((req, res) => {
-        const url = new URL(req.url)
-        if (url.pathname.endsWith('/changes')) {
-            if (url.searchParams.get('base') !== 'base') {
-                res.statusCode = 400
-                res.setBody(`fatal: bad revision '${url.searchParams.get('base')}'`)
-                return
-            }
-            res.headers['content-type'] = 'application/json'
-            res.setBody(JSON.stringify(Object.entries(files).map(([path, { status }]) => ({ status, path }))))
-            return
-        }
-        res.statusCode = 302
-        res.headers.location = `http://localhost:${(fileServer.address() as AddressInfo).port}/${url.search}`
-    })
+let devServer: ExecaChildProcess | undefined
+let siteDir: string
+let devServerUrl: string
 
 function viewer(params: Record<string, string>): string {
-    return `${target}/snapshot-diff-viewer.html?${new URLSearchParams(params).toString()}`
+    return `${devServerUrl}/snapshot-diff-viewer.html?${new URLSearchParams(params).toString()}`
 }
+
+urbanstatsFixture('snapshot diff viewer between git refs', '/index.html')
+    .before(async () => {
+        siteDir = await fs.mkdtemp(path.join(os.tmpdir(), 'snapshot-diff-viewer-'))
+        await fs.writeFile(path.join(siteDir, 'snapshot-diff-viewer.html'), await (await fetch(`${target}/snapshot-diff-viewer.html`)).text())
+        const port = await freePort()
+        devServerUrl = `http://localhost:${port}`
+        devServer = execa('npx', ['rspack', 'serve', '--mode=development', '--env', `directory=${siteDir}`, '--output-path', path.join(siteDir, 'scripts')], {
+            env: { PORT: port.toString(), NODE_ENV: 'development' },
+            stdio: 'ignore',
+            cleanup: true,
+        })
+        const deadline = Date.now() + 5 * 60 * 1000
+        while (!await fetch(`${devServerUrl}/scripts/index.js`).then(response => response.ok, () => false)) {
+            if (Date.now() > deadline) {
+                throw new Error('Dev server did not start')
+            }
+            await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+    })
+    .after(async () => {
+        devServer?.kill()
+        await fs.rm(siteDir, { recursive: true, force: true })
+    })
 
 const header = Selector('h2')
 
-urbanstatsFixture('snapshot diff viewer between git refs', viewer({ base: 'base', head: 'head', index: '1' }), undefined, { requestHooks: [gitMock] })
+test('lists every changed reference', async (t) => {
+    await t.navigateTo(viewer({ base, head }))
+    await t.expect(header.textContent).match(/^\(1 \/ 217\) /)
+})
 
-const deltaPixel = ClientFunction((x: number, y: number) => {
+const magentaIndicatorRows = ClientFunction(() => {
     const img = document.querySelectorAll<HTMLImageElement>('.container img')[1]
     const canvas = document.createElement('canvas')
     canvas.width = img.naturalWidth
     canvas.height = img.naturalHeight
     const context = canvas.getContext('2d')!
     context.drawImage(img, 0, 0)
-    return Array.from(context.getImageData(x, y, 1, 1).data)
+    const column = context.getImageData(img.naturalWidth - 50, 0, 1, img.naturalHeight).data
+    let rows = 0
+    for (let i = 0; i < column.length; i += 4) {
+        if (column[i] === 255 && column[i + 1] === 0 && column[i + 2] === 255) {
+            rows++
+        }
+    }
+    return rows
 })
 
-test('marks the changed pixels and rows', async (t) => {
-    await t.expect(header.textContent).eql('(2 / 6) t1 / changed.png')
-    const images = Selector('.container img')
-    await t.expect(images.count).eql(3)
-    await t.expect(deltaPixel(6, 3)).eql([255, 0, 255, 255])
-    await t.expect(deltaPixel(0, 3)).eql([255, 255, 255, 255])
-    // The indicator column, beside the image
-    await t.expect(deltaPixel(width + 50, 3)).eql([255, 0, 255, 255])
-    await t.expect(deltaPixel(width + 50, 0)).eql([0, 0, 0, 255])
-})
-
-test('forgives what CI forgives', async (t) => {
-    await t.navigateTo(viewer({ base: 'base', head: 'head', index: '3' }))
-    await t.expect(Selector('h1').withExactText('Within tolerance').exists).ok()
+test('shows a modified image beside its delta', async (t) => {
+    await t.navigateTo(viewer({ base, head, tests: 'statistics' }))
+    await t.expect(header.textContent).eql('(1 / 31) statistics / add columns starting from a statname-1.png')
+    await t.expect(Selector('.container img').count).eql(3)
+    await t.expect(magentaIndicatorRows()).gt(0)
 })
 
 test('diffs text', async (t) => {
-    await t.navigateTo(viewer({ base: 'base', head: 'head', index: '4' }))
-    await t.expect(Selector('.diff-removed').withExactText('-a,1').exists).ok()
-    await t.expect(Selector('.diff-added').withExactText('+a,2').exists).ok()
+    await t.navigateTo(viewer({ base, head, tests: 'statistics', index: '5' }))
+    await t.expect(header.textContent).eql('(6 / 31) statistics / csv-export-population-statistics.csv')
+    await t.expect(Selector('.diff-removed').withExactText('-"Name","Population [US Census]","Population [US Census] Ord","Population [US Census] percentile"').exists).ok()
+    await t.expect(Selector('.diff-added').withExactText('+"Name","Population [National Census]","Population [National Census] Ord","Population [National Census] percentile"').exists).ok()
+})
+
+test('diffs gzipped text', async (t) => {
+    await t.navigateTo(viewer({ base, head, tests: 'mapper_x1' }))
+    await t.expect(header.textContent).eql('(1 / 1) mapper_x1 / mapping-geojson-negative-default-value.json.gz')
+    await t.expect(Selector('pre.snapshot-text').withText(/^reference and actual agree on the first \d+ and last \d+ lines\./).exists).ok()
 })
 
 test('shows added and deleted files', async (t) => {
-    await t.navigateTo(viewer({ base: 'base', head: 'head', index: '0' }))
+    await t.navigateTo(viewer({ base, head, tests: 'infinite-statval' }))
     await t.expect(Selector('h1').withExactText('New File').exists).ok()
-    await t.navigateTo(viewer({ base: 'base', head: 'head', index: '2' }))
+    await t.navigateTo(viewer({ base, head, tests: 'mapper-ux_x1' }))
+    await t.expect(header.textContent).eql('(1 / 1) mapper-ux_x1 / mobile appearance-1.png')
     await t.expect(Selector('h1').withExactText('Deleted File').exists).ok()
     await t.expect(Selector('.container img').count).eql(1)
 })
 
 test('navigates with the buttons and arrow keys', async (t) => {
+    await t.navigateTo(viewer({ base, head, tests: 'infinite-statval' }))
     await t.click(Selector('button').withExactText('Forward →'))
-    await t.expect(header.textContent).eql('(3 / 6) t1 / deleted.png')
-    await t.expect(getLocation()).contains('index=2')
-    await t.pressKey('left left')
-    await t.expect(header.textContent).eql('(1 / 6) t1 / added.png')
+    await t.expect(header.textContent).eql('(2 / 2) infinite-statval / an unbounded value is written as an infinity, not as a missing one-1.png')
+    await t.expect(getLocation()).contains(`base=${base}`)
+    await t.expect(getLocation()).contains('index=1')
+    await t.pressKey('left')
+    await t.expect(header.textContent).eql('(1 / 2) infinite-statval / an unbounded value below zero keeps its sign-1.png')
     await t.expect(Selector('button').withExactText('← Back').hasAttribute('disabled')).ok()
 })
 
-test('narrows to the given tests', async (t) => {
-    await t.navigateTo(viewer({ base: 'base', head: 'head', tests: 't2' }))
-    await t.expect(header.textContent).eql('(1 / 1) t2 / other.png')
-})
-
 test('shows a bad ref rather than loading forever', async (t) => {
-    await t.navigateTo(viewer({ base: 'bad' }))
-    await t.expect(Selector('pre').withExactText('Error: fatal: bad revision \'bad\'').exists).ok()
+    await t.navigateTo(viewer({ base: 'no-such-ref' }))
+    await t.expect(Selector('pre').withText(/bad revision 'no-such-ref'/).exists).ok()
 })
