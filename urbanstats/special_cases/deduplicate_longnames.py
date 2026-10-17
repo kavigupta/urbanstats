@@ -88,7 +88,7 @@ def load_shapefile_cached(shapefile_key):
     return shapefiles[shapefile_key].load_file()
 
 
-def shapefile_hash_key(sf_key):
+def names_key_of(sf_key):
     return keyed_on("longname", "shortname")(shapefiles[sf_key])
 
 
@@ -96,7 +96,7 @@ def shapefile_hash_key(sf_key):
     "stats_for_shapefile/locate_rows_3",
     key_function=dict(
         shape=lambda g: stable_hash(g.__geo_interface__),
-        shapefile_key=shapefile_hash_key,
+        shapefile_key=names_key_of,
     ),
 )
 def locate_rows(shape, shapefile_key):
