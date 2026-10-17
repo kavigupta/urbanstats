@@ -109,7 +109,7 @@ class CensusBasicsMixin:
     def dependencies(self):
         return ["area"]
 
-    def compute_census_basics(self, *, shapefile, existing_statistics, shapefile_table):
+    def compute_census_basics(self, *, shapefile, existing_statistics):
         s = self.suffix
         results = {}
         for year in self.census_years:
@@ -122,14 +122,14 @@ class CensusBasicsMixin:
                 )
             histos = self.census_histograms(year, shapefile)
             results.update({f"pw_density_{year}_histogram_{r}_{s}": [] for r in RADII})
-            for idx, longname in enumerate(shapefile_table.longname):
+            for idx, histo in enumerate(histos):
                 for r in RADII:
-                    if longname not in histos:
+                    if histo is None:
                         assert st["population"][idx] == 0
                         results[f"pw_density_{year}_histogram_{r}_{s}"].append(np.nan)
                     else:
                         results[f"pw_density_{year}_histogram_{r}_{s}"].append(
-                            histos[longname][f"{s}_density_{year}_{r}"]
+                            histo[f"{s}_density_{year}_{r}"]
                         )
             results[f"density_{year}_pw_median_1_{s}"] = [
                 median_from_histogram(h)

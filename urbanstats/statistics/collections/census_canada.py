@@ -23,7 +23,7 @@ class CensusCanada(CensusBasicsMixin, CanadaStatistics):
         return compute_census_stats(year, shapefile.geometry)
 
     def census_histograms(self, year, shapefile):
-        return census_histogram_canada(shapefile, year)
+        return census_histogram_canada(shapefile.geometry, year)
 
     def census_median_point(self, shapefile):
         return compute_census_median_point(2021, shapefile.geometry)
@@ -32,9 +32,7 @@ class CensusCanada(CensusBasicsMixin, CanadaStatistics):
         self, *, shapefile, existing_statistics, shapefile_table
     ):
         return self.compute_census_basics(
-            shapefile=shapefile,
-            existing_statistics=existing_statistics,
-            shapefile_table=shapefile_table,
+            shapefile=shapefile, existing_statistics=existing_statistics
         )
 
 
