@@ -207,7 +207,7 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
         >
             <mapSettingsContext.Provider value={{ mapSettings, typeEnvironment, setMapEditorMode }}>
                 <transformContext.Provider value={{ selfDetermineHeight: useMobileLayout() }}>
-                    <PageTemplate csvExportCallback={mapGenerator.exportCSV} screencap={exportPng} showFooter={false}>
+                    <PageTemplate fullWidth csvExportCallback={mapGenerator.exportCSV} screencap={exportPng} showFooter={false}>
                         <MaybeSplitLayout
                             error={mapGenerator.errors.some(e => e.kind === 'error')}
                             left={(
@@ -296,7 +296,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
     })
 
     return (
-        <PageTemplate topPanel={!isMobile} csvExportCallback={mapGenerator.exportCSV} showFooter={false}>
+        <PageTemplate fullWidth topPanel={!isMobile} csvExportCallback={mapGenerator.exportCSV} showFooter={false}>
             <MaybeSplitLayout
                 left={undefined}
                 error={false}
@@ -550,7 +550,7 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
     })
 
     return (
-        <PageTemplate topPanel={!isMobile} csvExportCallback={mapGenerator.exportCSV} showFooter={false}>
+        <PageTemplate fullWidth topPanel={!isMobile} csvExportCallback={mapGenerator.exportCSV} showFooter={false}>
             <TextBoxesSelectionContext.Provider value={selectionProperty}>
                 <MaybeSplitLayout
                     left={undefined}
