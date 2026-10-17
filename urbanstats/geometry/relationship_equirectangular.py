@@ -57,56 +57,37 @@ class LandRleSummary:
 
 
 @permacache(
-    "population_density/relationship_equirectangular/land_rle_summaries_for_shapefile_4",
-    key_function=dict(shapefile=lambda s: s.hash_key),
+    "population_density/relationship_equirectangular/land_rle_summaries_for_shapefile_4"
 )
-def land_rle_summaries_for_shapefile(shapefile: Any) -> Dict[str, LandRleSummary]:
-    """
-    Compute LandRleSummary for every geometry in a Shapefile object.
-
-    Returns a dict mapping longname to LandRleSummary.
-    """
-    table = shapefile.load_file()
-    result = {}
-    pbar = tqdm.tqdm(total=len(table), delay=10)
-    for _, row in table.iterrows():
-        pbar.set_description(f"RLE summaries: Processing {row['longname']}")
-        geom = row.geometry
+def land_rle_summaries_for_shapefile(geometry: Any) -> List[LandRleSummary]:
+    """Each region's LandRleSummary, in row order."""
+    result = []
+    for geom in tqdm.tqdm(
+        geometry.load_rows().geometry,
+        desc=f"RLE summaries for {geometry.key}",
+        delay=10,
+    ):
         rows, lon_starts, lon_ends = rasterize_using_lines(
             geom, resolution=RESOLUTION_3ARCSEC
         )
-        rle = rle_dict_from_arrays(rows, lon_starts, lon_ends)
-        summary = land_rle_summary(rle)
-        result[row["longname"]] = summary
-        pbar.update(1)
-    pbar.close()
+        result.append(
+            land_rle_summary(rle_dict_from_arrays(rows, lon_starts, lon_ends))
+        )
     return result
 
 
-@permacache(
-    "population_density/relationship_equirectangular/compute_relationships_8",
-    key_function=dict(
-        shapefile_a=lambda s: s.hash_key,
-        shapefile_b=lambda s: s.hash_key,
-    ),
-)
+@permacache("population_density/relationship_equirectangular/compute_relationships_8")
 def compute_relationships(
-    shapefile_a: Any, shapefile_b: Any
-) -> Dict[str, List[Tuple[str, str]]]:
-    print(
-        "Computing relationships between",
-        shapefile_a.hash_key,
-        "and",
-        shapefile_b.hash_key,
-    )
-    summaries_a = land_rle_summaries_for_shapefile(shapefile_a)
-    summaries_b = land_rle_summaries_for_shapefile(shapefile_b)
-    keys_a = list(summaries_a.keys())
-    keys_b = list(summaries_b.keys())
-    rles_a = [summaries_a[k].buffered_land_rle for k in keys_a]
-    rles_b = [summaries_b[k].buffered_land_rle for k in keys_b]
+    geometry_a: Any, geometry_b: Any
+) -> Dict[str, List[Tuple[int, int]]]:
+    """Each kind of relationship's pairs of row positions, in geometry_a then geometry_b."""
+    print("Computing relationships between", geometry_a.key, "and", geometry_b.key)
+    summaries_a = land_rle_summaries_for_shapefile(geometry_a)
+    summaries_b = land_rle_summaries_for_shapefile(geometry_b)
+    rles_a = [summary.buffered_land_rle for summary in summaries_a]
+    rles_b = [summary.buffered_land_rle for summary in summaries_b]
     pairs = rle_spatial_join(rles_a, rles_b)
-    relationships: Dict[str, List[Tuple[str, str]]] = {
+    relationships: Dict[str, List[Tuple[int, int]]] = {
         "same_geography": [],
         "a_contains_b": [],
         "a_contained_by_b": [],
@@ -114,8 +95,8 @@ def compute_relationships(
         "borders": [],
     }
     for i, j in tqdm.tqdm(pairs, desc="Classifying relationships", delay=10):
-        rel = classify_relationship(summaries_a[keys_a[i]], summaries_b[keys_b[j]])
-        relationships[rel].append((keys_a[i], keys_b[j]))
+        rel = classify_relationship(summaries_a[i], summaries_b[j])
+        relationships[rel].append((int(i), int(j)))
     return relationships
 
 
