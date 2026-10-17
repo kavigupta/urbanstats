@@ -32,7 +32,7 @@ import { ArticleRow, getHighlightIndex, isCongressionalRepresentativesMetadataRo
 import { CommonMaplibreMap, MapAttribution, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding } from './map-common'
 import { PlotProps, pullRelevantPlotProps, useExpandedByStat } from './plots'
 import { createScreenshot, ScreencapElements, ScreenshotContext, ScreenshotContextType, useScreenshotMode } from './screenshot'
-import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
+import { computeComparisonWidthColumns, computeMaxColumns, computeScrollColumnsDivisor, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
 import { computeNameSpecsWithGroups } from './statistic-name-specs'
 import { TableContents, CellSpec, PlotSpec, SuperHeaderSpec, TableLayout, TopLeftCellSpec } from './supertable'
@@ -472,8 +472,8 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
                         collisionDetection={closestCenter}
                     >
                         <SortableContext items={localArticlesToUse.map(a => a.shortname)} strategy={transpose ? verticalListSortingStrategy : horizontalListSortingStrategy}>
-                            {/* As wide as the table needs, at the narrowest columns the sidebar layout allows */}
-                            <div style={fullWidth ? { maxWidth: widthColumns / computeMaxColumns(false) * desktopContentWidth(windowWidth, false), marginInline: 'auto' } : undefined}>
+                            {/* As wide as the table would be if it scrolled in the sidebar layout */}
+                            <div style={fullWidth ? { maxWidth: widthColumns / computeScrollColumnsDivisor(false) * desktopContentWidth(windowWidth, false), marginInline: 'auto' } : undefined}>
                                 <div className={headerTextClass}>Comparison</div>
                                 <div className={subHeaderTextClass}>{joinedString}</div>
                                 <div style={{ marginBlockEnd: '16px' }}></div>
