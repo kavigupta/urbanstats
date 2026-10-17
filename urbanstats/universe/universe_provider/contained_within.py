@@ -3,9 +3,9 @@ from typing import List
 
 import geopandas as gpd
 import numpy as np
-from permacache import drop_if_equal
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
+from urbanstats.geometry.shapefiles.longnames import shapefile_longnames
 from urbanstats.universe.universe_list import universe_by_universe_type
 from urbanstats.universe.universe_provider.universe_provider import UniverseProvider
 
@@ -40,11 +40,23 @@ class ContainedWithinUniverseProvider(UniverseProvider):
                 and not self.allow_self_universe
             ):
                 continue
-            result_for_c = compute_contained_in(
-                shapefile, shapefiles[c], self.longname_filter
+            universe_names = shapefile_longnames(shapefiles[c])
+            allowed = set(universe_names)
+            if self.longname_filter is not None:
+                missing = set(self.longname_filter) - allowed
+                if missing:
+                    raise ValueError(
+                        f"Missing longnames in universe shapefile: {missing}"
+                    )
+                allowed = set(self.longname_filter)
+            contained_in = compute_contained_in(
+                shapefile.geometry, shapefiles[c].geometry
             )
-            for longname, universes in result_for_c.items():
-                universes = [u for u in universes if u not in remove_universes]
+            for longname, positions in zip(shapefile_table.longname, contained_in):
+                universes = [universe_names[u] for u in positions]
+                universes = [
+                    u for u in universes if u in allowed and u not in remove_universes
+                ]
                 result_all[longname].extend(universes)
         return result_all
 
@@ -63,34 +75,24 @@ PROVINCE_PROVIDER = ContainedWithinUniverseProvider(
 
 
 @permacache_with_remapping_pickle(
-    "urbanstats/universe/universe_provider/contained_within/compute_contained_in",
-    key_function=dict(
-        shapefile=lambda a: a.hash_key,
-        universe_shapefile=lambda a: a.hash_key,
-        longname_filter=drop_if_equal(None),
-    ),
+    "urbanstats/universe/universe_provider/contained_within/compute_contained_in_2"
 )
-def compute_contained_in(shapefile, universe_shapefile, longname_filter=None):
+def compute_contained_in(geometry, universe_geometry):
     """
-    Compute the universes for a shapefile based on the universe shapefile. Specifically, a shape S is contained in
-    a universe U if the area of the intersection of S and U is at least 5% of the area of S.
+    For each region, in row order, the row positions of the universe regions covering at least 5%
+    of its area.
     """
-    print("contained_in", shapefile.hash_key, universe_shapefile.hash_key)
-    universe_df = universe_shapefile.load_file()
-    if longname_filter is not None:
-        universe_df_longnames = set(universe_df.longname)
-        missing = set(longname_filter) - universe_df_longnames
-        if missing:
-            raise ValueError(f"Missing longnames in universe shapefile: {missing}")
-        universe_df = universe_df[universe_df.longname.isin(longname_filter)]
-    a_df = shapefile.load_file()
+    print("contained_in", geometry.key, universe_geometry.key)
+    universe_df = universe_geometry.load_rows().reset_index(drop=True)[["geometry"]]
+    universe_df["universe_idx"] = np.arange(universe_df.shape[0])
+    a_df = geometry.load_rows().reset_index(drop=True)[["geometry"]]
     a_df["idx"] = np.arange(a_df.shape[0])
     over = gpd.overlay(universe_df, a_df, how="intersection", keep_geom_type=True)
     area = over.geometry.to_crs("EPSG:2163").area
-    area_elem = a_df.set_index("idx").geometry.to_crs("EPSG:2163").area
+    area_elem = a_df.geometry.to_crs("EPSG:2163").area
     pct = area / np.array(area_elem[over.idx])
     over = over[pct > 0.05]
-    result = {k: [] for k in a_df.longname}
-    for st, reg in zip(over.longname_1, over.longname_2):
-        result[reg].append(st)
+    result = [[] for _ in range(a_df.shape[0])]
+    for universe, region in zip(over.universe_idx, over.idx):
+        result[region].append(int(universe))
     return result
