@@ -109,7 +109,7 @@ pre.snapshot-text {
 .diff-hunk { color: blue; }
 `}
             </style>
-            <LazyNode node={items.then(loaded => <Entries items={loaded} index={index} source={source} />)} />
+            <LazyNode node={items.then(loaded => <Entries items={loaded} index={index} source={source} />, errorNode)} />
         </>
     )
 }
@@ -379,9 +379,7 @@ function Diff({ test, file, referenceUrl, delta, changed, index, total, navigato
 }
 
 function LazyNode({ node }: { node: Promise<ReactNode> }): ReactNode {
-    // useOrderedResolve treats a rejection as still loading, which would hide e.g. a mistyped git ref
-    const shown = useMemo(() => node.catch((error: unknown) => <pre>{String(error)}</pre>), [node])
-    const { result, loading } = useOrderedResolve(shown, 'LazyNode')
+    const { result, loading } = useOrderedResolve(node, 'LazyNode')
 
     if (result === undefined || loading) {
         return <LongLoad />
@@ -490,8 +488,14 @@ function delayed(render: () => Promise<ReactNode>): Delayed {
                 resolve = r
             })
             return await render()
-        })(),
+        })().catch(errorNode),
     }
+}
+
+// Rather than rejecting, which useOrderedResolve would show as loading forever, and which is
+// unhandled for the neighbours loaded ahead of time
+function errorNode(error: unknown): ReactNode {
+    return <pre>{String(error)}</pre>
 }
 
 function nodeFromEntry(entry: FileEntry): Delayed {

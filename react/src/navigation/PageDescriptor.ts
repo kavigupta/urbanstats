@@ -465,6 +465,8 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             searchParams = {
                 artifactId: pageDescriptor.artifactId,
                 hash: pageDescriptor.hash,
+                base: pageDescriptor.base,
+                head: pageDescriptor.head,
                 tests: pageDescriptor.tests,
                 index: pageDescriptor.index?.toString(),
             }
