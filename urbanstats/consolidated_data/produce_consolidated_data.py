@@ -5,6 +5,7 @@ from typing import Any, List, Tuple
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
+from urbanstats.geometry.shapefiles.shapefile import Names
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import ensure_writeable
@@ -26,18 +27,13 @@ def produce_results(row_geo: Any) -> data_files_pb2.Feature:
 @permacache(
     "urbanstats/consolidated_data/produce_consolidated_data/produce_all_results_from_tables_5",
     key_function=dict(
-        loaded_shapefile=lambda x: stable_hash(
-            {
-                **x.key_for_columns(["longname"]),
-                "does_overlap_self": x.does_overlap_self,
-            }
-        ),
+        names=stable_hash,
         longnames=stable_hash,
         universes=stable_hash,
     ),
 )
 def produce_all_results_from_tables(
-    loaded_shapefile: Any,
+    names: Names,
     longnames: List[str],
     universes: List[List[int]],
     limit: int = 5 * 1024 * 1024,
@@ -46,7 +42,7 @@ def produce_all_results_from_tables(
     shapes = None
     while simplify_amount < 20 / 3600:
         shapes = produce_results_from_tables_at_simplify_amount(
-            loaded_shapefile, longnames, universes, simplify_amount
+            names, longnames, universes, simplify_amount
         )
         if shapes.ByteSize() < limit:
             break
@@ -60,17 +56,17 @@ def produce_all_results_from_tables(
 
 
 def produce_results_from_tables_at_simplify_amount(
-    loaded_shapefile: Any,
+    names: Names,
     longnames: List[str],
     universes: List[List[int]],
     simplify_amount: float,
 ) -> data_files_pb2.ConsolidatedShapes:
-    geo_table = loaded_shapefile.load_file()
+    geo_table = names.load()
 
     geo_table = geo_table.set_index("longname")
     geo_table = geo_table.loc[longnames].copy()
     if simplify_amount != 0:
-        if loaded_shapefile.does_overlap_self:
+        if names.geometry.does_overlap_self:
             # can't use simplify_coverage for overlapping geometries
             # because it will not work correctly
             geo_table.geometry = geo_table.geometry.simplify(simplify_amount)
@@ -119,7 +115,7 @@ def compute_geography(typ: str, data_table: Any) -> Tuple[Any, bytes, float]:
         .tolist()
     )
     shapes, simplification = produce_all_results_from_tables(
-        loaded_shapefile, longnames, universes
+        loaded_shapefile.names, longnames, universes
     )
 
     return data_table, shapes, simplification
