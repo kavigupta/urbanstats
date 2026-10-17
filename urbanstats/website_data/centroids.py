@@ -5,6 +5,7 @@ import pandas as pd
 import tqdm.auto as tqdm
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
+from urbanstats.geometry.shapefiles.longnames import shapefile_longnames
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 
@@ -41,7 +42,7 @@ def compute_centroids(geometry: Any) -> List[Any]:
 def compute_all_centroids(shapefiles: Dict[str, Any]) -> pd.Series:
     return pd.concat(
         [
-            pd.Series(compute_centroids(sf.geometry), index=sf.load_file().longname)
+            pd.Series(compute_centroids(sf.geometry), index=shapefile_longnames(sf))
             for sf in tqdm.tqdm(shapefiles.values())
         ],
         axis=0,
