@@ -1,5 +1,7 @@
 import { createTwoFilesPatch } from 'diff'
 
+// Shared by the e2e snapshot check and the snapshot diff viewer, so the viewer flags exactly what CI does.
+
 export interface RGBAImage { width: number, height: number, data: Uint8Array }
 
 export function isImage(file: string): boolean {

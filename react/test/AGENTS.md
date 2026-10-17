@@ -26,6 +26,9 @@ That's the whole thing. In particular:
   tests it ran. The page needs the dev server up, since that is what serves the local
   `changed_snapshots`, `delta` and `reference_test_snapshots`. To accept what the run produced without
   rerunning it: `npm run update-snapshots -- '--test=test/mapper-ux_x1.test.ts'`.
+- **To see how references changed between git refs**, with no test run, open the viewer with
+  `?base=<ref>&head=<ref>`, or just `?base=<ref>` for the working tree. It computes the deltas
+  itself, with CI's tolerances.
 - **Redirect to a file, as above, rather than piping through `head`, `tail`, or `grep`.**
   Runs take minutes and produce a lot of log, and a run you truncate is a run you have to
   do again. With the whole thing on disk, narrowing down costs nothing:

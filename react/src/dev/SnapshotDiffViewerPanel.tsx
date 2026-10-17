@@ -1,4 +1,5 @@
 import { Data64URIWriter, FileEntry, Reader, TextWriter, Uint8ArrayWriter, ZipReader } from '@zip.js/zip.js'
+import { decode, encode } from 'fast-png'
 import React, { ReactNode, useContext, useEffect, useMemo } from 'react'
 import { z } from 'zod'
 
@@ -7,8 +8,10 @@ import { LongLoad } from '../navigation/loading'
 import { DefaultMap } from '../utils/DefaultMap'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
+import { imageDelta, isImage, RGBAImage, textDelta } from './snapshotDelta'
+
 /** Which run's snapshots to show, and which tests of it. Everything but the index the viewer navigates within. */
-interface Source { artifactId?: string, hash?: string, tests?: string }
+interface Source { artifactId?: string, hash?: string, base?: string, head?: string, tests?: string }
 
 interface Item {
     test: string
@@ -19,13 +22,18 @@ interface Item {
     delta?: Delayed
 }
 
-export function SnapshotDiffViewerPanel({ hash, artifactId, tests, index }: Source & { index: number }): ReactNode {
-    const source = useMemo(() => ({ artifactId, hash, tests }), [artifactId, hash, tests])
+export function SnapshotDiffViewerPanel({ hash, artifactId, base, head, tests, index }: Source & { index: number }): ReactNode {
+    const source = useMemo(() => ({ artifactId, hash, base, head, tests }), [artifactId, hash, base, head, tests])
     const items = useMemo(
-        () => artifactId === undefined || hash === undefined
-            ? localItems(splitTests(tests))
-            : artifactItems(artifactId, hash, splitTests(tests)),
-        [artifactId, hash, tests],
+        () => {
+            if (base !== undefined) {
+                return gitItems(base, head, splitTests(tests))
+            }
+            return artifactId === undefined || hash === undefined
+                ? localItems(splitTests(tests))
+                : artifactItems(artifactId, hash, splitTests(tests))
+        },
+        [artifactId, hash, base, head, tests],
     )
 
     return (
@@ -163,6 +171,69 @@ async function localItems(tests: string[] | undefined): Promise<Item[]> {
     return perTest.flat()
 }
 
+const gitChangesSchema = z.array(z.object({ status: z.string(), path: z.string() }))
+
+/** Diffs computed here, between the references at `base` and at `head`, or the working tree. */
+async function gitItems(base: string, head: string | undefined, tests: string[] | undefined): Promise<Item[]> {
+    const response = await fetch(`/local-snapshots/git/changes?${new URLSearchParams({ base, ...(head === undefined ? {} : { head }) })}`)
+    if (!response.ok) {
+        throw new Error(await response.text())
+    }
+    return gitChangesSchema.parse(await response.json())
+        .map(({ status, path }) => {
+            const [test, browser, ...rest] = path.split('/')
+            return { status, path, test, browser, file: rest.join('/') }
+        })
+        .filter(({ test }) => tests === undefined || tests.includes(test))
+        .sort((a, b) => a.path.localeCompare(b.path))
+        .map(({ status, path, test, browser, file }): Item => {
+            const baseUrl = gitFileUrl(base, path)
+            const headUrl = gitFileUrl(head, path)
+            return {
+                test,
+                browser,
+                file,
+                referenceUrl: baseUrl,
+                changed: status !== 'D' && showChanged(file, status === 'M') ? nodeFromUrl(headUrl, file) : undefined,
+                delta: status === 'M' ? delayed(() => computedDelta(baseUrl, headUrl, file)) : undefined,
+            }
+        })
+}
+
+function gitFileUrl(ref: string | undefined, path: string): string {
+    return `/local-snapshots/git/file?${new URLSearchParams({ path, ...(ref === undefined ? {} : { ref }) })}`
+}
+
+async function computedDelta(baseUrl: string, headUrl: string, file: string): Promise<ReactNode> {
+    const [ref, act] = await Promise.all([baseUrl, headUrl].map(async (url) => {
+        const response = await fetch(url)
+        if (!response.ok) {
+            throw new Error(await response.text())
+        }
+        return await response.blob()
+    }))
+    if (isImage(file)) {
+        const delta = imageDelta(await decodePng(ref), await decodePng(act), file)
+        if (delta === undefined) {
+            return <h1>Within tolerance</h1>
+        }
+        // Not a canvas: Chrome caps canvases at 32767px, and some screenshots are taller
+        const png = encode({ ...delta, channels: 4, depth: 8 }, { zlib: { level: 1 } })
+        return <img src={URL.createObjectURL(new Blob([png], { type: 'image/png' }))} />
+    }
+    const delta = textDelta(await decompress(ref, file), await decompress(act, file))
+    return delta === undefined ? <h1>Same text</h1> : textNode(delta, true)
+}
+
+// Not a canvas, which caps height and premultiplies alpha. fast-png decodes the same pixels as sharp does in CI.
+async function decodePng(blob: Blob): Promise<RGBAImage> {
+    const png = decode(await blob.arrayBuffer())
+    if (png.channels !== 4 || png.depth !== 8 || !(png.data instanceof Uint8Array)) {
+        throw new Error(`Expected an 8-bit RGBA PNG, got ${png.channels} channels at depth ${png.depth}`)
+    }
+    return { width: png.width, height: png.height, data: png.data }
+}
+
 function localUrl(tree: 'reference' | 'changed' | 'delta', test: string, path: string): string {
     return encodeURI(`/local-snapshots/${tree}/${test}/${path}`)
 }
@@ -279,13 +350,22 @@ function Diff({ test, file, referenceUrl, delta, changed, index, total, navigato
                                 </div>
                             </>
                         )
-                    : (
-                            <div>
-                                <h1>
-                                    New File
-                                </h1>
-                            </div>
-                        )}
+                    : changed
+                        ? (
+                                <div>
+                                    <h1>
+                                        New File
+                                    </h1>
+                                </div>
+                            )
+                        : (
+                                <div>
+                                    <h1>
+                                        Deleted File
+                                    </h1>
+                                    {isImage(file) ? <img src={referenceUrl} /> : <a href={referenceUrl}>Reference</a>}
+                                </div>
+                            )}
                 {changed
                     ? (
                             <div>
@@ -389,10 +469,6 @@ class CustomReader extends Reader<void> {
 
         return result
     }
-}
-
-function isImage(file: string): boolean {
-    return file.endsWith('.png')
 }
 
 function deltaName(file: string): string {
