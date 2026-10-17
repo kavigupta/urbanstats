@@ -34,13 +34,13 @@ class UniverseProvider(ABC):
         """
 
     @abstractmethod
-    def universes_for_shapefile(self, shapefiles, shapefile, shapefile_table):
+    def universes_for_shapefile(self, names_by_key, names, table):
         """
         Returns a dictionary mapping longnames to universes for a given shapefile
 
-        :param shapefiles: A dictionary of shapefiles, mapping relevant shapefile keys to shapefiles
-        :param shapefile: The shapefile to compute universes for
-        :param shapefile_table: The table of the shapefile
+        :param names_by_key: The Names of each of the relevant shapefiles
+        :param names: The Names of the shapefile to compute universes for
+        :param table: Its names and identifier columns, as from load_names_and_identifiers
         """
 
 
@@ -64,12 +64,10 @@ class UrbanCenterlikeStateUniverseProvider(UniverseProvider):
             return province_abbr_to_province[code[2:]]
         return None
 
-    def universes_for_shapefile(self, shapefiles, shapefile, shapefile_table):
+    def universes_for_shapefile(self, names_by_key, names, table):
         assert self.countries == ("US", "CA"), f"Unexpected countries: {self.countries}"
         result = {}
-        for longname, codes in zip(
-            shapefile_table.longname, shapefile_table.subnationals_ISO_CODE
-        ):
+        for longname, codes in zip(table.longname, table.subnationals_ISO_CODE):
             codes = [self.process_code(code) for code in codes]
             codes = [code for code in codes if code is not None]
             result[longname] = codes

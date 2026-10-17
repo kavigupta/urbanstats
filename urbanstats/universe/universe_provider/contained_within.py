@@ -29,18 +29,18 @@ class ContainedWithinUniverseProvider(UniverseProvider):
     def relevant_shapefiles(self):
         return self.contained_within
 
-    def universes_for_shapefile(self, shapefiles, shapefile, shapefile_table):
+    def universes_for_shapefile(self, names_by_key, names, table):
         remove_universes = (
             set(self.remove_universes) if self.remove_universes is not None else set()
         )
-        result_all = {longname: [] for longname in shapefile_table.longname}
+        result_all = {longname: [] for longname in table.longname}
         for c in self.contained_within:
             if (
-                shapefiles[c].hash_key == shapefile.hash_key
+                names_by_key[c].geometry == names.geometry
                 and not self.allow_self_universe
             ):
                 continue
-            universe_names = shapefile_longnames(shapefiles[c])
+            universe_names = shapefile_longnames(names_by_key[c])
             allowed = set(universe_names)
             if self.longname_filter is not None:
                 missing = set(self.longname_filter) - allowed
@@ -50,9 +50,9 @@ class ContainedWithinUniverseProvider(UniverseProvider):
                     )
                 allowed = set(self.longname_filter)
             contained_in = compute_contained_in(
-                shapefile.geometry, shapefiles[c].geometry
+                names.geometry, names_by_key[c].geometry
             )
-            for longname, positions in zip(shapefile_table.longname, contained_in):
+            for longname, positions in zip(table.longname, contained_in):
                 universes = [universe_names[u] for u in positions]
                 universes = [
                     u for u in universes if u in allowed and u not in remove_universes

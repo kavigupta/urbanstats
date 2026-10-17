@@ -8,9 +8,9 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 import pandas as pd
 import tqdm.auto as tqdm
 import us
-from permacache import permacache
+from permacache import permacache, stable_hash
 
-from urbanstats.geometry.shapefiles.shapefile import Shapefile, keyed_on
+from urbanstats.geometry.shapefiles.shapefile import Names, Shapefile
 from urbanstats.geometry.shapefiles.shapefiles.historical_congressional import to_year
 from urbanstats.metadata.metadata_columns import (
     MetadataColumnProvider,
@@ -142,12 +142,12 @@ def representatives_for_district(
 
 @permacache(
     "urbanstats/metadata/congressional_representatives/compute_representatives_for_shapefile_6",
-    key_function=dict(sf=keyed_on("longname", "shortname", "start_date", "end_date")),
+    key_function=dict(names=stable_hash),
 )
 def compute_representatives_for_shapefile(
-    sf: Shapefile, *, representatives_csv_version: str
+    names: Names, *, representatives_csv_version: str
 ) -> Tuple[List[str], List[Dict[int, List[Representative]]]]:
-    table = sf.load_file()
+    table = names.load()
     results = []
     pbar = tqdm.tqdm(total=len(table), desc="Computing representatives for districts")
     for _, row in table.iterrows():
@@ -203,7 +203,10 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
         from urbanstats.geometry.relationship import create_relationships_dispatch
 
         res = create_relationships_dispatch(
-            shapefiles, key_a, key_b, check_temporal=False
+            {k: sf.names for k, sf in shapefiles.items()},
+            key_a,
+            key_b,
+            check_temporal=False,
         )
         a_contains_b, b_contains_a, a_intersects_b, _ = res
         return [*a_contains_b, *b_contains_a, *a_intersects_b]
@@ -212,7 +215,7 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
         self, shapefile: Shapefile
     ) -> Dict[str, Dict[int, List[Representative]]]:
         names, representatives_by_row = compute_representatives_for_shapefile(
-            shapefile,
+            shapefile.names,
             representatives_csv_version=self.representatives_csv_version,
         )
         return dict(zip(names, representatives_by_row))

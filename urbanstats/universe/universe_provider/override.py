@@ -19,10 +19,8 @@ class OverrideUniverseProvider(UniverseProvider):
     def relevant_shapefiles(self):
         return self.underlying.relevant_shapefiles()
 
-    def universes_for_shapefile(self, shapefiles, shapefile, shapefile_table):
-        result = self.underlying.universes_for_shapefile(
-            shapefiles, shapefile, shapefile_table
-        )
+    def universes_for_shapefile(self, names_by_key, names, table):
+        result = self.underlying.universes_for_shapefile(names_by_key, names, table)
         result = result.copy()
         for k, v in self.overrides.items():
             assert k in result, f"Key {k} not in shapefile table"
