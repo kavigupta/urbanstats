@@ -239,7 +239,11 @@ async function maybeCompare(test: string, success: boolean): Promise<boolean> {
             await Promise.all(globSync(`test_snapshots/${test}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
         }
 
-        const snapshotsMatch = await checkSnapshots(test)
+        // A test that times out can leave a half-written PNG, which shouldn't take the runner down with it
+        const snapshotsMatch = await checkSnapshots(test).catch((error: unknown) => {
+            console.error(error)
+            return false
+        })
 
         if (options.write) {
             // A test that stopped early only produced some of its snapshots

@@ -1,6 +1,9 @@
 # You may want to update ../../Dockerfile when updating this file
+# This version for compatibility with pandas
 # Pinned by digest because a moving tag invalidates the build cache. bookworm to match the snapshot below.
-FROM debian:bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587
+# Python for the quiz tests, which start urbanstats-persistent-data with the image's pip3.
+# slim, since the full toolchain is 330MB.
+FROM python:3.10-slim-bookworm@sha256:7ed92b32353e8d8bd865b5ba811e0315d3999c3b57b1c2df2b504a359d4a1707
 
 # One layer, because /var/lib/apt/lists is 44MB that only the build uses.
 RUN apt-get -y update \

@@ -96,5 +96,8 @@ async function writeDelta(file: string, ref: Buffer, act: Buffer, deltaPath: str
 
 async function decodePng(buffer: Buffer): Promise<RGBAImage> {
     const { data, info } = await sharp(buffer).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
+    if (info.channels !== 4) {
+        throw new Error(`Expected 4 channels after decoding, got ${info.channels}`)
+    }
     return { width: info.width, height: info.height, data }
 }
