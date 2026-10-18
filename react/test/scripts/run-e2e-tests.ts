@@ -1,4 +1,7 @@
+import { existsSync } from 'fs'
 import fs from 'fs/promises'
+import os from 'os'
+import path from 'path'
 
 import chalkTemplate from 'chalk-template'
 import { execa } from 'execa'
@@ -9,6 +12,7 @@ import { argumentParser } from 'zodcli'
 
 import { port } from '../../port'
 
+import { checkSnapshots } from './check-snapshots'
 import { startProxy } from './ci_proxy'
 import { github } from './github-utils'
 import { runE2eTestsDocker } from './run-e2e-tests-docker'
@@ -55,7 +59,7 @@ const tests = testsFromGlobs(options.test)
 
 if (options.headless) {
     // Start display subsystem to browser can run
-    void execa('Xvfb', [':10', '-ac'])
+    void execa('Xvfb', [':10', '-ac', '-screen', '0', '2560x1920x24'])
     process.env.DISPLAY = ':10'
     void execa('bash', ['-c', 'fluxbox >/dev/null 2>&1'])
     if (process.env.URBANSTATS_VNC_PASSWORD) {
@@ -199,6 +203,8 @@ async function runTest(test: string): Promise<TestResult> {
     // Reset TOTP wait
     await setTOTPWait(test, 0)
 
+    await waitForReleasedChromeProfiles()
+
     const runningTests = (async () => {
         const start = Date.now()
         const failed = await runner.run({
@@ -238,10 +244,10 @@ async function maybeCompare(test: string, success: boolean): Promise<boolean> {
             await Promise.all(globSync(`test_snapshots/${test}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
         }
 
-        const snapshotComparison = await execa('python', ['tests/check_snapshots.py', `--test=${test}`], {
-            cwd: '..',
-            stdio: 'inherit',
-            reject: false,
+        // A test that times out can leave a half-written PNG, which shouldn't take the runner down with it
+        const snapshotsMatch = await checkSnapshots(test).catch((error: unknown) => {
+            console.error(error)
+            return false
         })
 
         if (options.write) {
@@ -254,12 +260,29 @@ async function maybeCompare(test: string, success: boolean): Promise<boolean> {
 
         await writeChangedSnapshotsManifest(test)
 
-        if (snapshotComparison.failed) {
+        if (!snapshotsMatch) {
             return false
         }
     }
 
     return true
+}
+
+/**
+ * TestCafe unlocks the last test's Chrome profile before deleting it, and deleting it kills any Chrome
+ * whose arguments name it. A browser launched in between reuses the unlocked profile and dies with it.
+ */
+async function waitForReleasedChromeProfiles(): Promise<void> {
+    const root = path.join(os.tmpdir(), 'testcafe')
+    const deadline = Date.now() + 15_000
+    while (Date.now() < deadline) {
+        const released = (await fs.readdir(root).catch(() => []))
+            .filter(dir => dir.startsWith('chrome-profile-') && !existsSync(path.join(root, dir, '.testcafe-lockfile')))
+        if (released.length === 0) {
+            return
+        }
+        await new Promise(resolve => setTimeout(resolve, 100))
+    }
 }
 
 async function withTimeout<T>(promise: Promise<T>, getTimeoutSeconds: () => Promise<number>): Promise<T | { status: 'timeout' }> {

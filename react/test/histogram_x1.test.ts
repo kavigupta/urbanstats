@@ -179,6 +179,8 @@ test('histogram-tooltip-top-of-frame', async (t) => {
 
     // fullPage would hover the corner of the page first, which would take the tooltip away with it
     await screencap(t, { fullPage: false, selector: Selector('.histogram-svg-panel') })
+    // screencap's preparation has once left the tooltip without its box; fail rather than keep that capture
+    await t.expect(Selector('.histogram-svg-panel').find('g[aria-label=tip] tspan').withText(/Indonesia: [\d.]+%$/).visible).ok()
 })
 
 // the same, pinned, which outlives the pointer and so can go in a full-page screenshot and the download

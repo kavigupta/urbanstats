@@ -12,6 +12,14 @@ export const desktopLayout = {
     fullWidthPaddingEm: 1,
 }
 
+/** In px, so content can size itself for either layout. */
+export function desktopContentWidth(windowWidth: number, fullWidth: boolean): number {
+    const em = parseFloat(getComputedStyle(document.documentElement).fontSize)
+    return fullWidth
+        ? windowWidth - 2 * desktopLayout.fullWidthPaddingEm * em
+        : (1 - desktopLayout.sidebarPercent / 100) * Math.min(desktopLayout.maxWidthEm * em, windowWidth) - desktopLayout.sidebarContentPaddingEm * em
+}
+
 export function useFullWidth(): boolean {
     return useContext(fullWidthContext)
 }

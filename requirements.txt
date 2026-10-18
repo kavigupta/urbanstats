@@ -18,7 +18,8 @@ pygeos==0.14.0
 # necessary for the geopandas version
 fiona==1.9.6
 pandas==2.0.0
--r requirements_screenshots.txt
+numpy==1.26.4
+Pillow==9.5.0
 permacache==3.9.0
 more_itertools
 cached_property

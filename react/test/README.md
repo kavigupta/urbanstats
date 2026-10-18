@@ -31,6 +31,12 @@
   enumerate the tests; with `artifactId` and `hash` instead, it reads a CI artifact as before,
   and `tests` narrows that too.
 
+- Compare the references at two git refs, computing the deltas in the page with the same
+  tolerances CI applies. Leave out `head` to compare against the working tree, which includes
+  untracked references:
+
+  `http://localhost:8000/snapshot-diff-viewer.html?base=main&head=HEAD`
+
 - Take a run's output as the new references, without rerunning it:
 
   `npm run update-snapshots -- '--test=test/mapper-edit-text-boxes-desktop.test.ts'`
@@ -65,7 +71,7 @@ Either container needs `--browser=chromium`, since it has Chromium rather than C
 
 `host-arch` avoids emulating `amd64`, but **can't do anything screenshot-related**: `arm64` Chromium
 antialiases a handful of pixels differently, well below what anyone would notice but well above
-`check_snapshots.py`'s near-exact threshold. Use `ci` for `--compare` and for regenerating references.
+`checkSnapshots`'s near-exact threshold. Use `ci` for `--compare` and for regenerating references.
 
 TestCafe ships no `arm64` build of the helper binaries behind `t.resizeWindow` and friends, so those
 run as `i386` binaries under emulation. Chromium and Node, where the time goes, run natively.
