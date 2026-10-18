@@ -110,6 +110,9 @@ type DragKind = 'move' | `${'top' | 'bottom'}${'Right' | 'Left'}`
 
 type Frame = [number, number, number, number]
 
+// Edit controls are bigger on mobile, where the canvas is scaled down to fit the screen
+const mobileControlMultiplier = 2
+
 // Controls are this size at full scale, and shrink in insets too small to hold them
 const controlSize = 25
 const controlMargin = 6
@@ -121,7 +124,7 @@ function InsetEditControls({ inset, editInset, container, i, numInsets }: { inse
     const frame: Frame = [...inset.bottomLeft, ...inset.topRight]
     const insetRef = useRef<HTMLDivElement>(null)
     const { width, height } = useElementSize(insetRef)
-    const multiplier = useMobileLayout() ? 2 : 1
+    const multiplier = useMobileLayout() ? mobileControlMultiplier : 1
     const scale = multiplier * Math.max(minControlScale, Math.min(1, width / (fullScaleInset.width * multiplier), height / (fullScaleInset.height * multiplier)))
     return (
         <>
@@ -280,7 +283,7 @@ export function EditInsetsHandles(props: {
     })
 
     const mobile = useMobileLayout()
-    const mobileMultiplier = props.scale ?? (mobile ? 2 : 1)
+    const mobileMultiplier = props.scale ?? (mobile ? mobileControlMultiplier : 1)
 
     return (
         <>
