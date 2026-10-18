@@ -6,7 +6,7 @@ import { mapUSSFromString } from '../src/mapper/settings/map-uss'
 import { geographiesFromMeta, mapperMetaFields } from '../src/mapper/settings/utils'
 import { Universe } from '../src/universe'
 import { toStatement } from '../src/urban-stats-script/ast'
-import { Inset } from '../src/urban-stats-script/constants/insets'
+import { Inset, isSplit, layoutInsets } from '../src/urban-stats-script/constants/insets'
 import { createRequestExecutor } from '../src/urban-stats-script/execute-request'
 import { USSValue } from '../src/urban-stats-script/types-values'
 import { GeographySelection } from '../src/urban-stats-script/workerManager'
@@ -46,6 +46,10 @@ void test('saying nothing differs from selecting nothing', () => {
     assert.deepEqual(meta({ geographies: [] }), [])
 })
 
+function leaves(universe: Universe | Universe[]): Inset[] {
+    return layoutInsets(loadInsets(universe)).leaves
+}
+
 function screenBox(inset: Inset): [number, number, number, number] {
     return [...inset.bottomLeft, ...inset.topRight]
 }
@@ -60,13 +64,21 @@ void test('combining one universe leaves its insets alone', () => {
 })
 
 void test('universes far apart get main maps of their own, neighbours share one', () => {
-    assert.equal(loadInsets(['USA', 'Iceland']).filter(inset => inset.mainMap).length, 2)
-    assert.equal(loadInsets(['USA', 'Canada']).filter(inset => inset.mainMap).length, 1)
+    assert.equal(leaves(['USA', 'Iceland']).filter(inset => inset.mainMap).length, 2)
+    assert.equal(leaves(['USA', 'Canada']).filter(inset => inset.mainMap).length, 1)
+})
+
+void test('main maps of their own share a split, each cell holding its universe\'s insets', () => {
+    const combined = loadInsets(['USA', 'Iceland'])
+    assert.equal(combined.length, 1)
+    const [split] = combined
+    assert.ok(isSplit(split))
+    assert.deepEqual(split.children.map(({ insets }) => insets.length), [loadInsets('USA').length, loadInsets('Iceland').length])
 })
 
 void test('the combined main maps take up exactly the space the separate ones did', () => {
-    const separate = [...loadInsets('USA'), ...loadInsets('Iceland')].filter(inset => inset.mainMap)
-    const combined = loadInsets(['USA', 'Iceland']).filter(inset => inset.mainMap)
+    const separate = [...leaves('USA'), ...leaves('Iceland')].filter(inset => inset.mainMap)
+    const combined = leaves(['USA', 'Iceland']).filter(inset => inset.mainMap)
 
     assert.deepEqual(extendCoordBoxes(combined.map(inset => inset.coordBox)), extendCoordBoxes(separate.map(inset => inset.coordBox)))
     assert.deepEqual(extendCoordBoxes(combined.map(screenBox)), extendCoordBoxes(separate.map(screenBox)))
@@ -93,10 +105,10 @@ function mainCovering(combined: Inset[], coordBox: CoordBox): Inset {
 // 'France' is far enough from the USA to get a main map of its own; 'Canada' shares one
 for (const other of ['France', 'Canada'] as Universe[]) {
     void test(`combining the USA with ${other} leaves every inset over the same place`, () => {
-        const combined = loadInsets(['USA', other])
+        const combined = leaves(['USA', other])
         let checked = 0
         for (const universe of ['USA', other] as Universe[]) {
-            const alone = loadInsets(universe)
+            const alone = leaves(universe)
             const aloneMain = alone.find(inset => inset.mainMap)!
             const combinedMain = mainCovering(combined, aloneMain.coordBox)
 

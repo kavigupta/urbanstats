@@ -148,6 +148,6 @@ export function map(n: number): string {
     return `[id^="map-${n}"]`
 }
 
-export function handle(mapNumber: number, pos: 'move' | 'topRight' | 'bottomRight' | 'bottomLeft' | 'topLeft' | 'duplicate' | 'delete' | 'add' | 'moveUp' | 'moveDown'): string {
+export function handle(mapNumber: number, pos: 'move' | 'topRight' | 'bottomRight' | 'bottomLeft' | 'topLeft' | 'duplicate' | 'delete' | 'add' | 'moveUp' | 'moveDown' | 'splitHorizontal' | 'splitVertical'): string {
     return `${map(mapNumber)} [data-test="${pos}"]`
 }

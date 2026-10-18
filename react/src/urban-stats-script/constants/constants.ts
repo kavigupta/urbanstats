@@ -6,7 +6,7 @@ import { renderType, USSRawValue, USSValue, DocumentationTable, UnitPropagation,
 import { osmBasemap, noBasemap } from './basemap'
 import { hsv, renderColor, rgb, colorConstants } from './color'
 import { toNumber, toString } from './convert'
-import { constructInsetValue, constructInsetsValue, insetConsts } from './insets'
+import { constructInsetValue, constructInsetsValue, constructSplitInsetValue, insetConsts, splitDirectionConsts } from './insets'
 import { cMap, cMapRGB, clusterMap, constructMissingData, constructOutline, pMap } from './map'
 import { constructRampValue, reverseRampValue, rampConsts, divergingRampValue } from './ramp'
 import { regression } from './regr'
@@ -294,6 +294,8 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ...rampConsts,
     ['constructInset', constructInsetValue],
     ['constructInsets', constructInsetsValue],
+    ['constructSplitInset', constructSplitInsetValue],
+    ...splitDirectionConsts,
     ...insetConsts,
     ['linearScale', linearScaleValue],
     ['logScale', logScaleValue],

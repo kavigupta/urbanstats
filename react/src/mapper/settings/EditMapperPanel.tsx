@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { Fragment, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import { CountsByUT } from '../../components/countsByArticleType'
 import { DivThatTakesUpTheRestOfThePage, MaybeSplitLayout } from '../../components/split-layout'
@@ -8,7 +8,7 @@ import { useColors } from '../../page_template/colors'
 import { useUnitSettings } from '../../page_template/settings'
 import { PageTemplate } from '../../page_template/template'
 import { universeContext } from '../../universe'
-import { Inset } from '../../urban-stats-script/constants/insets'
+import { Frame, Inset, InsetNode, isSplit, layoutInsets, listAt, mapList, mapNode, relativeTo } from '../../urban-stats-script/constants/insets'
 import { documentLength } from '../../urban-stats-script/constants/rich-text'
 import { defaults, TextBox } from '../../urban-stats-script/constants/text-box'
 import { unparse } from '../../urban-stats-script/parser'
@@ -23,6 +23,7 @@ import { saveAsFile } from '../../utils/saveAsFile'
 import { base64Gzip } from '../../utils/urlParamShort'
 import { useUndoRedo } from '../../utils/useUndoRedo'
 import { zIndex } from '../../utils/zIndex'
+import { SplitDivider, SplitFrameHandles } from '../components/InsetMap'
 import { Selection as TextBoxesSelection, SelectionContext as TextBoxesSelectionContext } from '../components/MapTextBox'
 import { defaultTypeEnvironment, loadInsets } from '../context'
 import { MapGenerator, transformContext, useMapGenerator } from '../map-generator'
@@ -31,7 +32,7 @@ import { ImportExportCode } from './ImportExportCode'
 import { mapSettingsContext } from './MapSettingsContext'
 import { MapperSettings } from './MapperSettings'
 import { Selection, SelectionContext } from './SelectionContext'
-import { doEditInsets, getInsets, InsetEdits, normalizeInsetScreenBounds, replaceInsets, swapInsets } from './edit-insets'
+import { deleteInsets, doEditInsets, fitInsetMapBounds, getInsets, InsetEdits, normalizeInsetScreenBounds, setInsets, splitInsets, swapInsets } from './edit-insets'
 import { getTextBoxes, scriptWithNewTextBoxes } from './edit-text-boxes'
 import { validMapperOutputs } from './map-uss'
 import { mapPageTitle, MapEditorMode, MapSettings, universesOf } from './utils'
@@ -262,36 +263,91 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
         addState(edits, undefined)
     }
 
+    const { leaves, splits } = layoutInsets(editedInsets)
+
+    const apply = (next: InsetNode[]): void => {
+        addInsetEdit(setInsets(insetEdits, editedInsets, next))
+    }
+
+    const setFrameAt = (path: number[], cell: Frame) => (frame: Frame) => {
+        const relative = relativeTo(cell, frame)
+        apply(mapNode(editedInsets, path, node => [{ ...node, bottomLeft: [relative[0], relative[1]], topRight: [relative[2], relative[3]] }]))
+    }
+
+    const reorder = (path: number[]): { moveUp?: () => void, moveDown?: () => void } => {
+        const listPath = path.slice(0, -1)
+        const i = path[path.length - 1]
+        const swapWith = (j: number) => () => {
+            if (path.length === 1) {
+                // Keeps the expressions of both insets
+                addInsetEdit(swapInsets(insetEdits, i, j))
+            }
+            else {
+                apply(mapList(editedInsets, listPath, list => list.map((node, k) => k === i ? list[j] : k === j ? list[i] : node)))
+            }
+        }
+        return {
+            moveUp: i + 1 < listAt(editedInsets, listPath).length ? swapWith(i + 1) : undefined,
+            moveDown: i > 0 ? swapWith(i - 1) : undefined,
+        }
+    }
+
+    const insertAfter = (path: number[], node: (list: InsetNode[]) => InsetNode): void => {
+        const i = path[path.length - 1]
+        apply(mapList(editedInsets, path.slice(0, -1), list => [...list.slice(0, i + 1), node(list), ...list.slice(i + 1)]))
+    }
+
+    const newInset = (): Inset => {
+        const { coordBox, name } = layoutInsets(loadInsets(mapSettings.geographies.length > 0 ? universesOf(mapSettings.geographies) : 'world')).leaves[0]
+        return { coordBox, name, bottomLeft: [0.25, 0.25], topRight: [0.75, 0.75], mainMap: false }
+    }
+
     const ui = mapGenerator.ui({
         mode: 'insets',
         editInsets: {
-            add: () => {
-                const newInset: Inset = {
-                    ...loadInsets(mapSettings.geographies.length > 0 ? universesOf(mapSettings.geographies) : 'world')[0],
-                    bottomLeft: [0.25, 0.25],
-                    topRight: [0.75, 0.75],
-                    mainMap: false,
+            edited: leaves,
+            handlers: (i) => {
+                const { path, mainMap, cell } = leaves[i]
+                const remaining = deleteInsets(editedInsets, path)
+                return {
+                    setCoordBox: (coordBox) => {
+                        apply(mapNode(editedInsets, path, (node) => {
+                            assert(!isSplit(node), 'Setting the map bounds of a split')
+                            return [{ ...node, coordBox }]
+                        }))
+                    },
+                    // Main maps fill their cell in a split
+                    setFrame: path.length === 1 || !mainMap ? setFrameAt(path, cell) : undefined,
+                    bounds: cell,
+                    delete: layoutInsets(remaining).leaves.some(leaf => leaf.mainMap) ? () => { apply(remaining) } : undefined,
+                    duplicate: mainMap ? undefined : () => { insertAfter(path, list => offsetInsetInBounds(list[path[path.length - 1]], list)) },
+                    add: mainMap ? () => { insertAfter(path, list => offsetInsetInBounds(newInset(), list)) } : undefined,
+                    // Allowing reordering on the main map in case you want to put its corner in front of an inset
+                    ...reorder(path),
+                    split: (direction) => { apply(splitInsets(editedInsets, path, direction)) },
                 }
-                addInsetEdit(replaceInsets(insetEdits, [editedInsets.length, editedInsets.length], [offsetInsetInBounds(newInset, editedInsets)]))
             },
-            modify: (i, e) => {
-                addInsetEdit(replaceInsets(insetEdits, [i, i + 1], [{ ...editedInsets[i], ...e }]))
-            },
-            delete: (i) => {
-                addInsetEdit(replaceInsets(insetEdits, [i, i + 1], []))
-            },
-            duplicate: (i) => {
-                addInsetEdit(replaceInsets(insetEdits, [i + 1, i + 1], [offsetInsetInBounds(editedInsets[i], editedInsets)]))
-            },
-            moveUp: (i) => {
-                assert(i + 1 < editedInsets.length, `Cannot move inset ${i} up, already top`)
-                addInsetEdit(swapInsets(insetEdits, i, i + 1))
-            },
-            moveDown: (i) => {
-                assert(i > 0, `Cannot move inset ${i} down, already bottom`)
-                addInsetEdit(swapInsets(insetEdits, i, i - 1))
-            },
-            edited: editedInsets,
+            overlay: container => splits.map(split => (
+                <Fragment key={split.path.join('-')}>
+                    {(split.path.length === 1 || !leaves.some(leaf => leaf.mainMap && split.path.every((p, k) => leaf.path[k] === p))) && (
+                        <SplitFrameHandles frame={split.frame} container={container} handlers={{ setFrame: setFrameAt(split.path, split.cell), bounds: split.cell, ...reorder(split.path) }} />
+                    )}
+                    {split.cells.slice(1).map((_, j) => (
+                        <SplitDivider
+                            key={j}
+                            split={split}
+                            j={j}
+                            container={container}
+                            setProportions={(proportions) => {
+                                apply(mapNode(editedInsets, split.path, (node) => {
+                                    assert(isSplit(node), 'Setting the proportions of a leaf')
+                                    return [{ ...node, children: node.children.map((cell, k) => ({ ...cell, proportion: proportions[k] })) }]
+                                }))
+                            }}
+                        />
+                    ))}
+                </Fragment>
+            )),
         },
     })
 
@@ -317,7 +373,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                                 <div>
                                     <b>Editing Insets.</b>
                                     {' '}
-                                    Pans and zooms to maps will be reflected permanently. Drag inset frames to reposition and resize.
+                                    Pans and zooms to maps will be reflected permanently. Drag inset frames to reposition and resize, and dividers to resize split insets.
                                 </div>
                             )}
                             <div style={{ display: 'flex', gap: '10px' }}>
@@ -327,7 +383,9 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                                 <button
                                     style={{ height: isMobile ? 30 : undefined }}
                                     onClick={() => {
-                                        setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, normalizeInsetScreenBounds(insetEdits, editedInsets), typeEnvironment) } }, {})
+                                        const original = getInsets(mapSettings, typeEnvironment)!
+                                        const fitted = mapGenerator.aspectRatio === undefined ? insetEdits : fitInsetMapBounds(insetEdits, original, mapGenerator.aspectRatio)
+                                        setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, normalizeInsetScreenBounds(fitted, fitted.insets(original)), typeEnvironment) } }, {})
                                         setMapEditorMode('uss')
                                     }}
                                     disabled={!canUndo}
@@ -347,7 +405,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
     )
 }
 
-function moveInset<T extends Inset | TextBox>(inset: T, x: number, y: number): T {
+function moveInset<T extends InsetNode | TextBox>(inset: T, x: number, y: number): T {
     return {
         ...inset,
         bottomLeft: [inset.bottomLeft[0] + x, inset.bottomLeft[1] + y],
@@ -355,15 +413,15 @@ function moveInset<T extends Inset | TextBox>(inset: T, x: number, y: number): T
     }
 }
 
-function inBounds(inset: Inset | TextBox): boolean {
+function inBounds(inset: InsetNode | TextBox): boolean {
     return inset.bottomLeft.concat(inset.topRight).every(c => c >= 0 && c <= 1)
 }
 
-function samePosition(a: Inset | TextBox, b: Inset | TextBox): boolean {
+function samePosition(a: InsetNode | TextBox, b: InsetNode | TextBox): boolean {
     return a.bottomLeft[0] === b.bottomLeft[0] && a.bottomLeft[1] === b.bottomLeft[1] && a.topRight[0] === b.topRight[0] && a.topRight[1] === b.topRight[1]
 }
 
-function offsetInsetInBounds<T extends Inset | TextBox>(inset: T, exclude: T[]): T {
+function offsetInsetInBounds<T extends InsetNode | TextBox>(inset: T, exclude: T[]): T {
     for (let delta = 0; delta < 1; delta += 0.05) {
         for (const [x, y] of [[delta, delta], [-delta, -delta], [-delta, delta], [delta, -delta]]) {
             const newInset = moveInset(inset, x, y)
