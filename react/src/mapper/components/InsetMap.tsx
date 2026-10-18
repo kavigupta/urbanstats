@@ -1,4 +1,4 @@
-import React, { HTMLAttributes, ReactNode, RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, { HTMLAttributes, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
 import { MapRef, useMap } from 'react-map-gl/maplibre'
 
 import { CommonMapProps, insetBorderWidth } from '../../components/map-common'
@@ -7,6 +7,7 @@ import { useColors } from '../../page_template/colors'
 import { Inset } from '../../urban-stats-script/constants/insets'
 import { Edit } from '../../utils/array-edits'
 import { useMobileLayout } from '../../utils/responsive'
+import { useElementSize } from '../../utils/useElementSize'
 
 interface InsetMapProps {
     inset: Inset
@@ -109,31 +110,19 @@ type DragKind = 'move' | `${'top' | 'bottom'}${'Right' | 'Left'}`
 
 type Frame = [number, number, number, number]
 
-function useElementSize(ref: RefObject<HTMLElement>): { width: number, height: number } {
-    const [size, setSize] = useState({ width: 0, height: 0 })
-    // Measuring before paint, so the controls don't first appear at the size of an empty container
-    useLayoutEffect(() => {
-        const element = ref.current!
-        const measure = (): void => {
-            setSize({ width: element.clientWidth, height: element.clientHeight })
-        }
-        measure()
-        const observer = new ResizeObserver(measure)
-        observer.observe(element)
-        return () => {
-            observer.disconnect()
-        }
-    }, [ref])
-    return size
-}
+// Controls are this size at full scale, and shrink in insets too small to hold them
+const controlSize = 25
+const controlMargin = 6
+const controlGap = 4
+const minControlScale = 0.4
+const fullScaleInset = { width: 160, height: 120 }
 
 function InsetEditControls({ inset, editInset, container, i, numInsets }: { inset: Inset, editInset: Edit<Inset>, container: RefObject<HTMLDivElement>, i: number, numInsets: number }): ReactNode {
     const frame: Frame = [...inset.bottomLeft, ...inset.topRight]
     const insetRef = useRef<HTMLDivElement>(null)
     const { width, height } = useElementSize(insetRef)
-    // Doubled on mobile, and shrunk for insets too small to hold the controls at that size
     const multiplier = useMobileLayout() ? 2 : 1
-    const scale = multiplier * Math.max(0.4, Math.min(1, width / (160 * multiplier), height / (120 * multiplier)))
+    const scale = multiplier * Math.max(minControlScale, Math.min(1, width / (fullScaleInset.width * multiplier), height / (fullScaleInset.height * multiplier)))
     return (
         <>
             <div ref={insetRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
@@ -163,10 +152,10 @@ function InsetEditControls({ inset, editInset, container, i, numInsets }: { inse
 
 // Inside the frame, so the buttons of neighbouring insets never overlap
 function InsetToolbar(props: { delete?: () => void, add?: () => void, duplicate?: () => void, scale: number }): ReactNode {
-    const size = 25 * props.scale
+    const size = controlSize * props.scale
     const button = { position: 'relative', cursor: 'default' } as const
     return (
-        <div style={{ position: 'absolute', top: 6 * props.scale, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 4 * props.scale, pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', top: controlMargin * props.scale, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: controlGap * props.scale, pointerEvents: 'none' }}>
             {props.delete && <Handle handleSize={size} data-test="delete" style={button} onClick={props.delete} img={{ src: '/close-red-small.png', alt: 'Delete' }} />}
             {props.add && <Handle handleSize={size} data-test="add" style={button} onClick={props.add} img={{ src: '/add-green-small.png', alt: 'Add', padding: 0.06 }} />}
             {props.duplicate && <Handle handleSize={size} data-test="duplicate" style={{ ...button, cursor: 'copy' }} onClick={props.duplicate} img={{ src: '/duplicate.png', alt: 'Duplicate' }} />}
@@ -175,10 +164,10 @@ function InsetToolbar(props: { delete?: () => void, add?: () => void, duplicate?
 }
 
 function ReorderButtons({ moveUp, moveDown, scale }: { moveUp?: () => void, moveDown?: () => void, scale: number }): ReactNode {
-    const size = 25 * scale
+    const size = controlSize * scale
     const button = { position: 'relative', cursor: 'default' } as const
     return (
-        <div style={{ position: 'absolute', left: 6 * scale, top: '50%', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 4 * scale, pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', left: controlMargin * scale, top: '50%', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: controlGap * scale, pointerEvents: 'none' }}>
             {moveUp && <Handle handleSize={size} data-test="moveUp" style={button} onClick={moveUp}><ArrowIcon direction="up" /></Handle>}
             {moveDown && <Handle handleSize={size} data-test="moveDown" style={button} onClick={moveDown}><ArrowIcon direction="down" /></Handle>}
         </div>
