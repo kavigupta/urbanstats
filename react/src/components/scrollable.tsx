@@ -10,10 +10,19 @@ export function computeMaxColumns(mobileLayout: boolean): number {
     return mobileLayout ? 3 : 6
 }
 
-export function MaybeScroll({ children, widthColumns }: { children: React.ReactNode, widthColumns: number }): ReactNode {
+export function computeScrollColumnsDivisor(mobileLayout: boolean): number {
+    return mobileLayout ? 3.5 : 5.3
+}
+
+export function MaybeScroll({ children, widthColumns, scale = 1 }: {
+    children: React.ReactNode
+    widthColumns: number
+    /** How many times wider the container is than the layout the column limits are tuned for. */
+    scale?: number
+}): ReactNode {
     const mobileLayout = useMobileLayout()
-    const maxColumns = computeMaxColumns(mobileLayout)
-    const scrollColumnsDivisor = mobileLayout ? 3.5 : 5.3
+    const maxColumns = computeMaxColumns(mobileLayout) * scale
+    const scrollColumnsDivisor = computeScrollColumnsDivisor(mobileLayout) * scale
     if (widthColumns <= maxColumns) {
         return children
     }

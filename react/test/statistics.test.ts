@@ -3,7 +3,7 @@ import { ClientFunction, Selector } from 'testcafe'
 
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor, typeTextWithKeys } from './editor_test_utils'
 import { getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript } from './mapper-utils'
-import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, saveString, waitForLoading, dataValues, checkTextboxesDirect, downloadCSV, downloadImage, resizeForPlatform, searchField, waitForSelectedSearchResult, goBack, goForward } from './test_utils'
+import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, saveString, waitForLoading, dataValues, checkTextboxesDirect, downloadCSV, downloadImage, resizeForPlatform, searchField, waitForSelectedSearchResult, goBack, goForward, hamburgerMenu } from './test_utils'
 
 // eslint-disable-next-line no-restricted-syntax -- Reading the title the router set, not setting one.
 const documentTitle = ClientFunction(() => document.title)
@@ -408,7 +408,6 @@ test('edit starting from a statname page works', async (t) => {
 urbanstatsFixture('edit mode layout', createUSSStatisticsPage(basicPage, 1, 5))
 
 const splitLeft = Selector('[data-test=split-left]')
-const hamburgerMenu = Selector('div').withAttribute('class', 'hamburgermenu')
 
 test('editing on desktop puts the settings beside the table', async (t) => {
     await t.expect(splitLeft.exists).notOk()

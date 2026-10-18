@@ -53,8 +53,9 @@ export async function checkSidebarTextboxes(t: TestController, txts: string[]): 
     })
 }
 
+export const hamburgerMenu = Selector('div').withAttribute('class', 'hamburgermenu')
+
 export async function withHamburgerMenu(t: TestController, block: () => Promise<void>): Promise<void> {
-    const hamburgerMenu = Selector('div').withAttribute('class', 'hamburgermenu')
     if (await hamburgerMenu.exists) {
         await t.click(hamburgerMenu)
     }
@@ -305,7 +306,7 @@ async function copyMostRecentFile(t: TestController, laterThan: number, suffix: 
     saveImage(t, fs.readFileSync(mrdp))
 }
 
-/** Compared against the reference of the same name by `tests/check_snapshots.py`. */
+/** Compared against the reference of the same name by `checkSnapshots`. */
 export function saveString(t: TestController, string: string, name: string, format: 'json' | 'xml' | 'txt' | 'csv', gzip = true): void {
     switch (format) {
         case 'json':
@@ -443,7 +444,7 @@ async function printFailedNetworkRequests(t: TestController): Promise<void> {
 export function urbanstatsFixture(name: string, url: string, beforeEach?: (t: TestController) => Promise<void>, { afterEach, requestHooks = [] }: {
     afterEach?: (t: TestController) => Promise<void>
     requestHooks?: object[]
-} = {}): void {
+} = {}): FixtureFn {
     if (url.startsWith('/')) {
         url = target + url
     }
@@ -453,7 +454,7 @@ export function urbanstatsFixture(name: string, url: string, beforeEach?: (t: Te
             throw new Error(`URL ${url} does not start with ${target}`)
         }
     }
-    fixture(name)
+    return fixture(name)
         .page(url)
         .beforeEach(async (t) => {
             await printConsoleMessages(t)
