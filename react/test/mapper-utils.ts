@@ -47,6 +47,19 @@ export function urlFromCode(geographyKind: string, universe: string, code: strin
     return url
 }
 
+// The Bay Area inset's border runs under the Boston inset, which should cover it.
+export const overlappingInsetsCode = `cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampUridis,
+    basemap=noBasemap(),
+    insets=constructInsets([
+        constructInset(screenBounds={north: 1, east: 1, south: 0, west: 0}, mapBounds={north: 49.833, east: -65.092, south: 22.269, west: -130.026}, mainMap=true, name="USA"),
+        constructInset(screenBounds={north: 0.6, east: 0.6, south: 0.1, west: 0.1}, mapBounds={north: 38.047, east: -121.37, south: 37.128, west: -122.766}, mainMap=false, name="Bay Area"),
+        constructInset(screenBounds={north: 0.9, east: 0.9, south: 0.4, west: 0.4}, mapBounds={north: 42.519, east: -70.812, south: 42.033, west: -71.413}, mainMap=false, name="Boston")
+    ])
+)`
+
 export function settingsFromURL(url: string): unknown {
     const encodedSettings = new URL(url).searchParams.get('settings') ?? (() => { throw new Error('no settings') })()
     return JSON.parse(gunzipSync(Buffer.from(encodedSettings, 'base64')).toString())
