@@ -1,7 +1,7 @@
 import { ClientFunction, Selector } from 'testcafe'
 
 import { runTests } from './mapper-edit-insets'
-import { drag, editInsetsButton, handle, map, numMaps, overlappingInsetsCode, toggleCustomScript, urlFromCode } from './mapper-utils'
+import { drag, editInsetsButton, getErrors, handle, map, numMaps, overlappingInsetsCode, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { downloadImage, urbanstatsFixture, waitForMapsToRender, wheel } from './test_utils'
 
 runTests('desktop')
@@ -130,4 +130,29 @@ test('a main map can only be deleted alone in a cell of a split', async (t) => {
     await t.click(handle(0, 'splitHorizontal'))
     await t.expect(Selector('[data-test="add"]').count).eql(4)
     await t.expect(Selector('[data-test="delete"]').count).eql(2)
+})
+
+const narrowSplitCode = `cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampUridis,
+    basemap=noBasemap(),
+    insets=constructInsets([
+        constructInset(screenBounds={north: 1, east: 1, south: 0, west: 0}, mapBounds={north: 49.833, east: -65.092, south: 22.269, west: -130.026}, mainMap=true, name="USA"),
+        constructSplitInset([
+            { insets: [constructInset(screenBounds={north: 1, east: 1, south: 0, west: 0}, mapBounds={north: 38.047, east: -121.37, south: 37.128, west: -122.766}, mainMap=false, name="Bay Area")], proportion: 1 },
+            { insets: [constructInset(screenBounds={north: 1, east: 1, south: 0, west: 0}, mapBounds={north: 42.519, east: -70.812, south: 42.033, west: -71.413}, mainMap=false, name="Boston")], proportion: 1 }
+        ], direction=splitHorizontal, screenBounds={north: 0.5, east: 0.11, south: 0.1, west: 0.1})
+    ])
+)`
+
+urbanstatsFixture('narrow split', urlFromCode('County', 'USA', narrowSplitCode))
+
+test('dragging the divider of a narrow split keeps both cells', async (t) => {
+    await toggleCustomScript(t)
+    await t.click(editInsetsButton)
+    await drag(t, '[data-test="splitDivider"]', -50, 0)
+    await t.click(Selector('button:not(:disabled)').withExactText('Accept'))
+    await t.expect(getErrors()).eql([])
+    await t.expect(numMaps()).eql(3)
 })

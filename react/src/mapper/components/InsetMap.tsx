@@ -215,7 +215,7 @@ export function EditInsetsHandles(props: {
     moveUp?: () => void
     moveDown?: () => void
     shouldHaveCenterHandle: boolean
-    // Defaults to the mobile size
+    // Defaults to the unscaled size (doubled on mobile)
     scale?: number
 }): ReactNode {
     const activeDrag = useRef<{ kind: DragKind, startX: number, startY: number, startFrame: Frame, pointerId: number } | undefined>(undefined)
@@ -475,7 +475,8 @@ export function SplitDivider({ split: { split, cells }, j, container, setProport
                 const position = horizontal
                     ? (e.clientX - bounds.left) / bounds.width
                     : 1 - (e.clientY - bounds.top) / bounds.height
-                const minSize = 0.02
+                // Less for cells too small to keep 0.02 each, so both shares stay positive
+                const minSize = Math.min(0.02, (hi - lo) / 4)
                 const clamped = Math.max(lo + minSize, Math.min(hi - minSize, position))
                 const firstShare = horizontal ? (clamped - lo) / (hi - lo) : (hi - clamped) / (hi - lo)
                 const pair = split.children[j].proportion + split.children[j + 1].proportion
