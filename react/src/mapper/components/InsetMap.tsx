@@ -126,7 +126,9 @@ function HandleInsets({ inset, setCoordBox }: { inset: Inset, setCoordBox: (newB
 type DragKind = 'move' | `${'top' | 'bottom'}${'Right' | 'Left'}`
 
 // Edit controls are bigger on mobile, where the canvas is scaled down to fit the screen
-const mobileControlMultiplier = 2
+export function useMobileControlScale(): number {
+    return useMobileLayout() ? 2 : 1
+}
 
 // Controls are this size at full scale, and shrink in insets too small to hold them
 const controlSize = 25
@@ -139,7 +141,7 @@ function InsetEditControls({ inset, editInset, container }: { inset: Inset, edit
     const frame: Frame = [...inset.bottomLeft, ...inset.topRight]
     const insetRef = useRef<HTMLDivElement>(null)
     const { width, height } = useElementSize(insetRef)
-    const multiplier = useMobileLayout() ? mobileControlMultiplier : 1
+    const multiplier = useMobileControlScale()
     const scale = multiplier * Math.max(minControlScale, Math.min(1, width / (fullScaleInset.width * multiplier), height / (fullScaleInset.height * multiplier)))
     return (
         <>
@@ -207,8 +209,7 @@ export function EditInsetsHandles(props: {
     moveUp?: () => void
     moveDown?: () => void
     shouldHaveCenterHandle: boolean
-    // Defaults to the unscaled size (doubled on mobile)
-    scale?: number
+    scale: number
 }): ReactNode {
     const activeDrag = useRef<{ kind: DragKind, startX: number, startY: number, startFrame: Frame, pointerId: number } | undefined>(undefined)
 
@@ -285,32 +286,31 @@ export function EditInsetsHandles(props: {
         },
     })
 
-    const mobile = useMobileLayout()
-    const mobileMultiplier = props.scale ?? (mobile ? mobileControlMultiplier : 1)
+    const scale = props.scale
 
     return (
         <>
             {props.moveUp && (
-                <Handle handleSize={25 * mobileMultiplier} data-test="moveUp" style={{ left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(50% - ${25 * mobileMultiplier}px)`, cursor: 'default' }} onClick={props.moveUp} img={{ src: '/sort-up.png', alt: 'Move Up' }} />
+                <Handle handleSize={controlSize * scale} data-test="moveUp" style={{ left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(50% - ${controlSize * scale}px)`, cursor: 'default' }} onClick={props.moveUp} img={{ src: '/sort-up.png', alt: 'Move Up' }} />
             )}
             {props.moveDown && (
-                <Handle handleSize={25 * mobileMultiplier} data-test="moveDown" style={{ left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(50%)`, cursor: 'default' }} onClick={props.moveDown} img={{ src: '/sort-down.png', alt: 'Move Down' }} />
+                <Handle handleSize={controlSize * scale} data-test="moveDown" style={{ left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(50%)`, cursor: 'default' }} onClick={props.moveDown} img={{ src: '/sort-down.png', alt: 'Move Down' }} />
             )}
             {props.duplicate && (
-                <Handle handleSize={25 * mobileMultiplier} data-test="duplicate" style={{ margin: 'auto', left: `calc(66% - ${12.5 * mobileMultiplier}px)`, textAlign: 'center', lineHeight: `${25 * mobileMultiplier}px`, top: -insetBorderWidth, cursor: 'copy' }} onClick={props.duplicate} img={{ src: '/duplicate.png', alt: 'Duplicate' }} />
+                <Handle handleSize={controlSize * scale} data-test="duplicate" style={{ margin: 'auto', left: `calc(66% - ${controlSize / 2 * scale}px)`, textAlign: 'center', lineHeight: `${controlSize * scale}px`, top: -insetBorderWidth, cursor: 'copy' }} onClick={props.duplicate} img={{ src: '/duplicate.png', alt: 'Duplicate' }} />
             )}
             {props.delete && (
-                <Handle handleSize={25 * mobileMultiplier} data-test="delete" style={{ margin: 'auto', left: `calc(33% - ${12.5 * mobileMultiplier}px)`, textAlign: 'center', lineHeight: `${25 * mobileMultiplier}px`, top: -insetBorderWidth, cursor: 'default' }} onClick={props.delete} img={{ src: '/close-red-small.png', alt: 'Delete' }} />
+                <Handle handleSize={controlSize * scale} data-test="delete" style={{ margin: 'auto', left: `calc(33% - ${controlSize / 2 * scale}px)`, textAlign: 'center', lineHeight: `${controlSize * scale}px`, top: -insetBorderWidth, cursor: 'default' }} onClick={props.delete} img={{ src: '/close-red-small.png', alt: 'Delete' }} />
             )}
             {props.add && (
-                <Handle handleSize={25 * mobileMultiplier} data-test="add" style={{ margin: 'auto', left: `calc(50% - ${12.5 * mobileMultiplier}px)`, textAlign: 'center', top: -insetBorderWidth, cursor: 'default' }} onClick={props.add} img={{ src: '/add-green-small.png', alt: 'Add' }} />
+                <Handle handleSize={controlSize * scale} data-test="add" style={{ margin: 'auto', left: `calc(50% - ${controlSize / 2 * scale}px)`, textAlign: 'center', top: -insetBorderWidth, cursor: 'default' }} onClick={props.add} img={{ src: '/add-green-small.png', alt: 'Add' }} />
             )}
-            {props.setFrame && <Handle handleSize={15 * mobileMultiplier} style={{ right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('topRight')} />}
-            {props.setFrame && <Handle handleSize={15 * mobileMultiplier} style={{ right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('bottomRight')} />}
-            {props.setFrame && <Handle handleSize={15 * mobileMultiplier} style={{ left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('bottomLeft')} />}
-            {props.setFrame && <Handle handleSize={15 * mobileMultiplier} style={{ left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('topLeft')} />}
+            {props.setFrame && <Handle handleSize={15 * scale} style={{ right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('topRight')} />}
+            {props.setFrame && <Handle handleSize={15 * scale} style={{ right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('bottomRight')} />}
+            {props.setFrame && <Handle handleSize={15 * scale} style={{ left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('bottomLeft')} />}
+            {props.setFrame && <Handle handleSize={15 * scale} style={{ left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('topLeft')} />}
             {props.setFrame && props.shouldHaveCenterHandle && (
-                <Handle handleSize={20 * mobileMultiplier} style={{ margin: 'auto', left: `calc(50% - ${10 * mobileMultiplier}px)`, top: `calc(50% - ${10 * mobileMultiplier}px)`, cursor: 'move' }} {...pointerHandlers('move')} />
+                <Handle handleSize={20 * scale} style={{ margin: 'auto', left: `calc(50% - ${10 * scale}px)`, top: `calc(50% - ${10 * scale}px)`, cursor: 'move' }} {...pointerHandlers('move')} />
             )}
         </>
     )
