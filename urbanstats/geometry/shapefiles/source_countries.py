@@ -147,7 +147,7 @@ class ContainedWithinCountries(VariesByRegion):
             for row in SUBNATIONAL_REGIONS.load_file().itertuples()
         }
 
-        related = related_subnationals(shapefile, SUBNATIONAL_REGIONS)
+        related = related_subnationals(shapefile.names, SUBNATIONAL_REGIONS.names)
         table = shapefile.load_file()
         result = []
         for longname in table.longname:
@@ -178,16 +178,14 @@ def _subnational_source_countries(subnational):
 
 @permacache(
     "urbanstats/geometry/shapefiles/source_countries/related_subnationals_3",
-    key_function=dict(
-        shapefile=lambda x: x.hash_key, subnational_regions=lambda x: x.hash_key
-    ),
+    key_function=dict(regions=stable_hash, subnational_regions=stable_hash),
 )
-def related_subnationals(shapefile, subnational_regions):
+def related_subnationals(regions, subnational_regions):
     """Longname -> the subnational regions it contains, is contained by, or intersects."""
     relationships = compute_relationships(
-        shapefile.geometry, subnational_regions.geometry
+        regions.geometry, subnational_regions.geometry
     )
-    names = shapefile_longnames(shapefile)
+    names = shapefile_longnames(regions)
     subnational_names = shapefile_longnames(subnational_regions)
     result = {}
     for kind in ["same_geography", "a_contains_b", "a_contained_by_b", "intersects"]:

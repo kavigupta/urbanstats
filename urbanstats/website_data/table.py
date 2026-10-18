@@ -68,7 +68,12 @@ def compute_statistics_for_shapefile(
         longname_to_universes[longname] for longname in result.longname
     ]
     if sf.wikidata_sourcer is not None:
-        wikidata, wikipedia = compute_wikidata_and_wikipedia(sf, sf.wikidata_sourcer)
+        values = list(
+            sf_fr[sf.wikidata_sourcer.columns()].itertuples(index=False, name=None)
+        )
+        wikidata, wikipedia = compute_wikidata_and_wikipedia(
+            values, sf.wikidata_sourcer
+        )
         result["wikidata"] = wikidata
         result["wikipedia_page"] = wikipedia
 

@@ -5,27 +5,33 @@ from permacache import permacache, stable_hash
 
 from urbanstats.geometry.relationship_equirectangular import compute_relationships
 from urbanstats.geometry.shapefiles.longnames import shapefile_longnames
+from urbanstats.geometry.shapefiles.shapefile import join_layers
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 
 @permacache(
     "population_density/relationship/create_relationships_15",
-    key_function=dict(x=lambda x: x.hash_key, y=lambda y: y.hash_key),
+    key_function=dict(
+        x_names=stable_hash,
+        x_dates=stable_hash,
+        y_names=stable_hash,
+        y_dates=stable_hash,
+    ),
 )
-def create_relationships(x, y, check_temporal=True):
+def create_relationships(x_names, x_dates, y_names, y_dates, check_temporal=True):
     """
-    Get the relationships between the two shapefiles x and y.
+    Get the relationships between the regions of shapefiles x and y.
     Delegates to relationship_equirectangular.compute_relationships.
     """
-    rels = compute_relationships(x.geometry, y.geometry)
-    names_x, names_y = shapefile_longnames(x), shapefile_longnames(y)
+    rels = compute_relationships(x_names.geometry, y_names.geometry)
+    names_x, names_y = shapefile_longnames(x_names), shapefile_longnames(y_names)
     rels = {
         kind: {(names_x[i], names_y[j]) for i, j in pairs}
         for kind, pairs in rels.items()
     }
-    a = x.load_file()
-    b = y.load_file()
+    a = join_layers(x_names, x_dates)
+    b = join_layers(y_names, y_dates)
     a_contains_b = rels["a_contains_b"] | rels["same_geography"]
     b_contains_a = rels["a_contained_by_b"] | rels["same_geography"]
     intersects = rels["intersects"]
@@ -219,7 +225,12 @@ def can_border(x, y):
 def full_relationships(long_to_type):
     return {
         rt: {k: by_rt_k for k, by_rt_k in by_rt.items() if by_rt_k}
-        for rt, by_rt in relationships_for_list(long_to_type, shapefiles).items()
+        for rt, by_rt in relationships_for_list(
+            long_to_type,
+            {k: sf.names for k, sf in shapefiles.items()},
+            {k: sf.dates for k, sf in shapefiles.items()},
+            {k: sf.meta["type"] for k, sf in shapefiles.items()},
+        ).items()
     }
 
 
@@ -227,14 +238,14 @@ def full_relationships(long_to_type):
     "relationship/relationships_for_list_3",
     key_function=dict(
         long_to_type=stable_hash,
-        shapefiles_to_use=lambda shapefiles_to_use: stable_hash(
-            {k: v.hash_key for k, v in shapefiles_to_use.items()}
-        ),
+        names_by_key=stable_hash,
+        dates_by_key=stable_hash,
+        type_by_key=stable_hash,
     ),
 )
-def relationships_for_list(long_to_type, shapefiles_to_use):
+def relationships_for_list(long_to_type, names_by_key, dates_by_key, type_by_key):
     contains, contained_by, intersects, borders = compute_all_relationships(
-        long_to_type, shapefiles_to_use
+        long_to_type, names_by_key, dates_by_key, type_by_key
     )
 
     same_geography = defaultdict(set)
@@ -276,7 +287,8 @@ def relationships_for_list(long_to_type, shapefiles_to_use):
     }
 
 
-def compute_all_relationships(long_to_type, shapefiles_to_use):
+def compute_all_relationships(long_to_type, names_by_key, dates_by_key, type_by_key):
+    # pylint: disable=too-many-locals
     contains, contained_by, intersects, borders = (
         defaultdict(set),
         defaultdict(set),
@@ -290,9 +302,7 @@ def compute_all_relationships(long_to_type, shapefiles_to_use):
                 continue
             d[x].add(y)
 
-    pairs = [
-        (k1, k2) for k1 in shapefiles_to_use for k2 in shapefiles_to_use if k1 >= k2
-    ]
+    pairs = [(k1, k2) for k1 in names_by_key for k2 in names_by_key if k1 >= k2]
 
     for i, (k1, k2) in enumerate(pairs):
         print(f"{i}/{len(pairs)}: {k1} and {k2}")
@@ -301,7 +311,7 @@ def compute_all_relationships(long_to_type, shapefiles_to_use):
             b_contains_a,
             a_intersects_b,
             a_borders_b,
-        ) = create_relationships_dispatch(shapefiles_to_use, k1, k2)
+        ) = create_relationships_dispatch(names_by_key, dates_by_key, k1, k2)
 
         add(contains, a_contains_b)
         add(contains, [(big, small) for small, big in b_contains_a])
@@ -309,10 +319,7 @@ def compute_all_relationships(long_to_type, shapefiles_to_use):
         add(contained_by, [(big, small) for small, big in a_contains_b])
         add(intersects, a_intersects_b)
         add(intersects, [(big, small) for small, big in a_intersects_b])
-        if can_border(
-            shapefiles_to_use[k1].meta["type"],
-            shapefiles_to_use[k2].meta["type"],
-        ):
+        if can_border(type_by_key[k1], type_by_key[k2]):
             add(borders, a_borders_b)
             add(borders, [(big, small) for small, big in a_borders_b])
     return contains, contained_by, intersects, borders
@@ -322,10 +329,16 @@ def flip(edges):
     return [(y, x) for (x, y) in edges]
 
 
-def create_relationships_dispatch(shapefiles_to_use, k1, k2, check_temporal=True):
+def create_relationships_dispatch(
+    names_by_key, dates_by_key, k1, k2, check_temporal=True
+):
     if k1 < k2:
         a_contains_b, b_contains_a, a_intersects_b, a_borders_b = create_relationships(
-            shapefiles_to_use[k2], shapefiles_to_use[k1], check_temporal=check_temporal
+            names_by_key[k2],
+            dates_by_key[k2],
+            names_by_key[k1],
+            dates_by_key[k1],
+            check_temporal=check_temporal,
         )
         return (
             flip(b_contains_a),
@@ -333,11 +346,12 @@ def create_relationships_dispatch(shapefiles_to_use, k1, k2, check_temporal=True
             flip(a_intersects_b),
             flip(a_borders_b),
         )
+    t1, t2 = dates_by_key[k1].temporal, dates_by_key[k2].temporal
     if check_temporal and not temporal_ranges_overlap(
-        shapefiles_to_use[k1].start_date_overall,
-        shapefiles_to_use[k1].end_date_overall,
-        shapefiles_to_use[k2].start_date_overall,
-        shapefiles_to_use[k2].end_date_overall,
+        t1.start_date_overall,
+        t1.end_date_overall,
+        t2.start_date_overall,
+        t2.end_date_overall,
     ):
         return set(), set(), set(), set()
     (
@@ -346,7 +360,11 @@ def create_relationships_dispatch(shapefiles_to_use, k1, k2, check_temporal=True
         a_intersects_b,
         a_borders_b,
     ) = create_relationships(
-        shapefiles_to_use[k1], shapefiles_to_use[k2], check_temporal=check_temporal
+        names_by_key[k1],
+        dates_by_key[k1],
+        names_by_key[k2],
+        dates_by_key[k2],
+        check_temporal=check_temporal,
     )
 
     return a_contains_b, b_contains_a, a_intersects_b, a_borders_b

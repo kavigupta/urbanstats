@@ -16,11 +16,9 @@ from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import canada_domestic_provider
 
 
-def load_cmas():
+def load_cmas(countries, subnationals):
     data = load_canadian_shapefile(
-        "named_region_shapefiles/canada/lcma000a21a_e.zip",
-        COUNTRIES,
-        SUBNATIONAL_REGIONS,
+        "named_region_shapefiles/canada/lcma000a21a_e.zip", countries, subnationals
     ).copy()
 
     data["PRUID"] = data["PRUID"].apply(lambda x: [x])
@@ -72,6 +70,7 @@ def canadian_census_kwargs(typ, category):
 CANADIAN_CENSUS_METROPOLITAN_AREAS = make_shapefile(
     hash_key="census_cmas_2",
     path=load_cmas,
+    path_inputs=(COUNTRIES.names, SUBNATIONAL_REGIONS.names),
     shortname_extractor=column("CMANAME") + " CMA",
     cleanname_extractor=column("CMANAME"),
     longname_extractor=column("CMANAME")

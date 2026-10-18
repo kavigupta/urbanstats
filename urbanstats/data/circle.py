@@ -298,8 +298,8 @@ manual_circle_names = [
 ]
 
 
-def attach_urban_centers_to_frame(frame):
-    urban_center_shapefile = URBAN_CENTERS.load_file()
+def attach_urban_centers_to_frame(frame, urban_center_names):
+    urban_center_shapefile = urban_center_names.load()
     urban_center_shapefile.index = urban_center_shapefile.longname
     overlays = direct_population_overlay(frame, urban_center_shapefile)
 
@@ -371,10 +371,10 @@ def specify_duplicates(frame, long_to_short):
 
 @permacache(
     "urbanstats/data/circle/overlapping_circles_frame_8",
-    key_function=dict(country_shapefile=lambda x: x.hash_key),
+    key_function=dict(country_names=stable_hash, urban_center_names=stable_hash),
 )
 def overlapping_circles_frame(
-    country_shapefile, population, suffix, max_radius_in_chunks=20
+    country_names, urban_center_names, population, suffix, max_radius_in_chunks=20
 ):
     print(f"population circles being computed for {suffix}")
     ghs = load_full_ghs_30_arcsec()
@@ -382,9 +382,9 @@ def overlapping_circles_frame(
         ghs, population, limit=10**9, max_radius_in_chunks=max_radius_in_chunks
     )
     frame = to_basic_geopandas_frame(ghs.shape, circles)
-    frame, long_to_short = attach_urban_centers_to_frame(frame)
+    frame, long_to_short = attach_urban_centers_to_frame(frame, urban_center_names)
     specify_duplicates(frame, long_to_short)
-    countries = relevant_regions(country_shapefile, frame, 3, 0.9)
+    countries = relevant_regions(country_names, frame, 3, 0.9)
     frame["suffix"] = frame.id.apply(lambda x: "-".join(countries[x]))
     frame["shortname"] = frame.shortname + " " + suffix
     frame["longname"] = frame["shortname"] + ", " + frame.suffix
@@ -608,9 +608,13 @@ def circle_shapefile_object(country_shapefile, population):
     version = 27
     return make_shapefile(
         hash_key=f"population_circle_{named_populations[population]}_{version}",
-        path=lambda: overlapping_circles_frame(
-            country_shapefile, population, named_populations[population] + "PC"
+        path=lambda country_names, urban_center_names: overlapping_circles_frame(
+            country_names,
+            urban_center_names,
+            population,
+            named_populations[population] + "PC",
         ),
+        path_inputs=(country_shapefile.names, URBAN_CENTERS.names),
         shortname_extractor=column("shortname"),
         cleanname_extractor=(column("shortname")).removesuffix(
             " " + named_populations[population] + "PC"
