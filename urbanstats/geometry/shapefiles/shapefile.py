@@ -5,6 +5,7 @@ from typing import Optional
 import attr
 import geopandas as gpd
 import pandas as pd
+from permacache import stable_hash
 
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
 
@@ -17,16 +18,21 @@ class Geometry:
     path = attr.ib()
     filter = attr.ib()
     does_overlap_self = attr.ib()
+    # layers of other shapefiles, which path is called with
+    inputs = attr.ib(default=())
 
     def __permacache_hash__(self):
         # path and filter are functions, which stable_hash can't hash, so the key stands in for them
-        return self.key
+        if not self.inputs:
+            return self.key
+        return [self.key, stable_hash(self.inputs)]
 
     def load_rows(self):
         """
         The regions: the loaded file after the filter, with its own columns, in EPSG:4326.
         Shapefile.load_file's rows and index are the same.
         """
+        assert not self.inputs or callable(self.path)
         if isinstance(self.path, list):
             s = gpd.GeoDataFrame(pd.concat([gpd.read_file(p) for p in self.path]))
             s = s.reset_index(drop=True)
@@ -37,7 +43,7 @@ class Geometry:
             else:
                 s = gpd.read_file(self.path)
         else:
-            s = self.path()
+            s = self.path(*self.inputs)
         s = s[s.apply(self.filter, axis=1)]
         if s.shape[0] == 0:
             raise EmptyShapefileError
@@ -306,6 +312,7 @@ def make_shapefile(
     *,
     hash_key,
     path,
+    path_inputs=(),
     filter,  # pylint: disable=redefined-builtin
     shortname_extractor,
     longname_extractor,
@@ -337,6 +344,7 @@ def make_shapefile(
             path=path,
             filter=filter,
             does_overlap_self=does_overlap_self,
+            inputs=path_inputs,
         ),
         temporal=Temporal(
             start_date=start_date,
