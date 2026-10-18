@@ -76,6 +76,14 @@ void test('main maps of their own share a split, each cell holding its universe\
     assert.deepEqual(split.children.map(({ insets }) => insets.length), [loadInsets('USA').length, loadInsets('Iceland').length])
 })
 
+void test('main maps far apart north to south are stacked, the northern one on top', () => {
+    const [split] = loadInsets(['South Africa', 'Iceland'])
+    assert.ok(isSplit(split))
+    assert.equal(split.direction, 'vertical')
+    const [north, south] = layoutInsets([split]).leaves.filter(inset => inset.mainMap).sort((a, b) => b.coordBox[3] - a.coordBox[3])
+    assert.ok(north.bottomLeft[1] >= south.topRight[1], `${north.name} is not above ${south.name}`)
+})
+
 void test('the combined main maps take up exactly the space the separate ones did', () => {
     const separate = [...leaves('USA'), ...leaves('Iceland')].filter(inset => inset.mainMap)
     const combined = leaves(['USA', 'Iceland']).filter(inset => inset.mainMap)
