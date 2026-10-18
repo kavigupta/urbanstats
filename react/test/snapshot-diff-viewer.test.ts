@@ -59,16 +59,23 @@ urbanstatsFixture('snapshot diff viewer', '/index.html')
         devServerUrl = `http://localhost:${port}`
         devServer = execa('npx', ['rspack', 'serve', '--mode=development', '--env', `directory=${siteDir}`, '--env', `snapshotsRoot=${runRoot}`, '--output-path', path.join(siteDir, 'scripts')], {
             env: { PORT: port.toString(), NODE_ENV: 'development' },
-            stdio: 'ignore',
+            all: true,
+            reject: false,
             cleanup: true,
         })
-        const deadline = Date.now() + 5 * 60 * 1000
-        while (!await fetch(`${devServerUrl}/scripts/index.js`).then(response => response.ok, () => false)) {
-            if (Date.now() > deadline) {
-                throw new Error('Dev server did not start')
+        const exited = devServer.then(({ exitCode, all }) => {
+            throw new Error(`Dev server exited with ${exitCode}:\n${all}`)
+        })
+        const started = (async () => {
+            const deadline = Date.now() + 5 * 60 * 1000
+            while (!await fetch(`${devServerUrl}/scripts/index.js`).then(response => response.ok, () => false)) {
+                if (Date.now() > deadline) {
+                    throw new Error('Dev server did not start')
+                }
+                await new Promise(resolve => setTimeout(resolve, 1000))
             }
-            await new Promise(resolve => setTimeout(resolve, 1000))
-        }
+        })()
+        await Promise.race([started, exited])
     })
     .after(async () => {
         devServer?.kill()
