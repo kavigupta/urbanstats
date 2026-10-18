@@ -223,7 +223,17 @@ def _from_layer(layer, name):
     return property(lambda self: getattr(getattr(self, layer), name))
 
 
-class _Layers:
+@attr.s(frozen=True)
+class ShapefileWithoutMetadata:
+    geometry = attr.ib()
+    naming = attr.ib()
+    universe_provider = attr.ib()
+    temporal = attr.ib()
+    identifiers = attr.ib()
+    special_data_sources = attr.ib()
+    source_countries = attr.ib()
+    cross_source_borders = attr.ib()
+
     @property
     def names(self):
         return Names(geometry=self.geometry, naming=self.naming)
@@ -237,20 +247,8 @@ class _Layers:
         return Identified(geometry=self.geometry, identifiers=self.identifiers)
 
 
-@attr.s(frozen=True)
-class ShapefileWithoutMetadata(_Layers):
-    geometry = attr.ib()
-    naming = attr.ib()
-    universe_provider = attr.ib()
-    temporal = attr.ib()
-    identifiers = attr.ib()
-    special_data_sources = attr.ib()
-    source_countries = attr.ib()
-    cross_source_borders = attr.ib()
-
-
 @attr.s
-class Shapefile(_Layers):
+class Shapefile:
     geometry = attr.ib()
     naming = attr.ib()
     metadata = attr.ib()
@@ -289,12 +287,27 @@ class Shapefile(_Layers):
 
     def without_metadata(self):
         return ShapefileWithoutMetadata(
-            **{
-                field.name: getattr(self, field.name)
-                for field in attr.fields(Shapefile)
-                if field.name != "metadata"
-            }
+            geometry=self.geometry,
+            naming=self.naming,
+            universe_provider=self.universe_provider,
+            temporal=self.temporal,
+            identifiers=self.identifiers,
+            special_data_sources=self.special_data_sources,
+            source_countries=self.source_countries,
+            cross_source_borders=self.cross_source_borders,
         )
+
+    @property
+    def names(self):
+        return self.without_metadata().names
+
+    @property
+    def dates(self):
+        return self.without_metadata().dates
+
+    @property
+    def identified(self):
+        return self.without_metadata().identified
 
     def load_file(self):
         return join_layers(self.names, self.dates, self.identified)
