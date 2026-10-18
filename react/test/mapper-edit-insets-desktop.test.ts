@@ -104,3 +104,30 @@ test('an inset covers the border of the inset under it in the export', async (t)
     await waitForMapsToRender()
     await downloadImage(t)
 })
+
+const twoMainMapsCode = `cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampUridis,
+    basemap=noBasemap(),
+    insets=constructInsets([
+        constructInset(screenBounds={north: 1, east: 0.5, south: 0, west: 0}, mapBounds={north: 49.833, east: -97.5, south: 22.269, west: -130.026}, mainMap=true, name="West"),
+        constructInset(screenBounds={north: 1, east: 1, south: 0, west: 0.5}, mapBounds={north: 49.833, east: -65.092, south: 22.269, west: -97.5}, mainMap=true, name="East"),
+        constructInset(screenBounds={north: 0.4, east: 0.3, south: 0.1, west: 0.1}, mapBounds={north: 38.047, east: -121.37, south: 37.128, west: -122.766}, mainMap=false, name="Bay Area")
+    ])
+)`
+
+urbanstatsFixture('two main maps', urlFromCode('County', 'USA', twoMainMapsCode))
+
+// Deleting a main map takes its small insets with it, which only a cell of a split groups
+test('a main map can only be deleted alone in a cell of a split', async (t) => {
+    await toggleCustomScript(t)
+    await t.click(editInsetsButton)
+    await t.expect(Selector('[data-test="add"]').count).eql(2)
+    await t.expect(Selector('[data-test="delete"]').count).eql(1)
+
+    // Each cell gets both main maps
+    await t.click(handle(0, 'splitHorizontal'))
+    await t.expect(Selector('[data-test="add"]').count).eql(4)
+    await t.expect(Selector('[data-test="delete"]').count).eql(2)
+})

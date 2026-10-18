@@ -305,6 +305,8 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                 const { path, mainMap, cell } = leaves[i]
                 const newInset: Inset = { coordBox: leaves[i].coordBox, name: leaves[i].name, bottomLeft: [0.25, 0.25], topRight: [0.75, 0.75], mainMap: false }
                 const remaining = deleteInsets(editedInsets, path)
+                // A main map goes with its cell, so only one alone in a cell of a split can be deleted
+                const deletable = !mainMap || (path.length > 1 && layoutInsets(listAt(editedInsets, path.slice(0, -1))).leaves.filter(leaf => leaf.mainMap).length === 1)
                 return {
                     setCoordBox: (coordBox) => {
                         apply(mapNode(editedInsets, path, (node) => {
@@ -315,7 +317,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                     // Main maps fill their cell in a split
                     setFrame: path.length === 1 || !mainMap ? setFrameAt(path, cell) : undefined,
                     bounds: cell,
-                    delete: layoutInsets(remaining).leaves.some(leaf => leaf.mainMap) ? () => { apply(remaining) } : undefined,
+                    delete: deletable && layoutInsets(remaining).leaves.some(leaf => leaf.mainMap) ? () => { apply(remaining) } : undefined,
                     duplicate: mainMap ? undefined : () => { insertAfter(path, list => offsetInsetInBounds(list[path[path.length - 1]], list)) },
                     add: mainMap ? () => { apply(mapList(editedInsets, path.slice(0, -1), list => [...list, offsetInsetInBounds(newInset, list)])) } : undefined,
                     // Allowing reordering on the main map in case you want to put its corner in front of an inset
