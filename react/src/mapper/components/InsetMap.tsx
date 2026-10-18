@@ -74,21 +74,7 @@ function InsetMapImpl({ inset, children, editInset, container, i, interactive }:
                 height: `calc(${(inset.topRight[1] - inset.bottomLeft[1]) * 100}% + ${top + bottom}px)` }}
         >
             {children(mapLibreProps, mapChildren, ref)}
-            { editInset && (
-                <EditInsetsHandles
-                    frame={[...inset.bottomLeft, ...inset.topRight]}
-                    setFrame={editInset.setFrame}
-                    bounds={editInset.bounds}
-                    container={container}
-                    delete={editInset.delete}
-                    duplicate={editInset.duplicate}
-                    add={editInset.add}
-                    split={editInset.split}
-                    shouldHaveCenterHandle={!inset.mainMap || !isFullScreenInset(inset)}
-                    moveUp={editInset.moveUp}
-                    moveDown={editInset.moveDown}
-                />
-            )}
+            { editInset && <InsetEditControls inset={inset} editInset={editInset} container={container} /> }
         </div>
     )
 }
@@ -138,12 +124,75 @@ function HandleInsets({ inset, setCoordBox }: { inset: Inset, setCoordBox: (newB
 
 type DragKind = 'move' | `${'top' | 'bottom'}${'Right' | 'Left'}`
 
-function isFullScreenInset(inset: Inset): boolean {
+function useElementSize(ref: RefObject<HTMLElement>): { width: number, height: number } {
+    const [size, setSize] = useState({ width: 0, height: 0 })
+    useEffect(() => {
+        const element = ref.current!
+        const observer = new ResizeObserver(() => {
+            setSize({ width: element.clientWidth, height: element.clientHeight })
+        })
+        observer.observe(element)
+        return () => {
+            observer.disconnect()
+        }
+    }, [ref])
+    return size
+}
+
+function InsetEditControls({ inset, editInset, container }: { inset: Inset, editInset: InsetEditHandlers, container: RefObject<HTMLDivElement> }): ReactNode {
+    const frame: Frame = [...inset.bottomLeft, ...inset.topRight]
+    const { width, height } = useElementSize(container)
+    // Shrinks the controls of small insets so they still fit
+    const scale = Math.max(0.4, Math.min(1, (frame[2] - frame[0]) * width / 160, (frame[3] - frame[1]) * height / 120))
+    return (
+        <>
+            <EditInsetsHandles
+                frame={frame}
+                setFrame={editInset.setFrame}
+                bounds={editInset.bounds}
+                container={container}
+                shouldHaveCenterHandle={!inset.mainMap || !isFullScreen(frame)}
+                scale={scale}
+            />
+            <InsetToolbar editInset={editInset} scale={scale} />
+            <ReorderButtons moveUp={editInset.moveUp} moveDown={editInset.moveDown} scale={scale} />
+        </>
+    )
+}
+
+function isFullScreen(frame: Frame): boolean {
     const tolerance = 0.005
-    return Math.abs(inset.bottomLeft[0] - 0) < tolerance
-        && Math.abs(inset.bottomLeft[1] - 0) < tolerance
-        && Math.abs(inset.topRight[0] - 1) < tolerance
-        && Math.abs(inset.topRight[1] - 1) < tolerance
+    return Math.abs(frame[0] - 0) < tolerance
+        && Math.abs(frame[1] - 0) < tolerance
+        && Math.abs(frame[2] - 1) < tolerance
+        && Math.abs(frame[3] - 1) < tolerance
+}
+
+// Inside the frame, so the buttons of neighbouring insets in a split never overlap
+function InsetToolbar({ editInset, scale }: { editInset: InsetEditHandlers, scale: number }): ReactNode {
+    const size = 25 * (useMobileLayout() ? 2 : 1) * scale
+    const button = { position: 'relative', cursor: 'default' } as const
+    const split = editInset.split
+    return (
+        <div style={{ position: 'absolute', top: 6 * scale, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 4 * scale, pointerEvents: 'none' }}>
+            {editInset.delete && <Handle handleSize={size} data-test="delete" style={button} onClick={editInset.delete} img={{ src: '/close-red-small.png', alt: 'Delete' }} />}
+            {editInset.add && <Handle handleSize={size} data-test="add" style={button} onClick={editInset.add} img={{ src: '/add-green-small.png', alt: 'Add', padding: 0.06 }} />}
+            {editInset.duplicate && <Handle handleSize={size} data-test="duplicate" style={{ ...button, cursor: 'copy' }} onClick={editInset.duplicate} img={{ src: '/duplicate.png', alt: 'Duplicate' }} />}
+            <Handle handleSize={size} data-test="splitHorizontal" style={button} onClick={() => { split('horizontal') }}><SplitIcon direction="horizontal" /></Handle>
+            <Handle handleSize={size} data-test="splitVertical" style={button} onClick={() => { split('vertical') }}><SplitIcon direction="vertical" /></Handle>
+        </div>
+    )
+}
+
+function ReorderButtons({ moveUp, moveDown, scale = 1 }: { moveUp?: () => void, moveDown?: () => void, scale?: number }): ReactNode {
+    const size = 25 * (useMobileLayout() ? 2 : 1) * scale
+    const button = { position: 'relative', cursor: 'default' } as const
+    return (
+        <div style={{ position: 'absolute', left: 6 * scale, top: '50%', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 4 * scale, pointerEvents: 'none' }}>
+            {moveUp && <Handle handleSize={size} data-test="moveUp" style={button} onClick={moveUp}><ArrowIcon direction="up" /></Handle>}
+            {moveDown && <Handle handleSize={size} data-test="moveDown" style={button} onClick={moveDown}><ArrowIcon direction="down" /></Handle>}
+        </div>
+    )
 }
 
 type EditInsetsHandlesProps = Parameters<typeof EditInsetsHandles>[0]
@@ -159,8 +208,8 @@ export function EditInsetsHandles(props: {
     add?: () => void
     moveUp?: () => void
     moveDown?: () => void
-    split?: (direction: SplitDirection) => void
     shouldHaveCenterHandle: boolean
+    scale?: number
 }): ReactNode {
     const activeDrag = useRef<{ kind: DragKind, startX: number, startY: number, startFrame: Frame, pointerId: number } | undefined>(undefined)
 
@@ -237,7 +286,7 @@ export function EditInsetsHandles(props: {
         },
     })
 
-    const mobileMultiplier = useMobileLayout() ? 2 : 1
+    const mobileMultiplier = (useMobileLayout() ? 2 : 1) * (props.scale ?? 1)
 
     return (
         <>
@@ -256,12 +305,6 @@ export function EditInsetsHandles(props: {
             {props.add && (
                 <Handle handleSize={25 * mobileMultiplier} data-test="add" style={{ margin: 'auto', left: `calc(50% - ${12.5 * mobileMultiplier}px)`, textAlign: 'center', top: -insetBorderWidth, cursor: 'default' }} onClick={props.add} img={{ src: '/add-green-small.png', alt: 'Add' }} />
             )}
-            {props.split && (
-                <Handle handleSize={25 * mobileMultiplier} data-test="splitHorizontal" style={{ left: `calc(40% - ${12.5 * mobileMultiplier}px)`, bottom: -insetBorderWidth, cursor: 'default' }} onClick={() => { props.split!('horizontal') }}><SplitIcon direction="horizontal" /></Handle>
-            )}
-            {props.split && (
-                <Handle handleSize={25 * mobileMultiplier} data-test="splitVertical" style={{ left: `calc(60% - ${12.5 * mobileMultiplier}px)`, bottom: -insetBorderWidth, cursor: 'default' }} onClick={() => { props.split!('vertical') }}><SplitIcon direction="vertical" /></Handle>
-            )}
             {props.setFrame && <Handle handleSize={15 * mobileMultiplier} style={{ right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('topRight')} />}
             {props.setFrame && <Handle handleSize={15 * mobileMultiplier} style={{ right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('bottomRight')} />}
             {props.setFrame && <Handle handleSize={15 * mobileMultiplier} style={{ left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('bottomLeft')} />}
@@ -273,20 +316,40 @@ export function EditInsetsHandles(props: {
     )
 }
 
-function SplitIcon({ direction }: { direction: SplitDirection }): ReactNode {
+function ArrowIcon({ direction }: { direction: 'up' | 'down' }): ReactNode {
     const colors = useColors()
     return (
         <svg viewBox="0 0 10 10" style={{ width: '100%', height: '100%', display: 'block' }}>
-            <title>{direction === 'horizontal' ? 'Split Horizontally' : 'Split Vertically'}</title>
-            <rect x={1.5} y={1.5} width={7} height={7} fill="none" stroke={colors.textMain} strokeWidth={1} />
-            {direction === 'horizontal'
-                ? <line x1={5} y1={1.5} x2={5} y2={8.5} stroke={colors.textMain} strokeWidth={1} />
-                : <line x1={1.5} y1={5} x2={8.5} y2={5} stroke={colors.textMain} strokeWidth={1} />}
+            <title>{direction === 'up' ? 'Move Up' : 'Move Down'}</title>
+            <polygon points={direction === 'up' ? '1.5,7.5 5,2.5 8.5,7.5' : '1.5,2.5 5,7.5 8.5,2.5'} fill={colors.brandingColor} />
         </svg>
     )
 }
 
-function Handle({ handleSize, style, img, children, ...rest }: { handleSize: number, img?: { src: string, alt: string } } & HTMLAttributes<HTMLDivElement>): ReactNode {
+function SplitIcon({ direction }: { direction: SplitDirection }): ReactNode {
+    const colors = useColors()
+    const pane = (x: number, y: number, width: number, height: number): ReactNode => <rect x={x} y={y} width={width} height={height} rx={1} fill={colors.brandingColor} />
+    return (
+        <svg viewBox="0 0 10 10" style={{ width: '100%', height: '100%', display: 'block' }}>
+            <title>{direction === 'horizontal' ? 'Split Horizontally' : 'Split Vertically'}</title>
+            {direction === 'horizontal'
+                ? (
+                        <>
+                            {pane(1.5, 1.5, 3, 7)}
+                            {pane(5.5, 1.5, 3, 7)}
+                        </>
+                    )
+                : (
+                        <>
+                            {pane(1.5, 1.5, 7, 3)}
+                            {pane(1.5, 5.5, 7, 3)}
+                        </>
+                    )}
+        </svg>
+    )
+}
+
+function Handle({ handleSize, style, img, children, ...rest }: { handleSize: number, img?: { src: string, alt: string, padding?: number } } & HTMLAttributes<HTMLDivElement>): ReactNode {
     const colors = useColors()
     const [hover, setHover] = useState(false)
 
@@ -321,7 +384,8 @@ function Handle({ handleSize, style, img, children, ...rest }: { handleSize: num
                 position: 'absolute',
                 width: `${handleSize}px`,
                 height: `${handleSize}px`,
-                borderRadius: '2px',
+                borderRadius: handleSize * 0.25,
+                overflow: 'hidden',
                 touchAction: 'none',
                 pointerEvents: 'auto',
                 zIndex: zIndex.insetEditHandle,
@@ -329,13 +393,13 @@ function Handle({ handleSize, style, img, children, ...rest }: { handleSize: num
             }}
             {...rest}
         >
-            {img && <img src={img.src} alt={img.alt} style={{ width: '100%', height: '100%' }} />}
+            {img && <img src={img.src} alt={img.alt} style={{ width: '100%', height: '100%', display: 'block', boxSizing: 'border-box', padding: `${(img.padding ?? 0) * 100}%` }} />}
             {children}
         </div>
     )
 }
 
-export function SplitFrameHandles({ frame, container, handlers }: { frame: Frame, container: RefObject<HTMLDivElement>, handlers: Omit<EditInsetsHandlesProps, 'frame' | 'container' | 'shouldHaveCenterHandle'> }): ReactNode {
+export function SplitFrameHandles({ frame, container, handlers: { moveUp, moveDown, ...handlers } }: { frame: Frame, container: RefObject<HTMLDivElement>, handlers: Omit<EditInsetsHandlesProps, 'frame' | 'container' | 'shouldHaveCenterHandle'> }): ReactNode {
     return (
         <div
             style={{
@@ -347,7 +411,8 @@ export function SplitFrameHandles({ frame, container, handlers }: { frame: Frame
                 height: `${(frame[3] - frame[1]) * 100}%`,
             }}
         >
-            <EditInsetsHandles frame={frame} container={container} shouldHaveCenterHandle={true} {...handlers} />
+            <EditInsetsHandles frame={frame} container={container} shouldHaveCenterHandle={!isFullScreen(frame)} {...handlers} />
+            <ReorderButtons moveUp={moveUp} moveDown={moveDown} />
         </div>
     )
 }
@@ -366,18 +431,22 @@ export function SplitDivider({ split: { split, cells }, j, container, setProport
     const after = cells[j + 1]
     // Extent of the two cells along the split axis
     const [lo, hi] = horizontal ? [before[0], after[2]] : [after[1], before[3]]
-    const thickness = 8 * (useMobileLayout() ? 2 : 1)
+    const mobileMultiplier = useMobileLayout() ? 2 : 1
+    const thickness = 12 * mobileMultiplier
+    const [hover, setHover] = useState(false)
 
     return (
         <div
             data-test="splitDivider"
+            onPointerEnter={() => { setHover(true) }}
+            onPointerLeave={() => { setHover(false) }}
             style={{
                 position: 'absolute',
                 pointerEvents: 'auto',
                 touchAction: 'none',
-                backgroundColor: colors.slightlyDifferentBackground,
-                border: `1px solid ${colors.textMain}`,
-                borderRadius: '2px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 ...(horizontal
                     ? { left: `calc(${before[2] * 100}% - ${thickness / 2}px)`, bottom: `${before[1] * 100}%`, height: `${(before[3] - before[1]) * 100}%`, width: thickness, cursor: 'col-resize' }
                     : { bottom: `calc(${before[1] * 100}% - ${thickness / 2}px)`, left: `${before[0] * 100}%`, width: `${(before[2] - before[0]) * 100}%`, height: thickness, cursor: 'row-resize' }),
@@ -416,6 +485,15 @@ export function SplitDivider({ split: { split, cells }, j, container, setProport
                     activePointer.current = undefined
                 }
             }}
-        />
+        >
+            <div style={{
+                backgroundColor: colors.slightlyDifferentBackground,
+                border: `1px solid ${colors.textMain}`,
+                borderRadius: 4 * mobileMultiplier,
+                width: horizontal ? (hover ? 8 : 6) * mobileMultiplier : (hover ? 48 : 32) * mobileMultiplier,
+                height: horizontal ? (hover ? 48 : 32) * mobileMultiplier : (hover ? 8 : 6) * mobileMultiplier,
+            }}
+            />
+        </div>
     )
 }

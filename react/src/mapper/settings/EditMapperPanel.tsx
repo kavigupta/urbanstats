@@ -321,7 +321,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                     bounds: cell,
                     delete: layoutInsets(remaining).leaves.some(leaf => leaf.mainMap) ? () => { apply(remaining) } : undefined,
                     duplicate: mainMap ? undefined : () => { insertAfter(path, list => offsetInsetInBounds(list[path[path.length - 1]], list)) },
-                    add: mainMap ? () => { insertAfter(path, list => offsetInsetInBounds(newInset(), list)) } : undefined,
+                    add: mainMap ? () => { apply(mapList(editedInsets, path.slice(0, -1), list => [...list, offsetInsetInBounds(newInset(), list)])) } : undefined,
                     // Allowing reordering on the main map in case you want to put its corner in front of an inset
                     ...reorder(path),
                     split: (direction) => { apply(splitInsets(editedInsets, path, direction)) },
