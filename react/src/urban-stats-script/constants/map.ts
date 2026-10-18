@@ -10,7 +10,7 @@ import { USSType, USSValue, createConstantExpression, USSRawValue, OriginalFunct
 
 import { basemapType, outlineType } from './basemap'
 import { Color, rgbColorExpression } from './color-utils'
-import { Inset, insetsType } from './insets'
+import { InsetNode, insetsType } from './insets'
 import { RampT } from './ramp'
 import { Scale, ScaleDescriptor } from './scale'
 import { TextBox, textBoxType } from './text-box'
@@ -38,7 +38,7 @@ export interface CommonMap {
     opacity: number
     label: HumanReadableName | undefined
     basemap: Basemap
-    insets: Inset[]
+    insets: InsetNode[]
     unit?: UnitType
     textBoxes: TextBox[]
     /** Undefined where a geography with no value is not drawn at all. */
@@ -58,7 +58,7 @@ export interface CMapRGB {
     opacity: number
     label: HumanReadableName
     basemap: Basemap
-    insets: Inset[]
+    insets: InsetNode[]
     unit?: UnitType
     outline: Outline
     textBoxes: TextBox[]
@@ -240,7 +240,7 @@ function computeCommonMap(
     const ramp = (namedArgs.ramp as { type: 'opaque', opaqueType: 'ramp', value: RampT }).value
     const labelPassedIn = namedArgs.label as string | null
     const basemap = (namedArgs.basemap as { type: 'opaque', opaqueType: 'basemap', value: Basemap }).value
-    const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: Inset[] }).value
+    const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: InsetNode[] }).value
     // what the user chose, and nothing else. A call with no unit argument leaves this undefined,
     // and mapRampUnitAndLabel falls back to the unit derived from the data
     const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'unit', value: { unit: UnitType } } | null
@@ -453,7 +453,7 @@ export const cMapRGB: USSValue = {
         })
         const label = parseHumanReadableTemplate(namedArgs.label as string)
         const basemap = (namedArgs.basemap as { type: 'opaque', opaqueType: 'basemap', value: Basemap }).value
-        const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: Inset[] }).value
+        const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: InsetNode[] }).value
         const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'unit', value: { unit: string } } | null
         const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
         const textBoxes = (namedArgs.textBoxes as { value: TextBox }[] | null ?? []).map(({ value }) => value)

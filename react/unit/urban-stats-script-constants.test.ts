@@ -273,6 +273,13 @@ void test('constant listing', (): void => {
             '([inset]; ) -> insets': [
                 'constructInsets',
             ],
+            '([{insets: [inset], proportion: number}]; direction: splitDirection, screenBounds: {east: number, north: number, south: number, west: number}) -> inset': [
+                'constructSplitInset',
+            ],
+            'splitDirection': [
+                'splitHorizontal',
+                'splitVertical',
+            ],
             'inset': [
                 'insetworld',
                 'insetAfrica',

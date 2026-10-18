@@ -71,6 +71,33 @@ test('accepting normalizes the screen bounds, which stay put while editing', asy
     await downloadImage(t)
 })
 
+test('splitting the main map duplicates its insets, which scale with the divider', async (t) => {
+    await toggleCustomScript(t)
+    const viewedMaps = await numMaps()
+    const aspectRatio = (): Promise<number> => ClientFunction(() => {
+        const rect = document.querySelector('#map-0')!.parentElement!.getBoundingClientRect()
+        return rect.width / rect.height
+    })()
+    const viewedAspectRatio = await aspectRatio()
+    await t.click(editInsetsButton)
+    const editedMaps = await numMaps()
+    await t.click(handle(0, 'splitHorizontal'))
+    await t.expect(numMaps()).eql(editedMaps * 2)
+
+    // The first main map, its last inset, and the second main map
+    const widths = (): Promise<number[]> => ClientFunction((n: number) => [0, n - 1, n].map(i => document.querySelector(`#map-${i}`)!.getBoundingClientRect().width))(editedMaps)
+    const [half, insetBefore] = await widths()
+    await drag(t, '[data-test="splitDivider"]', -Math.round(half / 2), 0)
+    const [left, insetAfter, right] = await widths()
+    await t.expect(left / right).within(0.3, 0.36)
+    await t.expect(insetAfter / insetBefore).within(0.45, 0.55)
+
+    await t.click(Selector('button:not(:disabled)').withExactText('Accept'))
+    await t.expect(Selector('input[value="Split Inset"]:not([inert] *)').count).eql(1)
+    await t.expect(numMaps()).eql(viewedMaps * 2)
+    await t.expect(await aspectRatio() / viewedAspectRatio).within(0.98, 1.02)
+})
+
 urbanstatsFixture('overlapping insets', urlFromCode('County', 'USA', overlappingInsetsCode))
 
 test('an inset covers the border of the inset under it in the export', async (t) => {
