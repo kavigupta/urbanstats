@@ -399,8 +399,8 @@ function Handle({ handleSize, style, img, children, ...rest }: { handleSize: num
     )
 }
 
-export function SplitFrameHandles({ frame, container, handlers: { moveUp, moveDown, ...handlers } }: { frame: Frame, container: RefObject<HTMLDivElement>, handlers: Omit<EditInsetsHandlesProps, 'frame' | 'container' | 'shouldHaveCenterHandle'> }): ReactNode {
-    const scale = useMobileLayout() ? mobileControlMultiplier : 1
+export function SplitFrameHandles({ frame, container, handlers: { moveUp, moveDown, ...handlers } }: { frame: Frame, container: RefObject<HTMLDivElement>, handlers: Omit<EditInsetsHandlesProps, 'frame' | 'container' | 'shouldHaveCenterHandle' | 'scale'> }): ReactNode {
+    const scale = useMobileControlScale()
     return (
         <div
             style={{
@@ -412,7 +412,7 @@ export function SplitFrameHandles({ frame, container, handlers: { moveUp, moveDo
                 height: `${(frame[3] - frame[1]) * 100}%`,
             }}
         >
-            <EditInsetsHandles frame={frame} container={container} shouldHaveCenterHandle={!isFullScreen(frame)} {...handlers} />
+            <EditInsetsHandles frame={frame} container={container} shouldHaveCenterHandle={!isFullScreen(frame)} scale={scale} {...handlers} />
             <ReorderButtons moveUp={moveUp} moveDown={moveDown} scale={scale} />
         </div>
     )
@@ -432,7 +432,7 @@ export function SplitDivider({ split: { split, cells }, j, container, setProport
     const after = cells[j + 1]
     // Extent of the two cells along the split axis
     const [lo, hi] = horizontal ? [before[0], after[2]] : [after[1], before[3]]
-    const mobileMultiplier = useMobileLayout() ? mobileControlMultiplier : 1
+    const mobileMultiplier = useMobileControlScale()
     const thickness = 12 * mobileMultiplier
     const [hover, setHover] = useState(false)
 
