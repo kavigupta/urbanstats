@@ -127,8 +127,9 @@ function useElementSize(ref: RefObject<HTMLElement>): { width: number, height: n
 function InsetEditControls({ inset, editInset, container, i, numInsets }: { inset: Inset, editInset: Edit<Inset>, container: RefObject<HTMLDivElement>, i: number, numInsets: number }): ReactNode {
     const frame: Frame = [...inset.bottomLeft, ...inset.topRight]
     const { width, height } = useElementSize(container)
-    // Shrinks the controls of small insets so they still fit
-    const scale = Math.max(0.4, Math.min(1, (frame[2] - frame[0]) * width / 160, (frame[3] - frame[1]) * height / 120))
+    // Doubled on mobile, and shrunk for insets too small to hold the controls at that size
+    const multiplier = useMobileLayout() ? 2 : 1
+    const scale = multiplier * Math.max(0.4, Math.min(1, (frame[2] - frame[0]) * width / (160 * multiplier), (frame[3] - frame[1]) * height / (120 * multiplier)))
     return (
         <>
             <EditInsetsHandles
@@ -157,7 +158,7 @@ function InsetEditControls({ inset, editInset, container, i, numInsets }: { inse
 
 // Inside the frame, so the buttons of neighbouring insets never overlap
 function InsetToolbar(props: { delete?: () => void, add?: () => void, duplicate?: () => void, scale: number }): ReactNode {
-    const size = 25 * (useMobileLayout() ? 2 : 1) * props.scale
+    const size = 25 * props.scale
     const button = { position: 'relative', cursor: 'default' } as const
     return (
         <div style={{ position: 'absolute', top: 6 * props.scale, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 4 * props.scale, pointerEvents: 'none' }}>
@@ -168,8 +169,8 @@ function InsetToolbar(props: { delete?: () => void, add?: () => void, duplicate?
     )
 }
 
-function ReorderButtons({ moveUp, moveDown, scale = 1 }: { moveUp?: () => void, moveDown?: () => void, scale?: number }): ReactNode {
-    const size = 25 * (useMobileLayout() ? 2 : 1) * scale
+function ReorderButtons({ moveUp, moveDown, scale }: { moveUp?: () => void, moveDown?: () => void, scale: number }): ReactNode {
+    const size = 25 * scale
     const button = { position: 'relative', cursor: 'default' } as const
     return (
         <div style={{ position: 'absolute', left: 6 * scale, top: '50%', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 4 * scale, pointerEvents: 'none' }}>
@@ -207,6 +208,7 @@ export function EditInsetsHandles(props: {
     moveUp?: () => void
     moveDown?: () => void
     shouldHaveCenterHandle: boolean
+    // Defaults to the mobile size
     scale?: number
 }): ReactNode {
     const activeDrag = useRef<{ kind: DragKind, startX: number, startY: number, startFrame: Frame, pointerId: number } | undefined>(undefined)
@@ -283,7 +285,8 @@ export function EditInsetsHandles(props: {
         },
     })
 
-    const mobileMultiplier = (useMobileLayout() ? 2 : 1) * (props.scale ?? 1)
+    const mobile = useMobileLayout()
+    const mobileMultiplier = props.scale ?? (mobile ? 2 : 1)
 
     return (
         <>
