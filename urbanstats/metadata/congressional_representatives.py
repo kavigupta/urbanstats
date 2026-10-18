@@ -10,7 +10,12 @@ import tqdm.auto as tqdm
 import us
 from permacache import permacache, stable_hash
 
-from urbanstats.geometry.shapefiles.shapefile import Names, Shapefile
+from urbanstats.geometry.shapefiles.shapefile import (
+    Dates,
+    Names,
+    Shapefile,
+    join_layers,
+)
 from urbanstats.geometry.shapefiles.shapefiles.historical_congressional import to_year
 from urbanstats.metadata.metadata_columns import (
     MetadataColumnProvider,
@@ -142,12 +147,12 @@ def representatives_for_district(
 
 @permacache(
     "urbanstats/metadata/congressional_representatives/compute_representatives_for_shapefile_6",
-    key_function=dict(names=stable_hash),
+    key_function=dict(names=stable_hash, dates=stable_hash),
 )
 def compute_representatives_for_shapefile(
-    names: Names, *, representatives_csv_version: str
+    names: Names, dates: Dates, *, representatives_csv_version: str
 ) -> Tuple[List[str], List[Dict[int, List[Representative]]]]:
-    table = names.load()
+    table = join_layers(names, dates)
     results = []
     pbar = tqdm.tqdm(total=len(table), desc="Computing representatives for districts")
     for _, row in table.iterrows():
@@ -204,6 +209,7 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
 
         res = create_relationships_dispatch(
             {k: sf.names for k, sf in shapefiles.items()},
+            {k: sf.dates for k, sf in shapefiles.items()},
             key_a,
             key_b,
             check_temporal=False,
@@ -216,6 +222,7 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
     ) -> Dict[str, Dict[int, List[Representative]]]:
         names, representatives_by_row = compute_representatives_for_shapefile(
             shapefile.names,
+            shapefile.dates,
             representatives_csv_version=self.representatives_csv_version,
         )
         return dict(zip(names, representatives_by_row))

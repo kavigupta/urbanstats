@@ -1,7 +1,7 @@
 from permacache import stable_hash
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
-from urbanstats.geometry.shapefiles.shapefile import load_names_and_identifiers
+from urbanstats.geometry.shapefiles.shapefile import join_layers
 
 
 def compute_universes_for_shapefile(shapefiles, shapefile):
@@ -30,5 +30,5 @@ def compute_universes_for_shapefile(shapefiles, shapefile):
     ),
 )
 def _compute_universes_for_shapefile_cached(provider, names_by_key, names, identified):
-    table = load_names_and_identifiers(names, identified)
+    table = join_layers(names, identified)
     return provider.universes_for_shapefile(names_by_key, names, table)

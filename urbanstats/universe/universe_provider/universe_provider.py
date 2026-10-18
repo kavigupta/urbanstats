@@ -40,7 +40,7 @@ class UniverseProvider(ABC):
 
         :param names_by_key: The Names of each of the relevant shapefiles
         :param names: The Names of the shapefile to compute universes for
-        :param table: Its names and identifier columns, as from load_names_and_identifiers
+        :param table: Its names and identifier columns
         """
 
 
