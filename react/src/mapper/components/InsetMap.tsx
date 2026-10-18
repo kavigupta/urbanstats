@@ -1,4 +1,4 @@
-import React, { HTMLAttributes, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
+import React, { HTMLAttributes, ReactNode, RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { MapRef, useMap } from 'react-map-gl/maplibre'
 
 import { CommonMapProps, insetBorderWidth } from '../../components/map-common'
@@ -111,11 +111,14 @@ type Frame = [number, number, number, number]
 
 function useElementSize(ref: RefObject<HTMLElement>): { width: number, height: number } {
     const [size, setSize] = useState({ width: 0, height: 0 })
-    useEffect(() => {
+    // Measuring before paint, so the controls don't first appear at the size of an empty container
+    useLayoutEffect(() => {
         const element = ref.current!
-        const observer = new ResizeObserver(() => {
+        const measure = (): void => {
             setSize({ width: element.clientWidth, height: element.clientHeight })
-        })
+        }
+        measure()
+        const observer = new ResizeObserver(measure)
         observer.observe(element)
         return () => {
             observer.disconnect()
@@ -126,12 +129,14 @@ function useElementSize(ref: RefObject<HTMLElement>): { width: number, height: n
 
 function InsetEditControls({ inset, editInset, container, i, numInsets }: { inset: Inset, editInset: Edit<Inset>, container: RefObject<HTMLDivElement>, i: number, numInsets: number }): ReactNode {
     const frame: Frame = [...inset.bottomLeft, ...inset.topRight]
-    const { width, height } = useElementSize(container)
+    const insetRef = useRef<HTMLDivElement>(null)
+    const { width, height } = useElementSize(insetRef)
     // Doubled on mobile, and shrunk for insets too small to hold the controls at that size
     const multiplier = useMobileLayout() ? 2 : 1
-    const scale = multiplier * Math.max(0.4, Math.min(1, (frame[2] - frame[0]) * width / (160 * multiplier), (frame[3] - frame[1]) * height / (120 * multiplier)))
+    const scale = multiplier * Math.max(0.4, Math.min(1, width / (160 * multiplier), height / (120 * multiplier)))
     return (
         <>
+            <div ref={insetRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
             <EditInsetsHandles
                 frame={frame}
                 setFrame={(newFrame) => {
