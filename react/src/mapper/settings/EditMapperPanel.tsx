@@ -382,7 +382,8 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                                     style={{ height: isMobile ? 30 : undefined }}
                                     onClick={() => {
                                         const original = getInsets(mapSettings, typeEnvironment)!
-                                        const fitted = mapGenerator.aspectRatio === undefined ? insetEdits : fitInsetMapBounds(insetEdits, original, mapGenerator.aspectRatio)
+                                        assert(mapGenerator.aspectRatio !== undefined, 'Insets were edited without a rendered map')
+                                        const fitted = fitInsetMapBounds(insetEdits, original, mapGenerator.aspectRatio)
                                         setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, normalizeInsetScreenBounds(fitted, fitted.insets(original)), typeEnvironment) } }, {})
                                         setMapEditorMode('uss')
                                     }}
