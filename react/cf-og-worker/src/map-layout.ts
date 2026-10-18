@@ -2,7 +2,10 @@
  * Projections may run past [0, 1] for shapes crossing the antimeridian, keeping fits tight.
  * `coveringTiles` wraps the tile x.
  */
+import { Inset, InsetNode, layoutInsets, pruneInsets } from '../../src/urban-stats-script/constants/insets'
 import { project } from '../../src/utils/coordinates'
+
+import type { MapContents } from './data'
 
 /** A closed ring of [lon, lat] pairs. */
 export type Ring = [number, number][]
@@ -99,4 +102,29 @@ export function polyline(points: [number, number][], width: number, height: numb
 /** Whether a circle of this radius shows in the box at all. */
 export function withinBox(x: number, y: number, radius: number, width: number, height: number): boolean {
     return x + radius >= 0 && x - radius <= width && y + radius >= 0 && y - radius <= height
+}
+
+/** Lays the insets out as the page does, after dropping those with nothing over their map bounds */
+export function cardInsets(insets: InsetNode[], contents: MapContents): Inset[] {
+    return layoutInsets(pruneInsets(insets, inset => inset.mainMap || hasContent(contents, inset.coordBox))).leaves
+}
+
+function hasContent(contents: MapContents, [west, south, east, north]: [number, number, number, number]): boolean {
+    const overlaps = (points: [number, number][]): boolean => {
+        let [minLon, minLat, maxLon, maxLat] = [Infinity, Infinity, -Infinity, -Infinity]
+        for (const [lon, lat] of points) {
+            minLon = Math.min(minLon, lon)
+            minLat = Math.min(minLat, lat)
+            maxLon = Math.max(maxLon, lon)
+            maxLat = Math.max(maxLat, lat)
+        }
+        return minLon < east && maxLon > west && minLat < north && maxLat > south
+    }
+    switch (contents.kind) {
+        case 'shapes':
+            return contents.shapes.some(({ rings }) => overlaps(rings.flat()))
+        case 'points':
+        case 'clusters':
+            return contents.points.some(({ lon, lat }) => overlaps([[lon, lat]]))
+    }
 }
