@@ -57,25 +57,7 @@ function InsetMapImpl({ inset, children, editInset, container, i, numInsets, int
                 height: `${(inset.topRight[1] - inset.bottomLeft[1]) * 100}%` }}
         >
             {children(mapLibreProps, mapChildren, ref)}
-            { editInset && (
-                <EditInsetsHandles
-                    frame={[...inset.bottomLeft, ...inset.topRight]}
-                    setFrame={(newFrame) => {
-                        editInset.modify({ bottomLeft: [newFrame[0], newFrame[1]], topRight: [newFrame[2], newFrame[3]] })
-                    }}
-                    container={container}
-                    delete={inset.mainMap ? undefined : editInset.delete}
-                    duplicate={inset.mainMap ? undefined : editInset.duplicate}
-                    add={inset.mainMap ? editInset.add : undefined}
-                    shouldHaveCenterHandle={!inset.mainMap || !isFullScreenInset(inset)}
-                    /*
-                    Allowing reordering on the main map in case you want to put its corner in front of an inset or something
-                    it also eliminates the weird edge case where the main map is not the 0th inset
-                    */
-                    moveUp={i + 1 < numInsets ? () => { editInset.moveUp() } : undefined}
-                    moveDown={i > 0 ? () => { editInset.moveDown() } : undefined}
-                />
-            )}
+            { editInset && <InsetEditControls inset={inset} editInset={editInset} container={container} i={i} numInsets={numInsets} /> }
         </div>
     )
 }
@@ -127,6 +109,86 @@ type DragKind = 'move' | `${'top' | 'bottom'}${'Right' | 'Left'}`
 
 type Frame = [number, number, number, number]
 
+function useElementSize(ref: RefObject<HTMLElement>): { width: number, height: number } {
+    const [size, setSize] = useState({ width: 0, height: 0 })
+    useEffect(() => {
+        const element = ref.current!
+        const observer = new ResizeObserver(() => {
+            setSize({ width: element.clientWidth, height: element.clientHeight })
+        })
+        observer.observe(element)
+        return () => {
+            observer.disconnect()
+        }
+    }, [ref])
+    return size
+}
+
+function InsetEditControls({ inset, editInset, container, i, numInsets }: { inset: Inset, editInset: Edit<Inset>, container: RefObject<HTMLDivElement>, i: number, numInsets: number }): ReactNode {
+    const frame: Frame = [...inset.bottomLeft, ...inset.topRight]
+    const { width, height } = useElementSize(container)
+    // Shrinks the controls of small insets so they still fit
+    const scale = Math.max(0.4, Math.min(1, (frame[2] - frame[0]) * width / 160, (frame[3] - frame[1]) * height / 120))
+    return (
+        <>
+            <EditInsetsHandles
+                frame={frame}
+                setFrame={(newFrame) => {
+                    editInset.modify({ bottomLeft: [newFrame[0], newFrame[1]], topRight: [newFrame[2], newFrame[3]] })
+                }}
+                container={container}
+                shouldHaveCenterHandle={!inset.mainMap || !isFullScreenInset(inset)}
+                scale={scale}
+            />
+            <InsetToolbar
+                delete={inset.mainMap ? undefined : editInset.delete}
+                duplicate={inset.mainMap ? undefined : editInset.duplicate}
+                add={inset.mainMap ? editInset.add : undefined}
+                scale={scale}
+            />
+            {/*
+            Allowing reordering on the main map in case you want to put its corner in front of an inset or something
+            it also eliminates the weird edge case where the main map is not the 0th inset
+            */}
+            <ReorderButtons moveUp={i + 1 < numInsets ? () => { editInset.moveUp() } : undefined} moveDown={i > 0 ? () => { editInset.moveDown() } : undefined} scale={scale} />
+        </>
+    )
+}
+
+// Inside the frame, so the buttons of neighbouring insets never overlap
+function InsetToolbar(props: { delete?: () => void, add?: () => void, duplicate?: () => void, scale: number }): ReactNode {
+    const size = 25 * (useMobileLayout() ? 2 : 1) * props.scale
+    const button = { position: 'relative', cursor: 'default' } as const
+    return (
+        <div style={{ position: 'absolute', top: 6 * props.scale, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 4 * props.scale, pointerEvents: 'none' }}>
+            {props.delete && <Handle handleSize={size} data-test="delete" style={button} onClick={props.delete} img={{ src: '/close-red-small.png', alt: 'Delete' }} />}
+            {props.add && <Handle handleSize={size} data-test="add" style={button} onClick={props.add} img={{ src: '/add-green-small.png', alt: 'Add', padding: 0.06 }} />}
+            {props.duplicate && <Handle handleSize={size} data-test="duplicate" style={{ ...button, cursor: 'copy' }} onClick={props.duplicate} img={{ src: '/duplicate.png', alt: 'Duplicate' }} />}
+        </div>
+    )
+}
+
+function ReorderButtons({ moveUp, moveDown, scale = 1 }: { moveUp?: () => void, moveDown?: () => void, scale?: number }): ReactNode {
+    const size = 25 * (useMobileLayout() ? 2 : 1) * scale
+    const button = { position: 'relative', cursor: 'default' } as const
+    return (
+        <div style={{ position: 'absolute', left: 6 * scale, top: '50%', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 4 * scale, pointerEvents: 'none' }}>
+            {moveUp && <Handle handleSize={size} data-test="moveUp" style={button} onClick={moveUp}><ArrowIcon direction="up" /></Handle>}
+            {moveDown && <Handle handleSize={size} data-test="moveDown" style={button} onClick={moveDown}><ArrowIcon direction="down" /></Handle>}
+        </div>
+    )
+}
+
+function ArrowIcon({ direction }: { direction: 'up' | 'down' }): ReactNode {
+    const colors = useColors()
+    return (
+        <svg viewBox="0 0 10 10" style={{ width: '100%', height: '100%', display: 'block' }}>
+            <title>{direction === 'up' ? 'Move Up' : 'Move Down'}</title>
+            <polygon points={direction === 'up' ? '1.5,7.5 5,2.5 8.5,7.5' : '1.5,2.5 5,7.5 8.5,2.5'} fill={colors.brandingColor} />
+        </svg>
+    )
+}
+
 function isFullScreenInset(inset: Inset): boolean {
     const tolerance = 0.005
     return Math.abs(inset.bottomLeft[0] - 0) < tolerance
@@ -145,6 +207,7 @@ export function EditInsetsHandles(props: {
     moveUp?: () => void
     moveDown?: () => void
     shouldHaveCenterHandle: boolean
+    scale?: number
 }): ReactNode {
     const activeDrag = useRef<{ kind: DragKind, startX: number, startY: number, startFrame: Frame, pointerId: number } | undefined>(undefined)
 
@@ -220,7 +283,7 @@ export function EditInsetsHandles(props: {
         },
     })
 
-    const mobileMultiplier = useMobileLayout() ? 2 : 1
+    const mobileMultiplier = (useMobileLayout() ? 2 : 1) * (props.scale ?? 1)
 
     return (
         <>
@@ -250,7 +313,7 @@ export function EditInsetsHandles(props: {
     )
 }
 
-function Handle({ handleSize, style, img, ...rest }: { handleSize: number, img?: { src: string, alt: string } } & HTMLAttributes<HTMLDivElement>): ReactNode {
+function Handle({ handleSize, style, img, children, ...rest }: { handleSize: number, img?: { src: string, alt: string, padding?: number } } & HTMLAttributes<HTMLDivElement>): ReactNode {
     const colors = useColors()
     const [hover, setHover] = useState(false)
 
@@ -285,13 +348,16 @@ function Handle({ handleSize, style, img, ...rest }: { handleSize: number, img?:
                 position: 'absolute',
                 width: `${handleSize}px`,
                 height: `${handleSize}px`,
-                borderRadius: '2px',
+                borderRadius: handleSize * 0.25,
+                overflow: 'hidden',
                 touchAction: 'none',
+                pointerEvents: 'auto',
                 ...style,
             }}
             {...rest}
         >
-            {img && <img src={img.src} alt={img.alt} style={{ width: '100%', height: '100%' }} />}
+            {img && <img src={img.src} alt={img.alt} style={{ width: '100%', height: '100%', display: 'block', boxSizing: 'border-box', padding: `${(img.padding ?? 0) * 100}%` }} />}
+            {children}
         </div>
     )
 }
