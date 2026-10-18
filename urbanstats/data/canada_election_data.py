@@ -84,7 +84,6 @@ canada_elections = [
 @without_loaded_values
 @permacache_with_remapping_pickle(
     "canada_election_data/disaggregate_to_blocks_canada_5",
-    key_function=dict(election=lambda x: x.key),
 )
 def disaggregate_to_blocks_canada(election, block_year=2021):
     """

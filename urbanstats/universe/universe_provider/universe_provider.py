@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from typing import Tuple
 
 import us
@@ -15,17 +15,15 @@ class UniverseProvider(ABC):
     Represents a provider of universe data.
     """
 
-    def hash_key(self):
-        """
-        Returns a hash key for this provider
-        """
-        return (self.__class__.__name__, self.hash_key_details())
+    # bump when universes_for_shapefile's code changes
+    version = 0
 
-    @abstractmethod
-    def hash_key_details(self):
-        """
-        Returns a hash key for this provider. Does not include the class name.
-        """
+    def __permacache_hash__(self):
+        return [
+            type(self).__name__,
+            self.version,
+            {f.name: getattr(self, f.name) for f in fields(self)},
+        ]
 
     @abstractmethod
     def relevant_shapefiles(self):
@@ -47,9 +45,6 @@ class UniverseProvider(ABC):
 @dataclass
 class UrbanCenterlikeStateUniverseProvider(UniverseProvider):
     countries: Tuple[str] = ("US", "CA")
-
-    def hash_key_details(self):
-        return self.countries
 
     def relevant_shapefiles(self):
         return []

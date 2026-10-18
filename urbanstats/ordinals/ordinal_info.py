@@ -165,10 +165,7 @@ def type_matches(table_type: Sequence[str], t: str) -> np.ndarray:
 
 @permacache(
     "urbanstats/ordinals/ordinal_info/compute_universe_type_masks",
-    key_function=dict(
-        table=lambda table: stable_hash((table.universes, table.type)),
-        universe_type=stable_hash,
-    ),
+    key_function=dict(table=stable_hash, universe_type=stable_hash),
 )
 def compute_universe_type_masks(
     table: Any, universe_type: List[Tuple[str, str]]
@@ -200,11 +197,14 @@ def compute_universe_type_masks(
 @permacache(
     "urbanstats/ordinals/ordinal_info/compute_ordinal_info_13",
     key_function=dict(
-        universe_type_masks=lambda universe_type_masks: stable_hash(
-            (universe_type_masks.indices, universe_type_masks.shape)
+        universe_type_masks=lambda m: stable_hash(
+            (m.data, m.indices, m.indptr, m.shape)
         ),
         universe_typ=stable_hash,
-        table=lambda table: stable_hash(table.to_numpy()),
+        # permacache can't hash a DataFrame whose column names aren't all strings
+        table=lambda t: stable_hash(
+            (list(t.columns), t.index.to_numpy(), t.to_numpy())
+        ),
         stat_col=stable_hash,
     ),
 )
@@ -262,7 +262,9 @@ def compute_ordinal_info(
 def fully_complete_ordinals(
     sorted_by_name: Any, universe_typ: List[Tuple[str, str]]
 ) -> OrdinalInfo:
-    universe_type_masks = compute_universe_type_masks(sorted_by_name, universe_typ)
+    universe_type_masks = compute_universe_type_masks(
+        sorted_by_name[["universes", "type"]], universe_typ
+    )
     pattern_keys = _entry_keys(universe_type_masks)
 
     def load(stat_col: str) -> CompactOrdinalInfoForColumn:
