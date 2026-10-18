@@ -20,11 +20,7 @@ from urbanstats.universe.universe_provider.constants import us_domestic_provider
         cd_names=stable_hash, cd_dates=stable_hash, county_names=stable_hash
     ),
 )
-def county_cross_cd(
-    cd_names=CONGRESSIONAL_DISTRICTS.names,
-    cd_dates=CONGRESSIONAL_DISTRICTS.dates,
-    county_names=COUNTIES.names,
-):
+def county_cross_cd(cd_names, cd_dates, county_names):
     cds = join_layers(cd_names, cd_dates)
     counties = county_names.load()
     county_areas = dict(zip(counties.longname, counties.to_crs({"proj": "cea"}).area))
@@ -64,9 +60,13 @@ def county_cross_cd(
 
 
 COUNTY_CROSS_CD = make_shapefile(
-    hash_key="county_cross_cd_4_"
-    + stable_hash((COUNTIES.hash_key, CONGRESSIONAL_DISTRICTS.hash_key))[:6],
+    hash_key="county_cross_cd_4",
     path=county_cross_cd,
+    path_inputs=(
+        CONGRESSIONAL_DISTRICTS.names,
+        CONGRESSIONAL_DISTRICTS.dates,
+        COUNTIES.names,
+    ),
     shortname_extractor=column("shortname"),
     longname_extractor=column("longname"),
     longname_sans_date_extractor=column("longname_sans_date"),

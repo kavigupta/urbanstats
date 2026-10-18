@@ -2,7 +2,7 @@ from collections import Counter
 
 import geopandas as gpd
 import pandas as pd
-from permacache import permacache
+from permacache import permacache, stable_hash
 
 from urbanstats.geometry.shapefiles.row_functions import column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
@@ -11,8 +11,11 @@ from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
-@permacache("population_density/shapefiles/school_district_shapefiles")
-def school_district_shapefiles():
+@permacache(
+    "population_density/shapefiles/school_district_shapefiles",
+    key_function=dict(county_names=stable_hash),
+)
+def school_district_shapefiles(county_names):
     paths = [
         f"named_region_shapefiles/cb_2022_us_{ident}_500k.zip"
         for ident in ["elsd", "scsd", "unsd"]
@@ -25,7 +28,7 @@ def school_district_shapefiles():
     duplicated = {x for x in u if u[x] > 1}
     duplicated_mask = full_names.apply(lambda x: x in duplicated)
     duplicated_districts = frame[duplicated_mask]
-    counties = COUNTIES.load_file()
+    counties = county_names.load()
     joined = gpd.overlay(counties, duplicated_districts.to_crs("epsg:4326"))
     areas = joined.area
     geoid_to_county = {}
@@ -41,6 +44,7 @@ def school_district_shapefiles():
 SCHOOL_DISTRICTS = make_shapefile(
     hash_key="school_districts_2",
     path=school_district_shapefiles,
+    path_inputs=(COUNTIES.names,),
     shortname_extractor=column("NAME"),
     longname_extractor=column("NAME")
     + column("suffix")

@@ -84,11 +84,9 @@ def load_canadian_shapefile_with_canada_shape(
     return data
 
 
-def load_canadian_shapefile(
-    shapefile_path, countries_shapefile, subnationals_shapefile
-):
-    canada_shape = compute_canada_shape(countries_shapefile.names)
-    qtconmt_shape = compute_qconmt(subnationals_shapefile.names)
+def load_canadian_shapefile(shapefile_path, countries, subnationals):
+    canada_shape = compute_canada_shape(countries)
+    qtconmt_shape = compute_qconmt(subnationals)
     return load_canadian_shapefile_with_canada_shape(
         shapefile_path, canada_shape, qtconmt_shape
     )

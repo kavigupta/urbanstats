@@ -6,6 +6,7 @@ from permacache import stable_hash
 from urbanstats.geometry.shapefiles.row_functions import column
 from urbanstats.geometry.shapefiles.shapefiles.cities import CITIES
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
+from urbanstats.geometry.shapefiles.shapefiles.county_cross_cd import COUNTY_CROSS_CD
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
 
@@ -46,3 +47,14 @@ class TestShapefileHash(unittest.TestCase):
             ),
         )
         self.assertNotEqual(stable_hash(cities.names), stable_hash(CITIES.names))
+
+    def test_input_naming_change_changes_derived_geometry(self):
+        renamed_counties = attr.evolve(
+            COUNTIES.names,
+            naming=attr.evolve(COUNTIES.naming, shortname_extractor=column("NAME")),
+        )
+        cds_names, cds_dates, _ = COUNTY_CROSS_CD.geometry.inputs
+        derived = attr.evolve(
+            COUNTY_CROSS_CD.geometry, inputs=(cds_names, cds_dates, renamed_counties)
+        )
+        self.assertNotEqual(stable_hash(derived), stable_hash(COUNTY_CROSS_CD.geometry))

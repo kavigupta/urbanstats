@@ -1,5 +1,5 @@
 import geopandas as gpd
-from permacache import permacache
+from permacache import permacache, stable_hash
 
 from urbanstats.geometry.shapefiles.load_canada_shapefile import load_canadian_shapefile
 from urbanstats.geometry.shapefiles.row_functions import column
@@ -16,12 +16,11 @@ from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
 
 @permacache(
     "urbanstats/geometry/shapefiles/shapefiles/canadian_population_centers/load_pcs_2",
+    key_function=dict(countries=stable_hash, subnationals=stable_hash),
 )
-def load_pcs():
+def load_pcs(countries, subnationals):
     data = load_canadian_shapefile(
-        "named_region_shapefiles/canada/lpc_000a21a_e.zip",
-        COUNTRIES,
-        SUBNATIONAL_REGIONS,
+        "named_region_shapefiles/canada/lpc_000a21a_e.zip", countries, subnationals
     )
     table = []
     for pcuid in sorted(set(data.PCUID)):
@@ -46,6 +45,7 @@ def load_pcs():
 CANADIAN_CENSUS_POPULATION_CENTERS = make_shapefile(
     hash_key="census_pcs_2",
     path=load_pcs,
+    path_inputs=(COUNTRIES.names, SUBNATIONAL_REGIONS.names),
     shortname_extractor=column("PCNAME") + " Population Center",
     cleanname_extractor=column("PCNAME"),
     longname_extractor=column("PCNAME")
