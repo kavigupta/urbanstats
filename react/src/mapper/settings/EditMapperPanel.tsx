@@ -298,7 +298,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
     }
 
     const newInset = (): Inset => {
-        const { coordBox, name } = loadInsets(mapSettings.geographies.length > 0 ? universesOf(mapSettings.geographies) : 'world')[0]
+        const { coordBox, name } = layoutInsets(loadInsets(mapSettings.geographies.length > 0 ? universesOf(mapSettings.geographies) : 'world')).leaves[0]
         return { coordBox, name, bottomLeft: [0.25, 0.25], topRight: [0.75, 0.75], mainMap: false }
     }
 

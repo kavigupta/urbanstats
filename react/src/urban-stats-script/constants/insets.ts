@@ -107,7 +107,7 @@ export function layoutInsets(nodes: InsetNode[]): { leaves: LaidOutInset[], spli
 }
 
 /** Replaces a split left with one cell with that cell's contents */
-function collapseSplit(split: SplitInset): InsetNode[] {
+export function collapseSplit(split: SplitInset): InsetNode[] {
     if (split.children.length === 0) {
         return []
     }
