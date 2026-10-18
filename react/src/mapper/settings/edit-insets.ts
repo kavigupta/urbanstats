@@ -82,7 +82,7 @@ export function swapInsets(edits: InsetEdits, indexA: number, indexB: number): I
     }
 }
 
-/** Saves the map bounds each edited inset shows on a canvas of the given aspect ratio, so its frame no longer stretches the canvas */
+/** Saves the map bounds each edited inset shows on a canvas of the given aspect ratio, which keeps the canvas at that aspect ratio */
 export function fitInsetMapBounds(edits: InsetEdits, original: Inset[], canvasAspectRatio: number): InsetEdits {
     const unedited = new Set(original)
     return edits.insets(original).reduce((result, inset, i) => {
