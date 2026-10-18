@@ -26,8 +26,12 @@ export function fitCoordBox(coordBox: [number, number, number, number], aspectRa
     if (!(aspectRatio > 0 && aspectRatio < Infinity) || Math.abs(Math.log(width / height / aspectRatio)) < 1e-3) {
         return coordBox
     }
-    const [newWidth, newHeight] = width / height < aspectRatio ? [height * aspectRatio, height] : [width, width / aspectRatio]
-    const [cx, cy] = [(x1 + x2) / 2, (y1 + y2) / 2]
+    const [, top] = project([0, 90])
+    const [, bottom] = project([0, -90])
+    // Maps stop short of the poles, so a box that would grow past them shifts away instead
+    const [newWidth, newHeight] = width / height < aspectRatio ? [height * aspectRatio, height] : [width, Math.min(width / aspectRatio, bottom - top)]
+    const cx = (x1 + x2) / 2
+    const cy = Math.max(top + newHeight / 2, Math.min(bottom - newHeight / 2, (y1 + y2) / 2))
     const [west, north] = unproject([cx - newWidth / 2, cy - newHeight / 2])
     const [east, south] = unproject([cx + newWidth / 2, cy + newHeight / 2])
     return [west, south, east, north]

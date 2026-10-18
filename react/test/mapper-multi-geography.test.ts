@@ -1,11 +1,13 @@
 import fs from 'fs/promises'
 import { gzipSync } from 'zlib'
 
-import { Selector } from 'testcafe'
+import { ClientFunction, Selector } from 'testcafe'
 
-import { getErrors, settingsFromURL } from './mapper-utils'
+import { TestWindow } from '../src/utils/TestUtils'
+
+import { editInsetsButton, getErrors, handle, numMaps, settingsFromURL, toggleCustomScript } from './mapper-utils'
 import { tempfileName } from './quiz_test_utils'
-import { clickMapFeature, flaky, getLocation, screencap, target, urbanstatsFixture, waitForDownload, waitForLoading } from './test_utils'
+import { clickMapFeature, flaky, getLocation, screencap, target, urbanstatsFixture, waitForDownload, waitForLoading, waitForMapsToRender } from './test_utils'
 
 const code = 'cMap(data=population, scale=linearScale(), ramp=rampUridis, basemap=noBasemap())'
 
@@ -107,4 +109,20 @@ test('a link naming its geography as scalars', async (t) => {
     await t.expect(rowInput(0, 0).value).eql('USA')
     await t.expect(rowInput(0, 1).value).eql('Urban Area')
     await t.expect(getErrors()).eql([])
+})
+
+urbanstatsFixture('adding an inset to a geography', url({ geographies: geographies('USA', 'France') }))
+
+test('adding an inset on a main map shows that map', async (t) => {
+    await toggleCustomScript(t)
+    await t.click(editInsetsButton)
+    await waitForMapsToRender()
+    const longitudes = (): Promise<number[]> => ClientFunction(() => Array.from(document.querySelectorAll('[id^="map-"]'))
+        .map(element => (window as unknown as TestWindow).testUtils.maps.get(element.id)!.getCenter().lng))()
+    const before = await longitudes()
+    const franceMain = (await Promise.all(before.map(async (lng, i) => lng > -30 && await Selector(handle(i, 'add')).exists))).indexOf(true)
+    await t.expect(franceMain).gte(0)
+    await t.click(handle(franceMain, 'add'))
+    await t.expect(numMaps()).eql(before.length + 1)
+    await t.expect((await longitudes()).at(-1)).gt(-30)
 })

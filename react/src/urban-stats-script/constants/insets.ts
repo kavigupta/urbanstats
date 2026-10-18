@@ -130,10 +130,11 @@ export function mapList(list: InsetNode[], listPath: number[], f: (list: InsetNo
     const split = list[i]
     assert(isSplit(split), 'Path descends into a leaf inset')
     const edited = mapList(split.children[c].insets, rest, f)
-    const children = edited.length === 0
-        ? split.children.filter((_, k) => k !== c)
-        : split.children.map((cell, k) => k === c ? { ...cell, insets: edited } : cell)
-    return [...list.slice(0, i), ...collapseSplit({ ...split, children }), ...list.slice(i + 1)]
+    // Only collapsing when a cell goes, so edits in place keep every path valid
+    const replacement = edited.length === 0
+        ? collapseSplit({ ...split, children: split.children.filter((_, k) => k !== c) })
+        : [{ ...split, children: split.children.map((cell, k) => k === c ? { ...cell, insets: edited } : cell) }]
+    return [...list.slice(0, i), ...replacement, ...list.slice(i + 1)]
 }
 
 export function mapNode(list: InsetNode[], path: number[], f: (node: InsetNode) => InsetNode[]): InsetNode[] {
