@@ -25,7 +25,7 @@ import { useUndoRedo } from '../../utils/useUndoRedo'
 import { zIndex } from '../../utils/zIndex'
 import { SplitDivider, SplitFrameHandles } from '../components/InsetMap'
 import { Selection as TextBoxesSelection, SelectionContext as TextBoxesSelectionContext } from '../components/MapTextBox'
-import { defaultTypeEnvironment, loadInsets } from '../context'
+import { defaultTypeEnvironment } from '../context'
 import { MapGenerator, transformContext, useMapGenerator } from '../map-generator'
 
 import { ImportExportCode } from './ImportExportCode'
@@ -297,17 +297,13 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
         apply(mapList(editedInsets, path.slice(0, -1), list => [...list.slice(0, i + 1), node(list), ...list.slice(i + 1)]))
     }
 
-    const newInset = (): Inset => {
-        const { coordBox, name } = loadInsets(mapSettings.geographies.length > 0 ? universesOf(mapSettings.geographies) : 'world')[0]
-        return { coordBox, name, bottomLeft: [0.25, 0.25], topRight: [0.75, 0.75], mainMap: false }
-    }
-
     const ui = mapGenerator.ui({
         mode: 'insets',
         editInsets: {
             edited: leaves,
             handlers: (i) => {
                 const { path, mainMap, cell } = leaves[i]
+                const newInset: Inset = { coordBox: leaves[i].coordBox, name: leaves[i].name, bottomLeft: [0.25, 0.25], topRight: [0.75, 0.75], mainMap: false }
                 const remaining = deleteInsets(editedInsets, path)
                 return {
                     setCoordBox: (coordBox) => {
@@ -321,7 +317,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                     bounds: cell,
                     delete: layoutInsets(remaining).leaves.some(leaf => leaf.mainMap) ? () => { apply(remaining) } : undefined,
                     duplicate: mainMap ? undefined : () => { insertAfter(path, list => offsetInsetInBounds(list[path[path.length - 1]], list)) },
-                    add: mainMap ? () => { apply(mapList(editedInsets, path.slice(0, -1), list => [...list, offsetInsetInBounds(newInset(), list)])) } : undefined,
+                    add: mainMap ? () => { apply(mapList(editedInsets, path.slice(0, -1), list => [...list, offsetInsetInBounds(newInset, list)])) } : undefined,
                     // Allowing reordering on the main map in case you want to put its corner in front of an inset
                     ...reorder(path),
                     split: (direction) => { apply(splitInsets(editedInsets, path, direction)) },
