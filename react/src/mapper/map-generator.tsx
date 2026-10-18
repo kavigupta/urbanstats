@@ -157,8 +157,19 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
 
     const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, geographies, cache, label, derivedUnit: rampLabelling.unit })
 
-    const acceptedInsets = layoutInsets(pruneInsets(mapResultMain.value.insets, inset => filterOverlaps(inset, features).length > 0)).leaves
-        .map(inset => ({ inset, insetFeatures: filterOverlaps(inset, features) }))
+    // Keyed by map bounds, which layoutInsets keeps as it copies each inset
+    const overlapsByCoordBox = new Map<Inset['coordBox'], GeoJSON.Feature[]>()
+    const overlaps = (inset: Inset): GeoJSON.Feature[] => {
+        if (inset.mainMap) {
+            return filterOverlaps(inset, features)
+        }
+        if (!overlapsByCoordBox.has(inset.coordBox)) {
+            overlapsByCoordBox.set(inset.coordBox, filterOverlaps(inset, features))
+        }
+        return overlapsByCoordBox.get(inset.coordBox)!
+    }
+    const acceptedInsets = layoutInsets(pruneInsets(mapResultMain.value.insets, inset => overlaps(inset).length > 0)).leaves
+        .map(inset => ({ inset, insetFeatures: overlaps(inset) }))
 
     // Don't change the aspect ratio while editing, otherwise things get nasty
     const aspectRatio = computeAspectRatioForInsets(acceptedInsets.map(({ inset }) => inset))
