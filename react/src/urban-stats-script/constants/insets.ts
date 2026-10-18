@@ -379,7 +379,8 @@ function computeInsetConstantName(name: string): string {
 function deconstructString(inset: typeof insets[keyof typeof insets][number] | InsetNode): string {
     const screenBounds = `screenBounds={ north: ${round(inset.topRight[1], 3)}, east: ${round(inset.topRight[0], 3)}, south: ${round(inset.bottomLeft[1], 3)}, west: ${round(inset.bottomLeft[0], 3)} }`
     if ('children' in inset) {
-        const children = inset.children.map(({ insets: cell, proportion }) => `{ insets: [${cell.map(deconstructString).join(', ')}], proportion: ${round(proportion, 3)} }`)
+        // Significant figures, since proportions are relative and rounding a small one to 0 makes it invalid
+        const children = inset.children.map(({ insets: cell, proportion }) => `{ insets: [${cell.map(deconstructString).join(', ')}], proportion: ${Number(proportion.toPrecision(3))} }`)
         return `constructSplitInset([${children.join(', ')}], direction=${splitDirectionValueToIdentifier[inset.direction]}, ${screenBounds})`
     }
     return `constructInset(${screenBounds}, mapBounds={ north: ${round(inset.coordBox[3], 3)}, east: ${round(inset.coordBox[2], 3)}, south: ${round(inset.coordBox[1], 3)}, west: ${round(inset.coordBox[0], 3)} }, mainMap=${inset.mainMap}, name="${inset.name}")`
