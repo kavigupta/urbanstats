@@ -55,8 +55,8 @@ function area(coordBox: [number, number, number, number]): number {
 }
 
 /**
- * Scripts store no canvas shape, so it's the one where the largest map's bounds exactly fill its frame.
- * A frame `fw` × `fh` of a `W` × `H` canvas has on-screen aspect `(fw / fh) · (W / H)`, hence the division.
+ * The canvas has no shape of its own and frames are fractions of it, so its shape comes from the map bounds, which have one.
+ * It's the shape where the largest map's bounds exactly fill its frame, whose on-screen aspect is `(fw / fh) · (W / H)`.
  */
 export function computeAspectRatioForInsets(mapsWithCoordBox: Inset[]): number {
     assert(mapsWithCoordBox.length > 0, 'No insets with coordBox')
