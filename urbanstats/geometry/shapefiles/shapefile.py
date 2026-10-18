@@ -223,8 +223,34 @@ def _from_layer(layer, name):
     return property(lambda self: getattr(getattr(self, layer), name))
 
 
+class _Layers:
+    @property
+    def names(self):
+        return Names(geometry=self.geometry, naming=self.naming)
+
+    @property
+    def dates(self):
+        return Dates(geometry=self.geometry, temporal=self.temporal)
+
+    @property
+    def identified(self):
+        return Identified(geometry=self.geometry, identifiers=self.identifiers)
+
+
+@attr.s(frozen=True)
+class ShapefileWithoutMetadata(_Layers):
+    geometry = attr.ib()
+    naming = attr.ib()
+    universe_provider = attr.ib()
+    temporal = attr.ib()
+    identifiers = attr.ib()
+    special_data_sources = attr.ib()
+    source_countries = attr.ib()
+    cross_source_borders = attr.ib()
+
+
 @attr.s
-class Shapefile:
+class Shapefile(_Layers):
     geometry = attr.ib()
     naming = attr.ib()
     metadata = attr.ib()
@@ -261,17 +287,14 @@ class Shapefile:
     include_in_syau = _from_layer("metadata", "include_in_syau")
     wikidata_sourcer = _from_layer("metadata", "wikidata_sourcer")
 
-    @property
-    def names(self):
-        return Names(geometry=self.geometry, naming=self.naming)
-
-    @property
-    def dates(self):
-        return Dates(geometry=self.geometry, temporal=self.temporal)
-
-    @property
-    def identified(self):
-        return Identified(geometry=self.geometry, identifiers=self.identifiers)
+    def without_metadata(self):
+        return ShapefileWithoutMetadata(
+            **{
+                field.name: getattr(self, field.name)
+                for field in attr.fields(Shapefile)
+                if field.name != "metadata"
+            }
+        )
 
     def load_file(self):
         return join_layers(self.names, self.dates, self.identified)
