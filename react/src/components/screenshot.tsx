@@ -141,11 +141,20 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, {
 
     const totalRefOffset = totalOffset(ref)
 
+    // Borders around canvases are drawn here rather than by domtoimage, so that overlapping maps cover each other's borders
+    const borderedContainers: { element: HTMLElement, inlineBorderColor: string }[] = []
+
     for (const [index, canvas] of canvases.entries()) {
+        let container = canvas.parentElement!
+        while (container !== ref && container.clientLeft === 0) {
+            container = container.parentElement!
+        }
+        const borderWidth = container === ref ? 0 : container.clientLeft
+
         const canvasOffset = totalOffset(canvas)
         // Can't just use bounding box, because it gets weird with transforms (e.g. zoom)
-        const x = (canvasOffset.left - totalRefOffset.left + mapBorderWidth) * scaleFactor
-        const y = (canvasOffset.top - totalRefOffset.top + mapBorderWidth) * scaleFactor
+        const x = (canvasOffset.left - totalRefOffset.left + borderWidth) * scaleFactor
+        const y = (canvasOffset.top - totalRefOffset.top + borderWidth) * scaleFactor
         const w = canvas.offsetWidth * scaleFactor
         const h = canvas.offsetHeight * scaleFactor
 
@@ -159,6 +168,25 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, {
         drawImageIfNotTesting(resultContext, index, canvas, x, y, w, h, testing)
 
         resultContext.restore()
+
+        if (borderWidth > 0) {
+            const style = getComputedStyle(container)
+            const containerOffset = totalOffset(container)
+            const bx = (containerOffset.left - totalRefOffset.left) * scaleFactor
+            const by = (containerOffset.top - totalRefOffset.top) * scaleFactor
+            const bw = container.offsetWidth * scaleFactor
+            const bh = container.offsetHeight * scaleFactor
+            const b = borderWidth * scaleFactor
+            const radius = parseFloat(style.borderTopLeftRadius) * scaleFactor
+            resultContext.beginPath()
+            resultContext.roundRect(bx, by, bw, bh, radius)
+            resultContext.roundRect(bx + b, by + b, bw - 2 * b, bh - 2 * b, Math.max(0, radius - b))
+            resultContext.fillStyle = style.borderTopColor
+            resultContext.fill('evenodd')
+
+            borderedContainers.push({ element: container, inlineBorderColor: container.style.borderColor })
+            container.style.borderColor = 'transparent'
+        }
     }
 
     const refCanvas = await domtoimage.toCanvas(ref, {
@@ -174,6 +202,7 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, {
 
     resultContext.drawImage(refCanvas, 0, 0)
 
+    borderedContainers.forEach(({ element, inlineBorderColor }) => element.style.borderColor = inlineBorderColor)
     unfixElement()
 
     return resultCanvas
