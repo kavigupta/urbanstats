@@ -125,6 +125,9 @@ function HandleInsets({ inset, setCoordBox }: { inset: Inset, setCoordBox: (newB
 
 type DragKind = 'move' | `${'top' | 'bottom'}${'Right' | 'Left'}`
 
+// Edit controls are bigger on mobile, where the canvas is scaled down to fit the screen
+const mobileControlMultiplier = 2
+
 // Controls are this size at full scale, and shrink in insets too small to hold them
 const controlSize = 25
 const controlMargin = 6
@@ -136,7 +139,7 @@ function InsetEditControls({ inset, editInset, container }: { inset: Inset, edit
     const frame: Frame = [...inset.bottomLeft, ...inset.topRight]
     const insetRef = useRef<HTMLDivElement>(null)
     const { width, height } = useElementSize(insetRef)
-    const multiplier = useMobileLayout() ? 2 : 1
+    const multiplier = useMobileLayout() ? mobileControlMultiplier : 1
     const scale = multiplier * Math.max(minControlScale, Math.min(1, width / (fullScaleInset.width * multiplier), height / (fullScaleInset.height * multiplier)))
     return (
         <>
@@ -283,7 +286,7 @@ export function EditInsetsHandles(props: {
     })
 
     const mobile = useMobileLayout()
-    const mobileMultiplier = props.scale ?? (mobile ? 2 : 1)
+    const mobileMultiplier = props.scale ?? (mobile ? mobileControlMultiplier : 1)
 
     return (
         <>
@@ -397,7 +400,7 @@ function Handle({ handleSize, style, img, children, ...rest }: { handleSize: num
 }
 
 export function SplitFrameHandles({ frame, container, handlers: { moveUp, moveDown, ...handlers } }: { frame: Frame, container: RefObject<HTMLDivElement>, handlers: Omit<EditInsetsHandlesProps, 'frame' | 'container' | 'shouldHaveCenterHandle'> }): ReactNode {
-    const scale = useMobileLayout() ? 2 : 1
+    const scale = useMobileLayout() ? mobileControlMultiplier : 1
     return (
         <div
             style={{
@@ -429,7 +432,7 @@ export function SplitDivider({ split: { split, cells }, j, container, setProport
     const after = cells[j + 1]
     // Extent of the two cells along the split axis
     const [lo, hi] = horizontal ? [before[0], after[2]] : [after[1], before[3]]
-    const mobileMultiplier = useMobileLayout() ? 2 : 1
+    const mobileMultiplier = useMobileLayout() ? mobileControlMultiplier : 1
     const thickness = 12 * mobileMultiplier
     const [hover, setHover] = useState(false)
 
