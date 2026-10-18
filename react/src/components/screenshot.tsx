@@ -169,7 +169,7 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, {
 
         resultContext.restore()
 
-        if (borderWidth > 0) {
+        if (borderWidth > 0 && !borderedContainers.some(({ element }) => element === container)) {
             const style = getComputedStyle(container)
             const containerOffset = totalOffset(container)
             const bx = (containerOffset.left - totalRefOffset.left) * scaleFactor
@@ -189,21 +189,24 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, {
         }
     }
 
-    const refCanvas = await domtoimage.toCanvas(ref, {
-        bgcolor: 'transparent',
-        height: resultCanvas.height,
-        width: resultCanvas.width,
-        style: {
-            transform: `scale(${scaleFactor})`,
-            transformOrigin: 'top left',
-        },
-        filter: node => !(node instanceof HTMLCanvasElement),
-    })
+    try {
+        const refCanvas = await domtoimage.toCanvas(ref, {
+            bgcolor: 'transparent',
+            height: resultCanvas.height,
+            width: resultCanvas.width,
+            style: {
+                transform: `scale(${scaleFactor})`,
+                transformOrigin: 'top left',
+            },
+            filter: node => !(node instanceof HTMLCanvasElement),
+        })
 
-    resultContext.drawImage(refCanvas, 0, 0)
-
-    borderedContainers.forEach(({ element, inlineBorderColor }) => element.style.borderColor = inlineBorderColor)
-    unfixElement()
+        resultContext.drawImage(refCanvas, 0, 0)
+    }
+    finally {
+        borderedContainers.forEach(({ element, inlineBorderColor }) => element.style.borderColor = inlineBorderColor)
+        unfixElement()
+    }
 
     return resultCanvas
 }
