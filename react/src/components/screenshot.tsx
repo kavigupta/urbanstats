@@ -171,11 +171,15 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, {
 
         if (borderWidth > 0 && !borderedContainers.some(({ element }) => element === container)) {
             const style = getComputedStyle(container)
-            const containerOffset = totalOffset(container)
-            const bx = (containerOffset.left - totalRefOffset.left) * scaleFactor
-            const by = (containerOffset.top - totalRefOffset.top) * scaleFactor
-            const bw = container.offsetWidth * scaleFactor
-            const bh = container.offsetHeight * scaleFactor
+            // Offsets round position and width separately, so instead snap each edge to a CSS pixel, as the browser does for borders
+            const refRect = ref.getBoundingClientRect()
+            const containerRect = container.getBoundingClientRect()
+            const zoom = refRect.width / ref.offsetWidth
+            const edge = (rectEdge: number, refEdge: number): number => Math.round((rectEdge - refEdge) / zoom) * scaleFactor
+            const bx = edge(containerRect.left, refRect.left)
+            const by = edge(containerRect.top, refRect.top)
+            const bw = edge(containerRect.right, refRect.left) - bx
+            const bh = edge(containerRect.bottom, refRect.top) - by
             const b = borderWidth * scaleFactor
             const radius = parseFloat(style.borderTopLeftRadius) * scaleFactor
             resultContext.beginPath()
