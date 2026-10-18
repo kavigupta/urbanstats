@@ -55,7 +55,7 @@ const tests = testsFromGlobs(options.test)
 
 if (options.headless) {
     // Start display subsystem to browser can run
-    void execa('Xvfb', [':10', '-ac'])
+    void execa('Xvfb', [':10', '-ac', '-screen', '0', '2560x1920x24'])
     process.env.DISPLAY = ':10'
     void execa('bash', ['-c', 'fluxbox >/dev/null 2>&1'])
     if (process.env.URBANSTATS_VNC_PASSWORD) {
