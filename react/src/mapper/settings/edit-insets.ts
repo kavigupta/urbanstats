@@ -144,7 +144,10 @@ export function deleteInsets(insets: InsetNode[], path: number[]): InsetNode[] {
     return mapNode(insets, path, () => [])
 }
 
-/** Saves the map bounds each edited inset shows on a canvas of the given aspect ratio, which keeps the canvas at that aspect ratio */
+/**
+ * Saves the map bounds each edited inset shows on a canvas of the given aspect ratio, so that
+ * `computeAspectRatioForInsets` gives the same canvas after a frame is resized without panning.
+ */
 export function fitInsetMapBounds(edits: InsetEdits, original: InsetNode[], canvasAspectRatio: number): InsetEdits {
     const unedited = new Set(original)
     const insets = edits.insets(original)
