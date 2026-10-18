@@ -213,7 +213,7 @@ export function EditInsetsHandles(props: {
     moveUp?: () => void
     moveDown?: () => void
     shouldHaveCenterHandle: boolean
-    // Defaults to the mobile size
+    // Defaults to the unscaled size (doubled on mobile)
     scale?: number
 }): ReactNode {
     const activeDrag = useRef<{ kind: DragKind, startX: number, startY: number, startFrame: Frame, pointerId: number } | undefined>(undefined)
