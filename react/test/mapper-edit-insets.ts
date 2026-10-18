@@ -271,6 +271,29 @@ export function runTests(platform: 'desktop' | 'mobile', shard = 0, numShards = 
         await t.expect(Selector(handle(0, 'delete')).exists).notOk()
     })
 
+    test('controls appear at their size, rather than growing into it', async (t) => {
+        await ClientFunction(() => {
+            const firstWidths: number[] = [];
+            (window as unknown as { firstWidths: number[] }).firstWidths = firstWidths
+            new MutationObserver((records) => {
+                for (const added of records.flatMap(record => Array.from(record.addedNodes))) {
+                    if (added instanceof HTMLElement) {
+                        for (const button of [added, ...Array.from(added.querySelectorAll<HTMLElement>('[data-test="add"]'))].filter(e => e.getAttribute('data-test') === 'add')) {
+                            // Layout width, unlike the on screen width, ignores the canvas scaling to fit the page
+                            firstWidths.push(button.offsetWidth)
+                        }
+                    }
+                }
+            }).observe(document.body, { childList: true, subtree: true })
+        })()
+        await t.click(editInsetsButton)
+        const add = Selector(handle(0, 'add'))
+        await t.expect(add.exists).ok()
+        const firstWidths = await ClientFunction(() => (window as unknown as { firstWidths: number[] }).firstWidths)()
+        await t.expect(firstWidths.length).gt(0)
+        await t.expect(firstWidths[0]).eql(await add.offsetWidth)
+    })
+
     test('edit interface', async (t) => {
         await t.click(editInsetsButton)
         await screencap(t, { removeEntireMap: false })
