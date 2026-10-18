@@ -83,8 +83,8 @@ export function swapInsets(edits: InsetEdits, indexA: number, indexB: number): I
 }
 
 /**
- * The canvas has no shape of its own and frames are fractions of it, so its aspect ratio comes from the map bounds.
- * Saving the bounds each edited inset shows keeps that aspect ratio when a frame is resized without panning.
+ * Saves the map bounds each edited inset shows on a canvas of the given aspect ratio, so that
+ * `computeAspectRatioForInsets` gives the same canvas after a frame is resized without panning.
  */
 export function fitInsetMapBounds(edits: InsetEdits, original: Inset[], canvasAspectRatio: number): InsetEdits {
     const unedited = new Set(original)
