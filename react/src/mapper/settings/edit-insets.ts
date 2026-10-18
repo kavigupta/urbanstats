@@ -4,6 +4,7 @@ import { emptyLocation } from '../../urban-stats-script/lexer'
 import * as l from '../../urban-stats-script/literal-parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { ArrayEdits, replace, swap } from '../../utils/array-edits'
+import { fitCoordBox } from '../../utils/coordinates'
 import { assert } from '../../utils/defensive'
 import { loadInsetExpression, loadInsets } from '../context'
 
@@ -79,6 +80,19 @@ export function swapInsets(edits: InsetEdits, indexA: number, indexB: number): I
         insets: swap(edits.insets, indexA, indexB),
         ast: swap(edits.ast, indexA, indexB),
     }
+}
+
+/** Saves the map bounds each edited inset shows on a canvas of the given aspect ratio, so its frame no longer stretches the canvas */
+export function fitInsetMapBounds(edits: InsetEdits, original: Inset[], canvasAspectRatio: number): InsetEdits {
+    const unedited = new Set(original)
+    return edits.insets(original).reduce((result, inset, i) => {
+        const aspectRatio = (inset.topRight[0] - inset.bottomLeft[0]) * canvasAspectRatio / (inset.topRight[1] - inset.bottomLeft[1])
+        const coordBox = fitCoordBox(inset.coordBox, aspectRatio)
+        if (unedited.has(inset) || coordBox === inset.coordBox) {
+            return result
+        }
+        return replaceInsets(result, [i, i + 1], [{ ...inset, coordBox }])
+    }, edits)
 }
 
 /** Rescales screen bounds so the insets span the whole canvas in both dimensions. */

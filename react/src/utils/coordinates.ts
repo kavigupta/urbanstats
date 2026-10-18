@@ -13,6 +13,26 @@ export function project([lon, lat]: [number, number]): [number, number] {
     return [x, y]
 }
 
+function unproject([x, y]: [number, number]): [number, number] {
+    return [x * 360 - 180, Math.atan(Math.sinh(Math.PI * (1 - 2 * y))) * 180 / Math.PI]
+}
+
+/** Expands a [west, south, east, north] box about its center to the given aspect ratio, as maplibre's fitBounds does */
+export function fitCoordBox(coordBox: [number, number, number, number], aspectRatio: number): [number, number, number, number] {
+    const [x1, y1] = project([coordBox[0], coordBox[3]])
+    const [x2, y2] = project([coordBox[2], coordBox[1]])
+    const width = x2 - x1
+    const height = y2 - y1
+    if (!(aspectRatio > 0 && aspectRatio < Infinity) || Math.abs(Math.log(width / height / aspectRatio)) < 1e-3) {
+        return coordBox
+    }
+    const [newWidth, newHeight] = width / height < aspectRatio ? [height * aspectRatio, height] : [width, width / aspectRatio]
+    const [cx, cy] = [(x1 + x2) / 2, (y1 + y2) / 2]
+    const [west, north] = unproject([cx - newWidth / 2, cy - newHeight / 2])
+    const [east, south] = unproject([cx + newWidth / 2, cy + newHeight / 2])
+    return [west, south, east, north]
+}
+
 /** The projected extent of a [west, south, east, north] box. */
 function extent(coordBox: [number, number, number, number]): { width: number, height: number } {
     const [x1, y1] = project([coordBox[0], coordBox[1]])

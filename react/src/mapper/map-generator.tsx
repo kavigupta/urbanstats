@@ -81,6 +81,7 @@ export interface MapGenerator<T = unknown> {
     exportCSV?: CSVExportData
     errors: EditorError[]
     assignments: AssignmentsResult
+    aspectRatio?: number
 }
 
 async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnvironment }: {
@@ -156,18 +157,18 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
 
     const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, geographies, cache, label, derivedUnit: rampLabelling.unit })
 
+    const acceptedInsets = mapResultMain.value.insets
+        .map(inset => ({ inset, insetFeatures: filterOverlaps(inset, features) }))
+        .filter(({ insetFeatures }) => insetFeatures.length > 0)
+
+    // Don't change the aspect ratio while editing, otherwise things get nasty
+    const aspectRatio = computeAspectRatioForInsets(acceptedInsets.map(({ inset }) => inset))
+
     function MapComponent({ props, exportImageRef }: { props: MapUIProps<{ loading: boolean }>, exportImageRef: (fn: () => Promise<HTMLCanvasElement>) => void }): ReactNode {
         const mapsRef: (MapRef | null)[] = []
 
         const mapsContainerRef = useRef<HTMLDivElement>(null)
         const wholeRenderRef = useRef<HTMLDivElement>(null)
-
-        const acceptedInsets = mapResultMain.value.insets
-            .map(inset => ({ inset, insetFeatures: filterOverlaps(inset, features) }))
-            .filter(({ insetFeatures }) => insetFeatures.length > 0)
-
-        // Don't change the aspect ratio while editing, otherwise things get nasty
-        const aspectRatio = computeAspectRatioForInsets(acceptedInsets.map(({ inset }) => inset))
 
         const maybeEditingInsets = props.mode === 'insets'
             ? props.editInsets.edited.map(inset => ({ inset, insetFeatures: filterOverlaps(inset, features) }))
@@ -269,6 +270,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         errors: execResult.error,
         exportCSV: csvExportCallback,
         exportGeoJSON: () => exportAsGeoJSON(features),
+        aspectRatio,
         ui: (props) => {
             let exportImage: () => Promise<HTMLCanvasElement>
 
