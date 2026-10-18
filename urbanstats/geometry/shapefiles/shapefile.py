@@ -85,20 +85,13 @@ class Metadata:
     wikidata_sourcer = attr.ib()
 
 
-NAME_COLUMNS = [
-    "longname",
-    "shortname",
-    "cleanname",
-    "longname_sans_date",
-    "start_date",
-    "end_date",
-]
+NAME_COLUMNS = ["longname", "shortname", "cleanname", "longname_sans_date"]
+DATE_COLUMNS = ["start_date", "end_date"]
 
 
 @attr.s(frozen=True)
 class Names:
     geometry = attr.ib()
-    temporal = attr.ib()
     naming = attr.ib()
 
     def load(self):
@@ -110,26 +103,6 @@ class Names:
         from urbanstats.special_cases.deduplicate_longnames import rename_duplicates
 
         s = rows.copy(deep=False)
-        if self.temporal.start_date is not None:
-            assert self.naming.longname_sans_date_extractor is not None
-            s["start_date"] = s.apply(self.temporal.start_date, axis=1)
-        else:
-            s["start_date"] = -float("inf")
-
-        if self.temporal.end_date is not None:
-            assert self.naming.longname_sans_date_extractor is not None
-            s["end_date"] = s.apply(self.temporal.end_date, axis=1)
-        else:
-            s["end_date"] = float("inf")
-
-        assert self.temporal.start_date_overall == min(
-            s.start_date
-        ), f"{self.temporal.start_date_overall} != {min(s.start_date)}"
-
-        assert self.temporal.end_date_overall == max(
-            s.end_date
-        ), f"{self.temporal.end_date_overall} != {max(s.end_date)}"
-
         s["shortname"] = s.apply(self.naming.shortname_extractor, axis=1)
         s["cleanname"] = (
             s["shortname"]
@@ -169,6 +142,41 @@ class Names:
 
 
 @attr.s(frozen=True)
+class Dates:
+    geometry = attr.ib()
+    temporal = attr.ib()
+
+    def load(self):
+        return self.load_from_rows(self.geometry.load_rows())
+
+    def load_from_rows(self, rows):
+        """The DATE_COLUMNS of rows, which are geometry.load_rows()."""
+        t = self.temporal
+        result = pd.DataFrame(
+            {
+                "start_date": (
+                    -float("inf")
+                    if t.start_date is None
+                    else rows.apply(t.start_date, axis=1)
+                ),
+                "end_date": (
+                    float("inf")
+                    if t.end_date is None
+                    else rows.apply(t.end_date, axis=1)
+                ),
+            },
+            index=rows.index,
+        )
+        assert t.start_date_overall == min(
+            result.start_date
+        ), f"{t.start_date_overall} != {min(result.start_date)}"
+        assert t.end_date_overall == max(
+            result.end_date
+        ), f"{t.end_date_overall} != {max(result.end_date)}"
+        return result
+
+
+@attr.s(frozen=True)
 class Identified:
     geometry = attr.ib()
     identifiers = attr.ib()
@@ -193,19 +201,16 @@ class Identified:
         )
 
 
-def load_names_and_identifiers(names, identified):
-    """Shapefile.load_file, for the regions of names and identified, which share a geometry."""
-    assert names.geometry == identified.geometry
-    rows = names.geometry.load_rows()
-    names_table = names.load_from_rows(rows)
-    identifiers_table = identified.load_from_rows(rows)
-    return gpd.GeoDataFrame(
-        {
-            **{col: names_table[col] for col in NAME_COLUMNS},
-            **{col: identifiers_table[col] for col in identifiers_table.columns},
-        },
-        geometry=names_table.geometry,
-    )
+def join_layers(*layers):
+    """The columns of each layer in order, then the geometry. The layers share a geometry."""
+    geometry = layers[0].geometry
+    assert all(layer.geometry == geometry for layer in layers)
+    rows = geometry.load_rows()
+    columns = {}
+    for layer in layers:
+        table = layer.load_from_rows(rows)
+        columns.update({col: table[col] for col in table.columns if col != "geometry"})
+    return gpd.GeoDataFrame(columns, geometry=rows.geometry)
 
 
 def _from_layer(layer, name):
@@ -252,14 +257,18 @@ class Shapefile:
 
     @property
     def names(self):
-        return Names(geometry=self.geometry, temporal=self.temporal, naming=self.naming)
+        return Names(geometry=self.geometry, naming=self.naming)
+
+    @property
+    def dates(self):
+        return Dates(geometry=self.geometry, temporal=self.temporal)
 
     @property
     def identified(self):
         return Identified(geometry=self.geometry, identifiers=self.identifiers)
 
     def load_file(self):
-        return load_names_and_identifiers(self.names, self.identified)
+        return join_layers(self.names, self.dates, self.identified)
 
     @property
     def source_country_list(self):
@@ -278,6 +287,7 @@ class Shapefile:
     def available_columns(self, *, include_intermediates):
         return [
             *NAME_COLUMNS,
+            *DATE_COLUMNS,
             *self.additional_columns_computer,
             *(self.intermediate_computation_columns if include_intermediates else []),
         ]
@@ -319,6 +329,8 @@ def make_shapefile(
     source_countries=None,
     cross_source_borders=None,
 ):
+    if start_date is not None or end_date is not None:
+        assert longname_sans_date_extractor is not None
     return Shapefile(
         geometry=Geometry(
             key=hash_key,

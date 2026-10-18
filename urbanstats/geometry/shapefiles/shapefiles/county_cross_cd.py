@@ -7,7 +7,7 @@ import us
 from permacache import permacache, stable_hash
 
 from urbanstats.geometry.shapefiles.row_functions import column
-from urbanstats.geometry.shapefiles.shapefile import make_shapefile
+from urbanstats.geometry.shapefiles.shapefile import join_layers, make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
 from urbanstats.geometry.shapefiles.shapefiles.districts import CONGRESSIONAL_DISTRICTS
 from urbanstats.geometry.shapefiles.source_countries import InCountry
@@ -16,12 +16,16 @@ from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 @permacache(
     "population_density/shapefiles/county_cross_cd_3",
-    key_function=dict(cd_names=stable_hash, county_names=stable_hash),
+    key_function=dict(
+        cd_names=stable_hash, cd_dates=stable_hash, county_names=stable_hash
+    ),
 )
 def county_cross_cd(
-    cd_names=CONGRESSIONAL_DISTRICTS.names, county_names=COUNTIES.names
+    cd_names=CONGRESSIONAL_DISTRICTS.names,
+    cd_dates=CONGRESSIONAL_DISTRICTS.dates,
+    county_names=COUNTIES.names,
 ):
-    cds = cd_names.load()
+    cds = join_layers(cd_names, cd_dates)
     counties = county_names.load()
     county_areas = dict(zip(counties.longname, counties.to_crs({"proj": "cea"}).area))
 
@@ -52,8 +56,6 @@ def county_cross_cd(
         lambda x: re.sub(r" \([0-9]{4}\)", "", x)
     )
     db["longname_sans_date"] = db["shortname_sans_date"] + ", USA"
-    db["start_date"] = db.start_date_1
-    db["end_date"] = db.end_date_1
     db["shortname"] = db.apply(
         lambda x: f"{x.shortname_sans_date} ({x.start_date})", axis=1
     )
