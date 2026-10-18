@@ -444,7 +444,7 @@ async function printFailedNetworkRequests(t: TestController): Promise<void> {
 export function urbanstatsFixture(name: string, url: string, beforeEach?: (t: TestController) => Promise<void>, { afterEach, requestHooks = [] }: {
     afterEach?: (t: TestController) => Promise<void>
     requestHooks?: object[]
-} = {}): void {
+} = {}): FixtureFn {
     if (url.startsWith('/')) {
         url = target + url
     }
@@ -454,7 +454,7 @@ export function urbanstatsFixture(name: string, url: string, beforeEach?: (t: Te
             throw new Error(`URL ${url} does not start with ${target}`)
         }
     }
-    fixture(name)
+    return fixture(name)
         .page(url)
         .beforeEach(async (t) => {
             await printConsoleMessages(t)

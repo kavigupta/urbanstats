@@ -1,3 +1,4 @@
+import { createRequire } from 'module'
 import path from 'path'
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
@@ -36,6 +37,8 @@ export default env => ({
     resolve: {
         alias: {
             react$: path.resolve(import.meta.dirname, 'src/react-duplicate-keys.cjs'),
+            // Resolved as Node would, so it follows NODE_PATH to the e2e container's /node_modules
+            'react-without-key-check$': createRequire(import.meta.url).resolve('react'),
         },
         // Add '.ts' and '.tsx' as resolvable extensions.
         extensions: ['', '.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
@@ -75,12 +78,13 @@ export default env => ({
         static: [
             { directory: env.directory },
             // What the snapshot diff viewer reads when it's pointed at a local test run rather than a CI artifact.
+            // snapshotsRoot stands in for the repository, so a test can serve a run of its own.
             ...Object.entries({
-                reference: path.resolve(import.meta.dirname, '..', 'reference_test_snapshots'),
-                changed: path.resolve(import.meta.dirname, 'changed_snapshots'),
-                delta: path.resolve(import.meta.dirname, 'delta'),
+                reference: 'reference_test_snapshots',
+                changed: 'react/changed_snapshots',
+                delta: 'react/delta',
             }).map(([name, directory]) => ({
-                directory,
+                directory: path.resolve(env.snapshotsRoot ?? path.resolve(import.meta.dirname, '..'), directory),
                 publicPath: `/local-snapshots/${name}`,
                 // A test run writing these shouldn't reload whatever page is open.
                 watch: false,
