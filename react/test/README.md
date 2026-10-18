@@ -65,7 +65,7 @@ Either container needs `--browser=chromium`, since it has Chromium rather than C
 
 `host-arch` avoids emulating `amd64`, but **can't do anything screenshot-related**: `arm64` Chromium
 antialiases a handful of pixels differently, well below what anyone would notice but well above
-`check_snapshots.py`'s near-exact threshold. Use `ci` for `--compare` and for regenerating references.
+`checkSnapshots`'s near-exact threshold. Use `ci` for `--compare` and for regenerating references.
 
 TestCafe ships no `arm64` build of the helper binaries behind `t.resizeWindow` and friends, so those
 run as `i386` binaries under emulation. Chromium and Node, where the time goes, run natively.
