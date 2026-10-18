@@ -53,8 +53,9 @@ export async function checkSidebarTextboxes(t: TestController, txts: string[]): 
     })
 }
 
+export const hamburgerMenu = Selector('div').withAttribute('class', 'hamburgermenu')
+
 export async function withHamburgerMenu(t: TestController, block: () => Promise<void>): Promise<void> {
-    const hamburgerMenu = Selector('div').withAttribute('class', 'hamburgermenu')
     if (await hamburgerMenu.exists) {
         await t.click(hamburgerMenu)
     }
