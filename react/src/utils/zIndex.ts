@@ -1,4 +1,6 @@
 const layers = [
+    // Only stacks against split dividers, since the map container is isolated
+    'insetEditHandle',
     'universeDropdown',
     'screenshotDim',
     'screenshotSpin',

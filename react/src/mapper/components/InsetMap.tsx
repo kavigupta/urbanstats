@@ -6,6 +6,7 @@ import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from '../..
 import { useColors } from '../../page_template/colors'
 import { Frame, Inset, LaidOutSplit, SharedEdges, SplitDirection } from '../../urban-stats-script/constants/insets'
 import { useMobileLayout } from '../../utils/responsive'
+import { zIndex } from '../../utils/zIndex'
 
 export interface InsetEditHandlers {
     setCoordBox: (coordBox: Frame) => void
@@ -323,6 +324,7 @@ function Handle({ handleSize, style, img, children, ...rest }: { handleSize: num
                 borderRadius: '2px',
                 touchAction: 'none',
                 pointerEvents: 'auto',
+                zIndex: zIndex.insetEditHandle,
                 ...style,
             }}
             {...rest}

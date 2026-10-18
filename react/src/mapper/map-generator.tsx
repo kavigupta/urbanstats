@@ -373,6 +373,8 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, who
                             position: 'relative',
                             maxHeight: '100%',
                             margin: 'auto',
+                            // Keeps the z-index of edit handles local
+                            isolation: 'isolate',
                         }}
                     >
                         {maps}
