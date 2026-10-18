@@ -259,7 +259,7 @@ export function runTests(platform: 'desktop' | 'mobile', shard = 0, numShards = 
         customInsetsAfterEdit: 0,
     })
 
-    // These three don't participate in the round robin above, so they go to the last shard, which
+    // These don't participate in the round robin above, so they go to the last shard, which
     // the round robin leaves one insets edit lighter whenever the count is odd.
     if (shard !== numShards - 1) {
         return
@@ -292,5 +292,38 @@ cMap(data=density_pw_1km + density_aw, scale=linearScale(), ramp=rampUridis)
         await toggleCustomScript(t)
         await t.click(editInsetsButton)
         await screencap(t, { removeEntireMap: false })
+    })
+
+    const mediumInsetCode = `cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampUridis,
+    insets=constructInsets([
+        constructInset(screenBounds={north: 1, east: 1, south: 0, west: 0}, mapBounds={north: 49.833, east: -65.092, south: 22.269, west: -130.026}, mainMap=true, name="USA"),
+        constructInset(screenBounds={north: 0.245, east: 0.19, south: 0.05, west: 0.05}, mapBounds={north: 38.047, east: -121.37, south: 37.128, west: -122.766}, mainMap=false, name="Bay Area")
+    ])
+)`
+
+    urbanstatsFixture(`medium inset`, urlFromCode('County', 'USA', mediumInsetCode), async (t) => {
+        if (platform === 'mobile') {
+            await t.resizeWindow(400, 800)
+        }
+    })
+
+    // Small enough that the controls shrink on mobile
+    test('an inset\'s buttons do not overlap each other', async (t) => {
+        await toggleCustomScript(t)
+        await t.click(editInsetsButton)
+        const { count, overlaps } = await ClientFunction(() => {
+            const rects = Array.from(document.querySelectorAll('#map-1 [role="button"]')).map(button => ({ name: button.getAttribute('data-test'), rect: button.getBoundingClientRect() }))
+            return {
+                count: rects.length,
+                overlaps: rects.flatMap((a, i) => rects.slice(i + 1)
+                    .filter(b => a.rect.left < b.rect.right && b.rect.left < a.rect.right && a.rect.top < b.rect.bottom && b.rect.top < a.rect.bottom)
+                    .map(b => `${a.name} overlaps ${b.name}`)),
+            }
+        })()
+        await t.expect(count).gt(2)
+        await t.expect(overlaps).eql([])
     })
 }
