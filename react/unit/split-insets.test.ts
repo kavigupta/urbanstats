@@ -3,7 +3,7 @@ import { describe, test } from 'node:test'
 
 import { deleteInsets, fitInsetMapBounds, InsetEdits, setInsets, splitInsets } from '../src/mapper/settings/edit-insets'
 import { UrbanStatsASTExpression } from '../src/urban-stats-script/ast'
-import { deconstruct, Inset, InsetNode, layoutInsets, mapNode, pruneInsets } from '../src/urban-stats-script/constants/insets'
+import { deconstruct, Inset, InsetNode, layoutInsets, mapNode, pruneInsets, SplitInset } from '../src/urban-stats-script/constants/insets'
 import { evaluate } from '../src/urban-stats-script/interpreter'
 import { computeAspectRatioForInsets } from '../src/utils/coordinates'
 
@@ -51,6 +51,12 @@ void describe('constructSplitInset', () => {
     void test('deconstructs to an equivalent expression', () => {
         const node = evaluateInset(split)
         assert.deepEqual(evaluate(deconstruct(node), emptyContextWithInsets([])).value, { type: 'opaque', opaqueType: 'inset', value: node })
+    })
+
+    void test('small proportions survive being written out', () => {
+        const node: InsetNode = { bottomLeft: [0, 0], topRight: [1, 1], direction: 'horizontal', children: [{ insets: usa, proportion: 0.00004 }, { insets: usa, proportion: 0.002 }] }
+        const value = evaluate(deconstruct(node), emptyContextWithInsets([])).value as { value: SplitInset }
+        assert.deepEqual(value.value.children.map(({ proportion }) => proportion), [0.00004, 0.002])
     })
 
     void test('pruning collapses a split left with one cell, but keeps cells that were already empty', () => {
