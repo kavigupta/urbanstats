@@ -243,7 +243,7 @@ class ShapefileWithoutMetadata:
         return Identified(geometry=self.geometry, identifiers=self.identifiers)
 
 
-@attr.s
+@attr.s(hash=False)
 class Shapefile:
     geometry = attr.ib()
     naming = attr.ib()
@@ -255,6 +255,9 @@ class Shapefile:
     # Optional[SourceCountries], for shapefiles with regions a source country's statistics cover
     source_countries = attr.ib(default=None)
     cross_source_borders: Optional[CrossSourceBorders] = attr.ib(default=None)
+
+    def __hash__(self):
+        return hash(stable_hash(self))
 
     def without_metadata(self):
         return ShapefileWithoutMetadata(
