@@ -3,7 +3,6 @@ import { deconstruct as deconstructInset, Inset } from '../../urban-stats-script
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import * as l from '../../urban-stats-script/literal-parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
-import { ArrayEdits } from '../../utils/array-edits'
 import { assert } from '../../utils/defensive'
 import { loadInsetExpression, loadInsets } from '../context'
 
@@ -84,7 +83,8 @@ export function normalizeInsetScreenBounds(insets: Inset[]): Inset[] {
     })
 }
 
-export function doEditInsets(settings: MapSettings, edits: ArrayEdits<Inset>, typeEnvironment: TypeEnvironment): MapUSS {
+/** `original` is what `getInsets` parsed from these settings, so it lines up with their expressions */
+export function doEditInsets(settings: MapSettings, original: Inset[], edited: Inset[], typeEnvironment: TypeEnvironment): MapUSS {
     assert(settings.script.uss.type === 'statements', 'Trying to do an inset edit on USS that is not inset editable')
     const mapInsets = mapSchema(settings.script.uss, typeEnvironment).namedArgs.insets
     assert(settings.geographies.length > 0, 'Trying to do an inset edit on USS that is not inset editable')
@@ -97,10 +97,8 @@ export function doEditInsets(settings: MapSettings, edits: ArrayEdits<Inset>, ty
         currentInsetsAst = loadInsetExpression(universesOf(settings.geographies))
     }
 
-    const parsed = constructInsetsSchema.parse(currentInsetsAst, typeEnvironment)
     // Insets that edits left untouched keep their expressions, so constants aren't written out
-    const original: Inset[] = parsed.currentValue
-    const newConstructInsets = parsed.edit(ast => edits(original).map((inset) => {
+    const newConstructInsets = constructInsetsSchema.parse(currentInsetsAst, typeEnvironment).edit(ast => edited.map((inset) => {
         const i = original.indexOf(inset)
         return i === -1 ? deconstructInset(inset) : ast[i]
     })) as UrbanStatsASTExpression
