@@ -15,6 +15,7 @@ import { unparse } from '../../urban-stats-script/parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { Property } from '../../utils/Property'
 import { TestUtils } from '../../utils/TestUtils'
+import { ArrayEdits, swap } from '../../utils/array-edits'
 import { makeDebugLogger } from '../../utils/debug-logging'
 import { assert } from '../../utils/defensive'
 import { mapperToTable } from '../../utils/page-conversion'
@@ -31,7 +32,7 @@ import { ImportExportCode } from './ImportExportCode'
 import { mapSettingsContext } from './MapSettingsContext'
 import { MapperSettings } from './MapperSettings'
 import { Selection, SelectionContext } from './SelectionContext'
-import { doEditInsets, getInsets, InsetEdits, normalizeInsetScreenBounds, replaceInsets, swapInsets } from './edit-insets'
+import { doEditInsets, getInsets, normalizeInsetScreenBounds } from './edit-insets'
 import { getTextBoxes, scriptWithNewTextBoxes } from './edit-text-boxes'
 import { validMapperOutputs } from './map-uss'
 import { mapPageTitle, MapEditorMode, MapSettings, universesOf } from './utils'
@@ -243,21 +244,25 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
     )
 }
 
+// Wrapped, since React would call an edit passed directly as a state updater
+function useEdits<T>(): [ArrayEdits<T>, (edits: ArrayEdits<T>) => void] {
+    const [state, setState] = useState<{ edits: ArrayEdits<T> }>({ edits: x => x })
+    return [state.edits, useCallback((edits: ArrayEdits<T>) => { setState({ edits }) }, [])]
+}
+
 function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapEditorMode, mapGenerator }: CommonEditorProps): ReactNode {
     const colors = useColors()
 
     const isMobile = useMobileLayout()
 
-    const [insetEdits, setInsetEdits] = useState<InsetEdits>({
-        ast: a => a,
-        insets: i => i,
-    })
+    const [insetEdits, setInsetEdits] = useEdits<Inset>()
 
     const { addState, ui: undoRedoUi, canUndo } = useUndoRedo(insetEdits, undefined, setInsetEdits, () => undefined)
 
-    const editedInsets = insetEdits.insets(getInsets(mapSettings, typeEnvironment)!)
+    const editedInsets = insetEdits(getInsets(mapSettings, typeEnvironment)!)
 
-    const addInsetEdit = (edits: InsetEdits): void => {
+    const addInsetEdit = (edit: ArrayEdits<Inset>): void => {
+        const edits: ArrayEdits<Inset> = insets => edit(insetEdits(insets))
         setInsetEdits(edits)
         addState(edits, undefined)
     }
@@ -272,24 +277,24 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                     topRight: [0.75, 0.75],
                     mainMap: false,
                 }
-                addInsetEdit(replaceInsets(insetEdits, [editedInsets.length, editedInsets.length], [offsetInsetInBounds(newInset, editedInsets)]))
+                addInsetEdit(insets => [...insets, offsetInsetInBounds(newInset, insets)])
             },
             modify: (i, e) => {
-                addInsetEdit(replaceInsets(insetEdits, [i, i + 1], [{ ...editedInsets[i], ...e }]))
+                addInsetEdit(insets => insets.map((inset, j) => j === i ? { ...inset, ...e } : inset))
             },
             delete: (i) => {
-                addInsetEdit(replaceInsets(insetEdits, [i, i + 1], []))
+                addInsetEdit(insets => insets.filter((_, j) => j !== i))
             },
             duplicate: (i) => {
-                addInsetEdit(replaceInsets(insetEdits, [i + 1, i + 1], [offsetInsetInBounds(editedInsets[i], editedInsets)]))
+                addInsetEdit(insets => [...insets.slice(0, i + 1), offsetInsetInBounds(insets[i], insets), ...insets.slice(i + 1)])
             },
             moveUp: (i) => {
                 assert(i + 1 < editedInsets.length, `Cannot move inset ${i} up, already top`)
-                addInsetEdit(swapInsets(insetEdits, i, i + 1))
+                addInsetEdit(insets => swap(insets, i, i + 1))
             },
             moveDown: (i) => {
                 assert(i > 0, `Cannot move inset ${i} down, already bottom`)
-                addInsetEdit(swapInsets(insetEdits, i, i - 1))
+                addInsetEdit(insets => swap(insets, i, i - 1))
             },
             edited: editedInsets,
         },
@@ -327,7 +332,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                                 <button
                                     style={{ height: isMobile ? 30 : undefined }}
                                     onClick={() => {
-                                        setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, normalizeInsetScreenBounds(insetEdits, editedInsets), typeEnvironment) } }, {})
+                                        setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, insets => normalizeInsetScreenBounds(insetEdits(insets)), typeEnvironment) } }, {})
                                         setMapEditorMode('uss')
                                     }}
                                     disabled={!canUndo}
@@ -464,11 +469,12 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
 
     const isMobile = useMobileLayout()
 
-    const [textBoxes, setTextBoxes] = useState<TextBox[]>(() => getTextBoxes(mapSettings, typeEnvironment)!)
+    const [textBoxEdits, setTextBoxEdits] = useEdits<TextBox>()
+    const textBoxes = textBoxEdits(getTextBoxes(mapSettings, typeEnvironment)!)
 
     const selectionProperty = useMemo(() => new Property<TextBoxesSelection | undefined>(undefined), [])
 
-    const { addState, ui: undoRedoUi, canUndo, updateCurrentSelection } = useUndoRedo<TextBox[], TextBoxesSelection | undefined>(textBoxes, undefined, setTextBoxes, (newSelection) => {
+    const { addState, ui: undoRedoUi, canUndo, updateCurrentSelection } = useUndoRedo<ArrayEdits<TextBox>, TextBoxesSelection | undefined>(textBoxEdits, undefined, setTextBoxEdits, (newSelection) => {
         selectionProperty.value = newSelection
     })
 
@@ -482,9 +488,10 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
         return () => { selectionProperty.observers.delete(observer) }
     }, [selectionProperty, updateCurrentSelection])
 
-    const setTextBoxesWithUndo = (boxes: TextBox[]): void => {
-        setTextBoxes(boxes)
-        addState(boxes, selectionProperty.value)
+    const addTextBoxEdit = (edit: ArrayEdits<TextBox>): void => {
+        const edits: ArrayEdits<TextBox> = boxes => edit(textBoxEdits(boxes))
+        setTextBoxEdits(edits)
+        addState(edits, selectionProperty.value)
     }
 
     const ui = mapGenerator.ui({
@@ -497,50 +504,32 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
                     text: [{ insert: '\n' }], // bugs on applying attributes to empty text without this
                     ...defaults,
                 }
-                setTextBoxesWithUndo([...textBoxes, offsetInsetInBounds(newTextBox, textBoxes)])
+                addTextBoxEdit(boxes => [...boxes, offsetInsetInBounds(newTextBox, boxes)])
                 selectionProperty.value = { index: textBoxes.length, range: { index: 0, length: 0 } }
             },
             modify: (i, e) => {
-                setTextBoxesWithUndo(textBoxes.map((textBox, j) => i === j ? { ...textBox, ...e } : textBox))
+                addTextBoxEdit(boxes => boxes.map((textBox, j) => i === j ? { ...textBox, ...e } : textBox))
             },
             delete: (i) => {
-                setTextBoxesWithUndo(textBoxes.filter((_, j) => j !== i))
+                addTextBoxEdit(boxes => boxes.filter((_, j) => j !== i))
                 if (selectionProperty.value?.index === i) {
                     selectionProperty.value = undefined
                 }
             },
             duplicate: (i) => {
-                setTextBoxesWithUndo([...textBoxes, offsetInsetInBounds(textBoxes[i], textBoxes)])
+                addTextBoxEdit(boxes => [...boxes, offsetInsetInBounds(boxes[i], boxes)])
                 selectionProperty.value = { index: textBoxes.length, range: { index: 0, length: documentLength(textBoxes[i].text) } }
             },
             moveUp: (i) => {
                 assert(i + 1 < textBoxes.length, `Cannot move text box ${i} up, already top`)
-                setTextBoxesWithUndo(textBoxes.map((textBox, j) => {
-                    switch (j) {
-                        case i:
-                            return textBoxes[i + 1]
-                        case i + 1:
-                            return textBoxes[i]
-                        default:
-                            return textBox
-                    }
-                }))
+                addTextBoxEdit(boxes => swap(boxes, i, i + 1))
                 if (selectionProperty.value?.index === i) {
                     selectionProperty.value = { ...selectionProperty.value, index: i + 1 }
                 }
             },
             moveDown: (i) => {
                 assert(i > 0, `Cannot move inset ${i} down, already bottom`)
-                setTextBoxesWithUndo(textBoxes.map((textBox, j) => {
-                    switch (j) {
-                        case i:
-                            return textBoxes[i - 1]
-                        case i - 1:
-                            return textBoxes[i]
-                        default:
-                            return textBox
-                    }
-                }))
+                addTextBoxEdit(boxes => swap(boxes, i, i - 1))
                 if (selectionProperty.value?.index === i) {
                     selectionProperty.value = { ...selectionProperty.value, index: i - 1 }
                 }
@@ -580,7 +569,7 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
                                     <button
                                         style={{ height: isMobile ? 30 : undefined }}
                                         onClick={() => {
-                                            setMapSettings({ ...mapSettings, script: { uss: scriptWithNewTextBoxes(mapSettings, textBoxes, typeEnvironment) } }, {})
+                                            setMapSettings({ ...mapSettings, script: { uss: scriptWithNewTextBoxes(mapSettings, textBoxEdits, typeEnvironment) } }, {})
                                             setMapEditorMode('uss')
                                         }}
                                         disabled={!canUndo}
