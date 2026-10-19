@@ -193,7 +193,7 @@ def compute_subset_statistics(
     for k in for_subset:
         assert len(for_subset[k]) == len(idxs), (
             f"{k} has {len(for_subset[k])} values for the {len(idxs)} regions of"
-            f" {shapefile_subset.hash_key}"
+            f" {shapefile_subset.geometry.key}"
         )
         result = [np.nan] * len(shapefile_table)
         for idx, value in zip(idxs, for_subset[k]):

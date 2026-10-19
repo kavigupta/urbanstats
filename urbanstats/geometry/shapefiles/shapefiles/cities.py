@@ -25,7 +25,7 @@ class CityWikidataSourcer(WikidataSourcer):
 
 
 CITIES = make_shapefile(
-    hash_key="census_places_6",
+    geometry_key="census_places_6",
     path="named_region_shapefiles/cb_2022_us_place_500k.zip",
     shortname_extractor=column("NAMELSAD"),
     cleanname_extractor=column("NAME"),

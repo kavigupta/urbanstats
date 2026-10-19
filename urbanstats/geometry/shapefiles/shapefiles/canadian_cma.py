@@ -68,7 +68,7 @@ def canadian_census_kwargs(typ, category):
 
 
 CANADIAN_CENSUS_METROPOLITAN_AREAS = make_shapefile(
-    hash_key="census_cmas_2",
+    geometry_key="census_cmas_2",
     path=load_cmas,
     path_inputs=(COUNTRIES.names, SUBNATIONAL_REGIONS.names),
     shortname_extractor=column("CMANAME") + " CMA",
