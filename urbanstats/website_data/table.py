@@ -25,6 +25,7 @@ from urbanstats.geometry.segregation import (
     compute_race_data,
     local_segregation_by_block,
 )
+from urbanstats.geometry.shapefiles.shapefile import ShapefileWithoutMetadata
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles as shapefiles_list
 from urbanstats.metadata.metadata_columns_list import (
     metadata_column_providers as default_metadata_column_providers,
@@ -42,11 +43,8 @@ from urbanstats.universe.universe_provider.compute_universes import (
 @permacache_with_remapping_pickle(
     "population_density/stats_for_shapefile/compute_statistics_for_shapefile_54",
     key_function=dict(
-        sf=lambda x: x.hash_key,
-        shapefiles=lambda x: {
-            k: (v.hash_key, v.universe_provider, v.source_countries)
-            for k, v in x.items()
-        },
+        sf=stable_hash,
+        shapefiles=stable_hash,
         metadata_providers=stable_hash,
         statistic_collections=stable_hash,
     ),
@@ -54,7 +52,7 @@ from urbanstats.universe.universe_provider.compute_universes import (
 )
 def compute_statistics_for_shapefile(
     sf: Any,
-    shapefiles: Dict[str, Any],
+    shapefiles: Dict[str, ShapefileWithoutMetadata],
     metadata_providers: Any = default_metadata_column_providers,
     statistic_collections: Any = default_statistic_collections,
 ) -> pd.DataFrame:
@@ -110,8 +108,9 @@ def compute_statistics_for_shapefile(
 
 def combined_shapefile() -> pd.DataFrame:
     full = []
+    without_metadata = {k: sf.without_metadata() for k, sf in shapefiles_list.items()}
     for k in tqdm.tqdm(shapefiles_list, desc="computing statistics"):
-        t = compute_statistics_for_shapefile(shapefiles_list[k], shapefiles_list)
+        t = compute_statistics_for_shapefile(shapefiles_list[k], without_metadata)
         forget_loaded_values(compute_statistics_for_shapefile)
         forget_loaded_values(_compute_crosswalk)
         forget_loaded_values(_compute_crosswalk_canada)

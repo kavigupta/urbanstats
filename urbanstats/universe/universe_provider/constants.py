@@ -19,9 +19,6 @@ from urbanstats.universe.universe_provider.universe_provider import UniverseProv
 class USContinentProvider(UniverseProvider):
     state_provider: UniverseProvider
 
-    def hash_key_details(self):
-        return self.state_provider.hash_key()
-
     def relevant_shapefiles(self):
         return sorted(
             set(
