@@ -15,7 +15,7 @@ from urbanstats.website_data.table import shapefile_without_ordinals
 
 from ..utils import output_typescript
 
-use = [x.meta["type"] for x in shapefiles.values()]
+use = [x.metadata.meta["type"] for x in shapefiles.values()]
 
 
 def produce_results(row_geo: Any) -> data_files_pb2.Feature:
@@ -104,7 +104,9 @@ def produce_results_for_type(folder: str, typ: str) -> None:
 
 
 def compute_geography(typ: str, data_table: Any) -> Tuple[Any, bytes, float]:
-    [loaded_shapefile] = [x for x in shapefiles.values() if x.meta["type"] == typ]
+    [loaded_shapefile] = [
+        x for x in shapefiles.values() if x.metadata.meta["type"] == typ
+    ]
     longnames = sorted(data_table.longname)
     universe_to_idx = {universe: idx for idx, universe in enumerate(all_universes())}
     universes = (

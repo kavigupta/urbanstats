@@ -60,7 +60,7 @@ def county_cross_cd(cd_names, cd_dates, county_names):
 
 
 COUNTY_CROSS_CD = make_shapefile(
-    hash_key="county_cross_cd_4",
+    geometry_key="county_cross_cd_4",
     path=county_cross_cd,
     path_inputs=(
         CONGRESSIONAL_DISTRICTS.names,

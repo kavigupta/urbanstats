@@ -98,7 +98,7 @@ class VariesByRegion(SourceCountries):
         in_country = {i for i, cs in by_region.items() if cs == (country,)}
 
         def new_filter(row):
-            return shapefile.filter(row) and row.name in in_country
+            return shapefile.geometry.filter(row) and row.name in in_country
 
         # cached per-country results line up with the subset's rows, so a subset with different
         # regions needs a different key
@@ -108,7 +108,7 @@ class VariesByRegion(SourceCountries):
             geometry=attr.evolve(
                 shapefile.geometry,
                 filter=new_filter,
-                key=f"{shapefile.hash_key}_{country}_{regions}",
+                key=f"{shapefile.geometry.key}_{country}_{regions}",
             ),
         )
 

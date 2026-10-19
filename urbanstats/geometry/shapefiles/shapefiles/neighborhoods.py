@@ -14,7 +14,7 @@ def load_neighborhoods():
 
 
 NEIGHBORHOODS = make_shapefile(
-    hash_key="zillow_neighborhoods_6",
+    geometry_key="zillow_neighborhoods_6",
     path=load_neighborhoods,
     shortname_extractor=column("Name") + ", " + column("City"),
     longname_extractor=column("Name")

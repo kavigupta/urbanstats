@@ -21,7 +21,7 @@ data_credit = dict(
 
 
 JUDICIAL_DISTRICTS = make_shapefile(
-    hash_key="judicial_districts",
+    geometry_key="judicial_districts",
     path=judicial_districts,
     shortname_extractor=column("NAME") + ", " + UsState(column("STATE"), "abbr"),
     longname_extractor=column("NAME")
@@ -62,7 +62,7 @@ def judicial_circuits():
 
 
 JUDICIAL_CIRCUITS = make_shapefile(
-    hash_key="judicial_circuits_2",
+    geometry_key="judicial_circuits_2",
     path=judicial_circuits,
     shortname_extractor=column("shortname"),
     longname_extractor=column("shortname") + ", USA",
