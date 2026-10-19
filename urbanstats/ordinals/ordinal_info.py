@@ -201,7 +201,7 @@ def compute_universe_type_masks(
             (m.data, m.indices, m.indptr, m.shape)
         ),
         universe_typ=stable_hash,
-        # permacache can't hash a DataFrame whose column names aren't all strings
+        # permacache can't hash a DataFrame with tuple column names, which some statistics have
         table=lambda t: stable_hash(
             (list(t.columns), t.index.to_numpy(), t.to_numpy())
         ),
