@@ -61,14 +61,14 @@ def geography_data_source_country() -> Dict[str, str]:
         if isinstance(shapefile.source_countries, InCountry):
             country = shapefile.source_countries.country
             assert country in countries, country
-            result[shapefile.meta["type"]] = country
+            result[shapefile.metadata.meta["type"]] = country
     return result
 
 
 def cross_source_border_types() -> Dict[str, Dict[str, Any]]:
     _check_declarations_match_source_countries()
     result = {
-        shapefile.meta["type"]: {
+        shapefile.metadata.meta["type"]: {
             "alternativeGeographyTypes": list(
                 shapefile.cross_source_borders.alternative_geography_types
             ),
@@ -100,7 +100,7 @@ def _check_declarations_match_source_countries() -> None:
     where every region is in one country (InCountry), nothing is dropped.
     """
     for shapefile in shapefiles.values():
-        typ = shapefile.meta["type"]
+        typ = shapefile.metadata.meta["type"]
         declared = shapefile.cross_source_borders is not None
         if _has_source_countries_by_region(shapefile):
             assert declared, (
@@ -123,7 +123,7 @@ def _check_alternatives_never_straddle_a_border(
     doesn't exist would produce a dead link.
     """
     shapefile_by_type = {
-        shapefile.meta["type"]: shapefile for shapefile in shapefiles.values()
+        shapefile.metadata.meta["type"]: shapefile for shapefile in shapefiles.values()
     }
     for typ, info in result.items():
         for alternative in info["alternativeGeographyTypes"]:

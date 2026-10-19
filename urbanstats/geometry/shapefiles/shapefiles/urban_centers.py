@@ -74,7 +74,7 @@ URBAN_CENTERS = create_urban_center_like_shapefile(
     more_general_direction=False,
     overrides=(("Venice", "IT34"),),
     meta=dict(type="Urban Center", source="GHSL", type_category="International City"),
-    hash_key="urban_centers_6",
+    geometry_key="urban_centers_6",
     cross_source_borders=CrossSourceBorders(
         can_straddle=True,
         alternative_geography_types=["Urban Area", "CA Population Center"],

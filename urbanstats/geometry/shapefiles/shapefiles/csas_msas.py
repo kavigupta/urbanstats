@@ -5,9 +5,9 @@ from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
-def csa_or_msa(hash_key, typ, census_name, wikidata_sourcer, path):
+def csa_or_msa(geometry_key, typ, census_name, wikidata_sourcer, path):
     return make_shapefile(
-        hash_key=hash_key,
+        geometry_key=geometry_key,
         path=path,
         shortname_extractor=column("NAME").split_part(", ", 0) + " " + typ,
         cleanname_extractor=column("NAME").split_part(", ", 0),

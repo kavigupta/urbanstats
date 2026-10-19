@@ -7,7 +7,7 @@ from urbanstats.special_cases.taylor_metropolitan_cluster import (
 )
 
 METROPOLITAN_CLUSTERS = create_urban_center_like_shapefile(
-    hash_key="metropolitan_clusters_6",
+    geometry_key="metropolitan_clusters_6",
     path=load_taylor_metropolitan_clusters_post_pruning,
     name_column="name",
     more_general_direction=True,
