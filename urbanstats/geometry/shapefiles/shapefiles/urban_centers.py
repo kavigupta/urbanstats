@@ -1,8 +1,14 @@
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
-from urbanstats.geometry.shapefiles.row_functions import column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
+from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
+    SUBNATIONAL_REGIONS,
+)
 from urbanstats.geometry.shapefiles.source_countries import ContainedWithinCountries
-from urbanstats.special_cases.ghsl_urban_center import load_ghsl_urban_center
+from urbanstats.special_cases.ghsl_urban_center import (
+    SubnationalSuffixedName,
+    SubnationalSuffixes,
+    load_ghsl_urban_centers,
+)
 from urbanstats.universe.universe_provider.combined_universe_provider import (
     CombinedUniverseProvider,
 )
@@ -12,14 +18,14 @@ from urbanstats.universe.universe_provider.universe_provider import (
 )
 
 
-def create_urban_center_like_shapefile(**kwargs):
+def create_urban_center_like_shapefile(*, suffixes, **kwargs):
+    def name(part):
+        return SubnationalSuffixedName(suffixes, kwargs["meta"]["type"], part)
+
     return make_shapefile(
-        shortname_extractor=column("shortname"),
-        longname_extractor=column("longname"),
-        cleanname_extractor=(column("shortname")).removesuffix(
-            " " + kwargs["meta"]["type"]
-        ),
-        intermediate_computation_columns=["subnationals_ISO_CODE"],
+        shortname_extractor=name("shortname"),
+        longname_extractor=name("longname"),
+        cleanname_extractor=name("cleanname"),
         filter=lambda x: True,
         does_overlap_self=False,
         special_data_sources=[
@@ -27,7 +33,7 @@ def create_urban_center_like_shapefile(**kwargs):
             "congressional_representatives_indirect",
         ],
         universe_provider=CombinedUniverseProvider(
-            [*INTERNATIONAL_PROVIDERS, UrbanCenterlikeStateUniverseProvider()]
+            [*INTERNATIONAL_PROVIDERS, UrbanCenterlikeStateUniverseProvider(suffixes)]
         ),
         source_countries=ContainedWithinCountries(
             {
@@ -41,7 +47,13 @@ def create_urban_center_like_shapefile(**kwargs):
 
 
 URBAN_CENTERS = create_urban_center_like_shapefile(
-    path=load_ghsl_urban_center,
+    path=load_ghsl_urban_centers,
+    suffixes=SubnationalSuffixes(
+        SUBNATIONAL_REGIONS.geometry,
+        name_column="UC_NM_MN",
+        more_general_direction=False,
+        overrides=(("Venice", "IT34"),),
+    ),
     meta=dict(type="Urban Center", source="GHSL", type_category="International City"),
     hash_key="urban_centers_6",
     cross_source_borders=CrossSourceBorders(

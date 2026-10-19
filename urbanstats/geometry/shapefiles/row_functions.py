@@ -33,6 +33,14 @@ class RowFunction(ABC):
         return SplitPart(self, separator, index)
 
 
+class TableFunction(ABC):
+    """An extractor computed from all of a geometry's rows at once, rather than row by row."""
+
+    @abstractmethod
+    def __call__(self, geometry, rows):
+        """A Series indexed like rows, which are geometry.load_rows()."""
+
+
 @dataclass(frozen=True)
 class Column(RowFunction):
     name: str

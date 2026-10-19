@@ -8,6 +8,7 @@ import pandas as pd
 from permacache import stable_hash
 
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
+from urbanstats.geometry.shapefiles.row_functions import TableFunction
 
 
 @attr.s(frozen=True)
@@ -91,6 +92,12 @@ class Metadata:
     wikidata_sourcer = attr.ib()
 
 
+def extract(extractor, geometry, rows):
+    if isinstance(extractor, TableFunction):
+        return extractor(geometry, rows)
+    return rows.apply(extractor, axis=1)
+
+
 NAME_COLUMNS = ["longname", "shortname", "cleanname", "longname_sans_date"]
 DATE_COLUMNS = ["start_date", "end_date"]
 
@@ -109,16 +116,16 @@ class Names:
         from urbanstats.special_cases.deduplicate_longnames import rename_duplicates
 
         s = rows.copy(deep=False)
-        s["shortname"] = s.apply(self.naming.shortname_extractor, axis=1)
+        s["shortname"] = extract(self.naming.shortname_extractor, self.geometry, s)
         s["cleanname"] = (
             s["shortname"]
             if self.naming.cleanname_extractor is None
-            else s.apply(self.naming.cleanname_extractor, axis=1)
+            else extract(self.naming.cleanname_extractor, self.geometry, s)
         )
-        s["longname"] = s.apply(self.naming.longname_extractor, axis=1)
+        s["longname"] = extract(self.naming.longname_extractor, self.geometry, s)
         if self.naming.longname_sans_date_extractor is not None:
-            s["longname_sans_date"] = s.apply(
-                self.naming.longname_sans_date_extractor, axis=1
+            s["longname_sans_date"] = extract(
+                self.naming.longname_sans_date_extractor, self.geometry, s
             )
         else:
             s["longname_sans_date"] = None
@@ -163,12 +170,12 @@ class Dates:
                 "start_date": (
                     -float("inf")
                     if t.start_date is None
-                    else rows.apply(t.start_date, axis=1)
+                    else extract(t.start_date, self.geometry, rows)
                 ),
                 "end_date": (
                     float("inf")
                     if t.end_date is None
-                    else rows.apply(t.end_date, axis=1)
+                    else extract(t.end_date, self.geometry, rows)
                 ),
             },
             index=rows.index,
@@ -194,7 +201,7 @@ class Identified:
         """The additional and intermediate columns of rows, which are geometry.load_rows()."""
         s = rows.copy(deep=False)
         for k, v in self.identifiers.additional_columns_computer.items():
-            s[k] = s.apply(v, axis=1)
+            s[k] = extract(v, self.geometry, s)
         return pd.DataFrame(
             {
                 col: s[col]
