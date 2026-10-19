@@ -3,7 +3,6 @@ import { deconstruct as deconstructInset, Inset, InsetNode, isSplit, layoutInset
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import * as l from '../../urban-stats-script/literal-parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
-import { ArrayEdits } from '../../utils/array-edits'
 import { fitCoordBox } from '../../utils/coordinates'
 import { assert } from '../../utils/defensive'
 import { loadInsetExpression, loadInsets } from '../context'
@@ -150,7 +149,8 @@ export function normalizeInsetScreenBounds(insets: InsetNode[]): InsetNode[] {
     })
 }
 
-export function doEditInsets(settings: MapSettings, edits: ArrayEdits<InsetNode>, typeEnvironment: TypeEnvironment): MapUSS {
+/** `original` is what `getInsets` parsed from these settings, so it lines up with their expressions */
+export function doEditInsets(settings: MapSettings, original: InsetNode[], edited: InsetNode[], typeEnvironment: TypeEnvironment): MapUSS {
     assert(settings.script.uss.type === 'statements', 'Trying to do an inset edit on USS that is not inset editable')
     const mapInsets = mapSchema(settings.script.uss, typeEnvironment).namedArgs.insets
     assert(settings.geographies.length > 0, 'Trying to do an inset edit on USS that is not inset editable')
@@ -163,10 +163,8 @@ export function doEditInsets(settings: MapSettings, edits: ArrayEdits<InsetNode>
         currentInsetsAst = loadInsetExpression(universesOf(settings.geographies))
     }
 
-    const parsed = constructInsetsSchema.parse(currentInsetsAst, typeEnvironment)
     // Insets that edits left untouched keep their expressions, so constants aren't written out
-    const original: InsetNode[] = parsed.currentValue
-    const newConstructInsets = parsed.edit(ast => edits(original).map((inset) => {
+    const newConstructInsets = constructInsetsSchema.parse(currentInsetsAst, typeEnvironment).edit(ast => edited.map((inset) => {
         const i = original.indexOf(inset)
         return i === -1 ? deconstructInset(inset) : ast[i]
     })) as UrbanStatsASTExpression
