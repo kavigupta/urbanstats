@@ -24,7 +24,7 @@ class UrbanAreaName(RowFunction):
 
 
 URBAN_AREAS = make_shapefile(
-    hash_key="urban_areas",
+    geometry_key="urban_areas",
     path="named_region_shapefiles/tl_rd22_us_uac20.zip",
     shortname_extractor=UrbanAreaName(is_shortname=True),
     cleanname_extractor=UrbanAreaName(is_shortname=True).removesuffix(" Urban Area"),

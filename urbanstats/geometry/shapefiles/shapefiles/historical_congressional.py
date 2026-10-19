@@ -88,7 +88,7 @@ version_for_decade = {"default": 0.2}
 
 HISTORICAL_CONGRESSIONALs = {
     f"historical_congressional_{decade}": make_shapefile(
-        hash_key=f"historical_congressional_{decade}_{version_for_decade.get(decade, version_for_decade['default'])}",
+        geometry_key=f"historical_congressional_{decade}_{version_for_decade.get(decade, version_for_decade['default'])}",
         path=functools.partial(filter_for_decade, decade),
         shortname_extractor=HistoricalShortname(),
         cleanname_extractor=HistoricalShortname(include_date=False),
@@ -123,7 +123,7 @@ HISTORICAL_CONGRESSIONALs = {
 }
 
 HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = make_shapefile(
-    hash_key="historical_congressional_2020_3",
+    geometry_key="historical_congressional_2020_3",
     path=lambda: load_shapefile("cd118", only_keep="past", minimum_district_length=2),
     shortname_extractor=HistoricalShortname(),
     cleanname_extractor=HistoricalShortname(include_date=False),

@@ -105,7 +105,7 @@ def load_csd_shapefile(countries, subnationals, division_names, division_identif
 
 
 CANADIAN_CENSUS_SUBDIVISIONS = make_shapefile(
-    hash_key="canadian_census_subdivisions_3",
+    geometry_key="canadian_census_subdivisions_3",
     path=load_csd_shapefile,
     path_inputs=(
         COUNTRIES.names,

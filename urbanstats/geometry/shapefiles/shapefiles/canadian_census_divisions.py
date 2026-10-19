@@ -54,7 +54,7 @@ CENSUS_DIVISION_LONGNAME = (
 
 
 CANADIAN_CENSUS_DIVISIONS = make_shapefile(
-    hash_key="canadian_census_divisions_3",
+    geometry_key="canadian_census_divisions_3",
     path=lambda countries, subnationals: load_canadian_shapefile(
         "named_region_shapefiles/canada/lcd_000a21a_e.zip", countries, subnationals
     ),

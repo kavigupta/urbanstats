@@ -10,7 +10,7 @@ from urbanstats.statistics.output_statistics_metadata import (
 )
 from urbanstats.website_data.table import shapefile_without_ordinals
 
-shapefiles_by_type = {sh.meta["type"]: sh for sh in shapefiles.values()}
+shapefiles_by_type = {sh.metadata.meta["type"]: sh for sh in shapefiles.values()}
 
 
 def csv_for(typ, category):
