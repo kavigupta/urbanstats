@@ -21,7 +21,7 @@ class CCDWikidataSourcer(WikidataSourcer):
 
 
 CCDs = make_shapefile(
-    hash_key="census_cousub_9",
+    geometry_key="census_cousub_9",
     path="named_region_shapefiles/cb_2023_us_cousub_500k.zip",
     shortname_extractor=column("NAMELSAD"),
     cleanname_extractor=column("NAME"),
