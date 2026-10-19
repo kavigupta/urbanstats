@@ -286,8 +286,7 @@ class Shapefile:
     wikidata_sourcer = _from_layer("metadata", "wikidata_sourcer")
 
     def __hash__(self):
-        # equal shapefiles have the same geometry
-        return hash(self.geometry.key)
+        return hash(stable_hash(self))
 
     def without_metadata(self):
         return ShapefileWithoutMetadata(
