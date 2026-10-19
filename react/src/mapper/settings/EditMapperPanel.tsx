@@ -15,7 +15,7 @@ import { unparse } from '../../urban-stats-script/parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { Property } from '../../utils/Property'
 import { TestUtils } from '../../utils/TestUtils'
-import { ArrayEdits, swap } from '../../utils/array-edits'
+import { swap } from '../../utils/array-edits'
 import { makeDebugLogger } from '../../utils/debug-logging'
 import { assert } from '../../utils/defensive'
 import { mapperToTable } from '../../utils/page-conversion'
@@ -245,27 +245,20 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
     )
 }
 
-// Wrapped, since React would call an edit passed directly as a state updater
-function useEdits<T>(): [ArrayEdits<T>, (edits: ArrayEdits<T>) => void] {
-    const [state, setState] = useState<{ edits: ArrayEdits<T> }>({ edits: x => x })
-    return [state.edits, useCallback((edits: ArrayEdits<T>) => { setState({ edits }) }, [])]
-}
-
 function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapEditorMode, mapGenerator }: CommonEditorProps): ReactNode {
     const colors = useColors()
 
     const isMobile = useMobileLayout()
 
-    const [insetEdits, setInsetEdits] = useEdits<InsetNode>()
+    const [originalInsets] = useState(() => getInsets(mapSettings, typeEnvironment)!)
+    const [editedInsets, setEditedInsets] = useState(originalInsets)
 
-    const { addState, ui: undoRedoUi, canUndo } = useUndoRedo(insetEdits, undefined, setInsetEdits, () => undefined)
+    const { addState, ui: undoRedoUi, canUndo } = useUndoRedo(editedInsets, undefined, setEditedInsets, () => undefined)
 
-    const editedInsets = insetEdits(getInsets(mapSettings, typeEnvironment)!)
-
-    const addInsetEdit = (edit: ArrayEdits<InsetNode>): void => {
-        const edits: ArrayEdits<InsetNode> = insets => edit(insetEdits(insets))
-        setInsetEdits(edits)
-        addState(edits, undefined)
+    const addInsetEdit = (edit: (insets: InsetNode[]) => InsetNode[]): void => {
+        const edited = edit(editedInsets)
+        setEditedInsets(edited)
+        addState(edited, undefined)
     }
 
     const { leaves, splits } = layoutInsets(editedInsets)
@@ -378,8 +371,8 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                                     onClick={() => {
                                         const aspectRatio = mapGenerator.aspectRatio
                                         assert(aspectRatio !== undefined, 'Insets were edited without a rendered map')
-                                        const edits: ArrayEdits<InsetNode> = original => normalizeInsetScreenBounds(fitInsetMapBounds(insetEdits(original), original, aspectRatio))
-                                        setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, edits, typeEnvironment) } }, {})
+                                        const fitted = normalizeInsetScreenBounds(fitInsetMapBounds(editedInsets, originalInsets, aspectRatio))
+                                        setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, originalInsets, fitted, typeEnvironment) } }, {})
                                         setMapEditorMode('uss')
                                     }}
                                     disabled={!canUndo}
@@ -516,12 +509,12 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
 
     const isMobile = useMobileLayout()
 
-    const [textBoxEdits, setTextBoxEdits] = useEdits<TextBox>()
-    const textBoxes = textBoxEdits(getTextBoxes(mapSettings, typeEnvironment)!)
+    const [originalTextBoxes] = useState(() => getTextBoxes(mapSettings, typeEnvironment)!)
+    const [textBoxes, setTextBoxes] = useState(originalTextBoxes)
 
     const selectionProperty = useMemo(() => new Property<TextBoxesSelection | undefined>(undefined), [])
 
-    const { addState, ui: undoRedoUi, canUndo, updateCurrentSelection } = useUndoRedo<ArrayEdits<TextBox>, TextBoxesSelection | undefined>(textBoxEdits, undefined, setTextBoxEdits, (newSelection) => {
+    const { addState, ui: undoRedoUi, canUndo, updateCurrentSelection } = useUndoRedo<TextBox[], TextBoxesSelection | undefined>(textBoxes, undefined, setTextBoxes, (newSelection) => {
         selectionProperty.value = newSelection
     })
 
@@ -535,10 +528,10 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
         return () => { selectionProperty.observers.delete(observer) }
     }, [selectionProperty, updateCurrentSelection])
 
-    const addTextBoxEdit = (edit: ArrayEdits<TextBox>): void => {
-        const edits: ArrayEdits<TextBox> = boxes => edit(textBoxEdits(boxes))
-        setTextBoxEdits(edits)
-        addState(edits, selectionProperty.value)
+    const addTextBoxEdit = (edit: (boxes: TextBox[]) => TextBox[]): void => {
+        const edited = edit(textBoxes)
+        setTextBoxes(edited)
+        addState(edited, selectionProperty.value)
     }
 
     const add = (): void => {
@@ -621,7 +614,7 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
                                     <button
                                         style={{ height: isMobile ? 30 : undefined }}
                                         onClick={() => {
-                                            setMapSettings({ ...mapSettings, script: { uss: scriptWithNewTextBoxes(mapSettings, textBoxEdits, typeEnvironment) } }, {})
+                                            setMapSettings({ ...mapSettings, script: { uss: scriptWithNewTextBoxes(mapSettings, originalTextBoxes, textBoxes, typeEnvironment) } }, {})
                                             setMapEditorMode('uss')
                                         }}
                                         disabled={!canUndo}

@@ -1,5 +1,3 @@
-export type ArrayEdits<T> = (a: T[]) => T[]
-
 export function swap<T>(array: T[], i: number, j: number): T[] {
     return array.map((x, k) => k === i ? array[j] : k === j ? array[i] : x)
 }

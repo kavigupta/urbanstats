@@ -3,7 +3,6 @@ import { deconstruct, defaults, TextBox } from '../../urban-stats-script/constan
 import * as l from '../../urban-stats-script/literal-parser'
 import { noLocation } from '../../urban-stats-script/location'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
-import { ArrayEdits } from '../../utils/array-edits'
 import { assert } from '../../utils/defensive'
 
 import { colorSchema } from './Selector'
@@ -73,11 +72,10 @@ export function getTextBoxes(settings: MapSettings, typeEnvironment: TypeEnviron
     return undefined
 }
 
-export function scriptWithNewTextBoxes(settings: MapSettings, edits: ArrayEdits<TextBox>, typeEnvironment: TypeEnvironment): MapUSS {
+/** `original` is what `getTextBoxes` parsed from these settings, so it lines up with their expressions */
+export function scriptWithNewTextBoxes(settings: MapSettings, original: TextBox[], textBoxes: TextBox[], typeEnvironment: TypeEnvironment): MapUSS {
     assert(settings.script.uss.type === 'statements', 'Trying to do an text boxes edit on USS that is not text boxes editable')
     const parsed = mapSchema(settings.script.uss, typeEnvironment).namedArgs.textBoxes
-    const original: TextBox[] = parsed.currentValue?.expr ?? []
-    const textBoxes = edits(original)
     const vector = parsed.expr?.type === 'autoUXNode' ? parsed.expr.expr : parsed.expr
     const exprs = vector?.type === 'vectorLiteral' ? vector.elements : []
     const result = parsed.edit(textBoxes.length === 0
