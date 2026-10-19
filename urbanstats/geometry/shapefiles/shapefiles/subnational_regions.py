@@ -69,7 +69,7 @@ class SubnationalIso(RowFunction):
 
 
 SUBNATIONAL_REGIONS = make_shapefile(
-    hash_key="subnational_regions_15",
+    geometry_key="subnational_regions_15",
     path=subnational_regions,
     shortname_extractor=column("NAME"),
     longname_extractor=column("fullname"),

@@ -86,8 +86,8 @@ def compute_search_flag(shapefile: Any) -> Image.Image:
     """
     Compute the search flag for a given shapefile.
     """
-    abbrev = shapefile.abbreviation
+    abbrev = shapefile.metadata.abbreviation
     color = hue_colors[
-        related_button_colors[type_to_type_category[shapefile.meta["type"]]]
+        related_button_colors[type_to_type_category[shapefile.metadata.meta["type"]]]
     ]
     return search_flag(abbrev, color)

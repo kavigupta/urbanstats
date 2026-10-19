@@ -57,7 +57,7 @@ def compute_statistics_for_shapefile(
     statistic_collections: Any = default_statistic_collections,
 ) -> pd.DataFrame:
     # pylint: disable=too-many-locals
-    print("Computing statistics for", sf.hash_key)
+    print("Computing statistics for", sf.geometry.key)
     sf_fr = sf.load_file()
     result = sf_fr[sf.available_columns(include_intermediates=False)].copy()
 
@@ -65,12 +65,14 @@ def compute_statistics_for_shapefile(
     result["universes"] = [
         longname_to_universes[longname] for longname in result.longname
     ]
-    if sf.wikidata_sourcer is not None:
+    if sf.metadata.wikidata_sourcer is not None:
         values = list(
-            sf_fr[sf.wikidata_sourcer.columns()].itertuples(index=False, name=None)
+            sf_fr[sf.metadata.wikidata_sourcer.columns()].itertuples(
+                index=False, name=None
+            )
         )
         wikidata, wikipedia = compute_wikidata_and_wikipedia(
-            values, sf.wikidata_sourcer
+            values, sf.metadata.wikidata_sourcer
         )
         result["wikidata"] = wikidata
         result["wikipedia_page"] = wikipedia
@@ -85,8 +87,8 @@ def compute_statistics_for_shapefile(
             assert len(computed_column.values) == len(result)
             result[computed_column.key] = computed_column.values
 
-    for k in sf.meta:
-        result[k] = sf.meta[k]
+    for k in sf.metadata.meta:
+        result[k] = sf.metadata.meta[k]
 
     statistics: Dict[str, Any] = {}
 
