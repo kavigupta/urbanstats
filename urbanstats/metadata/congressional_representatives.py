@@ -14,6 +14,7 @@ from urbanstats.geometry.shapefiles.shapefile import (
     Dates,
     Names,
     Shapefile,
+    ShapefileWithoutMetadata,
     join_layers,
 )
 from urbanstats.geometry.shapefiles.shapefiles.historical_congressional import to_year
@@ -182,7 +183,7 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
         self,
         *,
         shapefile: Shapefile,
-        shapefiles: Dict[str, Shapefile],
+        shapefiles: Dict[str, ShapefileWithoutMetadata],
         shapefile_table: pd.DataFrame,
     ) -> List[MetadataColumnResult]:
         has_representatives = set(shapefile.special_data_sources) & {
@@ -202,7 +203,7 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
         ]
 
     def all_relationships(
-        self, shapefiles: Dict[str, Shapefile], key_a: str, key_b: str
+        self, shapefiles: Dict[str, ShapefileWithoutMetadata], key_a: str, key_b: str
     ) -> List[Tuple[str, str]]:
         # pylint: disable=import-outside-toplevel,cyclic-import
         from urbanstats.geometry.relationship import create_relationships_dispatch
@@ -218,7 +219,7 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
         return [*a_contains_b, *b_contains_a, *a_intersects_b]
 
     def name_to_representatives_for_shapefile(
-        self, shapefile: Shapefile
+        self, shapefile: ShapefileWithoutMetadata
     ) -> Dict[str, Dict[int, List[Representative]]]:
         names, representatives_by_row = compute_representatives_for_shapefile(
             shapefile.names,
@@ -231,9 +232,13 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
         self,
         shapefile: Shapefile,
         shapefile_table: pd.DataFrame,
-        shapefiles: Dict[str, Shapefile],
+        shapefiles: Dict[str, ShapefileWithoutMetadata],
     ) -> List[List[RepresentativeWithTerms]]:
-        [key_self] = [key for key, value in shapefiles.items() if value == shapefile]
+        [key_self] = [
+            key
+            for key, value in shapefiles.items()
+            if value == shapefile.without_metadata()
+        ]
 
         other_keys = [
             key

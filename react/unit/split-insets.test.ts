@@ -1,8 +1,7 @@
 import assert from 'assert/strict'
 import { describe, test } from 'node:test'
 
-import { deleteInsets, fitInsetMapBounds, InsetEdits, setInsets, splitInsets } from '../src/mapper/settings/edit-insets'
-import { UrbanStatsASTExpression } from '../src/urban-stats-script/ast'
+import { deleteInsets, fitInsetMapBounds, splitInsets } from '../src/mapper/settings/edit-insets'
 import { deconstruct, Inset, InsetNode, layoutInsets, mapNode, pruneInsets, SplitInset } from '../src/urban-stats-script/constants/insets'
 import { evaluate } from '../src/urban-stats-script/interpreter'
 import { computeAspectRatioForInsets } from '../src/utils/coordinates'
@@ -22,8 +21,6 @@ function frames(nodes: InsetNode[]): Record<string, number[]> {
 }
 
 const usa = [leaf('main', true), leaf('alaska', false, [0, 0], [0.25, 0.25])]
-
-const noEdits: InsetEdits = { insets: i => i, ast: (a: UrbanStatsASTExpression[]) => a }
 
 function insetUSS(name: string, mainMap: boolean, screenBounds: string): string {
     return `constructInset(screenBounds=${screenBounds}, mapBounds={ north: 55, east: -60, south: 20, west: -130 }, mainMap=${mainMap}, name="${name}")`
@@ -97,28 +94,20 @@ void describe('editing split insets', () => {
         assert.deepEqual(deleteInsets(split, [0, 0, 0]), usa)
         assert.equal(layoutInsets(deleteInsets(split, [0, 0, 1])).leaves.length, 3)
     })
-
-    void test('only the top level insets that changed are rewritten', () => {
-        const insets = [...usa, leaf('hawaii', false, [0.5, 0], [0.75, 0.25])]
-        const ast = insets.map(deconstruct)
-        const edited = setInsets(noEdits, insets, [insets[0], leaf('alaska2'), insets[2]])
-        assert.deepEqual(edited.ast(ast).map((expr, i) => expr === ast[i]), [true, false, true])
-    })
 })
 
 void describe('fitInsetMapBounds', () => {
     void test('fitting a split with one cell keeps the split', () => {
         const original: InsetNode[] = [{ bottomLeft: [0, 0], topRight: [1, 1], direction: 'horizontal', children: [{ insets: usa, proportion: 1 }] }]
         const narrowed = mapNode(original, [0], node => [{ ...node, topRight: [0.5, 1] }])
-        const fitted = fitInsetMapBounds(setInsets(noEdits, original, narrowed), original, 2).insets(original)
+        const fitted = fitInsetMapBounds(narrowed, original, 2)
         assert.deepEqual(layoutInsets(fitted).splits.map(s => s.path), [[0]])
     })
 
     void test('accepting a split keeps the canvas aspect ratio', () => {
         const original = [leaf('a', true)]
         const canvasAspectRatio = computeAspectRatioForInsets(original)
-        const split = setInsets(noEdits, original, splitInsets(original, [0], 'horizontal'))
-        const fitted = fitInsetMapBounds(split, original, canvasAspectRatio).insets(original)
+        const fitted = fitInsetMapBounds(splitInsets(original, [0], 'horizontal'), original, canvasAspectRatio)
         assert.ok(Math.abs(computeAspectRatioForInsets(layoutInsets(fitted).leaves) / canvasAspectRatio - 1) < 1e-6)
     })
 })

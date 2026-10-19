@@ -5,9 +5,6 @@ from urbanstats.universe.universe_provider.universe_provider import UniverseProv
 
 @dataclass
 class SelfUniverseProvider(UniverseProvider):
-    def hash_key_details(self):
-        return ()
-
     def relevant_shapefiles(self):
         return []
 

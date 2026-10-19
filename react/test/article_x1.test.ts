@@ -171,7 +171,9 @@ test('loading indicator', async (t) => {
     // Loading indicator appears when shape load fails or is delayed
     await withInterceptedRequests(t, request => request.url.includes('shape') ? 'fail' : 'continue', async () => {
         await t.click(Selector('button[data-test-id="1"]'))
-        await t.expect(Selector('[data-test-id=longLoad]').exists).ok()
+        await t.expect(Selector('div').withExactText('Roscoe CDP').exists).ok()
+        // Loaders are always rendered, hidden until they are loading
+        await t.expect(Selector('[data-test-id=longLoad]').filter(e => getComputedStyle(e).opacity === '1').exists).ok()
 
         await screencap(t, { wait: false })
     })

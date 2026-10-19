@@ -1,11 +1,9 @@
 import assert from 'assert/strict'
 import test from 'node:test'
 
-import { UrbanStatsASTExpression } from '../src/urban-stats-script/ast'
 import { defaultConstants } from '../src/urban-stats-script/constants/constants'
 import * as l from '../src/urban-stats-script/literal-parser'
 import { unparse } from '../src/urban-stats-script/parser'
-import { replace } from '../src/utils/array-edits'
 
 import { parseExpr, parseProgram } from './urban-stats-script-utils'
 
@@ -257,7 +255,7 @@ void test('editable vector', () => {
         unparse(
             l.editableVector(l.number())
                 .parse(parseExpr('[1,2,3]'), defaultConstants)
-                .edit(replace<UrbanStatsASTExpression>(i => i, [1, 2], []))),
+                .edit(elements => elements.filter((_, i) => i !== 1))),
         '[1, 3]')
 })
 

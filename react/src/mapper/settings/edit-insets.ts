@@ -3,7 +3,7 @@ import { deconstruct as deconstructInset, Inset, InsetNode, isSplit, layoutInset
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import * as l from '../../urban-stats-script/literal-parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
-import { ArrayEdits, replace, swap } from '../../utils/array-edits'
+import { ArrayEdits } from '../../utils/array-edits'
 import { fitCoordBox } from '../../utils/coordinates'
 import { assert } from '../../utils/defensive'
 import { loadInsetExpression, loadInsets } from '../context'
@@ -79,38 +79,6 @@ export function getInsets(settings: MapSettings, typeEnvironment: TypeEnvironmen
     return undefined
 }
 
-export interface InsetEdits {
-    insets: ArrayEdits<InsetNode>
-    ast: ArrayEdits<UrbanStatsASTExpression>
-}
-
-export function replaceInsets(edits: InsetEdits, [from, to]: [number, number], withArray: InsetNode[]): InsetEdits {
-    return {
-        insets: replace(edits.insets, [from, to], withArray),
-        ast: replace(edits.ast, [from, to], withArray.map(deconstructInset)),
-    }
-}
-
-export function swapInsets(edits: InsetEdits, indexA: number, indexB: number): InsetEdits {
-    return {
-        insets: swap(edits.insets, indexA, indexB),
-        ast: swap(edits.ast, indexA, indexB),
-    }
-}
-
-/** Edits the top level insets from `old` to `next`, rewriting only the ones that changed */
-export function setInsets(edits: InsetEdits, old: InsetNode[], next: InsetNode[]): InsetEdits {
-    let start = 0
-    while (start < old.length && start < next.length && old[start] === next[start]) {
-        start++
-    }
-    let end = 0
-    while (end < old.length - start && end < next.length - start && old[old.length - 1 - end] === next[next.length - 1 - end]) {
-        end++
-    }
-    return replaceInsets(edits, [start, old.length - end], next.slice(start, next.length - end))
-}
-
 /** Splits a main map's whole list of insets, or another inset by itself */
 export function splitInsets(insets: InsetNode[], path: number[], direction: SplitDirection): InsetNode[] {
     const listPath = path.slice(0, -1)
@@ -148,10 +116,9 @@ export function deleteInsets(insets: InsetNode[], path: number[]): InsetNode[] {
  * Saves the map bounds each edited inset shows on a canvas of the given aspect ratio, so that
  * `computeAspectRatioForInsets` gives the same canvas after a frame is resized without panning.
  */
-export function fitInsetMapBounds(edits: InsetEdits, original: InsetNode[], canvasAspectRatio: number): InsetEdits {
+export function fitInsetMapBounds(insets: InsetNode[], original: InsetNode[], canvasAspectRatio: number): InsetNode[] {
     const unedited = new Set(original)
-    const insets = edits.insets(original)
-    const fitted = layoutInsets(insets).leaves.reduce((result, leaf) => {
+    return layoutInsets(insets).leaves.reduce((result, leaf) => {
         const aspectRatio = (leaf.topRight[0] - leaf.bottomLeft[0]) * canvasAspectRatio / (leaf.topRight[1] - leaf.bottomLeft[1])
         const coordBox = fitCoordBox(leaf.coordBox, aspectRatio)
         if (unedited.has(insets[leaf.path[0]]) || coordBox === leaf.coordBox) {
@@ -159,11 +126,10 @@ export function fitInsetMapBounds(edits: InsetEdits, original: InsetNode[], canv
         }
         return mapNode(result, leaf.path, node => [{ ...node, coordBox }])
     }, insets)
-    return setInsets(edits, insets, fitted)
 }
 
 /** Rescales screen bounds so the insets span the whole canvas in both dimensions. */
-export function normalizeInsetScreenBounds(edits: InsetEdits, insets: InsetNode[]): InsetEdits {
+export function normalizeInsetScreenBounds(insets: InsetNode[]): InsetNode[] {
     const scaleAxis = (axis: 0 | 1): (v: number) => number => {
         const values = insets.flatMap(inset => [inset.bottomLeft[axis], inset.topRight[axis]])
         const min = Math.min(...values)
@@ -173,18 +139,18 @@ export function normalizeInsetScreenBounds(edits: InsetEdits, insets: InsetNode[
     const scaleX = scaleAxis(0)
     const scaleY = scaleAxis(1)
 
-    return insets.reduce((result, inset, i) => {
+    return insets.map((inset) => {
         const bottomLeft: [number, number] = [scaleX(inset.bottomLeft[0]), scaleY(inset.bottomLeft[1])]
         const topRight: [number, number] = [scaleX(inset.topRight[0]), scaleY(inset.topRight[1])]
         if (bottomLeft[0] === inset.bottomLeft[0] && bottomLeft[1] === inset.bottomLeft[1]
             && topRight[0] === inset.topRight[0] && topRight[1] === inset.topRight[1]) {
-            return result
+            return inset
         }
-        return replaceInsets(result, [i, i + 1], [{ ...inset, bottomLeft, topRight }])
-    }, edits)
+        return { ...inset, bottomLeft, topRight }
+    })
 }
 
-export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvironment: TypeEnvironment): MapUSS {
+export function doEditInsets(settings: MapSettings, edits: ArrayEdits<InsetNode>, typeEnvironment: TypeEnvironment): MapUSS {
     assert(settings.script.uss.type === 'statements', 'Trying to do an inset edit on USS that is not inset editable')
     const mapInsets = mapSchema(settings.script.uss, typeEnvironment).namedArgs.insets
     assert(settings.geographies.length > 0, 'Trying to do an inset edit on USS that is not inset editable')
@@ -197,7 +163,13 @@ export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvir
         currentInsetsAst = loadInsetExpression(universesOf(settings.geographies))
     }
 
-    const newConstructInsets = constructInsetsSchema.parse(currentInsetsAst, typeEnvironment).edit(edits.ast) as UrbanStatsASTExpression
+    const parsed = constructInsetsSchema.parse(currentInsetsAst, typeEnvironment)
+    // Insets that edits left untouched keep their expressions, so constants aren't written out
+    const original: InsetNode[] = parsed.currentValue
+    const newConstructInsets = parsed.edit(ast => edits(original).map((inset) => {
+        const i = original.indexOf(inset)
+        return i === -1 ? deconstructInset(inset) : ast[i]
+    })) as UrbanStatsASTExpression
 
     const result = mapInsets.edit(newConstructInsets.type === 'autoUXNode'
         ? newConstructInsets
