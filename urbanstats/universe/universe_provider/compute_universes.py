@@ -23,7 +23,6 @@ def compute_universes_for_shapefile(shapefiles, shapefile):
 @permacache_with_remapping_pickle(
     "urbanstats/universe/universe_provider/universe_provider/_compute_universes_for_shapefile_cached_3",
     key_function=dict(
-        provider=lambda provider: provider.hash_key(),
         names_by_key=stable_hash,
         names=stable_hash,
         identified=stable_hash,

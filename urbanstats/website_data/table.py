@@ -25,6 +25,7 @@ from urbanstats.geometry.segregation import (
     compute_race_data,
     local_segregation_by_block,
 )
+from urbanstats.geometry.shapefiles.shapefile import ShapefileWithoutMetadata
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles as shapefiles_list
 from urbanstats.metadata.metadata_columns_list import (
     metadata_column_providers as default_metadata_column_providers,
@@ -42,11 +43,8 @@ from urbanstats.universe.universe_provider.compute_universes import (
 @permacache_with_remapping_pickle(
     "population_density/stats_for_shapefile/compute_statistics_for_shapefile_54",
     key_function=dict(
-        sf=lambda x: x.hash_key,
-        shapefiles=lambda x: {
-            k: (v.hash_key, v.universe_provider, v.source_countries)
-            for k, v in x.items()
-        },
+        sf=stable_hash,
+        shapefiles=stable_hash,
         metadata_providers=stable_hash,
         statistic_collections=stable_hash,
     ),
@@ -54,12 +52,12 @@ from urbanstats.universe.universe_provider.compute_universes import (
 )
 def compute_statistics_for_shapefile(
     sf: Any,
-    shapefiles: Dict[str, Any],
+    shapefiles: Dict[str, ShapefileWithoutMetadata],
     metadata_providers: Any = default_metadata_column_providers,
     statistic_collections: Any = default_statistic_collections,
 ) -> pd.DataFrame:
     # pylint: disable=too-many-locals
-    print("Computing statistics for", sf.hash_key)
+    print("Computing statistics for", sf.geometry.key)
     sf_fr = sf.load_file()
     result = sf_fr[sf.available_columns(include_intermediates=False)].copy()
 
@@ -67,12 +65,14 @@ def compute_statistics_for_shapefile(
     result["universes"] = [
         longname_to_universes[longname] for longname in result.longname
     ]
-    if sf.wikidata_sourcer is not None:
+    if sf.metadata.wikidata_sourcer is not None:
         values = list(
-            sf_fr[sf.wikidata_sourcer.columns()].itertuples(index=False, name=None)
+            sf_fr[sf.metadata.wikidata_sourcer.columns()].itertuples(
+                index=False, name=None
+            )
         )
         wikidata, wikipedia = compute_wikidata_and_wikipedia(
-            values, sf.wikidata_sourcer
+            values, sf.metadata.wikidata_sourcer
         )
         result["wikidata"] = wikidata
         result["wikipedia_page"] = wikipedia
@@ -87,8 +87,8 @@ def compute_statistics_for_shapefile(
             assert len(computed_column.values) == len(result)
             result[computed_column.key] = computed_column.values
 
-    for k in sf.meta:
-        result[k] = sf.meta[k]
+    for k in sf.metadata.meta:
+        result[k] = sf.metadata.meta[k]
 
     statistics: Dict[str, Any] = {}
 
@@ -110,8 +110,9 @@ def compute_statistics_for_shapefile(
 
 def combined_shapefile() -> pd.DataFrame:
     full = []
+    without_metadata = {k: sf.without_metadata() for k, sf in shapefiles_list.items()}
     for k in tqdm.tqdm(shapefiles_list, desc="computing statistics"):
-        t = compute_statistics_for_shapefile(shapefiles_list[k], shapefiles_list)
+        t = compute_statistics_for_shapefile(shapefiles_list[k], without_metadata)
         forget_loaded_values(compute_statistics_for_shapefile)
         forget_loaded_values(_compute_crosswalk)
         forget_loaded_values(_compute_crosswalk_canada)

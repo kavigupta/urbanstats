@@ -16,7 +16,7 @@ from urbanstats.universe.universe_provider.constants import INTERNATIONAL_PROVID
 from urbanstats.universe.universe_provider.self_provider import SelfUniverseProvider
 
 COUNTRIES = make_shapefile(
-    hash_key="countries_12",
+    geometry_key="countries_12",
     path=countries,
     shortname_extractor=CountryName(column("ISO_CC")),
     longname_extractor=CountryName(column("ISO_CC")),
@@ -34,7 +34,7 @@ COUNTRIES = make_shapefile(
     source_countries=IsCountry({"USA": "USA", "Canada": "Canada"}),
     cross_source_borders=CrossSourceBorders(can_straddle=False),
     abbreviation="CTRY",
-    data_credit=SUBNATIONAL_REGIONS.data_credit,
+    data_credit=SUBNATIONAL_REGIONS.metadata.data_credit,
     include_in_syau=True,
     wikidata_sourcer=SimpleWikidataSourcer("wdt:P297", "iso"),
 )

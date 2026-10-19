@@ -219,47 +219,16 @@ def join_layers(*layers):
     return gpd.GeoDataFrame(columns, geometry=rows.geometry)
 
 
-def _from_layer(layer, name):
-    return property(lambda self: getattr(getattr(self, layer), name))
-
-
-@attr.s
-class Shapefile:
+@attr.s(frozen=True)
+class ShapefileWithoutMetadata:
     geometry = attr.ib()
     naming = attr.ib()
-    metadata = attr.ib()
     universe_provider = attr.ib()
-    temporal = attr.ib(default=attr.Factory(Temporal))
-    identifiers = attr.ib(default=attr.Factory(Identifiers))
-    special_data_sources = attr.ib(default=attr.Factory(dict))
-    # Optional[SourceCountries], for shapefiles with regions a source country's statistics cover
-    source_countries = attr.ib(default=None)
-    cross_source_borders: Optional[CrossSourceBorders] = attr.ib(default=None)
-
-    # the attributes from before shapefiles were split into layers
-    hash_key = _from_layer("geometry", "key")
-    path = _from_layer("geometry", "path")
-    filter = _from_layer("geometry", "filter")
-    start_date = _from_layer("temporal", "start_date")
-    start_date_overall = _from_layer("temporal", "start_date_overall")
-    end_date = _from_layer("temporal", "end_date")
-    end_date_overall = _from_layer("temporal", "end_date_overall")
-    additional_columns_computer = _from_layer(
-        "identifiers", "additional_columns_computer"
-    )
-    intermediate_computation_columns = _from_layer(
-        "identifiers", "intermediate_computation_columns"
-    )
-    shortname_extractor = _from_layer("naming", "shortname_extractor")
-    longname_extractor = _from_layer("naming", "longname_extractor")
-    cleanname_extractor = _from_layer("naming", "cleanname_extractor")
-    longname_sans_date_extractor = _from_layer("naming", "longname_sans_date_extractor")
-    meta = _from_layer("metadata", "meta")
-    does_overlap_self = _from_layer("geometry", "does_overlap_self")
-    abbreviation = _from_layer("metadata", "abbreviation")
-    data_credit = _from_layer("metadata", "data_credit")
-    include_in_syau = _from_layer("metadata", "include_in_syau")
-    wikidata_sourcer = _from_layer("metadata", "wikidata_sourcer")
+    temporal = attr.ib()
+    identifiers = attr.ib()
+    special_data_sources = attr.ib()
+    source_countries = attr.ib()
+    cross_source_borders = attr.ib()
 
     @property
     def names(self):
@@ -272,6 +241,47 @@ class Shapefile:
     @property
     def identified(self):
         return Identified(geometry=self.geometry, identifiers=self.identifiers)
+
+
+@attr.s(hash=False)
+class Shapefile:
+    geometry = attr.ib()
+    naming = attr.ib()
+    metadata = attr.ib()
+    universe_provider = attr.ib()
+    temporal = attr.ib(default=attr.Factory(Temporal))
+    identifiers = attr.ib(default=attr.Factory(Identifiers))
+    special_data_sources = attr.ib(default=attr.Factory(dict))
+    # Optional[SourceCountries], for shapefiles with regions a source country's statistics cover
+    source_countries = attr.ib(default=None)
+    cross_source_borders: Optional[CrossSourceBorders] = attr.ib(default=None)
+
+    def __hash__(self):
+        return hash(stable_hash(self))
+
+    def without_metadata(self):
+        return ShapefileWithoutMetadata(
+            geometry=self.geometry,
+            naming=self.naming,
+            universe_provider=self.universe_provider,
+            temporal=self.temporal,
+            identifiers=self.identifiers,
+            special_data_sources=self.special_data_sources,
+            source_countries=self.source_countries,
+            cross_source_borders=self.cross_source_borders,
+        )
+
+    @property
+    def names(self):
+        return self.without_metadata().names
+
+    @property
+    def dates(self):
+        return self.without_metadata().dates
+
+    @property
+    def identified(self):
+        return self.without_metadata().identified
 
     def load_file(self):
         return join_layers(self.names, self.dates, self.identified)
@@ -288,14 +298,18 @@ class Shapefile:
     def localized_type_names(self):
         if self.source_countries is None:
             return {}
-        return self.source_countries.localized_type_names(self.meta["type"])
+        return self.source_countries.localized_type_names(self.metadata.meta["type"])
 
     def available_columns(self, *, include_intermediates):
         return [
             *NAME_COLUMNS,
             *DATE_COLUMNS,
-            *self.additional_columns_computer,
-            *(self.intermediate_computation_columns if include_intermediates else []),
+            *self.identifiers.additional_columns_computer,
+            *(
+                self.identifiers.intermediate_computation_columns
+                if include_intermediates
+                else []
+            ),
         ]
 
     @property
@@ -310,7 +324,7 @@ class Shapefile:
 # pylint: disable-next=too-many-arguments,too-many-locals
 def make_shapefile(
     *,
-    hash_key,
+    geometry_key,
     path,
     path_inputs=(),
     filter,  # pylint: disable=redefined-builtin
@@ -340,7 +354,7 @@ def make_shapefile(
         assert longname_sans_date_extractor is not None
     return Shapefile(
         geometry=Geometry(
-            key=hash_key,
+            key=geometry_key,
             path=path,
             filter=filter,
             does_overlap_self=does_overlap_self,
@@ -396,17 +410,12 @@ def multiple_localized_type_names(shapefiles):
 
 
 def compute_data_credits(ordered_shapefiles):
-    # type_to_data_credit = {
-    #     x.meta["type"]: (
-    #         x.data_credit if isinstance(x.data_credit, list) else [x.data_credit]
-    #     )
-    #     for x in ordered_shapefiles.values()
-    # }
     types = []
     all_credits = []
     for sf in ordered_shapefiles:
-        name = sf.meta["type"]
-        cs = sf.data_credit if isinstance(sf.data_credit, list) else [sf.data_credit]
+        name = sf.metadata.meta["type"]
+        credit = sf.metadata.data_credit
+        cs = credit if isinstance(credit, list) else [credit]
         cs = [{"text": None, **u} for u in cs]
         if cs in all_credits:
             types[all_credits.index(cs)].append(name)

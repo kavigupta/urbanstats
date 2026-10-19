@@ -8,9 +8,6 @@ from urbanstats.universe.universe_provider.universe_provider import UniverseProv
 class CombinedUniverseProvider(UniverseProvider):
     providers: List[UniverseProvider]
 
-    def hash_key_details(self):
-        return tuple(provider.hash_key() for provider in self.providers)
-
     def relevant_shapefiles(self):
         return sorted(
             {

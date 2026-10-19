@@ -14,7 +14,7 @@ from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
 )
 
 CANADIAN_DISTRICTS = make_shapefile(
-    hash_key="canadian_districts_2",
+    geometry_key="canadian_districts_2",
     path=lambda countries, subnationals: load_canadian_shapefile(
         "named_region_shapefiles/canada/lfed000a21a_e.zip", countries, subnationals
     ),
