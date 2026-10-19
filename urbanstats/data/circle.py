@@ -607,7 +607,7 @@ def circle_shapefile_object(country_shapefile, population):
     name = named_populations[population] + " Person Circle"
     version = 27
     return make_shapefile(
-        hash_key=f"population_circle_{named_populations[population]}_{version}",
+        geometry_key=f"population_circle_{named_populations[population]}_{version}",
         path=lambda country_names, urban_center_names: overlapping_circles_frame(
             country_names,
             urban_center_names,

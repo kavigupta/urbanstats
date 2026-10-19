@@ -219,10 +219,6 @@ def join_layers(*layers):
     return gpd.GeoDataFrame(columns, geometry=rows.geometry)
 
 
-def _from_layer(layer, name):
-    return property(lambda self: getattr(getattr(self, layer), name))
-
-
 @attr.s(frozen=True)
 class ShapefileWithoutMetadata:
     geometry = attr.ib()
@@ -259,31 +255,6 @@ class Shapefile:
     # Optional[SourceCountries], for shapefiles with regions a source country's statistics cover
     source_countries = attr.ib(default=None)
     cross_source_borders: Optional[CrossSourceBorders] = attr.ib(default=None)
-
-    # the attributes from before shapefiles were split into layers
-    hash_key = _from_layer("geometry", "key")
-    path = _from_layer("geometry", "path")
-    filter = _from_layer("geometry", "filter")
-    start_date = _from_layer("temporal", "start_date")
-    start_date_overall = _from_layer("temporal", "start_date_overall")
-    end_date = _from_layer("temporal", "end_date")
-    end_date_overall = _from_layer("temporal", "end_date_overall")
-    additional_columns_computer = _from_layer(
-        "identifiers", "additional_columns_computer"
-    )
-    intermediate_computation_columns = _from_layer(
-        "identifiers", "intermediate_computation_columns"
-    )
-    shortname_extractor = _from_layer("naming", "shortname_extractor")
-    longname_extractor = _from_layer("naming", "longname_extractor")
-    cleanname_extractor = _from_layer("naming", "cleanname_extractor")
-    longname_sans_date_extractor = _from_layer("naming", "longname_sans_date_extractor")
-    meta = _from_layer("metadata", "meta")
-    does_overlap_self = _from_layer("geometry", "does_overlap_self")
-    abbreviation = _from_layer("metadata", "abbreviation")
-    data_credit = _from_layer("metadata", "data_credit")
-    include_in_syau = _from_layer("metadata", "include_in_syau")
-    wikidata_sourcer = _from_layer("metadata", "wikidata_sourcer")
 
     def without_metadata(self):
         return ShapefileWithoutMetadata(
@@ -324,14 +295,18 @@ class Shapefile:
     def localized_type_names(self):
         if self.source_countries is None:
             return {}
-        return self.source_countries.localized_type_names(self.meta["type"])
+        return self.source_countries.localized_type_names(self.metadata.meta["type"])
 
     def available_columns(self, *, include_intermediates):
         return [
             *NAME_COLUMNS,
             *DATE_COLUMNS,
-            *self.additional_columns_computer,
-            *(self.intermediate_computation_columns if include_intermediates else []),
+            *self.identifiers.additional_columns_computer,
+            *(
+                self.identifiers.intermediate_computation_columns
+                if include_intermediates
+                else []
+            ),
         ]
 
     @property
@@ -346,7 +321,7 @@ class Shapefile:
 # pylint: disable-next=too-many-arguments,too-many-locals
 def make_shapefile(
     *,
-    hash_key,
+    geometry_key,
     path,
     path_inputs=(),
     filter,  # pylint: disable=redefined-builtin
@@ -376,7 +351,7 @@ def make_shapefile(
         assert longname_sans_date_extractor is not None
     return Shapefile(
         geometry=Geometry(
-            key=hash_key,
+            key=geometry_key,
             path=path,
             filter=filter,
             does_overlap_self=does_overlap_self,
@@ -441,8 +416,9 @@ def compute_data_credits(ordered_shapefiles):
     types = []
     all_credits = []
     for sf in ordered_shapefiles:
-        name = sf.meta["type"]
-        cs = sf.data_credit if isinstance(sf.data_credit, list) else [sf.data_credit]
+        name = sf.metadata.meta["type"]
+        credit = sf.metadata.data_credit
+        cs = credit if isinstance(credit, list) else [credit]
         cs = [{"text": None, **u} for u in cs]
         if cs in all_credits:
             types[all_credits.index(cs)].append(name)

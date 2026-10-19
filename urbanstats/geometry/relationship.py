@@ -143,7 +143,7 @@ tiers = [
 ]
 
 type_to_type_category = {
-    shapefile.meta["type"]: shapefile.meta["type_category"]
+    shapefile.metadata.meta["type"]: shapefile.metadata.meta["type_category"]
     for shapefile in shapefiles.values()
 }
 
@@ -161,7 +161,7 @@ type_category_order = {
     "Kavi": 80,
 }
 
-key_to_type = {x: sf.meta["type"] for x, sf in shapefiles.items()}
+key_to_type = {x: sf.metadata.meta["type"] for x, sf in shapefiles.items()}
 
 map_relationships = [
     ("subnational_regions", "counties"),
@@ -183,7 +183,9 @@ map_relationships_by_type = [[key_to_type[x] for x in y] for y in map_relationsh
 
 tier_index_by_type = {x: -i for i, tier in enumerate(tiers) for x in tier}
 
-missing = {x.meta["type"] for x in shapefiles.values()} - set(tier_index_by_type)
+missing = {x.metadata.meta["type"] for x in shapefiles.values()} - set(
+    tier_index_by_type
+)
 
 assert not missing, missing
 
@@ -229,7 +231,7 @@ def full_relationships(long_to_type):
             long_to_type,
             {k: sf.names for k, sf in shapefiles.items()},
             {k: sf.dates for k, sf in shapefiles.items()},
-            {k: sf.meta["type"] for k, sf in shapefiles.items()},
+            {k: sf.metadata.meta["type"] for k, sf in shapefiles.items()},
         ).items()
     }
 

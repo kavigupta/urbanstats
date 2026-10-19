@@ -324,7 +324,7 @@ def districts(
     wikidata_sourcer=None,
 ):
     return make_shapefile(
-        hash_key=f"current_districts_{file_name}"
+        geometry_key=f"current_districts_{file_name}"
         + version_tag_by_file_name.get(file_name, ""),
         path=lambda: load_shapefile(
             file_name,

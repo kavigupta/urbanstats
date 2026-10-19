@@ -27,7 +27,7 @@ def is_native_statistical_area(row):
 
 
 NATIVE_AREAS = make_shapefile(
-    hash_key="native_areas_2",
+    geometry_key="native_areas_2",
     path="named_region_shapefiles/cb_2022_us_aiannh_500k.zip",
     shortname_extractor=column("NAMELSAD"),
     cleanname_extractor=column("NAME"),
@@ -48,7 +48,7 @@ NATIVE_AREAS = make_shapefile(
     special_data_sources=["congressional_representatives_indirect"],
 )
 NATIVE_STATISTICAL_AREAS = make_shapefile(
-    hash_key="native_statistical_areas",
+    geometry_key="native_statistical_areas",
     path="named_region_shapefiles/cb_2022_us_aiannh_500k.zip",
     shortname_extractor=column("NAMELSAD"),
     cleanname_extractor=column("NAME"),
@@ -69,7 +69,7 @@ NATIVE_STATISTICAL_AREAS = make_shapefile(
     special_data_sources=["congressional_representatives_indirect"],
 )
 NATIVE_SUBDIVISIONS = make_shapefile(
-    hash_key="native_subdivisions_2",
+    geometry_key="native_subdivisions_2",
     path="named_region_shapefiles/cb_2022_us_aitsn_500k.zip",
     shortname_extractor=column("NAMELSAD"),
     cleanname_extractor=column("NAME"),

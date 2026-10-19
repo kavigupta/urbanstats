@@ -51,7 +51,7 @@ def clean_shape(geo):
     return shapely.MultiPolygon(result)
 
 
-shapefiles_by_type = {sh.meta["type"]: sh for sh in shapefiles.values()}
+shapefiles_by_type = {sh.metadata.meta["type"]: sh for sh in shapefiles.values()}
 
 
 @permacache("urbanstats/geometry/insets/load_geo")
