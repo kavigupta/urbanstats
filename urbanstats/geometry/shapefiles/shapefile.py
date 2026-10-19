@@ -407,12 +407,6 @@ def multiple_localized_type_names(shapefiles):
 
 
 def compute_data_credits(ordered_shapefiles):
-    # type_to_data_credit = {
-    #     x.meta["type"]: (
-    #         x.data_credit if isinstance(x.data_credit, list) else [x.data_credit]
-    #     )
-    #     for x in ordered_shapefiles.values()
-    # }
     types = []
     all_credits = []
     for sf in ordered_shapefiles:
