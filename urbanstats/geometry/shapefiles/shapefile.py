@@ -247,7 +247,7 @@ class ShapefileWithoutMetadata:
         return Identified(geometry=self.geometry, identifiers=self.identifiers)
 
 
-@attr.s
+@attr.s(hash=False)
 class Shapefile:
     geometry = attr.ib()
     naming = attr.ib()
@@ -284,6 +284,9 @@ class Shapefile:
     data_credit = _from_layer("metadata", "data_credit")
     include_in_syau = _from_layer("metadata", "include_in_syau")
     wikidata_sourcer = _from_layer("metadata", "wikidata_sourcer")
+
+    def __hash__(self):
+        return hash(stable_hash(self))
 
     def without_metadata(self):
         return ShapefileWithoutMetadata(
