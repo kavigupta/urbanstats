@@ -8,9 +8,6 @@ from urbanstats.universe.universe_provider.universe_provider import UniverseProv
 class ConstantUniverseProvider(UniverseProvider):
     universes: List[str]
 
-    def hash_key_details(self):
-        return tuple(self.universes)
-
     def relevant_shapefiles(self):
         return []
 
