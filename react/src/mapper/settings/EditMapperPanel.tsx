@@ -267,36 +267,40 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
         addState(edits, undefined)
     }
 
+    const add = (): void => {
+        const newInset: Inset = {
+            ...loadInsets(mapSettings.geographies.length > 0 ? universesOf(mapSettings.geographies) : 'world')[0],
+            bottomLeft: [0.25, 0.25],
+            topRight: [0.75, 0.75],
+            mainMap: false,
+        }
+        addInsetEdit(insets => [...insets, offsetInsetInBounds(newInset, insets)])
+    }
+
     const ui = mapGenerator.ui({
         mode: 'insets',
         editInsets: {
-            add: () => {
-                const newInset: Inset = {
-                    ...loadInsets(mapSettings.geographies.length > 0 ? universesOf(mapSettings.geographies) : 'world')[0],
-                    bottomLeft: [0.25, 0.25],
-                    topRight: [0.75, 0.75],
-                    mainMap: false,
-                }
-                addInsetEdit(insets => [...insets, offsetInsetInBounds(newInset, insets)])
-            },
-            modify: (i, e) => {
-                addInsetEdit(insets => insets.map((inset, j) => j === i ? { ...inset, ...e } : inset))
-            },
-            delete: (i) => {
-                addInsetEdit(insets => insets.filter((_, j) => j !== i))
-            },
-            duplicate: (i) => {
-                addInsetEdit(insets => [...insets.slice(0, i + 1), offsetInsetInBounds(insets[i], insets), ...insets.slice(i + 1)])
-            },
-            moveUp: (i) => {
-                assert(i + 1 < editedInsets.length, `Cannot move inset ${i} up, already top`)
-                addInsetEdit(insets => swap(insets, i, i + 1))
-            },
-            moveDown: (i) => {
-                assert(i > 0, `Cannot move inset ${i} down, already bottom`)
-                addInsetEdit(insets => swap(insets, i, i - 1))
-            },
             edited: editedInsets,
+            handlers: i => ({
+                add,
+                modify: (e) => {
+                    addInsetEdit(insets => insets.map((inset, j) => j === i ? { ...inset, ...e } : inset))
+                },
+                delete: () => {
+                    addInsetEdit(insets => insets.filter((_, j) => j !== i))
+                },
+                duplicate: () => {
+                    addInsetEdit(insets => [...insets.slice(0, i + 1), offsetInsetInBounds(insets[i], insets), ...insets.slice(i + 1)])
+                },
+                moveUp: () => {
+                    assert(i + 1 < editedInsets.length, `Cannot move inset ${i} up, already top`)
+                    addInsetEdit(insets => swap(insets, i, i + 1))
+                },
+                moveDown: () => {
+                    assert(i > 0, `Cannot move inset ${i} down, already bottom`)
+                    addInsetEdit(insets => swap(insets, i, i - 1))
+                },
+            }),
         },
     })
 
@@ -494,47 +498,52 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
         addState(edits, selectionProperty.value)
     }
 
+    const add = (): void => {
+        const newTextBox: TextBox = {
+            bottomLeft: [0.25, 0.25],
+            topRight: [0.75, 0.75],
+            text: [{ insert: '\n' }], // bugs on applying attributes to empty text without this
+            ...defaults,
+        }
+        addTextBoxEdit(boxes => [...boxes, offsetInsetInBounds(newTextBox, boxes)])
+        selectionProperty.value = { index: textBoxes.length, range: { index: 0, length: 0 } }
+    }
+
     const ui = mapGenerator.ui({
         mode: 'textBoxes',
         editTextBoxes: {
-            add: () => {
-                const newTextBox: TextBox = {
-                    bottomLeft: [0.25, 0.25],
-                    topRight: [0.75, 0.75],
-                    text: [{ insert: '\n' }], // bugs on applying attributes to empty text without this
-                    ...defaults,
-                }
-                addTextBoxEdit(boxes => [...boxes, offsetInsetInBounds(newTextBox, boxes)])
-                selectionProperty.value = { index: textBoxes.length, range: { index: 0, length: 0 } }
-            },
-            modify: (i, e) => {
-                addTextBoxEdit(boxes => boxes.map((textBox, j) => i === j ? { ...textBox, ...e } : textBox))
-            },
-            delete: (i) => {
-                addTextBoxEdit(boxes => boxes.filter((_, j) => j !== i))
-                if (selectionProperty.value?.index === i) {
-                    selectionProperty.value = undefined
-                }
-            },
-            duplicate: (i) => {
-                addTextBoxEdit(boxes => [...boxes, offsetInsetInBounds(boxes[i], boxes)])
-                selectionProperty.value = { index: textBoxes.length, range: { index: 0, length: documentLength(textBoxes[i].text) } }
-            },
-            moveUp: (i) => {
-                assert(i + 1 < textBoxes.length, `Cannot move text box ${i} up, already top`)
-                addTextBoxEdit(boxes => swap(boxes, i, i + 1))
-                if (selectionProperty.value?.index === i) {
-                    selectionProperty.value = { ...selectionProperty.value, index: i + 1 }
-                }
-            },
-            moveDown: (i) => {
-                assert(i > 0, `Cannot move inset ${i} down, already bottom`)
-                addTextBoxEdit(boxes => swap(boxes, i, i - 1))
-                if (selectionProperty.value?.index === i) {
-                    selectionProperty.value = { ...selectionProperty.value, index: i - 1 }
-                }
-            },
             edited: textBoxes,
+            add,
+            handlers: i => ({
+                add,
+                modify: (e) => {
+                    addTextBoxEdit(boxes => boxes.map((textBox, j) => i === j ? { ...textBox, ...e } : textBox))
+                },
+                delete: () => {
+                    addTextBoxEdit(boxes => boxes.filter((_, j) => j !== i))
+                    if (selectionProperty.value?.index === i) {
+                        selectionProperty.value = undefined
+                    }
+                },
+                duplicate: () => {
+                    addTextBoxEdit(boxes => [...boxes, offsetInsetInBounds(boxes[i], boxes)])
+                    selectionProperty.value = { index: textBoxes.length, range: { index: 0, length: documentLength(textBoxes[i].text) } }
+                },
+                moveUp: () => {
+                    assert(i + 1 < textBoxes.length, `Cannot move text box ${i} up, already top`)
+                    addTextBoxEdit(boxes => swap(boxes, i, i + 1))
+                    if (selectionProperty.value?.index === i) {
+                        selectionProperty.value = { ...selectionProperty.value, index: i + 1 }
+                    }
+                },
+                moveDown: () => {
+                    assert(i > 0, `Cannot move inset ${i} down, already bottom`)
+                    addTextBoxEdit(boxes => swap(boxes, i, i - 1))
+                    if (selectionProperty.value?.index === i) {
+                        selectionProperty.value = { ...selectionProperty.value, index: i - 1 }
+                    }
+                },
+            }),
         },
     })
 
