@@ -16,7 +16,7 @@ class ContainedWithinUniverseProvider(UniverseProvider):
     longname_filter: List[str] = None
     remove_universes: List[str] = None
     allow_self_universe: bool = field(kw_only=True)
-    version = 4
+    version: int = 4
 
     def relevant_shapefiles(self):
         return self.contained_within

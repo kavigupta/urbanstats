@@ -8,7 +8,7 @@ from urbanstats.universe.universe_provider.universe_provider import UniverseProv
 class OverrideUniverseProvider(UniverseProvider):
     overrides: Dict[str, List[str]]
     underlying: UniverseProvider
-    version = 2
+    version: int = 2
 
     def relevant_shapefiles(self):
         return self.underlying.relevant_shapefiles()
