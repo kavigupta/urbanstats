@@ -42,7 +42,7 @@ def school_district_shapefiles(county_names):
 
 
 SCHOOL_DISTRICTS = make_shapefile(
-    hash_key="school_districts_2",
+    geometry_key="school_districts_2",
     path=school_district_shapefiles,
     path_inputs=(COUNTIES.names,),
     shortname_extractor=column("NAME"),

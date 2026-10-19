@@ -33,7 +33,7 @@ class ContinentsWikidataSourcer:
 
 
 CONTINENTS = make_shapefile(
-    hash_key="continents_9",
+    geometry_key="continents_9",
     path=continents,
     shortname_extractor=column("name_1"),
     longname_extractor=column("name_1"),
@@ -45,7 +45,7 @@ CONTINENTS = make_shapefile(
         [ConstantUniverseProvider(["world"]), SelfUniverseProvider()]
     ),
     abbreviation="CONT",
-    data_credit=COUNTRIES.data_credit,
+    data_credit=COUNTRIES.metadata.data_credit,
     include_in_syau=True,
     wikidata_sourcer=ContinentsWikidataSourcer(),
 )

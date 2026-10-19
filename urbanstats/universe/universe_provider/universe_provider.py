@@ -15,18 +15,6 @@ class UniverseProvider(ABC):
     Represents a provider of universe data.
     """
 
-    def hash_key(self):
-        """
-        Returns a hash key for this provider
-        """
-        return (self.__class__.__name__, self.hash_key_details())
-
-    @abstractmethod
-    def hash_key_details(self):
-        """
-        Returns a hash key for this provider. Does not include the class name.
-        """
-
     @abstractmethod
     def relevant_shapefiles(self):
         """
@@ -47,9 +35,6 @@ class UniverseProvider(ABC):
 @dataclass
 class UrbanCenterlikeStateUniverseProvider(UniverseProvider):
     countries: Tuple[str] = ("US", "CA")
-
-    def hash_key_details(self):
-        return self.countries
 
     def relevant_shapefiles(self):
         return []

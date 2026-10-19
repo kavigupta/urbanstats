@@ -26,7 +26,6 @@ def join_with_suos(shapes):
 
 @permacache(
     "urbanstats/geometry/historical_counties/aggregation/aggregate_to_suos_5",
-    key_function=dict(suo_data_source=lambda x: x.hash_key),
 )
 def aggregate_to_suos(geometry, suo_data_source):
     data = suo_data_source.load_fn().reset_index(drop=True)

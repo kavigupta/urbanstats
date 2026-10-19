@@ -4,7 +4,7 @@ from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 MEDIA_MARKETS = make_shapefile(
-    hash_key="media_markets_2",
+    geometry_key="media_markets_2",
     path="named_region_shapefiles/NatDMA.zip",
     shortname_extractor=column("NAME") + " Media Market",
     cleanname_extractor=column("NAME"),

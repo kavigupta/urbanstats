@@ -24,7 +24,7 @@ data_credit = dict(
 )
 
 HRRs = make_shapefile(
-    hash_key="hospital_referral_regions_3",
+    geometry_key="hospital_referral_regions_3",
     path="named_region_shapefiles/hrr.geojson",
     shortname_extractor=HrrCleanname(column("hrrcity")) + " HRR",
     cleanname_extractor=HrrCleanname(column("hrrcity")),
@@ -45,7 +45,7 @@ HRRs = make_shapefile(
     special_data_sources=["congressional_representatives_indirect"],
 )
 HSAs = make_shapefile(
-    hash_key="hospital_service_areas_2",
+    geometry_key="hospital_service_areas_2",
     path="named_region_shapefiles/HsaBdry_AK_HI_unmodified.geojson",
     shortname_extractor=HrrCleanname(column("HSANAME")) + " HSA",
     cleanname_extractor=HrrCleanname(column("HSANAME")),

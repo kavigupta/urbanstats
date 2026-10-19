@@ -19,7 +19,7 @@ class CountyName(RowFunction):
 
 
 COUNTIES = make_shapefile(
-    hash_key="census_counties_7",
+    geometry_key="census_counties_7",
     path="named_region_shapefiles/cb_2022_us_county_500k.zip",
     shortname_extractor=CountyName(),
     cleanname_extractor=column("NAME"),

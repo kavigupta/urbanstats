@@ -29,7 +29,7 @@ def usda_county_type():
 
 
 USDA_COUNTY_TYPE = make_shapefile(
-    hash_key="usda_county_type",
+    geometry_key="usda_county_type",
     path=usda_county_type,
     shortname_extractor=IndexLabel() + " [USDA County Type]",
     cleanname_extractor=IndexLabel(),
