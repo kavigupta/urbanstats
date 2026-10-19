@@ -34,10 +34,14 @@ def load_ghsl_urban_centers():
 @dataclass(frozen=True)
 class SubnationalSuffixes:
     """
-    Names regions after the subnational regions holding over 5% of their area, e.g. the suffix
-    "Brazil" for an urban center in Brazil, and "Bahia" to tell apart two of the same name.
+    Names regions after the subnational regions holding over 5% of their area: the suffix is
+    their countries, and regions with the same name and suffix are told apart by their
+    subnational regions (and directions, if those match too).
     """
 
+    # Geometry of the regions named, among which names must be unique; per-country subsets of them
+    # take their names from here
+    regions: Any
     subnationals: Any  # Geometry
     name_column: str
     more_general_direction: bool
@@ -46,9 +50,9 @@ class SubnationalSuffixes:
 
 
 @permacache("urbanstats/special_cases/ghsl_urban_center/compute_subnational_suffixes")
-def compute_subnational_suffixes(suffixes, geometry):
-    """For each of geometry's rows: subnationals_ISO_CC, subnationals_ISO_CODE, suffix and mid."""
-    areas = geometry.load_rows().copy()
+def compute_subnational_suffixes(suffixes):
+    """For each region: subnationals_ISO_CC, subnationals_ISO_CODE, suffix and mid."""
+    areas = suffixes.regions.load_rows().copy()
     areas["index_"] = areas.index
     snr = suffixes.subnationals.load_rows()
     subnational_classes = classify_areas_by_subnational_region(snr, areas)
@@ -67,14 +71,14 @@ def compute_subnational_suffixes(suffixes, geometry):
 
 @dataclass(frozen=True)
 class SubnationalSuffixedName(TableFunction):
-    """part is "cleanname", e.g. "Salvador (Bahia)", or "shortname" or "longname"."""
+    """part is "cleanname" (the name and any disambiguator), "shortname" or "longname"."""
 
     suffixes: SubnationalSuffixes
     type_name: str
     part: str
 
-    def __call__(self, geometry, rows):
-        computed = compute_subnational_suffixes(self.suffixes, geometry).loc[rows.index]
+    def __call__(self, rows):
+        computed = compute_subnational_suffixes(self.suffixes).loc[rows.index]
         cleanname = rows[self.suffixes.name_column] + computed.mid.apply(
             lambda x: " (" + x + ")" if x else ""
         )

@@ -92,9 +92,9 @@ class Metadata:
     wikidata_sourcer = attr.ib()
 
 
-def extract(extractor, geometry, rows):
+def extract(extractor, rows):
     if isinstance(extractor, TableFunction):
-        return extractor(geometry, rows)
+        return extractor(rows)
     return rows.apply(extractor, axis=1)
 
 
@@ -116,16 +116,16 @@ class Names:
         from urbanstats.special_cases.deduplicate_longnames import rename_duplicates
 
         s = rows.copy(deep=False)
-        s["shortname"] = extract(self.naming.shortname_extractor, self.geometry, s)
+        s["shortname"] = extract(self.naming.shortname_extractor, s)
         s["cleanname"] = (
             s["shortname"]
             if self.naming.cleanname_extractor is None
-            else extract(self.naming.cleanname_extractor, self.geometry, s)
+            else extract(self.naming.cleanname_extractor, s)
         )
-        s["longname"] = extract(self.naming.longname_extractor, self.geometry, s)
+        s["longname"] = extract(self.naming.longname_extractor, s)
         if self.naming.longname_sans_date_extractor is not None:
             s["longname_sans_date"] = extract(
-                self.naming.longname_sans_date_extractor, self.geometry, s
+                self.naming.longname_sans_date_extractor, s
             )
         else:
             s["longname_sans_date"] = None
@@ -170,12 +170,10 @@ class Dates:
                 "start_date": (
                     -float("inf")
                     if t.start_date is None
-                    else extract(t.start_date, self.geometry, rows)
+                    else extract(t.start_date, rows)
                 ),
                 "end_date": (
-                    float("inf")
-                    if t.end_date is None
-                    else extract(t.end_date, self.geometry, rows)
+                    float("inf") if t.end_date is None else extract(t.end_date, rows)
                 ),
             },
             index=rows.index,
@@ -201,7 +199,7 @@ class Identified:
         """The additional and intermediate columns of rows, which are geometry.load_rows()."""
         s = rows.copy(deep=False)
         for k, v in self.identifiers.additional_columns_computer.items():
-            s[k] = extract(v, self.geometry, s)
+            s[k] = extract(v, s)
         return pd.DataFrame(
             {
                 col: s[col]

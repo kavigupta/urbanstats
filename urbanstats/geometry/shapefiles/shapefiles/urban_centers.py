@@ -1,3 +1,5 @@
+import attr
+
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
@@ -18,23 +20,20 @@ from urbanstats.universe.universe_provider.universe_provider import (
 )
 
 
-def create_urban_center_like_shapefile(*, suffixes, **kwargs):
-    def name(part):
-        return SubnationalSuffixedName(suffixes, kwargs["meta"]["type"], part)
-
-    return make_shapefile(
-        shortname_extractor=name("shortname"),
-        longname_extractor=name("longname"),
-        cleanname_extractor=name("cleanname"),
+def create_urban_center_like_shapefile(
+    *, name_column, more_general_direction, overrides, **kwargs
+):
+    # the names are computed among all the regions, so they're added once the geometry exists
+    shapefile = make_shapefile(
+        shortname_extractor=None,
+        longname_extractor=None,
+        universe_provider=None,
         filter=lambda x: True,
         does_overlap_self=False,
         special_data_sources=[
             "international_gridded_data",
             "congressional_representatives_indirect",
         ],
-        universe_provider=CombinedUniverseProvider(
-            [*INTERNATIONAL_PROVIDERS, UrbanCenterlikeStateUniverseProvider(suffixes)]
-        ),
         source_countries=ContainedWithinCountries(
             {
                 "USA": "US " + kwargs["meta"]["type"],
@@ -44,16 +43,36 @@ def create_urban_center_like_shapefile(*, suffixes, **kwargs):
         include_in_syau=True,
         **kwargs,
     )
+    suffixes = SubnationalSuffixes(
+        regions=shapefile.geometry,
+        subnationals=SUBNATIONAL_REGIONS.geometry,
+        name_column=name_column,
+        more_general_direction=more_general_direction,
+        overrides=overrides,
+    )
+
+    def name(part):
+        return SubnationalSuffixedName(suffixes, kwargs["meta"]["type"], part)
+
+    return attr.evolve(
+        shapefile,
+        naming=attr.evolve(
+            shapefile.naming,
+            shortname_extractor=name("shortname"),
+            longname_extractor=name("longname"),
+            cleanname_extractor=name("cleanname"),
+        ),
+        universe_provider=CombinedUniverseProvider(
+            [*INTERNATIONAL_PROVIDERS, UrbanCenterlikeStateUniverseProvider(suffixes)]
+        ),
+    )
 
 
 URBAN_CENTERS = create_urban_center_like_shapefile(
     path=load_ghsl_urban_centers,
-    suffixes=SubnationalSuffixes(
-        SUBNATIONAL_REGIONS.geometry,
-        name_column="UC_NM_MN",
-        more_general_direction=False,
-        overrides=(("Venice", "IT34"),),
-    ),
+    name_column="UC_NM_MN",
+    more_general_direction=False,
+    overrides=(("Venice", "IT34"),),
     meta=dict(type="Urban Center", source="GHSL", type_category="International City"),
     hash_key="urban_centers_6",
     cross_source_borders=CrossSourceBorders(

@@ -34,11 +34,11 @@ class RowFunction(ABC):
 
 
 class TableFunction(ABC):
-    """An extractor computed from all of a geometry's rows at once, rather than row by row."""
+    """An extractor computed from all the rows at once, rather than row by row."""
 
     @abstractmethod
-    def __call__(self, geometry, rows):
-        """A Series indexed like rows, which are geometry.load_rows()."""
+    def __call__(self, rows):
+        """A Series indexed like rows."""
 
 
 @dataclass(frozen=True)

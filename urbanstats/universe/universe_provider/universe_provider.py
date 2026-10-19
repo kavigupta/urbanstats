@@ -54,7 +54,7 @@ class UrbanCenterlikeStateUniverseProvider(UniverseProvider):
     def universes_for_shapefile(self, names_by_key, names, table):
         assert self.countries == ("US", "CA"), f"Unexpected countries: {self.countries}"
         result = {}
-        computed = compute_subnational_suffixes(self.suffixes, names.geometry)
+        computed = compute_subnational_suffixes(self.suffixes)
         codes_by_row = computed.subnationals_ISO_CODE.loc[table.index]
         for longname, codes in zip(table.longname, codes_by_row):
             codes = [self.process_code(code) for code in codes]
