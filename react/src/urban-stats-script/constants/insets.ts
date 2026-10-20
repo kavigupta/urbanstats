@@ -2,6 +2,7 @@ import { round } from 'mathjs'
 
 import insets from '../../data/insets'
 import { assert } from '../../utils/defensive'
+import { CoordBox } from '../../utils/partition-boxes'
 import { UrbanStatsASTExpression } from '../ast'
 import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
@@ -163,6 +164,10 @@ export function pruneInsets(nodes: InsetNode[], keep: (leaf: Inset) => boolean):
             .filter((cell, k) => cell.insets.length > 0 || node.children[k].insets.length === 0)
         return collapseSplit({ ...node, children })
     })
+}
+
+export function keepInsets(nodes: InsetNode[], hasContent: (coordBox: CoordBox) => boolean): InsetNode[] {
+    return pruneInsets(nodes, inset => inset.mainMap || hasContent(inset.coordBox))
 }
 
 const insetType = {
