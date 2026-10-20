@@ -1,13 +1,22 @@
+import pandas as pd
+
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import (
     NATIONAL_ORIGIN,
     QuizQuestionDescriptor,
 )
-from urbanstats.statistics.statistic_collection import ACSUSPRStatisticsColection
+from urbanstats.statistics.national_census import (
+    ACSUSPRCounts,
+    NationalCensusStatistics,
+    StatCanCounts,
+)
 from urbanstats.statistics.utils import fractionalize
 
 
-class NationalOriginCitizenshipStatistics(ACSUSPRStatisticsColection):
+class NationalOriginCitizenshipStatistics(NationalCensusStatistics):
+    version = {"USA": 1, "Canada": 1}
+
     def name_for_each_statistic(self):
         return {
             "citizenship_citizen_by_birth": "Citizen by Birth %",
@@ -38,16 +47,54 @@ class NationalOriginCitizenshipStatistics(ACSUSPRStatisticsColection):
             },
         )
 
-    def mutate_acs_results(self, statistics_table):
+    def mutate_counts(self, counts):
         fractionalize(
-            statistics_table,
+            counts,
             "citizenship_citizen_by_birth",
             "citizenship_citizen_by_naturalization",
             "citizenship_not_citizen",
         )
 
-    def acs_name(self):
-        return "citizenship"
+    def country_inputs(self):
+        return {
+            "USA": ACSUSPRCounts(*self.acs_entities()),
+            "Canada": CanadianCitizenshipCounts(self.census_tables_canada()),
+        }
+
+    def census_tables_canada(self):
+        return CensusTables(
+            [
+                "Total - Citizenship for the population in private households - 25% sample data (76)",
+                "Total - Immigrant status and period of immigration for the population in private households - 25% sample data (79)",
+            ],
+            {
+                "canadian_citizens": [
+                    "  Canadian citizens (77)",
+                ],
+                "not_canadian_citizens": [
+                    "  Not Canadian citizens (78)",
+                ],
+                "non_immigrants": [
+                    "  Non-immigrants (80)",
+                ],
+                None: [
+                    "Total - Citizenship for the population in private households - 25% sample data (76)",
+                    "    Canadian citizens aged under 18",
+                    "    Canadian citizens aged 18 and over",
+                    "Total - Immigrant status and period of immigration for the population in private households - 25% sample data (79)",
+                    "  Immigrants (81)",
+                    "    Before 1980",
+                    "    1980 to 1990",
+                    "    1991 to 2000",
+                    "    2001 to 2010",
+                    "    2011 to 2021 (82)",
+                    "      2011 to 2015",
+                    "      2016 to 2021",
+                    "  Non-permanent residents (83)",
+                ],
+            },
+            "population",
+        )
 
     def acs_entities(self):
         return [
@@ -94,3 +141,21 @@ class NationalOriginCitizenshipStatistics(ACSUSPRStatisticsColection):
                 },
             ),
         ]
+
+
+class CanadianCitizenshipCounts(StatCanCounts):
+    """StatCan counts citizens and immigrants, so citizens by naturalization are the difference."""
+
+    def compute(self, shapefile):
+        counts = super().compute(shapefile)
+        naturalized = counts["canadian_citizens"] - counts["non_immigrants"]
+        assert (
+            naturalized[naturalized < 0].sum() > -100
+        ), f"Negative naturalized citizen sum is {naturalized[naturalized < 0].sum()}"
+        return pd.DataFrame(
+            {
+                "citizenship_citizen_by_birth": counts["non_immigrants"],
+                "citizenship_citizen_by_naturalization": naturalized.clip(lower=0),
+                "citizenship_not_citizen": counts["not_canadian_citizens"],
+            }
+        )

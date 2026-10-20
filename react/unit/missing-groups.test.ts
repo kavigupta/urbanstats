@@ -27,6 +27,7 @@ const california: StatPath[] = [
     'generation_silent', 'generation_boomer', 'generation_genx',
     'generation_millenial', 'generation_genz', 'generation_genalpha',
     'marriage_never_married', 'marriage_married_not_divorced', 'marriage_divorced',
+    'household_size_pw',
     'area',
 ]
 
@@ -41,7 +42,8 @@ const alberta: StatPath[] = [
     'gpw_population',
     'generation_silent', 'generation_boomer', 'generation_genx',
     'generation_millenial', 'generation_genz', 'generation_genalpha',
-    'marriage_never_married_canada', 'marriage_married_not_divorced_canada', 'marriage_divorced_canada',
+    'marriage_never_married', 'marriage_married_not_divorced', 'marriage_divorced',
+    'household_size_pw_canada',
     'area',
 ]
 
@@ -56,9 +58,7 @@ const generationGroups: EnabledKey[] = [
     'show_stat_group_generation_millenial', 'show_stat_group_generation_genz', 'show_stat_group_generation_genalpha',
 ]
 
-const marriageGroups: EnabledKey[] = [
-    'show_stat_group_marriage_never_married', 'show_stat_group_marriage_married_not_divorced', 'show_stat_group_marriage_divorced',
-]
+const householdSizeGroup: EnabledKey[] = ['show_stat_group_household_size_pw']
 
 function settingsWith(enabled: EnabledKey[]): StatGroupSettings {
     const settings = Object.fromEntries(groupYearKeys().map(key => [key, false]))
@@ -99,22 +99,22 @@ void test('a statistic that only the disabled source has names that source', () 
 void test('regions missing a statistic for different sources name all of them', () => {
     assert.deepStrictEqual(
         warnings([california, alberta], [
-            ...populationGroup, ...marriageGroups, 'show_stat_year_2020',
+            ...populationGroup, ...householdSizeGroup, 'show_stat_year_2020',
             'show_stat_source_Population_GHSL',
         ]),
-        ['Relationships: **National Census** and **Canadian Census** are disabled. Enable them to see these statistics.'],
+        ['Housing: **National Census** and **Canadian Census** are disabled. Enable them to see these statistics.'],
     )
 })
 
 void test('a comparison warns about the source one of its regions is missing', () => {
-    // The Canadian census is enabled, so Alberta's marital status statistics are still in the table;
+    // The Canadian census is enabled, so Alberta's household size is still in the table;
     // the warning is about the column California is no longer filling in.
     assert.deepStrictEqual(
         warnings([california, alberta], [
-            ...populationGroup, ...marriageGroups, 'show_stat_year_2020',
+            ...populationGroup, ...householdSizeGroup, 'show_stat_year_2020',
             'show_stat_source_Population_GHSL', 'show_stat_source_Population_Canadian Census',
         ]),
-        ['Relationships: **National Census** is disabled. Enable it to see these statistics.'],
+        ['Housing: **National Census** is disabled. Enable it to see these statistics.'],
     )
 })
 

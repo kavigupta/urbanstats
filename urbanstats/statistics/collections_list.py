@@ -8,9 +8,6 @@ from urbanstats.statistics.collections.census import (
     CensusChange2010,
 )
 from urbanstats.statistics.collections.census_canada import CensusCanada
-from urbanstats.statistics.collections.census_canada_citizenship import (
-    CensusCanadaCitizenship,
-)
 from urbanstats.statistics.collections.census_canada_education_field import (
     CensusCanadaEducationField,
 )
@@ -85,6 +82,7 @@ from urbanstats.statistics.collections.transportation_commute_time import (
     TransportationCommuteTimeStatistics,
 )
 from urbanstats.statistics.collections.transportation_mode import (
+    TransportationModeNoWFHStatistics,
     TransportationModeStatistics,
 )
 from urbanstats.statistics.collections.transportation_vehicle_ownership import (
@@ -125,6 +123,7 @@ statistic_collections = (
     HousingYearBuiltStatistics(),
     HouseholdSizeStatistics(),
     TransportationModeStatistics(),
+    TransportationModeNoWFHStatistics(),
     TransportationCommuteTimeStatistics(),
     TransportationVehicleOwnershipStatistics(),
     NHTSAAccidentStatistics(),
@@ -145,7 +144,6 @@ statistic_collections = (
     *census_canada_simple,
     *census_canada_same_as_us,
     CensusCanadaRace(),
-    CensusCanadaCitizenship(),
     CensusCanadaLanguage(),
     CensusCanadaEducationField(),
     CensusCanadaHousingRent(),

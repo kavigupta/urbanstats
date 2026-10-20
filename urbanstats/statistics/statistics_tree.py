@@ -573,13 +573,13 @@ def just_2020_category(
     }
 
 
-def just_2020_category_with_canada(
-    cat_key: str, cat_name: str, *col_names: str, year: int = 2020
+def just_2020_category_multi_source(
+    cat_key: str, cat_name: str, *col_names: str, canada: bool
 ) -> Dict[str, StatisticCategory]:
     return {
         cat_key: StatisticCategory(
             name=cat_name,
-            contents=just_2020_multi_source(*col_names, year=year),
+            contents=just_2020_multi_source(*col_names, canada=canada),
         )
     }
 
@@ -789,6 +789,7 @@ statistics_tree = StatisticTree(
                         "citizenship_citizen_by_birth",
                         "citizenship_citizen_by_naturalization",
                         "citizenship_not_citizen",
+                        canada=False,
                     ),
                 ),
                 **in_subcategory(
@@ -807,6 +808,7 @@ statistics_tree = StatisticTree(
                     just_2020_multi_source(
                         "language_english_only",
                         "language_spanish",
+                        canada=False,
                     ),
                     just_2020(
                         "language_french_canada",
@@ -879,7 +881,7 @@ statistics_tree = StatisticTree(
                 ),
             },
         ),
-        **just_2020_category(
+        **just_2020_category_multi_source(
             "generation",
             "Generation",
             "generation_silent",
@@ -888,7 +890,7 @@ statistics_tree = StatisticTree(
             "generation_millenial",
             "generation_genz",
             "generation_genalpha",
-            source=population_census,
+            canada=False,
         ),
         "income": StatisticCategory(
             name="Income",
@@ -991,6 +993,7 @@ statistics_tree = StatisticTree(
                 ),
                 **just_2020_multi_source(
                     "rent_or_own_rent",
+                    canada=False,
                 ),
                 **just_2020(
                     "rent_burden_over_30_canada",
@@ -1009,6 +1012,7 @@ statistics_tree = StatisticTree(
                         "transportation_means_bike_no_wfh",
                         "transportation_means_walk_no_wfh",
                         "transportation_means_transit_no_wfh",
+                        canada=False,
                     ),
                 ),
                 **just_2020_multi_source(
@@ -1104,7 +1108,7 @@ statistics_tree = StatisticTree(
                 ),
             },
         ),
-        **just_2020_category_with_canada(
+        **just_2020_category_multi_source(
             "industry",
             "Industry",
             "industry_agriculture,_forestry,_fishing_and_hunting",
@@ -1127,6 +1131,7 @@ statistics_tree = StatisticTree(
             "industry_transportation_and_warehousing",
             "industry_utilities",
             "industry_wholesale_trade",
+            canada=False,
         ),
         "occupation": StatisticCategory(
             name="Occupation",
@@ -1196,6 +1201,7 @@ statistics_tree = StatisticTree(
                         "marriage_never_married",
                         "marriage_married_not_divorced",
                         "marriage_divorced",
+                        canada=False,
                     ),
                 ),
             },
