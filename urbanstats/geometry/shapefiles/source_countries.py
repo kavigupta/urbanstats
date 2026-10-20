@@ -179,7 +179,7 @@ def _subnational_source_countries(subnational):
 def related_subnationals(regions, subnational_regions):
     """Longname -> the subnational regions it contains, is contained by, or intersects."""
     relationships = compute_relationships(
-        regions.geometry, subnational_regions.geometry
+        regions.geometry, subnational_regions.geometry, subnational_regions.geometry
     )
     names = shapefile_longnames(regions)
     subnational_names = shapefile_longnames(subnational_regions)
