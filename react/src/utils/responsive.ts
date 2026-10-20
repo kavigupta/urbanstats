@@ -10,6 +10,10 @@ export function useMobileLayout(): boolean {
     return useSyncExternalStore(onWidthChange, isMobileLayout)
 }
 
+export function useWindowWidth(): number {
+    return useSyncExternalStore(onWidthChange, () => document.documentElement.clientWidth)
+}
+
 function onWidthChange(listener: () => void): () => void {
     const myListener = (): void => {
         if (window.innerWidth !== 1) {

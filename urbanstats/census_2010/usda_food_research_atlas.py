@@ -42,14 +42,13 @@ def usda_fra_block():
 
 @permacache_with_remapping_pickle(
     "urbanstats/census_2010/usda_food_research_atlas/aggregated_usda_fra_1",
-    key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def aggregated_usda_fra(shapefile):
+def aggregated_usda_fra(geometry):
     _, census_2010_pop, _, _, _ = load_raw_census(2010)
 
-    print("Aggregating USDA FRA for", shapefile.hash_key)
+    print("Aggregating USDA FRA for", geometry.key)
     usda_fra = usda_fra_block().reset_index(drop=True).copy()
     usda_fra.columns = [x + "_usda_fra_1" for x in usda_fra.columns]
     usda_fra = usda_fra * census_2010_pop[:, :1]
 
-    return aggregate_by_census_block(2010, shapefile, usda_fra)
+    return aggregate_by_census_block(2010, geometry, usda_fra)

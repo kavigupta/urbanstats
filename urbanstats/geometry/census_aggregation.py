@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List
 
 import numpy as np
 import pandas as pd
@@ -13,26 +12,16 @@ from urbanstats.geometry.weighted_statistics import geometric_median_by_group
 
 @dataclass
 class Crosswalk:
-    shapefile_index_actual: List[object]
     index_shapefile: np.ndarray
     index_block: np.ndarray
 
-    @classmethod
-    def combine(cls, crosswalks):
-        shapefile_index_actual = [
-            idx for c in crosswalks for idx in c.shapefile_index_actual
-        ]
-        index_shapefile = np.concatenate([c.index_shapefile for c in crosswalks])
-        index_block = np.concatenate([c.index_block for c in crosswalks])
-        return cls(shapefile_index_actual, index_shapefile, index_block)
+    @staticmethod
+    def compute_usa(year, geometry):
+        return _compute_crosswalk(year, geometry)
 
     @staticmethod
-    def compute_usa(year, shapefile):
-        return _compute_crosswalk(year, shapefile)
-
-    @staticmethod
-    def compute_canada(year, shapefile):
-        return _compute_crosswalk_canada(year, shapefile)
+    def compute_canada(year, geometry):
+        return _compute_crosswalk_canada(year, geometry)
 
     def compute_sum_by_shapefile(self, values):
         """
@@ -71,13 +60,13 @@ class Crosswalk:
             )
         return sum_array
 
-    def compute_sum_by_shapefile_dataframe(self, shapefile, values):
-        index = shapefile.load_file().index
+    def compute_sum_by_shapefile_dataframe(self, geometry, values):
+        index = geometry.load_rows().index
         sum_array = self.compute_sum_by_region(np.array(values.fillna(0)), len(index))
         return pd.DataFrame(sum_array, columns=values.columns, index=index)
 
-    def compute_geometric_median_dataframe(self, shapefile, population, lat, lon):
-        index = shapefile.load_file().index
+    def compute_geometric_median_dataframe(self, geometry, population, lat, lon):
+        index = geometry.load_rows().index
         median_lat, median_lon = geometric_median_by_group(
             self.index_shapefile,
             np.asarray(lat)[self.index_block],
@@ -88,53 +77,34 @@ class Crosswalk:
         return pd.DataFrame({"lat": median_lat, "lon": median_lon}, index=index)
 
 
-@permacache(
-    "urbanstats/geometry/census_aggregation/_compute_crosswalk_3",
-    key_function=dict(shapefile=lambda x: x.hash_key),
-)
-def _compute_crosswalk(year, shapefile):
+@permacache("urbanstats/geometry/census_aggregation/_compute_crosswalk_3")
+def _compute_crosswalk(year, geometry):
     geometry_row = census_block_points(year).fillna(0)
-    return _compute_crosswalk_for_geometry_row(geometry_row, shapefile)
+    return _compute_crosswalk_for_geometry_row(geometry_row, geometry)
 
 
-@permacache(
-    "urbanstats/geometry/census_aggregation/_compute_crosswalk_canada_2",
-    key_function=dict(shapefile=lambda x: x.hash_key),
-)
-def _compute_crosswalk_canada(year, shapefile):
+@permacache("urbanstats/geometry/census_aggregation/_compute_crosswalk_canada_2")
+def _compute_crosswalk_canada(year, geometry):
     geometry_row = load_canada_db_shapefile(year)[["geometry"]]
-    return _compute_crosswalk_for_geometry_row(geometry_row, shapefile)
+    return _compute_crosswalk_for_geometry_row(geometry_row, geometry)
 
 
-def _compute_crosswalk_for_geometry_row(geometry_row, shapefile):
-    s = shapefile.load_file().reset_index(drop=True)
-    if shapefile.chunk_size is None:
-        return _compute_crosswalk_direct(geometry_row, s)
-    crosswalks = []
-    for chunk in tqdm.trange(0, len(s), shapefile.chunk_size):
-        crosswalks.append(
-            _compute_crosswalk_direct(
-                geometry_row, s[chunk : chunk + shapefile.chunk_size]
-            )
-        )
-    return Crosswalk.combine(crosswalks)
-
-
-def _compute_crosswalk_direct(geometry_row, s):
+def _compute_crosswalk_for_geometry_row(geometry_row, geometry):
+    s = geometry.load_rows().reset_index(drop=True)
     c = s.sjoin(
         geometry_row,
         how="inner",
         predicate="intersects",
     )
     index_shapefile, index_block = np.array(c.index), np.array(c.index_right)
-    return Crosswalk(s.index, index_shapefile, index_block)
+    return Crosswalk(index_shapefile, index_block)
 
 
-def aggregate_by_census_block(year, shapefile, values):
-    crosswalk = Crosswalk.compute_usa(year, shapefile)
-    return crosswalk.compute_sum_by_shapefile_dataframe(shapefile, values)
+def aggregate_by_census_block(year, geometry, values):
+    crosswalk = Crosswalk.compute_usa(year, geometry)
+    return crosswalk.compute_sum_by_shapefile_dataframe(geometry, values)
 
 
-def aggregate_by_census_block_canada(year, shapefile, values):
-    crosswalk = Crosswalk.compute_canada(year, shapefile)
-    return crosswalk.compute_sum_by_shapefile_dataframe(shapefile, values)
+def aggregate_by_census_block_canada(year, geometry, values):
+    crosswalk = Crosswalk.compute_canada(year, geometry)
+    return crosswalk.compute_sum_by_shapefile_dataframe(geometry, values)

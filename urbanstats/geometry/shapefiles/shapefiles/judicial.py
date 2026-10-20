@@ -1,7 +1,8 @@
 import geopandas as gpd
 import us
 
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.row_functions import UsState, column
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
@@ -19,13 +20,13 @@ data_credit = dict(
 )
 
 
-JUDICIAL_DISTRICTS = Shapefile(
-    hash_key="judicial_districts",
+JUDICIAL_DISTRICTS = make_shapefile(
+    geometry_key="judicial_districts",
     path=judicial_districts,
-    shortname_extractor=lambda x: x["NAME"] + ", " + us.states.lookup(x["STATE"]).abbr,
-    longname_extractor=lambda x: x["NAME"]
+    shortname_extractor=column("NAME") + ", " + UsState(column("STATE"), "abbr"),
+    longname_extractor=column("NAME")
     + ", "
-    + us.states.lookup(x["STATE"]).abbr
+    + UsState(column("STATE"), "abbr")
     + ", USA",
     filter=lambda x: True,
     meta=dict(type="Judicial District", source="HIFLD", type_category="Oddball"),
@@ -60,11 +61,11 @@ def judicial_circuits():
     return data
 
 
-JUDICIAL_CIRCUITS = Shapefile(
-    hash_key="judicial_circuits_2",
+JUDICIAL_CIRCUITS = make_shapefile(
+    geometry_key="judicial_circuits_2",
     path=judicial_circuits,
-    shortname_extractor=lambda x: x["shortname"],
-    longname_extractor=lambda x: x["shortname"] + ", USA",
+    shortname_extractor=column("shortname"),
+    longname_extractor=column("shortname") + ", USA",
     filter=lambda x: True,
     meta=dict(type="Judicial Circuit", source="HIFLD", type_category="Oddball"),
     does_overlap_self=False,

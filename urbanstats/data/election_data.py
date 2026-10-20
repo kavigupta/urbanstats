@@ -29,6 +29,11 @@ class VestElection:
     dem_column_filter = attr.ib()
     gop_column_filter = attr.ib()
 
+    def __permacache_hash__(self):
+        # the column filters, and path when it isn't a file, are functions, which stable_hash
+        # can't hash, so key stands in for them
+        return [self.key, self.name, None if callable(self.path) else self.path]
+
     def read(self):
         if callable(self.path):
             frame = self.path()
@@ -195,7 +200,6 @@ def load_block_shapefiles(state_abbr, year=2020):
 @without_loaded_values
 @permacache_with_remapping_pickle(
     "urbanstats/data/election_data/disaggregate_to_blocks_for_state_2",
-    key_function=dict(state_abbr=lambda x: x, election=lambda x: x.key),
 )
 def disaggregate_to_blocks_for_state(state_abbr, election, block_year=2020):
     """
@@ -236,7 +240,6 @@ def disaggregate_to_blocks_for_state(state_abbr, election, block_year=2020):
 @without_loaded_values
 @permacache_with_remapping_pickle(
     "election_data/disaggregate_to_blocks_7",
-    key_function=dict(election=lambda x: x.key),
 )
 def disaggregate_to_blocks(election, block_year=2020):
     """
@@ -271,10 +274,9 @@ def disaggregate_to_blocks(election, block_year=2020):
 
 @permacache_with_remapping_pickle(
     "election_data/aggregated_election_results_5",
-    key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def aggregated_election_results(shapefile):
-    return aggregate_by_census_block(2020, shapefile, election_results_by_block())
+def aggregated_election_results(geometry):
+    return aggregate_by_census_block(2020, geometry, election_results_by_block())
 
 
 @lru_cache(None)

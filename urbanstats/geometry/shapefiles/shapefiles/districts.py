@@ -1,6 +1,7 @@
 import os
 import tempfile
 import zipfile
+from dataclasses import dataclass
 
 import geopandas as gpd
 import numpy as np
@@ -11,7 +12,8 @@ from urbanstats.data.wikipedia.congressional_wikidata import (
     CongressionalDistrictWikidataSourcer,
 )
 from urbanstats.geometry.districts import consistent_district_padding
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.row_functions import RowFunction, column
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.geometry.temporal_stacking import collapse_unchanged
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
@@ -276,14 +278,19 @@ def load_shapefile(file_name, *, only_keep, minimum_district_length):
     raise ValueError(f"Unknown value for only_keep: {only_keep}")
 
 
-def get_shortname(district_abbrev, x, include_date=True):
-    district = x["district"]
-    if district == "" or district.isnumeric() and int(district) == 0:
-        district = "AL"
-    dist_name = f'{x["state"]}-{district_abbrev}{district}'
-    if include_date:
-        return f'{dist_name} ({x["start_date"]})'
-    return dist_name
+@dataclass(frozen=True)
+class DistrictShortname(RowFunction):
+    district_abbrev: str
+    include_date: bool = True
+
+    def __call__(self, row):
+        district = row["district"]
+        if district == "" or district.isnumeric() and int(district) == 0:
+            district = "AL"
+        dist_name = f'{row["state"]}-{self.district_abbrev}{district}'
+        if self.include_date:
+            return f'{dist_name} ({row["start_date"]})'
+        return dist_name
 
 
 def data_credit_for_redistricting(file_name):
@@ -316,21 +323,19 @@ def districts(
     special_data_sources=(),
     wikidata_sourcer=None,
 ):
-    return Shapefile(
-        hash_key=f"current_districts_{file_name}"
+    return make_shapefile(
+        geometry_key=f"current_districts_{file_name}"
         + version_tag_by_file_name.get(file_name, ""),
         path=lambda: load_shapefile(
             file_name,
             only_keep="up-to-date",
             minimum_district_length=minimum_district_length,
         ),
-        shortname_extractor=lambda x: get_shortname(district_abbrev, x),
-        cleanname_extractor=lambda x: get_shortname(
-            district_abbrev, x, include_date=False
-        ),
-        longname_extractor=lambda x: get_shortname(district_abbrev, x) + ", USA",
-        longname_sans_date_extractor=lambda x: get_shortname(
-            district_abbrev, x, include_date=False
+        shortname_extractor=DistrictShortname(district_abbrev),
+        cleanname_extractor=DistrictShortname(district_abbrev, include_date=False),
+        longname_extractor=DistrictShortname(district_abbrev) + ", USA",
+        longname_sans_date_extractor=DistrictShortname(
+            district_abbrev, include_date=False
         )
         + ", USA",
         meta=dict(type=district_type, source="Census", type_category="Political"),
@@ -341,8 +346,8 @@ def districts(
         special_data_sources=special_data_sources,
         abbreviation=abbreviation,
         data_credit=[data_credit] + data_credit_for_redistricting(file_name),
-        start_date=lambda x: x["start_date"],
-        end_date=lambda x: x["end_date"],
+        start_date=column("start_date"),
+        end_date=column("end_date"),
         start_date_overall=2023,
         end_date_overall=2032,
         include_in_syau=False,

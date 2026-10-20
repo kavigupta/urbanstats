@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Dict, Tuple
 
 import attr
@@ -7,6 +8,7 @@ import pandas as pd
 from permacache import permacache, stable_hash
 
 from urbanstats.geometry.relationship_equirectangular import compute_relationships
+from urbanstats.geometry.shapefiles.longnames import shapefile_longnames
 
 # The countries whose statistics agencies are data sources
 SOURCE_COUNTRIES = ("USA", "Canada")
@@ -60,9 +62,6 @@ class InCountry(SourceCountries):
         return shapefile
 
 
-_BY_REGION = {}
-
-
 @dataclass(frozen=True)
 class VariesByRegion(SourceCountries):
     """
@@ -85,12 +84,10 @@ class VariesByRegion(SourceCountries):
             for country, name in self.names_in_country.items()
         }
 
+    # computing it reads other shapefiles, and every per-country statistic collection asks
+    @lru_cache(None)  # pylint: disable=method-cache-max-size-none
     def by_region(self, shapefile):
-        # computing it reads other shapefiles, and every per-country statistic collection asks
-        key = (self, shapefile.hash_key)
-        if key not in _BY_REGION:
-            _BY_REGION[key] = self.compute_by_region(shapefile)
-        return _BY_REGION[key]
+        return self.compute_by_region(shapefile)
 
     @abstractmethod
     def compute_by_region(self, shapefile) -> pd.Series:
@@ -101,15 +98,18 @@ class VariesByRegion(SourceCountries):
         in_country = {i for i, cs in by_region.items() if cs == (country,)}
 
         def new_filter(row):
-            return shapefile.filter(row) and row.name in in_country
+            return shapefile.geometry.filter(row) and row.name in in_country
 
         # cached per-country results line up with the subset's rows, so a subset with different
         # regions needs a different key
         regions = stable_hash(sorted(in_country))[:8]
         return attr.evolve(
             shapefile,
-            filter=new_filter,
-            hash_key=f"{shapefile.hash_key}_{country}_{regions}",
+            geometry=attr.evolve(
+                shapefile.geometry,
+                filter=new_filter,
+                key=f"{shapefile.geometry.key}_{country}_{regions}",
+            ),
         )
 
 
@@ -143,7 +143,7 @@ class ContainedWithinCountries(VariesByRegion):
             for row in SUBNATIONAL_REGIONS.load_file().itertuples()
         }
 
-        related = related_subnationals(shapefile, SUBNATIONAL_REGIONS)
+        related = related_subnationals(shapefile.names, SUBNATIONAL_REGIONS.names)
         table = shapefile.load_file()
         result = []
         for longname in table.longname:
@@ -174,15 +174,17 @@ def _subnational_source_countries(subnational):
 
 @permacache(
     "urbanstats/geometry/shapefiles/source_countries/related_subnationals_3",
-    key_function=dict(
-        shapefile=lambda x: x.hash_key, subnational_regions=lambda x: x.hash_key
-    ),
+    key_function=dict(regions=stable_hash, subnational_regions=stable_hash),
 )
-def related_subnationals(shapefile, subnational_regions):
+def related_subnationals(regions, subnational_regions):
     """Longname -> the subnational regions it contains, is contained by, or intersects."""
-    relationships = compute_relationships(shapefile, subnational_regions)
+    relationships = compute_relationships(
+        regions.geometry, subnational_regions.geometry, subnational_regions.geometry
+    )
+    names = shapefile_longnames(regions)
+    subnational_names = shapefile_longnames(subnational_regions)
     result = {}
     for kind in ["same_geography", "a_contains_b", "a_contained_by_b", "intersects"]:
-        for region, subnational in relationships[kind]:
-            result.setdefault(region, set()).add(subnational)
+        for i, j in relationships[kind]:
+            result.setdefault(names[i], set()).add(subnational_names[j])
     return result

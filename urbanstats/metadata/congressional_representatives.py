@@ -8,9 +8,15 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 import pandas as pd
 import tqdm.auto as tqdm
 import us
-from permacache import permacache
+from permacache import permacache, stable_hash
 
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.shapefile import (
+    Dates,
+    Names,
+    Shapefile,
+    ShapefileWithoutMetadata,
+    join_layers,
+)
 from urbanstats.geometry.shapefiles.shapefiles.historical_congressional import to_year
 from urbanstats.metadata.metadata_columns import (
     MetadataColumnProvider,
@@ -142,12 +148,12 @@ def representatives_for_district(
 
 @permacache(
     "urbanstats/metadata/congressional_representatives/compute_representatives_for_shapefile_6",
-    key_function=dict(sf=lambda x: x.hash_key),
+    key_function=dict(names=stable_hash, dates=stable_hash),
 )
 def compute_representatives_for_shapefile(
-    sf: Shapefile, *, representatives_csv_version: str
+    names: Names, dates: Dates, *, representatives_csv_version: str
 ) -> Tuple[List[str], List[Dict[int, List[Representative]]]]:
-    table = sf.load_file()
+    table = join_layers(names, dates)
     results = []
     pbar = tqdm.tqdm(total=len(table), desc="Computing representatives for districts")
     for _, row in table.iterrows():
@@ -177,7 +183,7 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
         self,
         *,
         shapefile: Shapefile,
-        shapefiles: Dict[str, Shapefile],
+        shapefiles: Dict[str, ShapefileWithoutMetadata],
         shapefile_table: pd.DataFrame,
     ) -> List[MetadataColumnResult]:
         has_representatives = set(shapefile.special_data_sources) & {
@@ -197,22 +203,27 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
         ]
 
     def all_relationships(
-        self, shapefiles: Dict[str, Shapefile], key_a: str, key_b: str
+        self, shapefiles: Dict[str, ShapefileWithoutMetadata], key_a: str, key_b: str
     ) -> List[Tuple[str, str]]:
         # pylint: disable=import-outside-toplevel,cyclic-import
         from urbanstats.geometry.relationship import create_relationships_dispatch
 
         res = create_relationships_dispatch(
-            shapefiles, key_a, key_b, check_temporal=False
+            {k: sf.names for k, sf in shapefiles.items()},
+            {k: sf.dates for k, sf in shapefiles.items()},
+            key_a,
+            key_b,
+            check_temporal=False,
         )
         a_contains_b, b_contains_a, a_intersects_b, _ = res
         return [*a_contains_b, *b_contains_a, *a_intersects_b]
 
     def name_to_representatives_for_shapefile(
-        self, shapefile: Shapefile
+        self, shapefile: ShapefileWithoutMetadata
     ) -> Dict[str, Dict[int, List[Representative]]]:
         names, representatives_by_row = compute_representatives_for_shapefile(
-            shapefile,
+            shapefile.names,
+            shapefile.dates,
             representatives_csv_version=self.representatives_csv_version,
         )
         return dict(zip(names, representatives_by_row))
@@ -221,9 +232,13 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
         self,
         shapefile: Shapefile,
         shapefile_table: pd.DataFrame,
-        shapefiles: Dict[str, Shapefile],
+        shapefiles: Dict[str, ShapefileWithoutMetadata],
     ) -> List[List[RepresentativeWithTerms]]:
-        [key_self] = [key for key, value in shapefiles.items() if value == shapefile]
+        [key_self] = [
+            key
+            for key, value in shapefiles.items()
+            if value == shapefile.without_metadata()
+        ]
 
         other_keys = [
             key

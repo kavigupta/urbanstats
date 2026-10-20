@@ -180,7 +180,8 @@ def create_react_jsons() -> None:
         output_typescript(
             compute_data_credits(
                 sorted(
-                    shapefiles.values(), key=lambda x: type_ordering_idx[x.meta["type"]]
+                    shapefiles.values(),
+                    key=lambda x: type_ordering_idx[x.metadata.meta["type"]],
                 )
             ),
             f,

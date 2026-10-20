@@ -7,7 +7,7 @@ import { Navigator } from '../navigation/Navigator'
 import { ExceptionalPageDescriptor } from '../navigation/PageDescriptor'
 import { universePath } from '../navigation/links'
 import { useColors } from '../page_template/colors'
-import { useHeaderLogoKey, useHideSidebarDesktop } from '../page_template/utils'
+import { useHeaderLogoKey, useFullWidth } from '../page_template/utils'
 import { humanReadableUniverse, universeContext, useUniverse, useUniverseContext } from '../universe'
 import { assert } from '../utils/defensive'
 import { useMobileLayout } from '../utils/responsive'
@@ -163,7 +163,7 @@ function TopLeft(props: {
     hamburgerOpen: boolean
     setHamburgerOpen: (newValue: boolean) => void
 }): ReactNode {
-    const hideSidebarDesktop = useHideSidebarDesktop()
+    const fullWidth = useFullWidth()
     const universeCtx = useUniverseContext()
     if (useMobileLayout()) {
         return (
@@ -177,7 +177,7 @@ function TopLeft(props: {
     else {
         return (
             <div className="left_panel_top" style={{ minWidth: '20%' }}>
-                {hideSidebarDesktop && <Nav hamburgerOpen={props.hamburgerOpen} setHamburgerOpen={props.setHamburgerOpen} />}
+                {fullWidth && <Nav hamburgerOpen={props.hamburgerOpen} setHamburgerOpen={props.setHamburgerOpen} />}
                 <HeaderImage />
             </div>
         )

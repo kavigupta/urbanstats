@@ -50,7 +50,7 @@ def disaggregate_gridded_data(
             shapefile_table,
             subset=subset_name,
             compute_function=lambda shapefile, existing_statistics, shapefile_table, subset_fn=subset_fn: subset_fn(
-                gridded_data_sources, shapefile
+                gridded_data_sources, shapefile.geometry
             ),
         )
         if just_subset:
@@ -59,7 +59,7 @@ def disaggregate_gridded_data(
             subsets.append(subset_stats)
 
     intl_stats = (
-        statistics_for_shapefile(gridded_data_sources, shapefile)
+        statistics_for_shapefile(gridded_data_sources, shapefile.geometry)
         if "international_gridded_data" in shapefile.special_data_sources
         else {}
     )
@@ -99,10 +99,9 @@ def statistics_for_shape(gridded_data_sources, shape):
 
 @permacache(
     "urbanstats/data/aggregate_gridded_data/statistics_for_shapefile",
-    key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def statistics_for_shapefile(gridded_data_sources, shapefile):
-    sf = shapefile.load_file()
+def statistics_for_shapefile(gridded_data_sources, geometry):
+    sf = geometry.load_rows()
     result = {k: [] for k in gridded_data_sources}
     for shape in tqdm.tqdm(sf.geometry):
         stats, _ = statistics_for_shape(gridded_data_sources, shape)
@@ -113,17 +112,16 @@ def statistics_for_shapefile(gridded_data_sources, shapefile):
 
 @permacache_with_remapping_pickle(
     "urbanstats/data/aggregate_gridded_data/statistics_for_american_shapefile",
-    key_function=dict(sf=lambda x: x.hash_key),
 )
-def statistics_for_american_shapefile(gridded_data_sources, sf):
+def statistics_for_american_shapefile(gridded_data_sources, geometry):
     return population_weighted_by_census_block(
         list(gridded_data_sources),
         lambda columns: stats_by_blocks_columns(gridded_data_sources, 2020, columns),
-        sf,
+        geometry,
     )
 
 
-def population_weighted_by_census_block(columns, load_columns, sf, chunk_size=5):
+def population_weighted_by_census_block(columns, load_columns, geometry, chunk_size=5):
     """
     Each region's population-weighted mean of each of the columns, where load_columns gives a
     list of arrays with a value per 2020 block. Columns are loaded a few at a time, since there
@@ -131,8 +129,8 @@ def population_weighted_by_census_block(columns, load_columns, sf, chunk_size=5)
     """
     _, population, *_ = load_raw_census(2020)
     population = population[:, 0].astype(np.float64)
-    crosswalk = Crosswalk.compute_usa(2020, sf)
-    index = sf.load_file().index
+    crosswalk = Crosswalk.compute_usa(2020, geometry)
+    index = geometry.load_rows().index
     total_population = crosswalk.compute_sum_by_region(population[:, None], len(index))[
         :, 0
     ]
@@ -149,9 +147,8 @@ def population_weighted_by_census_block(columns, load_columns, sf, chunk_size=5)
 
 @permacache_with_remapping_pickle(
     "urbanstats/data/aggregate_gridded_data/statistics_for_canada_shapefile",
-    key_function=dict(sf=lambda x: x.hash_key),
 )
-def statistics_for_canada_shapefile(gridded_data_sources, sf, year=2021):
+def statistics_for_canada_shapefile(gridded_data_sources, geometry, year=2021):
     canada_db = load_canada_db_shapefile(year)
     stats_times_population = (
         stats_by_canada_blocks(gridded_data_sources, year)
@@ -160,7 +157,7 @@ def statistics_for_canada_shapefile(gridded_data_sources, sf, year=2021):
     stats_times_population["population"] = canada_db.population
     agg = aggregate_by_census_block_canada(
         year,
-        sf,
+        geometry,
         stats_times_population,
     )
     for k in agg.columns[:-1]:

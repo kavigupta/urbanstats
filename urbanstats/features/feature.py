@@ -10,6 +10,10 @@ class Feature:
     radius_km = attr.ib()
     load_fn = attr.ib()
 
+    def __permacache_hash__(self):
+        # load_fn is a function, which stable_hash can't hash, so hash_key stands in for it
+        return [self.hash_key, self.name, self.radius_km]
+
     def within_distance_column_name(self):
         return (
             f"within_{self.name}_{self.radius_km}",

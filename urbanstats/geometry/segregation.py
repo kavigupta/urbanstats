@@ -78,13 +78,12 @@ def local_segregation_by_block(year, radius_small, radius_large):
 
 @permacache(
     "urbanstats/geometry/segregation/compute_homogenity_info_by_shapefile_4",
-    key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def compute_homogenity_info_by_shapefile(year, radius_small, radius_large, shapefile):
+def compute_homogenity_info_by_shapefile(year, radius_small, radius_large, geometry):
     # pylint: disable=too-many-locals
     census_pop = load_raw_census(year)[1][:, 0]
 
-    print("Aggregating homogenity info", shapefile.hash_key)
+    print("Aggregating homogenity info", geometry.key)
     vTu, v, u = compute_homogenity_info_by_block(year, radius_small)
 
     segregation_by_block = local_segregation_by_block(year, radius_small, radius_large)
@@ -102,7 +101,7 @@ def compute_homogenity_info_by_shapefile(year, radius_small, radius_large, shape
     )
     frame = pd.DataFrame(frame)
 
-    result = aggregate_by_census_block(year, shapefile, frame)
+    result = aggregate_by_census_block(year, geometry, frame)
     result = np.array(result)
     pop = result[:, 0]
     result = result[:, 1:] / pop[:, None]
@@ -121,7 +120,7 @@ def compute_homogenity_statistics(year, radius_small, radius_large, shapefile):
         homogenity,
         expected_homogenity,
     ) = compute_homogenity_info_by_shapefile(
-        year, radius_small, radius_large, shapefile
+        year, radius_small, radius_large, shapefile.geometry
     )
     segregation = (homogenity - expected_homogenity) / (1 - expected_homogenity)
     return homogenity, segregation, local_segregation

@@ -55,12 +55,11 @@ def compute_disaggregated_geoids(tracts, blocks, ignore_pr=False):
 
 @permacache_with_remapping_pickle(
     "urbanstats/census_2010/aggregated_cdc_table",
-    key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def aggregated_cdc_table(shapefile):
-    print("aggregating cdc for", shapefile.hash_key)
+def aggregated_cdc_table(geometry):
+    print("aggregating cdc for", geometry.key)
     _, _, population_18, _, _ = load_raw_census(2010)
     cdc = cdc_table().reset_index(drop=True).copy()
     cdc.columns = [x + "_cdc_2" for x in cdc.columns]
     cdc = cdc * np.array(population_18)[:, None]
-    return aggregate_by_census_block(2010, shapefile, cdc)
+    return aggregate_by_census_block(2010, geometry, cdc)

@@ -9,7 +9,9 @@ from urbanstats.statistics.statistic_collection import StatisticCollection
 
 # Each country's block-level counts, summed over a shapefile's regions, from that country's input
 COUNTRY_COUNTS = {
-    "USA": lambda entity, shapefile: aggregated_acs_data(2020, entity, shapefile),
+    "USA": lambda entity, shapefile: aggregated_acs_data(
+        2020, entity, shapefile.geometry
+    ),
     "Canada": lambda census_tables, shapefile: census_tables.compute(2021, shapefile),
 }
 

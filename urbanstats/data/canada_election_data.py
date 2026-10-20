@@ -84,7 +84,6 @@ canada_elections = [
 @without_loaded_values
 @permacache_with_remapping_pickle(
     "canada_election_data/disaggregate_to_blocks_canada_5",
-    key_function=dict(election=lambda x: x.key),
 )
 def disaggregate_to_blocks_canada(election, block_year=2021):
     """
@@ -117,11 +116,10 @@ def disaggregate_to_blocks_canada(election, block_year=2021):
 
 @permacache_with_remapping_pickle(
     "canada_election_data/aggregated_election_results_canada_3",
-    key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def aggregated_election_results_canada(shapefile):
+def aggregated_election_results_canada(geometry):
     return aggregate_by_census_block_canada(
-        2021, shapefile, election_results_by_block_canada()
+        2021, geometry, election_results_by_block_canada()
     )
 
 

@@ -41,20 +41,20 @@ province_abbr_to_province = {
 
 @permacache(
     "urbanstats/geometry/shapefiles/load_canada_shapefile/canada_shape",
-    key_function=dict(countries_shapefile=lambda x: x.hash_key),
+    key_function=dict(countries=stable_hash),
 )
-def compute_canada_shape(countries_shapefile):
-    sh = countries_shapefile.load_file()
+def compute_canada_shape(countries):
+    sh = countries.load()
     sh = sh[sh.longname == "Canada"]
     return sh.iloc[0].geometry
 
 
 @permacache(
     "urbanstats/geometry/shapefiles/load_canada_shapefile/compute_qconmt",
-    key_function=dict(subnationals_shapefile=lambda x: x.hash_key),
+    key_function=dict(subnationals=stable_hash),
 )
-def compute_qconmt(subnationals_shapefile):
-    sh = subnationals_shapefile.load_file()
+def compute_qconmt(subnationals):
+    sh = subnationals.load()
     geos = [
         sh[sh.longname == province].geometry.iloc[0]
         for province in ["Quebec, Canada", "Ontario, Canada", "Manitoba, Canada"]
@@ -84,11 +84,9 @@ def load_canadian_shapefile_with_canada_shape(
     return data
 
 
-def load_canadian_shapefile(
-    shapefile_path, countries_shapefile, subnationals_shapefile
-):
-    canada_shape = compute_canada_shape(countries_shapefile)
-    qtconmt_shape = compute_qconmt(subnationals_shapefile)
+def load_canadian_shapefile(shapefile_path, countries, subnationals):
+    canada_shape = compute_canada_shape(countries)
+    qtconmt_shape = compute_qconmt(subnationals)
     return load_canadian_shapefile_with_canada_shape(
         shapefile_path, canada_shape, qtconmt_shape
     )
