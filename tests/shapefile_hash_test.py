@@ -1,3 +1,4 @@
+import dataclasses
 import unittest
 
 import attr
@@ -7,6 +8,7 @@ from urbanstats.geometry.shapefiles.row_functions import column
 from urbanstats.geometry.shapefiles.shapefiles.cities import CITIES
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
 from urbanstats.geometry.shapefiles.shapefiles.county_cross_cd import COUNTY_CROSS_CD
+from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
 
@@ -58,3 +60,34 @@ class TestShapefileHash(unittest.TestCase):
             COUNTY_CROSS_CD.geometry, inputs=(cds_names, cds_dates, renamed_counties)
         )
         self.assertNotEqual(stable_hash(derived), stable_hash(COUNTY_CROSS_CD.geometry))
+
+    def test_subnational_change_changes_urban_center_names_and_universes_only(self):
+        extractor = URBAN_CENTERS.naming.longname_extractor
+        moved = dataclasses.replace(
+            extractor.suffixes,
+            subnationals=attr.evolve(extractor.suffixes.subnationals, key="other"),
+        )
+        [provider] = [
+            p
+            for p in URBAN_CENTERS.universe_provider.providers
+            if hasattr(p, "suffixes")
+        ]
+        changed = attr.evolve(
+            URBAN_CENTERS,
+            naming=attr.evolve(
+                URBAN_CENTERS.naming,
+                longname_extractor=dataclasses.replace(extractor, suffixes=moved),
+            ),
+        )
+        self.assertNotEqual(
+            stable_hash(changed.names), stable_hash(URBAN_CENTERS.names)
+        )
+        self.assertNotEqual(
+            stable_hash(dataclasses.replace(provider, suffixes=moved)),
+            stable_hash(provider),
+        )
+        for layer in ["geometry", "dates", "identified"]:
+            self.assertEqual(
+                stable_hash(getattr(changed, layer)),
+                stable_hash(getattr(URBAN_CENTERS, layer)),
+            )

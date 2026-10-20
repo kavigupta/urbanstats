@@ -9,6 +9,9 @@ from urbanstats.geometry.shapefiles.shapefile import join_layers
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.website_data.table import shapefile_without_ordinals
 
+# relationships are computed over land, whose mask is built from the subnational regions
+LAND_SOURCE = shapefiles["subnational_regions"].geometry
+
 
 @permacache(
     "population_density/relationship/create_relationships_15",
@@ -19,12 +22,14 @@ from urbanstats.website_data.table import shapefile_without_ordinals
         y_dates=stable_hash,
     ),
 )
-def create_relationships(x_names, x_dates, y_names, y_dates, check_temporal=True):
+def create_relationships(
+    x_names, x_dates, y_names, y_dates, *, land_source, check_temporal=True
+):
     """
     Get the relationships between the regions of shapefiles x and y.
     Delegates to relationship_equirectangular.compute_relationships.
     """
-    rels = compute_relationships(x_names.geometry, y_names.geometry)
+    rels = compute_relationships(x_names.geometry, y_names.geometry, land_source)
     names_x, names_y = shapefile_longnames(x_names), shapefile_longnames(y_names)
     rels = {
         kind: {(names_x[i], names_y[j]) for i, j in pairs}
@@ -340,6 +345,7 @@ def create_relationships_dispatch(
             dates_by_key[k2],
             names_by_key[k1],
             dates_by_key[k1],
+            land_source=LAND_SOURCE,
             check_temporal=check_temporal,
         )
         return (
@@ -366,6 +372,7 @@ def create_relationships_dispatch(
         dates_by_key[k1],
         names_by_key[k2],
         dates_by_key[k2],
+        land_source=LAND_SOURCE,
         check_temporal=check_temporal,
     )
 
