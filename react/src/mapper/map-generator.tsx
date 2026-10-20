@@ -27,7 +27,7 @@ import { noLocation } from '../urban-stats-script/location'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { AssignmentsResult, executeAsync, GeographySelection, useClearPreviousAssignments } from '../urban-stats-script/workerManager'
 import { loadImage } from '../utils/Image'
-import { editIndex, EditSeq } from '../utils/array-edits'
+import { Edit } from '../utils/array-edits'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { makeDebugLogger } from '../utils/debug-logging'
 import { HumanReadableName } from '../utils/human-readable-element'
@@ -73,7 +73,7 @@ export function useMapGenerator({ mapSettings, typeEnvironment }: { mapSettings:
     return result
 }
 
-type MapUIProps<T> = T & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: EditSeq<Inset> } | { mode: 'textBoxes', editTextBoxes: EditSeq<TextBox> })
+type MapUIProps<T> = T & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: { edited: Inset[], handlers: (i: number) => Edit<Inset> } } | { mode: 'textBoxes', editTextBoxes: { edited: TextBox[], add: () => void, handlers: (i: number) => Edit<TextBox> } })
 
 export interface MapGenerator<T = unknown> {
     ui: (props: MapUIProps<T>) => { node: ReactNode, exportImage?: () => Promise<HTMLCanvasElement> }
@@ -186,7 +186,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
                             container={mapsContainerRef}
                             numInsets={maybeEditingInsets.length}
                             editInset={props.mode === 'insets'
-                                ? editIndex(props.editInsets, i)
+                                ? props.editInsets.handlers(i)
                                 : undefined}
                             interactive={props.mode !== 'textBoxes'}
                         >
@@ -244,7 +244,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
                                 textBox={textBox}
                                 i={i}
                                 count={boxes.length}
-                                edit={props.mode === 'textBoxes' ? editIndex(props.editTextBoxes, i) : undefined}
+                                edit={props.mode === 'textBoxes' ? props.editTextBoxes.handlers(i) : undefined}
                             />
                         )).concat(props.mode === 'textBoxes' ? [<AddTextBox key="add" container={mapsContainerRef} add={props.editTextBoxes.add} />] : [])}
                     </OverrideTheme>

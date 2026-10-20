@@ -3,7 +3,6 @@ import { deconstruct as deconstructInset, Inset } from '../../urban-stats-script
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import * as l from '../../urban-stats-script/literal-parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
-import { ArrayEdits, replace, swap } from '../../utils/array-edits'
 import { fitCoordBox } from '../../utils/coordinates'
 import { assert } from '../../utils/defensive'
 import { loadInsetExpression, loadInsets } from '../context'
@@ -63,43 +62,21 @@ export function getInsets(settings: MapSettings, typeEnvironment: TypeEnvironmen
     return undefined
 }
 
-export interface InsetEdits {
-    insets: ArrayEdits<Inset>
-    ast: ArrayEdits<UrbanStatsASTExpression>
-}
-
-export function replaceInsets(edits: InsetEdits, [from, to]: [number, number], withArray: Inset[]): InsetEdits {
-    return {
-        insets: replace(edits.insets, [from, to], withArray),
-        ast: replace(edits.ast, [from, to], withArray.map(deconstructInset)),
-    }
-}
-
-export function swapInsets(edits: InsetEdits, indexA: number, indexB: number): InsetEdits {
-    return {
-        insets: swap(edits.insets, indexA, indexB),
-        ast: swap(edits.ast, indexA, indexB),
-    }
-}
-
 /**
  * Saves the map bounds each edited inset shows on a canvas of the given aspect ratio, so that
  * `computeAspectRatioForInsets` gives the same canvas after a frame is resized without panning.
  */
-export function fitInsetMapBounds(edits: InsetEdits, original: Inset[], canvasAspectRatio: number): InsetEdits {
+export function fitInsetMapBounds(insets: Inset[], original: Inset[], canvasAspectRatio: number): Inset[] {
     const unedited = new Set(original)
-    return edits.insets(original).reduce((result, inset, i) => {
+    return insets.map((inset) => {
         const aspectRatio = (inset.topRight[0] - inset.bottomLeft[0]) * canvasAspectRatio / (inset.topRight[1] - inset.bottomLeft[1])
         const coordBox = fitCoordBox(inset.coordBox, aspectRatio)
-        if (unedited.has(inset) || coordBox === inset.coordBox) {
-            return result
-        }
-        return replaceInsets(result, [i, i + 1], [{ ...inset, coordBox }])
-    }, edits)
+        return unedited.has(inset) || coordBox === inset.coordBox ? inset : { ...inset, coordBox }
+    })
 }
 
 /** Rescales screen bounds so the insets span the whole canvas in both dimensions. */
-export function normalizeInsetScreenBounds(edits: InsetEdits, insets: Inset[]): InsetEdits {
+export function normalizeInsetScreenBounds(insets: Inset[]): Inset[] {
     const scaleAxis = (axis: 0 | 1): (v: number) => number => {
         const values = insets.flatMap(inset => [inset.bottomLeft[axis], inset.topRight[axis]])
         const min = Math.min(...values)
@@ -109,18 +86,19 @@ export function normalizeInsetScreenBounds(edits: InsetEdits, insets: Inset[]): 
     const scaleX = scaleAxis(0)
     const scaleY = scaleAxis(1)
 
-    return insets.reduce((result, inset, i) => {
+    return insets.map((inset) => {
         const bottomLeft: [number, number] = [scaleX(inset.bottomLeft[0]), scaleY(inset.bottomLeft[1])]
         const topRight: [number, number] = [scaleX(inset.topRight[0]), scaleY(inset.topRight[1])]
         if (bottomLeft[0] === inset.bottomLeft[0] && bottomLeft[1] === inset.bottomLeft[1]
             && topRight[0] === inset.topRight[0] && topRight[1] === inset.topRight[1]) {
-            return result
+            return inset
         }
-        return replaceInsets(result, [i, i + 1], [{ ...inset, bottomLeft, topRight }])
-    }, edits)
+        return { ...inset, bottomLeft, topRight }
+    })
 }
 
-export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvironment: TypeEnvironment): MapUSS {
+/** `original` is what `getInsets` parsed from these settings, so it lines up with their expressions */
+export function doEditInsets(settings: MapSettings, original: Inset[], edited: Inset[], typeEnvironment: TypeEnvironment): MapUSS {
     assert(settings.script.uss.type === 'statements', 'Trying to do an inset edit on USS that is not inset editable')
     const mapInsets = mapSchema(settings.script.uss, typeEnvironment).namedArgs.insets
     assert(settings.geographies.length > 0, 'Trying to do an inset edit on USS that is not inset editable')
@@ -133,7 +111,11 @@ export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvir
         currentInsetsAst = loadInsetExpression(universesOf(settings.geographies))
     }
 
-    const newConstructInsets = constructInsetsSchema.parse(currentInsetsAst, typeEnvironment).edit(edits.ast) as UrbanStatsASTExpression
+    // Insets that edits left untouched keep their expressions, so constants aren't written out
+    const newConstructInsets = constructInsetsSchema.parse(currentInsetsAst, typeEnvironment).edit(ast => edited.map((inset) => {
+        const i = original.indexOf(inset)
+        return i === -1 ? deconstructInset(inset) : ast[i]
+    })) as UrbanStatsASTExpression
 
     const result = mapInsets.edit(newConstructInsets.type === 'autoUXNode'
         ? newConstructInsets

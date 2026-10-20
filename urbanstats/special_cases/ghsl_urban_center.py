@@ -1,10 +1,13 @@
 from collections import Counter
+from dataclasses import dataclass
+from typing import Any, Tuple
 
 import geopandas as gpd
 import numpy as np
+from permacache import permacache
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
-from urbanstats.special_cases.country import subnational_regions
+from urbanstats.geometry.shapefiles.row_functions import TableFunction
 from urbanstats.special_cases.country_names import iso_to_country
 
 
@@ -22,38 +25,73 @@ def classify_areas_by_subnational_region(snr, areas):
 
 
 @permacache_with_remapping_pickle(
-    "urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_10"
+    "urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_centers"
 )
-def load_ghsl_urban_center():
-    # pylint: disable=unsupported-assignment-operation
-    areas = load_ghsl_urban_center_no_names()
-    areas["shortname"] = (
-        areas.UC_NM_MN
-        + areas.mid.apply(lambda x: " (" + x + ")" if x else "")
-        + " Urban Center"
-    )
-    areas["longname"] = areas.shortname + ", " + areas.suffix
-    return areas
-
-
-@permacache_with_remapping_pickle(
-    "urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_center_no_names_4"
-)
-def load_ghsl_urban_center_no_names():
+def load_ghsl_urban_centers():
     areas = gpd.read_file(
         "named_region_shapefiles/GHS_STAT_UCDB2015MT_GLOBE_R2019A_V1_2.gpkg"
     )
     areas = areas[areas.QA2_1V == 1]
-    areas = areas[areas.UC_NM_MN != "N/A"]
-    areas = areas.copy()
-    areas["index_"] = areas.index
-    snr = subnational_regions()
-    subnational_classes = classify_areas_by_subnational_region(snr, areas)
-    [idx_venice] = areas.index[areas.UC_NM_MN == "Venice"]
-    # add idx_venice with ISO_CC = {"IT"} and ISO_CODE = {"IT34"}
-    subnational_classes.loc[idx_venice] = [{"IT"}, {"IT34"}]
+    return areas[areas.UC_NM_MN != "N/A"].copy()
 
-    return attach_subnational_suffxes(areas, snr, subnational_classes)
+
+@dataclass(frozen=True)
+class SubnationalSuffixes:
+    """
+    Names regions after the subnational regions holding over 5% of their area: the suffix is
+    their countries, and regions with the same name and suffix are told apart by their
+    subnational regions (and directions, if those match too).
+    """
+
+    # Geometry of the regions named, among which names must be unique; per-country subsets of them
+    # take their names from here
+    regions: Any
+    subnationals: Any  # Geometry
+    name_column: str
+    more_general_direction: bool
+    # (name, ISO code) of regions whose subnational region the overlap gets wrong
+    overrides: Tuple[Tuple[str, str], ...] = ()
+
+
+@permacache("urbanstats/special_cases/ghsl_urban_center/compute_subnational_suffixes")
+def compute_subnational_suffixes(suffixes):
+    """For each region: subnationals_ISO_CC, subnationals_ISO_CODE, suffix and mid."""
+    areas = suffixes.regions.load_rows().copy()
+    areas["index_"] = areas.index
+    snr = suffixes.subnationals.load_rows()
+    subnational_classes = classify_areas_by_subnational_region(snr, areas)
+    for name, iso_code in suffixes.overrides:
+        [idx] = areas.index[areas[suffixes.name_column] == name]
+        subnational_classes.loc[idx] = [{iso_code[:2]}, {iso_code}]
+    attach_subnational_suffxes(
+        areas,
+        snr,
+        subnational_classes,
+        name_column=suffixes.name_column,
+        more_general_direction=suffixes.more_general_direction,
+    )
+    return areas[["subnationals_ISO_CC", "subnationals_ISO_CODE", "suffix", "mid"]]
+
+
+@dataclass(frozen=True)
+class SubnationalSuffixedName(TableFunction):
+    """part is "cleanname" (the name and any disambiguator), "shortname" or "longname"."""
+
+    suffixes: SubnationalSuffixes
+    type_name: str
+    part: str
+
+    def __call__(self, rows):
+        computed = compute_subnational_suffixes(self.suffixes).loc[rows.index]
+        cleanname = rows[self.suffixes.name_column] + computed.mid.apply(
+            lambda x: " (" + x + ")" if x else ""
+        )
+        shortname = cleanname + " " + self.type_name
+        return {
+            "cleanname": cleanname,
+            "shortname": shortname,
+            "longname": shortname + ", " + computed.suffix,
+        }[self.part]
 
 
 def attach_subnational_suffxes(
