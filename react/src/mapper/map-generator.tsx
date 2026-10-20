@@ -400,7 +400,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, who
 }
 
 function EmptyMapLayout({ geographies, loading }: { geographies: GeographySelection[], loading: boolean }): ReactNode {
-    const insets = loadInsets(geographies.length > 0 ? universesOf(geographies) : 'world')
+    const insets = layoutInsets(loadInsets(geographies.length > 0 ? universesOf(geographies) : 'world')).leaves
 
     return (
         <MapLayout

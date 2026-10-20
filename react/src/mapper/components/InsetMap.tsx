@@ -22,7 +22,7 @@ export interface InsetEditHandlers {
 }
 
 interface InsetMapProps {
-    inset: Inset & { sharedEdges?: SharedEdges }
+    inset: Inset & { sharedEdges: SharedEdges }
     container: RefObject<HTMLDivElement>
     editInset?: InsetEditHandlers
     i: number
@@ -61,9 +61,9 @@ function InsetMapImpl({ inset, children, editInset, container, i, interactive }:
         testId: id,
     }
     // Neighbours in a split overlap by a border so the divider is one border wide
-    const shared = inset.sharedEdges ?? { left: false, right: false, top: false, bottom: false }
+    const { sharedEdges } = inset
     const half = insetBorderWidth / 2
-    const [left, right, top, bottom] = [shared.left, shared.right, shared.top, shared.bottom].map(e => e ? half : 0)
+    const [left, right, top, bottom] = [sharedEdges.left, sharedEdges.right, sharedEdges.top, sharedEdges.bottom].map(e => e ? half : 0)
 
     return (
         <div
