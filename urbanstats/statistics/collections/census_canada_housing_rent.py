@@ -1,10 +1,10 @@
 # pylint: disable=duplicate-code
+from dataclasses import dataclass
+
+import pandas as pd
+
 from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import RENT_BURDEN, QuizQuestionDescriptor
-from urbanstats.statistics.collections.census import Census2020
-from urbanstats.statistics.collections.census_canada_same_as_us import (
-    CensusCanadaSameAsUS,
-)
 from urbanstats.statistics.statistic_collection import CanadaStatistics
 from urbanstats.statistics.utils import fractionalize
 
@@ -74,81 +74,65 @@ class CensusCanadaHousingRent(CanadaStatistics):
         return {"rent_burden_over_30_canada": counts["rent_burden_over_30"]}
 
 
-class CensusCanadaHousingPerPerson(CensusCanadaSameAsUS):
-    version = 5
+def canadian_housing_population_tables() -> CensusTables:
+    return CensusTables(
+        ["Total - Age groups of the population - 100% data"],
+        {
+            None: [
+                "  0 to 14 years",
+                "    0 to 4 years",
+                "    5 to 9 years",
+                "    10 to 14 years",
+                "  15 to 64 years",
+                "  65 years and over",
+                "      85 to 89 years",
+                "      90 to 94 years",
+                "      95 to 99 years",
+                "      100 years and over",
+            ],
+            "population_total_canada": [
+                "Total - Age groups of the population - 100% data",
+            ],
+            "population_15_to_19_canada": [
+                "    15 to 19 years",
+            ],
+            "population_20_plus_canada": [
+                "    20 to 24 years",
+                "    25 to 29 years",
+                "    30 to 34 years",
+                "    35 to 39 years",
+                "    40 to 44 years",
+                "    45 to 49 years",
+                "    50 to 54 years",
+                "    55 to 59 years",
+                "    60 to 64 years",
+                "    65 to 69 years",
+                "    70 to 74 years",
+                "    75 to 79 years",
+                "    80 to 84 years",
+                "    85 years and over",
+            ],
+        },
+        "population",
+    )
 
-    def us_equivalent_fields(self):
-        return ["housing_per_person", "housing_per_pop"]
 
-    def census_tables(self) -> CensusTables:
-        return CensusTables(
+@dataclass(frozen=True)
+class CanadianHousingCounts:
+    """Dwellings, people, and adults (all over 20, and 2 in 5 of those 15 to 19)."""
+
+    def compute(self, shapefile):
+        dwellings = CensusTables(
             ["Total private dwellings (2)"],
-            {
-                "total_dwellings_canada": ["Total private dwellings (2)"],
-            },
+            {"total_dwellings_canada": ["Total private dwellings (2)"]},
             "total_dwellings",
-        )
-
-    def us_equivalent(self):
-        return Census2020()
-
-    def housing_population_tables(self) -> CensusTables:
-        return CensusTables(
-            ["Total - Age groups of the population - 100% data"],
+        ).compute(2021, shapefile)
+        population = canadian_housing_population_tables().compute(2021, shapefile)
+        return pd.DataFrame(
             {
-                None: [
-                    "  0 to 14 years",
-                    "    0 to 4 years",
-                    "    5 to 9 years",
-                    "    10 to 14 years",
-                    "  15 to 64 years",
-                    "  65 years and over",
-                    "      85 to 89 years",
-                    "      90 to 94 years",
-                    "      95 to 99 years",
-                    "      100 years and over",
-                ],
-                "population_total_canada": [
-                    "Total - Age groups of the population - 100% data",
-                ],
-                "population_15_to_19_canada": [
-                    "    15 to 19 years",
-                ],
-                "population_20_plus_canada": [
-                    "    20 to 24 years",
-                    "    25 to 29 years",
-                    "    30 to 34 years",
-                    "    35 to 39 years",
-                    "    40 to 44 years",
-                    "    45 to 49 years",
-                    "    50 to 54 years",
-                    "    55 to 59 years",
-                    "    60 to 64 years",
-                    "    65 to 69 years",
-                    "    70 to 74 years",
-                    "    75 to 79 years",
-                    "    80 to 84 years",
-                    "    85 years and over",
-                ],
-            },
-            "population",
+                "housing_units": dwellings["total_dwellings_canada"],
+                "housing_population": population["population_total_canada"],
+                "housing_adults": population["population_20_plus_canada"]
+                + population["population_15_to_19_canada"] * (2 / 5),
+            }
         )
-
-    def compute_statistics_dictionary_canada(
-        self, *, shapefile, existing_statistics, shapefile_table
-    ):
-        del existing_statistics, shapefile_table
-        dwellings_table = self.census_tables().compute(2021, shapefile)
-        population_table = self.housing_population_tables().compute(2021, shapefile)
-        population_18_plus = population_table[
-            "population_20_plus_canada"
-        ] + population_table["population_15_to_19_canada"] * (2 / 5)
-        return {
-            "housing_per_person_canada": (
-                dwellings_table["total_dwellings_canada"]
-                / population_table["population_total_canada"]
-            ),
-            "housing_per_pop_canada": (
-                dwellings_table["total_dwellings_canada"] / population_18_plus
-            ),
-        }

@@ -584,47 +584,37 @@ def just_2020_category_multi_source(
     }
 
 
-def census_basics_with_ghs_and_canada(
+def census_basics_with_ghs(
     col_name: str,
     gpw_name: Optional[str],
-    canada_name: str,
     *,
     change: bool,
     absolute_change: bool = False,
 ) -> Dict[str, StatisticGroup]:
+    """
+    Multi-source statistics named after the census column, as with just_2020_multi_source. The
+    census's 2010 values include Canada's from 2011.
+    """
     result = census_basics(col_name, change=change, absolute_change=absolute_change)
     by_source: Dict[Source, Union[str, Tuple[str, ...]]] = {
         population_census: col_name,
-        population_canada: canada_name,
         population_ghsl: gpw_name,
     }
     by_source = {k: v for k, v in by_source.items() if v is not None}
     result[col_name].by_year[2020] = [
         MultiSource(by_source, col_name, indented_name="2020")
     ]
-    # Also add Canadian 2011 data directly associated with 2010 US census
-    assert "_2021_" in canada_name, f"{canada_name!r}"
-    canada_2011_name = canada_name.replace("_2021_", "_2011_")
     result[col_name].by_year[2010] = [
         MultiSource(
-            {
-                population_census: f"{col_name}_2010",
-                population_canada: canada_2011_name,
-            },
+            {population_census: f"{col_name}_2010"},
             f"{col_name}_2010",
             indented_name="2010",
         )
     ]
     if change:
-        # Add both US and Canadian change statistics
         result[col_name].by_year[2010].append(
             MultiSource(
-                {
-                    population_census: f"{col_name}_change_2010",
-                    population_canada: canada_2011_name.replace(
-                        "_2011_", "_change_2011_"
-                    ),
-                },
+                {population_census: f"{col_name}_change_2010"},
                 f"{col_name}_change_2010",
                 indented_name="2010-2020 Change",
             )
@@ -632,12 +622,7 @@ def census_basics_with_ghs_and_canada(
     if absolute_change:
         result[col_name].by_year[2010].append(
             MultiSource(
-                {
-                    population_census: f"{col_name}_abs_change_2010",
-                    population_canada: canada_2011_name.replace(
-                        "_2011_", "_abs_change_2011_"
-                    ),
-                },
+                {population_census: f"{col_name}_abs_change_2010"},
                 f"{col_name}_abs_change_2010",
                 indented_name="2010-2020 Absolute Change",
             )
@@ -646,18 +631,11 @@ def census_basics_with_ghs_and_canada(
     return result
 
 
-def census_basics_with_canada(
-    col_name: str, canada_name: Optional[str] = None, *, change: bool
-) -> Dict[str, StatisticGroup]:
-    if canada_name is None:
-        canada_name = f"{col_name}_canada"
-    result = census_basics(col_name, change=change)
-    by_source: Dict[Source, Union[str, Tuple[str, ...]]] = {
-        population_census: col_name,
-        population_canada: canada_name,
-    }
+def census_basics_multi_source(col_name: str) -> Dict[str, StatisticGroup]:
+    """A census statistic whose 2020 value is multi-source, as with just_2020_multi_source."""
+    result = census_basics(col_name, change=False)
     result[col_name].by_year[2020] = [
-        MultiSource(by_source, col_name, indented_name="2020")
+        MultiSource({population_census: col_name}, col_name, indented_name="2020")
     ]
     result[col_name].group_name_statcol = col_name
     return result
@@ -725,22 +703,11 @@ statistics_tree = StatisticTree(
         "main": StatisticCategory(
             name="Main",
             contents={
-                **census_basics_with_ghs_and_canada(
-                    "population",
-                    "gpw_population",
-                    "population_2021_canada",
-                    change=True,
+                **census_basics_with_ghs("population", "gpw_population", change=True),
+                **census_basics_with_ghs(
+                    "ad_1", "gpw_pw_density_1", change=True, absolute_change=True
                 ),
-                **census_basics_with_ghs_and_canada(
-                    "ad_1",
-                    "gpw_pw_density_1",
-                    "density_2021_pw_1_canada",
-                    change=True,
-                    absolute_change=True,
-                ),
-                **census_basics_with_ghs_and_canada(
-                    "sd", "gpw_aw_density", "sd_2021_canada", change=False
-                ),
+                **census_basics_with_ghs("sd", "gpw_aw_density", change=False),
                 "area": StatisticGroup({None: [MultiSource({geography: "area"})]}),
                 "compactness": StatisticGroup(
                     {None: [MultiSource({geography: "compactness"})]}
@@ -766,13 +733,13 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "race_composition",
                     "Racial Composition",
-                    census_basics_with_canada("white", change=False),
-                    census_basics_with_canada("hispanic", change=False),
-                    census_basics_with_canada("black", change=False),
-                    census_basics_with_canada("asian", change=False),
-                    census_basics_with_canada("native", change=False),
-                    census_basics_with_canada("hawaiian_pi", change=False),
-                    census_basics_with_canada("other / mixed", change=False),
+                    census_basics_multi_source("white"),
+                    census_basics_multi_source("hispanic"),
+                    census_basics_multi_source("black"),
+                    census_basics_multi_source("asian"),
+                    census_basics_multi_source("native"),
+                    census_basics_multi_source("hawaiian_pi"),
+                    census_basics_multi_source("other / mixed"),
                 ),
                 **census_segregation("homogeneity_250"),
                 **census_segregation("segregation_250"),
@@ -942,8 +909,8 @@ statistics_tree = StatisticTree(
         "housing": StatisticCategory(
             name="Housing",
             contents={
-                **census_basics_with_canada("housing_per_pop", change=False),
-                **census_basics_with_canada("housing_per_person", change=False),
+                **census_basics_multi_source("housing_per_pop"),
+                **census_basics_multi_source("housing_per_person"),
                 **census_basics("vacancy", change=False),
                 **in_subcategory(
                     "rent_burden",
@@ -1447,21 +1414,17 @@ statistics_tree = StatisticTree(
                 k: v
                 for kvs in [
                     *[
-                        census_basics_with_ghs_and_canada(
+                        census_basics_with_ghs(
                             f"ad_{r}",
                             f"gpw_pw_density_{r}" if r in GPW_RADII else None,
-                            f"density_2021_pw_{r}_canada",
                             change=True,
                             absolute_change=True,
                         )
                         for r in RADII
                         if r != 1
                     ],
-                    census_basics_with_ghs_and_canada(
-                        "md_1",
-                        "gpw_pw_median_density_1",
-                        "density_2021_pw_median_1_canada",
-                        change=False,
+                    census_basics_with_ghs(
+                        "md_1", "gpw_pw_median_density_1", change=False
                     ),
                 ]
                 for k, v in kvs.items()

@@ -182,7 +182,6 @@ def _check_no_bad_universes(full_df: pd.DataFrame) -> None:
 
 def merge_population_estimates(full: pd.DataFrame) -> pd.DataFrame:
     popu = np.array(full.population)
-    popu[np.isnan(popu)] = full.population_2021_canada[np.isnan(popu)]
     popu[np.isnan(popu)] = full.gpw_population[np.isnan(popu)]
     full["best_population_estimate"] = popu
     return full

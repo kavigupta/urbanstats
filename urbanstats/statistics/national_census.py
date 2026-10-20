@@ -71,14 +71,30 @@ class NationalCensusStatistics(StatisticCollection):
     def __permacache_hash__(self):
         return (self.__class__.__name__, sorted(self.version.items()))
 
-    def compute_statistics_dictionary(
-        self, *, shapefile, existing_statistics, shapefile_table
-    ):
+    def computed_countries(self, shapefile):
+        """
+        The countries to compute for the shapefile, and whether each region is covered: all its
+        source countries are among them. None if there are no countries to compute.
+        """
         inputs = self.country_inputs()
         assert set(inputs) == set(self.version), (set(inputs), set(self.version))
         countries = [c for c in inputs if c in shapefile.source_country_list]
         if not countries:
-            return {}
+            return None
+        by_region = shapefile.source_countries.by_region(shapefile)
+        covered = by_region.map(lambda cs: cs is not None and set(cs) <= set(countries))
+        return countries, covered
+
+    def summed_counts(self, shapefile):
+        """
+        The counts summed over the countries computed, NaN for regions not covered, and which
+        countries those are. None if there are none.
+        """
+        computed = self.computed_countries(shapefile)
+        if computed is None:
+            return None
+        countries, covered = computed
+        inputs = self.country_inputs()
         counts = None
         for country in countries:
             country_counts = inputs[country].compute(shapefile).fillna(0)
@@ -87,9 +103,15 @@ class NationalCensusStatistics(StatisticCollection):
                 if counts is None
                 else counts.add(country_counts, fill_value=0)
             )
-        by_region = shapefile.source_countries.by_region(shapefile)
-        covered = by_region.map(lambda cs: cs is not None and set(cs) <= set(countries))
         counts.loc[~covered] = np.nan
-        counts = counts.copy()
+        return counts.copy(), countries
+
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        computed = self.summed_counts(shapefile)
+        if computed is None:
+            return {}
+        counts, _ = computed
         self.mutate_counts(counts)
         return {name: counts[name] for name in self.internal_statistic_names_list()}

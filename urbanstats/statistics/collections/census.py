@@ -16,10 +16,7 @@ from urbanstats.data.census_histogram import census_histogram
 from urbanstats.data.gpw import median_from_histogram
 from urbanstats.games.quiz_question_metadata import (
     HOUSING,
-    POPULATION,
-    POPULATION_DENSITY,
     POPULATION_OR_DENSITY_CHANGE,
-    RACE,
     QuizQuestionDescriptor,
     QuizQuestionSkip,
 )
@@ -49,7 +46,13 @@ density_metrics = [f"ad_{k}" for k in RADII]
 median_density_metrics = {"md_1": "PW Median Density (r=1km)"}
 
 
+DENSITY_KEYS = ["population", *density_metrics, *median_density_metrics, "sd"]
+
+
 class CensusForPreviousYear(USAStatistics):
+    # statistics computed for both countries by census_national, so not here
+    merged_keys = ()
+
     @abstractmethod
     def year(self):
         pass
@@ -80,7 +83,11 @@ class CensusForPreviousYear(USAStatistics):
                 "vacancy": "Vacancy %",
             }
         )
-        return {self.ysk(k): self.ysn(v) for k, v in result.items()}
+        return {
+            self.ysk(k): self.ysn(v)
+            for k, v in result.items()
+            if k not in self.merged_keys
+        }
 
     def unit_for_each_statistic(self):
         result = {"population": "population", "sd": "density"}
@@ -94,7 +101,7 @@ class CensusForPreviousYear(USAStatistics):
                 "vacancy": "percentage",
             }
         )
-        return {self.ysk(k): v for k, v in result.items()}
+        return {self.ysk(k): v for k, v in result.items() if k not in self.merged_keys}
 
     def varname_for_each_statistic(self):
         result = {}
@@ -116,8 +123,11 @@ class CensusForPreviousYear(USAStatistics):
                 "vacancy": "vacancy_rate",
             }
         )
-        for_each_stat = {self.ysk(k): self.ysk(v) for k, v in result.items()}
-        return for_each_stat
+        return {
+            self.ysk(k): self.ysk(v)
+            for k, v in result.items()
+            if k not in self.merged_keys
+        }
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name(str(self.year()))
@@ -178,7 +188,17 @@ class CensusForPreviousYear(USAStatistics):
             median_from_histogram(h)
             for h in statistics_table[self.ysk("pw_density_histogram_1")]
         ]
-        return statistics_table
+        # population_18 is for other collections, e.g. the CDC's, to divide by
+        kept = (
+            set(self.name_for_each_statistic())
+            | {self.ysk("population_18")}
+            | {
+                self.ysk(f"pw_density_histogram_{dens}")
+                for dens in RADII
+                if self.ysk(f"ad_{dens}") in self.name_for_each_statistic()
+            }
+        )
+        return {k: v for k, v in statistics_table.items() if k in kept}
 
     def extra_stats(self):
         return {
@@ -186,6 +206,7 @@ class CensusForPreviousYear(USAStatistics):
                 0, 0.1, self.ysk(f"pw_density_histogram_{d}"), "population"
             )
             for d in RADII
+            if self.ysk(f"ad_{d}") in self.name_for_each_statistic()
         }
 
 
@@ -295,9 +316,15 @@ class CensusChange(USAStatistics):
 
 
 class Census2020(CensusForPreviousYear):
-    # This isn't actually used for 2020, but it is used to just quickly source the 2020 data
-    # for computing other statistics
-    version = 5
+    """The 2020 statistics the Canadian census doesn't have."""
+
+    version = 6
+    merged_keys = (
+        *DENSITY_KEYS,
+        *race_names,
+        "housing_per_pop",
+        "housing_per_person",
+    )
 
     def year(self):
         return 2020
@@ -325,50 +352,8 @@ class Census2020(CensusForPreviousYear):
             for k in self.internal_statistic_names_list()
         }
 
-    def compute_statistics_dictionary_usa(
-        self, *, shapefile, existing_statistics, shapefile_table
-    ):
-        statistics_table = super().compute_statistics_dictionary_usa(
-            shapefile=shapefile,
-            existing_statistics=existing_statistics,
-            shapefile_table=shapefile_table,
-        )
-        median = population_median_point_usa(shapefile.geometry)
-        statistics_table["population_median_lat_usa"] = median["lat"]
-        statistics_table["population_median_lon_usa"] = median["lon"]
-        return statistics_table
-
     def quiz_question_descriptors(self):
         return {
-            "population": QuizQuestionDescriptor(
-                "higher population",
-                POPULATION,
-                exclude_geography_types=("Subnational Region",),
-            ),
-            "ad_1": QuizQuestionDescriptor(
-                "higher population-weighted density (r=1km)" + DENSITY_EXPLANATION_PW,
-                POPULATION_DENSITY,
-            ),
-            # duplicate
-            **{k: QuizQuestionSkip() for k in density_metrics if k != "ad_1"},
-            **{k: QuizQuestionSkip() for k in median_density_metrics},
-            # no sd because it's antithetical to the purpose of this site
-            "sd": QuizQuestionSkip(),
-            "white": QuizQuestionDescriptor("higher % of people who are White", RACE),
-            "hispanic": QuizQuestionDescriptor(
-                "higher % of people who are Hispanic", RACE
-            ),
-            "black": QuizQuestionDescriptor("higher % of people who are Black", RACE),
-            "asian": QuizQuestionDescriptor("higher % of people who are Asian", RACE),
-            # too small
-            "native": QuizQuestionSkip(),
-            "hawaiian_pi": QuizQuestionSkip(),
-            "other / mixed": QuizQuestionSkip(),
-            "housing_per_pop": QuizQuestionDescriptor(
-                "higher number of housing units per adult",
-                HOUSING,
-            ),
-            "housing_per_person": QuizQuestionSkip(),
             "vacancy": QuizQuestionDescriptor(
                 "higher % of units that are vacant"
                 "!TOOLTIP Vacancy is the % of housing units that were not occupied on April 1, 2020 (census night)."
@@ -380,7 +365,10 @@ class Census2020(CensusForPreviousYear):
 
 
 class Census2010(CensusForPreviousYear):
-    version = 10
+    """The 2010 statistics the Canadian census doesn't have."""
+
+    version = 11
+    merged_keys = tuple(DENSITY_KEYS)
 
     def year(self):
         return 2010
@@ -394,10 +382,35 @@ class Census2000(CensusForPreviousYear):
 
 
 class CensusChange2010(CensusChange):
-    version = 2
+    """From the merged statistics, with Canada's 2011 values as 2010."""
+
+    version = 3
+    data_source_country = None
+
+    def legacy_statistic_names(self):
+        # Canada's, from before the two countries' statistics were merged
+        return {
+            f"{name} [StatCan]": name
+            for name in self.name_for_each_statistic().values()
+        }
+
+    @property
+    def data_source_countries(self):
+        return ("USA", "Canada")
 
     def year(self):
         return 2010
+
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        if existing_statistics["population"] is None:
+            return {}
+        return self.compute_statistics_dictionary_usa(
+            shapefile=shapefile,
+            existing_statistics=existing_statistics,
+            shapefile_table=shapefile_table,
+        )
 
 
 class CensusChange2000(CensusChange):
