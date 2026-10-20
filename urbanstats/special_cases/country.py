@@ -4,6 +4,7 @@ import os
 import geopandas as gpd
 import pandas as pd
 import tqdm.auto as tqdm
+from permacache import stable_hash
 
 from urbanstats.special_cases.country_names import iso_to_country
 from urbanstats.special_cases.special_subnational_source import (
@@ -128,8 +129,8 @@ def subnational_regions():
     return gpd.read_file(path + "/subnational_regions.shp")
 
 
-def countries_direct():
-    data = subnational_regions()
+def countries_direct(subnationals):
+    data = subnationals.load_rows()
     print("read countries")
     data["dissolveby"] = data.ISO_CC
     data = data.dissolve(by="dissolveby")
@@ -139,10 +140,12 @@ def countries_direct():
     return data
 
 
-def countries():
-    path = "named_region_shapefiles/countries_processed"
+def countries(subnationals):
+    path = (
+        f"named_region_shapefiles/countries_processed_{stable_hash(subnationals)[:12]}"
+    )
     if not os.path.exists(path):
-        c = countries_direct()
+        c = countries_direct(subnationals)
         os.makedirs(path)
         c.to_file(path + "/countries.shp", encoding="utf-8")
     return gpd.read_file(path + "/countries.shp")

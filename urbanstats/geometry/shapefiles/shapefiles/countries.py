@@ -18,6 +18,7 @@ from urbanstats.universe.universe_provider.self_provider import SelfUniverseProv
 COUNTRIES = make_shapefile(
     geometry_key="countries_12",
     path=countries,
+    path_inputs=(SUBNATIONAL_REGIONS.geometry,),
     shortname_extractor=CountryName(column("ISO_CC")),
     longname_extractor=CountryName(column("ISO_CC")),
     additional_columns_computer={"iso": column("ISO_CC")},
