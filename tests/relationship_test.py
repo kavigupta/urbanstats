@@ -12,7 +12,9 @@ from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 class RelationshipTest(unittest.TestCase):
     def relationshipsFlat(self, k1, k2, filter_geos=lambda _: True):
         relationships = compute_relationships(
-            shapefiles[k1].geometry, shapefiles[k2].geometry
+            shapefiles[k1].geometry,
+            shapefiles[k2].geometry,
+            shapefiles["subnational_regions"].geometry,
         )
         names_1 = shapefile_longnames(shapefiles[k1].names)
         names_2 = shapefile_longnames(shapefiles[k2].names)
