@@ -16,7 +16,7 @@ import { mapUSSFromStat, pageRowIndices, sortedRowIndices, statDataFromTable } f
 import { clusterRadius } from '../../src/syau/cluster-geometry'
 import { toStatement } from '../../src/urban-stats-script/ast'
 import { doRender } from '../../src/urban-stats-script/constants/color-utils'
-import { Inset } from '../../src/urban-stats-script/constants/insets'
+import { Inset, keepInsets } from '../../src/urban-stats-script/constants/insets'
 import { ClusterMap, CMap, CMapRGB, PMap } from '../../src/urban-stats-script/constants/map'
 import { Table, TableCellValue } from '../../src/urban-stats-script/constants/table'
 import { deriveConditionLabel } from '../../src/urban-stats-script/derive-human-readable-name'
@@ -26,6 +26,7 @@ import { GeographySelection } from '../../src/urban-stats-script/workerManager'
 import { geometry } from '../../src/utils/geometry'
 import { HumanReadableName } from '../../src/utils/human-readable-element'
 import { reifyString } from '../../src/utils/human-readable-name'
+import { boxesOverlap, CoordBox } from '../../src/utils/partition-boxes'
 import { Feature } from '../../src/utils/protos'
 import { StoredUnit } from '../../src/utils/quantity'
 import { loadFeatureFromPossibleSymlink } from '../../src/utils/symlinks'
@@ -287,6 +288,22 @@ async function clusterContents(geographies: GeographySelection[], map: ClusterMa
     }
 }
 
+function hasContent(contents: MapContents, coordBox: CoordBox): boolean {
+    switch (contents.kind) {
+        case 'shapes':
+            return contents.shapes.some(shape => boxesOverlap(
+                shape.rings.flat().reduce<CoordBox>(
+                    ([west, south, east, north], [lon, lat]) => [Math.min(west, lon), Math.min(south, lat), Math.max(east, lon), Math.max(north, lat)],
+                    [Infinity, Infinity, -Infinity, -Infinity],
+                ),
+                coordBox,
+            ))
+        case 'points':
+        case 'clusters':
+            return contents.points.some(({ lon, lat }) => boxesOverlap([lon, lat, lon, lat], coordBox))
+    }
+}
+
 export async function mapCard(origin: string, pageData: Extract<PageData, { kind: 'mapper' }>, settings: Settings): Promise<MapCard | undefined> {
     setOrigin(origin)
     const { script } = pageData.settings
@@ -325,7 +342,7 @@ export async function mapCard(origin: string, pageData: Extract<PageData, { kind
         label: label === undefined ? '' : reifyString(label, {}),
         contents,
         opacity: map.opacity,
-        insets: map.insets,
+        insets: keepInsets(map.insets, coordBox => hasContent(contents, coordBox)),
         basemap: map.basemap,
         ramp: visuals.ramp === undefined
             ? undefined

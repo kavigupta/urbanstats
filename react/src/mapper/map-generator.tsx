@@ -17,7 +17,7 @@ import { ClusterMap as SyauClusterMap } from '../syau/syau-cluster-map'
 import { Universe } from '../universe'
 import { getAllParseErrors } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color-utils'
-import { Inset } from '../urban-stats-script/constants/insets'
+import { Inset, keepInsets } from '../urban-stats-script/constants/insets'
 import { CommonMap } from '../urban-stats-script/constants/map'
 import { ScaleInstance } from '../urban-stats-script/constants/scale'
 import { TextBox } from '../urban-stats-script/constants/text-box'
@@ -31,6 +31,7 @@ import { Edit } from '../utils/array-edits'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { makeDebugLogger } from '../utils/debug-logging'
 import { HumanReadableName } from '../utils/human-readable-element'
+import { boxesOverlap, CoordBox } from '../utils/partition-boxes'
 import { ICoordinate } from '../utils/protos'
 import { StoredUnit } from '../utils/quantity'
 import { plainNumber } from '../utils/unit'
@@ -162,9 +163,8 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         const mapsContainerRef = useRef<HTMLDivElement>(null)
         const wholeRenderRef = useRef<HTMLDivElement>(null)
 
-        const acceptedInsets = mapResultMain.value.insets
+        const acceptedInsets = keepInsets(mapResultMain.value.insets, coordBox => features.some(feature => overlaps(feature, coordBox)))
             .map(inset => ({ inset, insetFeatures: filterOverlaps(inset, features) }))
-            .filter(({ insetFeatures }) => insetFeatures.length > 0)
 
         // Don't change the aspect ratio while editing, otherwise things get nasty
         const aspectRatio = computeAspectRatioForInsets(acceptedInsets.map(({ inset }) => inset))
@@ -616,16 +616,12 @@ function TransformConstantWidth({ children, width }: { children: ReactNode, widt
 }
 
 function filterOverlaps(inset: Inset, features: GeoJSON.Feature[]): GeoJSON.Feature[] {
-    const bbox = inset.coordBox
-    if (!inset.mainMap) {
-        features = features.filter((poly) => {
-            const bounds = boundingBox(poly.geometry)
-            // Check if the polygon overlaps the inset bounds
-            return bounds.getWest() < bbox[2] && bounds.getEast() > bbox[0]
-                && bounds.getNorth() > bbox[1] && bounds.getSouth() < bbox[3]
-        })
-    }
-    return features
+    return inset.mainMap ? features : features.filter(feature => overlaps(feature, inset.coordBox))
+}
+
+function overlaps(feature: GeoJSON.Feature, coordBox: CoordBox): boolean {
+    const bounds = boundingBox(feature.geometry)
+    return boxesOverlap([bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()], coordBox)
 }
 
 interface MapCache {
