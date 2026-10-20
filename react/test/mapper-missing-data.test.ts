@@ -100,3 +100,10 @@ mapper(() => test)('a hidden region on an RGB map is still clickable', { code: r
     await t.click(canvas, { offsetX: Math.round(width * 0.82), offsetY: Math.round(height * 0.57) })
     await t.expect(getLocation()).contains('longname=Austurland%2C+Iceland')
 })
+
+// Nothing passes the condition, which still leaves the main map to draw.
+mapper(() => test)('no geographies', { code: 'customNode("");\ncondition (population < 0)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    await t.expect(Selector(map(0)).exists).ok()
+    await t.expect(getErrors()).eql([])
+    await screencap(t, { removeEntireMap: false })
+})
