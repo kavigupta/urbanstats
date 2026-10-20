@@ -2,19 +2,16 @@
 from urbanstats.acs.load import ACSDataEntity
 from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import GENERATION, QuizQuestionDescriptor
-from urbanstats.statistics.national_census import NationalCensusStatistics
+from urbanstats.statistics.national_census import (
+    ACSCounts,
+    NationalCensusStatistics,
+    StatCanCounts,
+)
 from urbanstats.statistics.utils import fractionalize
 
 
 class GenerationStatistics(NationalCensusStatistics):
     version = {"USA": 1, "Canada": 1}
-
-    def legacy_statistic_names(self):
-        # Canada's, from before the two countries' statistics were merged
-        return {
-            f"{name} [StatCan]": name
-            for name in self.name_for_each_statistic().values()
-        }
 
     def name_for_each_statistic(self):
         return {
@@ -55,14 +52,14 @@ class GenerationStatistics(NationalCensusStatistics):
             },
         )
 
-    def post_process(self, counts):
-        names = self.internal_statistic_names_list()
-        counts = counts[names].copy()
-        fractionalize(counts, *names)
-        return {name: counts[name] for name in names}
+    def mutate_counts(self, counts):
+        fractionalize(counts, *self.internal_statistic_names_list())
 
     def country_inputs(self):
-        return {"USA": self.acs_entity(), "Canada": self.census_tables_canada()}
+        return {
+            "USA": ACSCounts(self.acs_entity()),
+            "Canada": StatCanCounts(self.census_tables_canada()),
+        }
 
     def census_tables_canada(self):
         return CensusTables(

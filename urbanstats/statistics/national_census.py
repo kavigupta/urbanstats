@@ -1,19 +1,41 @@
 from abc import abstractmethod
+from dataclasses import dataclass
 from typing import Any, Dict
 
 import numpy as np
 import pandas as pd
 
-from urbanstats.acs.load import aggregated_acs_data
+from urbanstats.acs.load import aggregated_acs_data, aggregated_acs_data_us_pr
 from urbanstats.statistics.statistic_collection import StatisticCollection
 
-# Each country's block-level counts, summed over a shapefile's regions, from that country's input
-COUNTRY_COUNTS = {
-    "USA": lambda entity, shapefile: aggregated_acs_data(
-        2020, entity, shapefile.geometry
-    ),
-    "Canada": lambda census_tables, shapefile: census_tables.compute(2021, shapefile),
-}
+
+@dataclass(frozen=True)
+class ACSCounts:
+    entity: Any
+
+    def compute(self, shapefile):
+        return aggregated_acs_data(2020, self.entity, shapefile.geometry)
+
+
+@dataclass(frozen=True)
+class ACSUSPRCounts:
+    """Counts from separate US and Puerto Rico ACS tables."""
+
+    entity_us: Any
+    entity_pr: Any
+
+    def compute(self, shapefile):
+        return aggregated_acs_data_us_pr(
+            2020, self.entity_us, self.entity_pr, shapefile.geometry
+        )
+
+
+@dataclass(frozen=True)
+class StatCanCounts:
+    census_tables: Any
+
+    def compute(self, shapefile):
+        return self.census_tables.compute(2021, shapefile)
 
 
 class NationalCensusStatistics(StatisticCollection):
@@ -27,13 +49,20 @@ class NationalCensusStatistics(StatisticCollection):
     @abstractmethod
     def country_inputs(self) -> Dict[str, Any]:
         """
-        Country -> the input COUNTRY_COUNTS takes for it. Every country's input produces the same
-        count columns.
+        Country -> an object whose compute(shapefile) gives that country's counts, summed over each
+        of the shapefile's regions. Every country's counts have the same columns.
         """
 
     @abstractmethod
-    def post_process(self, counts: pd.DataFrame) -> Dict[str, Any]:
-        pass
+    def mutate_counts(self, counts: pd.DataFrame) -> None:
+        """Turns the counts, summed over the countries, into the statistics, in place."""
+
+    def legacy_statistic_names(self):
+        # Canada's, from before the two countries' statistics were merged
+        return {
+            f"{name} [StatCan]": name
+            for name in self.name_for_each_statistic().values()
+        }
 
     @property
     def data_source_countries(self):
@@ -52,8 +81,7 @@ class NationalCensusStatistics(StatisticCollection):
             return {}
         counts = None
         for country in countries:
-            country_counts = COUNTRY_COUNTS[country](inputs[country], shapefile)
-            country_counts = country_counts.fillna(0)
+            country_counts = inputs[country].compute(shapefile).fillna(0)
             counts = (
                 country_counts
                 if counts is None
@@ -62,4 +90,6 @@ class NationalCensusStatistics(StatisticCollection):
         by_region = shapefile.source_countries.by_region(shapefile)
         covered = by_region.map(lambda cs: cs is not None and set(cs) <= set(countries))
         counts.loc[~covered] = np.nan
-        return self.post_process(counts)
+        counts = counts.copy()
+        self.mutate_counts(counts)
+        return {name: counts[name] for name in self.internal_statistic_names_list()}
