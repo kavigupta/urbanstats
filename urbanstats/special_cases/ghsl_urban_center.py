@@ -6,6 +6,7 @@ import geopandas as gpd
 import numpy as np
 from permacache import permacache
 
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.geometry.shapefiles.row_functions import TableFunction
 from urbanstats.special_cases.country_names import iso_to_country
 
@@ -23,6 +24,9 @@ def classify_areas_by_subnational_region(snr, areas):
     return subnationals
 
 
+@permacache_with_remapping_pickle(
+    "urbanstats/special_cases/ghsl_urban_center/load_ghsl_urban_centers"
+)
 def load_ghsl_urban_centers():
     areas = gpd.read_file(
         "named_region_shapefiles/GHS_STAT_UCDB2015MT_GLOBE_R2019A_V1_2.gpkg"
