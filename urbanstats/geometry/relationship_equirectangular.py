@@ -59,8 +59,10 @@ class LandRleSummary:
 @permacache(
     "population_density/relationship_equirectangular/land_rle_summaries_for_shapefile_4"
 )
-def land_rle_summaries_for_shapefile(geometry: Any) -> List[LandRleSummary]:
-    """Each region's LandRleSummary, in row order."""
+def land_rle_summaries_for_shapefile(
+    geometry: Any, land_source: Any
+) -> List[LandRleSummary]:
+    """Each region's LandRleSummary, in row order. land_source is as for coastlines_rle."""
     result = []
     for geom in tqdm.tqdm(
         geometry.load_rows().geometry,
@@ -71,19 +73,21 @@ def land_rle_summaries_for_shapefile(geometry: Any) -> List[LandRleSummary]:
             geom, resolution=RESOLUTION_3ARCSEC
         )
         result.append(
-            land_rle_summary(rle_dict_from_arrays(rows, lon_starts, lon_ends))
+            land_rle_summary(
+                rle_dict_from_arrays(rows, lon_starts, lon_ends), land_source
+            )
         )
     return result
 
 
 @permacache("population_density/relationship_equirectangular/compute_relationships_8")
 def compute_relationships(
-    geometry_a: Any, geometry_b: Any
+    geometry_a: Any, geometry_b: Any, land_source: Any
 ) -> Dict[str, List[Tuple[int, int]]]:
     """Each kind of relationship's pairs of row positions, in geometry_a then geometry_b."""
     print("Computing relationships between", geometry_a.key, "and", geometry_b.key)
-    summaries_a = land_rle_summaries_for_shapefile(geometry_a)
-    summaries_b = land_rle_summaries_for_shapefile(geometry_b)
+    summaries_a = land_rle_summaries_for_shapefile(geometry_a, land_source)
+    summaries_b = land_rle_summaries_for_shapefile(geometry_b, land_source)
     rles_a = [summary.buffered_land_rle for summary in summaries_a]
     rles_b = [summary.buffered_land_rle for summary in summaries_b]
     pairs = rle_spatial_join(rles_a, rles_b)
@@ -106,8 +110,7 @@ def classify_relationship(summary_a: LandRleSummary, summary_b: LandRleSummary) 
     if not intersection:
         return "borders"
     eps = 1e-9
-    rc = RelationshipComputer.singleton()
-    inter_area = rc.area_of(intersection)
+    inter_area = area_of_rle(intersection)
 
     # In general, we do not want to compute population unless we have to,
     # it involves reading from a zarr and is therefore very expensive.
@@ -117,7 +120,7 @@ def classify_relationship(summary_a: LandRleSummary, summary_b: LandRleSummary) 
     def get_inter_pop() -> float:
         nonlocal _inter_pop
         if _inter_pop is None:
-            _inter_pop = rc.population_of(intersection)
+            _inter_pop = compute_population_for_rle(intersection, RESOLUTION_3ARCSEC)
         return _inter_pop
 
     union_area = summary_a.area + summary_b.area - inter_area
@@ -167,58 +170,38 @@ def compute_population_for_rle(
     return float(np.nansum(zarr[row_sel, col_sel]))
 
 
-class RelationshipComputer:
-    """
-    Computes containment between polygons represented as RLEs at 3 arcsecond
-    resolution, clipped to land. Uses area and population of intersection;
-    a contains b iff both are >= 95% of b's.
-    """
+_LAND_RLES = {}
 
-    _singleton: "RelationshipComputer"
 
-    @classmethod
-    def singleton(cls) -> "RelationshipComputer":
-        if not hasattr(cls, "_singleton"):
-            cls._singleton = cls()
-        return cls._singleton
+def land_rle(land_source):
+    """The land mask at 3 arcsecond resolution, without the extreme latitudes."""
+    key = stable_hash(land_source)
+    if key not in _LAND_RLES:
+        # the equirectangular approximation and population raster aren't meant for these
+        _LAND_RLES[key] = {
+            row: intervals
+            for row, intervals in coastlines_rle(land_source).items()
+            if -85 <= _lat_deg_from_rle_row(row) <= 85
+        }
+    return _LAND_RLES[key]
 
-    def __init__(self) -> None:
-        raw_rle = coastlines_rle()
-        # Filter out extreme latitudes where the equirectangular approximation and
-        # population raster are not intended to be used.
-        filtered_rle = {}
-        for row, intervals in raw_rle.items():
-            lat = _lat_deg_from_rle_row(row)
-            if -85 <= lat <= 85:
-                filtered_rle[row] = intervals
-        self._land_rle = filtered_rle
-        self._resolution = RESOLUTION_3ARCSEC
-        assert self._resolution == RESOLUTION_3ARCSEC
 
-    def clip_to_land(
-        self, rle: Dict[int, List[Tuple[int, int]]]
-    ) -> Dict[int, List[Tuple[int, int]]]:
-        """Intersect RLE with land mask; returns dict format."""
-        return intersect_rle_runs(rle, self._land_rle)
-
-    def population_of(self, rle: Dict[int, List[Tuple[int, int]]]) -> float:
-        """Sum population in grid cells covered by the RLE."""
-        return compute_population_for_rle(rle, self._resolution)
-
-    def area_of(self, rle: Dict[int, List[Tuple[int, int]]]) -> float:
-        """Area in m² of cells covered by the RLE (equirectangular)."""
-        total = 0.0
-        for row, intervals in rle.items():
-            for s, e in intervals:
-                total += (e - s + 1) * _cell_area_m2(row)
-        return total
+def area_of_rle(rle: Dict[int, List[Tuple[int, int]]]) -> float:
+    """Area in m² of cells covered by the RLE (equirectangular)."""
+    total = 0.0
+    for row, intervals in rle.items():
+        for s, e in intervals:
+            total += (e - s + 1) * _cell_area_m2(row)
+    return total
 
 
 @permacache(
     "population_density/relationship_equirectangular/compute_containment_2",
     key_function=dict(rle=stable_hash),
 )
-def land_rle_summary(rle: Dict[int, List[Tuple[int, int]]]) -> LandRleSummary:
+def land_rle_summary(
+    rle: Dict[int, List[Tuple[int, int]]], land_source: Any
+) -> LandRleSummary:
     """
     Compute summary information for an RLE relative to land:
 
@@ -230,11 +213,10 @@ def land_rle_summary(rle: Dict[int, List[Tuple[int, int]]]) -> LandRleSummary:
     """
     # pylint: disable=too-many-locals
     assert isinstance(rle, dict), "Expected dict-format RLE"
-    rc = RelationshipComputer.singleton()
-    land_rle = rc.clip_to_land(rle)
-    area = rc.area_of(land_rle)
-    population = rc.population_of(land_rle)
-    min_row, max_row, min_col, max_col = rle_bounds(land_rle)
+    clipped = intersect_rle_runs(rle, land_rle(land_source))
+    area = area_of_rle(clipped)
+    population = compute_population_for_rle(clipped, RESOLUTION_3ARCSEC)
+    min_row, max_row, min_col, max_col = rle_bounds(clipped)
     # Corner coordinates in degrees (approximate cell centers)
     lat_north = _lat_deg_from_rle_row(min_row)
     lat_south = _lat_deg_from_rle_row(max_row)
@@ -259,10 +241,10 @@ def land_rle_summary(rle: Dict[int, List[Tuple[int, int]]]) -> LandRleSummary:
         cos_lat = math.cos(math.radians(lat_here))
         return ry / cos_lat + 1
 
-    buffered_land_rle = pad_rle(land_rle, radius_fn, ry + 1)
+    buffered_land_rle = pad_rle(clipped, radius_fn, ry + 1)
     buffered_bounds = rle_bounds(buffered_land_rle)
     return LandRleSummary(
-        land_rle=land_rle,
+        land_rle=clipped,
         buffered_land_rle=buffered_land_rle,
         area=area,
         population=population,
