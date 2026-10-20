@@ -340,6 +340,7 @@ export function MapTextBoxComponent({ textBox: label, container, edit, i, count 
                     setFrame={(newFrame) => {
                         edit.modify({ bottomLeft: [newFrame[0], newFrame[1]], topRight: [newFrame[2], newFrame[3]] })
                     }}
+                    bounds={[0, 0, 1, 1]}
                     container={container}
                     delete={edit.delete}
                     duplicate={edit.duplicate}
@@ -435,6 +436,7 @@ export function AddTextBox({ container, add }: { container: RefObject<HTMLDivEle
     return (
         <EditInsetsHandles
             frame={[0, 0, 1, 1]}
+            bounds={[0, 0, 1, 1]}
             container={container}
             add={add}
             shouldHaveCenterHandle={false}

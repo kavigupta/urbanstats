@@ -200,8 +200,8 @@ type EditInsetsHandlesProps = Parameters<typeof EditInsetsHandles>[0]
 export function EditInsetsHandles(props: {
     frame: Frame
     setFrame?: (newFrame: Frame) => void
-    // Where the frame can be dragged, defaulting to the whole container
-    bounds?: Frame
+    // Where the frame can be dragged
+    bounds: Frame
     container: RefObject<HTMLDivElement>
     delete?: () => void
     duplicate?: () => void
@@ -243,7 +243,7 @@ export function EditInsetsHandles(props: {
             const containerBounds = props.container.current!.getBoundingClientRect()
             const rawMovementX = (e.clientX - drag.startX) / containerBounds.width
             const rawMovementY = -(e.clientY - drag.startY) / containerBounds.height
-            const [west, south, east, north] = props.bounds ?? [0, 0, 1, 1]
+            const [west, south, east, north] = props.bounds
             const resizedFrame: Frame = [
                 Math.max(west, Math.min(drag.startFrame[0] + rawMovementX, drag.startFrame[2])),
                 Math.max(south, Math.min(drag.startFrame[1] + rawMovementY, drag.startFrame[3])),
