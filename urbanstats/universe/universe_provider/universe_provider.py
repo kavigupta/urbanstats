@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Any, Tuple
 
 import us
 
 from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     province_abbr_to_province,
 )
+from urbanstats.special_cases.ghsl_urban_center import compute_subnational_suffixes
 from urbanstats.universe.universe_list import get_universe_name_for_state
 
 
@@ -34,6 +35,7 @@ class UniverseProvider(ABC):
 
 @dataclass
 class UrbanCenterlikeStateUniverseProvider(UniverseProvider):
+    suffixes: Any  # SubnationalSuffixes, which has the subnational regions of each region
     countries: Tuple[str] = ("US", "CA")
 
     def relevant_shapefiles(self):
@@ -52,7 +54,9 @@ class UrbanCenterlikeStateUniverseProvider(UniverseProvider):
     def universes_for_shapefile(self, names_by_key, names, table):
         assert self.countries == ("US", "CA"), f"Unexpected countries: {self.countries}"
         result = {}
-        for longname, codes in zip(table.longname, table.subnationals_ISO_CODE):
+        computed = compute_subnational_suffixes(self.suffixes)
+        codes_by_row = computed.subnationals_ISO_CODE.loc[table.index]
+        for longname, codes in zip(table.longname, codes_by_row):
             codes = [self.process_code(code) for code in codes]
             codes = [code for code in codes if code is not None]
             result[longname] = codes
