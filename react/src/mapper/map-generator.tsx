@@ -74,7 +74,12 @@ export function useMapGenerator({ mapSettings, typeEnvironment }: { mapSettings:
     return result
 }
 
-type MapUIProps<T> = T & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: { edited: LaidOutInset[], handlers: (i: number) => InsetEditHandlers, overlay: (container: RefObject<HTMLDivElement>) => ReactNode } } | { mode: 'textBoxes', editTextBoxes: { edited: TextBox[], add: () => void, handlers: (i: number) => Edit<TextBox> } })
+type MapUIProps<T> = T & (
+    { mode: 'view' }
+    | { mode: 'uss' }
+    | { mode: 'insets', editInsets: { edited: LaidOutInset[], handlers: (i: number) => InsetEditHandlers, overlay: (container: RefObject<HTMLDivElement>) => ReactNode } }
+    | { mode: 'textBoxes', editTextBoxes: { edited: TextBox[], add: () => void, handlers: (i: number) => Edit<TextBox> } }
+)
 
 export interface MapGenerator<T = unknown> {
     ui: (props: MapUIProps<T>) => { node: ReactNode, exportImage?: () => Promise<HTMLCanvasElement> }
