@@ -72,7 +72,7 @@ test('comparison-warnings-name-the-disabled-source', async (t) => {
         await t.click(categoryCheckbox('housing'))
         await t.click(editCheckbox('National Census'))
     })
-    await t.expect(warningNamed('National Census is disabled. Enable it to see these statistics.', 'Housing').exists).ok()
+    await t.expect(warningNamed('National Census is disabled. Enable it to see this statistic.', 'PW Household Size').exists).ok()
     // Ontario still has its own, from the Canadian census
     await t.expect(Selector('a').withExactText('PW Household Size [StatCan]').exists).ok()
 })
