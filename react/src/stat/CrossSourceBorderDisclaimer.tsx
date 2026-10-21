@@ -14,6 +14,11 @@ function withArticle(country: string): string {
     return country === 'USA' ? 'the USA' : country
 }
 
+function countryList(countries: readonly string[]): string {
+    const names = countries.map(withArticle)
+    return names.length <= 2 ? names.join(' and ') : `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`
+}
+
 export function CrossSourceBorderDisclaimer({ stat, view, counts, isFootnote }: {
     stat: Statistic
     view: View
@@ -86,7 +91,7 @@ function DisclaimerContents({ stat, view, exclusion, isFootnote: footnote }: {
                 </>
             )
         case 'outside-jurisdiction': {
-            const country = withArticle(exclusion.statisticCountry)
+            const country = countryList(exclusion.statisticCountries)
             return (
                 <>
                     <b>
