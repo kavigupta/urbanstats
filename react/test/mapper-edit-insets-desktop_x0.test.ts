@@ -4,7 +4,7 @@ import { runTests } from './mapper-edit-insets'
 import { drag, editInsetsButton, getErrors, handle, map, numMaps, overlappingInsetsCode, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { downloadImage, urbanstatsFixture, waitForMapsToRender, wheel } from './test_utils'
 
-runTests('desktop')
+runTests('desktop', 0, 2)
 
 urbanstatsFixture('usa no basemap', urlFromCode('County', 'USA', `cMap(
     data=density_pw_1km,
