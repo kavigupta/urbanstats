@@ -318,11 +318,11 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                     {(split.path.length === 1 || !leaves.some(leaf => leaf.mainMap && split.path.every((p, k) => leaf.path[k] === p))) && (
                         <SplitFrameHandles frame={split.frame} container={container} handlers={{ setFrame: setFrameAt(split.path, split.cell), bounds: split.cell, ...reorder(split.path) }} />
                     )}
-                    {split.cells.slice(1).map((_, j) => (
+                    {split.cells.slice(1).map((_, beforeIndex) => (
                         <SplitDivider
-                            key={j}
+                            key={beforeIndex}
                             split={split}
-                            j={j}
+                            beforeIndex={beforeIndex}
                             container={container}
                             setProportions={(proportions) => {
                                 addInsetEdit(insets => mapNode(insets, split.path, (node) => {

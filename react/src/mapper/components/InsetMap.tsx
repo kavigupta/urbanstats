@@ -418,9 +418,9 @@ export function SplitFrameHandles({ frame, container, handlers: { moveUp, moveDo
     )
 }
 
-export function SplitDivider({ split: { split, cells }, j, container, setProportions }: {
+export function SplitDivider({ split: { split, cells }, beforeIndex, container, setProportions }: {
     split: LaidOutSplit
-    j: number
+    beforeIndex: number
     container: RefObject<HTMLDivElement>
     setProportions: (proportions: number[]) => void
 }): ReactNode {
@@ -428,8 +428,8 @@ export function SplitDivider({ split: { split, cells }, j, container, setProport
     const activePointer = useRef<number | undefined>(undefined)
 
     const horizontal = split.direction === 'horizontal'
-    const before = cells[j]
-    const after = cells[j + 1]
+    const before = cells[beforeIndex]
+    const after = cells[beforeIndex + 1]
     // Extent of the two cells along the split axis
     const [lo, hi] = horizontal ? [before[0], after[2]] : [after[1], before[3]]
     const mobileMultiplier = useMobileControlScale()
@@ -471,10 +471,10 @@ export function SplitDivider({ split: { split, cells }, j, container, setProport
                 const minSize = Math.min(0.02, (hi - lo) / 4)
                 const clamped = Math.max(lo + minSize, Math.min(hi - minSize, position))
                 const firstShare = horizontal ? (clamped - lo) / (hi - lo) : (hi - clamped) / (hi - lo)
-                const pair = split.children[j].proportion + split.children[j + 1].proportion
+                const pair = split.children[beforeIndex].proportion + split.children[beforeIndex + 1].proportion
                 const proportions = split.children.map(({ proportion }) => proportion)
-                proportions[j] = pair * firstShare
-                proportions[j + 1] = pair * (1 - firstShare)
+                proportions[beforeIndex] = pair * firstShare
+                proportions[beforeIndex + 1] = pair * (1 - firstShare)
                 setProportions(proportions)
             }}
             onPointerUp={(e) => {
