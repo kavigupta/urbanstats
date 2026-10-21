@@ -35,7 +35,7 @@ const splitSchema: l.LiteralExprParser<SplitInset> = l.transformExpr(l.deconstru
     insets: l.vector({ parse: (...args) => insetSchema.parse(...args) }),
     proportion: l.number(),
 }))], namedArgs: {
-    direction: l.transformExpr(l.union(Object.keys(splitDirectionIdentifierToValue).map(l.identifier)), d => splitDirectionIdentifierToValue[d]),
+    direction: l.transformExpr(l.union(Object.keys(splitDirectionIdentifierToValue).map(l.identifier)), identifier => splitDirectionIdentifierToValue[identifier]),
     screenBounds: neswSchema,
 } })),
 ({ unnamedArgs: [children], namedArgs: { direction, screenBounds } }) => ({

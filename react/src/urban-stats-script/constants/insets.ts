@@ -122,35 +122,35 @@ function collapseSplit(split: SplitInset): InsetNode[] {
     return [split]
 }
 
-/** Replaces the list at `listPath` with `f` of it */
-export function mapList(list: InsetNode[], listPath: number[], f: (list: InsetNode[]) => InsetNode[]): InsetNode[] {
+/** Replaces the list at `listPath` with `edit` of it */
+export function mapList(list: InsetNode[], listPath: number[], edit: (list: InsetNode[]) => InsetNode[]): InsetNode[] {
     if (listPath.length === 0) {
-        return f(list)
+        return edit(list)
     }
-    const [i, c, ...rest] = listPath
+    const [i, cellIndex, ...rest] = listPath
     const split = list[i]
     assert(isSplit(split), 'Path descends into a leaf inset')
-    const edited = mapList(split.children[c].insets, rest, f)
+    const edited = mapList(split.children[cellIndex].insets, rest, edit)
     // Only collapsing when a cell goes, so edits in place keep every path valid
     const replacement = edited.length === 0
-        ? collapseSplit({ ...split, children: split.children.filter((_, k) => k !== c) })
-        : [{ ...split, children: split.children.map((cell, k) => k === c ? { ...cell, insets: edited } : cell) }]
+        ? collapseSplit({ ...split, children: split.children.filter((_, index) => index !== cellIndex) })
+        : [{ ...split, children: split.children.map((cell, index) => index === cellIndex ? { ...cell, insets: edited } : cell) }]
     return [...list.slice(0, i), ...replacement, ...list.slice(i + 1)]
 }
 
-export function mapNode(list: InsetNode[], path: number[], f: (node: InsetNode) => InsetNode[]): InsetNode[] {
+export function mapNode(list: InsetNode[], path: number[], edit: (node: InsetNode) => InsetNode[]): InsetNode[] {
     const i = path[path.length - 1]
-    return mapList(list, path.slice(0, -1), l => [...l.slice(0, i), ...f(l[i]), ...l.slice(i + 1)])
+    return mapList(list, path.slice(0, -1), siblings => [...siblings.slice(0, i), ...edit(siblings[i]), ...siblings.slice(i + 1)])
 }
 
 export function listAt(list: InsetNode[], listPath: number[]): InsetNode[] {
     if (listPath.length === 0) {
         return list
     }
-    const [i, c, ...rest] = listPath
+    const [i, cellIndex, ...rest] = listPath
     const split = list[i]
     assert(isSplit(split), 'Path descends into a leaf inset')
-    return listAt(split.children[c].insets, rest)
+    return listAt(split.children[cellIndex].insets, rest)
 }
 
 /** Removes leaves, dropping cells this empties and collapsing splits left with one cell */
@@ -161,7 +161,7 @@ export function pruneInsets(nodes: InsetNode[], keep: (leaf: Inset) => boolean):
         }
         const children = node.children
             .map(cell => ({ ...cell, insets: pruneInsets(cell.insets, keep) }))
-            .filter((cell, k) => cell.insets.length > 0 || node.children[k].insets.length === 0)
+            .filter((cell, cellIndex) => cell.insets.length > 0 || node.children[cellIndex].insets.length === 0)
         return collapseSplit({ ...node, children })
     })
 }
