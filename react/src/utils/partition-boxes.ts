@@ -25,6 +25,10 @@ export function extendCoordBoxes(boxes: CoordBox[]): CoordBox {
     return boxes.reduce((a, b) => [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[2], b[2]), Math.max(a[3], b[3])])
 }
 
+export function boxesOverlap([w1, s1, e1, n1]: CoordBox, [w2, s2, e2, n2]: CoordBox): boolean {
+    return w1 < e2 && e1 > w2 && s1 < n2 && n1 > s2
+}
+
 function proportionFilled(boxes: CoordBox[]): number {
     return boxes.reduce((a, box) => a + area(box), 0) / area(extendCoordBoxes(boxes))
 }
