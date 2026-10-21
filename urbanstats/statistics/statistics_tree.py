@@ -573,13 +573,13 @@ def just_2020_category(
     }
 
 
-def just_2020_category_with_canada(
-    cat_key: str, cat_name: str, *col_names: str, year: int = 2020
+def just_2020_category_multi_source(
+    cat_key: str, cat_name: str, *col_names: str, canada: bool
 ) -> Dict[str, StatisticCategory]:
     return {
         cat_key: StatisticCategory(
             name=cat_name,
-            contents=just_2020_multi_source(*col_names, year=year),
+            contents=just_2020_multi_source(*col_names, canada=canada),
         )
     }
 
@@ -879,7 +879,7 @@ statistics_tree = StatisticTree(
                 ),
             },
         ),
-        **just_2020_category_with_canada(
+        **just_2020_category_multi_source(
             "generation",
             "Generation",
             "generation_silent",
@@ -888,6 +888,7 @@ statistics_tree = StatisticTree(
             "generation_millenial",
             "generation_genz",
             "generation_genalpha",
+            canada=True,
         ),
         "income": StatisticCategory(
             name="Income",
@@ -1103,7 +1104,7 @@ statistics_tree = StatisticTree(
                 ),
             },
         ),
-        **just_2020_category_with_canada(
+        **just_2020_category_multi_source(
             "industry",
             "Industry",
             "industry_agriculture,_forestry,_fishing_and_hunting",
@@ -1126,6 +1127,7 @@ statistics_tree = StatisticTree(
             "industry_transportation_and_warehousing",
             "industry_utilities",
             "industry_wholesale_trade",
+            canada=True,
         ),
         "occupation": StatisticCategory(
             name="Occupation",
