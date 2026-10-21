@@ -26,6 +26,7 @@ const california: StatPath[] = [
     'gpw_population',
     'generation_silent', 'generation_boomer', 'generation_genx',
     'generation_millenial', 'generation_genz', 'generation_genalpha',
+    'household_size_pw',
     'area',
 ]
 
@@ -37,6 +38,7 @@ const alberta: StatPath[] = [
     'gpw_population',
     'generation_silent_canada', 'generation_boomer_canada', 'generation_genx_canada',
     'generation_millenial_canada', 'generation_genz_canada', 'generation_genalpha_canada',
+    'household_size_pw_canada',
     'area',
 ]
 
@@ -50,6 +52,8 @@ const generationGroups: EnabledKey[] = [
     'show_stat_group_generation_silent', 'show_stat_group_generation_boomer', 'show_stat_group_generation_genx',
     'show_stat_group_generation_millenial', 'show_stat_group_generation_genz', 'show_stat_group_generation_genalpha',
 ]
+
+const householdSizeGroup: EnabledKey[] = ['show_stat_group_household_size_pw']
 
 function settingsWith(enabled: EnabledKey[]): StatGroupSettings {
     const settings = Object.fromEntries(groupYearKeys().map(key => [key, false]))
@@ -90,22 +94,22 @@ void test('a statistic that only the disabled source has names that source', () 
 void test('regions missing a statistic for different sources name all of them', () => {
     assert.deepStrictEqual(
         warnings([california, alberta], [
-            ...populationGroup, ...generationGroups, 'show_stat_year_2020',
+            ...populationGroup, ...householdSizeGroup, 'show_stat_year_2020',
             'show_stat_source_Population_GHSL',
         ]),
-        ['Generation: **National Census** and **Canadian Census** are disabled. Enable them to see these statistics.'],
+        ['Housing: **National Census** and **Canadian Census** are disabled. Enable them to see these statistics.'],
     )
 })
 
 void test('a comparison warns about the source one of its regions is missing', () => {
-    // The Canadian census is enabled, so Alberta's generation statistics are still in the table;
+    // The Canadian census is enabled, so Alberta's household size is still in the table;
     // the warning is about the column California is no longer filling in.
     assert.deepStrictEqual(
         warnings([california, alberta], [
-            ...populationGroup, ...generationGroups, 'show_stat_year_2020',
+            ...populationGroup, ...householdSizeGroup, 'show_stat_year_2020',
             'show_stat_source_Population_GHSL', 'show_stat_source_Population_Canadian Census',
         ]),
-        ['Generation: **National Census** is disabled. Enable it to see these statistics.'],
+        ['Housing: **National Census** is disabled. Enable it to see these statistics.'],
     )
 })
 

@@ -9,7 +9,8 @@ import { Universe } from '../src/universe'
 import { GeographyKind } from '../src/urban-stats-script/workerManager'
 
 const usCensusPopulation = 'Population' satisfies StatName
-const statCanPopulation = 'Population [StatCan]' satisfies StatName
+// A Canadian census statistic with no variant from any other source
+const statCanOnly = 'Catholic %' satisfies StatName
 const ghslPopulation = 'Population [GHS-POP]' satisfies StatName
 // A US Census statistic with no variant from any other source
 const usCensusOnly = 'Arthritis %' satisfies StatName
@@ -125,7 +126,7 @@ void describe('crossSourceBorderExclusion', () => {
 
         void test('is silent when the statistic reaches none of the region set', async () => {
             // StatCan has no data for US urban centers
-            assert.equal(await exclusion(statCanPopulation, 'Urban Center', 'USA'), undefined)
+            assert.equal(await exclusion(statCanOnly, 'Urban Center', 'USA'), undefined)
         })
 
         void test('is silent for a data gap in a non-crossing type inside its country', async () => {
