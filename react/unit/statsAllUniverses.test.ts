@@ -90,13 +90,13 @@ void describe('statsAllUniverses', () => {
         const map = await statsUniverseMap
         assert.equal(map.get('Median Household Income (USD)__City'), 'USA')
     })
-    void test('catholic in canadian ridings', async () => {
+    void test('french in canadian ridings', async () => {
         const map = await statsUniverseMap
-        assert.equal(map.get('Catholic %__CA Riding'), 'Canada')
+        assert.equal(map.get('French at Home % [StatCan]__CA Riding'), 'Canada')
     })
-    void test('canadian catholic in metropolitan cluster has expected universe', async () => {
+    void test('canadian french in metropolitan cluster has expected universe', async () => {
         const map = await statsUniverseMap
-        assert.equal(map.get('Catholic %__Metropolitan Cluster'), 'Canada')
+        assert.equal(map.get('French at Home % [StatCan]__Metropolitan Cluster'), 'Canada')
     })
     void test('pollution in canadian ridings has expected universe', async () => {
         const map = await statsUniverseMap
