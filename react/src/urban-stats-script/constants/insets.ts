@@ -1,6 +1,7 @@
 import { round } from 'mathjs'
 
 import insets from '../../data/insets'
+import { CoordBox } from '../../utils/partition-boxes'
 import { UrbanStatsASTExpression } from '../ast'
 import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
@@ -12,6 +13,10 @@ export interface Inset {
     coordBox: [number, number, number, number]
     mainMap: boolean
     name?: string
+}
+
+export function keepInsets(insetList: Inset[], hasContent: (coordBox: CoordBox) => boolean): Inset[] {
+    return insetList.filter(inset => inset.mainMap || hasContent(inset.coordBox))
 }
 
 const insetType = {
