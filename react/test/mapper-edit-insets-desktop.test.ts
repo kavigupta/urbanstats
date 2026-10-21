@@ -85,7 +85,7 @@ test('splitting the main map duplicates its insets, which scale with the divider
     await t.expect(numMaps()).eql(editedMaps * 2)
 
     // The first main map, its last inset, and the second main map
-    const widths = (): Promise<number[]> => ClientFunction((n: number) => [0, n - 1, n].map(i => document.querySelector(`#map-${i}`)!.getBoundingClientRect().width))(editedMaps)
+    const widths = (): Promise<number[]> => ClientFunction((count: number) => [0, count - 1, count].map(i => document.querySelector(`#map-${i}`)!.getBoundingClientRect().width))(editedMaps)
     const [half, insetBefore] = await widths()
     await drag(t, '[data-test="splitDivider"]', -Math.round(half / 2), 0)
     const [left, insetAfter, right] = await widths()

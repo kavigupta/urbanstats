@@ -17,7 +17,7 @@ function evaluateInset(uss: string): InsetNode {
 }
 
 function frames(nodes: InsetNode[]): Record<string, number[]> {
-    return Object.fromEntries(layoutInsets(nodes).leaves.map(l => [l.name ?? '', [...l.bottomLeft, ...l.topRight]]))
+    return Object.fromEntries(layoutInsets(nodes).leaves.map(inset => [inset.name ?? '', [...inset.bottomLeft, ...inset.topRight]]))
 }
 
 const usa = [leaf('main', true), leaf('alaska', false, [0, 0], [0.25, 0.25])]
@@ -65,7 +65,7 @@ void describe('constructSplitInset', () => {
 
 void describe('editing split insets', () => {
     void test('splitting a main map splits its whole list, keeping main map status', () => {
-        assert.deepEqual(layoutInsets(splitInsets(usa, [0], 'horizontal')).leaves.map(l => [l.name, l.mainMap, ...l.bottomLeft, ...l.topRight]), [
+        assert.deepEqual(layoutInsets(splitInsets(usa, [0], 'horizontal')).leaves.map(inset => [inset.name, inset.mainMap, ...inset.bottomLeft, ...inset.topRight]), [
             ['main', true, 0, 0, 0.5, 1],
             ['alaska', false, 0, 0, 0.125, 0.25],
             ['main', true, 0.5, 0, 1, 1],
@@ -75,7 +75,7 @@ void describe('editing split insets', () => {
 
     void test('splitting another inset splits only it, in place', () => {
         const split = splitInsets(usa, [1], 'vertical')
-        assert.deepEqual(layoutInsets(split).leaves.map(l => [l.name, ...l.bottomLeft, ...l.topRight]), [
+        assert.deepEqual(layoutInsets(split).leaves.map(inset => [inset.name, ...inset.bottomLeft, ...inset.topRight]), [
             ['main', 0, 0, 1, 1],
             ['alaska', 0, 0.125, 0.25, 0.25],
             ['alaska', 0, 0, 0.25, 0.125],
@@ -86,7 +86,7 @@ void describe('editing split insets', () => {
         const split = splitInsets(usa, [0], 'horizontal')
         const proportions = (insets: InsetNode[]): number[] => layoutInsets(insets).splits[0].split.children.map(({ proportion }) => proportion)
         assert.deepEqual(proportions(splitInsets(split, [0, 1, 0], 'horizontal')), [1, 1, 1])
-        assert.deepEqual(layoutInsets(splitInsets(split, [0, 1, 0], 'vertical')).splits.map(s => s.path), [[0], [0, 1, 0]])
+        assert.deepEqual(layoutInsets(splitInsets(split, [0, 1, 0], 'vertical')).splits.map(({ path }) => path), [[0], [0, 1, 0]])
     })
 
     void test('deleting a main map in a split deletes its cell, collapsing the split', () => {
@@ -101,7 +101,7 @@ void describe('fitInsetMapBounds', () => {
         const original: InsetNode[] = [{ bottomLeft: [0, 0], topRight: [1, 1], direction: 'horizontal', children: [{ insets: usa, proportion: 1 }] }]
         const narrowed = mapNode(original, [0], node => [{ ...node, topRight: [0.5, 1] }])
         const fitted = fitInsetMapBounds(narrowed, original, 2)
-        assert.deepEqual(layoutInsets(fitted).splits.map(s => s.path), [[0]])
+        assert.deepEqual(layoutInsets(fitted).splits.map(({ path }) => path), [[0]])
     })
 
     void test('accepting a split keeps the canvas aspect ratio', () => {

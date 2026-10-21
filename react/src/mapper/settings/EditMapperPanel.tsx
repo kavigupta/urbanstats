@@ -315,7 +315,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
             },
             overlay: container => splits.map(split => (
                 <Fragment key={split.path.join('-')}>
-                    {(split.path.length === 1 || !leaves.some(leaf => leaf.mainMap && split.path.every((p, k) => leaf.path[k] === p))) && (
+                    {(split.path.length === 1 || !leaves.some(leaf => leaf.mainMap && split.path.every((step, depth) => leaf.path[depth] === step))) && (
                         <SplitFrameHandles frame={split.frame} container={container} handlers={{ setFrame: setFrameAt(split.path, split.cell), bounds: split.cell, ...reorder(split.path) }} />
                     )}
                     {split.cells.slice(1).map((_, beforeIndex) => (
@@ -327,7 +327,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                             setProportions={(proportions) => {
                                 addInsetEdit(insets => mapNode(insets, split.path, (node) => {
                                     assert(isSplit(node), 'Setting the proportions of a leaf')
-                                    return [{ ...node, children: node.children.map((cell, k) => ({ ...cell, proportion: proportions[k] })) }]
+                                    return [{ ...node, children: node.children.map((cell, cellIndex) => ({ ...cell, proportion: proportions[cellIndex] })) }]
                                 }))
                             }}
                         />

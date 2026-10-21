@@ -63,7 +63,7 @@ function InsetMapImpl({ inset, children, editInset, container, i, interactive }:
     // Neighbours in a split overlap by a border so the divider is one border wide
     const { sharedEdges } = inset
     const half = insetBorderWidth / 2
-    const [left, right, top, bottom] = [sharedEdges.left, sharedEdges.right, sharedEdges.top, sharedEdges.bottom].map(e => e ? half : 0)
+    const [left, right, top, bottom] = [sharedEdges.left, sharedEdges.right, sharedEdges.top, sharedEdges.bottom].map(shared => shared ? half : 0)
 
     return (
         <div
