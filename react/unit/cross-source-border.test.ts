@@ -10,7 +10,7 @@ import { GeographyKind } from '../src/urban-stats-script/workerManager'
 
 const usCensusPopulation = 'Population' satisfies StatName
 // A Canadian census statistic with no variant from any other source
-const statCanOnly = 'Catholic %' satisfies StatName
+const statCanOnly = 'French at Home % [StatCan]' satisfies StatName
 const ghslPopulation = 'Population [GHS-POP]' satisfies StatName
 // A US Census statistic with no variant from any other source
 const usCensusOnly = 'Arthritis %' satisfies StatName
