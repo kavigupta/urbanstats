@@ -86,11 +86,11 @@ export function splitInsets(insets: InsetNode[], path: number[], direction: Spli
     assert(!isSplit(leaf), 'Splitting a split')
 
     const splitPath = listPath.slice(0, -1)
-    const c = listPath[listPath.length - 1]
+    const cellIndex = listPath[listPath.length - 1]
     const parent = listPath.length > 0 ? listAt(insets, splitPath.slice(0, -1))[splitPath[splitPath.length - 1]] : undefined
     if (parent !== undefined && isSplit(parent) && parent.direction === direction && (leaf.mainMap || list.length === 1)) {
         return mapNode(insets, splitPath, () => {
-            return [{ ...parent, children: [...parent.children.slice(0, c + 1), parent.children[c], ...parent.children.slice(c + 1)] }]
+            return [{ ...parent, children: [...parent.children.slice(0, cellIndex + 1), parent.children[cellIndex], ...parent.children.slice(cellIndex + 1)] }]
         })
     }
 
