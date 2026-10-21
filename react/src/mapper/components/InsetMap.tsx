@@ -160,14 +160,6 @@ function InsetEditControls({ inset, editInset, container }: { inset: Inset, edit
     )
 }
 
-function isFullScreen(frame: Frame): boolean {
-    const tolerance = 0.005
-    return Math.abs(frame[0] - 0) < tolerance
-        && Math.abs(frame[1] - 0) < tolerance
-        && Math.abs(frame[2] - 1) < tolerance
-        && Math.abs(frame[3] - 1) < tolerance
-}
-
 // Inside the frame, so the buttons of neighbouring insets in a split never overlap
 function InsetToolbar({ editInset, scale }: { editInset: InsetEditHandlers, scale: number }): ReactNode {
     const size = controlSize * scale
@@ -193,6 +185,47 @@ function ReorderButtons({ moveUp, moveDown, scale }: { moveUp?: () => void, move
             {moveDown && <Handle handleSize={size} data-test="moveDown" style={button} onClick={moveDown}><ArrowIcon direction="down" /></Handle>}
         </div>
     )
+}
+
+function ArrowIcon({ direction }: { direction: 'up' | 'down' }): ReactNode {
+    const colors = useColors()
+    return (
+        <svg viewBox="0 0 10 10" style={{ width: '100%', height: '100%', display: 'block' }}>
+            <title>{direction === 'up' ? 'Move Up' : 'Move Down'}</title>
+            <polygon points={direction === 'up' ? '1.5,7.5 5,2.5 8.5,7.5' : '1.5,2.5 5,7.5 8.5,2.5'} fill={colors.brandingColor} />
+        </svg>
+    )
+}
+
+function SplitIcon({ direction }: { direction: SplitDirection }): ReactNode {
+    const colors = useColors()
+    const pane = (x: number, y: number, width: number, height: number): ReactNode => <rect x={x} y={y} width={width} height={height} rx={1} fill={colors.brandingColor} />
+    return (
+        <svg viewBox="0 0 10 10" style={{ width: '100%', height: '100%', display: 'block' }}>
+            <title>{direction === 'horizontal' ? 'Split Horizontally' : 'Split Vertically'}</title>
+            {direction === 'horizontal'
+                ? (
+                        <>
+                            {pane(1.5, 1.5, 3, 7)}
+                            {pane(5.5, 1.5, 3, 7)}
+                        </>
+                    )
+                : (
+                        <>
+                            {pane(1.5, 1.5, 7, 3)}
+                            {pane(1.5, 5.5, 7, 3)}
+                        </>
+                    )}
+        </svg>
+    )
+}
+
+function isFullScreen(frame: Frame): boolean {
+    const tolerance = 0.005
+    return Math.abs(frame[0] - 0) < tolerance
+        && Math.abs(frame[1] - 0) < tolerance
+        && Math.abs(frame[2] - 1) < tolerance
+        && Math.abs(frame[3] - 1) < tolerance
 }
 
 type EditInsetsHandlesProps = Parameters<typeof EditInsetsHandles>[0]
@@ -313,39 +346,6 @@ export function EditInsetsHandles(props: {
                 <Handle handleSize={20 * scale} style={{ margin: 'auto', left: `calc(50% - ${10 * scale}px)`, top: `calc(50% - ${10 * scale}px)`, cursor: 'move' }} {...pointerHandlers('move')} />
             )}
         </>
-    )
-}
-
-function ArrowIcon({ direction }: { direction: 'up' | 'down' }): ReactNode {
-    const colors = useColors()
-    return (
-        <svg viewBox="0 0 10 10" style={{ width: '100%', height: '100%', display: 'block' }}>
-            <title>{direction === 'up' ? 'Move Up' : 'Move Down'}</title>
-            <polygon points={direction === 'up' ? '1.5,7.5 5,2.5 8.5,7.5' : '1.5,2.5 5,7.5 8.5,2.5'} fill={colors.brandingColor} />
-        </svg>
-    )
-}
-
-function SplitIcon({ direction }: { direction: SplitDirection }): ReactNode {
-    const colors = useColors()
-    const pane = (x: number, y: number, width: number, height: number): ReactNode => <rect x={x} y={y} width={width} height={height} rx={1} fill={colors.brandingColor} />
-    return (
-        <svg viewBox="0 0 10 10" style={{ width: '100%', height: '100%', display: 'block' }}>
-            <title>{direction === 'horizontal' ? 'Split Horizontally' : 'Split Vertically'}</title>
-            {direction === 'horizontal'
-                ? (
-                        <>
-                            {pane(1.5, 1.5, 3, 7)}
-                            {pane(5.5, 1.5, 3, 7)}
-                        </>
-                    )
-                : (
-                        <>
-                            {pane(1.5, 1.5, 7, 3)}
-                            {pane(1.5, 5.5, 7, 3)}
-                        </>
-                    )}
-        </svg>
     )
 }
 
