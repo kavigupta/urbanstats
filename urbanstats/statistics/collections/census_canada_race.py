@@ -6,6 +6,62 @@ from urbanstats.statistics.collections.census_canada_same_as_us import (
 from urbanstats.statistics.utils import fractionalize
 
 
+def canadian_race_tables() -> CensusTables:
+    return CensusTables(
+        [
+            "Total - Visible minority for the population in private households - 25% sample data (117)",
+            "Total - Indigenous identity for the population in private households - 25% sample data (44)",
+        ],
+        {
+            "tvmp": [
+                "  Total visible minority population (118)",
+            ],
+            "nvmp": [
+                "  Not a visible minority (120)",
+            ],
+            "native_canada": [
+                "  Indigenous identity (45)",
+            ],
+            "asian_canada": [
+                "    South Asian",
+                "    Chinese",
+                "    Filipino",
+                "    Southeast Asian",
+                "    Korean",
+                "    Japanese",
+            ],
+            "black_canada": [
+                "    Black",
+            ],
+            "hispanic_canada": [
+                "    Latin American",
+            ],
+            "vm_white": [
+                "    Arab",
+                "    West Asian",
+            ],
+            "other / mixed_canada": [
+                "    Visible minority, n.i.e. (119)",
+                "    Multiple visible minorities",
+            ],
+            None: [
+                "Total - Visible minority for the population in private households - 25% sample data (117)",
+            ]
+            + [
+                "Total - Indigenous identity for the population in private households - 25% sample data (44)",
+                "    Single Indigenous responses (46)",
+                "      First Nations (North American Indian)",
+                "      Métis",
+                "      Inuk\xa0(Inuit)",
+                "    Multiple Indigenous responses (47)",
+                "    Indigenous responses not included elsewhere (48)",
+                "  Non-Indigenous identity",
+            ],
+        },
+        "population",
+    )
+
+
 class CensusCanadaRace(CensusCanadaSameAsUS):
     version = 6
 
@@ -13,59 +69,7 @@ class CensusCanadaRace(CensusCanadaSameAsUS):
         return list(race_names)
 
     def census_tables(self) -> CensusTables:
-        return CensusTables(
-            [
-                "Total - Visible minority for the population in private households - 25% sample data (117)",
-                "Total - Indigenous identity for the population in private households - 25% sample data (44)",
-            ],
-            {
-                "tvmp": [
-                    "  Total visible minority population (118)",
-                ],
-                "nvmp": [
-                    "  Not a visible minority (120)",
-                ],
-                "native_canada": [
-                    "  Indigenous identity (45)",
-                ],
-                "asian_canada": [
-                    "    South Asian",
-                    "    Chinese",
-                    "    Filipino",
-                    "    Southeast Asian",
-                    "    Korean",
-                    "    Japanese",
-                ],
-                "black_canada": [
-                    "    Black",
-                ],
-                "hispanic_canada": [
-                    "    Latin American",
-                ],
-                "vm_white": [
-                    "    Arab",
-                    "    West Asian",
-                ],
-                "other / mixed_canada": [
-                    "    Visible minority, n.i.e. (119)",
-                    "    Multiple visible minorities",
-                ],
-                None: [
-                    "Total - Visible minority for the population in private households - 25% sample data (117)",
-                ]
-                + [
-                    "Total - Indigenous identity for the population in private households - 25% sample data (44)",
-                    "    Single Indigenous responses (46)",
-                    "      First Nations (North American Indian)",
-                    "      Métis",
-                    "      Inuk\xa0(Inuit)",
-                    "    Multiple Indigenous responses (47)",
-                    "    Indigenous responses not included elsewhere (48)",
-                    "  Non-Indigenous identity",
-                ],
-            },
-            "population",
-        )
+        return canadian_race_tables()
 
     def us_equivalent(self):
         return Census2020()
