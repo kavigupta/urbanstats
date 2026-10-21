@@ -33,13 +33,13 @@ export type CrossSourceBorderExclusion =
      */
     | { kind: 'geography-limited-to-country', geographyCountry: string }
     /**
-     * The statistic comes from a single country's statistics agency, this universe sits
-     * inside that country, and the missing regions are the ones straddling its border.
+     * The statistic comes from national statistics agencies, this universe sits inside one
+     * of their countries, and the missing regions are the ones straddling its border.
      */
     | { kind: 'straddles-border', excludedCount: number, totalCount: number, statisticCountries: readonly string[], alternative: CrossSourceBorderAlternative | undefined }
     /**
-     * The statistic comes from a single country's statistics agency and this universe is
-     * broader, so the missing regions are the ones lying outside that country entirely.
+     * The statistic comes from national statistics agencies and this universe is broader,
+     * so the missing regions are the ones lying outside their countries entirely.
      */
     | { kind: 'outside-jurisdiction', excludedCount: number, totalCount: number, statisticCountries: readonly string[], alternative: CrossSourceBorderAlternative | undefined }
 
@@ -58,7 +58,7 @@ export function crossSourceBorderExclusion({ statName, articleType, universe, co
 
     const statIndex = statNames.indexOf(statName)
 
-    // A statistic computed the same way everywhere (no single-country source) can't be
+    // A statistic computed the same way everywhere (no national source) can't be
     // missing regions because of a data source border.
     const statisticCountries = statisticDataSourceCountry[statIndex]
     if (statisticCountries === null) {

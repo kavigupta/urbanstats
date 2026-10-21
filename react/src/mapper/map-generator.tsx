@@ -17,7 +17,7 @@ import { ClusterMap as SyauClusterMap } from '../syau/syau-cluster-map'
 import { Universe } from '../universe'
 import { getAllParseErrors } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color-utils'
-import { Inset } from '../urban-stats-script/constants/insets'
+import { Inset, keepInsets } from '../urban-stats-script/constants/insets'
 import { CommonMap } from '../urban-stats-script/constants/map'
 import { ScaleInstance } from '../urban-stats-script/constants/scale'
 import { TextBox } from '../urban-stats-script/constants/text-box'
@@ -27,10 +27,11 @@ import { noLocation } from '../urban-stats-script/location'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { AssignmentsResult, executeAsync, GeographySelection, useClearPreviousAssignments } from '../urban-stats-script/workerManager'
 import { loadImage } from '../utils/Image'
-import { editIndex, EditSeq } from '../utils/array-edits'
+import { Edit } from '../utils/array-edits'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { makeDebugLogger } from '../utils/debug-logging'
 import { HumanReadableName } from '../utils/human-readable-element'
+import { boxesOverlap, CoordBox } from '../utils/partition-boxes'
 import { ICoordinate } from '../utils/protos'
 import { StoredUnit } from '../utils/quantity'
 import { plainNumber } from '../utils/unit'
@@ -73,7 +74,7 @@ export function useMapGenerator({ mapSettings, typeEnvironment }: { mapSettings:
     return result
 }
 
-type MapUIProps<T> = T & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: EditSeq<Inset> } | { mode: 'textBoxes', editTextBoxes: EditSeq<TextBox> })
+type MapUIProps<T> = T & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: { edited: Inset[], handlers: (i: number) => Edit<Inset> } } | { mode: 'textBoxes', editTextBoxes: { edited: TextBox[], add: () => void, handlers: (i: number) => Edit<TextBox> } })
 
 export interface MapGenerator<T = unknown> {
     ui: (props: MapUIProps<T>) => { node: ReactNode, exportImage?: () => Promise<HTMLCanvasElement> }
@@ -162,9 +163,15 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         const mapsContainerRef = useRef<HTMLDivElement>(null)
         const wholeRenderRef = useRef<HTMLDivElement>(null)
 
-        const acceptedInsets = mapResultMain.value.insets
-            .map(inset => ({ inset, insetFeatures: filterOverlaps(inset, features) }))
-            .filter(({ insetFeatures }) => insetFeatures.length > 0)
+        const featuresByCoordBox = new Map<CoordBox, GeoJSON.Feature[]>()
+        const featuresIn = (coordBox: CoordBox): GeoJSON.Feature[] => {
+            if (!featuresByCoordBox.has(coordBox)) {
+                featuresByCoordBox.set(coordBox, features.filter(feature => overlaps(feature, coordBox)))
+            }
+            return featuresByCoordBox.get(coordBox)!
+        }
+        const acceptedInsets = keepInsets(mapResultMain.value.insets, coordBox => featuresIn(coordBox).length > 0)
+            .map(inset => ({ inset, insetFeatures: inset.mainMap ? features : featuresIn(inset.coordBox) }))
 
         // Don't change the aspect ratio while editing, otherwise things get nasty
         const aspectRatio = computeAspectRatioForInsets(acceptedInsets.map(({ inset }) => inset))
@@ -185,7 +192,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
                             container={mapsContainerRef}
                             numInsets={maybeEditingInsets.length}
                             editInset={props.mode === 'insets'
-                                ? editIndex(props.editInsets, i)
+                                ? props.editInsets.handlers(i)
                                 : undefined}
                             interactive={props.mode !== 'textBoxes'}
                         >
@@ -243,7 +250,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
                                 textBox={textBox}
                                 i={i}
                                 count={boxes.length}
-                                edit={props.mode === 'textBoxes' ? editIndex(props.editTextBoxes, i) : undefined}
+                                edit={props.mode === 'textBoxes' ? props.editTextBoxes.handlers(i) : undefined}
                             />
                         )).concat(props.mode === 'textBoxes' ? [<AddTextBox key="add" container={mapsContainerRef} add={props.editTextBoxes.add} />] : [])}
                     </OverrideTheme>
@@ -616,16 +623,12 @@ function TransformConstantWidth({ children, width }: { children: ReactNode, widt
 }
 
 function filterOverlaps(inset: Inset, features: GeoJSON.Feature[]): GeoJSON.Feature[] {
-    const bbox = inset.coordBox
-    if (!inset.mainMap) {
-        features = features.filter((poly) => {
-            const bounds = boundingBox(poly.geometry)
-            // Check if the polygon overlaps the inset bounds
-            return bounds.getWest() < bbox[2] && bounds.getEast() > bbox[0]
-                && bounds.getNorth() > bbox[1] && bounds.getSouth() < bbox[3]
-        })
-    }
-    return features
+    return inset.mainMap ? features : features.filter(feature => overlaps(feature, inset.coordBox))
+}
+
+function overlaps(feature: GeoJSON.Feature, coordBox: CoordBox): boolean {
+    const bounds = boundingBox(feature.geometry)
+    return boxesOverlap([bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()], coordBox)
 }
 
 interface MapCache {

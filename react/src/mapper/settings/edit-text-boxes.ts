@@ -72,16 +72,23 @@ export function getTextBoxes(settings: MapSettings, typeEnvironment: TypeEnviron
     return undefined
 }
 
-export function scriptWithNewTextBoxes(settings: MapSettings, textBoxes: TextBox[], typeEnvironment: TypeEnvironment): MapUSS {
+/** `original` is what `getTextBoxes` parsed from these settings, so it lines up with their expressions */
+export function scriptWithNewTextBoxes(settings: MapSettings, original: TextBox[], textBoxes: TextBox[], typeEnvironment: TypeEnvironment): MapUSS {
     assert(settings.script.uss.type === 'statements', 'Trying to do an text boxes edit on USS that is not text boxes editable')
     const parsed = mapSchema(settings.script.uss, typeEnvironment).namedArgs.textBoxes
+    const vector = parsed.expr?.type === 'autoUXNode' ? parsed.expr.expr : parsed.expr
+    const exprs = vector?.type === 'vectorLiteral' ? vector.elements : []
     const result = parsed.edit(textBoxes.length === 0
         ? undefined
         : {
                 type: 'autoUXNode',
                 expr: {
                     type: 'vectorLiteral',
-                    elements: textBoxes.map(deconstruct),
+                    // Text boxes that edits left untouched keep their expressions
+                    elements: textBoxes.map((textBox) => {
+                        const i = original.indexOf(textBox)
+                        return i === -1 ? deconstruct(textBox) : exprs[i]
+                    }),
                     entireLoc: noLocation,
                 },
                 metadata: {

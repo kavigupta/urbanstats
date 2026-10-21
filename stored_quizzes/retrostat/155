@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2025GE 2-Coalition Margin",
+      "stat_path": "2025GE-coalition_margin",
+      "question": "!FULL Which voted more for the left-of-center parties in the 2025 Canadian general election?!TOOLTIP By 2-Coalition Margin, which is calculated as (Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation.",
+      "longname_a": "Oshawa Urban Center, Canada",
+      "longname_b": "Calgary Urban Center, Canada",
+      "stat_a": 0.07070301473140717,
+      "stat_b": -0.1441883146762848
+    },
+    "b": {
+      "stat_column": "High windspeed (>10mph) days %",
+      "stat_path": "wind_speed_over_10mph_4",
+      "question": "higher % of days with wind speed over 10mph (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Madhya Pradesh, India",
+      "longname_b": "Guayas, Ecuador",
+      "stat_a": 0.05689056217670441,
+      "stat_b": 0.010507868602871895
+    },
+    "a_ease": 0.6570342205323194,
+    "b_ease": 0.24182509505703423
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Divorced %",
+      "stat_path": "marriage_divorced",
+      "question": "higher % of people who are divorced",
+      "longname_a": "Durham County, North Carolina, USA",
+      "longname_b": "Jackson County, Missouri, USA",
+      "stat_a": 0.09991035610437393,
+      "stat_b": 0.13438895344734192
+    },
+    "b": {
+      "stat_column": "Born in us outside state %",
+      "stat_path": "birthplace_us_not_state",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "Contra Costa County, California, USA",
+      "longname_b": "Greenville County, South Carolina, USA",
+      "stat_a": 0.18665720522403717,
+      "stat_b": 0.40456265211105347
+    },
+    "a_ease": 0.6236897274633124,
+    "b_ease": 0.21890547263681592
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mobility disability %",
+      "stat_path": "MOBILITY_cdc_2",
+      "question": "higher % of adults with a mobility disability",
+      "longname_a": "CA-19 (2023), USA",
+      "longname_b": "OK-01 (2023), USA",
+      "stat_a": 0.09648998826742172,
+      "stat_b": 0.15733154118061066
+    },
+    "b": {
+      "stat_column": "Private Insurance %",
+      "stat_path": "insurance_coverage_private",
+      "question": "higher % of people who are on private insurance!TOOLTIP The denominator for this statistic is the the total number of adults, including those without health insurance coverage.",
+      "longname_a": "Queens County, New York, USA",
+      "longname_b": "Ingham County, Michigan, USA",
+      "stat_a": 0.6175717115402222,
+      "stat_b": 0.7368832230567932
+    },
+    "a_ease": 0.8196517412935324,
+    "b_ease": 0.4171907756813417
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean high temperature in Dec/Jan/Feb",
+      "stat_path": "mean_high_temp_djf",
+      "question": "higher mean daily high temperature in Dec/Jan/Feb (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Jamaica",
+      "longname_b": "Kazakhstan",
+      "stat_a": 81.35606384277344,
+      "stat_b": 25.58372688293457
+    },
+    "b": {
+      "stat_column": "PW Mean % of parkland within 1km",
+      "stat_path": "park_percent_1km_v2",
+      "question": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
+      "longname_a": "Savannah [Urban Area], GA, USA",
+      "longname_b": "Austin [Urban Area], TX, USA",
+      "stat_a": 0.012332907877862453,
+      "stat_b": 0.04065056890249252
+    },
+    "a_ease": 0.9165035877364645,
+    "b_ease": 0.5047619047619047
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Electricity heating %",
+      "stat_path": "heating_electricity",
+      "question": "!FULL Which has a larger % of homes heated using electricity?",
+      "longname_a": "Reno [Urban Area], NV-CA, USA",
+      "longname_b": "Victorville-Hesperia-Apple Valley [Urban Area], CA, USA",
+      "stat_a": 0.3102331757545471,
+      "stat_b": 0.10740209370851517
+    },
+    "b": {
+      "stat_column": "1BR Rent < $750 %",
+      "stat_path": "rent_1br_under_750",
+      "question": "higher % of units with 1br rent under $750",
+      "longname_a": "New York, USA",
+      "longname_b": "Montana, USA",
+      "stat_a": 0.21759001910686493,
+      "stat_b": 0.5599424242973328
+    },
+    "a_ease": 0.5211442786069652,
+    "b_ease": 0.9329140461215933
+  }
+]
