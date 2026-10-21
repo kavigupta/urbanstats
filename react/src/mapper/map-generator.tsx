@@ -74,7 +74,12 @@ export function useMapGenerator({ mapSettings, typeEnvironment }: { mapSettings:
     return result
 }
 
-type MapUIProps<T> = T & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: { edited: LaidOutInset[], handlers: (i: number) => InsetEditHandlers, overlay: (container: RefObject<HTMLDivElement>) => ReactNode } } | { mode: 'textBoxes', editTextBoxes: { edited: TextBox[], add: () => void, handlers: (i: number) => Edit<TextBox> } })
+type MapUIProps<T> = T & (
+    { mode: 'view' }
+    | { mode: 'uss' }
+    | { mode: 'insets', editInsets: { edited: LaidOutInset[], handlers: (i: number) => InsetEditHandlers, overlay: (container: RefObject<HTMLDivElement>) => ReactNode } }
+    | { mode: 'textBoxes', editTextBoxes: { edited: TextBox[], add: () => void, handlers: (i: number) => Edit<TextBox> } }
+)
 
 export interface MapGenerator<T = unknown> {
     ui: (props: MapUIProps<T>) => { node: ReactNode, exportImage?: () => Promise<HTMLCanvasElement> }
@@ -166,9 +171,8 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         }
         return featuresByCoordBox.get(coordBox)!
     }
-    const acceptedInsets = layoutInsets(
-        keepInsets(mapResultMain.value.insets, coordBox => featuresIn(coordBox).length > 0),
-    ).leaves.map(inset => ({ inset, insetFeatures: inset.mainMap ? features : featuresIn(inset.coordBox) }))
+    const acceptedInsets = layoutInsets(keepInsets(mapResultMain.value.insets, coordBox => featuresIn(coordBox).length > 0)).leaves
+        .map(inset => ({ inset, insetFeatures: inset.mainMap ? features : featuresIn(inset.coordBox) }))
 
     // Don't change the aspect ratio while editing, otherwise things get nasty
     const aspectRatio = computeAspectRatioForInsets(acceptedInsets.map(({ inset }) => inset))
