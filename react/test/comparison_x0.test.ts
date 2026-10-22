@@ -176,8 +176,8 @@ test('comparison-american-vs-canada-population-stats', async (t) => {
     // these are the values for the National Census
     await t.expect(await dataValues()).eql(['14.2', '39.5'])
     await checkTextboxes(t, ['National Census'])
-    // these are the values for StatCan
-    await t.expect(await dataValues()).eql(['14.2', 'N/A'])
+    // Ontario's population is from the National Census too, so neither has one
+    await t.expect(await dataValues()).eql([])
     // enable everything
     await checkTextboxes(t, ['National Census', 'GHSL'])
     await t.expect(await dataValues()).eql(['14.2', '39.5', '14.3', '40.4'])

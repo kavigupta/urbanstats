@@ -77,7 +77,10 @@ function DisclaimerContents({ stat, view, exclusion, isFootnote: footnote }: {
     switch (exclusion.kind) {
         case 'geography-limited-to-country':
             return `${typ} are only defined in ${withArticle(exclusion.geographyCountry)}; regions elsewhere are not included in this ranking.`
-        case 'straddles-border':
+        case 'straddles-border': {
+            const missing = exclusion.statisticCountries.length === 1
+                ? 'the ones that do'
+                : `the ones extending outside ${countryList(exclusion.statisticCountries)}`
             return (
                 <>
                     <b>
@@ -86,10 +89,11 @@ function DisclaimerContents({ stat, view, exclusion, isFootnote: footnote }: {
                         {separateNumber(exclusion.totalCount.toString())}
                         {` ${typ} in ${universe} are missing from this ranking.`}
                     </b>
-                    {` ${typ} can span more than one country, and ${stat.statName} is not available for the ones that do.`}
+                    {` ${typ} can span more than one country, and ${stat.statName} is not available for ${missing}.`}
                     <AlternativeLink stat={stat} view={view} alternative={exclusion.alternative} footnote={footnote} />
                 </>
             )
+        }
         case 'outside-jurisdiction': {
             const country = countryList(exclusion.statisticCountries)
             return (
