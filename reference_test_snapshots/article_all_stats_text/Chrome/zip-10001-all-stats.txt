@@ -1,0 +1,1011 @@
+Region: 10001, USA
+Population: 30340
+Population (2010): 21102
+Population Change (2010-2020): 0.43777841329574585
+Population (2000): 17289
+Population Change (2000-2020): 0.7548730373382568
+PW Density (r=1km): 23224.28125
+PW Density (r=1km) (2010): 19280.634765625
+PW Density (r=1km) Change (2010-2020): 0.20453928411006927
+PW Density (r=1km) Absolute Change (2010-2020): 3943.647216796875
+PW Density (r=1km) (2000): 15587.576171875
+PW Density (r=1km) Change (2000-2020): 0.4899226129055023
+PW Density (r=1km) Absolute Change (2000-2020): 7636.7060546875
+AW Density: 19376.58203125
+AW Density (2010): 13476.751953125
+AW Density (2000): 11041.5869140625
+Area: 1.565807580947876
+Compactness: 0.22814588248729706
+PW Mean Hilliness (Grade): 0.101351298391819
+PW Mean Elevation: 35.167503356933594
+Population Median (Latitude): 40.749332427978516
+Population Median (Longitude): -73.9970932006836
+White %: 0.4394858181476593
+White % (2010): 0.5546393990516663
+White % (2000): 0.5318410396575928
+Hispanic %: 0.2329927533864975
+Hispanic % (2010): 0.17287461459636688
+Hispanic % (2000): 0.20139972865581512
+Black %: 0.09676994383335114
+Black % (2010): 0.07591697573661804
+Black % (2000): 0.08328995108604431
+Asian %: 0.18384970724582672
+Asian % (2010): 0.16676144301891327
+Asian % (2000): 0.1504424810409546
+Native %: 0.0021423862781375647
+Native % (2010): 0.001563832862302661
+Native % (2000): 0.002082248916849494
+Hawaiian / PI %: 0.0008569544879719615
+Hawaiian / PI % (2010): 0.00023694436822552234
+Hawaiian / PI % (2000): 0.0002892012125812471
+Other / Mixed %: 0.043902438133955
+Other / Mixed % (2010): 0.028006823733448982
+Other / Mixed % (2000): 0.030655330047011375
+Racial Homogeneity (2000) %: 0.4364269971847534
+Racial Homogeneity Change (2000-2020) %: -0.11036832630634308
+Racial Homogeneity (2010) %: 0.42098817229270935
+Racial Homogeneity Change (2010-2020) %: -0.09492949396371841
+Racial Homogeneity %: 0.32605868577957153
+Segregation (2000) %: 0.10373439639806747
+Segregation Change (2000-2020) %: -0.06543070077896118
+Segregation (2010) %: 0.06425568461418152
+Segregation Change (2010-2020) %: -0.02595198154449463
+Segregation %: 0.03830370306968689
+Mean Local Segregation (2000) %: 0.2469336986541748
+Mean Local Segregation Change (2000-2020) %: -0.0920737087726593
+Mean Local Segregation (2010) %: 0.2130041867494583
+Mean Local Segregation Change (2010-2020) %: -0.05814420059323311
+Mean Local Segregation %: 0.1548599898815155
+Citizen by Birth %: 0.7289815545082092
+Citizen by Naturalization %: 0.12905742228031158
+Non-citizen %: 0.14196103811264038
+Born outside country %: 0.27101844549179077
+Born in us outside state %: 0.3330257833003998
+Born in state of residence %: 0.39595574140548706
+Only English at Home %: 0.7381544709205627
+Spanish at Home %: 0.08458768576383591
+Other at Home %: 0.17725786566734314
+High School %: 0.9244236350059509
+Undergrad %: 0.7061712741851807
+Grad %: 0.2824545204639435
+Undergrad STEM %: 0.3005092144012451
+Undergrad Humanities %: 0.2402883619070053
+Undergrad Business %: 0.16537368297576904
+% of women with high school education - % of men with high school education: 0.008271681144833565
+% of women with undergraduate education - % of men with undergraduate education: -0.05140030011534691
+% of women with graduate education - % of men with graduate education: -0.055379025638103485
+Silent %: 0.07359877228736877
+Boomer %: 0.16248466074466705
+Gen X %: 0.19137895107269287
+Millennial %: 0.367339551448822
+Gen Z %: 0.1306898146867752
+Gen Alpha %: 0.07450823485851288
+Median Household Income (USD): 123393
+Poverty %: 0.11660418659448624
+Household Income < $50k %: 0.2689579129219055
+Household Income $50k - $100k %: 0.22152908146381378
+Household Income > $100k %: 0.5095130205154419
+Individual Income < $50k %: 0.3709261417388916
+Individual Income $50k - $100k %: 0.2600588798522949
+Individual Income > $100k %: 0.3690149784088135
+Housing Units per Adult: 0.6220532059669495
+Housing Units per Adult (2010): 0.6482385993003845
+Housing Units per Adult (2000): 0.6094420552253723
+Housing Units per Person: 0.5661832690238953
+Housing Units per Person (2010): 0.5912235975265503
+Housing Units per Person (2000): 0.5502920746803284
+Vacancy %: 0.11235301196575165
+Vacancy % (2010): 0.11582238227128983
+Vacancy % (2000): 0.05623291805386543
+Rent/Income < 20%: 0.3443461060523987
+Rent/Income 20%-40%: 0.40399739146232605
+Rent/Income > 40%: 0.25165650248527527
+1BR Rent < $750 %: 0.12622709572315216
+1BR Rent $750 - $1500 %: 0.24098548293113708
+1BR Rent > $1500 %: 0.6327874064445496
+2BR Rent < $750 %: 0.163476824760437
+2BR Rent $750 - $1500 %: 0.3368263244628906
+2BR Rent > $1500 %: 0.49969685077667236
+% units built pre-1970: 0.5249430537223816
+% units built in 1970s: 0.021248478442430496
+% units built in 1980s: 0.021606426686048508
+% units built in 1990s: 0.01963980123400688
+% units built in 2000s: 0.15803839266300201
+% units built in 2010s+: 0.2545238137245178
+PW Household Size: 2.0848817825317383
+Renter %: 0.755075216293335
+Commute Car %: 0.06948353350162506
+Commute Bike %: 0.03592716157436371
+Commute Walk %: 0.3307048976421356
+Commute Transit %: 0.5513848662376404
+Median Commute Time (min): 25.49534034729004
+Commute Time < 15 min %: 0.12309671193361282
+Commute Time 15 - 29 min %: 0.4791882336139679
+Commute Time 30 - 59 min %: 0.34828904271125793
+Commute Time > 60 min %: 0.04942600056529045
+Households With no Vehicle %: 0.8625003695487976
+Households With 1+ Vehicles %: 0.13749966025352478
+Households With 2+ Vehicles %: 0.015064666047692299
+Traffic Fatalities Per Capita Per Year: 0.00003295978967798874
+Pedestrian/Cyclist Fatalities Per Capita Per Year: 0.00002636783210618887
+Total Traffic Fatalities In Last Decade: 10
+Total Pedestrian/Cyclist Fatalities In Last Decade: 8
+Fair or poor self-rated health status %: 0.10343775153160095
+Physical health not good for two weeks in last year %: 0.07481492310762405
+Arthritis %: 0.16101673245429993
+Current asthma %: 0.09883471578359604
+High blood pressure %: 0.21358920633792877
+Cancer (excluding skin cancer) %: 0.05215234309434891
+Chronic kidney disease %: 0.022619297727942467
+COPD %: 0.03961727023124695
+Coronary heart disease %: 0.038559336215257645
+Diagnosed diabetes %: 0.06894388794898987
+Obesity %: 0.17573536932468414
+Stroke %: 0.020042814314365387
+Disability %: 0.21115633845329285
+Hearing disability %: 0.04435420408844948
+Vision disability %: 0.03581637889146805
+Cognitive disability %: 0.09380587935447693
+Mobility disability %: 0.09123807400465012
+Self-care disability %: 0.024624649435281754
+Independent living disability %: 0.054065726697444916
+Binge drinking among adults %: 0.21678665280342102
+Smoking %: 0.09709269553422928
+No leisure-time physical activity %: 0.17061415314674377
+Sleeping less than 7 hours %: 0.3022793233394623
+Attended doctor in last year %: 0.7235966324806213
+Attended dentist in last year %: 0.7175537347793579
+Cholesterol screening in last year %: 0.8715408444404602
+PW Mean PM2.5 Pollution: 7.61972713470459
+Utility gas heating %: 0.31126436591148376
+Electricity heating %: 0.47430217266082764
+Bottled, tank, or LP gas heating %: 0.01630890928208828
+Fuel oil, kerosene, etc. heating %: 0.08385865390300751
+Other fuel heating %: 0.03976859897375107
+No heating %: 0.07449731975793839
+Employed in Agriculture, forestry, fishing and hunting %: 0.0019716164097189903
+Employed in Mining, quarrying, and oil and gas extraction %: 0
+Employed in Accommodation and food services %: 0.0386156402528286
+Employed in Arts, entertainment, and recreation %: 0.05383793264627457
+Employed in Construction %: 0.018196381628513336
+Employed in Educational services %: 0.08110806345939636
+Employed in Health care and social assistance %: 0.09195036441087723
+Employed in Finance and insurance %: 0.1591782420873642
+Employed in Real estate and rental and leasing %: 0.03022097982466221
+Employed in Information %: 0.06372509151697159
+Employed in Manufacturing %: 0.033612530678510666
+Employed in Other services, except public administration %: 0.04061274230480194
+Employed in Administrative and support and waste management services %: 0.023997409269213676
+Employed in Management of companies and enterprises %: 0.002577856183052063
+Employed in Professional, scientific, and technical services %: 0.2238362580537796
+Employed in Public administration %: 0.021012021228671074
+Employed in Retail trade %: 0.06782738864421844
+Employed in Transportation and warehousing %: 0.024652689695358276
+Employed in Utilities %: 0.0050939107313752174
+Employed in Wholesale trade %: 0.017972873523831367
+Architecture and engineering occupations %: 0.013364246115088463
+Computer and mathematical occupations %: 0.0573141910135746
+Life, physical, and social science occupations %: 0.009797362610697746
+Arts, design, entertainment, sports, and media occupations %: 0.08172798156738281
+Community and social service occupations %: 0.004899070132523775
+Educational instruction, and library occupations %: 0.06536804884672165
+Legal occupations %: 0.026094766333699226
+Health diagnosing and treating practitioners and other technical occupations %: 0.03685704618692398
+Health technologists and technicians %: 0.006023424677550793
+Business and financial operations occupations %: 0.15478821098804474
+Management occupations %: 0.21972788870334625
+Construction and extraction occupations %: 0.006317845545709133
+Farming, fishing, and forestry occupations %: 0
+Installation, maintenance, and repair occupations %: 0.0050461916252970695
+Material moving occupations %: 0.01345780398696661
+Production occupations %: 0.009560997597873211
+Transportation occupations %: 0.0081707164645195
+Office and administrative support occupations %: 0.07551874220371246
+Sales and related occupations %: 0.09852627664804459
+Building and grounds cleaning and maintenance occupations %: 0.008407492190599442
+Food preparation and serving related occupations %: 0.030192598700523376
+Healthcare support occupations %: 0.02481606975197792
+Personal care and service occupations %: 0.03300128132104874
+Firefighting and prevention, and other protective service workers including supervisors %: 0.009046669118106365
+Law enforcement workers including supervisors %: 0.001975075574591756
+Not Cohabiting With Partner %: 0.3920314311981201
+Cohabiting With Partner (Gay) %: 0.030256139114499092
+Cohabiting With Partner (Straight) %: 0.2643778324127197
+Living With Parents %: 0.1419852375984192
+Other Living Situation %: 0.17134936153888702
+Never Married %: 0.5820256471633911
+Married (not divorced) %: 0.3281644582748413
+Divorced %: 0.08980987221002579
+2016 Presidential Election: 0.7576006650924683
+2016-2020 Swing: -0.02488926611840725
+2020 Presidential Election: 0.7327114343643188
+2020-2024 Swing: -0.10629456490278244
+2024 Presidential Election: 0.6264168620109558
+Congressional Representatives: {"kind":"congressional","representatives":[{"representative":{"name":"John Laurance","wikipediaPage":"https://en.wikipedia.org/wiki/John_Laurance","party":"Pro-Administration Party","termIn":[{"startYear":1789,"districtIdx":10202}]},"districtLongname":"NY-02 (1789), USA","startTerm":1789,"endTerm":1791},{"representative":{"name":"Thomas Tredwell","wikipediaPage":"https://en.wikipedia.org/wiki/Thomas_Tredwell","party":"Anti-Administration Party","termIn":[{"startYear":1791,"districtIdx":586},{"startYear":1793,"districtIdx":10203}]},"districtLongname":"NY-01 (1793), USA","startTerm":1793,"endTerm":1793},{"representative":{"name":"Jonathan Nicoll Havens","wikipediaPage":"https://en.wikipedia.org/wiki/Jonathan_Nicoll_Havens","party":"Democratic-Republican Party","termIn":[{"startYear":1799,"districtIdx":588},{"startYear":1795,"districtIdx":10203}]},"districtLongname":"NY-01 (1793), USA","startTerm":1795,"endTerm":1797},{"representative":{"name":"Philip Van Cortlandt","wikipediaPage":"https://en.wikipedia.org/wiki/Philip_Van_Cortlandt","party":"Democratic-Republican Party","termIn":[{"startYear":1799,"districtIdx":9038},{"startYear":1803,"districtIdx":9039},{"startYear":1805,"districtIdx":9040},{"startYear":1795,"districtIdx":10147}]},"districtLongname":"NY-03 (1799), USA","startTerm":1799,"endTerm":1801},{"representative":{"name":"George Clinton Jr.","wikipediaPage":"https://en.wikipedia.org/wiki/George_Clinton_Jr.","party":"Democratic-Republican Party","termIn":[{"startYear":1805,"districtIdx":590},{"startYear":1805,"districtIdx":591},{"startYear":1803,"districtIdx":10205}]},"districtLongname":"NY-03 (1803), USA","startTerm":1803,"endTerm":1803},{"representative":{"name":"Samuel L. Mitchill","wikipediaPage":"https://en.wikipedia.org/wiki/Samuel_L._Mitchill","party":"Democratic-Republican Party","termIn":[{"startYear":1809,"districtIdx":9041},{"startYear":1801,"districtIdx":10204},{"startYear":1803,"districtIdx":10205}]},"districtLongname":"NY-03 (1803), USA","startTerm":1803,"endTerm":1803},{"representative":{"name":"George Clinton Jr.","wikipediaPage":"https://en.wikipedia.org/wiki/George_Clinton_Jr.","party":"Democratic-Republican Party","termIn":[{"startYear":1805,"districtIdx":590},{"startYear":1805,"districtIdx":591},{"startYear":1803,"districtIdx":10205}]},"districtLongname":"NY-02 (1805), USA","startTerm":1805,"endTerm":1805},{"representative":{"name":"George Clinton Jr.","wikipediaPage":"https://en.wikipedia.org/wiki/George_Clinton_Jr.","party":"Democratic-Republican Party","termIn":[{"startYear":1805,"districtIdx":590},{"startYear":1805,"districtIdx":591},{"startYear":1803,"districtIdx":10205}]},"districtLongname":"NY-02 (1805), USA","startTerm":1805,"endTerm":1807},{"representative":{"name":"Gurdon S. Mumford","wikipediaPage":"https://en.wikipedia.org/wiki/Gurdon_S._Mumford","party":"Democratic-Republican Party","termIn":[{"startYear":1805,"districtIdx":590},{"startYear":1809,"districtIdx":9041}]},"districtLongname":"NY-02 (1805), USA","startTerm":1805,"endTerm":1807},{"representative":{"name":"Gurdon S. Mumford","wikipediaPage":"https://en.wikipedia.org/wiki/Gurdon_S._Mumford","party":"Democratic-Republican Party","termIn":[{"startYear":1805,"districtIdx":590},{"startYear":1809,"districtIdx":9041}]},"districtLongname":"NY-02 (1809), USA","startTerm":1809,"endTerm":1809},{"representative":{"name":"William Denning","wikipediaPage":"https://en.wikipedia.org/wiki/William_Denning","party":"Democratic-Republican Party","termIn":[{"startYear":1809,"districtIdx":9041}]},"districtLongname":"NY-02 (1809), USA","startTerm":1809,"endTerm":1809},{"representative":{"name":"Samuel L. Mitchill","wikipediaPage":"https://en.wikipedia.org/wiki/Samuel_L._Mitchill","party":"Democratic-Republican Party","termIn":[{"startYear":1809,"districtIdx":9041},{"startYear":1801,"districtIdx":10204},{"startYear":1803,"districtIdx":10205}]},"districtLongname":"NY-02 (1809), USA","startTerm":1809,"endTerm":1811},{"representative":{"name":"William Paulding Jr.","wikipediaPage":"https://en.wikipedia.org/wiki/William_Paulding_Jr.","party":"Democratic-Republican Party","termIn":[{"startYear":1811,"districtIdx":9041}]},"districtLongname":"NY-02 (1809), USA","startTerm":1811,"endTerm":1811},{"representative":{"name":"Egbert Benson","wikipediaPage":"https://en.wikipedia.org/wiki/Egbert_Benson","party":"Federalist Party","termIn":[{"startYear":1813,"districtIdx":10206}]},"districtLongname":"NY-02 (1813), USA","startTerm":1813,"endTerm":1813},{"representative":{"name":"Jotham Post Jr.","wikipediaPage":"https://en.wikipedia.org/wiki/Jotham_Post_Jr.","party":"Federalist Party","termIn":[{"startYear":1813,"districtIdx":10206}]},"districtLongname":"NY-02 (1813), USA","startTerm":1813,"endTerm":1813},{"representative":{"name":"William Irving","wikipediaPage":"https://en.wikipedia.org/wiki/William_Irving_(American_politician)","party":"Democratic-Republican Party","termIn":[{"startYear":1813,"districtIdx":10206}]},"districtLongname":"NY-02 (1813), USA","startTerm":1813,"endTerm":1817},{"representative":{"name":"Peter H. Wendover","wikipediaPage":"https://en.wikipedia.org/wiki/Peter_H._Wendover","party":"Democratic-Republican Party","termIn":[{"startYear":1815,"districtIdx":10206}]},"districtLongname":"NY-02 (1813), USA","startTerm":1815,"endTerm":1819},{"representative":{"name":"Henry Meigs","wikipediaPage":"https://en.wikipedia.org/wiki/Henry_Meigs","party":"Democratic-Republican Party","termIn":[{"startYear":1819,"districtIdx":10206}]},"districtLongname":"NY-02 (1813), USA","startTerm":1819,"endTerm":1819},{"representative":{"name":"Churchill C. Cambreleng","wikipediaPage":"https://en.wikipedia.org/wiki/Churchill_C._Cambreleng","party":"Democratic-Republican Party","termIn":[{"startYear":1821,"districtIdx":10207},{"startYear":1823,"districtIdx":10208}]},"districtLongname":"NY-02 (1821), USA","startTerm":1821,"endTerm":1821},{"representative":{"name":"John J. Morgan","wikipediaPage":"https://en.wikipedia.org/wiki/John_J._Morgan","party":"Democratic-Republican Party","termIn":[{"startYear":1821,"districtIdx":10207},{"startYear":1823,"districtIdx":10208}]},"districtLongname":"NY-02 (1821), USA","startTerm":1821,"endTerm":1821},{"representative":{"name":"John J. Morgan","wikipediaPage":"https://en.wikipedia.org/wiki/John_J._Morgan","party":"Democratic-Republican Party","termIn":[{"startYear":1821,"districtIdx":10207},{"startYear":1823,"districtIdx":10208}]},"districtLongname":"NY-03 (1823), USA","startTerm":1823,"endTerm":1823},{"representative":{"name":"Peter Sharpe","wikipediaPage":"https://en.wikipedia.org/wiki/Peter_Sharpe","party":"Democratic-Republican Party","termIn":[{"startYear":1823,"districtIdx":10208}]},"districtLongname":"NY-03 (1823), USA","startTerm":1823,"endTerm":1823},{"representative":{"name":"Churchill C. Cambreleng","wikipediaPage":"https://en.wikipedia.org/wiki/Churchill_C._Cambreleng","party":"Democratic-Republican Party","termIn":[{"startYear":1821,"districtIdx":10207},{"startYear":1823,"districtIdx":10208}]},"districtLongname":"NY-03 (1823), USA","startTerm":1823,"endTerm":1825},{"representative":{"name":"Gulian C. Verplanck","wikipediaPage":"https://en.wikipedia.org/wiki/Gulian_C._Verplanck","party":"Democratic-Republican Party","termIn":[{"startYear":1825,"districtIdx":10208}]},"districtLongname":"NY-03 (1823), USA","startTerm":1825,"endTerm":1825},{"representative":{"name":"Jeromus Johnson","wikipediaPage":"https://en.wikipedia.org/wiki/Jeromus_Johnson","party":"Democratic-Republican Party","termIn":[{"startYear":1825,"districtIdx":10208}]},"districtLongname":"NY-03 (1823), USA","startTerm":1825,"endTerm":1825},{"representative":{"name":"Jeromus Johnson","wikipediaPage":"https://en.wikipedia.org/wiki/Jeromus_Johnson","party":"Jacksonian Party","termIn":[{"startYear":1827,"districtIdx":10208}]},"districtLongname":"NY-03 (1823), USA","startTerm":1827,"endTerm":1827},{"representative":{"name":"Churchill C. Cambreleng","wikipediaPage":"https://en.wikipedia.org/wiki/Churchill_C._Cambreleng","party":"Jacksonian Party","termIn":[{"startYear":1827,"districtIdx":10208},{"startYear":1833,"districtIdx":10209}]},"districtLongname":"NY-03 (1823), USA","startTerm":1827,"endTerm":1831},{"representative":{"name":"Gulian C. Verplanck","wikipediaPage":"https://en.wikipedia.org/wiki/Gulian_C._Verplanck","party":"Jacksonian Party","termIn":[{"startYear":1827,"districtIdx":10208}]},"districtLongname":"NY-03 (1823), USA","startTerm":1827,"endTerm":1831},{"representative":{"name":"Campbell P. White","wikipediaPage":"https://en.wikipedia.org/wiki/Campbell_P._White","party":"Jacksonian Party","termIn":[{"startYear":1829,"districtIdx":10208},{"startYear":1833,"districtIdx":10209}]},"districtLongname":"NY-03 (1823), USA","startTerm":1829,"endTerm":1831},{"representative":{"name":"Charles G. Ferris","wikipediaPage":"https://en.wikipedia.org/wiki/Charles_G._Ferris","party":"Jacksonian Party","termIn":[{"startYear":1833,"districtIdx":10209}]},"districtLongname":"NY-03 (1833), USA","startTerm":1833,"endTerm":1833},{"representative":{"name":"Cornelius Lawrence","wikipediaPage":"https://en.wikipedia.org/wiki/Cornelius_Lawrence","party":"Jacksonian Party","termIn":[{"startYear":1833,"districtIdx":10209}]},"districtLongname":"NY-03 (1833), USA","startTerm":1833,"endTerm":1833},{"representative":{"name":"Dudley Selden","wikipediaPage":"https://en.wikipedia.org/wiki/Dudley_Selden","party":"Jacksonian Party","termIn":[{"startYear":1833,"districtIdx":10209}]},"districtLongname":"NY-03 (1833), USA","startTerm":1833,"endTerm":1833},{"representative":{"name":"John J. Morgan","wikipediaPage":"https://en.wikipedia.org/wiki/John_J._Morgan","party":"Jacksonian Party","termIn":[{"startYear":1833,"districtIdx":10209}]},"districtLongname":"NY-03 (1833), USA","startTerm":1833,"endTerm":1833},{"representative":{"name":"Campbell P. White","wikipediaPage":"https://en.wikipedia.org/wiki/Campbell_P._White","party":"Jacksonian Party","termIn":[{"startYear":1829,"districtIdx":10208},{"startYear":1833,"districtIdx":10209}]},"districtLongname":"NY-03 (1833), USA","startTerm":1833,"endTerm":1835},{"representative":{"name":"Churchill C. Cambreleng","wikipediaPage":"https://en.wikipedia.org/wiki/Churchill_C._Cambreleng","party":"Jacksonian Party","termIn":[{"startYear":1827,"districtIdx":10208},{"startYear":1833,"districtIdx":10209}]},"districtLongname":"NY-03 (1833), USA","startTerm":1833,"endTerm":1835},{"representative":{"name":"Ely Moore","wikipediaPage":"https://en.wikipedia.org/wiki/Ely_Moore","party":"Jacksonian Party","termIn":[{"startYear":1835,"districtIdx":10209}]},"districtLongname":"NY-03 (1833), USA","startTerm":1835,"endTerm":1835},{"representative":{"name":"Gideon Lee","wikipediaPage":"https://en.wikipedia.org/wiki/Gideon_Lee","party":"Jacksonian Party","termIn":[{"startYear":1835,"districtIdx":10209}]},"districtLongname":"NY-03 (1833), USA","startTerm":1835,"endTerm":1835},{"representative":{"name":"John McKeon","wikipediaPage":"https://en.wikipedia.org/wiki/John_McKeon","party":"Jacksonian Party","termIn":[{"startYear":1835,"districtIdx":10209}]},"districtLongname":"NY-03 (1833), USA","startTerm":1835,"endTerm":1835},{"representative":{"name":"Churchill C. Cambreleng","wikipediaPage":"https://en.wikipedia.org/wiki/Churchill_C._Cambreleng","party":"Democratic Party","termIn":[{"startYear":1837,"districtIdx":10209}]},"districtLongname":"NY-03 (1833), USA","startTerm":1837,"endTerm":1837},{"representative":{"name":"Ely Moore","wikipediaPage":"https://en.wikipedia.org/wiki/Ely_Moore","party":"Democratic Party","termIn":[{"startYear":1837,"districtIdx":10209}]},"districtLongname":"NY-03 (1833), USA","startTerm":1837,"endTerm":1837},{"representative":{"name":"Edward Curtis","wikipediaPage":"https://en.wikipedia.org/wiki/Edward_Curtis_(politician)","party":"Whig Party","termIn":[{"startYear":1837,"districtIdx":10209}]},"districtLongname":"NY-03 (1833), USA","startTerm":1837,"endTerm":1839},{"representative":{"name":"Ogden Hoffman","wikipediaPage":"https://en.wikipedia.org/wiki/Ogden_Hoffman","party":"Whig Party","termIn":[{"startYear":1837,"districtIdx":10209}]},"districtLongname":"NY-03 (1833), USA","startTerm":1837,"endTerm":1839},{"representative":{"name":"James Monroe","wikipediaPage":"https://en.wikipedia.org/wiki/James_Monroe_(New_York_politician)","party":"Whig Party","termIn":[{"startYear":1839,"districtIdx":10209}]},"districtLongname":"NY-03 (1833), USA","startTerm":1839,"endTerm":1839},{"representative":{"name":"Moses H. Grinnell","wikipediaPage":"https://en.wikipedia.org/wiki/Moses_H._Grinnell","party":"Whig Party","termIn":[{"startYear":1839,"districtIdx":10209}]},"districtLongname":"NY-03 (1833), USA","startTerm":1839,"endTerm":1839},{"representative":{"name":"Charles G. Ferris","wikipediaPage":"https://en.wikipedia.org/wiki/Charles_G._Ferris","party":"Democratic Party","termIn":[{"startYear":1841,"districtIdx":10209}]},"districtLongname":"NY-03 (1833), USA","startTerm":1841,"endTerm":1841},{"representative":{"name":"Fernando Wood","wikipediaPage":"https://en.wikipedia.org/wiki/Fernando_Wood","party":"Democratic Party","termIn":[{"startYear":1841,"districtIdx":10209},{"startYear":1863,"districtIdx":10226},{"startYear":1869,"districtIdx":10749},{"startYear":1873,"districtIdx":10751},{"startYear":1875,"districtIdx":10753}]},"districtLongname":"NY-03 (1833), USA","startTerm":1841,"endTerm":1841},{"representative":{"name":"James I. Roosevelt","wikipediaPage":"https://en.wikipedia.org/wiki/James_I._Roosevelt","party":"Democratic Party","termIn":[{"startYear":1841,"districtIdx":10209}]},"districtLongname":"NY-03 (1833), USA","startTerm":1841,"endTerm":1841},{"representative":{"name":"John McKeon","wikipediaPage":"https://en.wikipedia.org/wiki/John_McKeon","party":"Democratic Party","termIn":[{"startYear":1841,"districtIdx":10209}]},"districtLongname":"NY-03 (1833), USA","startTerm":1841,"endTerm":1841},{"representative":{"name":"Hamilton Fish","wikipediaPage":"https://en.wikipedia.org/wiki/Hamilton_Fish","party":"Whig Party","termIn":[{"startYear":1843,"districtIdx":10210}]},"districtLongname":"NY-06 (1843), USA","startTerm":1843,"endTerm":1843},{"representative":{"name":"William W. Campbell","wikipediaPage":"https://en.wikipedia.org/wiki/William_W._Campbell_(New_York_congressman)","party":"Know Nothing","termIn":[{"startYear":1845,"districtIdx":10210}]},"districtLongname":"NY-06 (1843), USA","startTerm":1845,"endTerm":1845},{"representative":{"name":"David S. Jackson","wikipediaPage":"https://en.wikipedia.org/wiki/David_S._Jackson","party":"Democratic Party","termIn":[{"startYear":1847,"districtIdx":10210}]},"districtLongname":"NY-06 (1843), USA","startTerm":1847,"endTerm":1847},{"representative":{"name":"Horace Greeley","wikipediaPage":"https://en.wikipedia.org/wiki/Horace_Greeley","party":"Whig Party","termIn":[{"startYear":1847,"districtIdx":10210}]},"districtLongname":"NY-06 (1843), USA","startTerm":1847,"endTerm":1847},{"representative":{"name":"James Brooks","wikipediaPage":"https://en.wikipedia.org/wiki/James_Brooks_(politician)","party":"Whig Party","termIn":[{"startYear":1849,"districtIdx":10210}]},"districtLongname":"NY-06 (1843), USA","startTerm":1849,"endTerm":1851},{"representative":{"name":"Francis B. Cutting","wikipediaPage":"https://en.wikipedia.org/wiki/Francis_B._Cutting","party":"Democratic Party","termIn":[{"startYear":1853,"districtIdx":10747}]},"districtLongname":"NY-08 (1853), USA","startTerm":1853,"endTerm":1853},{"representative":{"name":"William Adams Walker","wikipediaPage":"https://en.wikipedia.org/wiki/William_Adams_Walker","party":"Democratic Party","termIn":[{"startYear":1853,"districtIdx":10217}]},"districtLongname":"NY-07 (1853), USA","startTerm":1853,"endTerm":1853},{"representative":{"name":"Abram Wakeman","wikipediaPage":"https://en.wikipedia.org/wiki/Abram_Wakeman","party":"Opposition Party","termIn":[{"startYear":1855,"districtIdx":10748}]},"districtLongname":"NY-08 (1855), USA","startTerm":1855,"endTerm":1855},{"representative":{"name":"Thomas Child Jr.","wikipediaPage":"https://en.wikipedia.org/wiki/Thomas_Child_Jr.","party":"Opposition Party","termIn":[{"startYear":1855,"districtIdx":10221}]},"districtLongname":"NY-07 (1855), USA","startTerm":1855,"endTerm":1855},{"representative":{"name":"Elijah Ward","wikipediaPage":"https://en.wikipedia.org/wiki/Elijah_Ward","party":"Democratic Party","termIn":[{"startYear":1857,"districtIdx":10221},{"startYear":1861,"districtIdx":10221},{"startYear":1863,"districtIdx":10225},{"startYear":1875,"districtIdx":10235}]},"districtLongname":"NY-07 (1855), USA","startTerm":1857,"endTerm":1857},{"representative":{"name":"Horace F. Clark","wikipediaPage":"https://en.wikipedia.org/wiki/Horace_F._Clark","party":"Democratic Party","termIn":[{"startYear":1857,"districtIdx":10748}]},"districtLongname":"NY-08 (1855), USA","startTerm":1857,"endTerm":1859},{"representative":{"name":"George Briggs","wikipediaPage":"https://en.wikipedia.org/wiki/George_Briggs_(New_York_politician)","party":"Republican Party","termIn":[{"startYear":1859,"districtIdx":10221}]},"districtLongname":"NY-07 (1855), USA","startTerm":1859,"endTerm":1859},{"representative":{"name":"Elijah Ward","wikipediaPage":"https://en.wikipedia.org/wiki/Elijah_Ward","party":"Democratic Party","termIn":[{"startYear":1857,"districtIdx":10221},{"startYear":1861,"districtIdx":10221},{"startYear":1863,"districtIdx":10225},{"startYear":1875,"districtIdx":10235}]},"districtLongname":"NY-07 (1855), USA","startTerm":1861,"endTerm":1861},{"representative":{"name":"Isaac C. Delaplaine","wikipediaPage":"https://en.wikipedia.org/wiki/Isaac_C._Delaplaine","party":"Democratic Party","termIn":[{"startYear":1861,"districtIdx":10748}]},"districtLongname":"NY-08 (1855), USA","startTerm":1861,"endTerm":1861},{"representative":{"name":"Elijah Ward","wikipediaPage":"https://en.wikipedia.org/wiki/Elijah_Ward","party":"Democratic Party","termIn":[{"startYear":1857,"districtIdx":10221},{"startYear":1861,"districtIdx":10221},{"startYear":1863,"districtIdx":10225},{"startYear":1875,"districtIdx":10235}]},"districtLongname":"NY-06 (1863), USA","startTerm":1863,"endTerm":1863},{"representative":{"name":"James Brooks","wikipediaPage":"https://en.wikipedia.org/wiki/James_Brooks_(politician)","party":"Democratic Party","termIn":[{"startYear":1863,"districtIdx":10227},{"startYear":1869,"districtIdx":10227},{"startYear":1873,"districtIdx":10229}]},"districtLongname":"NY-08 (1863), USA","startTerm":1863,"endTerm":1865},{"representative":{"name":"Henry Jarvis Raymond","wikipediaPage":"https://en.wikipedia.org/wiki/Henry_Jarvis_Raymond","party":"Republican Party","termIn":[{"startYear":1865,"districtIdx":10225}]},"districtLongname":"NY-06 (1863), USA","startTerm":1865,"endTerm":1865},{"representative":{"name":"William E. Dodge","wikipediaPage":"https://en.wikipedia.org/wiki/William_E._Dodge","party":"Republican Party","termIn":[{"startYear":1865,"districtIdx":10227}]},"districtLongname":"NY-08 (1863), USA","startTerm":1865,"endTerm":1865},{"representative":{"name":"James Brooks","wikipediaPage":"https://en.wikipedia.org/wiki/James_Brooks_(politician)","termIn":[{"startYear":1867,"districtIdx":10227}]},"districtLongname":"NY-08 (1863), USA","startTerm":1867,"endTerm":1867},{"representative":{"name":"Thomas E. Stewart","wikipediaPage":"https://en.wikipedia.org/wiki/Thomas_E._Stewart","termIn":[{"startYear":1867,"districtIdx":10225}]},"districtLongname":"NY-06 (1863), USA","startTerm":1867,"endTerm":1867},{"representative":{"name":"James Brooks","wikipediaPage":"https://en.wikipedia.org/wiki/James_Brooks_(politician)","party":"Democratic Party","termIn":[{"startYear":1863,"districtIdx":10227},{"startYear":1869,"districtIdx":10227},{"startYear":1873,"districtIdx":10229}]},"districtLongname":"NY-08 (1863), USA","startTerm":1869,"endTerm":1871},{"representative":{"name":"Samuel S. Cox","wikipediaPage":"https://en.wikipedia.org/wiki/Samuel_S._Cox","party":"Democratic Party","termIn":[{"startYear":1863,"districtIdx":5099},{"startYear":1857,"districtIdx":8027},{"startYear":1869,"districtIdx":10225},{"startYear":1873,"districtIdx":10229},{"startYear":1875,"districtIdx":10236},{"startYear":1883,"districtIdx":10239},{"startYear":1885,"districtIdx":10244},{"startYear":1885,"districtIdx":10242}]},"districtLongname":"NY-06 (1863), USA","startTerm":1869,"endTerm":1871},{"representative":{"name":"David B. Mellish","wikipediaPage":"https://en.wikipedia.org/wiki/David_B._Mellish","party":"Republican Party","termIn":[{"startYear":1873,"districtIdx":10750}]},"districtLongname":"NY-09 (1873), USA","startTerm":1873,"endTerm":1873},{"representative":{"name":"John D. Lawson","wikipediaPage":"https://en.wikipedia.org/wiki/John_D._Lawson_(politician)","party":"Republican Party","termIn":[{"startYear":1873,"districtIdx":10230}]},"districtLongname":"NY-08 (1873), USA","startTerm":1873,"endTerm":1873},{"representative":{"name":"Lyman Tremain","wikipediaPage":"https://en.wikipedia.org/wiki/Lyman_Tremain","party":"Republican Party","termIn":[{"startYear":1873,"districtIdx":171}]},"districtLongname":"NY-AL (1873), USA","startTerm":1873,"endTerm":1873},{"representative":{"name":"Richard Schell","wikipediaPage":"https://en.wikipedia.org/wiki/Richard_Schell","party":"Democratic Party","termIn":[{"startYear":1873,"districtIdx":10750}]},"districtLongname":"NY-09 (1873), USA","startTerm":1873,"endTerm":1873},{"representative":{"name":"Elijah Ward","wikipediaPage":"https://en.wikipedia.org/wiki/Elijah_Ward","party":"Democratic Party","termIn":[{"startYear":1857,"districtIdx":10221},{"startYear":1861,"districtIdx":10221},{"startYear":1863,"districtIdx":10225},{"startYear":1875,"districtIdx":10235}]},"districtLongname":"NY-08 (1875), USA","startTerm":1875,"endTerm":1875},{"representative":{"name":"Benjamin A. Willis","wikipediaPage":"https://en.wikipedia.org/wiki/Benjamin_A._Willis","party":"Democratic Party","termIn":[{"startYear":1875,"districtIdx":10752}]},"districtLongname":"NY-11 (1875), USA","startTerm":1875,"endTerm":1877},{"representative":{"name":"Fernando Wood","wikipediaPage":"https://en.wikipedia.org/wiki/Fernando_Wood","party":"Democratic Party","termIn":[{"startYear":1841,"districtIdx":10209},{"startYear":1863,"districtIdx":10226},{"startYear":1869,"districtIdx":10749},{"startYear":1873,"districtIdx":10751},{"startYear":1875,"districtIdx":10753}]},"districtLongname":"NY-09 (1875), USA","startTerm":1875,"endTerm":1879},{"representative":{"name":"Anson G. McCook","wikipediaPage":"https://en.wikipedia.org/wiki/Anson_G._McCook","party":"Republican Party","termIn":[{"startYear":1877,"districtIdx":10235}]},"districtLongname":"NY-08 (1875), USA","startTerm":1877,"endTerm":1881},{"representative":{"name":"Levi P. Morton","wikipediaPage":"https://en.wikipedia.org/wiki/Levi_P._Morton","party":"Republican Party","termIn":[{"startYear":1879,"districtIdx":10752}]},"districtLongname":"NY-11 (1875), USA","startTerm":1879,"endTerm":1881},{"representative":{"name":"John Hardy","wikipediaPage":"https://en.wikipedia.org/wiki/John_Hardy_(New_York_politician)","party":"Democratic Party","termIn":[{"startYear":1881,"districtIdx":10753},{"startYear":1883,"districtIdx":10754}]},"districtLongname":"NY-09 (1875), USA","startTerm":1881,"endTerm":1881},{"representative":{"name":"Roswell P. Flower","wikipediaPage":"https://en.wikipedia.org/wiki/Roswell_P._Flower","party":"Democratic Party","termIn":[{"startYear":1889,"districtIdx":2749},{"startYear":1881,"districtIdx":10752}]},"districtLongname":"NY-11 (1875), USA","startTerm":1881,"endTerm":1881},{"representative":{"name":"Henry Warner Slocum","wikipediaPage":"https://en.wikipedia.org/wiki/Henry_Warner_Slocum","party":"Democratic Party","termIn":[{"startYear":1883,"districtIdx":174},{"startYear":1869,"districtIdx":8819}]},"districtLongname":"NY-AL (1883), USA","startTerm":1883,"endTerm":1883},{"representative":{"name":"John Hardy","wikipediaPage":"https://en.wikipedia.org/wiki/John_Hardy_(New_York_politician)","party":"Democratic Party","termIn":[{"startYear":1881,"districtIdx":10753},{"startYear":1883,"districtIdx":10754}]},"districtLongname":"NY-09 (1883), USA","startTerm":1883,"endTerm":1883},{"representative":{"name":"John J. Adams","wikipediaPage":"https://en.wikipedia.org/wiki/John_J._Adams","party":"Democratic Party","termIn":[{"startYear":1883,"districtIdx":10237},{"startYear":1885,"districtIdx":10241}]},"districtLongname":"NY-08 (1883), USA","startTerm":1883,"endTerm":1883},{"representative":{"name":"Orlando B. Potter","wikipediaPage":"https://en.wikipedia.org/wiki/Orlando_B._Potter","party":"Democratic Party","termIn":[{"startYear":1883,"districtIdx":10755}]},"districtLongname":"NY-11 (1883), USA","startTerm":1883,"endTerm":1883},{"representative":{"name":"Abram Hewitt","wikipediaPage":"https://en.wikipedia.org/wiki/Abram_Hewitt","party":"Democratic Party","termIn":[{"startYear":1875,"districtIdx":2747},{"startYear":1881,"districtIdx":2747},{"startYear":1883,"districtIdx":10935},{"startYear":1885,"districtIdx":11403}]},"districtLongname":"NY-10 (1885), USA","startTerm":1885,"endTerm":1885},{"representative":{"name":"Truman A. Merriman","wikipediaPage":"https://en.wikipedia.org/wiki/Truman_A._Merriman","party":"Democratic Party","termIn":[{"startYear":1885,"districtIdx":10757}]},"districtLongname":"NY-11 (1885), USA","startTerm":1885,"endTerm":1887},{"representative":{"name":"Francis B. Spinola","wikipediaPage":"https://en.wikipedia.org/wiki/Francis_B._Spinola","party":"Democratic Party","termIn":[{"startYear":1887,"districtIdx":11403}]},"districtLongname":"NY-10 (1885), USA","startTerm":1887,"endTerm":1891},{"representative":{"name":"John Quinn","wikipediaPage":"https://en.wikipedia.org/wiki/John_Quinn_(New_York_politician)","party":"Democratic Party","termIn":[{"startYear":1889,"districtIdx":10757}]},"districtLongname":"NY-11 (1885), USA","startTerm":1889,"endTerm":1889},{"representative":{"name":"J. De Witt Warner","wikipediaPage":"https://en.wikipedia.org/wiki/J._De_Witt_Warner","party":"Democratic Party","termIn":[{"startYear":1891,"districtIdx":10757},{"startYear":1893,"districtIdx":10758}]},"districtLongname":"NY-11 (1885), USA","startTerm":1891,"endTerm":1891},{"representative":{"name":"William Bourke Cockran","wikipediaPage":"https://en.wikipedia.org/wiki/William_Bourke_Cockran","party":"Democratic Party","termIn":[{"startYear":1887,"districtIdx":2749},{"startYear":1921,"districtIdx":2757},{"startYear":1903,"districtIdx":10936},{"startYear":1891,"districtIdx":11403},{"startYear":1893,"districtIdx":11404}]},"districtLongname":"NY-10 (1885), USA","startTerm":1891,"endTerm":1891},{"representative":{"name":"Daniel Sickles","wikipediaPage":"https://en.wikipedia.org/wiki/Daniel_Sickles","party":"Democratic Party","termIn":[{"startYear":1857,"districtIdx":10219},{"startYear":1893,"districtIdx":10247}]},"districtLongname":"NY-10 (1893), USA","startTerm":1893,"endTerm":1893},{"representative":{"name":"William Bourke Cockran","wikipediaPage":"https://en.wikipedia.org/wiki/William_Bourke_Cockran","party":"Democratic Party","termIn":[{"startYear":1887,"districtIdx":2749},{"startYear":1921,"districtIdx":2757},{"startYear":1903,"districtIdx":10936},{"startYear":1891,"districtIdx":11403},{"startYear":1893,"districtIdx":11404}]},"districtLongname":"NY-12 (1893), USA","startTerm":1893,"endTerm":1893},{"representative":{"name":"Amos J. Cummings","wikipediaPage":"https://en.wikipedia.org/wiki/Amos_J._Cummings","party":"Democratic Party","termIn":[{"startYear":1887,"districtIdx":10243},{"startYear":1889,"districtIdx":10242},{"startYear":1893,"districtIdx":10246},{"startYear":1895,"districtIdx":10247}]},"districtLongname":"NY-10 (1893), USA","startTerm":1895,"endTerm":1901},{"representative":{"name":"George B. McClellan Jr.","wikipediaPage":"https://en.wikipedia.org/wiki/George_B._McClellan_Jr.","party":"Democratic Party","termIn":[{"startYear":1903,"districtIdx":10936},{"startYear":1895,"districtIdx":11404}]},"districtLongname":"NY-12 (1893), USA","startTerm":1895,"endTerm":1901},{"representative":{"name":"Edward Swann","wikipediaPage":"https://en.wikipedia.org/wiki/Edward_Swann","party":"Democratic Party","termIn":[{"startYear":1901,"districtIdx":10247}]},"districtLongname":"NY-10 (1893), USA","startTerm":1901,"endTerm":1901},{"representative":{"name":"Francis Burton Harrison","wikipediaPage":"https://en.wikipedia.org/wiki/Francis_Burton_Harrison","party":"Democratic Party","termIn":[{"startYear":1903,"districtIdx":10251},{"startYear":1907,"districtIdx":11406},{"startYear":1913,"districtIdx":11407}]},"districtLongname":"NY-13 (1903), USA","startTerm":1903,"endTerm":1903},{"representative":{"name":"William Randolph Hearst","wikipediaPage":"https://en.wikipedia.org/wiki/William_Randolph_Hearst","party":"Democratic Party","termIn":[{"startYear":1903,"districtIdx":10252}]},"districtLongname":"NY-11 (1903), USA","startTerm":1903,"endTerm":1905},{"representative":{"name":"Herbert Parsons","wikipediaPage":"https://en.wikipedia.org/wiki/Herbert_Parsons_(New_York_politician)","party":"Republican Party","termIn":[{"startYear":1905,"districtIdx":10251}]},"districtLongname":"NY-13 (1903), USA","startTerm":1905,"endTerm":1909},{"representative":{"name":"Charles V. Fornes","wikipediaPage":"https://en.wikipedia.org/wiki/Charles_V._Fornes","party":"Democratic Party","termIn":[{"startYear":1907,"districtIdx":10252}]},"districtLongname":"NY-11 (1903), USA","startTerm":1907,"endTerm":1911},{"representative":{"name":"Jefferson Monroe Levy","wikipediaPage":"https://en.wikipedia.org/wiki/Jefferson_Monroe_Levy","party":"Democratic Party","termIn":[{"startYear":1911,"districtIdx":10251},{"startYear":1913,"districtIdx":10257},{"startYear":1899,"districtIdx":10758}]},"districtLongname":"NY-13 (1903), USA","startTerm":1911,"endTerm":1911},{"representative":{"name":"Michael F. Conry","wikipediaPage":"https://en.wikipedia.org/wiki/Michael_F._Conry","party":"Democratic Party","termIn":[{"startYear":1913,"districtIdx":10260},{"startYear":1909,"districtIdx":10936}]},"districtLongname":"NY-15 (1913), USA","startTerm":1913,"endTerm":1915},{"representative":{"name":"Thomas Francis Smith","wikipediaPage":"https://en.wikipedia.org/wiki/Thomas_Francis_Smith","party":"Democratic Party","termIn":[{"startYear":1919,"districtIdx":2757},{"startYear":1917,"districtIdx":10265}]},"districtLongname":"NY-15 (1917), USA","startTerm":1917,"endTerm":1917},{"representative":{"name":"Herbert Pell","wikipediaPage":"https://en.wikipedia.org/wiki/Herbert_Pell","party":"Democratic Party","termIn":[{"startYear":1919,"districtIdx":10769}]},"districtLongname":"NY-17 (1919), USA","startTerm":1919,"endTerm":1919},{"representative":{"name":"Peter J. Dooling","wikipediaPage":"https://en.wikipedia.org/wiki/Peter_J._Dooling","party":"Democratic Party","termIn":[{"startYear":1913,"districtIdx":10762},{"startYear":1917,"districtIdx":10767},{"startYear":1919,"districtIdx":10771}]},"districtLongname":"NY-15 (1919), USA","startTerm":1919,"endTerm":1919},{"representative":{"name":"Ogden L. Mills","wikipediaPage":"https://en.wikipedia.org/wiki/Ogden_L._Mills","party":"Republican Party","termIn":[{"startYear":1921,"districtIdx":10769},{"startYear":1923,"districtIdx":10772}]},"districtLongname":"NY-17 (1919), USA","startTerm":1921,"endTerm":1921},{"representative":{"name":"Thomas Jefferson Ryan","wikipediaPage":"https://en.wikipedia.org/wiki/Thomas_Jefferson_Ryan","party":"Republican Party","termIn":[{"startYear":1921,"districtIdx":10771}]},"districtLongname":"NY-15 (1919), USA","startTerm":1921,"endTerm":1921},{"representative":{"name":"Ogden L. Mills","wikipediaPage":"https://en.wikipedia.org/wiki/Ogden_L._Mills","party":"Republican Party","termIn":[{"startYear":1921,"districtIdx":10769},{"startYear":1923,"districtIdx":10772}]},"districtLongname":"NY-17 (1923), USA","startTerm":1923,"endTerm":1925},{"representative":{"name":"John J. Boylan","wikipediaPage":"https://en.wikipedia.org/wiki/John_J._Boylan","party":"Democratic Party","termIn":[{"startYear":1923,"districtIdx":10773},{"startYear":1933,"districtIdx":10775}]},"districtLongname":"NY-15 (1923), USA","startTerm":1923,"endTerm":1931},{"representative":{"name":"William W. Cohen","wikipediaPage":"https://en.wikipedia.org/wiki/William_W._Cohen","party":"Democratic Party","termIn":[{"startYear":1927,"districtIdx":10772}]},"districtLongname":"NY-17 (1923), USA","startTerm":1927,"endTerm":1927},{"representative":{"name":"Ruth Baker Pratt","wikipediaPage":"https://en.wikipedia.org/wiki/Ruth_Baker_Pratt","party":"Republican Party","termIn":[{"startYear":1929,"districtIdx":10772}]},"districtLongname":"NY-17 (1923), USA","startTerm":1929,"endTerm":1931},{"representative":{"name":"Elmer E. Studley","wikipediaPage":"https://en.wikipedia.org/wiki/Elmer_E._Studley","party":"Democratic Party","termIn":[{"startYear":1933,"districtIdx":183}]},"districtLongname":"NY-AL (1933), USA","startTerm":1933,"endTerm":1933},{"representative":{"name":"John Fitzgibbons","wikipediaPage":"https://en.wikipedia.org/wiki/John_Fitzgibbons","party":"Democratic Party","termIn":[{"startYear":1933,"districtIdx":183}]},"districtLongname":"NY-AL (1933), USA","startTerm":1933,"endTerm":1933},{"representative":{"name":"John J. Boylan","wikipediaPage":"https://en.wikipedia.org/wiki/John_J._Boylan","party":"Democratic Party","termIn":[{"startYear":1923,"districtIdx":10773},{"startYear":1933,"districtIdx":10775}]},"districtLongname":"NY-15 (1933), USA","startTerm":1933,"endTerm":1937},{"representative":{"name":"Theodore A. Peyser","wikipediaPage":"https://en.wikipedia.org/wiki/Theodore_A._Peyser","party":"Democratic Party","termIn":[{"startYear":1933,"districtIdx":10776}]},"districtLongname":"NY-17 (1933), USA","startTerm":1933,"endTerm":1937},{"representative":{"name":"Caroline Love Goodwin O'Day","wikipediaPage":"https://en.wikipedia.org/wiki/Caroline_Love_Goodwin_O%27Day","party":"Democratic Party","termIn":[{"startYear":1935,"districtIdx":183}]},"districtLongname":"NY-AL (1933), USA","startTerm":1935,"endTerm":1941},{"representative":{"name":"Matthew J. Merritt","wikipediaPage":"https://en.wikipedia.org/wiki/Matthew_J._Merritt","party":"Democratic Party","termIn":[{"startYear":1935,"districtIdx":183},{"startYear":1943,"districtIdx":186}]},"districtLongname":"NY-AL (1933), USA","startTerm":1935,"endTerm":1941},{"representative":{"name":"Bruce Fairchild Barton","wikipediaPage":"https://en.wikipedia.org/wiki/Bruce_Fairchild_Barton","party":"Republican Party","termIn":[{"startYear":1937,"districtIdx":10776}]},"districtLongname":"NY-17 (1933), USA","startTerm":1937,"endTerm":1939},{"representative":{"name":"Michael J. Kennedy","wikipediaPage":"https://en.wikipedia.org/wiki/Michael_J._Kennedy_(politician)","party":"Democratic Party","termIn":[{"startYear":1939,"districtIdx":10775}]},"districtLongname":"NY-15 (1933), USA","startTerm":1939,"endTerm":1941},{"representative":{"name":"Joseph C. Baldwin","wikipediaPage":"https://en.wikipedia.org/wiki/Joseph_C._Baldwin","party":"Republican Party","termIn":[{"startYear":1945,"districtIdx":10286},{"startYear":1941,"districtIdx":10776},{"startYear":1943,"districtIdx":10778}]},"districtLongname":"NY-17 (1933), USA","startTerm":1941,"endTerm":1941},{"representative":{"name":"Kenneth F. Simpson","wikipediaPage":"https://en.wikipedia.org/wiki/Kenneth_F._Simpson","party":"Republican Party","termIn":[{"startYear":1941,"districtIdx":10776}]},"districtLongname":"NY-17 (1933), USA","startTerm":1941,"endTerm":1941},{"representative":{"name":"Joseph C. Baldwin","wikipediaPage":"https://en.wikipedia.org/wiki/Joseph_C._Baldwin","party":"Republican Party","termIn":[{"startYear":1945,"districtIdx":10286},{"startYear":1941,"districtIdx":10776},{"startYear":1943,"districtIdx":10778}]},"districtLongname":"NY-17 (1943), USA","startTerm":1943,"endTerm":1943},{"representative":{"name":"Matthew J. Merritt","wikipediaPage":"https://en.wikipedia.org/wiki/Matthew_J._Merritt","party":"Democratic Party","termIn":[{"startYear":1935,"districtIdx":183},{"startYear":1943,"districtIdx":186}]},"districtLongname":"NY-AL (1943), USA","startTerm":1943,"endTerm":1943},{"representative":{"name":"Thomas F. Burchill","wikipediaPage":"https://en.wikipedia.org/wiki/Thomas_F._Burchill","party":"Democratic Party","termIn":[{"startYear":1943,"districtIdx":10780}]},"districtLongname":"NY-15 (1943), USA","startTerm":1943,"endTerm":1943},{"representative":{"name":"Winifred C. Stanley","wikipediaPage":"https://en.wikipedia.org/wiki/Winifred_C._Stanley","party":"Republican Party","termIn":[{"startYear":1943,"districtIdx":186}]},"districtLongname":"NY-AL (1943), USA","startTerm":1943,"endTerm":1943},{"representative":{"name":"Joseph C. Baldwin","wikipediaPage":"https://en.wikipedia.org/wiki/Joseph_C._Baldwin","party":"Republican Party","termIn":[{"startYear":1945,"districtIdx":10286},{"startYear":1941,"districtIdx":10776},{"startYear":1943,"districtIdx":10778}]},"districtLongname":"NY-17 (1945), USA","startTerm":1945,"endTerm":1945},{"representative":{"name":"Ellsworth B. Buck","wikipediaPage":"https://en.wikipedia.org/wiki/Ellsworth_B._Buck","party":"Republican Party","termIn":[{"startYear":1943,"districtIdx":10154},{"startYear":1945,"districtIdx":10155}]},"districtLongname":"NY-16 (1945), USA","startTerm":1945,"endTerm":1947},{"representative":{"name":"Sol Bloom","wikipediaPage":"https://en.wikipedia.org/wiki/Sol_Bloom","party":"Democratic Party","termIn":[{"startYear":1923,"districtIdx":10774},{"startYear":1933,"districtIdx":10777},{"startYear":1943,"districtIdx":10779},{"startYear":1945,"districtIdx":10781}]},"districtLongname":"NY-20 (1945), USA","startTerm":1945,"endTerm":1949},{"representative":{"name":"Frederic Coudert Jr.","wikipediaPage":"https://en.wikipedia.org/wiki/Frederic_Coudert_Jr.","party":"Republican Party","termIn":[{"startYear":1947,"districtIdx":10286},{"startYear":1953,"districtIdx":10290}]},"districtLongname":"NY-17 (1945), USA","startTerm":1947,"endTerm":1951},{"representative":{"name":"Franklin D. Roosevelt Jr.","wikipediaPage":"https://en.wikipedia.org/wiki/Franklin_D._Roosevelt_Jr.","party":"Liberal Party","termIn":[{"startYear":1949,"districtIdx":10781}]},"districtLongname":"NY-20 (1945), USA","startTerm":1949,"endTerm":1949},{"representative":{"name":"James J. Murphy","wikipediaPage":"https://en.wikipedia.org/wiki/James_J._Murphy","party":"Democratic Party","termIn":[{"startYear":1949,"districtIdx":10155}]},"districtLongname":"NY-16 (1945), USA","startTerm":1949,"endTerm":1951},{"representative":{"name":"Franklin D. Roosevelt Jr.","wikipediaPage":"https://en.wikipedia.org/wiki/Franklin_D._Roosevelt_Jr.","party":"Democratic Party","termIn":[{"startYear":1951,"districtIdx":10781},{"startYear":1953,"districtIdx":10782}]},"districtLongname":"NY-20 (1945), USA","startTerm":1951,"endTerm":1951},{"representative":{"name":"Franklin D. Roosevelt Jr.","wikipediaPage":"https://en.wikipedia.org/wiki/Franklin_D._Roosevelt_Jr.","party":"Democratic Party","termIn":[{"startYear":1951,"districtIdx":10781},{"startYear":1953,"districtIdx":10782}]},"districtLongname":"NY-20 (1953), USA","startTerm":1953,"endTerm":1953},{"representative":{"name":"Frederic Coudert Jr.","wikipediaPage":"https://en.wikipedia.org/wiki/Frederic_Coudert_Jr.","party":"Republican Party","termIn":[{"startYear":1947,"districtIdx":10286},{"startYear":1953,"districtIdx":10290}]},"districtLongname":"NY-17 (1953), USA","startTerm":1953,"endTerm":1957},{"representative":{"name":"Irwin D. Davidson","wikipediaPage":"https://en.wikipedia.org/wiki/Irwin_D._Davidson","party":"Liberal Party","termIn":[{"startYear":1955,"districtIdx":10782}]},"districtLongname":"NY-20 (1953), USA","startTerm":1955,"endTerm":1955},{"representative":{"name":"Ludwig Teller","wikipediaPage":"https://en.wikipedia.org/wiki/Ludwig_Teller","party":"Democratic Party","termIn":[{"startYear":1957,"districtIdx":10782}]},"districtLongname":"NY-20 (1953), USA","startTerm":1957,"endTerm":1959},{"representative":{"name":"John Lindsay","wikipediaPage":"https://en.wikipedia.org/wiki/John_Lindsay","party":"Republican Party","termIn":[{"startYear":1959,"districtIdx":10290},{"startYear":1963,"districtIdx":10291}]},"districtLongname":"NY-17 (1953), USA","startTerm":1959,"endTerm":1961},{"representative":{"name":"William Fitts Ryan","wikipediaPage":"https://en.wikipedia.org/wiki/William_Fitts_Ryan","party":"Democratic Party","termIn":[{"startYear":1961,"districtIdx":10782},{"startYear":1963,"districtIdx":10783},{"startYear":1969,"districtIdx":10784},{"startYear":1971,"districtIdx":10785}]},"districtLongname":"NY-20 (1953), USA","startTerm":1961,"endTerm":1961},{"representative":{"name":"John Lindsay","wikipediaPage":"https://en.wikipedia.org/wiki/John_Lindsay","party":"Republican Party","termIn":[{"startYear":1959,"districtIdx":10290},{"startYear":1963,"districtIdx":10291}]},"districtLongname":"NY-17 (1963), USA","startTerm":1963,"endTerm":1965},{"representative":{"name":"Leonard Farbstein","wikipediaPage":"https://en.wikipedia.org/wiki/Leonard_Farbstein","party":"Democratic Party","termIn":[{"startYear":1957,"districtIdx":10289},{"startYear":1963,"districtIdx":10292},{"startYear":1969,"districtIdx":10295}]},"districtLongname":"NY-19 (1963), USA","startTerm":1963,"endTerm":1967},{"representative":{"name":"Theodore R. Kupferman","wikipediaPage":"https://en.wikipedia.org/wiki/Theodore_R._Kupferman","party":"Republican Party","termIn":[{"startYear":1965,"districtIdx":10291}]},"districtLongname":"NY-17 (1963), USA","startTerm":1965,"endTerm":1967},{"representative":{"name":"Ed Koch","wikipediaPage":"https://en.wikipedia.org/wiki/Ed_Koch","party":"Democratic Party","termIn":[{"startYear":1969,"districtIdx":10293},{"startYear":1971,"districtIdx":10297},{"startYear":1973,"districtIdx":10299},{"startYear":1975,"districtIdx":10301}]},"districtLongname":"NY-17 (1969), USA","startTerm":1969,"endTerm":1969},{"representative":{"name":"Leonard Farbstein","wikipediaPage":"https://en.wikipedia.org/wiki/Leonard_Farbstein","party":"Democratic Party","termIn":[{"startYear":1957,"districtIdx":10289},{"startYear":1963,"districtIdx":10292},{"startYear":1969,"districtIdx":10295}]},"districtLongname":"NY-19 (1969), USA","startTerm":1969,"endTerm":1969},{"representative":{"name":"Bella Abzug","wikipediaPage":"https://en.wikipedia.org/wiki/Bella_Abzug","party":"Democratic Party","termIn":[{"startYear":1971,"districtIdx":10296},{"startYear":1973,"districtIdx":10786},{"startYear":1975,"districtIdx":10788}]},"districtLongname":"NY-19 (1971), USA","startTerm":1971,"endTerm":1971},{"representative":{"name":"Ed Koch","wikipediaPage":"https://en.wikipedia.org/wiki/Ed_Koch","party":"Democratic Party","termIn":[{"startYear":1969,"districtIdx":10293},{"startYear":1971,"districtIdx":10297},{"startYear":1973,"districtIdx":10299},{"startYear":1975,"districtIdx":10301}]},"districtLongname":"NY-17 (1971), USA","startTerm":1971,"endTerm":1971},{"representative":{"name":"Bella Abzug","wikipediaPage":"https://en.wikipedia.org/wiki/Bella_Abzug","party":"Democratic Party","termIn":[{"startYear":1971,"districtIdx":10296},{"startYear":1973,"districtIdx":10786},{"startYear":1975,"districtIdx":10788}]},"districtLongname":"NY-20 (1973), USA","startTerm":1973,"endTerm":1973},{"representative":{"name":"Ed Koch","wikipediaPage":"https://en.wikipedia.org/wiki/Ed_Koch","party":"Democratic Party","termIn":[{"startYear":1969,"districtIdx":10293},{"startYear":1971,"districtIdx":10297},{"startYear":1973,"districtIdx":10299},{"startYear":1975,"districtIdx":10301}]},"districtLongname":"NY-18 (1973), USA","startTerm":1973,"endTerm":1973},{"representative":{"name":"John M. Murphy","wikipediaPage":"https://en.wikipedia.org/wiki/John_M._Murphy_(New_York_politician)","party":"Democratic Party","termIn":[{"startYear":1963,"districtIdx":618},{"startYear":1969,"districtIdx":10157},{"startYear":1971,"districtIdx":10158},{"startYear":1973,"districtIdx":10159},{"startYear":1975,"districtIdx":10160}]},"districtLongname":"NY-17 (1973), USA","startTerm":1973,"endTerm":1973},{"representative":{"name":"Bella Abzug","wikipediaPage":"https://en.wikipedia.org/wiki/Bella_Abzug","party":"Democratic Party","termIn":[{"startYear":1971,"districtIdx":10296},{"startYear":1973,"districtIdx":10786},{"startYear":1975,"districtIdx":10788}]},"districtLongname":"NY-20 (1975), USA","startTerm":1975,"endTerm":1975},{"representative":{"name":"Ed Koch","wikipediaPage":"https://en.wikipedia.org/wiki/Ed_Koch","party":"Democratic Party","termIn":[{"startYear":1969,"districtIdx":10293},{"startYear":1971,"districtIdx":10297},{"startYear":1973,"districtIdx":10299},{"startYear":1975,"districtIdx":10301}]},"districtLongname":"NY-18 (1975), USA","startTerm":1975,"endTerm":1977},{"representative":{"name":"John M. Murphy","wikipediaPage":"https://en.wikipedia.org/wiki/John_M._Murphy_(New_York_politician)","party":"Democratic Party","termIn":[{"startYear":1963,"districtIdx":618},{"startYear":1969,"districtIdx":10157},{"startYear":1971,"districtIdx":10158},{"startYear":1973,"districtIdx":10159},{"startYear":1975,"districtIdx":10160}]},"districtLongname":"NY-17 (1975), USA","startTerm":1975,"endTerm":1979},{"representative":{"name":"Bill Green","wikipediaPage":"https://en.wikipedia.org/wiki/Bill_Green_(New_York_politician)","party":"Republican Party","termIn":[{"startYear":1977,"districtIdx":10301},{"startYear":1983,"districtIdx":10302},{"startYear":1985,"districtIdx":10304}]},"districtLongname":"NY-18 (1975), USA","startTerm":1977,"endTerm":1981},{"representative":{"name":"Ted Weiss","wikipediaPage":"https://en.wikipedia.org/wiki/Ted_Weiss","party":"Democratic Party","termIn":[{"startYear":1983,"districtIdx":10303},{"startYear":1985,"districtIdx":10305},{"startYear":1977,"districtIdx":10788}]},"districtLongname":"NY-20 (1975), USA","startTerm":1977,"endTerm":1981},{"representative":{"name":"Guy Molinari","wikipediaPage":"https://en.wikipedia.org/wiki/Guy_Molinari","party":"Republican Party","termIn":[{"startYear":1981,"districtIdx":10160},{"startYear":1983,"districtIdx":10161},{"startYear":1985,"districtIdx":10162}]},"districtLongname":"NY-17 (1975), USA","startTerm":1981,"endTerm":1981},{"representative":{"name":"Bill Green","wikipediaPage":"https://en.wikipedia.org/wiki/Bill_Green_(New_York_politician)","party":"Republican Party","termIn":[{"startYear":1977,"districtIdx":10301},{"startYear":1983,"districtIdx":10302},{"startYear":1985,"districtIdx":10304}]},"districtLongname":"NY-15 (1983), USA","startTerm":1983,"endTerm":1983},{"representative":{"name":"Ted Weiss","wikipediaPage":"https://en.wikipedia.org/wiki/Ted_Weiss","party":"Democratic Party","termIn":[{"startYear":1983,"districtIdx":10303},{"startYear":1985,"districtIdx":10305},{"startYear":1977,"districtIdx":10788}]},"districtLongname":"NY-17 (1983), USA","startTerm":1983,"endTerm":1983},{"representative":{"name":"Bill Green","wikipediaPage":"https://en.wikipedia.org/wiki/Bill_Green_(New_York_politician)","party":"Republican Party","termIn":[{"startYear":1977,"districtIdx":10301},{"startYear":1983,"districtIdx":10302},{"startYear":1985,"districtIdx":10304}]},"districtLongname":"NY-15 (1985), USA","startTerm":1985,"endTerm":1991},{"representative":{"name":"Ted Weiss","wikipediaPage":"https://en.wikipedia.org/wiki/Ted_Weiss","party":"Democratic Party","termIn":[{"startYear":1983,"districtIdx":10303},{"startYear":1985,"districtIdx":10305},{"startYear":1977,"districtIdx":10788}]},"districtLongname":"NY-17 (1985), USA","startTerm":1985,"endTerm":1991},{"representative":{"name":"Jerry Nadler","wikipediaPage":"https://en.wikipedia.org/wiki/Jerry_Nadler","party":"Democratic Party","termIn":[{"startYear":1993,"districtIdx":8841},{"startYear":1999,"districtIdx":8842},{"startYear":2003,"districtIdx":8845},{"startYear":2013,"districtIdx":8846},{"startYear":1991,"districtIdx":10305},{"startYear":2023,"districtIdx":10792},{"startYear":2025,"districtIdx":10793}]},"districtLongname":"NY-17 (1985), USA","startTerm":1991,"endTerm":1991},{"representative":{"name":"Jerry Nadler","wikipediaPage":"https://en.wikipedia.org/wiki/Jerry_Nadler","party":"Democratic Party","termIn":[{"startYear":1993,"districtIdx":8841},{"startYear":1999,"districtIdx":8842},{"startYear":2003,"districtIdx":8845},{"startYear":2013,"districtIdx":8846},{"startYear":1991,"districtIdx":10305},{"startYear":2023,"districtIdx":10792},{"startYear":2025,"districtIdx":10793}]},"districtLongname":"NY-08 (1993), USA","startTerm":1993,"endTerm":1997},{"representative":{"name":"Jerry Nadler","wikipediaPage":"https://en.wikipedia.org/wiki/Jerry_Nadler","party":"Democratic Party","termIn":[{"startYear":1993,"districtIdx":8841},{"startYear":1999,"districtIdx":8842},{"startYear":2003,"districtIdx":8845},{"startYear":2013,"districtIdx":8846},{"startYear":1991,"districtIdx":10305},{"startYear":2023,"districtIdx":10792},{"startYear":2025,"districtIdx":10793}]},"districtLongname":"NY-08 (1999), USA","startTerm":1999,"endTerm":2001},{"representative":{"name":"Jerry Nadler","wikipediaPage":"https://en.wikipedia.org/wiki/Jerry_Nadler","party":"Democratic Party","termIn":[{"startYear":1993,"districtIdx":8841},{"startYear":1999,"districtIdx":8842},{"startYear":2003,"districtIdx":8845},{"startYear":2013,"districtIdx":8846},{"startYear":1991,"districtIdx":10305},{"startYear":2023,"districtIdx":10792},{"startYear":2025,"districtIdx":10793}]},"districtLongname":"NY-08 (2003), USA","startTerm":2003,"endTerm":2011},{"representative":{"name":"Carolyn Maloney","wikipediaPage":"https://en.wikipedia.org/wiki/Carolyn_Maloney","party":"Democratic Party","termIn":[{"startYear":1993,"districtIdx":2809},{"startYear":1999,"districtIdx":2815},{"startYear":2003,"districtIdx":2821},{"startYear":2013,"districtIdx":2828}]},"districtLongname":"NY-12 (2013), USA","startTerm":2013,"endTerm":2021},{"representative":{"name":"Jerry Nadler","wikipediaPage":"https://en.wikipedia.org/wiki/Jerry_Nadler","party":"Democratic Party","termIn":[{"startYear":1993,"districtIdx":8841},{"startYear":1999,"districtIdx":8842},{"startYear":2003,"districtIdx":8845},{"startYear":2013,"districtIdx":8846},{"startYear":1991,"districtIdx":10305},{"startYear":2023,"districtIdx":10792},{"startYear":2025,"districtIdx":10793}]},"districtLongname":"NY-10 (2013), USA","startTerm":2013,"endTerm":2021},{"representative":{"name":"Jerry Nadler","wikipediaPage":"https://en.wikipedia.org/wiki/Jerry_Nadler","party":"Democratic Party","termIn":[{"startYear":1993,"districtIdx":8841},{"startYear":1999,"districtIdx":8842},{"startYear":2003,"districtIdx":8845},{"startYear":2013,"districtIdx":8846},{"startYear":1991,"districtIdx":10305},{"startYear":2023,"districtIdx":10792},{"startYear":2025,"districtIdx":10793}]},"districtLongname":"NY-12 (2023), USA","startTerm":2023,"endTerm":2023},{"representative":{"name":"Jerry Nadler","wikipediaPage":"https://en.wikipedia.org/wiki/Jerry_Nadler","party":"Democratic Party","termIn":[{"startYear":1993,"districtIdx":8841},{"startYear":1999,"districtIdx":8842},{"startYear":2003,"districtIdx":8845},{"startYear":2013,"districtIdx":8846},{"startYear":1991,"districtIdx":10305},{"startYear":2023,"districtIdx":10792},{"startYear":2025,"districtIdx":10793}]},"districtLongname":"NY-12 (2025), USA","startTerm":2025,"endTerm":2025}]}
+PW Mean % of parkland within 1km: 0.03078002855181694
+Within 10km of Hospital %: 1
+Mean distance to nearest Hospital: 1.373250961303711
+Within 2km of Public School %: 1
+Mean distance to nearest Public School: 0.2733212113380432
+Within 30km of Airport %: 1
+Mean distance to nearest Airport: 10.880524635314941
+Within 10km of Active Superfund Site %: 1
+Mean distance to nearest Active Superfund Site: 6.096495628356934
+Within 0.5mi of a grocery store %: 0.9999988675117493
+Within 1mi of a grocery store %: 1
+Within 10mi of a grocery store %: 1
+Within 20mi of a grocery store %: 1
+Mean high temp: 61.78266525268555
+Mean low temp: 47.60690689086914
+Mean high heat index: 61.52153396606445
+Mean high dewpt: 49.76557159423828
+High temperature Above 90°F %: 0.02770831435918808
+High temperature Between 40 and 90°F %: 0.8310906291007996
+High temperature Below 40°F %: 0.14120107889175415
+Humid days (dewpt > 70°F) %: 0.10593361407518387
+Non-humid, Non-dry days (50°F < dewpt < 70°F) %: 0.41418901085853577
+Dry days (dewpt < 50°F) %: 0.47987738251686096
+Mean sunny hours: 4.970730304718018
+Rainfall: 1.1242069005966187
+Snowfall [rain-equivalent]: 0.11001478135585785
+High windspeed (>10mph) days %: 0.3542816638946533
+Mean high temperature in Dec/Jan/Feb: 40.80858612060547
+Mean high temperature in Mar/Apr/May: 60.134239196777344
+Mean high temperature in Jun/Jul/Aug: 81.83905792236328
+Mean high temperature in Sep/Oct/Nov: 63.98350143432617
+Mean low temperature in Dec/Jan/Feb: 28.21392250061035
+Mean low temperature in Mar/Apr/May: 44.64718246459961
+Mean low temperature in Jun/Jul/Aug: 67.1180648803711
+Mean low temperature in Sep/Oct/Nov: 50.12079620361328
+No internet access %: 0.049227822571992874
+Uninsured %: 0.030159037560224533
+Public Insurance %: 0.1334063708782196
+Private Insurance %: 0.8364346027374268
+FIPS: "10001"
+PW Density (r=250m): 27057.115234375
+PW Density (r=250m) (2010): 25069.15234375
+PW Density (r=250m) Change (2010-2020): 0.07929915934801102
+PW Density (r=250m) Absolute Change (2010-2020): 1987.962890625
+PW Density (r=250m) (2000): 19870.306640625
+PW Density (r=250m) Change (2000-2020): 0.3616858124732971
+PW Density (r=250m) Absolute Change (2000-2020): 7186.80810546875
+PW Density (r=500m): 26239.185546875
+PW Density (r=500m) (2010): 22209.83984375
+PW Density (r=500m) Change (2010-2020): 0.18142162263393402
+PW Density (r=500m) Absolute Change (2010-2020): 4029.345458984375
+PW Density (r=500m) (2000): 18209.337890625
+PW Density (r=500m) Change (2000-2020): 0.4409742057323456
+PW Density (r=500m) Absolute Change (2000-2020): 8029.84814453125
+PW Density (r=1mi): 21869.474609375
+PW Density (r=1mi) (2010): 18929.21484375
+PW Density (r=1mi) Change (2010-2020): 0.15532925724983215
+PW Density (r=1mi) Absolute Change (2010-2020): 2940.2607421875
+PW Density (r=1mi) (2000): 15834.9189453125
+PW Density (r=1mi) Change (2000-2020): 0.38109174370765686
+PW Density (r=1mi) Absolute Change (2000-2020): 6034.556640625
+PW Density (r=2km): 21308.337890625
+PW Density (r=2km) (2010): 18966.798828125
+PW Density (r=2km) Change (2010-2020): 0.12345463782548904
+PW Density (r=2km) Absolute Change (2010-2020): 2341.539306640625
+PW Density (r=2km) (2000): 16500.1484375
+PW Density (r=2km) Change (2000-2020): 0.2914029061794281
+PW Density (r=2km) Absolute Change (2000-2020): 4808.19091796875
+PW Density (r=4km): 18226.603515625
+PW Density (r=4km) (2010): 16194.6044921875
+PW Density (r=4km) Change (2010-2020): 0.12547382712364197
+PW Density (r=4km) Absolute Change (2010-2020): 2031.9989013671875
+PW Density (r=4km) (2000): 14993.2607421875
+PW Density (r=4km) Change (2000-2020): 0.21565306186676025
+PW Density (r=4km) Absolute Change (2000-2020): 3233.342529296875
+PW Density (r=8km): 13152.6181640625
+PW Density (r=8km) (2010): 11759.970703125
+PW Density (r=8km) Change (2010-2020): 0.11842270195484161
+PW Density (r=8km) Absolute Change (2010-2020): 1392.6475830078125
+PW Density (r=8km) (2000): 11199.3583984375
+PW Density (r=8km) Change (2000-2020): 0.17440827190876007
+PW Density (r=8km) Absolute Change (2000-2020): 1953.2607421875
+PW Density (r=16km): 9684.09375
+PW Density (r=16km) (2010): 8925.607421875
+PW Density (r=16km) Change (2010-2020): 0.08497872203588486
+PW Density (r=16km) Absolute Change (2010-2020): 758.4866943359375
+PW Density (r=16km) (2000): 8701.3056640625
+PW Density (r=16km) Change (2000-2020): 0.11294722557067871
+PW Density (r=16km) Absolute Change (2000-2020): 982.788330078125
+PW Density (r=32km): 4123.279296875
+PW Density (r=32km) (2010): 3821.151123046875
+PW Density (r=32km) Change (2010-2020): 0.07906738668680191
+PW Density (r=32km) Absolute Change (2010-2020): 302.12841796875
+PW Density (r=32km) (2000): 3748.996337890625
+PW Density (r=32km) Change (2000-2020): 0.09983555227518082
+PW Density (r=32km) Absolute Change (2000-2020): 374.2831115722656
+PW Density (r=64km): 1416.6025390625
+PW Density (r=64km) (2010): 1325.871337890625
+PW Density (r=64km) Change (2010-2020): 0.0684313029050827
+PW Density (r=64km) Absolute Change (2010-2020): 90.73110961914062
+PW Density (r=64km) (2000): 1293.7969970703125
+PW Density (r=64km) Change (2000-2020): 0.09491868317127228
+PW Density (r=64km) Absolute Change (2000-2020): 122.80551147460938
+PW Median Density (r=1km): 24173.51953125
+PW Median Density (r=1km) (2010): 18457.244140625
+PW Median Density (r=1km) (2000): 14784.201171875
+Mean high temperature in summer: 81.5898208618164
+Mean high temperature in winter: 41.431053161621094
+Mean high temperature in fall: 56.51876449584961
+Mean high temperature in spring: 66.57571411132812
+Commute Car % (incl WFH): 0.05699480324983597
+Commute Bike % (incl WFH): 0.029469739645719528
+Commute Walk % (incl WFH): 0.2712651491165161
+Commute Transit % (incl WFH): 0.45228084921836853
+Commute Work From Home % (incl WFH): 0.17973652482032776
+Population (Rank): 3631
+Population (Percentile): 50
+Population (2010) (Rank): 5478
+Population (2010) (Percentile): 36
+Population Change (2010-2020) (Rank): 885
+Population Change (2010-2020) (Percentile): 96
+Population (2000) (Rank): 6040
+Population (2000) (Percentile): 34
+Population Change (2000-2020) (Rank): 1954
+Population Change (2000-2020) (Percentile): 88
+PW Density (r=1km) (Rank): 56
+PW Density (r=1km) (Percentile): 99
+PW Density (r=1km) (2010) (Rank): 64
+PW Density (r=1km) (2010) (Percentile): 98
+PW Density (r=1km) Change (2010-2020) (Rank): 2866
+PW Density (r=1km) Change (2010-2020) (Percentile): 91
+PW Density (r=1km) Absolute Change (2010-2020) (Rank): 23
+PW Density (r=1km) Absolute Change (2010-2020) (Percentile): 99
+PW Density (r=1km) (2000) (Rank): 94
+PW Density (r=1km) (2000) (Percentile): 98
+PW Density (r=1km) Change (2000-2020) (Rank): 2368
+PW Density (r=1km) Change (2000-2020) (Percentile): 90
+PW Density (r=1km) Absolute Change (2000-2020) (Rank): 10
+PW Density (r=1km) Absolute Change (2000-2020) (Percentile): 99
+AW Density (Rank): 86
+AW Density (Percentile): 98
+AW Density (2010) (Rank): 120
+AW Density (2010) (Percentile): 98
+AW Density (2000) (Rank): 136
+AW Density (2000) (Percentile): 97
+Area (Rank): 31388
+Area (Percentile): 0
+Compactness (Rank): 21359
+Compactness (Percentile): 32
+PW Mean Hilliness (Grade) (Rank): 2721
+PW Mean Hilliness (Grade) (Percentile): 98
+PW Mean Elevation (Rank): 28645
+PW Mean Elevation (Percentile): 22
+Population Median (Latitude) (Rank): 12531
+Population Median (Latitude) (Percentile): 70
+Population Median (Longitude) (Rank): 2680
+Population Median (Longitude) (Percentile): 90
+White % (Rank): 28407
+White % (Percentile): 30
+White % (2010) (Rank): 27533
+White % (2010) (Percentile): 33
+White % (2000) (Rank): 28620
+White % (2000) (Percentile): 24
+Hispanic % (Rank): 3938
+Hispanic % (Percentile): 73
+Hispanic % (2010) (Rank): 4377
+Hispanic % (2010) (Percentile): 69
+Hispanic % (2000) (Rank): 2843
+Hispanic % (2000) (Percentile): 80
+Black % (Rank): 6491
+Black % (Percentile): 65
+Black % (2010) (Rank): 7292
+Black % (2010) (Percentile): 61
+Black % (2000) (Rank): 6573
+Black % (2000) (Percentile): 67
+Asian % (Rank): 801
+Asian % (Percentile): 92
+Asian % (2010) (Rank): 667
+Asian % (2010) (Percentile): 93
+Asian % (2000) (Rank): 499
+Asian % (2000) (Percentile): 95
+Native % (Rank): 16933
+Native % (Percentile): 49
+Native % (2010) (Rank): 21363
+Native % (2010) (Percentile): 25
+Native % (2000) (Rank): 17990
+Native % (2000) (Percentile): 39
+Hawaiian / PI % (Rank): 5804
+Hawaiian / PI % (Percentile): 71
+Hawaiian / PI % (2010) (Rank): 11336
+Hawaiian / PI % (2010) (Percentile): 36
+Hawaiian / PI % (2000) (Rank): 9252
+Hawaiian / PI % (2000) (Percentile): 48
+Other / Mixed % (Rank): 13227
+Other / Mixed % (Percentile): 51
+Other / Mixed % (2010) (Rank): 4437
+Other / Mixed % (2010) (Percentile): 79
+Other / Mixed % (2000) (Rank): 2626
+Other / Mixed % (2000) (Percentile): 87
+Racial Homogeneity (2000) % (Rank): 32033
+Racial Homogeneity (2000) % (Percentile): 6
+Racial Homogeneity Change (2000-2020) % (Rank): 20575
+Racial Homogeneity Change (2000-2020) % (Percentile): 57
+Racial Homogeneity (2010) % (Rank): 31935
+Racial Homogeneity (2010) % (Percentile): 8
+Racial Homogeneity Change (2010-2020) % (Rank): 26030
+Racial Homogeneity Change (2010-2020) % (Percentile): 26
+Racial Homogeneity % (Rank): 32598
+Racial Homogeneity % (Percentile): 2
+Segregation (2000) % (Rank): 16228
+Segregation (2000) % (Percentile): 53
+Segregation Change (2000-2020) % (Rank): 24923
+Segregation Change (2000-2020) % (Percentile): 23
+Segregation (2010) % (Rank): 23117
+Segregation (2010) % (Percentile): 32
+Segregation Change (2010-2020) % (Rank): 22098
+Segregation Change (2010-2020) % (Percentile): 31
+Segregation % (Rank): 29377
+Segregation % (Percentile): 12
+Mean Local Segregation (2000) % (Rank): 1534
+Mean Local Segregation (2000) % (Percentile): 92
+Mean Local Segregation Change (2000-2020) % (Rank): 32451
+Mean Local Segregation Change (2000-2020) % (Percentile): 1
+Mean Local Segregation (2010) % (Rank): 2161
+Mean Local Segregation (2010) % (Percentile): 90
+Mean Local Segregation Change (2010-2020) % (Rank): 32463
+Mean Local Segregation Change (2010-2020) % (Percentile): 1
+Mean Local Segregation % (Rank): 3719
+Mean Local Segregation % (Percentile): 83
+Citizen by Birth % (Rank): 31475
+Citizen by Birth % (Percentile): 15
+Citizen by Naturalization % (Rank): 1631
+Citizen by Naturalization % (Percentile): 83
+Non-citizen % (Rank): 1453
+Non-citizen % (Percentile): 86
+Born outside country % (Rank): 1490
+Born outside country % (Percentile): 84
+Born in us outside state % (Rank): 9498
+Born in us outside state % (Percentile): 67
+Born in state of residence % (Rank): 29959
+Born in state of residence % (Percentile): 15
+Only English at Home % (Rank): 28757
+Only English at Home % (Percentile): 31
+Spanish at Home % (Rank): 6870
+Spanish at Home % (Percentile): 58
+Other at Home % (Rank): 1732
+Other at Home % (Percentile): 87
+High School % (Rank): 13954
+High School % (Percentile): 57
+Undergrad % (Rank): 644
+Undergrad % (Percentile): 96
+Grad % (Rank): 1354
+Grad % (Percentile): 92
+Undergrad STEM % (Rank): 1371
+Undergrad STEM % (Percentile): 92
+Undergrad Humanities % (Rank): 738
+Undergrad Humanities % (Percentile): 97
+Undergrad Business % (Rank): 545
+Undergrad Business % (Percentile): 97
+% of women with high school education - % of men with high school education (Rank): 19269
+% of women with high school education - % of men with high school education (Percentile): 47
+% of women with undergraduate education - % of men with undergraduate education (Rank): 29747
+% of women with undergraduate education - % of men with undergraduate education (Percentile): 7
+% of women with graduate education - % of men with graduate education (Rank): 30895
+% of women with graduate education - % of men with graduate education (Percentile): 5
+Silent % (Rank): 15391
+Silent % (Percentile): 68
+Boomer % (Rank): 30865
+Boomer % (Percentile): 11
+Gen X % (Rank): 13698
+Gen X % (Percentile): 53
+Millennial % (Rank): 389
+Millennial % (Percentile): 98
+Gen Z % (Rank): 28348
+Gen Z % (Percentile): 5
+Gen Alpha % (Rank): 27858
+Gen Alpha % (Percentile): 5
+Median Household Income (USD) (Rank): 2316
+Median Household Income (USD) (Percentile): 88
+Poverty % (Rank): 15656
+Poverty % (Percentile): 53
+Household Income < $50k % (Rank): 27111
+Household Income < $50k % (Percentile): 28
+Household Income $50k - $100k % (Rank): 29658
+Household Income $50k - $100k % (Percentile): 11
+Household Income > $100k % (Rank): 2913
+Household Income > $100k % (Percentile): 83
+Individual Income < $50k % (Rank): 32636
+Individual Income < $50k % (Percentile): 1
+Individual Income $50k - $100k % (Rank): 9048
+Individual Income $50k - $100k % (Percentile): 67
+Individual Income > $100k % (Rank): 431
+Individual Income > $100k % (Percentile): 97
+Housing Units per Adult (Rank): 9862
+Housing Units per Adult (Percentile): 88
+Housing Units per Adult (2010) (Rank): 8444
+Housing Units per Adult (2010) (Percentile): 90
+Housing Units per Adult (2000) (Rank): 10766
+Housing Units per Adult (2000) (Percentile): 86
+Housing Units per Person (Rank): 4911
+Housing Units per Person (Percentile): 95
+Housing Units per Person (2010) (Rank): 4302
+Housing Units per Person (2010) (Percentile): 96
+Housing Units per Person (2000) (Rank): 4156
+Housing Units per Person (2000) (Percentile): 95
+Vacancy % (Rank): 15978
+Vacancy % (Percentile): 79
+Vacancy % (2010) (Rank): 15960
+Vacancy % (2010) (Percentile): 75
+Vacancy % (2000) (Rank): 23941
+Vacancy % (2000) (Percentile): 47
+Rent/Income < 20% (Rank): 13486
+Rent/Income < 20% (Percentile): 81
+Rent/Income 20%-40% (Rank): 13715
+Rent/Income 20%-40% (Percentile): 50
+Rent/Income > 40% (Rank): 18712
+Rent/Income > 40% (Percentile): 20
+1BR Rent < $750 % (Rank): 22143
+1BR Rent < $750 % (Percentile): 31
+1BR Rent $750 - $1500 % (Rank): 13410
+1BR Rent $750 - $1500 % (Percentile): 27
+1BR Rent > $1500 % (Rank): 1198
+1BR Rent > $1500 % (Percentile): 92
+2BR Rent < $750 % (Rank): 20495
+2BR Rent < $750 % (Percentile): 60
+2BR Rent $750 - $1500 % (Rank): 19599
+2BR Rent $750 - $1500 % (Percentile): 26
+2BR Rent > $1500 % (Rank): 3611
+2BR Rent > $1500 % (Percentile): 75
+% units built pre-1970 (Rank): 9053
+% units built pre-1970 (Percentile): 71
+% units built in 1970s (Rank): 32335
+% units built in 1970s (Percentile): 2
+% units built in 1980s (Rank): 31915
+% units built in 1980s (Percentile): 2
+% units built in 1990s (Rank): 31955
+% units built in 1990s (Percentile): 3
+% units built in 2000s (Rank): 9440
+% units built in 2000s (Percentile): 66
+% units built in 2010s+ (Rank): 667
+% units built in 2010s+ (Percentile): 96
+PW Household Size (Rank): 32494
+PW Household Size (Percentile): 0
+Renter % (Rank): 616
+Renter % (Percentile): 97
+Commute Car % (Rank): 32907
+Commute Car % (Percentile): 0
+Commute Bike % (Rank): 729
+Commute Bike % (Percentile): 96
+Commute Walk % (Rank): 423
+Commute Walk % (Percentile): 99
+Commute Transit % (Rank): 97
+Commute Transit % (Percentile): 98
+Median Commute Time (min) (Rank): 11859
+Median Commute Time (min) (Percentile): 61
+Commute Time < 15 min % (Rank): 29556
+Commute Time < 15 min % (Percentile): 10
+Commute Time 15 - 29 min % (Rank): 4035
+Commute Time 15 - 29 min % (Percentile): 87
+Commute Time 30 - 59 min % (Rank): 9909
+Commute Time 30 - 59 min % (Percentile): 67
+Commute Time > 60 min % (Rank): 22593
+Commute Time > 60 min % (Percentile): 31
+Households With no Vehicle % (Rank): 49
+Households With no Vehicle % (Percentile): 99
+Households With 1+ Vehicles % (Rank): 32816
+Households With 1+ Vehicles % (Percentile): 0
+Households With 2+ Vehicles % (Rank): 32838
+Households With 2+ Vehicles % (Percentile): 0
+Traffic Fatalities Per Capita Per Year (Rank): 25546
+Traffic Fatalities Per Capita Per Year (Percentile): 14
+Pedestrian/Cyclist Fatalities Per Capita Per Year (Rank): 6667
+Pedestrian/Cyclist Fatalities Per Capita Per Year (Percentile): 72
+Total Traffic Fatalities In Last Decade (Rank): 10868
+Total Traffic Fatalities In Last Decade (Percentile): 24
+Total Pedestrian/Cyclist Fatalities In Last Decade (Rank): 2411
+Total Pedestrian/Cyclist Fatalities In Last Decade (Percentile): 71
+Fair or poor self-rated health status % (Rank): 31226
+Fair or poor self-rated health status % (Percentile): 9
+Physical health not good for two weeks in last year % (Rank): 32168
+Physical health not good for two weeks in last year % (Percentile): 4
+Arthritis % (Rank): 32074
+Arthritis % (Percentile): 6
+Current asthma % (Rank): 23044
+Current asthma % (Percentile): 35
+High blood pressure % (Rank): 32320
+High blood pressure % (Percentile): 3
+Cancer (excluding skin cancer) % (Rank): 30052
+Cancer (excluding skin cancer) % (Percentile): 22
+Chronic kidney disease % (Rank): 31341
+Chronic kidney disease % (Percentile): 10
+COPD % (Rank): 31765
+COPD % (Percentile): 8
+Coronary heart disease % (Rank): 31393
+Coronary heart disease % (Percentile): 11
+Diagnosed diabetes % (Rank): 31725
+Diagnosed diabetes % (Percentile): 6
+Obesity % (Rank): 32836
+Obesity % (Percentile): 0
+Stroke % (Rank): 31723
+Stroke % (Percentile): 7
+Disability % (Rank): 30825
+Disability % (Percentile): 12
+Hearing disability % (Rank): 31610
+Hearing disability % (Percentile): 9
+Vision disability % (Rank): 27696
+Vision disability % (Percentile): 23
+Cognitive disability % (Rank): 30794
+Cognitive disability % (Percentile): 10
+Mobility disability % (Rank): 30395
+Mobility disability % (Percentile): 15
+Self-care disability % (Rank): 30450
+Self-care disability % (Percentile): 14
+Independent living disability % (Rank): 30039
+Independent living disability % (Percentile): 14
+Binge drinking among adults % (Rank): 1371
+Binge drinking among adults % (Percentile): 95
+Smoking % (Rank): 31495
+Smoking % (Percentile): 8
+No leisure-time physical activity % (Rank): 30568
+No leisure-time physical activity % (Percentile): 13
+Sleeping less than 7 hours % (Rank): 26257
+Sleeping less than 7 hours % (Percentile): 19
+Attended doctor in last year % (Rank): 23570
+Attended doctor in last year % (Percentile): 38
+Attended dentist in last year % (Rank): 3901
+Attended dentist in last year % (Percentile): 83
+Cholesterol screening in last year % (Rank): 5429
+Cholesterol screening in last year % (Percentile): 80
+PW Mean PM2.5 Pollution (Rank): 5089
+PW Mean PM2.5 Pollution (Percentile): 65
+Utility gas heating % (Rank): 15321
+Utility gas heating % (Percentile): 29
+Electricity heating % (Rank): 10570
+Electricity heating % (Percentile): 65
+Bottled, tank, or LP gas heating % (Rank): 26070
+Bottled, tank, or LP gas heating % (Percentile): 43
+Fuel oil, kerosene, etc. heating % (Rank): 6821
+Fuel oil, kerosene, etc. heating % (Percentile): 87
+Other fuel heating % (Rank): 14788
+Other fuel heating % (Percentile): 86
+No heating % (Rank): 442
+No heating % (Percentile): 97
+Employed in Agriculture, forestry, fishing and hunting % (Rank): 25591
+Employed in Agriculture, forestry, fishing and hunting % (Percentile): 32
+Employed in Mining, quarrying, and oil and gas extraction % (Rank): 19669
+Employed in Mining, quarrying, and oil and gas extraction % (Percentile): 35
+Employed in Accommodation and food services % (Rank): 22675
+Employed in Accommodation and food services % (Percentile): 11
+Employed in Arts, entertainment, and recreation % (Rank): 1838
+Employed in Arts, entertainment, and recreation % (Percentile): 96
+Employed in Construction % (Rank): 31270
+Employed in Construction % (Percentile): 2
+Employed in Educational services % (Rank): 17853
+Employed in Educational services % (Percentile): 42
+Employed in Health care and social assistance % (Rank): 26973
+Employed in Health care and social assistance % (Percentile): 7
+Employed in Finance and insurance % (Rank): 233
+Employed in Finance and insurance % (Percentile): 99
+Employed in Real estate and rental and leasing % (Rank): 3785
+Employed in Real estate and rental and leasing % (Percentile): 87
+Employed in Information % (Rank): 544
+Employed in Information % (Percentile): 98
+Employed in Manufacturing % (Rank): 28879
+Employed in Manufacturing % (Percentile): 7
+Employed in Other services, except public administration % (Rank): 18332
+Employed in Other services, except public administration % (Percentile): 33
+Employed in Administrative and support and waste management services % (Rank): 20386
+Employed in Administrative and support and waste management services % (Percentile): 15
+Employed in Management of companies and enterprises % (Rank): 3519
+Employed in Management of companies and enterprises % (Percentile): 82
+Employed in Professional, scientific, and technical services % (Rank): 390
+Employed in Professional, scientific, and technical services % (Percentile): 97
+Employed in Public administration % (Rank): 27145
+Employed in Public administration % (Percentile): 11
+Employed in Retail trade % (Rank): 27594
+Employed in Retail trade % (Percentile): 5
+Employed in Transportation and warehousing % (Rank): 25078
+Employed in Transportation and warehousing % (Percentile): 15
+Employed in Utilities % (Rank): 19292
+Employed in Utilities % (Percentile): 38
+Employed in Wholesale trade % (Rank): 18323
+Employed in Wholesale trade % (Percentile): 30
+Architecture and engineering occupations % (Rank): 14926
+Architecture and engineering occupations % (Percentile): 37
+Computer and mathematical occupations % (Rank): 2224
+Computer and mathematical occupations % (Percentile): 87
+Life, physical, and social science occupations % (Rank): 9695
+Life, physical, and social science occupations % (Percentile): 64
+Arts, design, entertainment, sports, and media occupations % (Rank): 372
+Arts, design, entertainment, sports, and media occupations % (Percentile): 98
+Community and social service occupations % (Rank): 26101
+Community and social service occupations % (Percentile): 4
+Educational instruction, and library occupations % (Rank): 11978
+Educational instruction, and library occupations % (Percentile): 63
+Legal occupations % (Rank): 2274
+Legal occupations % (Percentile): 91
+Health diagnosing and treating practitioners and other technical occupations % (Rank): 14984
+Health diagnosing and treating practitioners and other technical occupations % (Percentile): 46
+Health technologists and technicians % (Rank): 27049
+Health technologists and technicians % (Percentile): 4
+Business and financial operations occupations % (Rank): 281
+Business and financial operations occupations % (Percentile): 99
+Management occupations % (Rank): 1686
+Management occupations % (Percentile): 98
+Construction and extraction occupations % (Rank): 31760
+Construction and extraction occupations % (Percentile): 1
+Farming, fishing, and forestry occupations % (Rank): 25827
+Farming, fishing, and forestry occupations % (Percentile): 17
+Installation, maintenance, and repair occupations % (Rank): 30691
+Installation, maintenance, and repair occupations % (Percentile): 2
+Material moving occupations % (Rank): 26937
+Material moving occupations % (Percentile): 11
+Production occupations % (Rank): 30795
+Production occupations % (Percentile): 3
+Transportation occupations % (Rank): 30676
+Transportation occupations % (Percentile): 2
+Office and administrative support occupations % (Rank): 26678
+Office and administrative support occupations % (Percentile): 8
+Sales and related occupations % (Rank): 11984
+Sales and related occupations % (Percentile): 53
+Building and grounds cleaning and maintenance occupations % (Rank): 29746
+Building and grounds cleaning and maintenance occupations % (Percentile): 4
+Food preparation and serving related occupations % (Rank): 23689
+Food preparation and serving related occupations % (Percentile): 12
+Healthcare support occupations % (Rank): 19082
+Healthcare support occupations % (Percentile): 37
+Personal care and service occupations % (Rank): 7237
+Personal care and service occupations % (Percentile): 77
+Firefighting and prevention, and other protective service workers including supervisors % (Rank): 13486
+Firefighting and prevention, and other protective service workers including supervisors % (Percentile): 41
+Law enforcement workers including supervisors % (Rank): 24050
+Law enforcement workers including supervisors % (Percentile): 11
+Not Cohabiting With Partner % (Rank): 261
+Not Cohabiting With Partner % (Percentile): 99
+Cohabiting With Partner (Gay) % (Rank): 607
+Cohabiting With Partner (Gay) % (Percentile): 98
+Cohabiting With Partner (Straight) % (Rank): 31135
+Cohabiting With Partner (Straight) % (Percentile): 6
+Living With Parents % (Rank): 31832
+Living With Parents % (Percentile): 2
+Other Living Situation % (Rank): 2418
+Other Living Situation % (Percentile): 91
+Never Married % (Rank): 700
+Never Married % (Percentile): 97
+Married (not divorced) % (Rank): 32090
+Married (not divorced) % (Percentile): 2
+Divorced % (Rank): 23299
+Divorced % (Percentile): 28
+2016 Presidential Election (Rank): 769
+2016 Presidential Election (Percentile): 94
+2016-2020 Swing (Rank): 23026
+2016-2020 Swing (Percentile): 21
+2020 Presidential Election (Rank): 832
+2020 Presidential Election (Percentile): 94
+2020-2024 Swing (Rank): 29436
+2020-2024 Swing (Percentile): 17
+2024 Presidential Election (Rank): 1095
+2024 Presidential Election (Percentile): 93
+PW Mean % of parkland within 1km (Rank): 3463
+PW Mean % of parkland within 1km (Percentile): 75
+Within 10km of Hospital % (Rank): 1043
+Within 10km of Hospital % (Percentile): 94
+Mean distance to nearest Hospital (Rank): 32120
+Mean distance to nearest Hospital (Percentile): 5
+Within 2km of Public School % (Rank): 516
+Within 2km of Public School % (Percentile): 97
+Mean distance to nearest Public School (Rank): 32829
+Mean distance to nearest Public School (Percentile): 1
+Within 30km of Airport % (Rank): 1030
+Within 30km of Airport % (Percentile): 95
+Mean distance to nearest Airport (Rank): 30079
+Mean distance to nearest Airport (Percentile): 20
+Within 10km of Active Superfund Site % (Rank): 621
+Within 10km of Active Superfund Site % (Percentile): 96
+Mean distance to nearest Active Superfund Site (Rank): 30280
+Mean distance to nearest Active Superfund Site (Percentile): 17
+Within 0.5mi of a grocery store % (Rank): 149
+Within 0.5mi of a grocery store % (Percentile): 98
+Within 1mi of a grocery store % (Rank): 129
+Within 1mi of a grocery store % (Percentile): 99
+Within 10mi of a grocery store % (Rank): 1935
+Within 10mi of a grocery store % (Percentile): 93
+Within 20mi of a grocery store % (Rank): 2343
+Within 20mi of a grocery store % (Percentile): 92
+Mean high temp (Rank): 19207
+Mean high temp (Percentile): 32
+Mean low temp (Rank): 14810
+Mean low temp (Percentile): 39
+Mean high heat index (Rank): 18404
+Mean high heat index (Percentile): 34
+Mean high dewpt (Rank): 14559
+Mean high dewpt (Percentile): 43
+High temperature Above 90°F % (Rank): 18598
+High temperature Above 90°F % (Percentile): 39
+High temperature Between 40 and 90°F % (Rank): 9928
+High temperature Between 40 and 90°F % (Percentile): 57
+High temperature Below 40°F % (Rank): 14762
+High temperature Below 40°F % (Percentile): 68
+Humid days (dewpt > 70°F) % (Rank): 15310
+Humid days (dewpt > 70°F) % (Percentile): 50
+Non-humid, Non-dry days (50°F < dewpt < 70°F) % (Rank): 15736
+Non-humid, Non-dry days (50°F < dewpt < 70°F) % (Percentile): 44
+Dry days (dewpt < 50°F) % (Rank): 16745
+Dry days (dewpt < 50°F) % (Percentile): 60
+Mean sunny hours (Rank): 18539
+Mean sunny hours (Percentile): 36
+Rainfall (Rank): 10417
+Rainfall (Percentile): 68
+Snowfall [rain-equivalent] (Rank): 11922
+Snowfall [rain-equivalent] (Percentile): 75
+High windspeed (>10mph) days % (Rank): 5964
+High windspeed (>10mph) days % (Percentile): 85
+Mean high temperature in Dec/Jan/Feb (Rank): 18418
+Mean high temperature in Dec/Jan/Feb (Percentile): 31
+Mean high temperature in Mar/Apr/May (Rank): 21210
+Mean high temperature in Mar/Apr/May (Percentile): 29
+Mean high temperature in Jun/Jul/Aug (Rank): 18859
+Mean high temperature in Jun/Jul/Aug (Percentile): 38
+Mean high temperature in Sep/Oct/Nov (Rank): 18673
+Mean high temperature in Sep/Oct/Nov (Percentile): 33
+Mean low temperature in Dec/Jan/Feb (Rank): 15960
+Mean low temperature in Dec/Jan/Feb (Percentile): 36
+Mean low temperature in Mar/Apr/May (Rank): 16648
+Mean low temperature in Mar/Apr/May (Percentile): 35
+Mean low temperature in Jun/Jul/Aug (Rank): 12690
+Mean low temperature in Jun/Jul/Aug (Percentile): 52
+Mean low temperature in Sep/Oct/Nov (Rank): 12456
+Mean low temperature in Sep/Oct/Nov (Percentile): 44
+No internet access % (Rank): 28781
+No internet access % (Percentile): 22
+Uninsured % (Rank): 31007
+Uninsured % (Percentile): 5
+Public Insurance % (Rank): 22402
+Public Insurance % (Percentile): 39
+Private Insurance % (Rank): 4553
+Private Insurance % (Percentile): 81
+PW Density (r=250m) (Rank): 71
+PW Density (r=250m) (Percentile): 98
+PW Density (r=250m) (2010) (Rank): 64
+PW Density (r=250m) (2010) (Percentile): 98
+PW Density (r=250m) Change (2010-2020) (Rank): 8055
+PW Density (r=250m) Change (2010-2020) (Percentile): 71
+PW Density (r=250m) Absolute Change (2010-2020) (Rank): 223
+PW Density (r=250m) Absolute Change (2010-2020) (Percentile): 98
+PW Density (r=250m) (2000) (Rank): 132
+PW Density (r=250m) (2000) (Percentile): 98
+PW Density (r=250m) Change (2000-2020) (Rank): 2845
+PW Density (r=250m) Change (2000-2020) (Percentile): 91
+PW Density (r=250m) Absolute Change (2000-2020) (Rank): 56
+PW Density (r=250m) Absolute Change (2000-2020) (Percentile): 99
+PW Density (r=500m) (Rank): 54
+PW Density (r=500m) (Percentile): 99
+PW Density (r=500m) (2010) (Rank): 67
+PW Density (r=500m) (2010) (Percentile): 98
+PW Density (r=500m) Change (2010-2020) (Rank): 3561
+PW Density (r=500m) Change (2010-2020) (Percentile): 90
+PW Density (r=500m) Absolute Change (2010-2020) (Rank): 38
+PW Density (r=500m) Absolute Change (2010-2020) (Percentile): 99
+PW Density (r=500m) (2000) (Rank): 88
+PW Density (r=500m) (2000) (Percentile): 98
+PW Density (r=500m) Change (2000-2020) (Rank): 2392
+PW Density (r=500m) Change (2000-2020) (Percentile): 91
+PW Density (r=500m) Absolute Change (2000-2020) (Rank): 23
+PW Density (r=500m) Absolute Change (2000-2020) (Percentile): 99
+PW Density (r=1mi) (Rank): 50
+PW Density (r=1mi) (Percentile): 99
+PW Density (r=1mi) (2010) (Rank): 56
+PW Density (r=1mi) (2010) (Percentile): 99
+PW Density (r=1mi) Change (2010-2020) (Rank): 3896
+PW Density (r=1mi) Change (2010-2020) (Percentile): 85
+PW Density (r=1mi) Absolute Change (2010-2020) (Rank): 29
+PW Density (r=1mi) Absolute Change (2010-2020) (Percentile): 99
+PW Density (r=1mi) (2000) (Rank): 77
+PW Density (r=1mi) (2000) (Percentile): 98
+PW Density (r=1mi) Change (2000-2020) (Rank): 3413
+PW Density (r=1mi) Change (2000-2020) (Percentile): 85
+PW Density (r=1mi) Absolute Change (2000-2020) (Rank): 9
+PW Density (r=1mi) Absolute Change (2000-2020) (Percentile): 99
+PW Density (r=2km) (Rank): 49
+PW Density (r=2km) (Percentile): 99
+PW Density (r=2km) (2010) (Rank): 53
+PW Density (r=2km) (2010) (Percentile): 99
+PW Density (r=2km) Change (2010-2020) (Rank): 4991
+PW Density (r=2km) Change (2010-2020) (Percentile): 79
+PW Density (r=2km) Absolute Change (2010-2020) (Rank): 39
+PW Density (r=2km) Absolute Change (2010-2020) (Percentile): 99
+PW Density (r=2km) (2000) (Rank): 65
+PW Density (r=2km) (2000) (Percentile): 98
+PW Density (r=2km) Change (2000-2020) (Rank): 4689
+PW Density (r=2km) Change (2000-2020) (Percentile): 80
+PW Density (r=2km) Absolute Change (2000-2020) (Rank): 16
+PW Density (r=2km) Absolute Change (2000-2020) (Percentile): 99
+PW Density (r=4km) (Rank): 54
+PW Density (r=4km) (Percentile): 99
+PW Density (r=4km) (2010) (Rank): 56
+PW Density (r=4km) (2010) (Percentile): 99
+PW Density (r=4km) Change (2010-2020) (Rank): 4575
+PW Density (r=4km) Change (2010-2020) (Percentile): 78
+PW Density (r=4km) Absolute Change (2010-2020) (Rank): 28
+PW Density (r=4km) Absolute Change (2010-2020) (Percentile): 99
+PW Density (r=4km) (2000) (Rank): 62
+PW Density (r=4km) (2000) (Percentile): 99
+PW Density (r=4km) Change (2000-2020) (Rank): 6248
+PW Density (r=4km) Change (2000-2020) (Percentile): 70
+PW Density (r=4km) Absolute Change (2000-2020) (Rank): 12
+PW Density (r=4km) Absolute Change (2000-2020) (Percentile): 99
+PW Density (r=8km) (Rank): 64
+PW Density (r=8km) (Percentile): 99
+PW Density (r=8km) (2010) (Rank): 67
+PW Density (r=8km) (2010) (Percentile): 99
+PW Density (r=8km) Change (2010-2020) (Rank): 4687
+PW Density (r=8km) Change (2010-2020) (Percentile): 74
+PW Density (r=8km) Absolute Change (2010-2020) (Rank): 31
+PW Density (r=8km) Absolute Change (2010-2020) (Percentile): 99
+PW Density (r=8km) (2000) (Rank): 73
+PW Density (r=8km) (2000) (Percentile): 98
+PW Density (r=8km) Change (2000-2020) (Rank): 7802
+PW Density (r=8km) Change (2000-2020) (Percentile): 60
+PW Density (r=8km) Absolute Change (2000-2020) (Rank): 23
+PW Density (r=8km) Absolute Change (2000-2020) (Percentile): 99
+PW Density (r=16km) (Rank): 41
+PW Density (r=16km) (Percentile): 99
+PW Density (r=16km) (2010) (Rank): 36
+PW Density (r=16km) (2010) (Percentile): 99
+PW Density (r=16km) Change (2010-2020) (Rank): 7359
+PW Density (r=16km) Change (2010-2020) (Percentile): 57
+PW Density (r=16km) Absolute Change (2010-2020) (Rank): 36
+PW Density (r=16km) Absolute Change (2010-2020) (Percentile): 99
+PW Density (r=16km) (2000) (Rank): 35
+PW Density (r=16km) (2000) (Percentile): 99
+PW Density (r=16km) Change (2000-2020) (Rank): 11631
+PW Density (r=16km) Change (2000-2020) (Percentile): 42
+PW Density (r=16km) Absolute Change (2000-2020) (Rank): 28
+PW Density (r=16km) Absolute Change (2000-2020) (Percentile): 99
+PW Density (r=32km) (Rank): 51
+PW Density (r=32km) (Percentile): 99
+PW Density (r=32km) (2010) (Rank): 50
+PW Density (r=32km) (2010) (Percentile): 99
+PW Density (r=32km) Change (2010-2020) (Rank): 8350
+PW Density (r=32km) Change (2010-2020) (Percentile): 54
+PW Density (r=32km) Absolute Change (2010-2020) (Rank): 35
+PW Density (r=32km) Absolute Change (2010-2020) (Percentile): 99
+PW Density (r=32km) (2000) (Rank): 46
+PW Density (r=32km) (2000) (Percentile): 99
+PW Density (r=32km) Change (2000-2020) (Rank): 13827
+PW Density (r=32km) Change (2000-2020) (Percentile): 35
+PW Density (r=32km) Absolute Change (2000-2020) (Rank): 84
+PW Density (r=32km) Absolute Change (2000-2020) (Percentile): 99
+PW Density (r=64km) (Rank): 45
+PW Density (r=64km) (Percentile): 99
+PW Density (r=64km) (2010) (Rank): 38
+PW Density (r=64km) (2010) (Percentile): 99
+PW Density (r=64km) Change (2010-2020) (Rank): 10592
+PW Density (r=64km) Change (2010-2020) (Percentile): 47
+PW Density (r=64km) Absolute Change (2010-2020) (Rank): 228
+PW Density (r=64km) Absolute Change (2010-2020) (Percentile): 97
+PW Density (r=64km) (2000) (Rank): 41
+PW Density (r=64km) (2000) (Percentile): 99
+PW Density (r=64km) Change (2000-2020) (Rank): 16005
+PW Density (r=64km) Change (2000-2020) (Percentile): 33
+PW Density (r=64km) Absolute Change (2000-2020) (Rank): 584
+PW Density (r=64km) Absolute Change (2000-2020) (Percentile): 93
+PW Median Density (r=1km) (Rank): 53
+PW Median Density (r=1km) (Percentile): 99
+PW Median Density (r=1km) (2010) (Rank): 74
+PW Median Density (r=1km) (2010) (Percentile): 98
+PW Median Density (r=1km) (2000) (Rank): 100
+PW Median Density (r=1km) (2000) (Percentile): 98
+Mean high temperature in summer (Rank): 18923
+Mean high temperature in summer (Percentile): 38
+Mean high temperature in winter (Rank): 19212
+Mean high temperature in winter (Percentile): 30
+Mean high temperature in fall (Rank): 17904
+Mean high temperature in fall (Percentile): 34
+Mean high temperature in spring (Rank): 21045
+Mean high temperature in spring (Percentile): 31
+Commute Car % (incl WFH) (Rank): 32906
+Commute Car % (incl WFH) (Percentile): 0
+Commute Bike % (incl WFH) (Rank): 807
+Commute Bike % (incl WFH) (Percentile): 96
+Commute Walk % (incl WFH) (Rank): 445
+Commute Walk % (incl WFH) (Percentile): 99
+Commute Transit % (incl WFH) (Rank): 105
+Commute Transit % (incl WFH) (Percentile): 98
+Commute Work From Home % (incl WFH) (Rank): 2757
+Commute Work From Home % (incl WFH) (Percentile): 91

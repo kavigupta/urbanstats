@@ -1,0 +1,1062 @@
+Region: California, USA
+Population: 39531992
+Population [GHS-POP]: 40424156
+Population (2010): 37250192
+Population Change (2010-2020): 0.06125617027282715
+Population (2000): 33866448
+Population Change (2000-2020): 0.1672908514738083
+PW Density (r=1km): 3071.196044921875
+PW Density (r=1km) [GHS-POP]: 3201.550048828125
+PW Density (r=1km) (2010): 2994.704345703125
+PW Density (r=1km) Change (2010-2020): 0.02554229460656643
+PW Density (r=1km) Absolute Change (2010-2020): 76.49161529541016
+PW Density (r=1km) (2000): 3053.48046875
+PW Density (r=1km) Change (2000-2020): 0.005801735911518335
+PW Density (r=1km) Absolute Change (2000-2020): 17.715486526489258
+AW Density: 96.46199035644531
+AW Density [GHS-POP]: 98.63895416259766
+AW Density (2010): 90.8941650390625
+AW Density (2000): 82.63749694824219
+Area: 409819.375
+Compactness: 0.2529369592666626
+PW Mean Hilliness (Grade): 0.0437471978366375
+PW Mean Elevation: 156.12303161621094
+Population Median (Latitude): 34.31596755981445
+Population Median (Longitude): -118.39314270019531
+White %: 0.3468213975429535
+White % (2010): 0.40142905712127686
+White % (2000): 0.46691226959228516
+Hispanic %: 0.3940794765949249
+Hispanic % (2010): 0.37619611620903015
+Hispanic % (2000): 0.3238053619861603
+Black %: 0.05359944701194763
+Black % (2010): 0.05808461830019951
+Black % (2000): 0.06442175805568695
+Asian %: 0.15122757852077484
+Asian % (2010): 0.128183513879776
+Asian % (2000): 0.10773465782403946
+Native %: 0.003947562072426081
+Native % (2010): 0.004355252720415592
+Native % (2000): 0.005284404382109642
+Hawaiian / PI %: 0.003493904136121273
+Hawaiian / PI % (2010): 0.0034516064915806055
+Hawaiian / PI % (2000): 0.0030628249514847994
+Other / Mixed %: 0.04683062434196472
+Other / Mixed % (2010): 0.028299828991293907
+Other / Mixed % (2000): 0.028778720647096634
+Racial Homogeneity (2000) %: 0.5377798080444336
+Racial Homogeneity Change (2000-2020) %: -0.0586746409535408
+Racial Homogeneity (2010) %: 0.5158163905143738
+Racial Homogeneity Change (2010-2020) %: -0.03671126812696457
+Racial Homogeneity %: 0.479105144739151
+Segregation (2000) %: 0.3002587854862213
+Segregation Change (2000-2020) %: -0.048229414969682693
+Segregation (2010) %: 0.28444215655326843
+Segregation Change (2010-2020) %: -0.03241279348731041
+Segregation %: 0.2520293593406677
+Mean Local Segregation (2000) %: 0.11478743702173233
+Mean Local Segregation Change (2000-2020) %: -0.0223002340644598
+Mean Local Segregation (2010) %: 0.10767403990030289
+Mean Local Segregation Change (2010-2020) %: -0.015186836943030357
+Mean Local Segregation %: 0.09248720109462738
+Citizen by Birth %: 0.735001266002655
+Citizen by Naturalization %: 0.14184212684631348
+Non-citizen %: 0.12315661460161209
+Born outside country %: 0.26499873399734497
+Born in us outside state %: 0.1710376739501953
+Born in state of residence %: 0.5639635920524597
+Only English at Home %: 0.5614312291145325
+Spanish at Home %: 0.2834053337574005
+Other at Home %: 0.15516343712806702
+High School %: 0.8455924391746521
+Undergrad %: 0.34443244338035583
+Grad %: 0.13104276359081268
+Undergrad STEM %: 0.17285703122615814
+Undergrad Humanities %: 0.10941163450479507
+Undergrad Business %: 0.062163762748241425
+% of women with high school education - % of men with high school education: 0.006880162283778191
+% of women with undergraduate education - % of men with undergraduate education: 0.010331885889172554
+% of women with graduate education - % of men with graduate education: -0.0008139659184962511
+Silent %: 0.05845274776220322
+Boomer %: 0.20691661536693573
+Gen X %: 0.19291792809963226
+Millennial %: 0.22086624801158905
+Gen Z %: 0.199573814868927
+Gen Alpha %: 0.12127265334129333
+Median Household Income (USD): 96334
+Poverty %: 0.12250709533691406
+Household Income < $50k %: 0.3046419620513916
+Household Income $50k - $100k %: 0.2700328528881073
+Household Income > $100k %: 0.4253251552581787
+Individual Income < $50k %: 0.6129840016365051
+Individual Income $50k - $100k %: 0.22448453307151794
+Individual Income > $100k %: 0.16253145039081573
+Housing Units per Adult: 0.46655935049057007
+Housing Units per Adult (2010): 0.4884640574455261
+Housing Units per Adult (2000): 0.49525508284568787
+Housing Units per Person: 0.3637562394142151
+Housing Units per Person (2010): 0.3665812611579895
+Housing Units per Person (2000): 0.3599952757358551
+Vacancy %: 0.06329885125160217
+Vacancy % (2010): 0.0790538564324379
+Vacancy % (2000): 0.05672970414161682
+Rent/Income < 20%: 0.2206886261701584
+Rent/Income 20%-40%: 0.40173864364624023
+Rent/Income > 40%: 0.3775727450847626
+1BR Rent < $750 %: 0.13125820457935333
+1BR Rent $750 - $1500 %: 0.3982417583465576
+1BR Rent > $1500 %: 0.47050005197525024
+2BR Rent < $750 %: 0.05867826193571091
+2BR Rent $750 - $1500 %: 0.3148134648799896
+2BR Rent > $1500 %: 0.6265082955360413
+% units built pre-1970: 0.4081776738166809
+% units built in 1970s: 0.1737629920244217
+% units built in 1980s: 0.1499827355146408
+% units built in 1990s: 0.10801064968109131
+% units built in 2000s: 0.10934630036354065
+% units built in 2010s+: 0.050719644874334335
+PW Household Size: 3.6587681770324707
+Renter %: 0.4450180232524872
+Commute Car %: 0.9020223021507263
+Commute Bike %: 0.011661168187856674
+Commute Walk %: 0.027371684089303017
+Commute Transit %: 0.0458994135260582
+Median Commute Time (min): 24.83611488342285
+Commute Time < 15 min %: 0.2143036425113678
+Commute Time 15 - 29 min %: 0.3525960147380829
+Commute Time 30 - 59 min %: 0.30996885895729065
+Commute Time > 60 min %: 0.12313146889209747
+Households With no Vehicle %: 0.06897056102752686
+Households With 1+ Vehicles %: 0.9310294389724731
+Households With 2+ Vehicles %: 0.6314031481742859
+Traffic Fatalities Per Capita Per Year: 0.00009536832658341154
+Pedestrian/Cyclist Fatalities Per Capita Per Year: 0.000028589502107934095
+Total Traffic Fatalities In Last Decade: 37701
+Total Pedestrian/Cyclist Fatalities In Last Decade: 11302
+Fair or poor self-rated health status %: 0.17126411199569702
+Physical health not good for two weeks in last year %: 0.11009015142917633
+Arthritis %: 0.19049841165542603
+Current asthma %: 0.0955820381641388
+High blood pressure %: 0.26640188694000244
+Cancer (excluding skin cancer) %: 0.054545845836400986
+Chronic kidney disease %: 0.02788262628018856
+COPD %: 0.0510927215218544
+Coronary heart disease %: 0.04679977148771286
+Diagnosed diabetes %: 0.102984718978405
+Obesity %: 0.28694280982017517
+Stroke %: 0.026724671944975853
+Disability %: 0.2645028531551361
+Hearing disability %: 0.05718569830060005
+Vision disability %: 0.054520588368177414
+Cognitive disability %: 0.13296736776828766
+Mobility disability %: 0.1160399466753006
+Self-care disability %: 0.03788293898105621
+Independent living disability %: 0.07384704798460007
+Binge drinking among adults %: 0.16056545078754425
+Smoking %: 0.11692765355110168
+No leisure-time physical activity %: 0.2059696912765503
+Sleeping less than 7 hours %: 0.3240498900413513
+Attended doctor in last year %: 0.618610143661499
+Attended dentist in last year %: 0.6212058067321777
+Cholesterol screening in last year %: 0.8393977284431458
+Life Expectancy (2019): 81.40748596191406
+IHME Health Performance Score (2019): -0.5977306365966797
+PW Mean PM2.5 Pollution: 9.908263206481934
+Utility gas heating %: 0.6304479837417603
+Electricity heating %: 0.27666762471199036
+Bottled, tank, or LP gas heating %: 0.03397759795188904
+Fuel oil, kerosene, etc. heating %: 0.002350505208596587
+Other fuel heating %: 0.025466684252023697
+No heating %: 0.03108964115381241
+Employed in Agriculture, forestry, fishing and hunting %: 0.019931739196181297
+Employed in Mining, quarrying, and oil and gas extraction %: 0.0012144276406615973
+Employed in Accommodation and food services %: 0.07250875234603882
+Employed in Arts, entertainment, and recreation %: 0.025751853361725807
+Employed in Construction %: 0.06615826487541199
+Employed in Educational services %: 0.08666443824768066
+Employed in Health care and social assistance %: 0.12697447836399078
+Employed in Finance and insurance %: 0.03761398419737816
+Employed in Real estate and rental and leasing %: 0.02169835940003395
+Employed in Information %: 0.028892207890748978
+Employed in Manufacturing %: 0.08978136628866196
+Employed in Other services, except public administration %: 0.049648430198431015
+Employed in Administrative and support and waste management services %: 0.045846547931432724
+Employed in Management of companies and enterprises %: 0.0013121793745085597
+Employed in Professional, scientific, and technical services %: 0.09272945672273636
+Employed in Public administration %: 0.04628702625632286
+Employed in Retail trade %: 0.10278135538101196
+Employed in Transportation and warehousing %: 0.04981778562068939
+Employed in Utilities %: 0.0075403726659715176
+Employed in Wholesale trade %: 0.02684696950018406
+Architecture and engineering occupations %: 0.0245160274207592
+Computer and mathematical occupations %: 0.0396130196750164
+Life, physical, and social science occupations %: 0.012376728467643261
+Arts, design, entertainment, sports, and media occupations %: 0.029287423938512802
+Community and social service occupations %: 0.017118580639362335
+Educational instruction, and library occupations %: 0.055533867329359055
+Legal occupations %: 0.012418079189956188
+Health diagnosing and treating practitioners and other technical occupations %: 0.03590848669409752
+Health technologists and technicians %: 0.01656474359333515
+Business and financial operations occupations %: 0.057362090796232224
+Management occupations %: 0.11023840308189392
+Construction and extraction occupations %: 0.048251546919345856
+Farming, fishing, and forestry occupations %: 0.014252283610403538
+Installation, maintenance, and repair occupations %: 0.02609225921332836
+Material moving occupations %: 0.0375552773475647
+Production occupations %: 0.04624452069401741
+Transportation occupations %: 0.03525698184967041
+Office and administrative support occupations %: 0.10734523087739944
+Sales and related occupations %: 0.09676777571439743
+Building and grounds cleaning and maintenance occupations %: 0.03830208256840706
+Food preparation and serving related occupations %: 0.05417705699801445
+Healthcare support occupations %: 0.036341726779937744
+Personal care and service occupations %: 0.027688102796673775
+Firefighting and prevention, and other protective service workers including supervisors %: 0.012613301165401936
+Law enforcement workers including supervisors %: 0.008174399845302105
+Not Cohabiting With Partner %: 0.1454252153635025
+Cohabiting With Partner (Gay) %: 0.007384246215224266
+Cohabiting With Partner (Straight) %: 0.3717181086540222
+Living With Parents %: 0.34274014830589294
+Other Living Situation %: 0.13273227214813232
+Never Married %: 0.3739241063594818
+Married (not divorced) %: 0.5345271825790405
+Divorced %: 0.09154869616031647
+2008 Presidential Election: 0.2405778020620346
+2008-2012 Swing: -0.03228520229458809
+2012 Presidential Election: 0.20829258859157562
+2012-2016 Swing: 0.09533567726612091
+2016 Presidential Election: 0.30362826585769653
+2016-2020 Swing: -0.011944855563342571
+2020 Presidential Election: 0.2916834056377411
+2020-2024 Swing: -0.09032833576202393
+2024 Presidential Election: 0.20135508477687836
+PW Mean % of parkland within 1km: 0.02304079569876194
+Within 10km of Hospital %: 0.9194345474243164
+Mean distance to nearest Hospital: 4.483288764953613
+Within 2km of Public School %: 0.9407109022140503
+Mean distance to nearest Public School: 0.8541304469108582
+Within 30km of Airport %: 0.7311225533485413
+Mean distance to nearest Airport: 25.16339874267578
+Within 10km of Active Superfund Site %: 0.4178716540336609
+Mean distance to nearest Active Superfund Site: 19.986167907714844
+Within 0.5mi of a grocery store %: 0.4898277223110199
+Within 1mi of a grocery store %: 0.8152488470077515
+Within 10mi of a grocery store %: 0.9946776032447815
+Within 20mi of a grocery store %: 0.9990947246551514
+Mean high temp: 70.42012023925781
+Mean low temp: 54.07022476196289
+Mean high heat index: 69.75020599365234
+Mean high dewpt: 53.046875
+High temperature Above 90°F %: 0.0789039134979248
+High temperature Between 40 and 90°F %: 0.9199690222740173
+High temperature Below 40°F %: 0.0011270599206909537
+Humid days (dewpt > 70°F) %: 0.0038086907006800175
+Non-humid, Non-dry days (50°F < dewpt < 70°F) %: 0.6989763379096985
+Dry days (dewpt < 50°F) %: 0.29721495509147644
+Mean sunny hours: 7.787449359893799
+Rainfall: 0.45791691541671753
+Snowfall [rain-equivalent]: 0.005139371380209923
+High windspeed (>10mph) days %: 0.06246897578239441
+Mean high temperature in Dec/Jan/Feb: 60.670372009277344
+Mean high temperature in Mar/Apr/May: 68.00640869140625
+Mean high temperature in Jun/Jul/Aug: 79.5092544555664
+Mean high temperature in Sep/Oct/Nov: 73.33468627929688
+Mean low temperature in Dec/Jan/Feb: 46.280757904052734
+Mean low temperature in Mar/Apr/May: 51.99744415283203
+Mean low temperature in Jun/Jul/Aug: 61.663856506347656
+Mean low temperature in Sep/Oct/Nov: 56.202537536621094
+No internet access %: 0.07382583618164062
+Uninsured %: 0.09689068794250488
+Public Insurance %: 0.2223125398159027
+Private Insurance %: 0.6807968020439148
+FIPS: "06"
+ISO Code: "US-CA"
+PW Density (r=250m): 4558.30615234375
+PW Density (r=250m) (2010): 4526.5869140625
+PW Density (r=250m) Change (2010-2020): 0.007007314823567867
+PW Density (r=250m) Absolute Change (2010-2020): 31.719219207763672
+PW Density (r=250m) (2000): 4843.658203125
+PW Density (r=250m) Change (2000-2020): -0.0589124821126461
+PW Density (r=250m) Absolute Change (2000-2020): -285.3519287109375
+PW Density (r=500m): 3598.36962890625
+PW Density (r=500m) (2010): 3537.970947265625
+PW Density (r=500m) Change (2010-2020): 0.01707153394818306
+PW Density (r=500m) Absolute Change (2010-2020): 60.398590087890625
+PW Density (r=500m) (2000): 3647.81103515625
+PW Density (r=500m) Change (2000-2020): -0.013553709723055363
+PW Density (r=500m) Absolute Change (2000-2020): -49.441368103027344
+PW Density (r=1mi): 2763.142333984375
+PW Density (r=1mi) [GHS-POP]: 2869.616943359375
+PW Density (r=1mi) (2010): 2686.632568359375
+PW Density (r=1mi) Change (2010-2020): 0.028477951884269714
+PW Density (r=1mi) Absolute Change (2010-2020): 76.5097885131836
+PW Density (r=1mi) (2000): 2730.650634765625
+PW Density (r=1mi) Change (2000-2020): 0.011898856610059738
+PW Density (r=1mi) Absolute Change (2000-2020): 32.49161911010742
+PW Density (r=2km): 2629.949951171875
+PW Density (r=2km) [GHS-POP]: 2722.546142578125
+PW Density (r=2km) (2010): 2553.87841796875
+PW Density (r=2km) Change (2010-2020): 0.029786692932248116
+PW Density (r=2km) Absolute Change (2010-2020): 76.07159423828125
+PW Density (r=2km) (2000): 2590.7197265625
+PW Density (r=2km) Change (2000-2020): 0.01514257863163948
+PW Density (r=2km) Absolute Change (2000-2020): 39.23017883300781
+PW Density (r=4km): 2170.847412109375
+PW Density (r=4km) [GHS-POP]: 2237.518798828125
+PW Density (r=4km) (2010): 2104.114990234375
+PW Density (r=4km) Change (2010-2020): 0.031715210527181625
+PW Density (r=4km) Absolute Change (2010-2020): 66.73245239257812
+PW Density (r=4km) (2000): 2122.64111328125
+PW Density (r=4km) Change (2000-2020): 0.022710509598255157
+PW Density (r=4km) Absolute Change (2000-2020): 48.206260681152344
+PW Density (r=8km): 1722.7916259765625
+PW Density (r=8km) [GHS-POP]: 1768.7275390625
+PW Density (r=8km) (2010): 1675.8787841796875
+PW Density (r=8km) Change (2010-2020): 0.027992984279990196
+PW Density (r=8km) Absolute Change (2010-2020): 46.91284942626953
+PW Density (r=8km) (2000): 1685.312744140625
+PW Density (r=8km) Change (2000-2020): 0.022238584235310555
+PW Density (r=8km) Absolute Change (2000-2020): 37.478965759277344
+PW Density (r=16km): 1304.940185546875
+PW Density (r=16km) [GHS-POP]: 1341.1630859375
+PW Density (r=16km) (2010): 1274.8001708984375
+PW Density (r=16km) Change (2010-2020): 0.0236430112272501
+PW Density (r=16km) Absolute Change (2010-2020): 30.140111923217773
+PW Density (r=16km) (2000): 1282.021728515625
+PW Density (r=16km) Change (2000-2020): 0.017876865342259407
+PW Density (r=16km) Absolute Change (2000-2020): 22.918527603149414
+PW Density (r=32km): 911.4265747070312
+PW Density (r=32km) [GHS-POP]: 937.53955078125
+PW Density (r=32km) (2010): 891.8115234375
+PW Density (r=32km) Change (2010-2020): 0.021994639188051224
+PW Density (r=32km) Absolute Change (2010-2020): 19.615074157714844
+PW Density (r=32km) (2000): 895.0197143554688
+PW Density (r=32km) Change (2000-2020): 0.01833127997815609
+PW Density (r=32km) Absolute Change (2000-2020): 16.406858444213867
+PW Density (r=64km): 516.79736328125
+PW Density (r=64km) [GHS-POP]: 530.6085815429688
+PW Density (r=64km) (2010): 499.58978271484375
+PW Density (r=64km) Change (2010-2020): 0.034443411976099014
+PW Density (r=64km) Absolute Change (2010-2020): 17.207576751708984
+PW Density (r=64km) (2000): 486.6164855957031
+PW Density (r=64km) Change (2000-2020): 0.062021903693675995
+PW Density (r=64km) Absolute Change (2000-2020): 30.18088150024414
+PW Median Density (r=1km): 2548.754150390625
+PW Median Density (r=1km) [GHS-POP]: 2709.618408203125
+PW Median Density (r=1km) (2010): 2453.1259765625
+PW Median Density (r=1km) (2000): 2466.245849609375
+Mean high temperature in summer: 80.41569519042969
+Mean high temperature in winter: 61.47561264038086
+Mean high temperature in fall: 68.99075317382812
+Mean high temperature in spring: 70.41228485107422
+Commute Car % (incl WFH): 0.7995851635932922
+Commute Bike % (incl WFH): 0.010336881503462791
+Commute Walk % (incl WFH): 0.024263249710202217
+Commute Transit % (incl WFH): 0.040686897933483124
+Commute Work From Home % (incl WFH): 0.11356385797262192
+Population (Rank): 1
+Population (Percentile): 88
+Population [GHS-POP] (Rank): 1
+Population [GHS-POP] (Percentile): 88
+Population (2010) (Rank): 1
+Population (2010) (Percentile): 88
+Population Change (2010-2020) (Rank): 25
+Population Change (2010-2020) (Percentile): 42
+Population (2000) (Rank): 1
+Population (2000) (Percentile): 88
+Population Change (2000-2020) (Rank): 23
+Population Change (2000-2020) (Percentile): 48
+PW Density (r=1km) (Rank): 3
+PW Density (r=1km) (Percentile): 81
+PW Density (r=1km) [GHS-POP] (Rank): 3
+PW Density (r=1km) [GHS-POP] (Percentile): 81
+PW Density (r=1km) (2010) (Rank): 3
+PW Density (r=1km) (2010) (Percentile): 81
+PW Density (r=1km) Change (2010-2020) (Rank): 40
+PW Density (r=1km) Change (2010-2020) (Percentile): 14
+PW Density (r=1km) Absolute Change (2010-2020) (Rank): 21
+PW Density (r=1km) Absolute Change (2010-2020) (Percentile): 41
+PW Density (r=1km) (2000) (Rank): 3
+PW Density (r=1km) (2000) (Percentile): 81
+PW Density (r=1km) Change (2000-2020) (Rank): 39
+PW Density (r=1km) Change (2000-2020) (Percentile): 21
+PW Density (r=1km) Absolute Change (2000-2020) (Rank): 35
+PW Density (r=1km) Absolute Change (2000-2020) (Percentile): 23
+AW Density (Rank): 13
+AW Density (Percentile): 58
+AW Density [GHS-POP] (Rank): 17
+AW Density [GHS-POP] (Percentile): 58
+AW Density (2010) (Rank): 13
+AW Density (2010) (Percentile): 58
+AW Density (2000) (Rank): 14
+AW Density (2000) (Percentile): 54
+Area (Rank): 3
+Area (Percentile): 79
+Compactness (Rank): 32
+Compactness (Percentile): 48
+PW Mean Hilliness (Grade) (Rank): 42
+PW Mean Hilliness (Grade) (Percentile): 26
+PW Mean Elevation (Rank): 34
+PW Mean Elevation (Percentile): 30
+Population Median (Latitude) (Rank): 42
+Population Median (Latitude) (Percentile): 27
+Population Median (Longitude) (Rank): 51
+Population Median (Longitude) (Percentile): 4
+White % (Rank): 50
+White % (Percentile): 1
+White % (2010) (Rank): 49
+White % (2010) (Percentile): 1
+White % (2000) (Rank): 48
+White % (2000) (Percentile): 2
+Hispanic % (Rank): 3
+Hispanic % (Percentile): 86
+Hispanic % (2010) (Rank): 4
+Hispanic % (2010) (Percentile): 77
+Hispanic % (2000) (Rank): 3
+Hispanic % (2000) (Percentile): 86
+Black % (Rank): 31
+Black % (Percentile): 15
+Black % (2010) (Rank): 29
+Black % (2010) (Percentile): 18
+Black % (2000) (Rank): 27
+Black % (2000) (Percentile): 22
+Asian % (Rank): 2
+Asian % (Percentile): 87
+Asian % (2010) (Rank): 2
+Asian % (2010) (Percentile): 87
+Asian % (2000) (Rank): 2
+Asian % (2000) (Percentile): 87
+Native % (Rank): 26
+Native % (Percentile): 59
+Native % (2010) (Rank): 26
+Native % (2010) (Percentile): 59
+Native % (2000) (Rank): 24
+Native % (2000) (Percentile): 61
+Hawaiian / PI % (Rank): 8
+Hawaiian / PI % (Percentile): 81
+Hawaiian / PI % (2010) (Rank): 6
+Hawaiian / PI % (2010) (Percentile): 83
+Hawaiian / PI % (2000) (Rank): 6
+Hawaiian / PI % (2000) (Percentile): 83
+Other / Mixed % (Rank): 20
+Other / Mixed % (Percentile): 65
+Other / Mixed % (2010) (Rank): 8
+Other / Mixed % (2010) (Percentile): 81
+Other / Mixed % (2000) (Rank): 5
+Other / Mixed % (2000) (Percentile): 84
+Racial Homogeneity (2000) % (Rank): 51
+Racial Homogeneity (2000) % (Percentile): 0
+Racial Homogeneity Change (2000-2020) % (Rank): 4
+Racial Homogeneity Change (2000-2020) % (Percentile): 86
+Racial Homogeneity (2010) % (Rank): 50
+Racial Homogeneity (2010) % (Percentile): 1
+Racial Homogeneity Change (2010-2020) % (Rank): 4
+Racial Homogeneity Change (2010-2020) % (Percentile): 86
+Racial Homogeneity % (Rank): 50
+Racial Homogeneity % (Percentile): 1
+Segregation (2000) % (Rank): 31
+Segregation (2000) % (Percentile): 18
+Segregation Change (2000-2020) % (Rank): 17
+Segregation Change (2000-2020) % (Percentile): 75
+Segregation (2010) % (Rank): 29
+Segregation (2010) % (Percentile): 20
+Segregation Change (2010-2020) % (Rank): 17
+Segregation Change (2010-2020) % (Percentile): 75
+Segregation % (Rank): 25
+Segregation % (Percentile): 24
+Mean Local Segregation (2000) % (Rank): 15
+Mean Local Segregation (2000) % (Percentile): 46
+Mean Local Segregation Change (2000-2020) % (Rank): 43
+Mean Local Segregation Change (2000-2020) % (Percentile): 26
+Mean Local Segregation (2010) % (Rank): 14
+Mean Local Segregation (2010) % (Percentile): 52
+Mean Local Segregation Change (2010-2020) % (Rank): 42
+Mean Local Segregation Change (2010-2020) % (Percentile): 33
+Mean Local Segregation % (Rank): 16
+Mean Local Segregation % (Percentile): 49
+Citizen by Birth % (Rank): 52
+Citizen by Birth % (Percentile): 0
+Citizen by Naturalization % (Rank): 1
+Citizen by Naturalization % (Percentile): 88
+Non-citizen % (Rank): 1
+Non-citizen % (Percentile): 88
+Born outside country % (Rank): 1
+Born outside country % (Percentile): 88
+Born in us outside state % (Rank): 49
+Born in us outside state % (Percentile): 10
+Born in state of residence % (Rank): 28
+Born in state of residence % (Percentile): 34
+Only English at Home % (Rank): 51
+Only English at Home % (Percentile): 0
+Spanish at Home % (Rank): 3
+Spanish at Home % (Percentile): 78
+Other at Home % (Rank): 3
+Other at Home % (Percentile): 81
+High School % (Rank): 51
+High School % (Percentile): 0
+Undergrad % (Rank): 14
+Undergrad % (Percentile): 61
+Grad % (Rank): 15
+Grad % (Percentile): 62
+Undergrad STEM % (Rank): 11
+Undergrad STEM % (Percentile): 72
+Undergrad Humanities % (Rank): 29
+Undergrad Humanities % (Percentile): 45
+Undergrad Business % (Rank): 28
+Undergrad Business % (Percentile): 25
+% of women with high school education - % of men with high school education (Rank): 49
+% of women with high school education - % of men with high school education (Percentile): 1
+% of women with undergraduate education - % of men with undergraduate education (Rank): 44
+% of women with undergraduate education - % of men with undergraduate education (Percentile): 16
+% of women with graduate education - % of men with graduate education (Rank): 46
+% of women with graduate education - % of men with graduate education (Percentile): 13
+Silent % (Rank): 46
+Silent % (Percentile): 15
+Boomer % (Rank): 49
+Boomer % (Percentile): 9
+Gen X % (Rank): 10
+Gen X % (Percentile): 71
+Millennial % (Rank): 5
+Millennial % (Percentile): 83
+Gen Z % (Rank): 17
+Gen Z % (Percentile): 63
+Gen Alpha % (Rank): 21
+Gen Alpha % (Percentile): 59
+Median Household Income (USD) (Rank): 6
+Median Household Income (USD) (Percentile): 80
+Poverty % (Rank): 26
+Poverty % (Percentile): 33
+Household Income < $50k % (Rank): 42
+Household Income < $50k % (Percentile): 12
+Household Income $50k - $100k % (Rank): 47
+Household Income $50k - $100k % (Percentile): 12
+Household Income > $100k % (Rank): 6
+Household Income > $100k % (Percentile): 80
+Individual Income < $50k % (Rank): 39
+Individual Income < $50k % (Percentile): 23
+Individual Income $50k - $100k % (Rank): 35
+Individual Income $50k - $100k % (Percentile): 28
+Individual Income > $100k % (Rank): 7
+Individual Income > $100k % (Percentile): 77
+Housing Units per Adult (Rank): 52
+Housing Units per Adult (Percentile): 0
+Housing Units per Adult (2010) (Rank): 52
+Housing Units per Adult (2010) (Percentile): 0
+Housing Units per Adult (2000) (Rank): 51
+Housing Units per Adult (2000) (Percentile): 0
+Housing Units per Person (Rank): 51
+Housing Units per Person (Percentile): 0
+Housing Units per Person (2010) (Rank): 51
+Housing Units per Person (2010) (Percentile): 0
+Housing Units per Person (2000) (Rank): 51
+Housing Units per Person (2000) (Percentile): 0
+Vacancy % (Rank): 52
+Vacancy % (Percentile): 0
+Vacancy % (2010) (Rank): 51
+Vacancy % (2010) (Percentile): 1
+Vacancy % (2000) (Rank): 52
+Vacancy % (2000) (Percentile): 0
+Rent/Income < 20% (Rank): 50
+Rent/Income < 20% (Percentile): 6
+Rent/Income 20%-40% (Rank): 26
+Rent/Income 20%-40% (Percentile): 45
+Rent/Income > 40% (Rank): 4
+Rent/Income > 40% (Percentile): 79
+1BR Rent < $750 % (Rank): 52
+1BR Rent < $750 % (Percentile): 0
+1BR Rent $750 - $1500 % (Rank): 38
+1BR Rent $750 - $1500 % (Percentile): 20
+1BR Rent > $1500 % (Rank): 2
+1BR Rent > $1500 % (Percentile): 87
+2BR Rent < $750 % (Rank): 52
+2BR Rent < $750 % (Percentile): 0
+2BR Rent $750 - $1500 % (Rank): 49
+2BR Rent $750 - $1500 % (Percentile): 1
+2BR Rent > $1500 % (Rank): 2
+2BR Rent > $1500 % (Percentile): 87
+% units built pre-1970 (Rank): 19
+% units built pre-1970 (Percentile): 54
+% units built in 1970s (Rank): 11
+% units built in 1970s (Percentile): 80
+% units built in 1980s (Rank): 14
+% units built in 1980s (Percentile): 58
+% units built in 1990s (Rank): 41
+% units built in 1990s (Percentile): 18
+% units built in 2000s (Rank): 40
+% units built in 2000s (Percentile): 27
+% units built in 2010s+ (Rank): 41
+% units built in 2010s+ (Percentile): 28
+PW Household Size (Rank): 3
+PW Household Size (Percentile): 86
+Renter % (Rank): 3
+Renter % (Percentile): 81
+Commute Car % (Rank): 41
+Commute Car % (Percentile): 24
+Commute Bike % (Rank): 6
+Commute Bike % (Percentile): 84
+Commute Walk % (Rank): 24
+Commute Walk % (Percentile): 55
+Commute Transit % (Rank): 10
+Commute Transit % (Percentile): 64
+Median Commute Time (min) (Rank): 8
+Median Commute Time (min) (Percentile): 64
+Commute Time < 15 min % (Rank): 46
+Commute Time < 15 min % (Percentile): 18
+Commute Time 15 - 29 min % (Rank): 41
+Commute Time 15 - 29 min % (Percentile): 18
+Commute Time 30 - 59 min % (Rank): 12
+Commute Time 30 - 59 min % (Percentile): 57
+Commute Time > 60 min % (Rank): 5
+Commute Time > 60 min % (Percentile): 75
+Households With no Vehicle % (Rank): 19
+Households With no Vehicle % (Percentile): 53
+Households With 1+ Vehicles % (Rank): 34
+Households With 1+ Vehicles % (Percentile): 34
+Households With 2+ Vehicles % (Rank): 17
+Households With 2+ Vehicles % (Percentile): 69
+Traffic Fatalities Per Capita Per Year (Rank): 37
+Traffic Fatalities Per Capita Per Year (Percentile): 28
+Pedestrian/Cyclist Fatalities Per Capita Per Year (Rank): 8
+Pedestrian/Cyclist Fatalities Per Capita Per Year (Percentile): 74
+Total Traffic Fatalities In Last Decade (Rank): 2
+Total Traffic Fatalities In Last Decade (Percentile): 79
+Total Pedestrian/Cyclist Fatalities In Last Decade (Rank): 1
+Total Pedestrian/Cyclist Fatalities In Last Decade (Percentile): 88
+Fair or poor self-rated health status % (Rank): 19
+Fair or poor self-rated health status % (Percentile): 48
+Physical health not good for two weeks in last year % (Rank): 29
+Physical health not good for two weeks in last year % (Percentile): 31
+Arthritis % (Rank): 50
+Arthritis % (Percentile): 0
+Current asthma % (Rank): 45
+Current asthma % (Percentile): 6
+High blood pressure % (Rank): 50
+High blood pressure % (Percentile): 2
+Cancer (excluding skin cancer) % (Rank): 50
+Cancer (excluding skin cancer) % (Percentile): 0
+Chronic kidney disease % (Rank): 40
+Chronic kidney disease % (Percentile): 13
+COPD % (Rank): 49
+COPD % (Percentile): 1
+Coronary heart disease % (Rank): 47
+Coronary heart disease % (Percentile): 3
+Diagnosed diabetes % (Rank): 24
+Diagnosed diabetes % (Percentile): 35
+Obesity % (Rank): 48
+Obesity % (Percentile): 4
+Stroke % (Rank): 46
+Stroke % (Percentile): 7
+Disability % (Rank): 36
+Disability % (Percentile): 21
+Hearing disability % (Rank): 44
+Hearing disability % (Percentile): 19
+Vision disability % (Rank): 18
+Vision disability % (Percentile): 50
+Cognitive disability % (Rank): 29
+Cognitive disability % (Percentile): 31
+Mobility disability % (Rank): 36
+Mobility disability % (Percentile): 16
+Self-care disability % (Rank): 24
+Self-care disability % (Percentile): 30
+Independent living disability % (Rank): 30
+Independent living disability % (Percentile): 23
+Binge drinking among adults % (Rank): 37
+Binge drinking among adults % (Percentile): 17
+Smoking % (Rank): 51
+Smoking % (Percentile): 0
+No leisure-time physical activity % (Rank): 44
+No leisure-time physical activity % (Percentile): 8
+Sleeping less than 7 hours % (Rank): 31
+Sleeping less than 7 hours % (Percentile): 17
+Attended doctor in last year % (Rank): 50
+Attended doctor in last year % (Percentile): 0
+Attended dentist in last year % (Rank): 34
+Attended dentist in last year % (Percentile): 36
+Cholesterol screening in last year % (Rank): 20
+Cholesterol screening in last year % (Percentile): 50
+Life Expectancy (2019) (Rank): 3
+Life Expectancy (2019) (Percentile): 81
+IHME Health Performance Score (2019) (Rank): 34
+IHME Health Performance Score (2019) (Percentile): 19
+PW Mean PM2.5 Pollution (Rank): 1
+PW Mean PM2.5 Pollution (Percentile): 88
+Utility gas heating % (Rank): 10
+Utility gas heating % (Percentile): 68
+Electricity heating % (Rank): 29
+Electricity heating % (Percentile): 37
+Bottled, tank, or LP gas heating % (Rank): 39
+Bottled, tank, or LP gas heating % (Percentile): 28
+Fuel oil, kerosene, etc. heating % (Rank): 34
+Fuel oil, kerosene, etc. heating % (Percentile): 37
+Other fuel heating % (Rank): 25
+Other fuel heating % (Percentile): 55
+No heating % (Rank): 3
+No heating % (Percentile): 86
+Employed in Agriculture, forestry, fishing and hunting % (Rank): 14
+Employed in Agriculture, forestry, fishing and hunting % (Percentile): 79
+Employed in Mining, quarrying, and oil and gas extraction % (Rank): 34
+Employed in Mining, quarrying, and oil and gas extraction % (Percentile): 34
+Employed in Accommodation and food services % (Rank): 17
+Employed in Accommodation and food services % (Percentile): 54
+Employed in Arts, entertainment, and recreation % (Rank): 5
+Employed in Arts, entertainment, and recreation % (Percentile): 78
+Employed in Construction % (Rank): 33
+Employed in Construction % (Percentile): 40
+Employed in Educational services % (Rank): 43
+Employed in Educational services % (Percentile): 21
+Employed in Health care and social assistance % (Rank): 44
+Employed in Health care and social assistance % (Percentile): 18
+Employed in Finance and insurance % (Rank): 37
+Employed in Finance and insurance % (Percentile): 10
+Employed in Real estate and rental and leasing % (Rank): 9
+Employed in Real estate and rental and leasing % (Percentile): 68
+Employed in Information % (Rank): 2
+Employed in Information % (Percentile): 87
+Employed in Manufacturing % (Rank): 30
+Employed in Manufacturing % (Percentile): 41
+Employed in Other services, except public administration % (Rank): 11
+Employed in Other services, except public administration % (Percentile): 62
+Employed in Administrative and support and waste management services % (Rank): 8
+Employed in Administrative and support and waste management services % (Percentile): 72
+Employed in Management of companies and enterprises % (Rank): 22
+Employed in Management of companies and enterprises % (Percentile): 39
+Employed in Professional, scientific, and technical services % (Rank): 8
+Employed in Professional, scientific, and technical services % (Percentile): 74
+Employed in Public administration % (Rank): 28
+Employed in Public administration % (Percentile): 55
+Employed in Retail trade % (Rank): 47
+Employed in Retail trade % (Percentile): 12
+Employed in Transportation and warehousing % (Rank): 15
+Employed in Transportation and warehousing % (Percentile): 49
+Employed in Utilities % (Rank): 38
+Employed in Utilities % (Percentile): 26
+Employed in Wholesale trade % (Rank): 10
+Employed in Wholesale trade % (Percentile): 65
+Architecture and engineering occupations % (Rank): 8
+Architecture and engineering occupations % (Percentile): 76
+Computer and mathematical occupations % (Rank): 10
+Computer and mathematical occupations % (Percentile): 73
+Life, physical, and social science occupations % (Rank): 10
+Life, physical, and social science occupations % (Percentile): 80
+Arts, design, entertainment, sports, and media occupations % (Rank): 3
+Arts, design, entertainment, sports, and media occupations % (Percentile): 81
+Community and social service occupations % (Rank): 41
+Community and social service occupations % (Percentile): 28
+Educational instruction, and library occupations % (Rank): 49
+Educational instruction, and library occupations % (Percentile): 10
+Legal occupations % (Rank): 13
+Legal occupations % (Percentile): 58
+Health diagnosing and treating practitioners and other technical occupations % (Rank): 49
+Health diagnosing and treating practitioners and other technical occupations % (Percentile): 2
+Health technologists and technicians % (Rank): 45
+Health technologists and technicians % (Percentile): 6
+Business and financial operations occupations % (Rank): 15
+Business and financial operations occupations % (Percentile): 55
+Management occupations % (Rank): 19
+Management occupations % (Percentile): 67
+Construction and extraction occupations % (Rank): 34
+Construction and extraction occupations % (Percentile): 40
+Farming, fishing, and forestry occupations % (Rank): 8
+Farming, fishing, and forestry occupations % (Percentile): 82
+Installation, maintenance, and repair occupations % (Rank): 47
+Installation, maintenance, and repair occupations % (Percentile): 12
+Material moving occupations % (Rank): 22
+Material moving occupations % (Percentile): 40
+Production occupations % (Rank): 35
+Production occupations % (Percentile): 31
+Transportation occupations % (Rank): 38
+Transportation occupations % (Percentile): 16
+Office and administrative support occupations % (Rank): 39
+Office and administrative support occupations % (Percentile): 16
+Sales and related occupations % (Rank): 27
+Sales and related occupations % (Percentile): 38
+Building and grounds cleaning and maintenance occupations % (Rank): 12
+Building and grounds cleaning and maintenance occupations % (Percentile): 73
+Food preparation and serving related occupations % (Rank): 25
+Food preparation and serving related occupations % (Percentile): 53
+Healthcare support occupations % (Rank): 11
+Healthcare support occupations % (Percentile): 71
+Personal care and service occupations % (Rank): 11
+Personal care and service occupations % (Percentile): 69
+Firefighting and prevention, and other protective service workers including supervisors % (Rank): 16
+Firefighting and prevention, and other protective service workers including supervisors % (Percentile): 60
+Law enforcement workers including supervisors % (Rank): 40
+Law enforcement workers including supervisors % (Percentile): 14
+Not Cohabiting With Partner % (Rank): 49
+Not Cohabiting With Partner % (Percentile): 1
+Cohabiting With Partner (Gay) % (Rank): 15
+Cohabiting With Partner (Gay) % (Percentile): 63
+Cohabiting With Partner (Straight) % (Rank): 47
+Cohabiting With Partner (Straight) % (Percentile): 9
+Living With Parents % (Rank): 6
+Living With Parents % (Percentile): 75
+Other Living Situation % (Rank): 3
+Other Living Situation % (Percentile): 87
+Never Married % (Rank): 5
+Never Married % (Percentile): 80
+Married (not divorced) % (Rank): 45
+Married (not divorced) % (Percentile): 10
+Divorced % (Rank): 48
+Divorced % (Percentile): 9
+2008 Presidential Election (Rank): 10
+2008 Presidential Election (Percentile): 72
+2008-2012 Swing (Rank): 23
+2008-2012 Swing (Percentile): 41
+2012 Presidential Election (Rank): 8
+2012 Presidential Election (Percentile): 76
+2012-2016 Swing (Rank): 2
+2012-2016 Swing (Percentile): 87
+2016 Presidential Election (Rank): 3
+2016 Presidential Election (Percentile): 87
+2016-2020 Swing (Rank): 48
+2016-2020 Swing (Percentile): 7
+2020 Presidential Election (Rank): 6
+2020 Presidential Election (Percentile): 83
+2020-2024 Swing (Rank): 48
+2020-2024 Swing (Percentile): 15
+2024 Presidential Election (Rank): 6
+2024 Presidential Election (Percentile): 83
+PW Mean % of parkland within 1km (Rank): 21
+PW Mean % of parkland within 1km (Percentile): 51
+Within 10km of Hospital % (Rank): 5
+Within 10km of Hospital % (Percentile): 82
+Mean distance to nearest Hospital (Rank): 49
+Mean distance to nearest Hospital (Percentile): 5
+Within 2km of Public School % (Rank): 2
+Within 2km of Public School % (Percentile): 87
+Mean distance to nearest Public School (Rank): 51
+Mean distance to nearest Public School (Percentile): 0
+Within 30km of Airport % (Rank): 8
+Within 30km of Airport % (Percentile): 78
+Mean distance to nearest Airport (Rank): 42
+Mean distance to nearest Airport (Percentile): 18
+Within 10km of Active Superfund Site % (Rank): 11
+Within 10km of Active Superfund Site % (Percentile): 69
+Mean distance to nearest Active Superfund Site (Rank): 39
+Mean distance to nearest Active Superfund Site (Percentile): 24
+Within 0.5mi of a grocery store % (Rank): 3
+Within 0.5mi of a grocery store % (Percentile): 81
+Within 1mi of a grocery store % (Rank): 2
+Within 1mi of a grocery store % (Percentile): 87
+Within 10mi of a grocery store % (Rank): 10
+Within 10mi of a grocery store % (Percentile): 69
+Within 20mi of a grocery store % (Rank): 32
+Within 20mi of a grocery store % (Percentile): 26
+Mean high temp (Rank): 18
+Mean high temp (Percentile): 57
+Mean low temp (Rank): 15
+Mean low temp (Percentile): 60
+Mean high heat index (Rank): 19
+Mean high heat index (Percentile): 53
+Mean high dewpt (Rank): 19
+Mean high dewpt (Percentile): 53
+High temperature Above 90°F % (Rank): 19
+High temperature Above 90°F % (Percentile): 51
+High temperature Between 40 and 90°F % (Rank): 7
+High temperature Between 40 and 90°F % (Percentile): 86
+High temperature Below 40°F % (Rank): 49
+High temperature Below 40°F % (Percentile): 7
+Humid days (dewpt > 70°F) % (Rank): 47
+Humid days (dewpt > 70°F) % (Percentile): 8
+Non-humid, Non-dry days (50°F < dewpt < 70°F) % (Rank): 1
+Non-humid, Non-dry days (50°F < dewpt < 70°F) % (Percentile): 88
+Dry days (dewpt < 50°F) % (Rank): 43
+Dry days (dewpt < 50°F) % (Percentile): 25
+Mean sunny hours (Rank): 4
+Mean sunny hours (Percentile): 84
+Rainfall (Rank): 48
+Rainfall (Percentile): 7
+Snowfall [rain-equivalent] (Rank): 46
+Snowfall [rain-equivalent] (Percentile): 18
+High windspeed (>10mph) days % (Rank): 51
+High windspeed (>10mph) days % (Percentile): 7
+Mean high temperature in Dec/Jan/Feb (Rank): 11
+Mean high temperature in Dec/Jan/Feb (Percentile): 68
+Mean high temperature in Mar/Apr/May (Rank): 21
+Mean high temperature in Mar/Apr/May (Percentile): 52
+Mean high temperature in Jun/Jul/Aug (Rank): 39
+Mean high temperature in Jun/Jul/Aug (Percentile): 22
+Mean high temperature in Sep/Oct/Nov (Rank): 16
+Mean high temperature in Sep/Oct/Nov (Percentile): 59
+Mean low temperature in Dec/Jan/Feb (Rank): 9
+Mean low temperature in Dec/Jan/Feb (Percentile): 78
+Mean low temperature in Mar/Apr/May (Rank): 16
+Mean low temperature in Mar/Apr/May (Percentile): 60
+Mean low temperature in Jun/Jul/Aug (Rank): 42
+Mean low temperature in Jun/Jul/Aug (Percentile): 11
+Mean low temperature in Sep/Oct/Nov (Rank): 12
+Mean low temperature in Sep/Oct/Nov (Percentile): 67
+No internet access % (Rank): 48
+No internet access % (Percentile): 5
+Uninsured % (Rank): 29
+Uninsured % (Percentile): 38
+Public Insurance % (Rank): 10
+Public Insurance % (Percentile): 73
+Private Insurance % (Rank): 41
+Private Insurance % (Percentile): 18
+PW Density (r=250m) (Rank): 4
+PW Density (r=250m) (Percentile): 81
+PW Density (r=250m) (2010) (Rank): 4
+PW Density (r=250m) (2010) (Percentile): 81
+PW Density (r=250m) Change (2010-2020) (Rank): 39
+PW Density (r=250m) Change (2010-2020) (Percentile): 16
+PW Density (r=250m) Absolute Change (2010-2020) (Rank): 32
+PW Density (r=250m) Absolute Change (2010-2020) (Percentile): 25
+PW Density (r=250m) (2000) (Rank): 4
+PW Density (r=250m) (2000) (Percentile): 81
+PW Density (r=250m) Change (2000-2020) (Rank): 38
+PW Density (r=250m) Change (2000-2020) (Percentile): 23
+PW Density (r=250m) Absolute Change (2000-2020) (Rank): 48
+PW Density (r=250m) Absolute Change (2000-2020) (Percentile): 5
+PW Density (r=500m) (Rank): 4
+PW Density (r=500m) (Percentile): 79
+PW Density (r=500m) (2010) (Rank): 3
+PW Density (r=500m) (2010) (Percentile): 81
+PW Density (r=500m) Change (2010-2020) (Rank): 39
+PW Density (r=500m) Change (2010-2020) (Percentile): 15
+PW Density (r=500m) Absolute Change (2010-2020) (Rank): 21
+PW Density (r=500m) Absolute Change (2010-2020) (Percentile): 36
+PW Density (r=500m) (2000) (Rank): 3
+PW Density (r=500m) (2000) (Percentile): 81
+PW Density (r=500m) Change (2000-2020) (Rank): 37
+PW Density (r=500m) Change (2000-2020) (Percentile): 22
+PW Density (r=500m) Absolute Change (2000-2020) (Rank): 43
+PW Density (r=500m) Absolute Change (2000-2020) (Percentile): 16
+PW Density (r=1mi) (Rank): 3
+PW Density (r=1mi) (Percentile): 81
+PW Density (r=1mi) [GHS-POP] (Rank): 3
+PW Density (r=1mi) [GHS-POP] (Percentile): 81
+PW Density (r=1mi) (2010) (Rank): 3
+PW Density (r=1mi) (2010) (Percentile): 81
+PW Density (r=1mi) Change (2010-2020) (Rank): 40
+PW Density (r=1mi) Change (2010-2020) (Percentile): 14
+PW Density (r=1mi) Absolute Change (2010-2020) (Rank): 19
+PW Density (r=1mi) Absolute Change (2010-2020) (Percentile): 48
+PW Density (r=1mi) (2000) (Rank): 3
+PW Density (r=1mi) (2000) (Percentile): 81
+PW Density (r=1mi) Change (2000-2020) (Rank): 41
+PW Density (r=1mi) Change (2000-2020) (Percentile): 21
+PW Density (r=1mi) Absolute Change (2000-2020) (Rank): 33
+PW Density (r=1mi) Absolute Change (2000-2020) (Percentile): 27
+PW Density (r=2km) (Rank): 3
+PW Density (r=2km) (Percentile): 81
+PW Density (r=2km) [GHS-POP] (Rank): 3
+PW Density (r=2km) [GHS-POP] (Percentile): 81
+PW Density (r=2km) (2010) (Rank): 3
+PW Density (r=2km) (2010) (Percentile): 81
+PW Density (r=2km) Change (2010-2020) (Rank): 40
+PW Density (r=2km) Change (2010-2020) (Percentile): 14
+PW Density (r=2km) Absolute Change (2010-2020) (Rank): 20
+PW Density (r=2km) Absolute Change (2010-2020) (Percentile): 39
+PW Density (r=2km) (2000) (Rank): 3
+PW Density (r=2km) (2000) (Percentile): 81
+PW Density (r=2km) Change (2000-2020) (Rank): 41
+PW Density (r=2km) Change (2000-2020) (Percentile): 21
+PW Density (r=2km) Absolute Change (2000-2020) (Rank): 29
+PW Density (r=2km) Absolute Change (2000-2020) (Percentile): 30
+PW Density (r=4km) (Rank): 3
+PW Density (r=4km) (Percentile): 81
+PW Density (r=4km) [GHS-POP] (Rank): 4
+PW Density (r=4km) [GHS-POP] (Percentile): 81
+PW Density (r=4km) (2010) (Rank): 3
+PW Density (r=4km) (2010) (Percentile): 81
+PW Density (r=4km) Change (2010-2020) (Rank): 42
+PW Density (r=4km) Change (2010-2020) (Percentile): 13
+PW Density (r=4km) Absolute Change (2010-2020) (Rank): 19
+PW Density (r=4km) Absolute Change (2010-2020) (Percentile): 40
+PW Density (r=4km) (2000) (Rank): 3
+PW Density (r=4km) (2000) (Percentile): 81
+PW Density (r=4km) Change (2000-2020) (Rank): 40
+PW Density (r=4km) Change (2000-2020) (Percentile): 22
+PW Density (r=4km) Absolute Change (2000-2020) (Rank): 28
+PW Density (r=4km) Absolute Change (2000-2020) (Percentile): 32
+PW Density (r=8km) (Rank): 4
+PW Density (r=8km) (Percentile): 79
+PW Density (r=8km) [GHS-POP] (Rank): 5
+PW Density (r=8km) [GHS-POP] (Percentile): 78
+PW Density (r=8km) (2010) (Rank): 4
+PW Density (r=8km) (2010) (Percentile): 79
+PW Density (r=8km) Change (2010-2020) (Rank): 44
+PW Density (r=8km) Change (2010-2020) (Percentile): 9
+PW Density (r=8km) Absolute Change (2010-2020) (Rank): 23
+PW Density (r=8km) Absolute Change (2010-2020) (Percentile): 34
+PW Density (r=8km) (2000) (Rank): 4
+PW Density (r=8km) (2000) (Percentile): 79
+PW Density (r=8km) Change (2000-2020) (Rank): 44
+PW Density (r=8km) Change (2000-2020) (Percentile): 16
+PW Density (r=8km) Absolute Change (2000-2020) (Rank): 30
+PW Density (r=8km) Absolute Change (2000-2020) (Percentile): 29
+PW Density (r=16km) (Rank): 4
+PW Density (r=16km) (Percentile): 79
+PW Density (r=16km) [GHS-POP] (Rank): 5
+PW Density (r=16km) [GHS-POP] (Percentile): 78
+PW Density (r=16km) (2010) (Rank): 4
+PW Density (r=16km) (2010) (Percentile): 79
+PW Density (r=16km) Change (2010-2020) (Rank): 46
+PW Density (r=16km) Change (2010-2020) (Percentile): 7
+PW Density (r=16km) Absolute Change (2010-2020) (Rank): 25
+PW Density (r=16km) Absolute Change (2010-2020) (Percentile): 28
+PW Density (r=16km) (2000) (Rank): 4
+PW Density (r=16km) (2000) (Percentile): 79
+PW Density (r=16km) Change (2000-2020) (Rank): 46
+PW Density (r=16km) Change (2000-2020) (Percentile): 11
+PW Density (r=16km) Absolute Change (2000-2020) (Rank): 35
+PW Density (r=16km) Absolute Change (2000-2020) (Percentile): 21
+PW Density (r=32km) (Rank): 4
+PW Density (r=32km) (Percentile): 79
+PW Density (r=32km) [GHS-POP] (Rank): 4
+PW Density (r=32km) [GHS-POP] (Percentile): 79
+PW Density (r=32km) (2010) (Rank): 4
+PW Density (r=32km) (2010) (Percentile): 79
+PW Density (r=32km) Change (2010-2020) (Rank): 46
+PW Density (r=32km) Change (2010-2020) (Percentile): 7
+PW Density (r=32km) Absolute Change (2010-2020) (Rank): 24
+PW Density (r=32km) Absolute Change (2010-2020) (Percentile): 28
+PW Density (r=32km) (2000) (Rank): 4
+PW Density (r=32km) (2000) (Percentile): 79
+PW Density (r=32km) Change (2000-2020) (Rank): 46
+PW Density (r=32km) Change (2000-2020) (Percentile): 11
+PW Density (r=32km) Absolute Change (2000-2020) (Rank): 35
+PW Density (r=32km) Absolute Change (2000-2020) (Percentile): 17
+PW Density (r=64km) (Rank): 4
+PW Density (r=64km) (Percentile): 79
+PW Density (r=64km) [GHS-POP] (Rank): 4
+PW Density (r=64km) [GHS-POP] (Percentile): 79
+PW Density (r=64km) (2010) (Rank): 4
+PW Density (r=64km) (2010) (Percentile): 79
+PW Density (r=64km) Change (2010-2020) (Rank): 45
+PW Density (r=64km) Change (2010-2020) (Percentile): 10
+PW Density (r=64km) Absolute Change (2010-2020) (Rank): 18
+PW Density (r=64km) Absolute Change (2010-2020) (Percentile): 41
+PW Density (r=64km) (2000) (Rank): 3
+PW Density (r=64km) (2000) (Percentile): 79
+PW Density (r=64km) Change (2000-2020) (Rank): 47
+PW Density (r=64km) Change (2000-2020) (Percentile): 9
+PW Density (r=64km) Absolute Change (2000-2020) (Rank): 17
+PW Density (r=64km) Absolute Change (2000-2020) (Percentile): 41
+PW Median Density (r=1km) (Rank): 3
+PW Median Density (r=1km) (Percentile): 81
+PW Median Density (r=1km) [GHS-POP] (Rank): 4
+PW Median Density (r=1km) [GHS-POP] (Percentile): 81
+PW Median Density (r=1km) (2010) (Rank): 3
+PW Median Density (r=1km) (2010) (Percentile): 81
+PW Median Density (r=1km) (2000) (Rank): 3
+PW Median Density (r=1km) (2000) (Percentile): 81
+Mean high temperature in summer (Rank): 37
+Mean high temperature in summer (Percentile): 23
+Mean high temperature in winter (Rank): 11
+Mean high temperature in winter (Percentile): 68
+Mean high temperature in fall (Rank): 13
+Mean high temperature in fall (Percentile): 65
+Mean high temperature in spring (Rank): 27
+Mean high temperature in spring (Percentile): 43
+Commute Car % (incl WFH) (Rank): 42
+Commute Car % (incl WFH) (Percentile): 22
+Commute Bike % (incl WFH) (Rank): 6
+Commute Bike % (incl WFH) (Percentile): 84
+Commute Walk % (incl WFH) (Rank): 26
+Commute Walk % (incl WFH) (Percentile): 53
+Commute Transit % (incl WFH) (Rank): 10
+Commute Transit % (incl WFH) (Percentile): 64
+Commute Work From Home % (incl WFH) (Rank): 12
+Commute Work From Home % (incl WFH) (Percentile): 71
