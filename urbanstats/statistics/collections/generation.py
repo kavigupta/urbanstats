@@ -11,7 +11,7 @@ from urbanstats.statistics.utils import fractionalize
 
 
 class GenerationStatistics(NationalCensusStatistics):
-    version = {"USA": 1, "Canada": 1}
+    version = 1
 
     def name_for_each_statistic(self):
         return {

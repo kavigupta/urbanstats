@@ -136,7 +136,7 @@ class TransportationModeStatistics(ACSStatisticsColection):
 class TransportationModeNoWFHStatistics(NationalCensusStatistics):
     """The shares of commuters who don't work from home."""
 
-    version = {"USA": 1, "Canada": 1}
+    version = 1
 
     def name_for_each_statistic(self):
         return {

@@ -19,7 +19,7 @@ from urbanstats.statistics.utils import fractionalize
 
 
 class NationalOriginLanguageStatistics(NationalCensusStatistics):
-    version = {"USA": 1, "Canada": 1}
+    version = 1
 
     def legacy_statistic_names(self):
         # Canada's, from before the two countries' statistics were merged

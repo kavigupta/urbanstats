@@ -44,8 +44,6 @@ class NationalCensusStatistics(StatisticCollection):
     over every region, not just the ones inside it, so regions straddling a border get both.
     """
 
-    version: Dict[str, int]
-
     @abstractmethod
     def country_inputs(self) -> Dict[str, Any]:
         """
@@ -68,16 +66,12 @@ class NationalCensusStatistics(StatisticCollection):
     def data_source_countries(self):
         return tuple(self.country_inputs())
 
-    def __permacache_hash__(self):
-        return (self.__class__.__name__, sorted(self.version.items()))
-
     def computed_countries(self, shapefile):
         """
         The countries to compute for the shapefile, and whether each region is covered: all its
         source countries are among them. None if there are no countries to compute.
         """
         inputs = self.country_inputs()
-        assert set(inputs) == set(self.version), (set(inputs), set(self.version))
         countries = [c for c in inputs if c in shapefile.source_country_list]
         if not countries:
             return None

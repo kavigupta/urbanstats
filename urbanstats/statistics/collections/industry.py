@@ -11,7 +11,7 @@ from urbanstats.statistics.utils import fractionalize
 
 
 class IndustryStatistics(NationalCensusStatistics):
-    version = {"USA": 1, "Canada": 1}
+    version = 1
 
     def __init__(self):
         super().__init__()

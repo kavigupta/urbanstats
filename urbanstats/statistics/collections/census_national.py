@@ -258,13 +258,13 @@ class CensusDensity(NationalCensusStatistics):
 
 
 class CensusDensity2020(CensusDensity):
-    version = {"USA": 1, "Canada": 1}
+    version = 1
     year = 2020
     canada_year = 2021
 
 
 class CensusDensity2010(CensusDensity):
-    version = {"USA": 1, "Canada": 1}
+    version = 1
     year = 2010
     canada_year = 2011
 
@@ -279,7 +279,7 @@ class USCensusRace:
 
 
 class CensusRace2020(NationalCensusStatistics):
-    version = {"USA": 1, "Canada": 1}
+    version = 1
 
     def name_for_each_statistic(self):
         return dict(race_names)
@@ -329,7 +329,7 @@ class USCensusHousing:
 
 
 class CensusHousing2020(NationalCensusStatistics):
-    version = {"USA": 1, "Canada": 1}
+    version = 1
 
     def name_for_each_statistic(self):
         return {
