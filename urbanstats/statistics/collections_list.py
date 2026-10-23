@@ -22,9 +22,6 @@ from urbanstats.statistics.collections.census_canada_occupation import (
 from urbanstats.statistics.collections.census_canada_religion import (
     CensusCanadaReligion,
 )
-from urbanstats.statistics.collections.census_canada_same_as_us import (
-    census_canada_same_as_us,
-)
 from urbanstats.statistics.collections.census_canada_simple import census_canada_simple
 from urbanstats.statistics.collections.census_national import (
     CensusDensity2010,
@@ -148,7 +145,6 @@ statistic_collections = (
     MarriageStatistics(),
     ElevationHillinessStatistics(),
     *census_canada_simple,
-    *census_canada_same_as_us,
     CensusCanadaLanguage(),
     CensusCanadaEducationField(),
     CensusCanadaHousingRent(),
