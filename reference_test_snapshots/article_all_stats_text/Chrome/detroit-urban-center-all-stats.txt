@@ -38,11 +38,17 @@ Gen Z %: 0.18715207278728485
 Gen Alpha %: 0.11774243414402008
 Housing Units per Adult: 0.5620888471603394
 Housing Units per Person: 0.44134417176246643
+PW Household Size: 3.221062421798706
 Renter %: 0.3457348048686981
 Commute Car %: 0.9517930746078491
 Commute Bike %: 0.003117436310276389
 Commute Walk %: 0.017002861946821213
 Commute Transit %: 0.018363436684012413
+Median Commute Time (min): 23.62841033935547
+Commute Time < 15 min %: 0.22913990914821625
+Commute Time 15 - 29 min %: 0.41317352652549744
+Commute Time 30 - 59 min %: 0.3064934015274048
+Commute Time > 60 min %: 0.05119314417243004
 PW Mean PM2.5 Pollution: 8.321000099182129
 Employed in Agriculture, forestry, fishing and hunting %: 0.0023366634268313646
 Employed in Mining, quarrying, and oil and gas extraction %: 0.0005046036094427109
@@ -218,6 +224,8 @@ Housing Units per Adult (Rank): 143
 Housing Units per Adult (Percentile): 73
 Housing Units per Person (Rank): 147
 Housing Units per Person (Percentile): 74
+PW Household Size (Rank): 150
+PW Household Size (Percentile): 34
 Renter % (Rank): 281
 Renter % (Percentile): 4
 Commute Car % (Rank): 113
@@ -228,6 +236,16 @@ Commute Walk % (Rank): 224
 Commute Walk % (Percentile): 23
 Commute Transit % (Rank): 164
 Commute Transit % (Percentile): 21
+Median Commute Time (min) (Rank): 81
+Median Commute Time (min) (Percentile): 33
+Commute Time < 15 min % (Rank): 269
+Commute Time < 15 min % (Percentile): 61
+Commute Time 15 - 29 min % (Rank): 135
+Commute Time 15 - 29 min % (Percentile): 69
+Commute Time 30 - 59 min % (Rank): 62
+Commute Time 30 - 59 min % (Percentile): 39
+Commute Time > 60 min % (Rank): 161
+Commute Time > 60 min % (Percentile): 25
 PW Mean PM2.5 Pollution (Rank): 47
 PW Mean PM2.5 Pollution (Percentile): 71
 Employed in Agriculture, forestry, fishing and hunting % (Rank): 228

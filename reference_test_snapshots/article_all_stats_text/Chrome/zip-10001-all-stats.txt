@@ -112,13 +112,13 @@ Rent/Income > 40%: 0.25165650248527527
 % units built in 1990s: 0.01963980123400688
 % units built in 2000s: 0.15803839266300201
 % units built in 2010s+: 0.2545238137245178
-PW Household Size: 2.0848817825317383
+PW Household Size: 2.1025197505950928
 Renter %: 0.755075216293335
 Commute Car %: 0.06948353350162506
 Commute Bike %: 0.03592716157436371
 Commute Walk %: 0.3307048976421356
 Commute Transit %: 0.5513848662376404
-Median Commute Time (min): 25.49534034729004
+Median Commute Time (min): 25.87408447265625
 Commute Time < 15 min %: 0.12309671193361282
 Commute Time 15 - 29 min %: 0.4791882336139679
 Commute Time 30 - 59 min %: 0.34828904271125793
@@ -563,7 +563,7 @@ Rent/Income > 40% (Percentile): 20
 % units built in 2000s (Percentile): 66
 % units built in 2010s+ (Rank): 667
 % units built in 2010s+ (Percentile): 96
-PW Household Size (Rank): 32494
+PW Household Size (Rank): 32492
 PW Household Size (Percentile): 0
 Renter % (Rank): 616
 Renter % (Percentile): 97
@@ -575,8 +575,8 @@ Commute Walk % (Rank): 423
 Commute Walk % (Percentile): 99
 Commute Transit % (Rank): 97
 Commute Transit % (Percentile): 98
-Median Commute Time (min) (Rank): 11859
-Median Commute Time (min) (Percentile): 61
+Median Commute Time (min) (Rank): 12198
+Median Commute Time (min) (Percentile): 59
 Commute Time < 15 min % (Rank): 29556
 Commute Time < 15 min % (Percentile): 10
 Commute Time 15 - 29 min % (Rank): 4035
