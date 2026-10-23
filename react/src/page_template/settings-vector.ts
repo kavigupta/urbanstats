@@ -366,7 +366,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_gridded_elevation', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_gridded_hilliness', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'mobile_article_pointers', coder: mobileArticlePointersCoder }),
-    new ActiveSetting({ key: 'show_stat_source_Population_Canadian Census', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'show_stat_source_Population_Canadian Census', coder: booleanSettingCoder }),
     new DeprecatedSetting({ key: 'expanded__density_2021_pw_0.25_canada', coder: booleanSettingCoder }),
     new DeprecatedSetting({ key: 'expanded__density_2021_pw_0.5_canada', coder: booleanSettingCoder }),
     new DeprecatedSetting({ key: 'expanded__density_2021_pw_1_canada', coder: booleanSettingCoder }),

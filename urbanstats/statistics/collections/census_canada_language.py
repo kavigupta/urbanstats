@@ -378,10 +378,12 @@ class CensusCanadaLanguage(CanadaStatistics):
 
     version = 5
 
+    had_statcan_label = True
+
     def name_for_each_statistic(self):
         return {
-            "language_french_canada": "French at Home % [StatCan]",
-            "language_other_non_french_canada": "Other (non-French) at Home % [StatCan]",
+            "language_french_canada": "French at Home %",
+            "language_other_non_french_canada": "Other (non-French) at Home %",
         }
 
     def unit_for_each_statistic(self):

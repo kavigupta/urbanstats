@@ -171,7 +171,6 @@ urbanstatsFixture(
 test('comparison-american-vs-canada-population-stats', async (t) => {
     // forces GHSL onto the screen. National Census is only enabled by the checkbox
     await t.expect(await checkboxStatus(t, 'National Census')).eql('enabled')
-    await t.expect(await checkboxStatus(t, 'Canadian Census')).eql('enabled')
     await t.expect(await checkboxStatus(t, 'GHSL')).eql('enabled')
     // these are the values for the National Census
     await t.expect(await dataValues()).eql(['14.2', '39.5'])

@@ -7,6 +7,8 @@ from urbanstats.statistics.utils import fractionalize
 class CensusCanadaOccupation(CanadaStatistics):
     version = 1
 
+    had_statcan_label = True
+
     def census_tables(self) -> CensusTables:
         occupation_table = (
             "Total - Labour force aged 15 years and over by occupation - Broad category - "
@@ -56,16 +58,16 @@ class CensusCanadaOccupation(CanadaStatistics):
 
     def name_for_each_statistic(self):
         return {
-            "occupation_legislative_and_senior_management_canada": "Legislative and senior management occupations % [StatCan]",
-            "occupation_business_finance_and_administration_canada": "Business, finance and administration occupations % [StatCan]",
-            "occupation_natural_and_applied_sciences_canada": "Natural and applied sciences occupations % [StatCan]",
-            "occupation_health_canada": "Health occupations % [StatCan]",
-            "occupation_education_law_social_community_government_canada": "Education, law, social, community and government occupations % [StatCan]",
-            "occupation_art_culture_recreation_sport_canada": "Art, culture, recreation and sport occupations % [StatCan]",
-            "occupation_sales_and_service_canada": "Sales and service occupations % [StatCan]",
-            "occupation_trades_transport_equipment_canada": "Trades, transport and equipment operators occupations % [StatCan]",
-            "occupation_natural_resources_agriculture_canada": "Natural resources and agriculture occupations % [StatCan]",
-            "occupation_manufacturing_utilities_canada": "Manufacturing and utilities occupations % [StatCan]",
+            "occupation_legislative_and_senior_management_canada": "Legislative and senior management occupations %",
+            "occupation_business_finance_and_administration_canada": "Business, finance and administration occupations %",
+            "occupation_natural_and_applied_sciences_canada": "Natural and applied sciences occupations %",
+            "occupation_health_canada": "Health occupations %",
+            "occupation_education_law_social_community_government_canada": "Education, law, social, community and government occupations %",
+            "occupation_art_culture_recreation_sport_canada": "Art, culture, recreation and sport occupations %",
+            "occupation_sales_and_service_canada": "Sales and service occupations %",
+            "occupation_trades_transport_equipment_canada": "Trades, transport and equipment operators occupations %",
+            "occupation_natural_resources_agriculture_canada": "Natural resources and agriculture occupations %",
+            "occupation_manufacturing_utilities_canada": "Manufacturing and utilities occupations %",
         }
 
     def unit_for_each_statistic(self):

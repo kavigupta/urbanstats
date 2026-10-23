@@ -46,8 +46,10 @@ class CensusCanadaHousingRent(CanadaStatistics):
 
     version = 5
 
+    had_statcan_label = True
+
     def name_for_each_statistic(self):
-        return {"rent_burden_over_30_canada": "Housing Cost/Income > 30% [StatCan]"}
+        return {"rent_burden_over_30_canada": "Housing Cost/Income > 30%"}
 
     def unit_for_each_statistic(self):
         return self.same_for_each_name("percentage")

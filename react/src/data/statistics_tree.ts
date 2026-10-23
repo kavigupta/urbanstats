@@ -11,11 +11,6 @@ export const dataSources = [
                 "category": "Population",
                 "name": "GHSL",
                 "is_default": false
-            },
-            {
-                "category": "Population",
-                "name": "Canadian Census",
-                "is_default": true
             }
         ]
     },
@@ -1609,7 +1604,7 @@ export const rawStatsTree = [
             },
             {
                 "id": "language_french_canada",
-                "name": "French at Home % [StatCan]",
+                "name": "French at Home %",
                 "subcategory": {
                     "id": "language",
                     "name": "Language at Home"
@@ -1619,13 +1614,13 @@ export const rawStatsTree = [
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "French at Home % [StatCan]",
+                                "name": "French at Home %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 268
                                     }
@@ -1638,7 +1633,7 @@ export const rawStatsTree = [
             },
             {
                 "id": "language_other_non_french_canada",
-                "name": "Other (non-French) at Home % [StatCan]",
+                "name": "Other (non-French) at Home %",
                 "subcategory": {
                     "id": "language",
                     "name": "Language at Home"
@@ -1648,13 +1643,13 @@ export const rawStatsTree = [
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Other (non-French) at Home % [StatCan]",
+                                "name": "Other (non-French) at Home %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 270
                                     }
@@ -1715,7 +1710,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 364
                                     }
@@ -1741,7 +1736,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 360
                                     }
@@ -1767,7 +1762,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 366
                                     }
@@ -1793,7 +1788,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 361
                                     }
@@ -1819,7 +1814,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 362
                                     }
@@ -1845,7 +1840,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 363
                                     }
@@ -1871,7 +1866,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 367
                                     }
@@ -1897,7 +1892,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 359
                                     }
@@ -1923,7 +1918,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 365
                                     }
@@ -2045,7 +2040,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 181
                                     }
@@ -2074,7 +2069,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 183
                                     }
@@ -2103,7 +2098,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 179
                                     }
@@ -2203,7 +2198,7 @@ export const rawStatsTree = [
             },
             {
                 "id": "education_field_stem_canada",
-                "name": "Undergrad STEM [25-64] % [StatCan]",
+                "name": "Undergrad STEM [25-64] %",
                 "subcategory": {
                     "id": "education_field",
                     "name": "Field of Study"
@@ -2213,13 +2208,13 @@ export const rawStatsTree = [
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Undergrad STEM [25-64] % [StatCan]",
+                                "name": "Undergrad STEM [25-64] %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 177
                                     }
@@ -2232,7 +2227,7 @@ export const rawStatsTree = [
             },
             {
                 "id": "education_field_humanities_canada",
-                "name": "Undergrad Humanities [25-64] % [StatCan]",
+                "name": "Undergrad Humanities [25-64] %",
                 "subcategory": {
                     "id": "education_field",
                     "name": "Field of Study"
@@ -2242,13 +2237,13 @@ export const rawStatsTree = [
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Undergrad Humanities [25-64] % [StatCan]",
+                                "name": "Undergrad Humanities [25-64] %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 175
                                     }
@@ -2261,7 +2256,7 @@ export const rawStatsTree = [
             },
             {
                 "id": "education_field_business_canada",
-                "name": "Undergrad Business [25-64] % [StatCan]",
+                "name": "Undergrad Business [25-64] %",
                 "subcategory": {
                     "id": "education_field",
                     "name": "Field of Study"
@@ -2271,13 +2266,13 @@ export const rawStatsTree = [
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Undergrad Business [25-64] % [StatCan]",
+                                "name": "Undergrad Business [25-64] %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 173
                                     }
@@ -2601,7 +2596,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 276
                                     }
@@ -2627,7 +2622,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 278
                                     }
@@ -2743,7 +2738,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 228
                                     }
@@ -2772,7 +2767,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 224
                                     }
@@ -2801,7 +2796,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 226
                                     }
@@ -2917,7 +2912,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 241
                                     }
@@ -2946,7 +2941,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 237
                                     }
@@ -2975,7 +2970,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 239
                                     }
@@ -3673,20 +3668,20 @@ export const rawStatsTree = [
             },
             {
                 "id": "rent_burden_over_30_canada",
-                "name": "Housing Cost/Income > 30% [StatCan]",
+                "name": "Housing Cost/Income > 30%",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Housing Cost/Income > 30% [StatCan]",
+                                "name": "Housing Cost/Income > 30%",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 375
                                     }
@@ -6276,20 +6271,20 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_legislative_and_senior_management_canada",
-                "name": "Legislative and senior management occupations % [StatCan]",
+                "name": "Legislative and senior management occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Legislative and senior management occupations % [StatCan]",
+                                "name": "Legislative and senior management occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 330
                                     }
@@ -6302,20 +6297,20 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_business_finance_and_administration_canada",
-                "name": "Business, finance and administration occupations % [StatCan]",
+                "name": "Business, finance and administration occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Business, finance and administration occupations % [StatCan]",
+                                "name": "Business, finance and administration occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 314
                                     }
@@ -6328,20 +6323,20 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_natural_and_applied_sciences_canada",
-                "name": "Natural and applied sciences occupations % [StatCan]",
+                "name": "Natural and applied sciences occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Natural and applied sciences occupations % [StatCan]",
+                                "name": "Natural and applied sciences occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 335
                                     }
@@ -6354,20 +6349,20 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_health_canada",
-                "name": "Health occupations % [StatCan]",
+                "name": "Health occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Health occupations % [StatCan]",
+                                "name": "Health occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 323
                                     }
@@ -6380,20 +6375,20 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_education_law_social_community_government_canada",
-                "name": "Education, law, social, community and government occupations % [StatCan]",
+                "name": "Education, law, social, community and government occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Education, law, social, community and government occupations % [StatCan]",
+                                "name": "Education, law, social, community and government occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 318
                                     }
@@ -6406,20 +6401,20 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_art_culture_recreation_sport_canada",
-                "name": "Art, culture, recreation and sport occupations % [StatCan]",
+                "name": "Art, culture, recreation and sport occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Art, culture, recreation and sport occupations % [StatCan]",
+                                "name": "Art, culture, recreation and sport occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 310
                                     }
@@ -6432,20 +6427,20 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_sales_and_service_canada",
-                "name": "Sales and service occupations % [StatCan]",
+                "name": "Sales and service occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Sales and service occupations % [StatCan]",
+                                "name": "Sales and service occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 341
                                     }
@@ -6458,20 +6453,20 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_trades_transport_equipment_canada",
-                "name": "Trades, transport and equipment operators occupations % [StatCan]",
+                "name": "Trades, transport and equipment operators occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Trades, transport and equipment operators occupations % [StatCan]",
+                                "name": "Trades, transport and equipment operators occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 342
                                     }
@@ -6484,20 +6479,20 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_natural_resources_agriculture_canada",
-                "name": "Natural resources and agriculture occupations % [StatCan]",
+                "name": "Natural resources and agriculture occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Natural resources and agriculture occupations % [StatCan]",
+                                "name": "Natural resources and agriculture occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 336
                                     }
@@ -6510,20 +6505,20 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_manufacturing_utilities_canada",
-                "name": "Manufacturing and utilities occupations % [StatCan]",
+                "name": "Manufacturing and utilities occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Manufacturing and utilities occupations % [StatCan]",
+                                "name": "Manufacturing and utilities occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
                                         "column": 333
                                     }

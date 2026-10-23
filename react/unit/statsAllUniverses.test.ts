@@ -92,11 +92,11 @@ void describe('statsAllUniverses', () => {
     })
     void test('french in canadian ridings', async () => {
         const map = await statsUniverseMap
-        assert.equal(map.get('French at Home % [StatCan]__CA Riding'), 'Canada')
+        assert.equal(map.get('French at Home %__CA Riding'), 'Canada')
     })
     void test('canadian french in metropolitan cluster has expected universe', async () => {
         const map = await statsUniverseMap
-        assert.equal(map.get('French at Home % [StatCan]__Metropolitan Cluster'), 'Canada')
+        assert.equal(map.get('French at Home %__Metropolitan Cluster'), 'Canada')
     })
     void test('pollution in canadian ridings has expected universe', async () => {
         const map = await statsUniverseMap

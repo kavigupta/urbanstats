@@ -10,6 +10,8 @@ from urbanstats.statistics.utils import fractionalize
 class CensusCanadaEducationField(CanadaStatistics):
     version = 3
 
+    had_statcan_label = True
+
     def dependencies(self):
         return ["education_ugrad_canada"]
 
@@ -96,9 +98,9 @@ class CensusCanadaEducationField(CanadaStatistics):
 
     def name_for_each_statistic(self):
         return {
-            "education_field_stem_canada": "Undergrad STEM [25-64] % [StatCan]",
-            "education_field_humanities_canada": "Undergrad Humanities [25-64] % [StatCan]",
-            "education_field_business_canada": "Undergrad Business [25-64] % [StatCan]",
+            "education_field_stem_canada": "Undergrad STEM [25-64] %",
+            "education_field_humanities_canada": "Undergrad Humanities [25-64] %",
+            "education_field_business_canada": "Undergrad Business [25-64] %",
         }
 
     def unit_for_each_statistic(self):

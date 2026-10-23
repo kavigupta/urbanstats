@@ -10,6 +10,8 @@ from urbanstats.statistics.statistic_collection import CanadaStatistics
 class CensusCanadaReligion(CanadaStatistics):
     version = 4
 
+    had_statcan_label = True
+
     def census_tables(self) -> CensusTables:
         religion_table = "Total - Religion for the population in private households - 25% sample data (161)"
         return CensusTables(
@@ -49,12 +51,6 @@ class CensusCanadaReligion(CanadaStatistics):
             },
             "population",
         )
-
-    def legacy_statistic_names(self):
-        return {
-            f"{name} [StatCan]": name
-            for name in self.name_for_each_statistic().values()
-        }
 
     def name_for_each_statistic(self):
         # no source tag, as these name rows that other countries' sources share

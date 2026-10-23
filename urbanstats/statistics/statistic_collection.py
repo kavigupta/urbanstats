@@ -148,6 +148,16 @@ class USAStatisticsCounties(USAStatistics):
 
 class CanadaStatistics(StatisticCollection):
     data_source_country = "Canada"
+    # whether the statistics' names used to end in " [StatCan]", which old links may still use
+    had_statcan_label = False
+
+    def legacy_statistic_names(self):
+        if not self.had_statcan_label:
+            return {}
+        return {
+            f"{name} [StatCan]": name
+            for name in self.name_for_each_statistic().values()
+        }
 
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
