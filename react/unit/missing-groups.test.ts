@@ -96,6 +96,17 @@ void test('every source disabled says so without singling one out', () => {
     )
 })
 
+void test('regions each missing a different source name all of them', () => {
+    // Made up: each region has its population from one source only. The statistics from the other
+    // source keep it from being the region's only Population source, which would force it on.
+    const censusPopulation: StatPath[] = ['population', 'gpw_pw_density_64', 'area']
+    const ghslPopulation: StatPath[] = ['gpw_population', 'generation_genz', 'area']
+    assert.deepStrictEqual(
+        warnings([censusPopulation, ghslPopulation], [...populationGroup, 'show_stat_year_2020']),
+        ['Population: **National Census** and **GHSL** are disabled. Enable them to see this statistic.'],
+    )
+})
+
 void test('a year the enabled source lacks is about the year, not the source', () => {
     // GHSL is enabled and simply has no data for 2010, so selecting 2020 is what brings it back.
     assert.deepStrictEqual(

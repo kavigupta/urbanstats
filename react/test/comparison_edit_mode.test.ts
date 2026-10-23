@@ -64,10 +64,10 @@ test('csv export in edit mode covers the selected statistics, not the whole tree
 })
 
 // USA and Canada are both countries, so their statistics could be ranked against each other, but
-// high school education comes from each country's own census, which rules ordinals out.
-const onlyHighSchoolStats = `${comparisonPage(['USA', 'Canada'])}&s=ETka7gsT4VeWN9bx7irKgT`
+// ISO codes are metadata, which have no ordinals.
+const onlyIsoCode = `${comparisonPage(['USA', 'Canada'])}&s=2cNpMzJ4v2q1f42BDx3Z`
 
-urbanstatsFixture('comparison edit mode ordinals', onlyHighSchoolStats)
+urbanstatsFixture('comparison edit mode ordinals', onlyIsoCode)
 
 test('csv export in edit mode leaves out ordinals the selected statistics do not have', async (t) => {
     await t.expect(await downloadCSV(t)).notContains('(Rank)')
@@ -77,7 +77,7 @@ test('csv export in edit mode leaves out ordinals the selected statistics do not
     await t.expect(comparisonTable.find('.serif').withExactText('Ord').exists).ok()
 
     const csvContent = await downloadCSV(t)
-    await t.expect(csvContent).contains('High School %')
+    await t.expect(csvContent).contains('ISO Code')
     await t.expect(csvContent).notContains('(Rank)')
 })
 

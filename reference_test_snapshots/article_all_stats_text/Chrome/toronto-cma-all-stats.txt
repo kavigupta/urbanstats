@@ -60,18 +60,18 @@ Individual income C$50k - C$100k %: 0.2671581208705902
 Individual income > C$100k %: 0.13289378583431244
 Housing Units per Adult: 0.47673672437667847
 Housing Units per Person: 0.3859820067882538
-PW Household Size [StatCan]: 3.478714942932129
+PW Household Size: 3.5656511783599854
 Renter %: 0.34852784872055054
 Housing Cost/Income > 30% [StatCan]: 0.30452653765678406
 Commute Car %: 0.7735636830329895
 Commute Bike %: 0.007107836194336414
 Commute Walk %: 0.04202236980199814
 Commute Transit %: 0.15651915967464447
-Median Commute Time (min) [StatCan]: 29.64293670654297
-Commute Time < 15 min % [StatCan]: 0.1827046126127243
-Commute Time 15 - 29 min % [StatCan]: 0.3250325620174408
-Commute Time 30 - 59 min % [StatCan]: 0.37755370140075684
-Commute Time > 60 min % [StatCan]: 0.11470913887023926
+Median Commute Time (min): 29.509065628051758
+Commute Time < 15 min %: 0.1827046126127243
+Commute Time 15 - 29 min %: 0.3250325620174408
+Commute Time 30 - 59 min %: 0.37755370140075684
+Commute Time > 60 min %: 0.11470913887023926
 PW Mean PM2.5 Pollution: 7.011679172515869
 Employed in Agriculture, forestry, fishing and hunting %: 0.00158541405107826
 Employed in Mining, quarrying, and oil and gas extraction %: 0.00040114810690283775
@@ -340,8 +340,8 @@ Housing Units per Adult (Rank): 152
 Housing Units per Adult (Percentile): 2
 Housing Units per Person (Rank): 149
 Housing Units per Person (Percentile): 2
-PW Household Size [StatCan] (Rank): 9
-PW Household Size [StatCan] (Percentile): 77
+PW Household Size (Rank): 9
+PW Household Size (Percentile): 77
 Renter % (Rank): 47
 Renter % (Percentile): 41
 Housing Cost/Income > 30% [StatCan] (Rank): 1
@@ -354,16 +354,16 @@ Commute Walk % (Rank): 80
 Commute Walk % (Percentile): 36
 Commute Transit % (Rank): 2
 Commute Transit % (Percentile): 79
-Median Commute Time (min) [StatCan] (Rank): 1
-Median Commute Time (min) [StatCan] (Percentile): 80
-Commute Time < 15 min % [StatCan] (Rank): 155
-Commute Time < 15 min % [StatCan] (Percentile): 0
-Commute Time 15 - 29 min % [StatCan] (Rank): 58
-Commute Time 15 - 29 min % [StatCan] (Percentile): 12
-Commute Time 30 - 59 min % [StatCan] (Rank): 1
-Commute Time 30 - 59 min % [StatCan] (Percentile): 80
-Commute Time > 60 min % [StatCan] (Rank): 10
-Commute Time > 60 min % [StatCan] (Percentile): 77
+Median Commute Time (min) (Rank): 1
+Median Commute Time (min) (Percentile): 80
+Commute Time < 15 min % (Rank): 155
+Commute Time < 15 min % (Percentile): 0
+Commute Time 15 - 29 min % (Rank): 58
+Commute Time 15 - 29 min % (Percentile): 12
+Commute Time 30 - 59 min % (Rank): 1
+Commute Time 30 - 59 min % (Percentile): 80
+Commute Time > 60 min % (Rank): 10
+Commute Time > 60 min % (Percentile): 77
 PW Mean PM2.5 Pollution (Rank): 21
 PW Mean PM2.5 Pollution (Percentile): 52
 Employed in Agriculture, forestry, fishing and hunting % (Rank): 149
