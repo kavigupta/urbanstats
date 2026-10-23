@@ -1,9 +1,8 @@
+from dataclasses import dataclass
+
+import pandas as pd
+
 from urbanstats.data.canada.canadian_da_data import CensusTables
-from urbanstats.statistics.collections.census import Census2020, race_names
-from urbanstats.statistics.collections.census_canada_same_as_us import (
-    CensusCanadaSameAsUS,
-)
-from urbanstats.statistics.utils import fractionalize
 
 
 def canadian_race_tables() -> CensusTables:
@@ -19,10 +18,10 @@ def canadian_race_tables() -> CensusTables:
             "nvmp": [
                 "  Not a visible minority (120)",
             ],
-            "native_canada": [
+            "native": [
                 "  Indigenous identity (45)",
             ],
-            "asian_canada": [
+            "asian": [
                 "    South Asian",
                 "    Chinese",
                 "    Filipino",
@@ -30,17 +29,17 @@ def canadian_race_tables() -> CensusTables:
                 "    Korean",
                 "    Japanese",
             ],
-            "black_canada": [
+            "black": [
                 "    Black",
             ],
-            "hispanic_canada": [
+            "hispanic": [
                 "    Latin American",
             ],
             "vm_white": [
                 "    Arab",
                 "    West Asian",
             ],
-            "other / mixed_canada": [
+            "other / mixed": [
                 "    Visible minority, n.i.e. (119)",
                 "    Multiple visible minorities",
             ],
@@ -62,52 +61,39 @@ def canadian_race_tables() -> CensusTables:
     )
 
 
-class CensusCanadaRace(CensusCanadaSameAsUS):
-    version = 6
+@dataclass(frozen=True)
+class CanadianRaceCounts:
+    """
+    Counts in the US census's race categories. White is everyone not a visible minority or
+    Indigenous, plus visible minorities who are White; visible minorities in no category go to
+    other / mixed.
+    """
 
-    def us_equivalent_fields(self):
-        return list(race_names)
-
-    def census_tables(self) -> CensusTables:
-        return canadian_race_tables()
-
-    def us_equivalent(self):
-        return Census2020()
-
-    def post_process(self, statistic_table):
-        statistic_table = statistic_table.copy()
-        statistic_table["white_canada"] = (
-            statistic_table["nvmp"] - statistic_table["native_canada"]
-        )
-        negative_white_canada = statistic_table["white_canada"][
-            statistic_table["white_canada"] < 0
-        ]
+    def compute(self, shapefile):
+        t = canadian_race_tables().compute(2021, shapefile).copy()
+        white = t["nvmp"] - t["native"]
         assert (
-            negative_white_canada.sum() > -100
-        ), f"Negative white_canada sum is {negative_white_canada.sum()}, which is too high. Check the underlying data for issues."
-        statistic_table["white_canada"] = statistic_table["white_canada"].clip(lower=0)
-        statistic_table["white_canada"] += statistic_table["vm_white"]
-
-        unallocated_tvmp = (
-            statistic_table.tvmp
-            - statistic_table.asian_canada
-            - statistic_table.black_canada
-            - statistic_table.hispanic_canada
-            - statistic_table.vm_white
-            - statistic_table["other / mixed_canada"]
+            white[white < 0].sum() > -100
+        ), f"Negative white sum is {white[white < 0].sum()}, which is too high. Check the underlying data for issues."
+        unallocated = (
+            t["tvmp"]
+            - t["asian"]
+            - t["black"]
+            - t["hispanic"]
+            - t["vm_white"]
+            - t["other / mixed"]
         )
         assert (
-            unallocated_tvmp[unallocated_tvmp < 0].sum() > -5000
-        ), f"Unallocated TVMP sum is {unallocated_tvmp[unallocated_tvmp < 0].sum()}, which is too high. Check the underlying data for issues."
-
-        unallocated_tvmp = unallocated_tvmp.clip(lower=0)
-        statistic_table["other / mixed_canada"] += unallocated_tvmp
-
-        del statistic_table["vm_white"]
-        del statistic_table["nvmp"]
-        del statistic_table["tvmp"]
-        for column in ["hawaiian_pi_canada"]:
-            assert column not in statistic_table
-            statistic_table[column] = statistic_table.iloc[:, 0] * 0.0
-        fractionalize(statistic_table, *self.internal_statistic_names_list())
-        return statistic_table
+            unallocated[unallocated < 0].sum() > -5000
+        ), f"Unallocated TVMP sum is {unallocated[unallocated < 0].sum()}, which is too high. Check the underlying data for issues."
+        return pd.DataFrame(
+            {
+                "white": white.clip(lower=0) + t["vm_white"],
+                "hispanic": t["hispanic"],
+                "black": t["black"],
+                "asian": t["asian"],
+                "native": t["native"],
+                "hawaiian_pi": t["hispanic"] * 0.0,
+                "other / mixed": t["other / mixed"] + unallocated.clip(lower=0),
+            }
+        )

@@ -1,11 +1,11 @@
 # pylint: disable=duplicate-code
+from dataclasses import dataclass
+
+import pandas as pd
+
 from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import RENT_BURDEN, QuizQuestionDescriptor
-from urbanstats.statistics.collections.census import Census2020
-from urbanstats.statistics.collections.census_canada_same_as_us import (
-    CensusCanadaSameAsUS,
-)
-from urbanstats.statistics.collections.housing_rent_or_own import HousingRentOrOwn
+from urbanstats.statistics.statistic_collection import CanadaStatistics
 from urbanstats.statistics.utils import fractionalize
 
 
@@ -18,17 +18,17 @@ def canadian_tenure_and_burden_tables() -> CensusTables:
     return CensusTables(
         [tenure_table, burden_table],
         {
-            "rent_or_own_rent_canada": [
+            "rent_or_own_rent": [
                 "  Renter",
                 "  Dwelling provided by the local government, First Nation or Indian band",
             ],
-            "rent_or_own_own_canada": [
+            "rent_or_own_own": [
                 "  Owner",
             ],
-            "rent_burden_under_30_canada": [
+            "rent_burden_under_30": [
                 "  Spending less than 30% of income on shelter costs",
             ],
-            "rent_burden_over_30_canada": [
+            "rent_burden_over_30": [
                 "  Spending 30% or more of income on shelter costs",
             ],
             None: [
@@ -41,48 +41,25 @@ def canadian_tenure_and_burden_tables() -> CensusTables:
     )
 
 
-class CensusCanadaHousingRent(CensusCanadaSameAsUS):
-    version = 4
+class CensusCanadaHousingRent(CanadaStatistics):
+    """Housing costs over 30% of income, which the US statistics don't have."""
 
-    def us_equivalent_fields(self):
-        return ["rent_or_own_rent"]
-
-    def census_tables(self) -> CensusTables:
-        return canadian_tenure_and_burden_tables()
-
-    def us_equivalent(self):
-        return HousingRentOrOwn()
+    version = 5
 
     def name_for_each_statistic(self):
-        names = super().name_for_each_statistic()
-        names.update(
-            {
-                "rent_burden_over_30_canada": "Housing Cost/Income > 30% [StatCan]",
-            }
-        )
-        return names
+        return {"rent_burden_over_30_canada": "Housing Cost/Income > 30% [StatCan]"}
 
     def unit_for_each_statistic(self):
         return self.same_for_each_name("percentage")
 
     def varname_for_each_statistic(self):
-        varnames = super().varname_for_each_statistic()
-        varnames.update(
-            {
-                "rent_burden_over_30_canada": "housing_cost_30_percent_or_more",
-            }
-        )
-        return varnames
+        return {"rent_burden_over_30_canada": "housing_cost_30_percent_or_more"}
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("canadian-census-disaggregated")
 
     def quiz_question_descriptors(self):
-        rent_or_own_desc = HousingRentOrOwn().quiz_question_descriptors()[
-            "rent_or_own_rent"
-        ]
         return {
-            "rent_or_own_rent_canada": rent_or_own_desc,
             "rent_burden_over_30_canada": QuizQuestionDescriptor(
                 "higher % of households spending 30% or more of income on shelter costs",
                 RENT_BURDEN,
@@ -92,26 +69,9 @@ class CensusCanadaHousingRent(CensusCanadaSameAsUS):
     def compute_statistics_dictionary_canada(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
-        del existing_statistics, shapefile_table
-        statistics_table = self.census_tables().compute(2021, shapefile)
-        statistics_table = statistics_table.copy()
-        return self.post_process(statistics_table)
-
-    def post_process(self, statistic_table):
-        statistic_table = statistic_table.copy()
-        fractionalize(
-            statistic_table,
-            "rent_or_own_rent_canada",
-            "rent_or_own_own_canada",
-        )
-        del statistic_table["rent_or_own_own_canada"]
-        fractionalize(
-            statistic_table,
-            "rent_burden_under_30_canada",
-            "rent_burden_over_30_canada",
-        )
-        del statistic_table["rent_burden_under_30_canada"]
-        return statistic_table
+        counts = canadian_tenure_and_burden_tables().compute(2021, shapefile)
+        fractionalize(counts, "rent_burden_under_30", "rent_burden_over_30")
+        return {"rent_burden_over_30_canada": counts["rent_burden_over_30"]}
 
 
 def canadian_housing_population_tables() -> CensusTables:
@@ -157,42 +117,22 @@ def canadian_housing_population_tables() -> CensusTables:
     )
 
 
-class CensusCanadaHousingPerPerson(CensusCanadaSameAsUS):
-    version = 5
+@dataclass(frozen=True)
+class CanadianHousingCounts:
+    """Dwellings, people, and adults (all over 20, and 2 in 5 of those 15 to 19)."""
 
-    def us_equivalent_fields(self):
-        return ["housing_per_person", "housing_per_pop"]
-
-    def census_tables(self) -> CensusTables:
-        return CensusTables(
+    def compute(self, shapefile):
+        dwellings = CensusTables(
             ["Total private dwellings (2)"],
-            {
-                "total_dwellings_canada": ["Total private dwellings (2)"],
-            },
+            {"total_dwellings_canada": ["Total private dwellings (2)"]},
             "total_dwellings",
+        ).compute(2021, shapefile)
+        population = canadian_housing_population_tables().compute(2021, shapefile)
+        return pd.DataFrame(
+            {
+                "housing_units": dwellings["total_dwellings_canada"],
+                "housing_population": population["population_total_canada"],
+                "housing_adults": population["population_20_plus_canada"]
+                + population["population_15_to_19_canada"] * (2 / 5),
+            }
         )
-
-    def us_equivalent(self):
-        return Census2020()
-
-    def housing_population_tables(self) -> CensusTables:
-        return canadian_housing_population_tables()
-
-    def compute_statistics_dictionary_canada(
-        self, *, shapefile, existing_statistics, shapefile_table
-    ):
-        del existing_statistics, shapefile_table
-        dwellings_table = self.census_tables().compute(2021, shapefile)
-        population_table = self.housing_population_tables().compute(2021, shapefile)
-        population_18_plus = population_table[
-            "population_20_plus_canada"
-        ] + population_table["population_15_to_19_canada"] * (2 / 5)
-        return {
-            "housing_per_person_canada": (
-                dwellings_table["total_dwellings_canada"]
-                / population_table["population_total_canada"]
-            ),
-            "housing_per_pop_canada": (
-                dwellings_table["total_dwellings_canada"] / population_18_plus
-            ),
-        }

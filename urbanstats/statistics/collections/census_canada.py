@@ -1,39 +1,9 @@
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.canada.canada_density import canada_shapefile_with_densities
-from urbanstats.data.census_histogram import census_histogram_canada
 from urbanstats.geometry.census_aggregation import (
     Crosswalk,
     aggregate_by_census_block_canada,
 )
-from urbanstats.statistics.collections.census_basics import CensusBasicsMixin
-from urbanstats.statistics.statistic_collection import CanadaStatistics
-
-
-class CensusCanada(CensusBasicsMixin, CanadaStatistics):
-    version = 10
-
-    suffix = "canada"
-    source_name = "StatCan"
-    explanation_page = "canadian-census"
-    census_years = (2021, 2011)
-    # for compatibility
-    varname_year_suffix = {2021: "", 2011: "_2010"}
-
-    def census_stats(self, year, shapefile):
-        return compute_census_stats(year, shapefile.geometry)
-
-    def census_histograms(self, year, shapefile):
-        return census_histogram_canada(shapefile.geometry, year)
-
-    def census_median_point(self, shapefile):
-        return compute_census_median_point(2021, shapefile.geometry)
-
-    def compute_statistics_dictionary_canada(
-        self, *, shapefile, existing_statistics, shapefile_table
-    ):
-        return self.compute_census_basics(
-            shapefile=shapefile, existing_statistics=existing_statistics
-        )
 
 
 @permacache_with_remapping_pickle(

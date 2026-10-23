@@ -1,12 +1,24 @@
 from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import QuizQuestionSkip
-from urbanstats.statistics.collections.census_canada_same_as_us import (
-    CensusCanadaSameAsUS,
-)
-from urbanstats.statistics.collections.national_origin_language import (
-    NationalOriginLanguageStatistics,
-)
+from urbanstats.statistics.statistic_collection import CanadaStatistics
 from urbanstats.statistics.utils import fractionalize
+
+
+def canadian_language_counts(statistic_table):
+    """English only, Spanish, French and other non-French counts, from the language tables."""
+    statistic_table = statistic_table.copy()
+    other = (
+        statistic_table["language_total"]
+        - statistic_table["language_english_only"]
+        - statistic_table["language_spanish"]
+        - statistic_table["language_french"]
+    )
+    assert (
+        other[other < 0].sum() > -1000
+    ), f"Negative other language sum is {other[other < 0].sum()}, which is too high. Check the underlying data for issues."
+    statistic_table["language_other_non_french"] = other.clip(lower=0)
+    del statistic_table["language_total"]
+    return statistic_table
 
 
 def canadian_language_tables() -> CensusTables:
@@ -18,14 +30,14 @@ def canadian_language_tables() -> CensusTables:
         [table_name],
         {
             "language_total": [table_name],
-            "language_english_only_canada": [
+            "language_english_only": [
                 "      English",
                 "    English and non-official language(s)",
             ],
-            "language_spanish_canada": [
+            "language_spanish": [
                 "            Spanish",
             ],
-            "language_french_canada": [
+            "language_french": [
                 "      French",
                 "    English and French",
                 "    French and non-official language(s)",
@@ -361,69 +373,40 @@ def canadian_language_tables() -> CensusTables:
     )
 
 
-class CensusCanadaLanguage(CensusCanadaSameAsUS):
-    version = 4
+class CensusCanadaLanguage(CanadaStatistics):
+    """The Canadian languages the US statistics don't have, as shares of everyone."""
 
-    def us_equivalent_fields(self):
-        return ["language_english_only", "language_spanish"]
-
-    def census_tables(self) -> CensusTables:
-        return canadian_language_tables()
-
-    def us_equivalent(self):
-        return NationalOriginLanguageStatistics()
+    version = 5
 
     def name_for_each_statistic(self):
-        names = super().name_for_each_statistic()
-        names.update(
-            {
-                "language_french_canada": "French at Home % [StatCan]",
-                "language_other_non_french_canada": (
-                    "Other (non-French) at Home % [StatCan]"
-                ),
-            }
-        )
-        return names
+        return {
+            "language_french_canada": "French at Home % [StatCan]",
+            "language_other_non_french_canada": "Other (non-French) at Home % [StatCan]",
+        }
 
     def unit_for_each_statistic(self):
         return self.same_for_each_name("percentage")
 
     def varname_for_each_statistic(self):
-        varnames = super().varname_for_each_statistic()
-        varnames.update(
-            {
-                "language_french_canada": "french_at_home",
-                "language_other_non_french_canada": "other_non_french_at_home",
-            }
-        )
-        return varnames
-
-    def quiz_question_descriptors(self):
         return {
-            **super().quiz_question_descriptors(),
-            **QuizQuestionSkip.several(
-                "language_french_canada",
-                "language_other_non_french_canada",
-            ),
+            "language_french_canada": "french_at_home",
+            "language_other_non_french_canada": "other_non_french_at_home",
         }
 
-    def post_process(self, statistic_table):
-        statistic_table = statistic_table.copy()
-        statistic_table["language_other_non_french_canada"] = (
-            statistic_table["language_total"]
-            - statistic_table["language_english_only_canada"]
-            - statistic_table["language_spanish_canada"]
-            - statistic_table["language_french_canada"]
+    def explanation_page_for_each_statistic(self):
+        return self.same_for_each_name("canadian-census-disaggregated")
+
+    def quiz_question_descriptors(self):
+        return QuizQuestionSkip.several(*self.internal_statistic_names_list())
+
+    def compute_statistics_dictionary_canada(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        counts = canadian_language_counts(
+            canadian_language_tables().compute(2021, shapefile)
         )
-        negative_other = statistic_table["language_other_non_french_canada"][
-            statistic_table["language_other_non_french_canada"] < 0
-        ]
-        assert (
-            negative_other.sum() > -1000
-        ), f"Negative other language sum is {negative_other.sum()}, which is too high. Check the underlying data for issues."
-        statistic_table["language_other_non_french_canada"] = statistic_table[
-            "language_other_non_french_canada"
-        ].clip(lower=0)
-        del statistic_table["language_total"]
-        fractionalize(statistic_table, *self.internal_statistic_names_list())
-        return statistic_table
+        fractionalize(counts, *counts.columns)
+        return {
+            "language_french_canada": counts["language_french"],
+            "language_other_non_french_canada": counts["language_other_non_french"],
+        }

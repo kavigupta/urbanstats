@@ -20,7 +20,7 @@ test('links to the broader source that covers every region', async (t) => {
     await waitForLoading()
     await t.expect(disclaimer.count).eql(1, 'expected the cross-source-border disclaimer')
     await t.expect(disclaimer.innerText).match(
-        /^[\d\u202f]+ of the [\d\u202f]+ US Urban Centers in USA are missing from this ranking\. US Urban Centers can span more than one country, and Population is not available for the ones that do\. See Population \[GHS-POP\] instead, which covers all of them\.$/,
+        /^[\d\u202f]+ of the [\d\u202f]+ US Urban Centers in USA are missing from this ranking\. US Urban Centers can span more than one country, and Population is not available for the ones extending outside the USA and Canada\. See Population \[GHS-POP\] instead, which covers all of them\.$/,
     )
     await t.expect(disclaimerLink.innerText).eql('Population [GHS-POP]')
     await screencap(t)
@@ -109,7 +109,7 @@ test('explains limited coverage for a non-crossing type in a broad universe', as
     await waitForLoading()
     await t.expect(disclaimer.count).eql(1, 'expected the cross-source-border disclaimer')
     await t.expect(disclaimer.innerText).match(
-        /^[\d\u202f]+ of the [\d\u202f]+ Subnational Regions are missing from this ranking\. White % is only available in the USA \(and we only compute it for regions contained entirely within the USA\)\.$/,
+        /^[\d\u202f]+ of the [\d\u202f]+ Subnational Regions are missing from this ranking\. White % is only available in the USA and Canada \(and we only compute it for regions contained entirely within the USA and Canada\)\.$/,
     )
     await t.expect(disclaimerLink.count).eql(0, 'no broader source or domestic equivalent to link to')
     await screencap(t)
@@ -129,7 +129,7 @@ test('explains limited coverage in a universe spanning more than one jurisdictio
     await waitForLoading()
     await t.expect(disclaimer.count).eql(1, 'expected the cross-source-border disclaimer')
     await t.expect(disclaimer.innerText).match(
-        /^[\d\u202f]+ of the [\d\u202f]+ Urban Centers are missing from this ranking\. Population is only available in the USA \(and we only compute it for regions contained entirely within the USA\)\. See Population \[GHS-POP\] instead, which covers all of them\.$/,
+        /^[\d\u202f]+ of the [\d\u202f]+ Urban Centers are missing from this ranking\. Population is only available in the USA and Canada \(and we only compute it for regions contained entirely within the USA and Canada\)\. See Population \[GHS-POP\] instead, which covers all of them\.$/,
     )
     await t.expect(disclaimerLink.innerText).eql('Population [GHS-POP]')
     await screencap(t)

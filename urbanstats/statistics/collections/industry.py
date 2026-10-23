@@ -1,11 +1,18 @@
 from urbanstats.acs import industry
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import INDUSTRY, QuizQuestionDescriptor
-from urbanstats.statistics.statistic_collection import ACSStatisticsColection
+from urbanstats.statistics.national_census import (
+    ACSCounts,
+    NationalCensusStatistics,
+    StatCanCounts,
+)
 from urbanstats.statistics.utils import fractionalize
 
 
-class IndustryStatistics(ACSStatisticsColection):
+class IndustryStatistics(NationalCensusStatistics):
+    version = 1
+
     def __init__(self):
         super().__init__()
         assert set(self.internal_statistic_names_list()) == set(
@@ -19,7 +26,10 @@ class IndustryStatistics(ACSStatisticsColection):
         return self.same_for_each_name("percentage")
 
     def legacy_statistic_names(self):
-        return {v: f"Employed in {v}" for v in industry.industry_display.values()}
+        return {
+            **super().legacy_statistic_names(),
+            **{v: f"Employed in {v}" for v in industry.industry_display.values()},
+        }
 
     def varname_for_each_statistic(self):
         return {
@@ -153,11 +163,91 @@ class IndustryStatistics(ACSStatisticsColection):
             " public finance activities, public order and safety activities, etc.",
         }
 
-    def mutate_acs_results(self, statistics_table):
-        fractionalize(statistics_table, *self.internal_statistic_names_list())
+    def mutate_counts(self, counts):
+        fractionalize(counts, *self.internal_statistic_names_list())
 
-    def acs_name(self):
-        return "industry"
+    def country_inputs(self):
+        return {
+            "USA": ACSCounts(self.acs_entity()),
+            "Canada": StatCanCounts(self.census_tables_canada()),
+        }
+
+    def census_tables_canada(self):
+        # pylint: disable=line-too-long
+        return CensusTables(
+            [
+                "Total - Labour force aged 15 years and over by industry - Sectors - North American Industry Classification System (NAICS) 2017 - 25% sample data (194)",
+            ],
+            {
+                None: [
+                    "Total - Labour force aged 15 years and over by industry - Sectors - North American Industry Classification System (NAICS) 2017 - 25% sample data (194)",
+                    "  Industry - not applicable (190)",
+                    "  All industries (191)",
+                ],
+                "industry_agriculture,_forestry,_fishing_and_hunting": [
+                    "    11 Agriculture, forestry, fishing and hunting",
+                ],
+                # "industry_mining,_quarrying,_and_oil_and_gas_extraction": "higher % of workers employed in the mining, quarrying, and oil/gas extraction industries",
+                "industry_mining,_quarrying,_and_oil_and_gas_extraction": [
+                    "    21 Mining, quarrying, and oil and gas extraction",
+                ],
+                "industry_accommodation_and_food_services": [
+                    "    72 Accommodation and food services",
+                ],
+                "industry_arts,_entertainment,_and_recreation": [
+                    "    71 Arts, entertainment and recreation",
+                ],
+                "industry_construction": [
+                    "    23 Construction",
+                ],
+                "industry_educational_services": [
+                    "    61 Educational services",
+                ],
+                "industry_health_care_and_social_assistance": [
+                    "    62 Health care and social assistance",
+                ],
+                "industry_finance_and_insurance": [
+                    "    52 Finance and insurance",
+                ],
+                "industry_real_estate_and_rental_and_leasing": [
+                    "    53 Real estate and rental and leasing",
+                ],
+                "industry_information": [
+                    "    51 Information and cultural industries",
+                ],
+                "industry_manufacturing": [
+                    "    31-33 Manufacturing",
+                ],
+                "industry_other_services,_except_public_administration": [
+                    "    81 Other services (except public administration)",
+                ],
+                "industry_administrative_and_support_and_waste_management_services": [
+                    "    56 Administrative and support, waste management and remediation services",
+                ],
+                "industry_management_of_companies_and_enterprises": [
+                    "    55 Management of companies and enterprises",
+                ],
+                "industry_professional,_scientific,_and_technical_services": [
+                    "    54 Professional, scientific and technical services",
+                ],
+                "industry_public_administration": [
+                    "    91 Public administration",
+                ],
+                "industry_retail_trade": [
+                    "    44-45 Retail trade",
+                ],
+                "industry_transportation_and_warehousing": [
+                    "    48-49 Transportation and warehousing",
+                ],
+                "industry_utilities": [
+                    "    22 Utilities",
+                ],
+                "industry_wholesale_trade": [
+                    "    41 Wholesale trade",
+                ],
+            },
+            "population",
+        )
 
     def acs_entity(self):
         return ACSDataEntity(

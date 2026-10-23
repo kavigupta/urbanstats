@@ -45,5 +45,5 @@ test('change select to pointer_in_class and navigate forwards', async (t) => {
     const select = Selector('select[data-test-id=tablePointerSelect]')
     await t.click(select).click(select.find('option').withExactText('Within Type'))
     await t.click(Selector('button[data-test-id="1"]'))
-    await t.expect(Selector('div').withExactText('Fresno Urban Center').exists).ok()
+    await t.expect(Selector('div').withExactText('Buffalo Urban Center').exists).ok()
 })

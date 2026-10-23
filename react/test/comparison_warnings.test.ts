@@ -47,7 +47,7 @@ urbanstatsFixture('comparison warnings across data sources', comparisonPage([
 test('comparison-warnings-all-sources-disabled', async (t) => {
     // GHSL is off by default, so turning off the two censuses leaves nothing enabled
     await checkTextboxes(t, ['National Census', 'Canadian Census'])
-    await t.expect(warningNamed('National Census, Canadian Census, and GHSL are disabled. Enable one to see this statistic.', 'Population').exists).ok()
+    await t.expect(warningNamed('National Census and GHSL are disabled. Enable one to see this statistic.', 'Population').exists).ok()
     await t.expect(Selector('a').withExactText('Area').exists).ok()
     await screencap(t)
 })

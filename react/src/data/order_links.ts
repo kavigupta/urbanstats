@@ -220,71 +220,18 @@ const value: Record<string, number[]> = {
         2,
         2,
         2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        1
+        2
     ],
     "5M Person Circle": [
         316,
-        221
+        126
     ],
     "CA Census Subdivision": [
         106,
         106,
         106,
         106,
-        106,
-        7
-    ],
-    "CA Population Center": [
-        520,
-        17
+        18
     ],
     "CCD": [
         11,
@@ -327,15 +274,7 @@ const value: Record<string, number[]> = {
         11,
         11,
         11,
-        11,
-        11,
-        11,
-        11,
-        11,
-        11,
-        11,
-        11,
-        9
+        2
     ],
     "City": [
         13,
@@ -371,37 +310,23 @@ const value: Record<string, number[]> = {
         13,
         13,
         13,
-        13,
-        13,
-        13,
-        13,
-        13,
-        13,
-        13,
-        13,
-        4
-    ],
-    "Congressional District (1960s)": [
-        518,
-        19
+        13
     ],
     "County": [
         159,
         159,
-        159,
-        60
+        124
     ],
     "County Cross CD": [
         136,
         136,
         136,
-        129
+        34
     ],
     "Hospital Service Area": [
         149,
         149,
-        149,
-        90
+        144
     ],
     "Metropolitan Cluster": [
         11,
@@ -444,15 +369,7 @@ const value: Record<string, number[]> = {
         11,
         11,
         11,
-        11,
-        11,
-        11,
-        11,
-        11,
-        11,
-        11,
-        11,
-        9
+        2
     ],
     "Neighborhood": [
         31,
@@ -469,10 +386,7 @@ const value: Record<string, number[]> = {
         31,
         31,
         31,
-        31,
-        31,
-        31,
-        10
+        8
     ],
     "School District": [
         38,
@@ -486,34 +400,29 @@ const value: Record<string, number[]> = {
         38,
         38,
         38,
-        38,
-        38,
-        38,
-        5
+        24
     ],
     "State House District": [
         105,
         105,
         105,
         105,
-        105,
-        12
+        22
     ],
     "State Senate District": [
         267,
-        267,
-        3
+        175
     ],
     "Subnational Region": [
         140,
         140,
         140,
-        117
+        22
     ],
     "Urban Area": [
         195,
         195,
-        147
+        52
     ],
     "Urban Center": [
         50,
@@ -524,9 +433,7 @@ const value: Record<string, number[]> = {
         50,
         50,
         50,
-        50,
-        50,
-        37
+        42
     ],
     "ZIP": [
         13,
@@ -562,15 +469,7 @@ const value: Record<string, number[]> = {
         13,
         13,
         13,
-        13,
-        13,
-        13,
-        13,
-        13,
-        13,
-        13,
-        13,
-        4
+        13
     ]
 }
 export default value

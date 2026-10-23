@@ -64,10 +64,10 @@ test('csv export in edit mode covers the selected statistics, not the whole tree
 })
 
 // USA and Canada are both countries, so their statistics could be ranked against each other, but
-// the generation statistics come from each country's own census, which rules ordinals out.
-const onlyGenerationStats = `${comparisonPage(['USA', 'Canada'])}&s=D7tCowVik3d2eRfvgW`
+// household size comes from each country's own census, which rules ordinals out.
+const onlyHouseholdSizeStats = `${comparisonPage(['USA', 'Canada'])}&s=879J3dtLH54utxEDiiSR5`
 
-urbanstatsFixture('comparison edit mode ordinals', onlyGenerationStats)
+urbanstatsFixture('comparison edit mode ordinals', onlyHouseholdSizeStats)
 
 test('csv export in edit mode leaves out ordinals the selected statistics do not have', async (t) => {
     await t.expect(await downloadCSV(t)).notContains('(Rank)')
@@ -77,7 +77,7 @@ test('csv export in edit mode leaves out ordinals the selected statistics do not
     await t.expect(comparisonTable.find('.serif').withExactText('Ord').exists).ok()
 
     const csvContent = await downloadCSV(t)
-    await t.expect(csvContent).contains('Millennial %')
+    await t.expect(csvContent).contains('PW Household Size')
     await t.expect(csvContent).notContains('(Rank)')
 })
 

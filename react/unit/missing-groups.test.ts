@@ -26,18 +26,23 @@ const california: StatPath[] = [
     'gpw_population',
     'generation_silent', 'generation_boomer', 'generation_genx',
     'generation_millenial', 'generation_genz', 'generation_genalpha',
+    'marriage_never_married', 'marriage_married_not_divorced', 'marriage_divorced',
     'household_size_pw',
     'area',
 ]
 
 const massachusetts = california
 
-/** A Canadian province: the same statistics, but from the Canadian census instead of the US one. */
+/**
+ * A Canadian province: the same statistics, from the Canadian census where it is a separate source,
+ * and from the National Census where the two countries' statistics are merged.
+ */
 const alberta: StatPath[] = [
-    'population_2021_canada', 'population_2011_canada', 'population_change_2011_canada',
+    'population', 'population_2010', 'population_change_2010',
     'gpw_population',
-    'generation_silent_canada', 'generation_boomer_canada', 'generation_genx_canada',
-    'generation_millenial_canada', 'generation_genz_canada', 'generation_genalpha_canada',
+    'generation_silent', 'generation_boomer', 'generation_genx',
+    'generation_millenial', 'generation_genz', 'generation_genalpha',
+    'marriage_never_married', 'marriage_married_not_divorced', 'marriage_divorced',
     'household_size_pw_canada',
     'area',
 ]
@@ -116,7 +121,7 @@ void test('a comparison warns about the source one of its regions is missing', (
 void test('every source disabled says so without singling one out', () => {
     assert.deepStrictEqual(
         warnings([california, ontario], [...populationGroup, 'show_stat_year_2020']),
-        ['Population: **National Census**, **Canadian Census**, and **GHSL** are disabled. Enable one to see this statistic.'],
+        ['Population: **National Census** and **GHSL** are disabled. Enable one to see this statistic.'],
     )
 })
 
