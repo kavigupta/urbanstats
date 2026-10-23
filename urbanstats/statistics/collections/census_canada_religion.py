@@ -53,7 +53,6 @@ class CensusCanadaReligion(CanadaStatistics):
         )
 
     def name_for_each_statistic(self):
-        # no source tag, as these name rows that other countries' sources share
         return {
             "religion_catholic_canada": "Catholic %",
             "religion_protestant_canada": "Protestant (non-Catholic Christian) %",
