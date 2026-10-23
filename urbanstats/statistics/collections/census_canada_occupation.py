@@ -1,13 +1,14 @@
 from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import QuizQuestionSkip
-from urbanstats.statistics.statistic_collection import CanadaStatistics
+from urbanstats.statistics.statistic_collection import (
+    CanadaStatistics,
+    statcan_legacy_names,
+)
 from urbanstats.statistics.utils import fractionalize
 
 
 class CensusCanadaOccupation(CanadaStatistics):
     version = 1
-
-    had_statcan_label = True
 
     def census_tables(self) -> CensusTables:
         occupation_table = (
@@ -55,6 +56,9 @@ class CensusCanadaOccupation(CanadaStatistics):
             },
             "population",
         )
+
+    def legacy_statistic_names(self):
+        return statcan_legacy_names(self)
 
     def name_for_each_statistic(self):
         return {

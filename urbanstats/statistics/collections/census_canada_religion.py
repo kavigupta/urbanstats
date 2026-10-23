@@ -4,13 +4,14 @@ from urbanstats.games.quiz_question_metadata import (
     QuizQuestionDescriptor,
     QuizQuestionSkip,
 )
-from urbanstats.statistics.statistic_collection import CanadaStatistics
+from urbanstats.statistics.statistic_collection import (
+    CanadaStatistics,
+    statcan_legacy_names,
+)
 
 
 class CensusCanadaReligion(CanadaStatistics):
     version = 4
-
-    had_statcan_label = True
 
     def census_tables(self) -> CensusTables:
         religion_table = "Total - Religion for the population in private households - 25% sample data (161)"
@@ -51,6 +52,9 @@ class CensusCanadaReligion(CanadaStatistics):
             },
             "population",
         )
+
+    def legacy_statistic_names(self):
+        return statcan_legacy_names(self)
 
     def name_for_each_statistic(self):
         return {

@@ -3,14 +3,15 @@ from urbanstats.games.quiz_question_metadata import (
     EDUCATION_FIELD,
     QuizQuestionDescriptor,
 )
-from urbanstats.statistics.statistic_collection import CanadaStatistics
+from urbanstats.statistics.statistic_collection import (
+    CanadaStatistics,
+    statcan_legacy_names,
+)
 from urbanstats.statistics.utils import fractionalize
 
 
 class CensusCanadaEducationField(CanadaStatistics):
     version = 3
-
-    had_statcan_label = True
 
     def dependencies(self):
         return ["education_ugrad_canada"]
@@ -95,6 +96,9 @@ class CensusCanadaEducationField(CanadaStatistics):
             },
             "population",
         )
+
+    def legacy_statistic_names(self):
+        return statcan_legacy_names(self)
 
     def name_for_each_statistic(self):
         return {
