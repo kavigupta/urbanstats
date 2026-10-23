@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react'
 
 import { useMissingGroupReasonsOfEveryGroup, useMissingGroups, useSelectedGroups } from '../page_template/statistic-settings'
-import { Category, Group, GroupIdentifier, StatPath, statPathToOrder, Subcategory } from '../page_template/statistic-tree'
+import { firstStatOrder, GroupIdentifier, StatPath } from '../page_template/statistic-tree'
 
 import { useScreenshotMode } from './screenshot'
 import { warningMessage } from './warning-message'
@@ -43,13 +43,11 @@ export function useArticleWarnings(onEdit: () => void): ArticleWarning[] {
         }]
     }
 
-    return missingGroups
-        .map(({ groupOrCategory, reason }) => ({
-            order: firstStatOrder(groupOrCategory),
-            name: groupOrCategory.name,
-            content: warningMessage(reason, groupOrCategory, onEdit),
-        }))
-        .sort((a, b) => a.order - b.order)
+    return missingGroups.map(({ groupOrCategory, reason }) => ({
+        order: firstStatOrder(groupOrCategory),
+        name: groupOrCategory.name,
+        content: warningMessage(reason, groupOrCategory, onEdit),
+    }))
 }
 
 export function useWarningsByGroup(): Map<GroupIdentifier, ReactNode> {
@@ -64,10 +62,6 @@ export function useWarningsByGroup(): Map<GroupIdentifier, ReactNode> {
         result.set(group.id, warningMessage(reason, group))
     }
     return result
-}
-
-function firstStatOrder(groupOrCategory: Group | Subcategory | Category): number {
-    return Math.min(...Array.from(groupOrCategory.statPaths).map(path => statPathToOrder.get(path)!))
 }
 
 export function placeWarnings(statPaths: StatPath[], warnings: ArticleWarning[]): WarningRow[] {
