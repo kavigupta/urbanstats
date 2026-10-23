@@ -89,6 +89,31 @@ void test('a statistic that only the disabled source has names that source', () 
     )
 })
 
+/** PW density at 250m comes from the National Census only; at 64km, from GHSL too. */
+const californiaDensities: StatPath[] = [...california, 'ad_0.25', 'ad_64', 'gpw_pw_density_64']
+
+const densityGroups: EnabledKey[] = ['show_stat_group_ad_0.25', 'show_stat_group_ad_64']
+
+void test('statistics missing for different sources each name their own', () => {
+    assert.deepStrictEqual(
+        warnings([californiaDensities], [...densityGroups, 'show_stat_year_2020']),
+        [
+            'PW Density (r=250m): **National Census** is disabled. Enable it to see this statistic.',
+            'PW Density (r=64km): **National Census** and **GHSL** are disabled. Enable one to see this statistic.',
+        ],
+    )
+})
+
+void test('warns only about the statistics a disabled source takes away', () => {
+    // GHSL is enabled, so the 64km density is still in the table.
+    assert.deepStrictEqual(
+        warnings([californiaDensities], [
+            ...densityGroups, 'show_stat_year_2020', 'show_stat_source_Population_GHSL',
+        ]),
+        ['PW Density (r=250m): **National Census** is disabled. Enable it to see this statistic.'],
+    )
+})
+
 void test('every source disabled says so without singling one out', () => {
     assert.deepStrictEqual(
         warnings([california, ontario], [...populationGroup, 'show_stat_year_2020']),
