@@ -151,7 +151,7 @@ test('statistic-universe availability test', async (t) => {
     await t
         .click(Selector('img').withAttribute('class', 'universe-selector'))
     const options = Selector('img').withAttribute('class', 'universe-selector-option')
-    await t.expect(options.count).eql(56)
+    await t.expect(options.count).eql(70)
     // take the first 10 options and get the alt attribute
     const firstTen: (string | null)[] = []
     for (let i = 0; i < 10; i++) {
@@ -161,13 +161,13 @@ test('statistic-universe availability test', async (t) => {
         'world',
         'North America',
         'Oceania',
+        'Canada',
         'USA',
         'Alabama, USA',
         'Alaska, USA',
         'Arizona, USA',
         'Arkansas, USA',
         'California, USA',
-        'Colorado, USA',
     ])
 })
 
@@ -176,7 +176,7 @@ urbanstatsFixture('statistic ascending descending', `${target}/statistic.html?st
 // get elements on page
 
 async function getElements(): Promise<string[]> {
-    const elements = Selector('div').withText(/, USA$/)
+    const elements = Selector('div').withText(/, (USA|Canada)$/)
     const texts: string[] = []
     for (let i = 0; i < (await elements.count); i++) {
         texts.push(await elements.nth(i).innerText)
@@ -192,12 +192,12 @@ test('statistic-ascending-descending-check-descending', async (t) => {
         'Texas, USA',
         'Florida, USA',
         'New York, USA',
+        'Ontario, Canada',
         'Pennsylvania, USA',
         'Illinois, USA',
         'Ohio, USA',
         'Georgia, USA',
         'North Carolina, USA',
-        'Michigan, USA',
     ])
 })
 
@@ -214,16 +214,16 @@ test('statistic-ascending-descending-check-click', async (t) => {
         .eql(`${target}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10&order=ascending`)
 
     await t.expect(await getElements()).eql([
+        'Nunavut, Canada',
+        'Yukon, Canada',
+        'Northwest Territories, Canada',
+        'Prince Edward Island, Canada',
+        'Newfoundland and Labrador, Canada',
         'Wyoming, USA',
         'Vermont, USA',
         'District of Columbia, USA',
         'Alaska, USA',
-        'North Dakota, USA',
-        'South Dakota, USA',
-        'Delaware, USA',
-        'Montana, USA',
-        'Rhode Island, USA',
-        'Maine, USA',
+        'New Brunswick, Canada',
     ])
     // click the button again
     await t.click(Selector('.testing-order-swap'))
