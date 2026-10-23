@@ -86,7 +86,7 @@ class TransportationModeStatistics(ACSStatisticsColection):
         del statistics_table["transportation_means_other"]
 
     def acs_name(self):
-        return "transportation_mode"
+        return "transportation_means"
 
     def acs_entity(self):
         return ACSDataEntity(

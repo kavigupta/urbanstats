@@ -145,6 +145,15 @@ test('universe keyboard navigation', async (t) => {
     await t.expect(getLocation()).eql(`${target}/statistic.html?statname=Population&article_type=City&start=501&amount=20&universe=New+Mexico%2C+USA`)
 })
 
+urbanstatsFixture('statistic with a legacy name', `${target}/statistic.html?statname=Population+%5BStatCan%5D&article_type=Subnational+Region&start=1&amount=20&universe=Canada`)
+
+test('statistic-legacy-name', async (t) => {
+    await waitForLoading()
+    await t.expect(getLocation())
+        .eql(`${target}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=20&universe=Canada`)
+    await t.expect(Selector('div').withExactText('Ontario, Canada').exists).ok()
+})
+
 urbanstatsFixture('statistic universe availability test', `${target}/statistic.html?statname=Commute+Car+__PCT__&article_type=Subnational+Region&start=21&amount=20&universe=USA`)
 
 test('statistic-universe availability test', async (t) => {

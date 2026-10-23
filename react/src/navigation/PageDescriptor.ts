@@ -6,6 +6,7 @@ import type { ComparisonPanel } from '../components/comparison-panel'
 import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
 import { ArticleRow, loadArticles } from '../components/load-article'
 import type { QuizPanel } from '../components/quiz-panel'
+import { LegacyStatName, whatOldQuizzesMeantBy } from '../data/legacy_statistic_columns'
 import valid_geographies from '../data/mapper/used_geographies'
 import statnames from '../data/statistic_name_list'
 import type { DataCreditPanel } from '../data-credit'
@@ -108,6 +109,14 @@ const statisticSchema = z.object({
     ]),
 )
 
+// Links from before a statistic was renamed or merged into another
+function currentStatName(statname: string): string {
+    if ((statnames as readonly string[]).includes(statname) || !(statname in whatOldQuizzesMeantBy)) {
+        return statname
+    }
+    return whatOldQuizzesMeantBy[statname as LegacyStatName]
+}
+
 const statisticSchemaFromParams = z.union([
     z.object({
         article_type: z.optional(z.enum(valid_geographies)).catch(undefined),
@@ -121,7 +130,7 @@ const statisticSchemaFromParams = z.union([
         sort_column: z.optional(z.coerce.number().int()).default(0),
     }).and(z.union([
         z.object({
-            statname: z.string().transform(s => s.replaceAll('__PCT__', '%')).pipe(z.enum(statnames)),
+            statname: z.string().transform(s => s.replaceAll('__PCT__', '%')).transform(currentStatName).pipe(z.enum(statnames)),
         }),
         z.object({
             uss: z.string(),

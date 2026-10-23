@@ -164,7 +164,10 @@ export function DataCreditPanel(): ReactNode {
                         <h1>Census Data</h1>
                         <div>
 
-                            All data listed in this section is collected from the 2020 US Census.
+                            All data listed in this section is collected from the 2020 US Census. Population, density,
+                            race, and housing units per person and per adult are also available in Canada, from the 2021
+                            Canadian Census (see Canadian Data below), and the two countries&apos; values are combined into
+                            one National Census statistic.
 
                             <NRef name="population">Population</NRef>
                             <div>
@@ -402,6 +405,9 @@ export function DataCreditPanel(): ReactNode {
                         <h1>American Community Survey Data</h1>
                         <div>
                             All data listed in this section is collected from the 2021 American Community Survey 5-year estimates.
+                            Citizenship, language, generation, commute mode, industry, marriage, and renter % are also available
+                            in Canada, from the 2021 Canadian Census (see Canadian Data below), and the two countries&apos; values
+                            are combined into one National Census statistic.
 
                             <NRef name="citizenship">Citizenship</NRef>
                             <div>
@@ -705,7 +711,8 @@ export function DataCreditPanel(): ReactNode {
                             <NRef name="2010">2010 Census</NRef>
                             <div>
                                 <p>
-                                    2010 Census data is treated the same way as 2020 Census data.
+                                    2010 Census data is treated the same way as 2020 Census data. In Canada, we use the 2011
+                                    Census in its place.
                                 </p>
                             </div>
                         </div>
@@ -1055,6 +1062,7 @@ export function DataCreditPanel(): ReactNode {
                                 </p>
                                 <p>
                                     For Generation, Marriage, Industry, and Commute time, we are able to use identical definitions to the US data.
+                                    For Language, French counts as Other, as it does in the US data.
                                     For Income, LICO-AT, and ..., we use similar definitions to the US data, but with Canadian-specific
                                     thresholds (e.g., the income thresholds are in CAD, not USD, and we use LICO-AT rather than US Census&apos;s
                                     poverty thresholds).
