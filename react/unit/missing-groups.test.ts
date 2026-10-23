@@ -33,14 +33,13 @@ const california: StatPath[] = [
 
 const massachusetts = california
 
-/** A Canadian province: the same statistics, and one only the Canadian census has. */
+/** A Canadian province: the same statistics, and a housing one only the Canadian census has. */
 const alberta: StatPath[] = [
     'population', 'population_2010', 'population_change_2010',
     'gpw_population',
     'generation_silent', 'generation_boomer', 'generation_genx',
     'generation_millenial', 'generation_genz', 'generation_genalpha',
     'marriage_never_married', 'marriage_married_not_divorced', 'marriage_divorced',
-    'household_size_pw',
     'rent_burden_over_30_canada',
     'area',
 ]
@@ -109,7 +108,7 @@ void test('statistics missing for different sources each name their own', () => 
 
 void test('a comparison warns only about the statistics a disabled source takes away', () => {
     // The Canadian census is enabled, so Alberta's rent burden is still in the table;
-    // the warning is only about household size, which both regions get from the National Census.
+    // the warning is only about California's household size.
     assert.deepStrictEqual(
         warnings([california, alberta], [
             ...populationGroup, ...housingGroups, 'show_stat_year_2020',
@@ -123,6 +122,17 @@ void test('every source disabled says so without singling one out', () => {
     assert.deepStrictEqual(
         warnings([california, ontario], [...populationGroup, 'show_stat_year_2020']),
         ['Population: **National Census** and **GHSL** are disabled. Enable one to see this statistic.'],
+    )
+})
+
+void test('regions each missing a different source name all of them', () => {
+    // Made up: each region has its population from one source only. The statistics from the other
+    // source keep it from being the region's only Population source, which would force it on.
+    const censusPopulation: StatPath[] = ['population', 'gpw_pw_density_64', 'area']
+    const ghslPopulation: StatPath[] = ['gpw_population', 'generation_genz', 'area']
+    assert.deepStrictEqual(
+        warnings([censusPopulation, ghslPopulation], [...populationGroup, 'show_stat_year_2020']),
+        ['Population: **National Census** and **GHSL** are disabled. Enable them to see this statistic.'],
     )
 })
 
