@@ -64,17 +64,17 @@ test('comparison-warnings-enable-one-opens-edit-mode', async (t) => {
 })
 
 test('comparison-warnings-name-the-disabled-source', async (t) => {
-    // Household size comes from the two censuses only, so turning off the national one
+    // Education comes from the two censuses only, so turning off the national one
     // leaves Ontario's showing and California's gone -- naming the Population sources as a whole would
     // be a lie, since enabling the others is what brings the population statistic itself back.
     await withEditMode(t, async () => {
         await uncheckAllCategories(t)
-        await t.click(categoryCheckbox('housing'))
+        await t.click(categoryCheckbox('education'))
         await t.click(editCheckbox('National Census'))
     })
-    await t.expect(warningNamed('National Census is disabled. Enable it to see this statistic.', 'PW Household Size').exists).ok()
+    await t.expect(warningNamed('National Census is disabled. Enable it to see this statistic.', 'High School %').exists).ok()
     // Ontario still has its own, from the Canadian census
-    await t.expect(Selector('a').withExactText('PW Household Size [StatCan]').exists).ok()
+    await t.expect(Selector('a').withExactText('High school diploma [25-64] %').exists).ok()
 })
 
 // Two US states, so the National Census and GHSL are both choosable, and GHSL only has 2020.

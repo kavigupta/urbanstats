@@ -18,9 +18,6 @@ class CensusCanadaSimple(CanadaStatistics):
     directly fractionalized and used with no further processing.
 
     You can override `post_process` to do something more sophisticated.
-
-    Unlike `CensusCanadaSameAsUS`, you need to provide quiz question names,
-    explanation pages, etc.
     """
 
     @abstractmethod

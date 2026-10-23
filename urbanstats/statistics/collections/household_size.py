@@ -1,49 +1,26 @@
 # pylint: disable=duplicate-code
-import numpy as np
-
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import HOUSING, QuizQuestionDescriptor
-from urbanstats.statistics.statistic_collection import ACSStatisticsColection
+from urbanstats.statistics.national_census import (
+    ACSCounts,
+    NationalCensusStatistics,
+    StatCanCounts,
+)
+
+# Canada's top bin is 5+; 5.75 is the size that makes US regions' values from 5+ match those from
+# the ACS's 5, 6, and 7+ bins best.
+HOUSEHOLD_SIZES = {
+    "household_size_1": 1,
+    "household_size_2": 2,
+    "household_size_3": 3,
+    "household_size_4": 4,
+    "household_size_5_plus": 5.75,
+}
 
 
-def compute_population_weighted_household_size(
-    statistics_table,
-    prefix="household_size_",
-    output_name="household_size_pw",
-    max_size=7,
-):
-    """
-    Calculate population-weighted average household size.
-
-    Formula: sum(households * size^2) / sum(households * size).
-
-    """
-    # Build household_sizes dict based on max_size
-    household_sizes = {str(i): i for i in range(1, max_size)}
-    household_sizes[f"{max_size}_plus"] = max_size + 0.5
-
-    numerator = np.zeros(len(statistics_table))
-    denominator = np.zeros(len(statistics_table))
-
-    for category in household_sizes:
-        col_name = f"{prefix}{category}"
-        households = statistics_table[col_name]
-        size = household_sizes[category]
-        numerator += households * size * size
-        denominator += households * size
-        del statistics_table[col_name]
-
-    assert not list(statistics_table)
-
-    statistics_table[output_name] = np.where(
-        denominator > 0,
-        numerator / denominator,
-        np.nan,
-    )
-
-
-class HouseholdSizeStatistics(ACSStatisticsColection):
-    version = 2
+class HouseholdSizeStatistics(NationalCensusStatistics):
+    version = 3
 
     def name_for_each_statistic(self):
         return {
@@ -74,11 +51,42 @@ class HouseholdSizeStatistics(ACSStatisticsColection):
             ),
         }
 
-    def mutate_acs_results(self, statistics_table):
-        compute_population_weighted_household_size(statistics_table)
+    def mutate_counts(self, counts):
+        numerator = sum(counts[k] * size**2 for k, size in HOUSEHOLD_SIZES.items())
+        denominator = sum(counts[k] * size for k, size in HOUSEHOLD_SIZES.items())
+        counts["household_size_pw"] = numerator / denominator
 
-    def acs_name(self):
-        return "household_size"
+    def country_inputs(self):
+        return {
+            "USA": ACSCounts(self.acs_entity()),
+            "Canada": StatCanCounts(self.census_tables_canada()),
+        }
+
+    def census_tables_canada(self):
+        return CensusTables(
+            ["Total - Private households by household size - 100% data"],
+            {
+                None: [
+                    "Total - Private households by household size - 100% data",
+                ],
+                "household_size_1": [
+                    "  1 person",
+                ],
+                "household_size_2": [
+                    "  2 persons",
+                ],
+                "household_size_3": [
+                    "  3 persons",
+                ],
+                "household_size_4": [
+                    "  4 persons",
+                ],
+                "household_size_5_plus": [
+                    "  5 or more persons",
+                ],
+            },
+            "population",
+        )
 
     def acs_entity(self):
         return ACSDataEntity(
@@ -107,15 +115,11 @@ class HouseholdSizeStatistics(ACSStatisticsColection):
                     "Estimate!!Total:!!Owner occupied:!!4-person household",
                     "Estimate!!Total:!!Renter occupied:!!4-person household",
                 ],
-                "household_size_5": [
+                "household_size_5_plus": [
                     "Estimate!!Total:!!Owner occupied:!!5-person household",
                     "Estimate!!Total:!!Renter occupied:!!5-person household",
-                ],
-                "household_size_6": [
                     "Estimate!!Total:!!Owner occupied:!!6-person household",
                     "Estimate!!Total:!!Renter occupied:!!6-person household",
-                ],
-                "household_size_7_plus": [
                     "Estimate!!Total:!!Owner occupied:!!7-or-more person household",
                     "Estimate!!Total:!!Renter occupied:!!7-or-more person household",
                 ],

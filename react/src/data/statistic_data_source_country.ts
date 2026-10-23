@@ -699,9 +699,7 @@ export default [
         "USA"
     ],
     [
-        "USA"
-    ],
-    [
+        "USA",
         "Canada"
     ],
     [
@@ -1214,33 +1212,23 @@ export default [
         "USA"
     ],
     [
-        "USA"
-    ],
-    [
+        "USA",
         "Canada"
     ],
     [
-        "USA"
-    ],
-    [
+        "USA",
         "Canada"
     ],
     [
-        "USA"
-    ],
-    [
+        "USA",
         "Canada"
     ],
     [
-        "USA"
-    ],
-    [
+        "USA",
         "Canada"
     ],
     [
-        "USA"
-    ],
-    [
+        "USA",
         "Canada"
     ],
     [

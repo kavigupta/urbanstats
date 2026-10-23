@@ -511,7 +511,7 @@ def just_2020(
 
 
 def just_2020_multi_source(
-    *col_names: str, year: int = 2020, canada: bool = True
+    *col_names: str, year: int = 2020
 ) -> Dict[str, StatisticGroup]:
     """
     Even with a single source, these are multi-source statistics named after the US column, so their
@@ -522,14 +522,7 @@ def just_2020_multi_source(
             {
                 year: [
                     MultiSource(
-                        {
-                            population_census: col_name,
-                            **(
-                                {population_canada: col_name + "_canada"}
-                                if canada
-                                else {}
-                            ),
-                        },
+                        {population_census: col_name},
                         col_name,
                         indented_name="2020",
                     )
@@ -579,7 +572,7 @@ def just_2020_category_multi_source(
     return {
         cat_key: StatisticCategory(
             name=cat_name,
-            contents=just_2020_multi_source(*col_names, canada=False),
+            contents=just_2020_multi_source(*col_names),
         )
     }
 
@@ -752,7 +745,6 @@ statistics_tree = StatisticTree(
                         "citizenship_citizen_by_birth",
                         "citizenship_citizen_by_naturalization",
                         "citizenship_not_citizen",
-                        canada=False,
                     ),
                 ),
                 **in_subcategory(
@@ -771,7 +763,6 @@ statistics_tree = StatisticTree(
                     just_2020_multi_source(
                         "language_english_only",
                         "language_spanish",
-                        canada=False,
                     ),
                     just_2020(
                         "language_french_canada",
@@ -811,7 +802,6 @@ statistics_tree = StatisticTree(
                         "education_high_school",
                         "education_ugrad",
                         "education_grad",
-                        canada=False,
                     ),
                     just_2020(
                         "education_high_school_canada",
@@ -827,7 +817,6 @@ statistics_tree = StatisticTree(
                         "education_field_stem",
                         "education_field_humanities",
                         "education_field_business",
-                        canada=False,
                     ),
                     just_2020(
                         "education_field_stem_canada",
@@ -955,7 +944,6 @@ statistics_tree = StatisticTree(
                 ),
                 **just_2020_multi_source(
                     "rent_or_own_rent",
-                    canada=False,
                 ),
                 **just_2020(
                     "rent_burden_over_30_canada",
@@ -974,7 +962,6 @@ statistics_tree = StatisticTree(
                         "transportation_means_bike_no_wfh",
                         "transportation_means_walk_no_wfh",
                         "transportation_means_transit_no_wfh",
-                        canada=False,
                     ),
                 ),
                 **just_2020_multi_source(
@@ -1162,7 +1149,6 @@ statistics_tree = StatisticTree(
                         "marriage_never_married",
                         "marriage_married_not_divorced",
                         "marriage_divorced",
-                        canada=False,
                     ),
                 ),
             },
