@@ -2,7 +2,7 @@ import assert from 'assert/strict'
 import { describe, test } from 'node:test'
 
 import { fitInsetMapBounds } from '../src/mapper/settings/edit-insets'
-import { Inset } from '../src/urban-stats-script/constants/insets'
+import { Inset, layoutInsets } from '../src/urban-stats-script/constants/insets'
 import { computeAspectRatioForInsets, fitCoordBox } from '../src/utils/coordinates'
 
 function inset(name: string, mainMap: boolean, bottomLeft: [number, number], topRight: [number, number]): Inset {
@@ -14,7 +14,7 @@ void describe('fitInsetMapBounds', () => {
         const original = [inset('main', true, [0, 0], [1, 1])]
         const canvasAspectRatio = computeAspectRatioForInsets(original)
         const fitted = fitInsetMapBounds([inset('main', true, [0, 0], [0.5, 1])], original, canvasAspectRatio)
-        assert.ok(Math.abs(computeAspectRatioForInsets(fitted) / canvasAspectRatio - 1) < 1e-6)
+        assert.ok(Math.abs(computeAspectRatioForInsets(layoutInsets(fitted).leaves) / canvasAspectRatio - 1) < 1e-6)
     })
 
     void test('a box made taller near a pole stays within the latitudes the map can show', () => {

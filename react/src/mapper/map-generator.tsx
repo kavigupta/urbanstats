@@ -1,5 +1,5 @@
 import Color from 'color'
-import React, { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import React, { createContext, ReactNode, RefObject, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { MapInstance, MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
@@ -17,7 +17,7 @@ import { ClusterMap as SyauClusterMap } from '../syau/syau-cluster-map'
 import { Universe } from '../universe'
 import { getAllParseErrors } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color-utils'
-import { Inset, keepInsets } from '../urban-stats-script/constants/insets'
+import { Inset, keepInsets, LaidOutInset, layoutInsets } from '../urban-stats-script/constants/insets'
 import { CommonMap } from '../urban-stats-script/constants/map'
 import { ScaleInstance } from '../urban-stats-script/constants/scale'
 import { TextBox } from '../urban-stats-script/constants/text-box'
@@ -38,7 +38,7 @@ import { plainNumber } from '../utils/unit'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
 import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar'
-import { InsetMap } from './components/InsetMap'
+import { InsetEditHandlers, InsetMap } from './components/InsetMap'
 import { AddTextBox, MapTextBoxComponent } from './components/MapTextBox'
 import { loadInsets } from './context'
 import { canonicalWidth, centroidsByName, markerArea, markerRadius, MapResult, mapVisuals, mergedByName } from './map-rendering'
@@ -74,7 +74,12 @@ export function useMapGenerator({ mapSettings, typeEnvironment }: { mapSettings:
     return result
 }
 
-type MapUIProps<T> = T & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: { edited: Inset[], handlers: (i: number) => Edit<Inset> } } | { mode: 'textBoxes', editTextBoxes: { edited: TextBox[], add: () => void, handlers: (i: number) => Edit<TextBox> } })
+type MapUIProps<T> = T & (
+    { mode: 'view' }
+    | { mode: 'uss' }
+    | { mode: 'insets', editInsets: { edited: LaidOutInset[], handlers: (i: number) => InsetEditHandlers, overlay: (container: RefObject<HTMLDivElement>) => ReactNode } }
+    | { mode: 'textBoxes', editTextBoxes: { edited: TextBox[], add: () => void, handlers: (i: number) => Edit<TextBox> } }
+)
 
 export interface MapGenerator<T = unknown> {
     ui: (props: MapUIProps<T>) => { node: ReactNode, exportImage?: () => Promise<HTMLCanvasElement> }
@@ -158,6 +163,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
 
     const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, geographies, cache, label, derivedUnit: rampLabelling.unit })
 
+    // Keyed by map bounds, which layoutInsets keeps as it copies each inset
     const featuresByCoordBox = new Map<CoordBox, GeoJSON.Feature[]>()
     const featuresIn = (coordBox: CoordBox): GeoJSON.Feature[] => {
         if (!featuresByCoordBox.has(coordBox)) {
@@ -165,7 +171,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         }
         return featuresByCoordBox.get(coordBox)!
     }
-    const acceptedInsets = keepInsets(mapResultMain.value.insets, coordBox => featuresIn(coordBox).length > 0)
+    const acceptedInsets = layoutInsets(keepInsets(mapResultMain.value.insets, coordBox => featuresIn(coordBox).length > 0)).leaves
         .map(inset => ({ inset, insetFeatures: inset.mainMap ? features : featuresIn(inset.coordBox) }))
 
     // Don't change the aspect ratio while editing, otherwise things get nasty
@@ -241,7 +247,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         })
 
         const textBoxes = props.mode === 'insets'
-            ? undefined
+            ? props.editInsets.overlay(mapsContainerRef)
             : (
                     <OverrideTheme theme="Light Mode">
                         {(props.mode === 'textBoxes' ? props.editTextBoxes.edited : mapResultMain.value.textBoxes).map((textBox, i, boxes) => (
@@ -381,6 +387,8 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, who
                             position: 'relative',
                             maxHeight: '100%',
                             margin: 'auto',
+                            // Keeps the z-index of edit handles local
+                            isolation: 'isolate',
                         }}
                     >
                         {maps}
@@ -395,7 +403,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, who
 }
 
 function EmptyMapLayout({ geographies, loading }: { geographies: GeographySelection[], loading: boolean }): ReactNode {
-    const insets = loadInsets(geographies.length > 0 ? universesOf(geographies) : 'world')
+    const insets = layoutInsets(loadInsets(geographies.length > 0 ? universesOf(geographies) : 'world')).leaves
 
     return (
         <MapLayout

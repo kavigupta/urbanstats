@@ -16,7 +16,7 @@ import { mapUSSFromStat, pageRowIndices, sortedRowIndices, statDataFromTable } f
 import { clusterRadius } from '../../src/syau/cluster-geometry'
 import { toStatement } from '../../src/urban-stats-script/ast'
 import { doRender } from '../../src/urban-stats-script/constants/color-utils'
-import { Inset, keepInsets } from '../../src/urban-stats-script/constants/insets'
+import { Inset, keepInsets, layoutInsets } from '../../src/urban-stats-script/constants/insets'
 import { ClusterMap, CMap, CMapRGB, PMap } from '../../src/urban-stats-script/constants/map'
 import { Table, TableCellValue } from '../../src/urban-stats-script/constants/table'
 import { deriveConditionLabel } from '../../src/urban-stats-script/derive-human-readable-name'
@@ -342,7 +342,7 @@ export async function mapCard(origin: string, pageData: Extract<PageData, { kind
         label: label === undefined ? '' : reifyString(label, {}),
         contents,
         opacity: map.opacity,
-        insets: keepInsets(map.insets, coordBox => hasContent(contents, coordBox)),
+        insets: layoutInsets(keepInsets(map.insets, coordBox => hasContent(contents, coordBox))).leaves,
         basemap: map.basemap,
         ramp: visuals.ramp === undefined
             ? undefined

@@ -4,6 +4,7 @@ import { inspect } from 'node:util'
 
 import { getRamps } from '../src/mapper/ramps'
 import { colorType } from '../src/urban-stats-script/constants/color'
+import { layoutInsets } from '../src/urban-stats-script/constants/insets'
 import { CMap, CMapRGB, ClusterMap, Outline, PMap } from '../src/urban-stats-script/constants/map'
 import { regressionType, regressionResultType } from '../src/urban-stats-script/constants/regr'
 import { instantiate, ScaleDescriptor, Scale } from '../src/urban-stats-script/constants/scale'
@@ -2152,7 +2153,7 @@ void test('test basic map with custom insets', () => {
     assert.strictEqual(Array.isArray(resultMapRaw.insets), true)
     assert.strictEqual(resultMapRaw.insets.length > 0, true)
     // Verify it's the world insets (should have main map)
-    const hasMainMap = resultMapRaw.insets.some(inset => inset.mainMap)
+    const hasMainMap = layoutInsets(resultMapRaw.insets).leaves.some(inset => inset.mainMap)
     assert.strictEqual(hasMainMap, true)
     assert.deepStrictEqual(effects, [])
 })
@@ -2192,21 +2193,22 @@ void test('test basic map with constructed insets', () => {
     const resultMap = execute(parseProgram(program), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+    const insets = layoutInsets(resultMapRaw.insets).leaves
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B'])
     assert.deepStrictEqual(resultMapRaw.data, [1, 2])
 
     // Check that custom insets are properly set
-    assert.strictEqual(Array.isArray(resultMapRaw.insets), true)
-    assert.strictEqual(resultMapRaw.insets.length, 2)
+    assert.strictEqual(Array.isArray(insets), true)
+    assert.strictEqual(insets.length, 2)
 
     // Verify the main inset
-    const mainInset = resultMapRaw.insets.find(inset => inset.mainMap)
+    const mainInset = insets.find(inset => inset.mainMap)
     assert.strictEqual(mainInset !== undefined, true)
     assert.deepStrictEqual(mainInset!.bottomLeft, [0, 0])
     assert.deepStrictEqual(mainInset!.topRight, [1, 1])
 
     // Verify the Alaska inset
-    const alaskaInset = resultMapRaw.insets.find(inset => !inset.mainMap)
+    const alaskaInset = insets.find(inset => !inset.mainMap)
     assert.strictEqual(alaskaInset !== undefined, true)
     assert.deepStrictEqual(alaskaInset!.bottomLeft, [0.7, 0.7])
     assert.deepStrictEqual(alaskaInset!.topRight, [1, 1])
