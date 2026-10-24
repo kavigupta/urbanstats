@@ -6,7 +6,6 @@
 
 # vulture: ignore -- these are lists of cells used to track progress on
 unsorted = [
-    ("G02", "Median_tot_hhd_inc_weekly", "Median total household income weekly"),
     # G01 Selected Person Characteristics by Sex, counting Persons
     ("G01", "Count_psns_occ_priv_dwgs_P", "Count of Persons in occupied private dwellings Persons"),
     ("G01", "Count_Persons_other_dwgs_P", "Count of Persons in other dwellings Persons"),
@@ -6272,6 +6271,8 @@ unused = [
     ("G02", "Median_tot_fam_inc_weekly", "Median total family income weekly"),
     ("G02", "Average_num_psns_per_bedroom", "Average number of Persons per bedroom"),
     ("G02", "Average_household_size", "Average household size"),
+    # duplicates the household income brackets (G33), which we use
+    ("G02", "Median_tot_hhd_inc_weekly", "Median total household income weekly"),
     # marital status by age, and the total; we only use the all-ages count of each status
     ("G05", "P_15_19_yr_Married", "PERSONS 15 19 years Married"),
     ("G05", "P_15_19_yr_Separated", "PERSONS 15 19 years Separated"),
