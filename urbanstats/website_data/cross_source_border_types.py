@@ -45,7 +45,12 @@ def statistic_data_source_country() -> List[Optional[List[str]]]:
         for statistic in collection.name_for_each_statistic()
     }
     return [
-        list(collection_by_statistic[statistic].data_source_countries) or None
+        list(
+            collection_by_statistic[statistic].data_source_countries_for_statistic(
+                statistic
+            )
+        )
+        or None
         for statistic in internal_statistic_names()
     ]
 

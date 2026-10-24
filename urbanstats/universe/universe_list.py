@@ -45,6 +45,16 @@ def universe_by_universe_type():
             "Saskatchewan, Canada",
             "Yukon, Canada",
         ],
+        "australian_state": [
+            "Australian Capital Territory, Australia",
+            "New South Wales, Australia",
+            "Northern Territory, Australia",
+            "Queensland, Australia",
+            "South Australia, Australia",
+            "Tasmania, Australia",
+            "Victoria, Australia",
+            "Western Australia, Australia",
+        ],
     }
 
 

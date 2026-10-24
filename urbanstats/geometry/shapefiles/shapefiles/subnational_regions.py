@@ -89,7 +89,9 @@ SUBNATIONAL_REGIONS = make_shapefile(
     universe_provider=CombinedUniverseProvider(
         [*INTERNATIONAL_PROVIDERS, STATE_PROVIDER, PROVINCE_PROVIDER]
     ),
-    source_countries=ContainedWithinCountries({"USA": "State", "Canada": "Province"}),
+    source_countries=ContainedWithinCountries(
+        {"USA": "State", "Canada": "Province", "Australia": "State"}
+    ),
     cross_source_borders=CrossSourceBorders(can_straddle=False),
     abbreviation="SUBN",
     data_credit=[

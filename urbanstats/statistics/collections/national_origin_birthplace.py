@@ -3,11 +3,18 @@ from urbanstats.games.quiz_question_metadata import (
     NATIONAL_ORIGIN,
     QuizQuestionDescriptor,
 )
-from urbanstats.statistics.statistic_collection import ACSUSPRStatisticsColection
-from urbanstats.statistics.utils import fractionalize
+from urbanstats.statistics.national_census import (
+    ACSUSPRCounts,
+    AustralianCounts,
+    NationalCensusStatistics,
+)
+
+US_ONLY = ("birthplace_us_not_state", "birthplace_us_state")
 
 
-class NationalOriginBirthplaceStatistics(ACSUSPRStatisticsColection):
+class NationalOriginBirthplaceStatistics(NationalCensusStatistics):
+    version = 1
+
     def legacy_statistic_names(self):
         return {"Born outside US %": "Born outside country %"}
 
@@ -41,16 +48,38 @@ class NationalOriginBirthplaceStatistics(ACSUSPRStatisticsColection):
             },
         )
 
-    def mutate_acs_results(self, statistics_table):
-        fractionalize(
-            statistics_table,
-            "birthplace_non_us",
-            "birthplace_us_not_state",
-            "birthplace_us_state",
-        )
+    def countries_for_each_statistic(self):
+        return {
+            name: ("USA",) if name in US_ONLY else ("USA", "Australia")
+            for name in self.internal_statistic_names_list()
+        }
 
-    def acs_name(self):
-        return "birthplace"
+    def mutate_counts(self, counts):
+        # each country only has its own columns, and a shapefile might have just one country
+        for column in [*US_ONLY, "birthplace_in_australia"]:
+            if column not in counts:
+                counts[column] = 0
+        total = (
+            counts.birthplace_non_us
+            + counts.birthplace_us_not_state
+            + counts.birthplace_us_state
+            + counts.birthplace_in_australia
+        )
+        for column in self.internal_statistic_names_list():
+            counts[column] = counts[column] / total
+
+    def country_inputs(self):
+        return {
+            "USA": ACSUSPRCounts(*self.acs_entities()),
+            "Australia": AustralianCounts(
+                {
+                    "G01": {
+                        "birthplace_non_us": ["Birthplace_Elsewhere_P"],
+                        "birthplace_in_australia": ["Birthplace_Australia_P"],
+                    }
+                }
+            ),
+        }
 
     def acs_entities(self):
         return [

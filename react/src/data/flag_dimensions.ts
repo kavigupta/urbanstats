@@ -291,6 +291,14 @@ const value: Record<string, number> = {
     "Prince Edward Island, Canada": 1.4598540145985401,
     "Quebec, Canada": 1.4981273408239701,
     "Saskatchewan, Canada": 2.0,
-    "Yukon, Canada": 2.0
+    "Yukon, Canada": 2.0,
+    "Australian Capital Territory, Australia": 2.0,
+    "New South Wales, Australia": 2.0,
+    "Northern Territory, Australia": 2.0,
+    "Queensland, Australia": 2.0,
+    "South Australia, Australia": 2.0,
+    "Tasmania, Australia": 2.0,
+    "Victoria, Australia": 2.0,
+    "Western Australia, Australia": 2.0
 }
 export default value

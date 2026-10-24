@@ -6272,5 +6272,165 @@ export default {
             "mainMap": true,
             "name": "Yukon, Canada"
         }
+    ],
+    "Australian Capital Territory, Australia": [
+        {
+            "bottomLeft": [
+                0,
+                0
+            ],
+            "topRight": [
+                1,
+                1
+            ],
+            "coordBox": [
+                148.763824462629,
+                -35.9197139739207,
+                149.400406598886,
+                -35.1252865787126
+            ],
+            "mainMap": true,
+            "name": "Australian Capital Territory, Australia"
+        }
+    ],
+    "New South Wales, Australia": [
+        {
+            "bottomLeft": [
+                0,
+                0
+            ],
+            "topRight": [
+                1,
+                1
+            ],
+            "coordBox": [
+                140.9999999998,
+                -37.51301077616231,
+                153.64706398175088,
+                -28.156585693375
+            ],
+            "mainMap": true,
+            "name": "New South Wales, Australia"
+        }
+    ],
+    "Northern Territory, Australia": [
+        {
+            "bottomLeft": [
+                0,
+                0
+            ],
+            "topRight": [
+                1,
+                1
+            ],
+            "coordBox": [
+                128.99291097501535,
+                -26.0003455879785,
+                138.00339453442538,
+                -11.108508223424165
+            ],
+            "mainMap": true,
+            "name": "Northern Territory, Australia"
+        }
+    ],
+    "Queensland, Australia": [
+        {
+            "bottomLeft": [
+                0,
+                0
+            ],
+            "topRight": [
+                1,
+                1
+            ],
+            "coordBox": [
+                137.995111703942,
+                -29.178915024109,
+                153.55674208182893,
+                -10.678885153228547
+            ],
+            "mainMap": true,
+            "name": "Queensland, Australia"
+        }
+    ],
+    "South Australia, Australia": [
+        {
+            "bottomLeft": [
+                0,
+                0
+            ],
+            "topRight": [
+                1,
+                1
+            ],
+            "coordBox": [
+                128.99437217339712,
+                -38.07036098064238,
+                141.002206445071,
+                -25.9983301164417
+            ],
+            "mainMap": true,
+            "name": "South Australia, Australia"
+        }
+    ],
+    "Tasmania, Australia": [
+        {
+            "bottomLeft": [
+                0,
+                0
+            ],
+            "topRight": [
+                1,
+                1
+            ],
+            "coordBox": [
+                144.59960935334783,
+                -43.65100502635005,
+                148.36827620244821,
+                -39.71113109362103
+            ],
+            "mainMap": true,
+            "name": "Tasmania, Australia"
+        }
+    ],
+    "Victoria, Australia": [
+        {
+            "bottomLeft": [
+                0,
+                0
+            ],
+            "topRight": [
+                1,
+                1
+            ],
+            "coordBox": [
+                140.961914419815,
+                -39.14452249610376,
+                149.9794983052285,
+                -33.9802086353202
+            ],
+            "mainMap": true,
+            "name": "Victoria, Australia"
+        }
+    ],
+    "Western Australia, Australia": [
+        {
+            "bottomLeft": [
+                0,
+                0
+            ],
+            "topRight": [
+                1,
+                1
+            ],
+            "coordBox": [
+                112.91194237665965,
+                -35.14175666971313,
+                129.0030576304415,
+                -13.732223058115665
+            ],
+            "mainMap": true,
+            "name": "Western Australia, Australia"
+        }
     ]
 } as const
