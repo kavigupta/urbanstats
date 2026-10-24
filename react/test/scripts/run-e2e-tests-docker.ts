@@ -46,7 +46,7 @@ export async function runE2eTestsDocker(args: string[], hostArch: boolean, docke
 }
 
 // A port of its own, so parallel runs don't fight over one.
-function freePort(): Promise<number> {
+export function freePort(): Promise<number> {
     return new Promise((resolve) => {
         const server = net.createServer()
         server.listen(0, () => {

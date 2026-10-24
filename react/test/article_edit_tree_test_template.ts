@@ -483,7 +483,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.expect(categoryCheckbox('income').exists).notOk()
     })
 
-    // States have population from both the US Census and GHSL, so they're the articles that
+    // States have population from both the National Census and GHSL, so they're the articles that
     // get a source section to choose between them.
     platformFixture('article edit tree sources', `${target}/article.html?longname=California%2C+USA`)
 
@@ -509,7 +509,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
         await t.click(ghslCheck)
         await t.expect(populationRow('2020 [GHSL]').exists).ok()
-        await t.expect(populationRow('2020 [US Census]').exists).ok()
+        await t.expect(populationRow('2020 [National Census]').exists).ok()
         await screencap(t)
     })
 

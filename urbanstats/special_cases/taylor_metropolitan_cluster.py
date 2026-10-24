@@ -1,15 +1,10 @@
 import geopandas as gpd
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
-from urbanstats.special_cases.country import subnational_regions
-from urbanstats.special_cases.ghsl_urban_center import (
-    attach_subnational_suffxes,
-    classify_areas_by_subnational_region,
-)
 
 
 @permacache_with_remapping_pickle(
-    "urbanstats/special_cases/taylor_metropolitan_cluster/load_taylor_metropolitan_clusters_post_pruning_3"
+    "urbanstats/special_cases/taylor_metropolitan_cluster/load_taylor_metropolitan_clusters_post_pruning_4"
 )
 def load_taylor_metropolitan_clusters_post_pruning(min_km2=0.5):
     tmc = load_taylor_metropolitan_clusters_pre_pruning()
@@ -24,25 +19,4 @@ def load_taylor_metropolitan_clusters_pre_pruning():
     )
     bad_names = list(tmc.name[tmc.name.apply(lambda x: "?" in x)])
     assert not bad_names, bad_names
-    subn = subnational_regions()
-    tmc["index_"] = tmc.index
-    table = classify_areas_by_subnational_region(subn, tmc)
-    table_updated = table.copy()
-    for name, iso_code in [
-        ("Kongdongdao Village", "CNSD"),
-        ("Hei Ling Chau-Chi Ma Wan Peninsula-Cheung Chau", "CNHK"),
-        ("Mangsee", "MY12"),
-        ("Betio", "KIG"),
-    ]:
-        [idx] = tmc.index[tmc.name == name]
-        table_updated.loc[idx] = [{iso_code[:2]}, {iso_code}]
-    attach_subnational_suffxes(
-        tmc, subn, table_updated, name_column="name", more_general_direction=True
-    )
-    tmc["shortname"] = (
-        tmc.name
-        + tmc.mid.apply(lambda x: " (" + x + ")" if x else "")
-        + " Metropolitan Cluster"
-    )
-    tmc["longname"] = tmc.shortname + ", " + tmc.suffix
     return tmc

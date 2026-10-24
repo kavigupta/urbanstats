@@ -1,11 +1,24 @@
 # we want to be pretty explicit about the parameters, so its fine if there is some duplication
 # pylint: disable=duplicate-code
+from dataclasses import dataclass
+
 import geopandas as gpd
 from permacache import permacache
 
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
+from urbanstats.geometry.shapefiles.row_functions import RowFunction, column
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
+
+
+@dataclass(frozen=True)
+class NativeAreaName(RowFunction):
+    """The name of the native area whose AIANNHCE code inner gives."""
+
+    inner: RowFunction
+
+    def __call__(self, row):
+        return ce_to_name()[self.inner(row)]
 
 
 def is_native_statistical_area(row):
@@ -13,18 +26,18 @@ def is_native_statistical_area(row):
     return "OTSA" in x or "SDTSA" in x or "ANVSA" in x or "TDSA" in x
 
 
-NATIVE_AREAS = Shapefile(
-    hash_key="native_areas_2",
+NATIVE_AREAS = make_shapefile(
+    geometry_key="native_areas_2",
     path="named_region_shapefiles/cb_2022_us_aiannh_500k.zip",
-    shortname_extractor=lambda x: f"{x.NAMELSAD}",
-    cleanname_extractor=lambda x: x.NAME,
-    longname_extractor=lambda x: f"{x.NAMELSAD}, USA",
-    additional_columns_computer={"geoid": lambda x: x.GEOID},
+    shortname_extractor=column("NAMELSAD"),
+    cleanname_extractor=column("NAME"),
+    longname_extractor=column("NAMELSAD") + ", USA",
+    additional_columns_computer={"geoid": column("GEOID")},
     filter=lambda x: not is_native_statistical_area(x),
     meta=dict(type="Native Area", source="Census", type_category="Native"),
     does_overlap_self=False,
     universe_provider=us_domestic_provider(),
-    subset_masks={"USA": SelfSubset()},
+    source_countries=InCountry("USA"),
     abbreviation="NAAR",
     data_credit=dict(
         linkText="US Census",
@@ -34,18 +47,18 @@ NATIVE_AREAS = Shapefile(
     wikidata_sourcer=None,
     special_data_sources=["congressional_representatives_indirect"],
 )
-NATIVE_STATISTICAL_AREAS = Shapefile(
-    hash_key="native_statistical_areas",
+NATIVE_STATISTICAL_AREAS = make_shapefile(
+    geometry_key="native_statistical_areas",
     path="named_region_shapefiles/cb_2022_us_aiannh_500k.zip",
-    shortname_extractor=lambda x: f"{x.NAMELSAD}",
-    cleanname_extractor=lambda x: x.NAME,
-    longname_extractor=lambda x: f"{x.NAMELSAD}, USA",
-    additional_columns_computer={"geoid": lambda x: x.GEOID},
+    shortname_extractor=column("NAMELSAD"),
+    cleanname_extractor=column("NAME"),
+    longname_extractor=column("NAMELSAD") + ", USA",
+    additional_columns_computer={"geoid": column("GEOID")},
     filter=is_native_statistical_area,
     meta=dict(type="Native Statistical Area", source="Census", type_category="Native"),
     does_overlap_self=False,
     universe_provider=us_domestic_provider(),
-    subset_masks={"USA": SelfSubset()},
+    source_countries=InCountry("USA"),
     abbreviation="NASA",
     data_credit=dict(
         linkText="US Census",
@@ -55,18 +68,21 @@ NATIVE_STATISTICAL_AREAS = Shapefile(
     wikidata_sourcer=None,
     special_data_sources=["congressional_representatives_indirect"],
 )
-NATIVE_SUBDIVISIONS = Shapefile(
-    hash_key="native_subdivisions_2",
+NATIVE_SUBDIVISIONS = make_shapefile(
+    geometry_key="native_subdivisions_2",
     path="named_region_shapefiles/cb_2022_us_aitsn_500k.zip",
-    shortname_extractor=lambda x: f"{x.NAMELSAD}",
-    cleanname_extractor=lambda x: x.NAME,
-    longname_extractor=lambda x: f"{x.NAMELSAD}, {ce_to_name()[x.AIANNHCE]}, USA",
-    additional_columns_computer={"geoid": lambda x: x.GEOID},
+    shortname_extractor=column("NAMELSAD"),
+    cleanname_extractor=column("NAME"),
+    longname_extractor=column("NAMELSAD")
+    + ", "
+    + NativeAreaName(column("AIANNHCE"))
+    + ", USA",
+    additional_columns_computer={"geoid": column("GEOID")},
     filter=lambda x: True,
     meta=dict(type="Native Subdivision", source="Census", type_category="Native"),
     does_overlap_self=False,
     universe_provider=us_domestic_provider(),
-    subset_masks={"USA": SelfSubset()},
+    source_countries=InCountry("USA"),
     abbreviation="NASD",
     data_credit=dict(
         linkText="US Census",

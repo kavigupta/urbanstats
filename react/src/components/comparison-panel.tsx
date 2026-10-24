@@ -11,13 +11,14 @@ import { Navigator } from '../navigation/Navigator'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { StatGroupSettings, useVisibleRows } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
+import { desktopContentWidth } from '../page_template/utils'
 import { compareArticleRows } from '../sorting'
 import { Universe, universeContext } from '../universe'
 import { mixWithBackground } from '../utils/color'
 import { sanitize } from '../utils/paths'
 import { notWaiting, waiting } from '../utils/promiseStream'
 import { Article } from '../utils/protos'
-import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
+import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass, useWindowWidth } from '../utils/responsive'
 import { TransposeContext } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
@@ -31,7 +32,7 @@ import { ArticleRow, getHighlightIndex, isCongressionalRepresentativesMetadataRo
 import { CommonMaplibreMap, MapAttribution, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding } from './map-common'
 import { PlotProps, pullRelevantPlotProps, useExpandedByStat } from './plots'
 import { createScreenshot, ScreencapElements, ScreenshotContext, ScreenshotContextType, useScreenshotMode } from './screenshot'
-import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
+import { computeComparisonWidthColumns, computeMaxColumns, computeScrollColumnsDivisor, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
 import { computeNameSpecsWithGroups } from './statistic-name-specs'
 import { TableContents, CellSpec, PlotSpec, SuperHeaderSpec, TableLayout, TopLeftCellSpec } from './supertable'
@@ -435,6 +436,9 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
                 warningRows: warningPlacements,
             }
 
+    const windowWidth = useWindowWidth()
+    const fullWidth = !mobileLayout && widthColumns > computeMaxColumns(mobileLayout)
+
     const csvExportCallback = useCSVExport(localArticlesToUse, props.rows, includeOrdinalsInExport, joinedString)
 
     return (
@@ -459,6 +463,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
                     screencap={(...args) => createScreenshot(screencapElements, ...args)}
                     screenshotContext={props.screenshotContext}
                     csvExportCallback={csvExportCallback}
+                    fullWidth={fullWidth}
                 >
                     <DndContext
                         sensors={sensors}
@@ -467,7 +472,8 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
                         collisionDetection={closestCenter}
                     >
                         <SortableContext items={localArticlesToUse.map(a => a.shortname)} strategy={transpose ? verticalListSortingStrategy : horizontalListSortingStrategy}>
-                            <div>
+                            {/* As wide as the table would be if it scrolled in the sidebar layout */}
+                            <div style={fullWidth ? { maxWidth: widthColumns / computeScrollColumnsDivisor(false) * desktopContentWidth(windowWidth, false), marginInline: 'auto' } : undefined}>
                                 <div className={headerTextClass}>Comparison</div>
                                 <div className={subHeaderTextClass}>{joinedString}</div>
                                 <div style={{ marginBlockEnd: '16px' }}></div>
@@ -498,7 +504,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
                                 {/* Outside the scroll and tableRef, so its buttons stay on screen and out of screenshots. */}
                                 <StagingControls onExitStaging={editState.exitEditMode} />
 
-                                <MaybeScroll widthColumns={widthColumns}>
+                                <MaybeScroll widthColumns={widthColumns} scale={fullWidth ? desktopContentWidth(windowWidth, true) / desktopContentWidth(windowWidth, false) : 1}>
                                     <div ref={tableRef} data-test-id="comparison-table">
                                         {editMode
                                             ? (

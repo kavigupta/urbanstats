@@ -164,7 +164,11 @@ export function DataCreditPanel(): ReactNode {
                         <h1>Census Data</h1>
                         <div>
 
-                            All data listed in this section is collected from the 2020 US Census.
+                            All data listed in this section is collected from the 2020 US Census. Population, density,
+                            race, and housing units per person and per adult are also available in Canada, from the 2021
+                            Canadian Census (see Canadian Data below), and the two countries&apos; values are combined into
+                            one National Census statistic. Population and density are also available in Australia, from the
+                            2021 Australian Census (see Australian Data below), and are combined in the same way.
 
                             <NRef name="population">Population</NRef>
                             <div>
@@ -193,8 +197,8 @@ export function DataCreditPanel(): ReactNode {
                             <div>
                                 <p>
                                     The population median is the point with the smallest average great-circle distance to
-                                    the region&apos;s residents. It is computed from 2020 US Census blocks or 2021 Canada dissemination
-                                    blocks where available, and GHS-POP grid cells when not.
+                                    the region&apos;s residents. It is computed from 2020 US Census blocks, 2021 Canada dissemination
+                                    blocks, or 2021 Australia mesh blocks where available, and GHS-POP grid cells when not.
                                 </p>
                             </div>
                             <NRef name="race">Race</NRef>
@@ -223,6 +227,11 @@ export function DataCreditPanel(): ReactNode {
                                     which is different from the unweighted mean household size of 2.0. This
                                     is more useful because it measures the average size of a household that
                                     each person is in.
+                                </p>
+                                <p>
+                                    The Canadian data groups all households of 5 or more people together, so we count each of
+                                    them as having 5.75 people, in both countries. On US data, this gives values close to those
+                                    computed from the ACS&apos;s separate 5, 6, and 7+ person counts.
                                 </p>
                             </div>
 
@@ -402,6 +411,11 @@ export function DataCreditPanel(): ReactNode {
                         <h1>American Community Survey Data</h1>
                         <div>
                             All data listed in this section is collected from the 2021 American Community Survey 5-year estimates.
+                            Citizenship, language, generation, commute mode and time, industry, marriage, household size, and renter %
+                            are also available in Canada, from the 2021 Canadian Census (see Canadian Data below), and the two countries&apos; values
+                            are combined into one National Census statistic. Language, generation, marriage, born outside the
+                            country, undergrad and graduate degrees, and degree field are also available in Australia, from the 2021
+                            Australian Census (see Australian Data below), and are combined in the same way.
 
                             <NRef name="citizenship">Citizenship</NRef>
                             <div>
@@ -495,10 +509,11 @@ export function DataCreditPanel(): ReactNode {
                                     work-from-home from the mode shares to align with in-person commuting modes only.
                                 </p>
                                 <p>
-                                    To compute median commute time, we take the most detailed data available, which is
-                                    binned in 10-15minute intervals depending on the bin, and compute an approximate median
-                                    by assuming that commute times are uniformly distributed within each bin, with the &gt;60
-                                    minute bin being assumed to be 60-120 minutes (this rarely applies anyway).
+                                    To compute median commute time, we use the bins the US and Canadian data share: under 15, 15-29,
+                                    30-44, 45-59, and 60+ minutes. We compute an approximate median by assuming that the logarithm of
+                                    commute time is uniformly distributed within each bin, with the first bin taken to start at 4
+                                    minutes and the 60+ bin to end at 120 minutes. On US data, this gives medians close to those
+                                    computed from the finer bins the ACS provides.
                                 </p>
                             </div>
 
@@ -705,7 +720,8 @@ export function DataCreditPanel(): ReactNode {
                             <NRef name="2010">2010 Census</NRef>
                             <div>
                                 <p>
-                                    2010 Census data is treated the same way as 2020 Census data.
+                                    2010 Census data is treated the same way as 2020 Census data. In Canada, we use the 2011
+                                    Census in its place.
                                 </p>
                             </div>
                         </div>
@@ -1054,7 +1070,11 @@ export function DataCreditPanel(): ReactNode {
                                     dissemination block.
                                 </p>
                                 <p>
-                                    For Generation, Marriage, Industry, and Commute time, we are able to use identical definitions to the US data.
+                                    For Generation, Marriage, and Industry, we are able to use identical definitions to the US data.
+                                    For Commute time and Household size, the Canadian data is binned more coarsely, so both
+                                    countries&apos; values are computed from the bins they share.
+                                    For Language, the merged Other at Home % includes French, since the US data has no separate
+                                    French category; French at Home % is also shown separately for Canada.
                                     For Income, LICO-AT, and ..., we use similar definitions to the US data, but with Canadian-specific
                                     thresholds (e.g., the income thresholds are in CAD, not USD, and we use LICO-AT rather than US Census&apos;s
                                     poverty thresholds).
@@ -1096,8 +1116,18 @@ export function DataCreditPanel(): ReactNode {
                                 {' '}
                                 <a href="https://www.abs.gov.au/census/find-census-data/datapacks">DataPacks</a>
                                 . We treat these as effectively equivalent to ACS data published by census tract, disaggregating
-                                them to the mesh block level using population as a weight, and then aggregating to the geography
-                                of interest.
+                                them to the mesh block level using population (or, for household income, dwellings) as a weight,
+                                and then aggregating to the geography of interest.
+                                <p>
+                                    For Generation and Marriage, we use the same definitions as the US data. For Language, Other at
+                                    Home % is everyone who speaks a language other than English at home, less Spanish speakers.
+                                    For Religion, we use the Canadian categories, leaving out people who did not state a religion.
+                                    For Birthplace, only Born outside country % is available. For Education, the data has no count
+                                    of people who finished high school, so only undergrad and graduate degrees are available;
+                                    graduate diplomas and certificates count as undergrad. As with Canada, the split between degree
+                                    fields is of every post-school qualification, so we apply it to the people with at least an
+                                    undergrad degree. For Income, we use thresholds in AUD rather than USD.
+                                </p>
                             </div>
                         </div>
                         <h1> Flags </h1>

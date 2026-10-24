@@ -2,6 +2,7 @@ import { gzipSync } from 'zlib'
 
 import { Selector } from 'testcafe'
 
+import { overlappingInsetsCode } from './mapper-utils'
 import { noTiles, ogPort, runOgWorkerForTest, runTileServerForTest, snapshotTiles } from './og_worker_test_utils'
 import { saveImage, urbanstatsFixture } from './test_utils'
 
@@ -63,6 +64,10 @@ const labelledMap = usaMap('County', 'cMap(data=density_pw_1km, label="How dense
 const pointMap = usaMap('Urban Center', 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, relativeArea=population)')
 // Counties, dense enough that markers actually merge.
 const clusterMap = usaMap('County', 'clusterMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)')
+const overlappingInsetsMap = usaMap('County', overlappingInsetsCode)
+// The default map with only the largest states, none of them outside the contiguous US, so the
+// card keeps the main map and drops every inset.
+const contiguousMap = usaMap('Subnational Region', 'customNode("");\ncondition (population > 5000000)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)')
 
 // Nothing here goes through the dev panel, which is embed_preview's; the browser is barely used.
 urbanstatsFixture('embed worker', '/index.html', async () => {
@@ -165,6 +170,14 @@ test('embed-worker-multi-geography-map-card', async (t) => {
 
 test('embed-worker-inset-map-card', async (t) => {
     await snapshotCard(t, insetMap)
+})
+
+test('embed-worker-overlapping-insets-card', async (t) => {
+    await snapshotCard(t, overlappingInsetsMap)
+})
+
+test('embed-worker-empty-insets-card', async (t) => {
+    await snapshotCard(t, contiguousMap)
 })
 
 test('embed-worker-point-map-card', async (t) => {

@@ -1,7 +1,8 @@
 # You may want to update ../../Dockerfile when updating this file
 # This version for compatibility with pandas
 # Pinned by digest because a moving tag invalidates the build cache. bookworm to match the snapshot below.
-# slim, since the e2e jobs only need python for check_snapshots.py and the full toolchain is 330MB.
+# Python for the quiz tests, which start urbanstats-persistent-data with the image's pip3.
+# slim, since the full toolchain is 330MB.
 FROM python:3.10-slim-bookworm@sha256:7ed92b32353e8d8bd865b5ba811e0315d3999c3b57b1c2df2b504a359d4a1707
 
 # One layer, because /var/lib/apt/lists is 44MB that only the build uses.
@@ -38,10 +39,5 @@ RUN apt-get -y update \
         # needed for emoji display in tests
         fonts-noto-color-emoji fonts-noto-core \
     && rm -rf /var/lib/apt/lists/*
-
-# Screenshot comparison is all the Python the e2e jobs do, so they install it here rather
-# than restoring the full environment. Last, so editing it doesn't rebuild the apt layers.
-COPY requirements_screenshots.txt /tmp/requirements_screenshots.txt
-RUN pip3 install -r /tmp/requirements_screenshots.txt && pip3 cache purge
 
 ENTRYPOINT [ "/bin/bash", "-l", "-c" ]

@@ -30,7 +30,6 @@ def census_block_coordinates():
 
 @permacache(
     "urbanstats/features/minimum_distance_by_block_3",
-    key_function=dict(feature=lambda x: x.hash_key),
 )
 def minimum_distance_by_block(feature):
     # pylint: disable=too-many-locals

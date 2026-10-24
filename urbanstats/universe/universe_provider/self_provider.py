@@ -5,11 +5,8 @@ from urbanstats.universe.universe_provider.universe_provider import UniverseProv
 
 @dataclass
 class SelfUniverseProvider(UniverseProvider):
-    def hash_key_details(self):
-        return ()
-
     def relevant_shapefiles(self):
         return []
 
-    def universes_for_shapefile(self, shapefiles, shapefile, shapefile_table):
-        return {longname: [longname] for longname in shapefile_table.longname}
+    def universes_for_shapefile(self, names_by_key, names, table):
+        return {longname: [longname] for longname in table.longname}

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.row_functions import column
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.special_cases.country import continents
 from urbanstats.universe.universe_provider.combined_universe_provider import (
@@ -31,21 +32,20 @@ class ContinentsWikidataSourcer:
         return mapping[iso]
 
 
-CONTINENTS = Shapefile(
-    hash_key="continents_9",
+CONTINENTS = make_shapefile(
+    geometry_key="continents_9",
     path=continents,
-    shortname_extractor=lambda x: x.name_1,
-    longname_extractor=lambda x: x.name_1,
+    shortname_extractor=column("name_1"),
+    longname_extractor=column("name_1"),
     filter=lambda x: x.name_1 != "Antarctica",
     meta=dict(type="Continent", source="OpenDataSoft", type_category="International"),
     does_overlap_self=False,
     special_data_sources=["international_gridded_data", "composed_of_counties"],
-    chunk_size=1,
     universe_provider=CombinedUniverseProvider(
         [ConstantUniverseProvider(["world"]), SelfUniverseProvider()]
     ),
     abbreviation="CONT",
-    data_credit=COUNTRIES.data_credit,
+    data_credit=COUNTRIES.metadata.data_credit,
     include_in_syau=True,
     wikidata_sourcer=ContinentsWikidataSourcer(),
 )

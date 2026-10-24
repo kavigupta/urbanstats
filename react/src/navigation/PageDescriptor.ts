@@ -6,6 +6,7 @@ import type { ComparisonPanel } from '../components/comparison-panel'
 import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
 import { ArticleRow, loadArticles } from '../components/load-article'
 import type { QuizPanel } from '../components/quiz-panel'
+import { LegacyStatName, whatOldQuizzesMeantBy } from '../data/legacy_statistic_columns'
 import valid_geographies from '../data/mapper/used_geographies'
 import statnames from '../data/statistic_name_list'
 import type { DataCreditPanel } from '../data-credit'
@@ -108,6 +109,14 @@ const statisticSchema = z.object({
     ]),
 )
 
+// Links from before a statistic was renamed or merged into another
+function currentStatName(statname: string): string {
+    if ((statnames as readonly string[]).includes(statname) || !(statname in whatOldQuizzesMeantBy)) {
+        return statname
+    }
+    return whatOldQuizzesMeantBy[statname as LegacyStatName]
+}
+
 const statisticSchemaFromParams = z.union([
     z.object({
         article_type: z.optional(z.enum(valid_geographies)).catch(undefined),
@@ -121,7 +130,7 @@ const statisticSchemaFromParams = z.union([
         sort_column: z.optional(z.coerce.number().int()).default(0),
     }).and(z.union([
         z.object({
-            statname: z.string().transform(s => s.replaceAll('__PCT__', '%')).pipe(z.enum(statnames)),
+            statname: z.string().transform(s => s.replaceAll('__PCT__', '%')).transform(currentStatName).pipe(z.enum(statnames)),
         }),
         z.object({
             uss: z.string(),
@@ -213,10 +222,13 @@ const editorSchema = z.object({
     mode: z.optional(z.enum(['uss', 'mapper'])),
 })
 
-// Without artifactId and hash, the viewer reads a local test run through the dev server instead of a CI artifact.
+// With base, the viewer compares the references at git refs base and head, or base and the working tree.
+// Otherwise, without artifactId and hash, it reads a local test run through the dev server instead of a CI artifact.
 const snapshotDiffViewerSchema = z.object({
     artifactId: z.optional(z.string()),
     hash: z.optional(z.string()),
+    base: z.optional(z.string()),
+    head: z.optional(z.string()),
     // Comma-separated. Restricts the viewer to these tests.
     tests: z.optional(z.string()),
     index: z.optional(z.coerce.number()),
@@ -279,7 +291,7 @@ export type PageData =
         descriptor?: PageDescriptor // If descriptor is not present, we could not parse it
     }
     | { kind: 'initialLoad', descriptor: PageDescriptor }
-    | { kind: 'snapshotDiffViewer', artifactId?: string, hash?: string, tests?: string, index: number, panel: typeof SnapshotDiffViewerPanel }
+    | { kind: 'snapshotDiffViewer', artifactId?: string, hash?: string, base?: string, head?: string, tests?: string, index: number, panel: typeof SnapshotDiffViewerPanel }
     | { kind: 'embedPreview', target: string, ogPort: number, panel: typeof EmbedPreviewPanel }
 
 export function pageDescriptorFromURL(url: URL): PageDescriptor {
@@ -462,6 +474,8 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             searchParams = {
                 artifactId: pageDescriptor.artifactId,
                 hash: pageDescriptor.hash,
+                base: pageDescriptor.base,
+                head: pageDescriptor.head,
                 tests: pageDescriptor.tests,
                 index: pageDescriptor.index?.toString(),
             }

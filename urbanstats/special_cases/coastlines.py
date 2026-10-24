@@ -11,11 +11,14 @@ from urbanstats.special_cases.country import subnational_regions_raw
 
 
 @permacache("urbanstats/special_cases/country/coastlines_rle_3")
-def coastlines_rle():
+def coastlines_rle(land_source):  # pylint: disable=unused-argument
     """
     Build a single run-length encoding of "land" at 3 arcsecond resolution
     (same as GHS), by rasterizing each raw subnational shape and merging
     all runs into one RLE. Returns dict {row: [(lon_start, lon_end), ...]}.
+
+    land_source is the subnational regions' Geometry. The mask is built from the raw file that
+    geometry is processed from, so updating that file comes with a bump of its key.
     """
     data = subnational_regions_raw()
     print("read subnational regions (raw) for land RLE")

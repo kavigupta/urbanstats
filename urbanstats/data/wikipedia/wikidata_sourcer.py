@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import tqdm.auto as tqdm
 from attr import dataclass
-from permacache import permacache
+from permacache import permacache, stable_hash
 
 from urbanstats.data.wikipedia.wikidata import query_sparlql, wikidata_to_wikipage
 
@@ -32,15 +32,13 @@ class SimpleWikidataSourcer(WikidataSourcer):
 
 @permacache(
     "urbanstats/data/wikipedia/wikidata_sourcer/compute_wikidata_and_wikipedia",
-    key_function=dict(shapefile=lambda x: x.hash_key),
+    key_function=dict(values=stable_hash),
 )
-def compute_wikidata_and_wikipedia(shapefile, sourcer: WikidataSourcer):
-    table = shapefile.load_file()
+def compute_wikidata_and_wikipedia(values, sourcer: WikidataSourcer):
+    """values has a tuple of the sourcer's columns for each region."""
     wikidata = [
-        sourcer.compute_wikidata(*[row[c] for c in sourcer.columns()])
-        for _, row in tqdm.tqdm(
-            table.iterrows(), total=len(table), delay=5, desc="Wikidata"
-        )
+        sourcer.compute_wikidata(*row)
+        for row in tqdm.tqdm(values, total=len(values), delay=5, desc="Wikidata")
     ]
     wikipedia = [
         wikidata_to_wikipage(wikidata_id)

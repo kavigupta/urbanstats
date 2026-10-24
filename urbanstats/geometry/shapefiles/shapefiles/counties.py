@@ -1,37 +1,35 @@
-import us
+from dataclasses import dataclass
 
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
+from urbanstats.geometry.shapefiles.row_functions import RowFunction, UsState, column
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
-def county_name(row):
-    f = row["NAMELSAD"]
-    if f.lower().endswith("city"):
-        f = f + "-County"
-    return f
+@dataclass(frozen=True)
+class CountyName(RowFunction):
+    """NAMELSAD, with independent cities' names, like "Baltimore city", ending in -County."""
+
+    def __call__(self, row):
+        f = row["NAMELSAD"]
+        if f.lower().endswith("city"):
+            f = f + "-County"
+        return f
 
 
-def compute_geoid(row):
-    return row.STATEFP + row.COUNTYFP
-
-
-COUNTIES = Shapefile(
-    hash_key="census_counties_7",
+COUNTIES = make_shapefile(
+    geometry_key="census_counties_7",
     path="named_region_shapefiles/cb_2022_us_county_500k.zip",
-    shortname_extractor=county_name,
-    cleanname_extractor=lambda x: x["NAME"],
-    longname_extractor=lambda x: county_name(x)
-    + ", "
-    + us.states.lookup(x["STATEFP"]).name
-    + ", USA",
-    additional_columns_computer={"geoid": compute_geoid},
+    shortname_extractor=CountyName(),
+    cleanname_extractor=column("NAME"),
+    longname_extractor=CountyName() + ", " + UsState(column("STATEFP")) + ", USA",
+    additional_columns_computer={"geoid": column("STATEFP") + column("COUNTYFP")},
     filter=lambda x: True,
     meta=dict(type="County", source="Census", type_category="US Subdivision"),
     does_overlap_self=False,
     universe_provider=us_domestic_provider(),
-    subset_masks={"USA": SelfSubset()},
+    source_countries=InCountry("USA"),
     abbreviation="COU",
     data_credit=dict(
         linkText="US Census",

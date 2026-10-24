@@ -7,7 +7,10 @@ import geopandas as gpd
 import pandas as pd
 import tqdm.auto as tqdm
 
-from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
+from urbanstats.compatibility.compatibility import (
+    permacache_with_remapping_pickle,
+    without_loaded_values,
+)
 from urbanstats.data.canada.canada_blocks import load_canada_db_shapefile
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block_canada
 from urbanstats.geometry.disaggregate import disaggregate_by_area
@@ -78,9 +81,9 @@ canada_elections = [
 ]
 
 
+@without_loaded_values
 @permacache_with_remapping_pickle(
     "canada_election_data/disaggregate_to_blocks_canada_5",
-    key_function=dict(election=lambda x: x.key),
 )
 def disaggregate_to_blocks_canada(election, block_year=2021):
     """
@@ -113,11 +116,10 @@ def disaggregate_to_blocks_canada(election, block_year=2021):
 
 @permacache_with_remapping_pickle(
     "canada_election_data/aggregated_election_results_canada_3",
-    key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def aggregated_election_results_canada(shapefile):
+def aggregated_election_results_canada(geometry):
     return aggregate_by_census_block_canada(
-        2021, shapefile, election_results_by_block_canada()
+        2021, geometry, election_results_by_block_canada()
     )
 
 

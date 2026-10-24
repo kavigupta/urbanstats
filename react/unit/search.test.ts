@@ -72,7 +72,7 @@ nthResult(test)(0, 'white city', 'White Plains city, New York, USA', undefined, 
 nthResult(test)(0, 'by population center', 'Thunder Bay Population Center, ON, Canada')
 nthResult(test)(0, 'by population center', 'Area by CA Population Center', undefined, 'allUniverses')
 nthResult(test)(0, 'by population center', 'Area by CA Population Center', undefined, 'Canada')
-nthResult(test)(0, 'agriculture by riding', 'Natural resources and agriculture occupations % [StatCan] by CA Riding', undefined, 'allUniverses')
+nthResult(test)(0, 'agriculture by riding', 'Natural resources and agriculture occupations % by CA Riding', undefined, 'allUniverses')
 
 void test('do not leave slow mode on', () => {
     assert.equal(simulateSlowSearchDelayMs, undefined)

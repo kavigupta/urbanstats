@@ -7,6 +7,8 @@
  * and then any files not generated, we'll proxy the request to a CI proxy that has a copy of densitydb.
  */
 
+import { OutgoingHttpHeaders } from 'http'
+
 import compression from 'compression'
 import express from 'express'
 import proxy from 'express-http-proxy'
@@ -16,57 +18,9 @@ import { port } from '../../port'
 
 import { github } from './github-utils'
 
-/**
- * jsdelivr sometimes stalls for a minute before answering 504. An inactivity timeout, so a slow but
- * steady download is unaffected.
- */
-const attemptTimeoutMs = 10_000
-const attempts = 3
-
-const upstream: proxy.ProxyOptions = {
-    timeout: attemptTimeoutMs,
-    userResHeaderDecorator(headers, userReq) {
-        const fileExtension = (/\.(.+)$/.exec(userReq.path))?.[1]
-        const mimeType = fileExtension ? { html: 'text/html', js: 'text/javascript' }[fileExtension] : undefined
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-restricted-syntax -- We're removing the context-security-policy header via destructuring
-        const { 'content-security-policy': _, ...filteredHeaders } = headers
-        return {
-            ...filteredHeaders,
-            'content-type': mimeType ?? headers['content-type'],
-        }
-    },
-}
-
-function jsdelivrProxy(sha: string): express.RequestHandler {
-    return proxy(`https://cdn.jsdelivr.net`, {
-        ...upstream,
-        proxyReqPathResolver(req) {
-            // We must get by SHA, since if we used branch name jsdelvir would cache the result for 12 hours and we couldn't get new changes from the branch
-            return `/gh/densitydb/densitydb.github.io@${sha}${req.path}`
-        },
-        // A 404 is jsdelivr telling us the file isn't there, which is an answer. Anything else means
-        // it didn't answer, so hand off to the next attempt and eventually to raw.githubusercontent.
-        skipToNextHandlerFilter: (proxyRes) => {
-            const status = proxyRes.statusCode ?? 500
-            return status !== 404 && (status < 200 || status > 299)
-        },
-        proxyErrorHandler: (error, res, next) => { next() },
-    })
-}
-
-/**
- * jsdelivr sometimes answers 403 for 12 hours, since the repo is ~90x its 50MB package limit. raw has
- * no limit, and only carries what jsdelivr fails.
- */
-function rawGithubProxy(sha: string): express.RequestHandler {
-    return proxy(`https://raw.githubusercontent.com`, {
-        ...upstream,
-        proxyReqPathResolver: req => `/densitydb/densitydb.github.io/${sha}${req.path}`,
-    })
-}
-
 export async function startProxy(): Promise<void> {
-    const { octokit } = await github()
+    const token = z.string().parse(process.env.GITHUB_TOKEN)
+    const { octokit } = await github(token)
 
     /**
      * If the user is using a branch that also exists on densitydb, we should use it as well.
@@ -91,23 +45,26 @@ export async function startProxy(): Promise<void> {
 
     app.use(compression({ enforceEncoding: 'gzip' }))
 
-    const handlers: express.RequestHandler[] = []
-    for (let attempt = 1; attempt <= attempts; attempt++) {
-        if (attempt > 1) {
-            handlers.push((req, res, next) => {
-                console.warn(`jsdelivr did not serve ${req.path}; starting attempt ${attempt}`)
-                next()
-            })
-        }
-        handlers.push(jsdelivrProxy(branch.commit.sha))
-    }
-    handlers.push((req, res, next) => {
-        console.warn(`jsdelivr did not serve ${req.path}; falling back to raw.githubusercontent`)
-        next()
-    })
-    handlers.push(rawGithubProxy(branch.commit.sha))
-
-    app.use(express.static('test/density-db'), ...handlers)
+    app.use(express.static('test/density-db'), proxy('https://raw.githubusercontent.com', {
+        proxyReqPathResolver: req => `/densitydb/densitydb.github.io/${branch.commit.sha}${req.path}`,
+        proxyReqOptDecorator(proxyReqOpts) {
+            proxyReqOpts.headers = { ...proxyReqOpts.headers as OutgoingHttpHeaders, authorization: `Bearer ${token}` }
+            return proxyReqOpts
+        },
+        userResHeaderDecorator(headers, userReq, userRes, proxyReq, proxyRes) {
+            if ((proxyRes.statusCode ?? 500) >= 400) {
+                console.warn(`raw.githubusercontent answered ${proxyRes.statusCode} for ${userReq.path}`)
+            }
+            const fileExtension = (/\.(.+)$/.exec(userReq.path))?.[1]
+            const mimeType = fileExtension ? { html: 'text/html', js: 'text/javascript' }[fileExtension] : undefined
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-restricted-syntax -- We're removing the context-security-policy header via destructuring
+            const { 'content-security-policy': _, ...filteredHeaders } = headers
+            return {
+                ...filteredHeaders,
+                'content-type': mimeType ?? headers['content-type'],
+            }
+        },
+    }))
 
     app.listen(port())
 }

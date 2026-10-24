@@ -1,4 +1,4 @@
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long,too-many-lines
 # fmt: off
 
 # Each cell of the 2021 ABS General Community Profile DataPack that counts persons (or is not split by

@@ -326,21 +326,11 @@ class StatisticTree:
 
 
 population_census = Source(
-    "Population", "US Census", is_default=True, priority=1, variable_suffix="us_census"
-)
-population_canada = Source(
     "Population",
-    "Canadian Census",
+    "National Census",
     is_default=True,
-    priority=2,
-    variable_suffix="statcan",
-)
-population_australia = Source(
-    "Population",
-    "Australian Census",
-    is_default=True,
-    priority=3,
-    variable_suffix="aubs",
+    priority=1,
+    variable_suffix="census",
 )
 population_ghsl = Source(
     "Population", "GHSL", is_default=False, priority=10, variable_suffix="ghsl"
@@ -514,30 +504,18 @@ def just_2020(
 
 
 def just_2020_multi_source(
-    *col_names: str, year: int = 2020, canada: bool = True, australia: bool = False
+    *col_names: str, year: int = 2020
 ) -> Dict[str, StatisticGroup]:
     """
-    Even with a single source, these are multi-source statistics named after the US column, so their
-    variable names do not change when a source is added.
+    Even with a single source, these are multi-source statistics, so their variable names do not
+    change when a source is added.
     """
     return {
         col_name: StatisticGroup(
             {
                 year: [
                     MultiSource(
-                        {
-                            population_census: col_name,
-                            **(
-                                {population_canada: col_name + "_canada"}
-                                if canada
-                                else {}
-                            ),
-                            **(
-                                {population_australia: col_name + "_australia"}
-                                if australia
-                                else {}
-                            ),
-                        },
+                        {population_census: col_name},
                         col_name,
                         indented_name="2020",
                     )
@@ -546,38 +524,6 @@ def just_2020_multi_source(
             group_name_statcol=col_name,
         )
         for col_name in col_names
-    }
-
-
-def just_2020_canada_multi_source(
-    *canada_col_names: str, year: int = 2020, australia: bool = False
-) -> Dict[str, StatisticGroup]:
-    """Like just_2020_multi_source, for statistics the US does not have, named after the Canadian column."""
-    return {
-        col_name: StatisticGroup(
-            {
-                year: [
-                    MultiSource(
-                        {
-                            population_canada: col_name,
-                            **(
-                                {
-                                    population_australia: col_name.replace(
-                                        "_canada", "_australia"
-                                    )
-                                }
-                                if australia
-                                else {}
-                            ),
-                        },
-                        col_name,
-                        indented_name="2020",
-                    )
-                ]
-            },
-            group_name_statcol=col_name,
-        )
-        for col_name in canada_col_names
     }
 
 
@@ -592,63 +538,42 @@ def just_2020_category(
     }
 
 
-def just_2020_category_with_canada(
-    cat_key: str,
-    cat_name: str,
-    *col_names: str,
-    year: int = 2020,
-    australia: bool = False,
+def just_2020_category_multi_source(
+    cat_key: str, cat_name: str, *col_names: str
 ) -> Dict[str, StatisticCategory]:
     return {
         cat_key: StatisticCategory(
             name=cat_name,
-            contents=just_2020_multi_source(*col_names, year=year, australia=australia),
+            contents=just_2020_multi_source(*col_names),
         )
     }
 
 
-def census_basics_with_ghs_and_canada(
+def census_basics_with_ghs(
     col_name: str,
     gpw_name: Optional[str],
-    canada_name: str,
     *,
     change: bool,
     absolute_change: bool = False,
 ) -> Dict[str, StatisticGroup]:
     result = census_basics(col_name, change=change, absolute_change=absolute_change)
-    by_source: Dict[Source, Union[str, Tuple[str, ...]]] = {
-        population_census: col_name,
-        population_canada: canada_name,
-        population_australia: canada_name.replace("_canada", "_australia"),
-        population_ghsl: gpw_name,
-    }
-    by_source = {k: v for k, v in by_source.items() if v is not None}
+    by_source: Dict[Source, Union[str, Tuple[str, ...]]] = {population_census: col_name}
+    if gpw_name is not None:
+        by_source[population_ghsl] = gpw_name
     result[col_name].by_year[2020] = [
         MultiSource(by_source, col_name, indented_name="2020")
     ]
-    # Also add Canadian 2011 data directly associated with 2010 US census
-    assert "_2021_" in canada_name, f"{canada_name!r}"
-    canada_2011_name = canada_name.replace("_2021_", "_2011_")
     result[col_name].by_year[2010] = [
         MultiSource(
-            {
-                population_census: f"{col_name}_2010",
-                population_canada: canada_2011_name,
-            },
+            {population_census: f"{col_name}_2010"},
             f"{col_name}_2010",
             indented_name="2010",
         )
     ]
     if change:
-        # Add both US and Canadian change statistics
         result[col_name].by_year[2010].append(
             MultiSource(
-                {
-                    population_census: f"{col_name}_change_2010",
-                    population_canada: canada_2011_name.replace(
-                        "_2011_", "_change_2011_"
-                    ),
-                },
+                {population_census: f"{col_name}_change_2010"},
                 f"{col_name}_change_2010",
                 indented_name="2010-2020 Change",
             )
@@ -656,12 +581,7 @@ def census_basics_with_ghs_and_canada(
     if absolute_change:
         result[col_name].by_year[2010].append(
             MultiSource(
-                {
-                    population_census: f"{col_name}_abs_change_2010",
-                    population_canada: canada_2011_name.replace(
-                        "_2011_", "_abs_change_2011_"
-                    ),
-                },
+                {population_census: f"{col_name}_abs_change_2010"},
                 f"{col_name}_abs_change_2010",
                 indented_name="2010-2020 Absolute Change",
             )
@@ -670,18 +590,10 @@ def census_basics_with_ghs_and_canada(
     return result
 
 
-def census_basics_with_canada(
-    col_name: str, canada_name: Optional[str] = None, *, change: bool
-) -> Dict[str, StatisticGroup]:
-    if canada_name is None:
-        canada_name = f"{col_name}_canada"
-    result = census_basics(col_name, change=change)
-    by_source: Dict[Source, Union[str, Tuple[str, ...]]] = {
-        population_census: col_name,
-        population_canada: canada_name,
-    }
+def census_basics_multi_source(col_name: str) -> Dict[str, StatisticGroup]:
+    result = census_basics(col_name, change=False)
     result[col_name].by_year[2020] = [
-        MultiSource(by_source, col_name, indented_name="2020")
+        MultiSource({population_census: col_name}, col_name, indented_name="2020")
     ]
     result[col_name].group_name_statcol = col_name
     return result
@@ -749,22 +661,14 @@ statistics_tree = StatisticTree(
         "main": StatisticCategory(
             name="Main",
             contents={
-                **census_basics_with_ghs_and_canada(
-                    "population",
-                    "gpw_population",
-                    "population_2021_canada",
-                    change=True,
-                ),
-                **census_basics_with_ghs_and_canada(
+                **census_basics_with_ghs("population", "gpw_population", change=True),
+                **census_basics_with_ghs(
                     "ad_1",
                     "gpw_pw_density_1",
-                    "density_2021_pw_1_canada",
                     change=True,
                     absolute_change=True,
                 ),
-                **census_basics_with_ghs_and_canada(
-                    "sd", "gpw_aw_density", "sd_2021_canada", change=False
-                ),
+                **census_basics_with_ghs("sd", "gpw_aw_density", change=False),
                 "area": StatisticGroup({None: [MultiSource({geography: "area"})]}),
                 "compactness": StatisticGroup(
                     {None: [MultiSource({geography: "compactness"})]}
@@ -790,13 +694,13 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "race_composition",
                     "Racial Composition",
-                    census_basics_with_canada("white", change=False),
-                    census_basics_with_canada("hispanic", change=False),
-                    census_basics_with_canada("black", change=False),
-                    census_basics_with_canada("asian", change=False),
-                    census_basics_with_canada("native", change=False),
-                    census_basics_with_canada("hawaiian_pi", change=False),
-                    census_basics_with_canada("other / mixed", change=False),
+                    census_basics_multi_source("white"),
+                    census_basics_multi_source("hispanic"),
+                    census_basics_multi_source("black"),
+                    census_basics_multi_source("asian"),
+                    census_basics_multi_source("native"),
+                    census_basics_multi_source("hawaiian_pi"),
+                    census_basics_multi_source("other / mixed"),
                 ),
                 **census_segregation("homogeneity_250"),
                 **census_segregation("segregation_250"),
@@ -818,12 +722,8 @@ statistics_tree = StatisticTree(
                 **in_subcategory(
                     "birthplace",
                     "Birthplace",
-                    just_2020_multi_source(
-                        "birthplace_non_us",
-                        canada=False,
-                        australia=True,
-                    ),
                     just_2020(
+                        "birthplace_non_us",
                         "birthplace_us_not_state",
                         "birthplace_us_state",
                         source=population_census,
@@ -835,17 +735,15 @@ statistics_tree = StatisticTree(
                     just_2020_multi_source(
                         "language_english_only",
                         "language_spanish",
-                        australia=True,
                     ),
                     just_2020(
                         "language_french_canada",
                         "language_other_non_french_canada",
-                        source=population_canada,
+                        source=population_census,
                     ),
-                    just_2020_multi_source(
+                    just_2020(
                         "language_other",
-                        canada=False,
-                        australia=True,
+                        source=population_census,
                     ),
                 ),
             },
@@ -853,7 +751,7 @@ statistics_tree = StatisticTree(
         "religion": StatisticCategory(
             name="Religion",
             contents={
-                **just_2020_canada_multi_source(
+                **just_2020_multi_source(
                     "religion_no_religion_canada",
                     "religion_catholic_canada",
                     "religion_protestant_canada",
@@ -863,7 +761,6 @@ statistics_tree = StatisticTree(
                     "religion_sikh_canada",
                     "religion_buddhist_canada",
                     "religion_other_canada",
-                    australia=True,
                 ),
             },
         ),
@@ -875,19 +772,14 @@ statistics_tree = StatisticTree(
                     "Educational Attainment",
                     just_2020_multi_source(
                         "education_high_school",
-                        canada=False,
-                    ),
-                    just_2020_multi_source(
                         "education_ugrad",
                         "education_grad",
-                        canada=False,
-                        australia=True,
                     ),
                     just_2020(
                         "education_high_school_canada",
                         "education_ugrad_canada",
                         "education_grad_canada",
-                        source=population_canada,
+                        source=population_census,
                     ),
                 ),
                 **in_subcategory(
@@ -897,14 +789,12 @@ statistics_tree = StatisticTree(
                         "education_field_stem",
                         "education_field_humanities",
                         "education_field_business",
-                        canada=False,
-                        australia=True,
                     ),
                     just_2020(
                         "education_field_stem_canada",
                         "education_field_humanities_canada",
                         "education_field_business_canada",
-                        source=population_canada,
+                        source=population_census,
                     ),
                 ),
                 **just_2020(
@@ -915,7 +805,7 @@ statistics_tree = StatisticTree(
                 ),
             },
         ),
-        **just_2020_category_with_canada(
+        **just_2020_category_multi_source(
             "generation",
             "Generation",
             "generation_silent",
@@ -924,7 +814,6 @@ statistics_tree = StatisticTree(
             "generation_millenial",
             "generation_genz",
             "generation_genalpha",
-            australia=True,
         ),
         "income": StatisticCategory(
             name="Income",
@@ -937,7 +826,7 @@ statistics_tree = StatisticTree(
                 **just_2020(
                     "lico_at_canada",
                     "lim_at_canada",
-                    source=population_canada,
+                    source=population_census,
                 ),
                 **in_subcategory(
                     "household_income",
@@ -952,13 +841,13 @@ statistics_tree = StatisticTree(
                         "household_income_under_50cad",
                         "household_income_50_to_100cad",
                         "household_income_above_100_cad",
-                        source=population_canada,
+                        source=population_census,
                     ),
                     just_2020(
                         "household_income_under_52k_australia",
                         "household_income_52k_to_104k_australia",
                         "household_income_over_104k_australia",
-                        source=population_australia,
+                        source=population_census,
                     ),
                 ),
                 **in_subcategory(
@@ -974,13 +863,13 @@ statistics_tree = StatisticTree(
                         "individual_income_under_50cad",
                         "individual_income_50_to_100cad",
                         "individual_income_above_100_cad",
-                        source=population_canada,
+                        source=population_census,
                     ),
                     just_2020(
                         "individual_income_under_52k_australia",
                         "individual_income_52k_to_104k_australia",
                         "individual_income_over_104k_australia",
-                        source=population_australia,
+                        source=population_census,
                     ),
                 ),
             },
@@ -988,8 +877,8 @@ statistics_tree = StatisticTree(
         "housing": StatisticCategory(
             name="Housing",
             contents={
-                **census_basics_with_canada("housing_per_pop", change=False),
-                **census_basics_with_canada("housing_per_person", change=False),
+                **census_basics_multi_source("housing_per_pop"),
+                **census_basics_multi_source("housing_per_person"),
                 **census_basics("vacancy", change=False),
                 **in_subcategory(
                     "rent_burden",
@@ -1042,7 +931,7 @@ statistics_tree = StatisticTree(
                 ),
                 **just_2020(
                     "rent_burden_over_30_canada",
-                    source=population_canada,
+                    source=population_census,
                 ),
             },
         ),
@@ -1152,7 +1041,7 @@ statistics_tree = StatisticTree(
                 ),
             },
         ),
-        **just_2020_category_with_canada(
+        **just_2020_category_multi_source(
             "industry",
             "Industry",
             "industry_agriculture,_forestry,_fishing_and_hunting",
@@ -1218,7 +1107,7 @@ statistics_tree = StatisticTree(
                     "occupation_trades_transport_equipment_canada",
                     "occupation_natural_resources_agriculture_canada",
                     "occupation_manufacturing_utilities_canada",
-                    source=population_canada,
+                    source=population_census,
                 ),
             },
         ),
@@ -1244,7 +1133,6 @@ statistics_tree = StatisticTree(
                         "marriage_never_married",
                         "marriage_married_not_divorced",
                         "marriage_divorced",
-                        australia=True,
                     ),
                 ),
             },
@@ -1490,20 +1378,18 @@ statistics_tree = StatisticTree(
                 k: v
                 for kvs in [
                     *[
-                        census_basics_with_ghs_and_canada(
+                        census_basics_with_ghs(
                             f"ad_{r}",
                             f"gpw_pw_density_{r}" if r in GPW_RADII else None,
-                            f"density_2021_pw_{r}_canada",
                             change=True,
                             absolute_change=True,
                         )
                         for r in RADII
                         if r != 1
                     ],
-                    census_basics_with_ghs_and_canada(
+                    census_basics_with_ghs(
                         "md_1",
                         "gpw_pw_median_density_1",
-                        "density_2021_pw_median_1_canada",
                         change=False,
                     ),
                 ]

@@ -2,7 +2,7 @@ import { Selector } from 'testcafe'
 
 import { editModeSharedTests } from './edit_mode_test_template'
 import { comparisonTableScope, doneButton, editButton, filterBox, groupCheckbox, groupMemberRow, yearCheckbox } from './edit_mode_test_utils'
-import { comparisonPage, downloadCSV, screencap, target, urbanstatsFixture } from './test_utils'
+import { comparisonPage, downloadCSV, screencap, target, urbanstatsFixture, withHamburgerMenu } from './test_utils'
 
 /** What the comparison table's edit mode does that the article table's doesn't. */
 
@@ -64,10 +64,10 @@ test('csv export in edit mode covers the selected statistics, not the whole tree
 })
 
 // USA and Canada are both countries, so their statistics could be ranked against each other, but
-// the generation statistics come from each country's own census, which rules ordinals out.
-const onlyGenerationStats = `${comparisonPage(['USA', 'Canada'])}&s=D7tCowVik3d2eRfvgW`
+// ISO codes are metadata, which have no ordinals.
+const onlyIsoCode = `${comparisonPage(['USA', 'Canada'])}&s=2cNpMzJ4v2q1f42BDx3Z`
 
-urbanstatsFixture('comparison edit mode ordinals', onlyGenerationStats)
+urbanstatsFixture('comparison edit mode ordinals', onlyIsoCode)
 
 test('csv export in edit mode leaves out ordinals the selected statistics do not have', async (t) => {
     await t.expect(await downloadCSV(t)).notContains('(Rank)')
@@ -77,7 +77,7 @@ test('csv export in edit mode leaves out ordinals the selected statistics do not
     await t.expect(comparisonTable.find('.serif').withExactText('Ord').exists).ok()
 
     const csvContent = await downloadCSV(t)
-    await t.expect(csvContent).contains('Millennial %')
+    await t.expect(csvContent).contains('ISO Code')
     await t.expect(csvContent).notContains('(Rank)')
 })
 
@@ -98,7 +98,9 @@ test('editing a transposed comparison pops out of transpose', async (t) => {
 
 urbanstatsFixture('comparison edit mode staging while scrolling', scrollingRegions, async (t) => {
     // Save a setting first, so the link enters staging instead of silently applying.
-    await t.click(Selector('input[data-test-id=use_imperial]'))
+    await withHamburgerMenu(t, async () => {
+        await t.click(Selector('input[data-test-id=use_imperial]'))
+    })
     await t.navigateTo(`${scrollingRegions}&s=29ZqGgHgeNSXMA9`)
 })
 

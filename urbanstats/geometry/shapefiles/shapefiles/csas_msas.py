@@ -1,25 +1,28 @@
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
-from urbanstats.geometry.shapefiles.utils import name_components
+from urbanstats.geometry.shapefiles.row_functions import column
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
-def csa_or_msa(hash_key, typ, census_name, wikidata_sourcer, path):
-    return Shapefile(
-        hash_key=hash_key,
+def csa_or_msa(geometry_key, typ, census_name, wikidata_sourcer, path):
+    return make_shapefile(
+        geometry_key=geometry_key,
         path=path,
-        shortname_extractor=lambda x: name_components(typ, x)[0],
-        cleanname_extractor=lambda x: x.NAME.split(", ")[0],
-        longname_extractor=lambda x: ", ".join(
-            name_components(typ, x, abbreviate=True)
-        ),
-        additional_columns_computer={"geoid": lambda x: x.GEOID},
+        shortname_extractor=column("NAME").split_part(", ", 0) + " " + typ,
+        cleanname_extractor=column("NAME").split_part(", ", 0),
+        longname_extractor=column("NAME").split_part(", ", 0)
+        + " "
+        + typ
+        + ", "
+        + column("NAME").split_part(", ", 1)
+        + ", USA",
+        additional_columns_computer={"geoid": column("GEOID")},
         filter=lambda x: True,
         meta=dict(type=typ, source="Census", type_category="Census"),
         does_overlap_self=False,
         universe_provider=us_domestic_provider(),
-        subset_masks={"USA": SelfSubset()},
+        source_countries=InCountry("USA"),
         abbreviation=typ,
         data_credit=dict(
             linkText="US Census",

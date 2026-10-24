@@ -1,7 +1,7 @@
 import { ClientFunction, Selector } from 'testcafe'
 
 import { runTests } from './mapper-edit-insets'
-import { drag, editInsetsButton, handle, map, numMaps, toggleCustomScript, urlFromCode } from './mapper-utils'
+import { drag, editInsetsButton, handle, map, numMaps, overlappingInsetsCode, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { downloadImage, urbanstatsFixture, waitForMapsToRender, wheel } from './test_utils'
 
 runTests('desktop')
@@ -67,6 +67,13 @@ test('accepting normalizes the screen bounds, which stay put while editing', asy
     await t.expect(normalized.bottom).gt(0.99)
     await t.expect(numMaps()).eql(3)
 
+    await waitForMapsToRender()
+    await downloadImage(t)
+})
+
+urbanstatsFixture('overlapping insets', urlFromCode('County', 'USA', overlappingInsetsCode))
+
+test('an inset covers the border of the inset under it in the export', async (t) => {
     await waitForMapsToRender()
     await downloadImage(t)
 })

@@ -135,7 +135,7 @@ void test('one run over several geographies concatenates them', async () => {
 
 void test('a statistic missing from one geography falls back to a source covering it', async () => {
     const geographies = [usaStates, icelandRegions]
-    const census = await numbers(geographies, 'population_us_census')
+    const census = await numbers(geographies, 'population_census')
     const population = await numbers(geographies, 'population')
 
     assert.ok(census.some(value => Number.isNaN(value)), 'expected rows the US census does not cover')

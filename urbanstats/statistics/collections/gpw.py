@@ -86,7 +86,7 @@ class GPWStatistics(InternationalStatistics):
         statistics_table = {}
 
         result, hists = compute_gpw_data_for_shapefile(
-            shapefile,
+            shapefile.geometry,
             resolution_by_radius={k: 1200 if k <= 4 else 120 for k in GPW_RADII},
         )
         for k, rk in result.items():
@@ -100,7 +100,7 @@ class GPWStatistics(InternationalStatistics):
         (
             statistics_table["population_median_lat_gpw"],
             statistics_table["population_median_lon_gpw"],
-        ) = compute_gpw_population_median_for_shapefile(shapefile)
+        ) = compute_gpw_population_median_for_shapefile(shapefile.geometry)
 
         statistics_table["gpw_aw_density"] = (
             statistics_table["gpw_population"] / existing_statistics["area"]

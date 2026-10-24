@@ -5,6 +5,7 @@ from permacache import permacache
 
 from urbanstats.geometry.classify_coordinate_zone import classify_coordinate_zone
 from urbanstats.geometry.read_qgis_layouts import load_qgis_layouts_and_maps
+from urbanstats.geometry.shapefiles.longnames import shapefile_longnames
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.universe.universe_list import all_universes
 from urbanstats.utils import output_typescript
@@ -50,18 +51,12 @@ def clean_shape(geo):
     return shapely.MultiPolygon(result)
 
 
-shapefiles_by_type = {sh.meta["type"]: sh for sh in shapefiles.values()}
+shapefiles_by_type = {sh.metadata.meta["type"]: sh for sh in shapefiles.values()}
 
 
-@permacache(
-    "urbanstats/geometry/insets/load_geo",
-    key_function=dict(shapefile=lambda x: x.hash_key),
-)
-def load_geo(name, shapefile):
-    """
-    Load a shapefile by name.
-    """
-    return shapefile.load_file().set_index("longname").loc[name].geometry
+@permacache("urbanstats/geometry/insets/load_geo")
+def load_geo(geometry, position):
+    return geometry.load_rows().geometry.iloc[position]
 
 
 def bounding_box_area(bbox):
@@ -178,7 +173,8 @@ def merge_all_boxes(bounding_boxes):
 
 
 def automatically_compute_insets(name_to_type, swo_subnats, u):
-    geo = load_geo(u, shapefiles_by_type[name_to_type[u]])
+    shapefile = shapefiles_by_type[name_to_type[u]]
+    geo = load_geo(shapefile.geometry, shapefile_longnames(shapefile.names).index(u))
 
     filt_table = (
         swo_subnats[swo_subnats.universes.apply(lambda x: u in x)]

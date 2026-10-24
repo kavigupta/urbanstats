@@ -26,16 +26,13 @@ def join_with_suos(shapes):
 
 @permacache(
     "urbanstats/geometry/historical_counties/aggregation/aggregate_to_suos_5",
-    key_function=dict(
-        shapefile=lambda x: x.hash_key, suo_data_source=lambda x: x.hash_key
-    ),
 )
-def aggregate_to_suos(shapefile, suo_data_source):
+def aggregate_to_suos(geometry, suo_data_source):
     data = suo_data_source.load_fn().reset_index(drop=True)
     suos = list(data.suos)
     suo_to_index = {s: i for i, suo in enumerate(suos) for s in suo}
     data = np.array(data[suo_data_source.data_columns])
-    geo = shapefile.load_file()
+    geo = geometry.load_rows()
     joined = join_with_suos(geo)
     contents = [
         compute_county_contents(region_suos, suos, suo_to_index)

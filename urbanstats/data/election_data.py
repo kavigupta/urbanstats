@@ -11,8 +11,11 @@ import pandas as pd
 import tqdm.auto as tqdm
 import us
 
-from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
-from urbanstats.data.census_blocks import all_densities_gpd
+from urbanstats.compatibility.compatibility import (
+    permacache_with_remapping_pickle,
+    without_loaded_values,
+)
+from urbanstats.data.census_blocks import all_densities_gpd, load_raw_census
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.geometry.disaggregate import disaggregate_by_area
 
@@ -25,6 +28,11 @@ class VestElection:
     presidential_column_filter = attr.ib()
     dem_column_filter = attr.ib()
     gop_column_filter = attr.ib()
+
+    def __permacache_hash__(self):
+        # the column filters, and path when it isn't a file, are functions, which stable_hash
+        # can't hash, so key stands in for them
+        return [self.key, self.name, None if callable(self.path) else self.path]
 
     def read(self):
         if callable(self.path):
@@ -137,6 +145,7 @@ def read_full_vest_data(path):
     return gpd.GeoDataFrame(pd.concat(frames, ignore_index=True))
 
 
+@without_loaded_values
 @permacache_with_remapping_pickle("election_data/load_block_shapefiles_5")
 def load_block_shapefiles(state_abbr, year=2020):
     """
@@ -164,7 +173,10 @@ def load_block_shapefiles(state_abbr, year=2020):
         )
 
     # Load all dense data to get the index structure
-    dense = all_densities_gpd(year)[["geoid", "population"]].copy()
+    geoid, population, *_ = load_raw_census(year)
+    dense = pd.DataFrame(
+        dict(geoid=geoid, population=population[:, 0]), index=np.arange(len(geoid))
+    )
     backmap = {x[len("7500000US") :]: y for x, y in zip(dense.geoid, dense.index)}
 
     # Filter dense to only blocks from this state
@@ -185,9 +197,9 @@ def load_block_shapefiles(state_abbr, year=2020):
     return gpd.GeoDataFrame(dense_state, geometry="geometry", crs="epsg:4326")
 
 
+@without_loaded_values
 @permacache_with_remapping_pickle(
     "urbanstats/data/election_data/disaggregate_to_blocks_for_state_2",
-    key_function=dict(state_abbr=lambda x: x, election=lambda x: x.key),
 )
 def disaggregate_to_blocks_for_state(state_abbr, election, block_year=2020):
     """
@@ -225,9 +237,9 @@ def disaggregate_to_blocks_for_state(state_abbr, election, block_year=2020):
     return {idx: row.values for idx, row in disaggregated.iterrows()}
 
 
+@without_loaded_values
 @permacache_with_remapping_pickle(
     "election_data/disaggregate_to_blocks_7",
-    key_function=dict(election=lambda x: x.key),
 )
 def disaggregate_to_blocks(election, block_year=2020):
     """
@@ -262,10 +274,9 @@ def disaggregate_to_blocks(election, block_year=2020):
 
 @permacache_with_remapping_pickle(
     "election_data/aggregated_election_results_5",
-    key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def aggregated_election_results(shapefile):
-    return aggregate_by_census_block(2020, shapefile, election_results_by_block())
+def aggregated_election_results(geometry):
+    return aggregate_by_census_block(2020, geometry, election_results_by_block())
 
 
 @lru_cache(None)

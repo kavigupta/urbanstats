@@ -4,8 +4,9 @@ from attr import dataclass
 
 from urbanstats.data.wikipedia.wikidata import query_sparlql
 from urbanstats.data.wikipedia.wikidata_sourcer import WikidataSourcer
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
+from urbanstats.geometry.shapefiles.row_functions import column
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
@@ -19,13 +20,18 @@ class CCDWikidataSourcer(WikidataSourcer):
         return query_sparlql("wdt:P774", f"{statefp}-{cousubfp}")
 
 
-CCDs = Shapefile(
-    hash_key="census_cousub_9",
+CCDs = make_shapefile(
+    geometry_key="census_cousub_9",
     path="named_region_shapefiles/cb_2023_us_cousub_500k.zip",
-    shortname_extractor=lambda x: f"{x.NAMELSAD}",
-    cleanname_extractor=lambda x: x.NAME,
-    longname_extractor=lambda x: f"{x.NAMELSAD} [CCD], {x.NAMELSADCO}, {x.STATE_NAME}, USA",
-    additional_columns_computer={"geoid": lambda x: x.GEOID},
+    shortname_extractor=column("NAMELSAD"),
+    cleanname_extractor=column("NAME"),
+    longname_extractor=column("NAMELSAD")
+    + " [CCD], "
+    + column("NAMELSADCO")
+    + ", "
+    + column("STATE_NAME")
+    + ", USA",
+    additional_columns_computer={"geoid": column("GEOID")},
     filter=lambda x: True,
     meta=dict(type="CCD", source="Census", type_category="Census"),
     does_overlap_self=False,
@@ -34,7 +40,7 @@ CCDs = Shapefile(
         "congressional_representatives_indirect",
     ],
     universe_provider=us_domestic_provider(),
-    subset_masks={"USA": SelfSubset()},
+    source_countries=InCountry("USA"),
     abbreviation="CCD",
     data_credit=dict(
         linkText="US Census",

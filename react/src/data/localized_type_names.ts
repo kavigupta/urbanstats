@@ -35,7 +35,20 @@ const value: [string, Record<string, string>][] = [
     ],
     [
         "Australia",
-        {}
+        {
+            "Country": "Australia",
+            "Subnational Region": "State",
+            "Urban Center": "AU Urban Center",
+            "Metropolitan Cluster": "AU Metropolitan Cluster",
+            "5M Person Circle": "AU 5M Person Circle",
+            "10M Person Circle": "AU 10M Person Circle",
+            "20M Person Circle": "AU 20M Person Circle",
+            "50M Person Circle": "AU 50M Person Circle",
+            "100M Person Circle": "AU 100M Person Circle",
+            "200M Person Circle": "AU 200M Person Circle",
+            "500M Person Circle": "AU 500M Person Circle",
+            "1B Person Circle": "AU 1B Person Circle"
+        }
     ]
 ]
 export default value

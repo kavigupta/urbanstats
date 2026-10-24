@@ -4,7 +4,7 @@ import { dataSources } from '../data/statistics_tree'
 import { Navigator } from '../navigation/Navigator'
 
 import { isStagedChange, Settings, settingValue, sourceEnabledKey, StatCategorySavedIndeterminateKey, StatGroupKey, StatYearKey, StatSourceKey, StatSubcategorySavedIndeterminateKey, useSettings, useSettingsInfo } from './settings'
-import { allGroups, allYears, AmbiguousSources, Category, CategorySection, categorySections, DataSource, DataSourceCheckboxes, findAmbiguousSourcesAll, Group, sectionsOf, SourceIdentifier, sourceDisambiguation, statParents, StatPath, Subcategory, Year, yearStatPaths } from './statistic-tree'
+import { allGroups, allYears, AmbiguousSources, Category, CategorySection, categorySections, DataSource, DataSourceCheckboxes, findAmbiguousSourcesAll, firstStatOrder, Group, sectionsOf, SourceIdentifier, sourceDisambiguation, statParents, StatPath, Subcategory, Year, yearStatPaths } from './statistic-tree'
 
 export type StatGroupSettings = Record<StatGroupKey | StatYearKey | StatSourceKey, boolean>
 
@@ -422,8 +422,9 @@ export function missingGroups(
         byReason.get(key)!.groups.push(group)
     }
 
-    return Array.from(byReason.values()).flatMap(({ reason, groups }) =>
-        consolidateGroups(groups).map(groupOrCategory => ({ groupOrCategory, reason })))
+    return Array.from(byReason.values())
+        .flatMap(({ reason, groups }) => consolidateGroups(groups).map(groupOrCategory => ({ groupOrCategory, reason })))
+        .sort((a, b) => firstStatOrder(a.groupOrCategory) - firstStatOrder(b.groupOrCategory))
 }
 
 export function useMissingGroups(): MissingGroup[] {

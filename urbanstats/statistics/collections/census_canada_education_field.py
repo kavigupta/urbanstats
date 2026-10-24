@@ -3,7 +3,10 @@ from urbanstats.games.quiz_question_metadata import (
     EDUCATION_FIELD,
     QuizQuestionDescriptor,
 )
-from urbanstats.statistics.statistic_collection import CanadaStatistics
+from urbanstats.statistics.statistic_collection import (
+    CanadaStatistics,
+    statcan_legacy_names,
+)
 from urbanstats.statistics.utils import fractionalize
 
 
@@ -94,11 +97,14 @@ class CensusCanadaEducationField(CanadaStatistics):
             "population",
         )
 
+    def legacy_statistic_names(self):
+        return statcan_legacy_names(self)
+
     def name_for_each_statistic(self):
         return {
-            "education_field_stem_canada": "Undergrad STEM [25-64] % [StatCan]",
-            "education_field_humanities_canada": "Undergrad Humanities [25-64] % [StatCan]",
-            "education_field_business_canada": "Undergrad Business [25-64] % [StatCan]",
+            "education_field_stem_canada": "Undergrad STEM [25-64] %",
+            "education_field_humanities_canada": "Undergrad Humanities [25-64] %",
+            "education_field_business_canada": "Undergrad Business [25-64] %",
         }
 
     def unit_for_each_statistic(self):

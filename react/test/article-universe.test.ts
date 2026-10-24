@@ -156,8 +156,8 @@ test('values-same-by-universe', async (t) => {
     for (const row of original) {
         row[row.length - 1] = row[row.length - 1].replace(/State/g, 'Subnational Region')
     }
-    // clear out the ones that are different by universe (compactness [3] and area [4])
-    for (let rowIdx = 3; rowIdx < original.length; rowIdx++) {
+    // the world universe also ranks Canadian provinces, so every ordinal differs
+    for (let rowIdx = 0; rowIdx < original.length; rowIdx++) {
         // ordinal and percentile
         for (let colIdx = 3; colIdx < original[rowIdx].length; colIdx++) {
             original[rowIdx][colIdx] = '<varies>'

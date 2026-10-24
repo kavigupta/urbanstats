@@ -3,7 +3,8 @@ from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     load_canadian_shapefile,
     pruid_to_province,
 )
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
+from urbanstats.geometry.shapefiles.row_functions import Lookup, column
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.canadian_cma import (
     canadian_census_kwargs,
 )
@@ -12,18 +13,17 @@ from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
 )
 
-CANADIAN_DISTRICTS = Shapefile(
-    hash_key="canadian_districts_2",
-    path=lambda: load_canadian_shapefile(
-        "named_region_shapefiles/canada/lfed000a21a_e.zip",
-        COUNTRIES,
-        SUBNATIONAL_REGIONS,
+CANADIAN_DISTRICTS = make_shapefile(
+    geometry_key="canadian_districts_2",
+    path=lambda countries, subnationals: load_canadian_shapefile(
+        "named_region_shapefiles/canada/lfed000a21a_e.zip", countries, subnationals
     ),
-    shortname_extractor=lambda row: row.FEDENAME,
-    longname_extractor=lambda row: row.FEDENAME
+    path_inputs=(COUNTRIES.names, SUBNATIONAL_REGIONS.names),
+    shortname_extractor=column("FEDENAME"),
+    longname_extractor=column("FEDENAME")
     + " (Riding), "
-    + pruid_to_province[row["PRUID"]],
-    additional_columns_computer={"scgc": lambda row: row.FEDUID},
+    + Lookup(column("PRUID"), pruid_to_province),
+    additional_columns_computer={"scgc": column("FEDUID")},
     **canadian_census_kwargs("CA Riding", "Political"),
     abbreviation="RDNG",
     data_credit=dict(

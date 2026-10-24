@@ -4,17 +4,7 @@ export const dataSources = [
         "sources": [
             {
                 "category": "Population",
-                "name": "US Census",
-                "is_default": true
-            },
-            {
-                "category": "Population",
-                "name": "Canadian Census",
-                "is_default": true
-            },
-            {
-                "category": "Population",
-                "name": "Australian Census",
+                "name": "National Census",
                 "is_default": true
             },
             {
@@ -176,25 +166,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 446
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 451
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Australian Census"
-                                        },
-                                        "column": 450
+                                        "column": 356
                                     },
                                     {
                                         "kind": "data",
@@ -202,7 +176,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 258
+                                        "column": 194
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -219,17 +193,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 448
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 449
+                                        "column": 358
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -241,17 +207,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 453
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 454
+                                        "column": 360
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -268,9 +226,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 447
+                                        "column": 357
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -282,9 +240,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 452
+                                        "column": 359
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -308,7 +266,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 96
                                     },
@@ -316,25 +274,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 197
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Australian Census"
-                                        },
-                                        "column": 196
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 259
+                                        "column": 195
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -351,17 +293,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 112
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 181
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -373,17 +307,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 116
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 224
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -395,17 +321,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 114
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 214
                                     }
                                 ],
                                 "indentedName": "2010-2020 Absolute Change"
@@ -422,7 +340,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 111
                                     }
@@ -436,7 +354,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 115
                                     }
@@ -450,7 +368,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 113
                                     }
@@ -476,25 +394,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 480
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 485
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Australian Census"
-                                        },
-                                        "column": 484
+                                        "column": 385
                                     },
                                     {
                                         "kind": "data",
@@ -502,7 +404,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 257
+                                        "column": 193
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -519,17 +421,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 482
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 483
+                                        "column": 387
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -546,9 +440,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 481
+                                        "column": 386
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -600,7 +494,7 @@ export const rawStatsTree = [
                                             "category": "Geography",
                                             "name": "Shapefile Geometry"
                                         },
-                                        "column": 170
+                                        "column": 165
                                     }
                                 ],
                                 "indentedName": null
@@ -632,7 +526,7 @@ export const rawStatsTree = [
                                             "category": "Elevation",
                                             "name": "ASTER GDEM"
                                         },
-                                        "column": 269
+                                        "column": 205
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -658,7 +552,7 @@ export const rawStatsTree = [
                                             "category": "Elevation",
                                             "name": "ASTER GDEM"
                                         },
-                                        "column": 268
+                                        "column": 204
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -684,7 +578,7 @@ export const rawStatsTree = [
                                             "category": "Population Median",
                                             "name": "Best Available Population Data"
                                         },
-                                        "column": 455
+                                        "column": 361
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -710,7 +604,7 @@ export const rawStatsTree = [
                                             "category": "Population Median",
                                             "name": "Best Available Population Data"
                                         },
-                                        "column": 456
+                                        "column": 362
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -743,17 +637,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 535
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 538
+                                        "column": 428
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -770,9 +656,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 537
+                                        "column": 430
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -789,9 +675,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 536
+                                        "column": 429
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -818,17 +704,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 280
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 283
+                                        "column": 215
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -845,9 +723,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 282
+                                        "column": 217
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -864,9 +742,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 281
+                                        "column": 216
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -893,17 +771,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 160
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 163
+                                        "column": 159
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -920,9 +790,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 162
+                                        "column": 161
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -939,9 +809,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 161
+                                        "column": 160
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -968,17 +838,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 153
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 156
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -995,7 +857,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 155
                                     }
@@ -1014,7 +876,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 154
                                     }
@@ -1043,17 +905,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 400
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 403
+                                        "column": 312
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1070,9 +924,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 402
+                                        "column": 314
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -1089,9 +943,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 401
+                                        "column": 313
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -1118,17 +972,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 270
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 273
+                                        "column": 206
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1145,9 +991,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 272
+                                        "column": 208
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -1164,9 +1010,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 271
+                                        "column": 207
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -1193,17 +1039,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 439
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 442
+                                        "column": 350
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1220,9 +1058,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 441
+                                        "column": 352
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -1239,9 +1077,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 440
+                                        "column": 351
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -1265,9 +1103,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 284
+                                        "column": 218
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -1279,9 +1117,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 287
+                                        "column": 221
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -1298,9 +1136,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 285
+                                        "column": 219
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -1312,9 +1150,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 288
+                                        "column": 222
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -1331,9 +1169,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 286
+                                        "column": 220
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1357,9 +1195,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 491
+                                        "column": 393
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -1371,9 +1209,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 494
+                                        "column": 396
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -1390,9 +1228,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 492
+                                        "column": 394
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -1404,9 +1242,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 495
+                                        "column": 397
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -1423,9 +1261,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 493
+                                        "column": 395
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1449,9 +1287,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 486
+                                        "column": 388
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -1463,9 +1301,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 489
+                                        "column": 391
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -1482,9 +1320,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 487
+                                        "column": 389
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -1496,9 +1334,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 490
+                                        "column": 392
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -1515,9 +1353,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 488
+                                        "column": 390
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1550,17 +1388,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 164
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 165
+                                        "column": 162
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1587,17 +1417,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 166
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 167
+                                        "column": 163
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1624,17 +1446,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 168
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 169
+                                        "column": 164
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1661,9 +1475,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 157
+                                        "column": 156
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1690,9 +1504,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 158
+                                        "column": 157
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1719,9 +1533,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 159
+                                        "column": 158
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1748,17 +1562,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 356
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 357
+                                        "column": 273
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1785,17 +1591,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 361
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 362
+                                        "column": 277
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1806,7 +1604,7 @@ export const rawStatsTree = [
             },
             {
                 "id": "language_french_canada",
-                "name": "French at Home % [StatCan]",
+                "name": "French at Home %",
                 "subcategory": {
                     "id": "language",
                     "name": "Language at Home"
@@ -1816,15 +1614,15 @@ export const rawStatsTree = [
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "French at Home % [StatCan]",
+                                "name": "French at Home %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 358
+                                        "column": 274
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1835,7 +1633,7 @@ export const rawStatsTree = [
             },
             {
                 "id": "language_other_non_french_canada",
-                "name": "Other (non-French) at Home % [StatCan]",
+                "name": "Other (non-French) at Home %",
                 "subcategory": {
                     "id": "language",
                     "name": "Language at Home"
@@ -1845,15 +1643,15 @@ export const rawStatsTree = [
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Other (non-French) at Home % [StatCan]",
+                                "name": "Other (non-French) at Home %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 360
+                                        "column": 276
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1880,9 +1678,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 359
+                                        "column": 275
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1899,22 +1697,22 @@ export const rawStatsTree = [
         "contents": [
             {
                 "id": "religion_no_religion_canada",
-                "name": "No religion % [StatCan]",
+                "name": "No religion %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "No religion % [StatCan]",
+                                "name": "No religion %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 464
+                                        "column": 370
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1925,22 +1723,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "religion_catholic_canada",
-                "name": "Catholic % [StatCan]",
+                "name": "Catholic %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Catholic % [StatCan]",
+                                "name": "Catholic %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 460
+                                        "column": 366
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1951,22 +1749,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "religion_protestant_canada",
-                "name": "Protestant (non-Catholic Christian) % [StatCan]",
+                "name": "Protestant (non-Catholic Christian) %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Protestant (non-Catholic Christian) % [StatCan]",
+                                "name": "Protestant (non-Catholic Christian) %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 466
+                                        "column": 372
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1977,22 +1775,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "religion_hindu_canada",
-                "name": "Hindu % [StatCan]",
+                "name": "Hindu %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Hindu % [StatCan]",
+                                "name": "Hindu %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 461
+                                        "column": 367
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2003,22 +1801,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "religion_jewish_canada",
-                "name": "Jewish % [StatCan]",
+                "name": "Jewish %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Jewish % [StatCan]",
+                                "name": "Jewish %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 462
+                                        "column": 368
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2029,22 +1827,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "religion_muslim_canada",
-                "name": "Muslim % [StatCan]",
+                "name": "Muslim %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Muslim % [StatCan]",
+                                "name": "Muslim %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 463
+                                        "column": 369
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2055,22 +1853,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "religion_sikh_canada",
-                "name": "Sikh % [StatCan]",
+                "name": "Sikh %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Sikh % [StatCan]",
+                                "name": "Sikh %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 467
+                                        "column": 373
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2081,22 +1879,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "religion_buddhist_canada",
-                "name": "Buddhist % [StatCan]",
+                "name": "Buddhist %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Buddhist % [StatCan]",
+                                "name": "Buddhist %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 459
+                                        "column": 365
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2107,22 +1905,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "religion_other_canada",
-                "name": "Other religion % [StatCan]",
+                "name": "Other religion %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Other religion % [StatCan]",
+                                "name": "Other religion %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 465
+                                        "column": 371
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2155,9 +1953,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 238
+                                        "column": 180
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2184,9 +1982,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 240
+                                        "column": 182
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2213,9 +2011,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 236
+                                        "column": 178
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2242,9 +2040,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 239
+                                        "column": 181
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2271,9 +2069,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 241
+                                        "column": 183
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2300,9 +2098,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 237
+                                        "column": 179
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2329,9 +2127,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 234
+                                        "column": 176
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2358,9 +2156,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 232
+                                        "column": 174
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2387,9 +2185,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 230
+                                        "column": 172
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2400,7 +2198,7 @@ export const rawStatsTree = [
             },
             {
                 "id": "education_field_stem_canada",
-                "name": "Undergrad STEM [25-64] % [StatCan]",
+                "name": "Undergrad STEM [25-64] %",
                 "subcategory": {
                     "id": "education_field",
                     "name": "Field of Study"
@@ -2410,15 +2208,15 @@ export const rawStatsTree = [
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Undergrad STEM [25-64] % [StatCan]",
+                                "name": "Undergrad STEM [25-64] %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 235
+                                        "column": 177
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2429,7 +2227,7 @@ export const rawStatsTree = [
             },
             {
                 "id": "education_field_humanities_canada",
-                "name": "Undergrad Humanities [25-64] % [StatCan]",
+                "name": "Undergrad Humanities [25-64] %",
                 "subcategory": {
                     "id": "education_field",
                     "name": "Field of Study"
@@ -2439,15 +2237,15 @@ export const rawStatsTree = [
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Undergrad Humanities [25-64] % [StatCan]",
+                                "name": "Undergrad Humanities [25-64] %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 233
+                                        "column": 175
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2458,7 +2256,7 @@ export const rawStatsTree = [
             },
             {
                 "id": "education_field_business_canada",
-                "name": "Undergrad Business [25-64] % [StatCan]",
+                "name": "Undergrad Business [25-64] %",
                 "subcategory": {
                     "id": "education_field",
                     "name": "Field of Study"
@@ -2468,15 +2266,15 @@ export const rawStatsTree = [
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Undergrad Business [25-64] % [StatCan]",
+                                "name": "Undergrad Business [25-64] %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 231
+                                        "column": 173
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2500,9 +2298,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 243
+                                        "column": 185
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2526,9 +2324,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 244
+                                        "column": 186
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2552,9 +2350,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 242
+                                        "column": 184
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2584,17 +2382,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 255
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 256
+                                        "column": 192
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2618,17 +2408,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 245
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 246
+                                        "column": 187
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2652,17 +2434,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 249
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 250
+                                        "column": 189
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2686,17 +2460,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 253
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 254
+                                        "column": 191
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2720,17 +2486,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 251
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 252
+                                        "column": 190
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2754,17 +2512,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 247
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 248
+                                        "column": 188
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2794,9 +2544,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 399
+                                        "column": 311
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2820,9 +2570,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 457
+                                        "column": 363
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2846,9 +2596,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 367
+                                        "column": 282
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2872,9 +2622,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 369
+                                        "column": 284
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2901,9 +2651,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 295
+                                        "column": 231
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2930,9 +2680,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 291
+                                        "column": 225
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2959,9 +2709,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 293
+                                        "column": 228
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2988,9 +2738,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 294
+                                        "column": 230
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3017,9 +2767,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 290
+                                        "column": 224
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3046,9 +2796,96 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 292
+                                        "column": 227
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "household_income_under_52k_australia",
+                "name": "Household income < A$52k %",
+                "subcategory": {
+                    "id": "household_income",
+                    "name": "Household Income"
+                },
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Household income < A$52k %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "National Census"
+                                        },
+                                        "column": 232
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "household_income_52k_to_104k_australia",
+                "name": "Household income A$52k - A$104k %",
+                "subcategory": {
+                    "id": "household_income",
+                    "name": "Household Income"
+                },
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Household income A$52k - A$104k %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "National Census"
+                                        },
+                                        "column": 226
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "household_income_over_104k_australia",
+                "name": "Household income > A$104k %",
+                "subcategory": {
+                    "id": "household_income",
+                    "name": "Household Income"
+                },
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Household income > A$104k %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "National Census"
+                                        },
+                                        "column": 229
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3075,9 +2912,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 311
+                                        "column": 247
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3104,9 +2941,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 307
+                                        "column": 241
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3133,9 +2970,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 309
+                                        "column": 244
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3162,9 +2999,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 310
+                                        "column": 246
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3191,9 +3028,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 306
+                                        "column": 240
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3220,9 +3057,96 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 308
+                                        "column": 243
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "individual_income_under_52k_australia",
+                "name": "Individual income < A$52k %",
+                "subcategory": {
+                    "id": "individual_income",
+                    "name": "Individual Income"
+                },
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Individual income < A$52k %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "National Census"
+                                        },
+                                        "column": 248
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "individual_income_52k_to_104k_australia",
+                "name": "Individual income A$52k - A$104k %",
+                "subcategory": {
+                    "id": "individual_income",
+                    "name": "Individual Income"
+                },
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Individual income A$52k - A$104k %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "National Census"
+                                        },
+                                        "column": 242
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "individual_income_over_104k_australia",
+                "name": "Individual income > A$104k %",
+                "subcategory": {
+                    "id": "individual_income",
+                    "name": "Individual Income"
+                },
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Individual income > A$104k %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "National Census"
+                                        },
+                                        "column": 245
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3252,17 +3176,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 302
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 305
+                                        "column": 237
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3279,9 +3195,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 304
+                                        "column": 239
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -3298,9 +3214,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 303
+                                        "column": 238
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -3324,17 +3240,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 298
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 301
+                                        "column": 234
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3351,9 +3259,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 300
+                                        "column": 236
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -3370,9 +3278,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 299
+                                        "column": 235
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -3396,9 +3304,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 529
+                                        "column": 422
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3415,9 +3323,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 531
+                                        "column": 424
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -3434,9 +3342,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 530
+                                        "column": 423
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -3463,9 +3371,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 477
+                                        "column": 383
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3492,9 +3400,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 474
+                                        "column": 380
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3521,9 +3429,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 476
+                                        "column": 382
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3550,9 +3458,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 470
+                                        "column": 376
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3579,9 +3487,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 468
+                                        "column": 374
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3608,9 +3516,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 469
+                                        "column": 375
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3637,9 +3545,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 473
+                                        "column": 379
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3666,9 +3574,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 471
+                                        "column": 377
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3695,9 +3603,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 472
+                                        "column": 378
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3724,9 +3632,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 544
+                                        "column": 436
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3753,9 +3661,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 545
+                                        "column": 437
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3782,9 +3690,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 546
+                                        "column": 438
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3811,9 +3719,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 547
+                                        "column": 439
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3840,9 +3748,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 548
+                                        "column": 440
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3869,9 +3777,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 549
+                                        "column": 441
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3895,17 +3803,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 296
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 297
+                                        "column": 233
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3929,17 +3829,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 478
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 479
+                                        "column": 384
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3950,22 +3842,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "rent_burden_over_30_canada",
-                "name": "Housing Cost/Income > 30% [StatCan]",
+                "name": "Housing Cost/Income > 30%",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Housing Cost/Income > 30% [StatCan]",
+                                "name": "Housing Cost/Income > 30%",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 475
+                                        "column": 381
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3998,17 +3890,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 520
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 521
+                                        "column": 416
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4035,17 +3919,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 517
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 518
+                                        "column": 414
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4072,17 +3948,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 526
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 527
+                                        "column": 420
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4109,17 +3977,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 523
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 524
+                                        "column": 418
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4143,17 +4003,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 510
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 511
+                                        "column": 410
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4180,17 +4032,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 514
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 515
+                                        "column": 412
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4217,17 +4061,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 506
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 507
+                                        "column": 408
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4254,17 +4090,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 508
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 509
+                                        "column": 409
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4291,17 +4119,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 512
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 513
+                                        "column": 411
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4328,9 +4148,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 534
+                                        "column": 427
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4357,9 +4177,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 532
+                                        "column": 425
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4386,9 +4206,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 533
+                                        "column": 426
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4414,7 +4234,7 @@ export const rawStatsTree = [
                                             "category": "Traffic Fatalities",
                                             "name": "NHTSA FARS"
                                         },
-                                        "column": 503
+                                        "column": 405
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4440,7 +4260,7 @@ export const rawStatsTree = [
                                             "category": "Traffic Fatalities",
                                             "name": "NHTSA FARS"
                                         },
-                                        "column": 505
+                                        "column": 407
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4466,7 +4286,7 @@ export const rawStatsTree = [
                                             "category": "Traffic Fatalities",
                                             "name": "NHTSA FARS"
                                         },
-                                        "column": 502
+                                        "column": 404
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4492,7 +4312,7 @@ export const rawStatsTree = [
                                             "category": "Traffic Fatalities",
                                             "name": "NHTSA FARS"
                                         },
-                                        "column": 504
+                                        "column": 406
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5200,7 +5020,7 @@ export const rawStatsTree = [
                                             "category": "Health Care Performance",
                                             "name": "IHME"
                                         },
-                                        "column": 368
+                                        "column": 283
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5226,7 +5046,7 @@ export const rawStatsTree = [
                                             "category": "Health Care Performance",
                                             "name": "IHME"
                                         },
-                                        "column": 444
+                                        "column": 354
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5258,7 +5078,7 @@ export const rawStatsTree = [
                                             "category": "Pollution",
                                             "name": "Atmospheric Composition Analysis Group"
                                         },
-                                        "column": 445
+                                        "column": 355
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5285,9 +5105,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 279
+                                        "column": 214
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5314,9 +5134,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 275
+                                        "column": 210
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5343,9 +5163,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 274
+                                        "column": 209
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5372,9 +5192,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 276
+                                        "column": 211
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5401,9 +5221,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 278
+                                        "column": 213
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5430,9 +5250,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 277
+                                        "column": 212
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5462,17 +5282,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 316
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 317
+                                        "column": 251
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5496,17 +5308,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 334
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 335
+                                        "column": 260
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5530,17 +5334,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 312
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 313
+                                        "column": 249
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5564,17 +5360,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 318
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 319
+                                        "column": 252
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5598,17 +5386,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 320
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 321
+                                        "column": 253
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5632,17 +5412,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 322
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 323
+                                        "column": 254
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5666,17 +5438,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 326
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 327
+                                        "column": 256
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5700,17 +5464,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 324
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 325
+                                        "column": 255
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5734,17 +5490,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 342
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 343
+                                        "column": 264
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5768,17 +5516,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 328
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 329
+                                        "column": 257
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5802,17 +5542,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 332
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 333
+                                        "column": 259
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5836,17 +5568,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 336
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 337
+                                        "column": 261
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5870,17 +5594,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 314
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 315
+                                        "column": 250
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5904,17 +5620,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 330
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 331
+                                        "column": 258
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5938,17 +5646,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 338
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 339
+                                        "column": 262
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5972,17 +5672,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 340
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 341
+                                        "column": 263
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6006,17 +5698,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 344
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 345
+                                        "column": 265
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6040,17 +5724,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 346
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 347
+                                        "column": 266
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6074,17 +5750,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 348
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 349
+                                        "column": 267
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6108,17 +5776,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 350
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 351
+                                        "column": 268
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6148,9 +5808,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 404
+                                        "column": 315
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6174,9 +5834,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 411
+                                        "column": 322
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6200,9 +5860,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 426
+                                        "column": 337
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6226,9 +5886,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 406
+                                        "column": 317
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6252,9 +5912,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 410
+                                        "column": 321
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6278,9 +5938,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 414
+                                        "column": 325
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6304,9 +5964,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 424
+                                        "column": 335
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6330,9 +5990,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 419
+                                        "column": 330
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6356,9 +6016,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 420
+                                        "column": 331
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6382,9 +6042,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 408
+                                        "column": 319
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6408,9 +6068,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 427
+                                        "column": 338
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6434,9 +6094,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 412
+                                        "column": 323
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6460,9 +6120,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 415
+                                        "column": 326
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6486,9 +6146,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 422
+                                        "column": 333
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6512,9 +6172,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 429
+                                        "column": 340
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6538,9 +6198,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 434
+                                        "column": 345
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6564,9 +6224,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 438
+                                        "column": 349
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6590,9 +6250,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 432
+                                        "column": 343
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6616,9 +6276,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 435
+                                        "column": 346
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6642,9 +6302,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 407
+                                        "column": 318
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6668,9 +6328,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 417
+                                        "column": 328
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6694,9 +6354,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 421
+                                        "column": 332
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6720,9 +6380,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 433
+                                        "column": 344
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6746,9 +6406,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 416
+                                        "column": 327
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6772,9 +6432,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 423
+                                        "column": 334
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6785,22 +6445,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_legislative_and_senior_management_canada",
-                "name": "Legislative and senior management occupations % [StatCan]",
+                "name": "Legislative and senior management occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Legislative and senior management occupations % [StatCan]",
+                                "name": "Legislative and senior management occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 425
+                                        "column": 336
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6811,22 +6471,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_business_finance_and_administration_canada",
-                "name": "Business, finance and administration occupations % [StatCan]",
+                "name": "Business, finance and administration occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Business, finance and administration occupations % [StatCan]",
+                                "name": "Business, finance and administration occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 409
+                                        "column": 320
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6837,22 +6497,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_natural_and_applied_sciences_canada",
-                "name": "Natural and applied sciences occupations % [StatCan]",
+                "name": "Natural and applied sciences occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Natural and applied sciences occupations % [StatCan]",
+                                "name": "Natural and applied sciences occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 430
+                                        "column": 341
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6863,22 +6523,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_health_canada",
-                "name": "Health occupations % [StatCan]",
+                "name": "Health occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Health occupations % [StatCan]",
+                                "name": "Health occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 418
+                                        "column": 329
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6889,22 +6549,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_education_law_social_community_government_canada",
-                "name": "Education, law, social, community and government occupations % [StatCan]",
+                "name": "Education, law, social, community and government occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Education, law, social, community and government occupations % [StatCan]",
+                                "name": "Education, law, social, community and government occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 413
+                                        "column": 324
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6915,22 +6575,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_art_culture_recreation_sport_canada",
-                "name": "Art, culture, recreation and sport occupations % [StatCan]",
+                "name": "Art, culture, recreation and sport occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Art, culture, recreation and sport occupations % [StatCan]",
+                                "name": "Art, culture, recreation and sport occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 405
+                                        "column": 316
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6941,22 +6601,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_sales_and_service_canada",
-                "name": "Sales and service occupations % [StatCan]",
+                "name": "Sales and service occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Sales and service occupations % [StatCan]",
+                                "name": "Sales and service occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 436
+                                        "column": 347
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6967,22 +6627,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_trades_transport_equipment_canada",
-                "name": "Trades, transport and equipment operators occupations % [StatCan]",
+                "name": "Trades, transport and equipment operators occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Trades, transport and equipment operators occupations % [StatCan]",
+                                "name": "Trades, transport and equipment operators occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 437
+                                        "column": 348
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6993,22 +6653,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_natural_resources_agriculture_canada",
-                "name": "Natural resources and agriculture occupations % [StatCan]",
+                "name": "Natural resources and agriculture occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Natural resources and agriculture occupations % [StatCan]",
+                                "name": "Natural resources and agriculture occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 431
+                                        "column": 342
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7019,22 +6679,22 @@ export const rawStatsTree = [
             },
             {
                 "id": "occupation_manufacturing_utilities_canada",
-                "name": "Manufacturing and utilities occupations % [StatCan]",
+                "name": "Manufacturing and utilities occupations %",
                 "subcategory": null,
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Manufacturing and utilities occupations % [StatCan]",
+                                "name": "Manufacturing and utilities occupations %",
                                 "stats": [
                                     {
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 428
+                                        "column": 339
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7067,9 +6727,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 501
+                                        "column": 403
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7096,9 +6756,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 498
+                                        "column": 400
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7125,9 +6785,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 499
+                                        "column": 401
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7154,9 +6814,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 497
+                                        "column": 399
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7183,9 +6843,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 500
+                                        "column": 402
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7212,17 +6872,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 374
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 375
+                                        "column": 287
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7249,17 +6901,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 372
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 373
+                                        "column": 286
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7286,17 +6930,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 370
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 371
+                                        "column": 285
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8247,7 +7883,7 @@ export const rawStatsTree = [
                                             "category": "Distance from Features",
                                             "name": "Feature Datasets"
                                         },
-                                        "column": 443
+                                        "column": 353
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8273,7 +7909,7 @@ export const rawStatsTree = [
                                             "category": "Distance from Features",
                                             "name": "Feature Datasets"
                                         },
-                                        "column": 542
+                                        "column": 434
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8299,7 +7935,7 @@ export const rawStatsTree = [
                                             "category": "Distance from Features",
                                             "name": "Feature Datasets"
                                         },
-                                        "column": 381
+                                        "column": 293
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8325,7 +7961,7 @@ export const rawStatsTree = [
                                             "category": "Distance from Features",
                                             "name": "Feature Datasets"
                                         },
-                                        "column": 543
+                                        "column": 435
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8351,7 +7987,7 @@ export const rawStatsTree = [
                                             "category": "Distance from Features",
                                             "name": "Feature Datasets"
                                         },
-                                        "column": 382
+                                        "column": 294
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8377,7 +8013,7 @@ export const rawStatsTree = [
                                             "category": "Distance from Features",
                                             "name": "Feature Datasets"
                                         },
-                                        "column": 541
+                                        "column": 433
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8403,7 +8039,7 @@ export const rawStatsTree = [
                                             "category": "Distance from Features",
                                             "name": "Feature Datasets"
                                         },
-                                        "column": 380
+                                        "column": 292
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8429,7 +8065,7 @@ export const rawStatsTree = [
                                             "category": "Distance from Features",
                                             "name": "Feature Datasets"
                                         },
-                                        "column": 540
+                                        "column": 432
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8455,7 +8091,7 @@ export const rawStatsTree = [
                                             "category": "Distance from Features",
                                             "name": "Feature Datasets"
                                         },
-                                        "column": 379
+                                        "column": 291
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8481,7 +8117,7 @@ export const rawStatsTree = [
                                             "category": "Food Access",
                                             "name": "USDA Food Access Research Atlas"
                                         },
-                                        "column": 366
+                                        "column": 281
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8507,7 +8143,7 @@ export const rawStatsTree = [
                                             "category": "Food Access",
                                             "name": "USDA Food Access Research Atlas"
                                         },
-                                        "column": 364
+                                        "column": 279
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8533,7 +8169,7 @@ export const rawStatsTree = [
                                             "category": "Food Access",
                                             "name": "USDA Food Access Research Atlas"
                                         },
-                                        "column": 363
+                                        "column": 278
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8559,7 +8195,7 @@ export const rawStatsTree = [
                                             "category": "Food Access",
                                             "name": "USDA Food Access Research Atlas"
                                         },
-                                        "column": 365
+                                        "column": 280
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8591,7 +8227,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 385
+                                        "column": 297
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8617,7 +8253,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 394
+                                        "column": 306
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8643,7 +8279,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 384
+                                        "column": 296
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8669,7 +8305,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 383
+                                        "column": 295
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8695,7 +8331,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 171
+                                        "column": 166
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8721,7 +8357,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 173
+                                        "column": 168
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8747,7 +8383,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 172
+                                        "column": 167
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8773,7 +8409,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 176
+                                        "column": 171
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8799,7 +8435,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 175
+                                        "column": 170
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8825,7 +8461,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 174
+                                        "column": 169
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8851,7 +8487,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 289
+                                        "column": 223
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8877,7 +8513,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 458
+                                        "column": 364
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8903,7 +8539,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 496
+                                        "column": 398
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8929,7 +8565,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 539
+                                        "column": 431
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8955,7 +8591,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 386
+                                        "column": 298
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8981,7 +8617,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 389
+                                        "column": 301
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9007,7 +8643,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 388
+                                        "column": 300
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9033,7 +8669,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 390
+                                        "column": 302
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9059,7 +8695,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 395
+                                        "column": 307
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9085,7 +8721,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 397
+                                        "column": 309
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9111,7 +8747,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 396
+                                        "column": 308
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9137,7 +8773,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 398
+                                        "column": 310
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9167,9 +8803,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 355
+                                        "column": 272
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9193,9 +8829,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 353
+                                        "column": 270
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9219,9 +8855,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 352
+                                        "column": 269
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9245,9 +8881,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 354
+                                        "column": 271
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9367,25 +9003,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 82
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 189
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Australian Census"
-                                        },
-                                        "column": 188
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9402,17 +9022,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 84
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 177
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -9424,17 +9036,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 88
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 220
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -9446,17 +9050,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 86
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 210
                                     }
                                 ],
                                 "indentedName": "2010-2020 Absolute Change"
@@ -9473,7 +9069,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 83
                                     }
@@ -9487,7 +9083,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 87
                                     }
@@ -9501,7 +9097,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 85
                                     }
@@ -9527,25 +9123,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 89
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 191
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Australian Census"
-                                        },
-                                        "column": 190
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9562,17 +9142,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 91
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 178
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -9584,17 +9156,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 95
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 221
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -9606,17 +9170,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 93
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 211
                                     }
                                 ],
                                 "indentedName": "2010-2020 Absolute Change"
@@ -9633,7 +9189,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 90
                                     }
@@ -9647,7 +9203,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 94
                                     }
@@ -9661,7 +9217,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 92
                                     }
@@ -9687,7 +9243,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 97
                                     },
@@ -9695,25 +9251,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 193
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Australian Census"
-                                        },
-                                        "column": 192
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 260
+                                        "column": 196
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9730,17 +9270,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 99
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 179
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -9752,17 +9284,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 103
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 222
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -9774,17 +9298,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 101
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 212
                                     }
                                 ],
                                 "indentedName": "2010-2020 Absolute Change"
@@ -9801,7 +9317,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 98
                                     }
@@ -9815,7 +9331,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 102
                                     }
@@ -9829,7 +9345,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 100
                                     }
@@ -9855,7 +9371,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 117
                                     },
@@ -9863,25 +9379,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 199
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Australian Census"
-                                        },
-                                        "column": 198
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 262
+                                        "column": 198
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9898,17 +9398,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 119
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 182
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -9920,17 +9412,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 123
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 225
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -9942,17 +9426,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 121
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 215
                                     }
                                 ],
                                 "indentedName": "2010-2020 Absolute Change"
@@ -9969,7 +9445,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 118
                                     }
@@ -9983,7 +9459,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 122
                                     }
@@ -9997,7 +9473,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 120
                                     }
@@ -10023,7 +9499,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 131
                                     },
@@ -10031,25 +9507,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 203
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Australian Census"
-                                        },
-                                        "column": 202
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 264
+                                        "column": 200
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10066,17 +9526,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 133
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 184
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -10088,17 +9540,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 137
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 227
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -10110,17 +9554,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 135
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 217
                                     }
                                 ],
                                 "indentedName": "2010-2020 Absolute Change"
@@ -10137,7 +9573,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 132
                                     }
@@ -10151,7 +9587,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 136
                                     }
@@ -10165,7 +9601,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 134
                                     }
@@ -10191,7 +9627,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 145
                                     },
@@ -10199,25 +9635,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 207
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Australian Census"
-                                        },
-                                        "column": 206
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 266
+                                        "column": 202
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10234,17 +9654,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 147
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 186
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -10256,17 +9668,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 151
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 229
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -10278,17 +9682,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 149
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 219
                                     }
                                 ],
                                 "indentedName": "2010-2020 Absolute Change"
@@ -10305,7 +9701,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 146
                                     }
@@ -10319,7 +9715,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 150
                                     }
@@ -10333,7 +9729,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 148
                                     }
@@ -10359,7 +9755,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 104
                                     },
@@ -10367,25 +9763,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 195
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Australian Census"
-                                        },
-                                        "column": 194
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 261
+                                        "column": 197
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10402,17 +9782,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 106
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 180
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -10424,17 +9796,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 110
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 223
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -10446,17 +9810,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 108
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 213
                                     }
                                 ],
                                 "indentedName": "2010-2020 Absolute Change"
@@ -10473,7 +9829,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 105
                                     }
@@ -10487,7 +9843,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 109
                                     }
@@ -10501,7 +9857,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 107
                                     }
@@ -10527,7 +9883,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 124
                                     },
@@ -10535,25 +9891,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 201
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Australian Census"
-                                        },
-                                        "column": 200
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 263
+                                        "column": 199
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10570,17 +9910,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 126
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 183
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -10592,17 +9924,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 130
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 226
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -10614,17 +9938,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 128
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 216
                                     }
                                 ],
                                 "indentedName": "2010-2020 Absolute Change"
@@ -10641,7 +9957,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 125
                                     }
@@ -10655,7 +9971,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 129
                                     }
@@ -10669,7 +9985,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 127
                                     }
@@ -10695,7 +10011,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 138
                                     },
@@ -10703,25 +10019,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 205
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Australian Census"
-                                        },
-                                        "column": 204
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 265
+                                        "column": 201
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10738,17 +10038,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 140
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 185
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -10760,17 +10052,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 144
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 228
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -10782,17 +10066,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 142
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 218
                                     }
                                 ],
                                 "indentedName": "2010-2020 Absolute Change"
@@ -10809,7 +10085,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 139
                                     }
@@ -10823,7 +10099,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 143
                                     }
@@ -10837,7 +10113,7 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
                                         "column": 141
                                     }
@@ -10863,25 +10139,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 376
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 209
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Australian Census"
-                                        },
-                                        "column": 208
+                                        "column": 288
                                     },
                                     {
                                         "kind": "data",
@@ -10889,7 +10149,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 267
+                                        "column": 203
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10906,17 +10166,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 378
-                                    },
-                                    {
-                                        "kind": "data",
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 187
+                                        "column": 290
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -10933,9 +10185,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 377
+                                        "column": 289
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -10967,7 +10219,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 392
+                                        "column": 304
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10993,7 +10245,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 393
+                                        "column": 305
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -11019,7 +10271,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 387
+                                        "column": 299
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -11045,7 +10297,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 391
+                                        "column": 303
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -11069,9 +10321,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 519
+                                        "column": 415
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -11095,9 +10347,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 516
+                                        "column": 413
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -11121,9 +10373,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 525
+                                        "column": 419
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -11147,9 +10399,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 522
+                                        "column": 417
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -11173,9 +10425,9 @@ export const rawStatsTree = [
                                         "kind": "data",
                                         "source": {
                                             "category": "Population",
-                                            "name": "US Census"
+                                            "name": "National Census"
                                         },
-                                        "column": 528
+                                        "column": 421
                                     }
                                 ],
                                 "indentedName": "2020"

@@ -61,7 +61,7 @@ class USElectionStatistics(USAStatistics):
     def compute_statistics_dictionary_usa(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
-        table = aggregated_election_results(shapefile)
+        table = aggregated_election_results(shapefile.geometry)
         for elect_k in vest_elections:
             table[elect_k.name, "margin"] = (
                 table[elect_k.name, "dem"] - table[elect_k.name, "gop"]

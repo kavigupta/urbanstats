@@ -1,6 +1,7 @@
 import unittest
 
 from urbanstats.geometry.relationship_equirectangular import compute_relationships
+from urbanstats.geometry.shapefiles.longnames import shapefile_longnames
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
 
@@ -10,12 +11,18 @@ from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 )
 class RelationshipTest(unittest.TestCase):
     def relationshipsFlat(self, k1, k2, filter_geos=lambda _: True):
-        relationships = compute_relationships(shapefiles[k1], shapefiles[k2])
+        relationships = compute_relationships(
+            shapefiles[k1].geometry,
+            shapefiles[k2].geometry,
+            shapefiles["subnational_regions"].geometry,
+        )
+        names_1 = shapefile_longnames(shapefiles[k1].names)
+        names_2 = shapefile_longnames(shapefiles[k2].names)
         relationships_flat = {
-            (a, b, rel)
-            for rel, a_b_s in relationships.items()
-            for a, b in a_b_s
-            if filter_geos(a) or filter_geos(b)
+            (names_1[i], names_2[j], rel)
+            for rel, pairs in relationships.items()
+            for i, j in pairs
+            if filter_geos(names_1[i]) or filter_geos(names_2[j])
         }
         print(relationships_flat)
         return relationships_flat
@@ -442,33 +449,21 @@ class RelationshipTest(unittest.TestCase):
                 lambda g: g.startswith("CA-SD23 (2023), USA"),
             ),
             {
-                ("CA-SD23 (2023), USA", "CA-20 (2023), USA", "borders"),  # north
-                ("CA-SD23 (2023), USA", "CA-26 (2023), USA", "borders"),  # west
-                ("CA-SD23 (2023), USA", "CA-29 (2023), USA", "borders"),  # southwest
+                ("CA-SD23 (2023), USA", "CA-20 (2027), USA", "borders"),  # northwest
+                ("CA-SD23 (2023), USA", "CA-29 (2027), USA", "borders"),  # southwest
+                ("CA-SD23 (2023), USA", "CA-32 (2027), USA", "borders"),  # southwest
+                ("CA-SD23 (2023), USA", "CA-23 (2027), USA", "intersects"),  # east, 35%
+                ("CA-SD23 (2023), USA", "CA-27 (2027), USA", "intersects"),  # west, 31%
+                ("CA-SD23 (2023), USA", "CA-26 (2027), USA", "intersects"),  # west, 21%
                 (
                     "CA-SD23 (2023), USA",
-                    "CA-32 (2023), USA",
-                    "borders",
-                ),  # also southwest
-                (
-                    "CA-SD23 (2023), USA",
-                    "CA-23 (2023), USA",
+                    "CA-30 (2027), USA",
                     "intersects",
-                ),  # east/overlaps
+                ),  # southwest, 7%
                 (
                     "CA-SD23 (2023), USA",
-                    "CA-27 (2023), USA",
+                    "CA-28 (2027), USA",
                     "intersects",
-                ),  # more or less the same district
-                (
-                    "CA-SD23 (2023), USA",
-                    "CA-28 (2023), USA",
-                    "intersects",
-                ),  # southeast/overlaps
-                (
-                    "CA-SD23 (2023), USA",
-                    "CA-30 (2023), USA",
-                    "intersects",
-                ),  # south/overlaps
+                ),  # southeast, 6%
             },
         )

@@ -11,7 +11,6 @@ import zipfile
 import pandas as pd
 from permacache import permacache, stable_hash
 
-
 SA1_CODE = "SA1_CODE_2021"
 GCP_ZIP = os.path.join(
     "named_region_shapefiles",

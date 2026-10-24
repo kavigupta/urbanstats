@@ -1,14 +1,22 @@
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import (
     MARRIAGE,
     QuizQuestionDescriptor,
     QuizQuestionSkip,
 )
-from urbanstats.statistics.statistic_collection import ACSStatisticsColection
+from urbanstats.statistics.national_census import (
+    ACSCounts,
+    AustralianCounts,
+    NationalCensusStatistics,
+    StatCanCounts,
+)
 from urbanstats.statistics.utils import fractionalize
 
 
-class MarriageStatistics(ACSStatisticsColection):
+class MarriageStatistics(NationalCensusStatistics):
+    version = 2
+
     def name_for_each_statistic(self):
         return {
             "marriage_never_married": "Never Married %",
@@ -39,16 +47,66 @@ class MarriageStatistics(ACSStatisticsColection):
             ),
         }
 
-    def mutate_acs_results(self, statistics_table):
+    def mutate_counts(self, counts):
         fractionalize(
-            statistics_table,
+            counts,
             "marriage_never_married",
             "marriage_married_not_divorced",
             "marriage_divorced",
         )
 
-    def acs_name(self):
-        return "marriage"
+    def country_inputs(self):
+        return {
+            "USA": ACSCounts(self.acs_entity()),
+            "Canada": StatCanCounts(self.census_tables_canada()),
+            "Australia": AustralianCounts(self.abs_tables()),
+        }
+
+    def abs_tables(self):
+        # Registered (legal) marital status, persons 15+. As in the US, separated people are still
+        # married and widowed people count as married.
+        return {
+            "G05": {
+                "marriage_never_married": ["P_Tot_Never_married"],
+                "marriage_married_not_divorced": [
+                    "P_Tot_Married",
+                    "P_Tot_Separated",
+                    "P_Tot_Widowed",
+                ],
+                "marriage_divorced": ["P_Tot_Divorced"],
+            }
+        }
+
+    def census_tables_canada(self):
+        return CensusTables(
+            [
+                "Total - Marital status for the total population aged 15 years and over - 100% data"
+            ],
+            {
+                None: [
+                    "Total - Marital status for the total population aged 15 years and over - 100% data",
+                    "  Married or living common-law",
+                    "    Living common-law",
+                    "  Not married and not living common-law",
+                ],
+                "marriage_never_married": [
+                    "    Not married and not living common law - Never married",
+                    "      Living common law - Never married",
+                ],
+                "marriage_married_not_divorced": [
+                    "    Married",
+                    "      Living common law - Separated",
+                    "      Living common law - Widowed",
+                    "    Not married and not living common law - Widowed",
+                ],
+                "marriage_divorced": [
+                    "      Living common law - Divorced",
+                    "    Not married and not living common law - Separated",
+                    "    Not married and not living common law - Divorced",
+                ],
+            },
+            "population",
+        )
 
     def acs_entity(self):
         return ACSDataEntity(

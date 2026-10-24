@@ -300,7 +300,7 @@ test('lr-overall-other-stat', async (t) => {
     await waitForLoading()
 })
 
-// Regression test for California article with specific settings (US Census and Area/Compactness unchecked)
+// Regression test for California article with specific settings (National Census and Area/Compactness unchecked)
 urbanstatsFixture('california-article-area-compactness-no-us-census', '/article.html?longname=California%2C+USA&universe=world&s=2jZmh2wde1Kqyhw')
 
 test('california-article-area-compactness-no-us-census', async (t) => {

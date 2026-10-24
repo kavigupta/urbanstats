@@ -159,7 +159,7 @@ def download_all_flags() -> None:
 def download_all_search_icons() -> None:
     os.makedirs(search_icons_folder, exist_ok=True)
     for s in shapefiles.values():
-        typ = s.meta["type"]
+        typ = s.metadata.meta["type"]
         path = os.path.join(search_icons_folder, f"{typ}.png")
         if os.path.exists(path):
             continue

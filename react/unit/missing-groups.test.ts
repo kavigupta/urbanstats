@@ -26,21 +26,23 @@ const california: StatPath[] = [
     'gpw_population',
     'generation_silent', 'generation_boomer', 'generation_genx',
     'generation_millenial', 'generation_genz', 'generation_genalpha',
+    'marriage_never_married', 'marriage_married_not_divorced', 'marriage_divorced',
+    'household_size_pw',
     'area',
 ]
 
 const massachusetts = california
 
-/** A Canadian province: the same statistics, but from the Canadian census instead of the US one. */
-const alberta: StatPath[] = [
-    'population_2021_canada', 'population_2011_canada', 'population_change_2011_canada',
+/** A Canadian province: the same statistics, without 2000. */
+const ontario: StatPath[] = [
+    'population', 'population_2010', 'population_change_2010',
     'gpw_population',
-    'generation_silent_canada', 'generation_boomer_canada', 'generation_genx_canada',
-    'generation_millenial_canada', 'generation_genz_canada', 'generation_genalpha_canada',
+    'generation_silent', 'generation_boomer', 'generation_genx',
+    'generation_millenial', 'generation_genz', 'generation_genalpha',
+    'marriage_never_married', 'marriage_married_not_divorced', 'marriage_divorced',
+    'household_size_pw',
     'area',
 ]
-
-const ontario = alberta
 
 type EnabledKey = StatGroupKey | StatYearKey | StatSourceKey
 
@@ -81,38 +83,65 @@ void test('a statistic that only the disabled source has names that source', () 
     assert.deepStrictEqual(
         warnings([california], [
             ...populationGroup, ...generationGroups, 'show_stat_year_2020',
-            'show_stat_source_Population_GHSL', 'show_stat_source_Population_Canadian Census',
-        ]),
-        ['Generation: **US Census** is disabled. Enable it to see these statistics.'],
-    )
-})
-
-void test('regions missing a statistic for different sources name all of them', () => {
-    assert.deepStrictEqual(
-        warnings([california, alberta], [
-            ...populationGroup, ...generationGroups, 'show_stat_year_2020',
             'show_stat_source_Population_GHSL',
         ]),
-        ['Generation: **US Census** and **Canadian Census** are disabled. Enable them to see these statistics.'],
+        ['Generation: **National Census** is disabled. Enable it to see these statistics.'],
     )
 })
 
-void test('a comparison warns about the source one of its regions is missing', () => {
-    // The Canadian census is enabled, so Alberta's generation statistics are still in the table;
-    // the warning is about the column California is no longer filling in.
+/** PW density at 250m comes from the National Census only; at 64km, from GHSL too. */
+const californiaDensities: StatPath[] = [...california, 'ad_0.25', 'ad_64', 'gpw_pw_density_64']
+
+const densityGroups: EnabledKey[] = ['show_stat_group_ad_0.25', 'show_stat_group_ad_64']
+
+void test('statistics missing for different sources each name their own', () => {
     assert.deepStrictEqual(
-        warnings([california, alberta], [
-            ...populationGroup, ...generationGroups, 'show_stat_year_2020',
-            'show_stat_source_Population_GHSL', 'show_stat_source_Population_Canadian Census',
+        warnings([californiaDensities], [...densityGroups, 'show_stat_year_2020']),
+        [
+            'PW Density (r=250m): **National Census** is disabled. Enable it to see this statistic.',
+            'PW Density (r=64km): **National Census** and **GHSL** are disabled. Enable one to see this statistic.',
+        ],
+    )
+})
+
+void test('warns only about the statistics a disabled source takes away', () => {
+    // GHSL is enabled, so the 64km density is still in the table.
+    assert.deepStrictEqual(
+        warnings([californiaDensities], [
+            ...densityGroups, 'show_stat_year_2020', 'show_stat_source_Population_GHSL',
         ]),
-        ['Generation: **US Census** is disabled. Enable it to see these statistics.'],
+        ['PW Density (r=250m): **National Census** is disabled. Enable it to see this statistic.'],
+    )
+})
+
+void test('warnings come in statistic tree order, whatever their reasons', () => {
+    // Issue #2599: the 64km warning has the same reason as the population one, and used to come
+    // right after it.
+    assert.deepStrictEqual(
+        warnings([californiaDensities], [...populationGroup, ...densityGroups, 'show_stat_year_2020']),
+        [
+            'Population: **National Census** and **GHSL** are disabled. Enable one to see this statistic.',
+            'PW Density (r=250m): **National Census** is disabled. Enable it to see this statistic.',
+            'PW Density (r=64km): **National Census** and **GHSL** are disabled. Enable one to see this statistic.',
+        ],
     )
 })
 
 void test('every source disabled says so without singling one out', () => {
     assert.deepStrictEqual(
         warnings([california, ontario], [...populationGroup, 'show_stat_year_2020']),
-        ['Population: **US Census**, **Canadian Census**, and **GHSL** are disabled. Enable one to see this statistic.'],
+        ['Population: **National Census** and **GHSL** are disabled. Enable one to see this statistic.'],
+    )
+})
+
+void test('regions each missing a different source name all of them', () => {
+    // Made up: each region has its population from one source only. The statistics from the other
+    // source keep it from being the region's only Population source, which would force it on.
+    const censusPopulation: StatPath[] = ['population', 'gpw_pw_density_64', 'area']
+    const ghslPopulation: StatPath[] = ['gpw_population', 'generation_genz', 'area']
+    assert.deepStrictEqual(
+        warnings([censusPopulation, ghslPopulation], [...populationGroup, 'show_stat_year_2020']),
+        ['Population: **National Census** and **GHSL** are disabled. Enable them to see this statistic.'],
     )
 })
 
@@ -130,8 +159,8 @@ void test('no year selected and no source enabled asks for both', () => {
     // Issue #2164: neither half of this on its own would bring the statistic back, so naming only
     // one of them (or, as before, warning about nothing at all) leaves the page unexplained.
     assert.deepStrictEqual(
-        warnings([california], [...populationGroup, 'show_stat_source_Population_Canadian Census']),
-        ['Population: Select **2020**, **2010**, or **2000** and enable **US Census** or **GHSL** to see this statistic.'],
+        warnings([california], populationGroup),
+        ['Population: Select **2020**, **2010**, or **2000** and enable **National Census** or **GHSL** to see this statistic.'],
     )
 })
 

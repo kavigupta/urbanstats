@@ -1,12 +1,16 @@
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
+from urbanstats.geometry.shapefiles.row_functions import column
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import australia_domestic_provider
 
 PROCESSED = "named_region_shapefiles/australia/data/processed"
 
 # ABS includes rows for people it cannot place, e.g. "No usual address (NSW)"
 NOT_PLACES = ("Not in any", "No usual address", "Migratory", "Outside Australia")
+
+# SUAs and postcodes can span states, so their layers have no state column
+LAYERS_WITHOUT_STATE = ("SUA", "POA")
 
 
 # Wikidata's "Australian Statistical Geography 2021 ID" is the layer's code with its name in front,
@@ -27,35 +31,26 @@ def abs_shapefile(
     include_in_syau=False,
     gridded_data=False,
 ):
-    """
-    `kind` is what the region is called after its name, e.g. "LGA" in "Brisbane LGA". The state is part
-    of the longname where the layer has one; SUAs and postcodes can span states.
-    """
+    """`kind` is what the region is called after its name, e.g. "LGA" in "Brisbane LGA"."""
     # pylint: disable=too-many-arguments
-    code_column = f"{layer}_CODE21"
+    shortname = column(name_column) + f" {kind}"
+    state = "" if layer in LAYERS_WITHOUT_STATE else ", " + column("STE_NAME21")
 
-    def shortname(row):
-        return f"{row[name_column]} {kind}"
-
-    def longname(row):
-        state = row.get("STE_NAME21")
-        return shortname(row) + (f", {state}" if state else "") + ", Australia"
-
-    return Shapefile(
-        hash_key=f"australian_{layer.lower()}_{version}",
+    return make_shapefile(
+        geometry_key=f"australian_{layer.lower()}_{version}",
         path=f"{PROCESSED}/{layer}_2021_AUST_SHP.zip",
         shortname_extractor=shortname,
-        cleanname_extractor=lambda row: row[name_column],
-        longname_extractor=longname,
+        cleanname_extractor=column(name_column),
+        longname_extractor=shortname + state + ", Australia",
         additional_columns_computer=(
-            {"asgs_id": lambda row: layer + row[code_column]} if in_wikidata else {}
+            {"asgs_id": layer + column(f"{layer}_CODE21")} if in_wikidata else {}
         ),
         filter=lambda row: not row[name_column].startswith(NOT_PLACES),
         meta=dict(type=type_name, source="ABS", type_category=type_category),
         does_overlap_self=False,
         special_data_sources=["international_gridded_data"] if gridded_data else [],
         universe_provider=australia_domestic_provider(),
-        subset_masks={"Australia": SelfSubset()},
+        source_countries=InCountry("Australia"),
         abbreviation=abbreviation,
         data_credit=dict(
             linkText="Australian Bureau of Statistics",

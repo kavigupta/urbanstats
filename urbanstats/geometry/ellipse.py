@@ -4,6 +4,7 @@ import numpy as np
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
+from urbanstats.compatibility.compatibility import without_loaded_values
 from urbanstats.geometry.categorize_coordinates import categorize
 
 
@@ -62,6 +63,7 @@ class Ellipse:
         )
 
 
+@without_loaded_values
 @permacache(
     "population_density/geometry/locate_blocks_2",
     key_function=dict(

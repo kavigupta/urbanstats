@@ -7,29 +7,14 @@ from urbanstats.statistics.collections.census import (
     CensusChange2000,
     CensusChange2010,
 )
-from urbanstats.statistics.collections.census_australia import CensusAustralia
-from urbanstats.statistics.collections.census_australia_education import (
-    census_australia_education,
-)
 from urbanstats.statistics.collections.census_australia_income import (
     CensusAustraliaIncomeHousehold,
     CensusAustraliaIncomeIndividual,
-)
-from urbanstats.statistics.collections.census_australia_religion import (
-    CensusAustraliaReligion,
-)
-from urbanstats.statistics.collections.census_australia_same_as_us import (
-    census_australia_same_as_us,
-)
-from urbanstats.statistics.collections.census_canada import CensusCanada
-from urbanstats.statistics.collections.census_canada_citizenship import (
-    CensusCanadaCitizenship,
 )
 from urbanstats.statistics.collections.census_canada_education_field import (
     CensusCanadaEducationField,
 )
 from urbanstats.statistics.collections.census_canada_housing_rent import (
-    CensusCanadaHousingPerPerson,
     CensusCanadaHousingRent,
 )
 from urbanstats.statistics.collections.census_canada_language import (
@@ -38,14 +23,13 @@ from urbanstats.statistics.collections.census_canada_language import (
 from urbanstats.statistics.collections.census_canada_occupation import (
     CensusCanadaOccupation,
 )
-from urbanstats.statistics.collections.census_canada_race import CensusCanadaRace
-from urbanstats.statistics.collections.census_canada_religion import (
-    CensusCanadaReligion,
-)
-from urbanstats.statistics.collections.census_canada_same_as_us import (
-    census_canada_same_as_us,
-)
 from urbanstats.statistics.collections.census_canada_simple import census_canada_simple
+from urbanstats.statistics.collections.census_national import (
+    CensusDensity2010,
+    CensusDensity2020,
+    CensusHousing2020,
+    CensusRace2020,
+)
 from urbanstats.statistics.collections.education_gender_gap import (
     EducationGenderGapStatistics,
 )
@@ -90,6 +74,7 @@ from urbanstats.statistics.collections.pollution import PollutionStatistics
 from urbanstats.statistics.collections.population_median import (
     PopulationMedianStatistics,
 )
+from urbanstats.statistics.collections.religion import ReligionStatistics
 from urbanstats.statistics.collections.segregation import SegregationStatistics
 from urbanstats.statistics.collections.sexual_orientation_and_relationship_status import (
     SexualOrientationRelationshipStatusStatistics,
@@ -99,6 +84,7 @@ from urbanstats.statistics.collections.transportation_commute_time import (
     TransportationCommuteTimeStatistics,
 )
 from urbanstats.statistics.collections.transportation_mode import (
+    TransportationModeNoWFHStatistics,
     TransportationModeStatistics,
 )
 from urbanstats.statistics.collections.transportation_vehicle_ownership import (
@@ -113,13 +99,15 @@ from urbanstats.statistics.collections.weather_global import GlobalWeatherStatis
 
 statistic_collections = (
     AreaAndCompactnessStatistics(),
+    CensusDensity2020(),
+    CensusRace2020(),
+    CensusHousing2020(),
     Census2020(),
+    CensusDensity2010(),
     Census2010(),
     CensusChange2010(),
     Census2000(),
     CensusChange2000(),
-    CensusCanada(),
-    CensusAustralia(),
     CanadaElectionStatistics(),
     GPWStatistics(),
     PopulationMedianStatistics(),
@@ -140,6 +128,7 @@ statistic_collections = (
     HousingYearBuiltStatistics(),
     HouseholdSizeStatistics(),
     TransportationModeStatistics(),
+    TransportationModeNoWFHStatistics(),
     TransportationCommuteTimeStatistics(),
     TransportationVehicleOwnershipStatistics(),
     NHTSAAccidentStatistics(),
@@ -158,19 +147,12 @@ statistic_collections = (
     MarriageStatistics(),
     ElevationHillinessStatistics(),
     *census_canada_simple,
-    *census_canada_same_as_us,
-    *census_australia_same_as_us,
-    *census_australia_education,
-    CensusAustraliaReligion(),
-    CensusAustraliaIncomeIndividual(),
-    CensusAustraliaIncomeHousehold(),
-    CensusCanadaRace(),
-    CensusCanadaCitizenship(),
     CensusCanadaLanguage(),
     CensusCanadaEducationField(),
     CensusCanadaHousingRent(),
-    CensusCanadaHousingPerPerson(),
-    CensusCanadaReligion(),
+    ReligionStatistics(),
+    CensusAustraliaIncomeIndividual(),
+    CensusAustraliaIncomeHousehold(),
     CensusCanadaOccupation(),
     PollutionStatistics(),
     IMHELifeExpectancyStatistics(),

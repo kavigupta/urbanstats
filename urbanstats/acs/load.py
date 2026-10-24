@@ -9,7 +9,10 @@ import us
 from cached_property import cached_property
 from permacache import drop_if_equal, permacache, stable_hash
 
-from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
+from urbanstats.compatibility.compatibility import (
+    permacache_with_remapping_pickle,
+    without_loaded_values,
+)
 from urbanstats.data.census_blocks import all_densities_gpd
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
@@ -288,6 +291,7 @@ class ACSDataEntityForMultipleLevels:
         return pd.concat([geoid.rename("geoid"), data], axis=1).set_index("geoid")
 
 
+@without_loaded_values
 @permacache_with_remapping_pickle(
     "population_density/acs/get_acs_data_3",
     key_function=dict(acs_data_entity=stable_hash),
@@ -315,25 +319,23 @@ def combine_us_pr(us_entity, pr_entity):
 
 @permacache_with_remapping_pickle(
     "population_density/acs/aggregated_acs_data",
-    key_function=dict(entity=stable_hash, shapefile=lambda x: x.hash_key),
+    key_function=dict(entity=stable_hash),
 )
-def aggregated_acs_data(year, entity, shapefile):
+def aggregated_acs_data(year, entity, geometry):
     print("Aggregating ACS data for", entity.concept)
-    print("    on shapefile", shapefile.hash_key)
+    print("    on geometry", geometry.key)
     acs_data = get_acs_data(entity)
-    acs_data = aggregate_by_census_block(year, shapefile, acs_data)
+    acs_data = aggregate_by_census_block(year, geometry, acs_data)
     return acs_data
 
 
 @permacache_with_remapping_pickle(
     "population_density/acs/aggregated_acs_data_us_pr",
-    key_function=dict(
-        entity_us=stable_hash, entity_pr=stable_hash, shapefile=lambda x: x.hash_key
-    ),
+    key_function=dict(entity_us=stable_hash, entity_pr=stable_hash),
 )
-def aggregated_acs_data_us_pr(year, entity_us, entity_pr, shapefile):
+def aggregated_acs_data_us_pr(year, entity_us, entity_pr, geometry):
     print("Aggregating ACS data for", entity_us.concept)
-    print("    on shapefile", shapefile.hash_key)
+    print("    on geometry", geometry.key)
     acs_data = combine_us_pr(entity_us, entity_pr)
-    acs_data = aggregate_by_census_block(year, shapefile, acs_data)
+    acs_data = aggregate_by_census_block(year, geometry, acs_data)
     return acs_data

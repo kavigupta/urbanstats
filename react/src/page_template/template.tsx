@@ -12,7 +12,7 @@ import { zIndex } from '../utils/zIndex'
 
 import { Colors } from './color-themes'
 import { useColors, useStyleElement } from './colors'
-import { useHideSidebarDesktop } from './utils'
+import { desktopLayout, fullWidthContext, useFullWidth } from './utils'
 
 export function PageTemplate({
     screencap,
@@ -22,6 +22,7 @@ export function PageTemplate({
     topPanel = true,
     screenshotContext: inheritedScreenshotContext,
     hideSidebar = false,
+    fullWidth = false,
 }: {
     screencap?: (currentUniverse: string | undefined, colors: Colors, screenshotContext: ScreenshotContextType) => Promise<void>
     /** For pages whose layout depends on screenshot mode, which need the context above them. */
@@ -31,6 +32,8 @@ export function PageTemplate({
     showFooter?: boolean
     topPanel?: boolean
     hideSidebar?: boolean
+    /** If a page is known to be full width from its descriptor, also set this for its initial load in routers.tsx. */
+    fullWidth?: boolean
 }): ReactNode {
     const [hamburgerOpen, setHamburgerOpen] = useState(false)
     const [screenshotInProgress, setScreenshotInProgress] = useState(false)
@@ -38,7 +41,6 @@ export function PageTemplate({
     const screenshotContext = inheritedScreenshotContext ?? ownScreenshotContext.current
     const colors = useColors()
     const mobileLayout = useMobileLayout()
-    const hideSidebarDesktop = useHideSidebarDesktop()
 
     const styleElement = useStyleElement()
     useEffect(() => {
@@ -52,10 +54,10 @@ export function PageTemplate({
     }, [styleElement, colors.background, colors.textMain])
 
     useEffect(() => {
-        if (!(mobileLayout || hideSidebarDesktop) && hamburgerOpen) {
+        if (!(mobileLayout || fullWidth) && hamburgerOpen) {
             setHamburgerOpen(false)
         }
-    }, [hamburgerOpen, mobileLayout, hideSidebarDesktop])
+    }, [hamburgerOpen, mobileLayout, fullWidth])
 
     const hasScreenshotButton = screencap !== undefined
     const hasCSVButton = csvExportCallback !== undefined
@@ -94,46 +96,48 @@ export function PageTemplate({
 
     return (
         <ScreenshotContext.Provider value={screenshotContext}>
-            <meta name="viewport" content="width=device-width, initial-scale=0.75" />
-            <div
-                className={mobileLayout ? 'main_panel_mobile' : 'main_panel'}
-                style={{
-                    ...(mobileLayout
-                        ? { paddingLeft: '1em', paddingRight: '1em' }
-                        : {
-                                position: 'relative',
-                                maxWidth: hideSidebarDesktop ? undefined : '80em',
-                                marginLeft: 'auto',
-                                marginRight: 'auto',
-                            }),
-                    backgroundColor: colors.background,
-                    // simulate mobile zoom in testcafe so screenshots are more accurate to what they would actually be on mobile
-                    // since desktop browsers don't respect meta[name=viewport]
-                    zoom: mobileLayout && runningInTestCafe ? 0.75 : undefined,
-                }}
-            >
-                {topPanel && (
-                    <>
-                        <Header
-                            hamburgerOpen={hamburgerOpen}
-                            setHamburgerOpen={setHamburgerOpen}
-                            hasScreenshot={hasScreenshotButton}
-                            screenshotInProgress={screenshotInProgress}
-                            hasCSV={hasCSVButton}
-                            initiateScreenshot={(currentUniverse) => { void doScreencap(currentUniverse) }}
-                            exportCSV={exportCSV}
-                        />
-                        <div style={{ marginBlockEnd: '16px' }}></div>
-                    </>
-                )}
-                <BodyPanel
-                    hamburgerOpen={hamburgerOpen}
-                    mainContent={children}
-                    showFooter={showFooter}
-                    setHamburgerOpen={setHamburgerOpen}
-                    hideSidebar={hideSidebar}
-                />
-            </div>
+            <fullWidthContext.Provider value={fullWidth}>
+                <meta name="viewport" content="width=device-width, initial-scale=0.75" />
+                <div
+                    className={mobileLayout ? 'main_panel_mobile' : 'main_panel'}
+                    style={{
+                        ...(mobileLayout
+                            ? { paddingLeft: '1em', paddingRight: '1em' }
+                            : {
+                                    position: 'relative',
+                                    maxWidth: fullWidth ? undefined : `${desktopLayout.maxWidthEm}em`,
+                                    marginLeft: 'auto',
+                                    marginRight: 'auto',
+                                }),
+                        backgroundColor: colors.background,
+                        // simulate mobile zoom in testcafe so screenshots are more accurate to what they would actually be on mobile
+                        // since desktop browsers don't respect meta[name=viewport]
+                        zoom: mobileLayout && runningInTestCafe ? 0.75 : undefined,
+                    }}
+                >
+                    {topPanel && (
+                        <>
+                            <Header
+                                hamburgerOpen={hamburgerOpen}
+                                setHamburgerOpen={setHamburgerOpen}
+                                hasScreenshot={hasScreenshotButton}
+                                screenshotInProgress={screenshotInProgress}
+                                hasCSV={hasCSVButton}
+                                initiateScreenshot={(currentUniverse) => { void doScreencap(currentUniverse) }}
+                                exportCSV={exportCSV}
+                            />
+                            <div style={{ marginBlockEnd: '16px' }}></div>
+                        </>
+                    )}
+                    <BodyPanel
+                        hamburgerOpen={hamburgerOpen}
+                        mainContent={children}
+                        showFooter={showFooter}
+                        setHamburgerOpen={setHamburgerOpen}
+                        hideSidebar={hideSidebar}
+                    />
+                </div>
+            </fullWidthContext.Provider>
         </ScreenshotContext.Provider>
     )
 }
@@ -160,7 +164,7 @@ function TemplateFooter(): ReactNode {
 export function Version(): ReactNode {
     return (
         <span id="current-version">
-            {TestUtils.shared.isTesting ? '<VERSION>' : '32.4.2'}
+            {TestUtils.shared.isTesting ? '<VERSION>' : '32.4.6'}
         </span>
     )
 }
@@ -168,7 +172,7 @@ export function Version(): ReactNode {
 function LastUpdated(): ReactNode {
     return (
         <span id="last-updated">
-            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2026-10-03'}
+            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2026-10-23'}
         </span>
     )
 }
@@ -198,9 +202,9 @@ function BodyPanel({ hamburgerOpen, mainContent, showFooter, setHamburgerOpen, h
     hideSidebar: boolean
 }): ReactNode {
     const mobileLayout = useMobileLayout()
-    const hideSidebarDesktop = useHideSidebarDesktop()
+    const fullWidth = useFullWidth()
 
-    if (!hideSidebar && hamburgerOpen && (!hideSidebarDesktop || mobileLayout)) {
+    if (!hideSidebar && hamburgerOpen && (!fullWidth || mobileLayout)) {
         return <LeftPanel setHamburgerOpen={setHamburgerOpen} />
     }
     return (
@@ -210,14 +214,14 @@ function BodyPanel({ hamburgerOpen, mainContent, showFooter, setHamburgerOpen, h
             display: 'flex',
         }}
         >
-            {(!hideSidebar && !mobileLayout && (!hideSidebarDesktop || hamburgerOpen)) ? <LeftPanel setHamburgerOpen={setHamburgerOpen} /> : undefined }
+            {(!hideSidebar && !mobileLayout && (!fullWidth || hamburgerOpen)) ? <LeftPanel setHamburgerOpen={setHamburgerOpen} /> : undefined }
             <div
                 className={mobileLayout ? 'content_panel_mobile' : 'right_panel'}
                 style={mobileLayout
                     ? { width: '100%' }
-                    : (hideSidebarDesktop || hideSidebar
-                            ? { width: '100%', paddingLeft: '1em', paddingRight: '1em' }
-                            : { width: '80%', paddingLeft: '2em' })}
+                    : (fullWidth || hideSidebar
+                            ? { width: '100%', paddingLeft: `${desktopLayout.fullWidthPaddingEm}em`, paddingRight: `${desktopLayout.fullWidthPaddingEm}em` }
+                            : { width: `${100 - desktopLayout.sidebarPercent}%`, paddingLeft: `${desktopLayout.sidebarContentPaddingEm}em` })}
             >
                 {mainContent}
 
@@ -237,17 +241,17 @@ function BodyPanel({ hamburgerOpen, mainContent, showFooter, setHamburgerOpen, h
 function LeftPanel({ setHamburgerOpen }: { setHamburgerOpen: (open: boolean) => void }): ReactNode {
     const mobileLayout = useMobileLayout()
     const colors = useColors()
-    const hideSidebarDesktop = useHideSidebarDesktop()
+    const fullWidth = useFullWidth()
     const sidebar = (
         <div
             className="left_panel"
             style={mobileLayout
                 ? {}
                 : {
-                        width: '20%',
+                        width: `${desktopLayout.sidebarPercent}%`,
                         float: 'left',
-                        borderRadius: hideSidebarDesktop ? '5px' : undefined,
-                        border: hideSidebarDesktop ? `1px solid ${colors.borderShadow}` : undefined,
+                        borderRadius: fullWidth ? '5px' : undefined,
+                        border: fullWidth ? `1px solid ${colors.borderShadow}` : undefined,
                         overflow: 'hidden', // needed so the corners aren't cut off
                     }}
         >
@@ -256,7 +260,7 @@ function LeftPanel({ setHamburgerOpen }: { setHamburgerOpen: (open: boolean) => 
     )
 
     const hideRef = useRef<HTMLDivElement>(null)
-    if (!mobileLayout && hideSidebarDesktop) {
+    if (!mobileLayout && fullWidth) {
         return (
             <div
                 ref={hideRef}

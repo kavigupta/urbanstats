@@ -1,7 +1,7 @@
 import pandas as pd
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
-from urbanstats.data.census_blocks import all_densities_gpd
+from urbanstats.data.census_blocks import load_raw_census
 from urbanstats.features.extract_data import feature_data
 from urbanstats.features.feature import feature_columns
 from urbanstats.games.quiz_question_metadata import (
@@ -91,7 +91,7 @@ class USFeatureDistanceStatistics(USAStatistics):
         self, *, shapefile, existing_statistics, shapefile_table
     ):
         statistics_table = {}
-        feats = features_by_region(shapefile)
+        feats = features_by_region(shapefile.geometry)
         for feat in feature_columns:
             statistics_table[feat] = feats[feat]
 
@@ -109,19 +109,18 @@ class USFeatureDistanceStatistics(USAStatistics):
 
 @permacache_with_remapping_pickle(
     "urbanstats/statistics/collections/feature/features_by_region",
-    key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def features_by_region(shapefile):
+def features_by_region(geometry):
     feats = feature_data()
-    blocks_gdf = all_densities_gpd()
+    _, population, *_ = load_raw_census(2020)
     return aggregate_by_census_block(
         2020,
-        shapefile,
+        geometry,
         pd.DataFrame(
             {
                 **feats,
                 "park_percent_1km_v2": park_overlap_percentages_all(r=1)
-                * blocks_gdf.population,
+                * population[:, 0],
             }
         ),
     )

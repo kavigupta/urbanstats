@@ -8,13 +8,15 @@ import { crossSourceBorderExclusion } from '../src/stat/crossSourceBorder'
 import { Universe } from '../src/universe'
 import { GeographyKind } from '../src/urban-stats-script/workerManager'
 
-const usCensusPopulation = 'Population' satisfies StatName
-const statCanPopulation = 'Population [StatCan]' satisfies StatName
+// A National Census statistic, covering the USA and Canada, with a GHSL variant
+const censusPopulation = 'Population' satisfies StatName
+// A National Census statistic only Canada has, with no variant from any other source
+const canadaOnly = 'French at Home %' satisfies StatName
 const ghslPopulation = 'Population [GHS-POP]' satisfies StatName
 // A US Census statistic with no variant from any other source
 const usCensusOnly = 'Arthritis %' satisfies StatName
-// A US Census statistic with a StatCan variant that covers fewer regions
-const usCensusRace = 'White %' satisfies StatName
+// A National Census statistic, covering the USA and Canada, with no variant from any other source
+const censusRace = 'White %' satisfies StatName
 
 // Loaded once (cached in the module) and served by the test proxy, like the other
 // data-loading unit tests.
@@ -27,32 +29,32 @@ async function exclusion(statName: StatName, articleType: GeographyKind, univers
 void describe('crossSourceBorderExclusion', () => {
     void describe('geography limited to one country (most superseding)', () => {
         void test('fires for a US-only geography viewed in a broad universe', async () => {
-            assert.deepEqual(await exclusion(usCensusPopulation, 'City', 'world'), {
+            assert.deepEqual(await exclusion(censusPopulation, 'City', 'world'), {
                 kind: 'geography-limited-to-country',
                 geographyCountry: 'USA',
             })
         })
 
         void test('fires for a Canada-only geography viewed in a broad universe', async () => {
-            assert.deepEqual(await exclusion(usCensusPopulation, 'CA Riding', 'world'), {
+            assert.deepEqual(await exclusion(censusPopulation, 'CA Riding', 'world'), {
                 kind: 'geography-limited-to-country',
                 geographyCountry: 'Canada',
             })
         })
 
         void test('is silent when the universe is inside the geography\'s country', async () => {
-            assert.equal(await exclusion(usCensusPopulation, 'City', 'USA'), undefined)
-            assert.equal(await exclusion(usCensusPopulation, 'City', 'California, USA'), undefined)
+            assert.equal(await exclusion(censusPopulation, 'City', 'USA'), undefined)
+            assert.equal(await exclusion(censusPopulation, 'City', 'California, USA'), undefined)
         })
     })
 
     void describe('statistic drops regions straddling its border (universe inside its country)', () => {
         void test('offers the broader source when the statistic has one', async () => {
-            assert.deepEqual(await exclusion(usCensusPopulation, 'Urban Center', 'USA'), {
+            assert.deepEqual(await exclusion(censusPopulation, 'Urban Center', 'USA'), {
                 kind: 'straddles-border',
-                excludedCount: 13,
+                excludedCount: 9,
                 totalCount: 337,
-                statisticCountry: 'USA',
+                statisticCountries: ['USA', 'Canada'],
                 alternative: { kind: 'broader-source', statName: ghslPopulation },
             })
         })
@@ -62,7 +64,7 @@ void describe('crossSourceBorderExclusion', () => {
                 kind: 'straddles-border',
                 excludedCount: 13,
                 totalCount: 337,
-                statisticCountry: 'USA',
+                statisticCountries: ['USA'],
                 alternative: { kind: 'domestic-type', articleType: 'Urban Area' },
             })
         })
@@ -72,9 +74,9 @@ void describe('crossSourceBorderExclusion', () => {
             // they carry a reason instead of an alternative to link to
             assert.deepEqual(await exclusion(usCensusOnly, '5M Person Circle', 'USA'), {
                 kind: 'straddles-border',
-                excludedCount: 16,
+                excludedCount: 20,
                 totalCount: 77,
-                statisticCountry: 'USA',
+                statisticCountries: ['USA'],
                 alternative: {
                     kind: 'no-equivalent',
                     reason: 'Circles are drawn around a point without regard to national borders, and no region type defined by a statistics agency resembles them.',
@@ -85,11 +87,11 @@ void describe('crossSourceBorderExclusion', () => {
 
     void describe('statistic covers only its country (universe is broader)', () => {
         void test('offers the broader source when the statistic has one', async () => {
-            assert.deepEqual(await exclusion(usCensusPopulation, 'Urban Center', 'world'), {
+            assert.deepEqual(await exclusion(censusPopulation, 'Urban Center', 'world'), {
                 kind: 'outside-jurisdiction',
-                excludedCount: 9834,
+                excludedCount: 9784,
                 totalCount: 10158,
-                statisticCountry: 'USA',
+                statisticCountries: ['USA', 'Canada'],
                 alternative: { kind: 'broader-source', statName: ghslPopulation },
             })
         })
@@ -99,20 +101,19 @@ void describe('crossSourceBorderExclusion', () => {
                 kind: 'outside-jurisdiction',
                 excludedCount: 9834,
                 totalCount: 10158,
-                statisticCountry: 'USA',
+                statisticCountries: ['USA'],
                 alternative: { kind: 'domestic-type', articleType: 'Urban Area' },
             })
         })
 
         void test('fires for a non-border-crossing multi-country type (Subnational Region)', async () => {
-            // The region type can't straddle a border, but its non-US regions still lie
-            // outside a US statistic's coverage. Its StatCan variant covers fewer regions,
-            // so it isn't offered as a broader source.
-            assert.deepEqual(await exclusion(usCensusRace, 'Subnational Region', 'world'), {
+            // The region type can't straddle a border, but its regions outside the USA and
+            // Canada still lie outside the statistic's coverage
+            assert.deepEqual(await exclusion(censusRace, 'Subnational Region', 'world'), {
                 kind: 'outside-jurisdiction',
-                excludedCount: 3599,
+                excludedCount: 3586,
                 totalCount: 3651,
-                statisticCountry: 'USA',
+                statisticCountries: ['USA', 'Canada'],
                 alternative: undefined,
             })
         })
@@ -125,7 +126,7 @@ void describe('crossSourceBorderExclusion', () => {
 
         void test('is silent when the statistic reaches none of the region set', async () => {
             // StatCan has no data for US urban centers
-            assert.equal(await exclusion(statCanPopulation, 'Urban Center', 'USA'), undefined)
+            assert.equal(await exclusion(canadaOnly, 'Urban Center', 'USA'), undefined)
         })
 
         void test('is silent for a data gap in a non-crossing type inside its country', async () => {
