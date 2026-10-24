@@ -65,6 +65,12 @@ PROVINCE_PROVIDER = ContainedWithinUniverseProvider(
     allow_self_universe=True,
 )
 
+AUSTRALIAN_STATE_PROVIDER = ContainedWithinUniverseProvider(
+    ["subnational_regions"],
+    universe_by_universe_type()["australian_state"],
+    allow_self_universe=True,
+)
+
 
 @permacache_with_remapping_pickle(
     "urbanstats/universe/universe_provider/contained_within/compute_contained_in_2"
