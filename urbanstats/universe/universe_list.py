@@ -21,6 +21,18 @@ def get_universe_name_for_state(state):
     return name + ", USA"
 
 
+australian_state_abbr_to_state = {
+    "ACT": "Australian Capital Territory, Australia",
+    "NSW": "New South Wales, Australia",
+    "NT": "Northern Territory, Australia",
+    "QLD": "Queensland, Australia",
+    "SA": "South Australia, Australia",
+    "TAS": "Tasmania, Australia",
+    "VIC": "Victoria, Australia",
+    "WA": "Western Australia, Australia",
+}
+
+
 @lru_cache(None)
 def universe_by_universe_type():
     return {
@@ -45,6 +57,7 @@ def universe_by_universe_type():
             "Saskatchewan, Canada",
             "Yukon, Canada",
         ],
+        "australian_state": list(australian_state_abbr_to_state.values()),
     }
 
 

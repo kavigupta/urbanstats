@@ -12,10 +12,9 @@ from urbanstats.special_cases.country_names import iso_to_country
 from urbanstats.universe.universe_provider.combined_universe_provider import (
     CombinedUniverseProvider,
 )
-from urbanstats.universe.universe_provider.constants import INTERNATIONAL_PROVIDERS
-from urbanstats.universe.universe_provider.contained_within import (
-    PROVINCE_PROVIDER,
-    STATE_PROVIDER,
+from urbanstats.universe.universe_provider.constants import (
+    INTERNATIONAL_PROVIDERS,
+    SUBNATIONAL_PROVIDERS,
 )
 
 
@@ -87,7 +86,7 @@ SUBNATIONAL_REGIONS = make_shapefile(
         ("census", "state"),
     ],
     universe_provider=CombinedUniverseProvider(
-        [*INTERNATIONAL_PROVIDERS, STATE_PROVIDER, PROVINCE_PROVIDER]
+        [*INTERNATIONAL_PROVIDERS, *SUBNATIONAL_PROVIDERS]
     ),
     source_countries=ContainedWithinCountries({"USA": "State", "Canada": "Province"}),
     cross_source_borders=CrossSourceBorders(can_straddle=False),

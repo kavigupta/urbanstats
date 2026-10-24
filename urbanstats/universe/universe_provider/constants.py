@@ -7,6 +7,7 @@ from urbanstats.universe.universe_provider.constant_provider import (
     ConstantUniverseProvider,
 )
 from urbanstats.universe.universe_provider.contained_within import (
+    AUSTRALIAN_STATE_PROVIDER,
     PROVINCE_PROVIDER,
     STATE_PROVIDER,
     ContainedWithinUniverseProvider,
@@ -87,3 +88,5 @@ INTERNATIONAL_PROVIDERS = [
         allow_self_universe=False,  # handled separately for countries / continents.
     ),
 ]
+
+SUBNATIONAL_PROVIDERS = [STATE_PROVIDER, PROVINCE_PROVIDER, AUSTRALIAN_STATE_PROVIDER]
