@@ -7,6 +7,7 @@ import { useColors } from '../../page_template/colors'
 import { Inset } from '../../urban-stats-script/constants/insets'
 import { Edit } from '../../utils/array-edits'
 import { useMobileLayout } from '../../utils/responsive'
+import { useElementSize } from '../../utils/useElementSize'
 
 interface InsetMapProps {
     inset: Inset
@@ -57,25 +58,7 @@ function InsetMapImpl({ inset, children, editInset, container, i, numInsets, int
                 height: `${(inset.topRight[1] - inset.bottomLeft[1]) * 100}%` }}
         >
             {children(mapLibreProps, mapChildren, ref)}
-            { editInset && (
-                <EditInsetsHandles
-                    frame={[...inset.bottomLeft, ...inset.topRight]}
-                    setFrame={(newFrame) => {
-                        editInset.modify({ bottomLeft: [newFrame[0], newFrame[1]], topRight: [newFrame[2], newFrame[3]] })
-                    }}
-                    container={container}
-                    delete={inset.mainMap ? undefined : editInset.delete}
-                    duplicate={inset.mainMap ? undefined : editInset.duplicate}
-                    add={inset.mainMap ? editInset.add : undefined}
-                    shouldHaveCenterHandle={!inset.mainMap || !isFullScreenInset(inset)}
-                    /*
-                    Allowing reordering on the main map in case you want to put its corner in front of an inset or something
-                    it also eliminates the weird edge case where the main map is not the 0th inset
-                    */
-                    moveUp={i + 1 < numInsets ? () => { editInset.moveUp() } : undefined}
-                    moveDown={i > 0 ? () => { editInset.moveDown() } : undefined}
-                />
-            )}
+            { editInset && <InsetEditControls inset={inset} editInset={editInset} container={container} i={i} numInsets={numInsets} /> }
         </div>
     )
 }
@@ -127,6 +110,85 @@ type DragKind = 'move' | `${'top' | 'bottom'}${'Right' | 'Left'}`
 
 type Frame = [number, number, number, number]
 
+// Edit controls are bigger on mobile, where the canvas is scaled down to fit the screen
+export function useMobileControlScale(): number {
+    return useMobileLayout() ? 2 : 1
+}
+
+// Controls are this size at full scale, and shrink in insets too small to hold them
+const controlSize = 25
+const controlMargin = 6
+const controlGap = 4
+const minControlScale = 0.4
+const fullScaleInset = { width: 160, height: 120 }
+
+function InsetEditControls({ inset, editInset, container, i, numInsets }: { inset: Inset, editInset: Edit<Inset>, container: RefObject<HTMLDivElement>, i: number, numInsets: number }): ReactNode {
+    const frame: Frame = [...inset.bottomLeft, ...inset.topRight]
+    const insetRef = useRef<HTMLDivElement>(null)
+    const { width, height } = useElementSize(insetRef)
+    const multiplier = useMobileControlScale()
+    const scale = multiplier * Math.max(minControlScale, Math.min(1, width / (fullScaleInset.width * multiplier), height / (fullScaleInset.height * multiplier)))
+    return (
+        <>
+            <div ref={insetRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
+            <EditInsetsHandles
+                frame={frame}
+                setFrame={(newFrame) => {
+                    editInset.modify({ bottomLeft: [newFrame[0], newFrame[1]], topRight: [newFrame[2], newFrame[3]] })
+                }}
+                container={container}
+                shouldHaveCenterHandle={!inset.mainMap || !isFullScreenInset(inset)}
+                scale={scale}
+            />
+            <InsetToolbar
+                delete={inset.mainMap ? undefined : editInset.delete}
+                duplicate={inset.mainMap ? undefined : editInset.duplicate}
+                add={inset.mainMap ? editInset.add : undefined}
+                scale={scale}
+            />
+            {/*
+            Allowing reordering on the main map in case you want to put its corner in front of an inset or something
+            it also eliminates the weird edge case where the main map is not the 0th inset
+            */}
+            <ReorderButtons moveUp={i + 1 < numInsets ? () => { editInset.moveUp() } : undefined} moveDown={i > 0 ? () => { editInset.moveDown() } : undefined} scale={scale} />
+        </>
+    )
+}
+
+// Inside the frame, so the buttons of neighbouring insets never overlap
+function InsetToolbar(props: { delete?: () => void, add?: () => void, duplicate?: () => void, scale: number }): ReactNode {
+    const size = controlSize * props.scale
+    const button = { position: 'relative', cursor: 'default' } as const
+    return (
+        <div style={{ position: 'absolute', top: controlMargin * props.scale, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: controlGap * props.scale, pointerEvents: 'none' }}>
+            {props.delete && <Handle handleSize={size} data-test="delete" style={button} onClick={props.delete} img={{ src: '/close-red-small.png', alt: 'Delete' }} />}
+            {props.add && <Handle handleSize={size} data-test="add" style={button} onClick={props.add} img={{ src: '/add-green-small.png', alt: 'Add', padding: 0.06 }} />}
+            {props.duplicate && <Handle handleSize={size} data-test="duplicate" style={{ ...button, cursor: 'copy' }} onClick={props.duplicate} img={{ src: '/duplicate.png', alt: 'Duplicate' }} />}
+        </div>
+    )
+}
+
+function ReorderButtons({ moveUp, moveDown, scale }: { moveUp?: () => void, moveDown?: () => void, scale: number }): ReactNode {
+    const size = controlSize * scale
+    const button = { position: 'relative', cursor: 'default' } as const
+    return (
+        <div style={{ position: 'absolute', left: controlMargin * scale, top: '50%', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: controlGap * scale, pointerEvents: 'none' }}>
+            {moveUp && <Handle handleSize={size} data-test="moveUp" style={button} onClick={moveUp}><ArrowIcon direction="up" /></Handle>}
+            {moveDown && <Handle handleSize={size} data-test="moveDown" style={button} onClick={moveDown}><ArrowIcon direction="down" /></Handle>}
+        </div>
+    )
+}
+
+function ArrowIcon({ direction }: { direction: 'up' | 'down' }): ReactNode {
+    const colors = useColors()
+    return (
+        <svg viewBox="0 0 10 10" style={{ width: '100%', height: '100%', display: 'block' }}>
+            <title>{direction === 'up' ? 'Move Up' : 'Move Down'}</title>
+            <polygon points={direction === 'up' ? '1.5,7.5 5,2.5 8.5,7.5' : '1.5,2.5 5,7.5 8.5,2.5'} fill={colors.brandingColor} />
+        </svg>
+    )
+}
+
 function isFullScreenInset(inset: Inset): boolean {
     const tolerance = 0.005
     return Math.abs(inset.bottomLeft[0] - 0) < tolerance
@@ -145,6 +207,7 @@ export function EditInsetsHandles(props: {
     moveUp?: () => void
     moveDown?: () => void
     shouldHaveCenterHandle: boolean
+    scale: number
 }): ReactNode {
     const activeDrag = useRef<{ kind: DragKind, startX: number, startY: number, startFrame: Frame, pointerId: number } | undefined>(undefined)
 
@@ -220,37 +283,37 @@ export function EditInsetsHandles(props: {
         },
     })
 
-    const mobileMultiplier = useMobileLayout() ? 2 : 1
+    const scale = props.scale
 
     return (
         <>
             {props.moveUp && (
-                <Handle handleSize={25 * mobileMultiplier} data-test="moveUp" style={{ left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(50% - ${25 * mobileMultiplier}px)`, cursor: 'default' }} onClick={props.moveUp} img={{ src: '/sort-up.png', alt: 'Move Up' }} />
+                <Handle handleSize={controlSize * scale} data-test="moveUp" style={{ left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(50% - ${controlSize * scale}px)`, cursor: 'default' }} onClick={props.moveUp} img={{ src: '/sort-up.png', alt: 'Move Up' }} />
             )}
             {props.moveDown && (
-                <Handle handleSize={25 * mobileMultiplier} data-test="moveDown" style={{ left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(50%)`, cursor: 'default' }} onClick={props.moveDown} img={{ src: '/sort-down.png', alt: 'Move Down' }} />
+                <Handle handleSize={controlSize * scale} data-test="moveDown" style={{ left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(50%)`, cursor: 'default' }} onClick={props.moveDown} img={{ src: '/sort-down.png', alt: 'Move Down' }} />
             )}
             {props.duplicate && (
-                <Handle handleSize={25 * mobileMultiplier} data-test="duplicate" style={{ margin: 'auto', left: `calc(66% - ${12.5 * mobileMultiplier}px)`, textAlign: 'center', lineHeight: `${25 * mobileMultiplier}px`, top: -insetBorderWidth, cursor: 'copy' }} onClick={props.duplicate} img={{ src: '/duplicate.png', alt: 'Duplicate' }} />
+                <Handle handleSize={controlSize * scale} data-test="duplicate" style={{ margin: 'auto', left: `calc(66% - ${controlSize / 2 * scale}px)`, textAlign: 'center', lineHeight: `${controlSize * scale}px`, top: -insetBorderWidth, cursor: 'copy' }} onClick={props.duplicate} img={{ src: '/duplicate.png', alt: 'Duplicate' }} />
             )}
             {props.delete && (
-                <Handle handleSize={25 * mobileMultiplier} data-test="delete" style={{ margin: 'auto', left: `calc(33% - ${12.5 * mobileMultiplier}px)`, textAlign: 'center', lineHeight: `${25 * mobileMultiplier}px`, top: -insetBorderWidth, cursor: 'default' }} onClick={props.delete} img={{ src: '/close-red-small.png', alt: 'Delete' }} />
+                <Handle handleSize={controlSize * scale} data-test="delete" style={{ margin: 'auto', left: `calc(33% - ${controlSize / 2 * scale}px)`, textAlign: 'center', lineHeight: `${controlSize * scale}px`, top: -insetBorderWidth, cursor: 'default' }} onClick={props.delete} img={{ src: '/close-red-small.png', alt: 'Delete' }} />
             )}
             {props.add && (
-                <Handle handleSize={25 * mobileMultiplier} data-test="add" style={{ margin: 'auto', left: `calc(50% - ${12.5 * mobileMultiplier}px)`, textAlign: 'center', top: -insetBorderWidth, cursor: 'default' }} onClick={props.add} img={{ src: '/add-green-small.png', alt: 'Add' }} />
+                <Handle handleSize={controlSize * scale} data-test="add" style={{ margin: 'auto', left: `calc(50% - ${controlSize / 2 * scale}px)`, textAlign: 'center', top: -insetBorderWidth, cursor: 'default' }} onClick={props.add} img={{ src: '/add-green-small.png', alt: 'Add' }} />
             )}
-            {props.setFrame && <Handle handleSize={15 * mobileMultiplier} style={{ right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('topRight')} />}
-            {props.setFrame && <Handle handleSize={15 * mobileMultiplier} style={{ right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('bottomRight')} />}
-            {props.setFrame && <Handle handleSize={15 * mobileMultiplier} style={{ left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('bottomLeft')} />}
-            {props.setFrame && <Handle handleSize={15 * mobileMultiplier} style={{ left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('topLeft')} />}
+            {props.setFrame && <Handle handleSize={15 * scale} style={{ right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('topRight')} />}
+            {props.setFrame && <Handle handleSize={15 * scale} style={{ right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('bottomRight')} />}
+            {props.setFrame && <Handle handleSize={15 * scale} style={{ left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('bottomLeft')} />}
+            {props.setFrame && <Handle handleSize={15 * scale} style={{ left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('topLeft')} />}
             {props.setFrame && props.shouldHaveCenterHandle && (
-                <Handle handleSize={20 * mobileMultiplier} style={{ margin: 'auto', left: `calc(50% - ${10 * mobileMultiplier}px)`, top: `calc(50% - ${10 * mobileMultiplier}px)`, cursor: 'move' }} {...pointerHandlers('move')} />
+                <Handle handleSize={20 * scale} style={{ margin: 'auto', left: `calc(50% - ${10 * scale}px)`, top: `calc(50% - ${10 * scale}px)`, cursor: 'move' }} {...pointerHandlers('move')} />
             )}
         </>
     )
 }
 
-function Handle({ handleSize, style, img, ...rest }: { handleSize: number, img?: { src: string, alt: string } } & HTMLAttributes<HTMLDivElement>): ReactNode {
+function Handle({ handleSize, style, img, children, ...rest }: { handleSize: number, img?: { src: string, alt: string, padding?: number } } & HTMLAttributes<HTMLDivElement>): ReactNode {
     const colors = useColors()
     const [hover, setHover] = useState(false)
 
@@ -285,13 +348,16 @@ function Handle({ handleSize, style, img, ...rest }: { handleSize: number, img?:
                 position: 'absolute',
                 width: `${handleSize}px`,
                 height: `${handleSize}px`,
-                borderRadius: '2px',
+                borderRadius: handleSize * 0.25,
+                overflow: 'hidden',
                 touchAction: 'none',
+                pointerEvents: 'auto',
                 ...style,
             }}
             {...rest}
         >
-            {img && <img src={img.src} alt={img.alt} style={{ width: '100%', height: '100%' }} />}
+            {img && <img src={img.src} alt={img.alt} style={{ width: '100%', height: '100%', display: 'block', boxSizing: 'border-box', padding: `${(img.padding ?? 0) * 100}%` }} />}
+            {children}
         </div>
     )
 }

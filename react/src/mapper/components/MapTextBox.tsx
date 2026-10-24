@@ -12,7 +12,7 @@ import { Edit } from '../../utils/array-edits'
 import { BetterDatalist, cannotParse } from '../settings/BetterDatalist'
 import { BetterSelector } from '../settings/BetterSelector'
 
-import { EditInsetsHandles } from './InsetMap'
+import { EditInsetsHandles, useMobileControlScale } from './InsetMap'
 
 const toolbarHeight = '30px'
 
@@ -29,6 +29,7 @@ export function MapTextBoxComponent({ textBox: label, container, edit, i, count 
     const divRef = useRef<HTMLDivElement>(null)
 
     const colors = useColors()
+    const controlScale = useMobileControlScale()
 
     const refocus = (): void => {
         if (selection?.index === i) {
@@ -346,6 +347,7 @@ export function MapTextBoxComponent({ textBox: label, container, edit, i, count 
                     shouldHaveCenterHandle={true}
                     moveUp={i + 1 < count ? () => { edit.moveUp() } : undefined}
                     moveDown={i > 0 ? () => { edit.moveDown() } : undefined}
+                    scale={controlScale}
                 />
             )}
         </div>
@@ -436,6 +438,7 @@ export function AddTextBox({ container, add }: { container: RefObject<HTMLDivEle
             container={container}
             add={add}
             shouldHaveCenterHandle={false}
+            scale={useMobileControlScale()}
         />
     )
 }
