@@ -21,6 +21,10 @@ class StatisticCollection(ABC):
             return ()
         return (self.data_source_country,)
 
+    def data_source_countries_for_statistic(self, statistic):
+        del statistic
+        return self.data_source_countries
+
     def __init__(self):
         quiz_questions = set(self.quiz_question_descriptors())
         all_columns = set(self.internal_statistic_names_list())
