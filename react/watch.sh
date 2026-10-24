@@ -2,9 +2,11 @@
 
 set -e
 
-cd ..
-python create_website.py --mode dev --target scripts --site-folder $1
-cd react
+build_site() {
+    (cd .. && python create_website.py --mode dev --target scripts --site-folder $1)
+    built_head=$(git -C $1 rev-parse HEAD)
+}
+build_site $1
 
 # Mirrors output to dev-server.log without color escapes, trimmed to the last
 # `keep` lines once it reaches `max`.
@@ -27,6 +29,8 @@ log_tail() {
 }
 
 while true; do
+    # The site repository was reset since the last build, wiping the generated scripts.
+    [ "$(git -C $1 rev-parse HEAD)" = "$built_head" ] || build_site $1
     FORCE_COLOR=1 rspack serve --mode=development --watch --env directory=$1 2>&1 | log_tail
     echo 'Restarting watcher... Press ^C again to stop watching.'
     sleep 1
