@@ -20,6 +20,7 @@ Read these when the task calls for them, rather than up front:
 
 | Doc | Read it when |
 | --- | --- |
+| [`react/src/utils/AGENTS.md`](react/src/utils/AGENTS.md) | writing a new hook or helper function in the frontend |
 | [`react/test/AGENTS.md`](react/test/AGENTS.md) | running or writing e2e tests |
 | [`react/unit/AGENTS.md`](react/unit/AGENTS.md) | running or writing unit tests |
 | [`react/cf-og-worker/README.md`](react/cf-og-worker/README.md) | working on link embeds or the preview card |

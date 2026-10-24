@@ -1,5 +1,5 @@
-import { calculateRegression, computePearsonR2 } from '../../mapper/regression'
 import { assert } from '../../utils/defensive'
+import { calculateRegression, computePearsonR2 } from '../../utils/regression'
 import { UrbanStatsASTExpression } from '../ast'
 import { Context } from '../context'
 import { USSFunctionArgType, USSRawValue, USSType, USSValue, createConstantExpression } from '../types-values'
