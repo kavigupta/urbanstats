@@ -34,8 +34,8 @@ Only comment on things that are actually problematic. No praise-only comments, n
 - **Typos in user-facing strings**: misspellings in UI text, labels, error messages, and tooltip content — these are not caught by linters
 - **Inconsistent formatting of displayed numbers**: mixing different decimal places, missing thousands separators, or inconsistent handling of negative values/percentages across the UI
 - **Sorting stability and locale issues**: sorting strings that include place names with accents, hyphens, or numbers — default sort may produce unexpected orderings
-- **Stale utilities index**: a change to what a file in `react/src/utils/` is for, or a new capability worth finding there, without updating its line in `react/src/utils/AGENTS.md`
-- **Reimplemented utilities**: a new helper or hook that duplicates one listed in `react/src/utils/AGENTS.md`, or a general-purpose one added outside `react/src/utils/`
+- **Reimplemented utilities**: a new helper or hook that duplicates something already in `react/src/utils/` — search there before accepting one
+- **Reusable code left inline**: a helper or hook that isn't tied to its feature (generic math, text, async, React state) written inside a feature file instead of `react/src/utils/`, even if it has one caller today
 
 ## Persistent data API (`urbanstats-persistent-data/`)
 
