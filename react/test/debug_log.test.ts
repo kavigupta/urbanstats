@@ -15,20 +15,24 @@ async function downloadDebugLog(t: TestController): Promise<{ tab: string, text:
     })
 }
 
+const isExecutedSearch = ({ text }: { text: string }): boolean => text.endsWith('ms to execute search')
+
 test('debug-log-persists-and-correlates-workers', async (t) => {
     await t
         .click(searchField)
         .typeText(searchField, 'Pasadena')
     await waitForSelectedSearchResult(t)
-
-    const pageTab = (await downloadDebugLog(t)).reverse().find(({ tab, text }) => !tab.includes('/') && text.startsWith('Requested new search worker'))!.tab
-    const executedOnPage = ({ tab, text }: { tab: string, text: string }): boolean => tab === `${pageTab}/search` && text.endsWith('ms to execute search')
     // The worker's write may not have committed yet
-    while (!(await downloadDebugLog(t)).some(executedOnPage)) {
+    while (!(await downloadDebugLog(t)).some(isExecutedSearch)) {
         await t.wait(100)
     }
 
     await safeReload(t)
 
-    await t.expect((await downloadDebugLog(t)).some(executedOnPage)).ok()
+    const lines = await downloadDebugLog(t)
+    // Only the search typed before the reload executes one
+    const executed = lines.find(isExecutedSearch)
+    await t.expect(executed?.tab.endsWith('/search')).ok()
+    const pageTab = executed!.tab.slice(0, -'/search'.length)
+    await t.expect(lines.some(({ tab, text }) => tab === pageTab && text.startsWith('Requested new search worker'))).ok()
 })
