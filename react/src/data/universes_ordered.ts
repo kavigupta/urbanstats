@@ -291,5 +291,13 @@ export default [
     "Prince Edward Island, Canada",
     "Quebec, Canada",
     "Saskatchewan, Canada",
-    "Yukon, Canada"
+    "Yukon, Canada",
+    "Australian Capital Territory, Australia",
+    "New South Wales, Australia",
+    "Northern Territory, Australia",
+    "Queensland, Australia",
+    "South Australia, Australia",
+    "Tasmania, Australia",
+    "Victoria, Australia",
+    "Western Australia, Australia"
 ] as const
