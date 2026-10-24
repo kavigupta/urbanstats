@@ -14,7 +14,7 @@ import { GeographyKind } from '../urban-stats-script/workerManager'
 import { Property } from '../utils/Property'
 import { TestUtils } from '../utils/TestUtils'
 import { withButtonRole } from '../utils/a11y'
-import { makeDebugLogger } from '../utils/debug-logging'
+import { debugTabId, makeDebugLogger } from '../utils/debug-logging'
 
 import { GenericSearchBox } from './search-generic'
 
@@ -167,7 +167,7 @@ interface SearchWorker {
 type AsyncConfig = Omit<SearchIndexConfig, 'cacheKey'> & { cacheKeyPromise: Promise<string | undefined> }
 
 function createSearchWorker(config: AsyncConfig): SearchWorker {
-    const worker = new Worker(new URL('../searchWorker', import.meta.url))
+    const worker = new Worker(new URL('../searchWorker', import.meta.url), { name: `${debugTabId}/search` })
     const { cacheKeyPromise, ...configWithoutPromise } = config
     const configured = cacheKeyPromise.then((cacheKey) => { worker.postMessage({ type: 'configure', config: { ...configWithoutPromise, cacheKey } } satisfies SearchWorkerInputMessage) })
     debugPerformance(`Requested new search worker at timestamp ${Date.now()}`)

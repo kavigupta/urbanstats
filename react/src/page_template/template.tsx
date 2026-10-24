@@ -1,3 +1,4 @@
+import { saveAs } from 'file-saver'
 import React, { ReactNode, useEffect, useRef, useState } from 'react'
 
 import { exportToCSV, CSVExportData } from '../components/csv-export'
@@ -7,6 +8,7 @@ import { Sidebar } from '../components/sidebar'
 import '../common.css'
 import '../components/article.css'
 import { TestUtils } from '../utils/TestUtils'
+import { debugBufferEnabled, debugBufferText } from '../utils/debug-logging'
 import { useMobileLayout } from '../utils/responsive'
 import { zIndex } from '../utils/zIndex'
 
@@ -157,6 +159,23 @@ function TemplateFooter(): ReactNode {
             <Support />
             {' '}
             <Store />
+            {debugBufferEnabled && (
+                <>
+                    {' '}
+                    <a
+                        href="#"
+                        onClick={(e) => {
+                            e.preventDefault()
+                            debugBufferText().then((text) => { saveAs(new Blob([text], { type: 'text/plain' }), 'urbanstats-debug-log.txt') }).catch((error: unknown) => {
+                                console.error(error)
+                                alert(`Could not download debug log: ${error instanceof Error ? error.message : String(error)}`)
+                            })
+                        }}
+                    >
+                        Download debug log
+                    </a>
+                </>
+            )}
         </div>
     )
 }
