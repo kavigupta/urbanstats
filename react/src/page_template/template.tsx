@@ -161,7 +161,18 @@ function TemplateFooter(): ReactNode {
             {debugBufferEnabled && (
                 <>
                     {' '}
-                    <a href="#" onClick={(e) => { e.preventDefault(); void downloadDebugBuffer() }}>Download debug log</a>
+                    <a
+                        href="#"
+                        onClick={(e) => {
+                            e.preventDefault()
+                            downloadDebugBuffer().catch((error: unknown) => {
+                                console.error(error)
+                                alert(`Could not download debug log: ${error instanceof Error ? error.message : String(error)}`)
+                            })
+                        }}
+                    >
+                        Download debug log
+                    </a>
                 </>
             )}
         </div>

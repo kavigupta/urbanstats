@@ -4,7 +4,7 @@ import * as idb from 'idb'
 type Destination = 'console' | 'buffer'
 
 const enableDebugLogging = {
-    search: ['buffer'],
+    search: [],
     searchPerformance: ['buffer'],
     waitForLoading: ['buffer'],
     undoRedo: ['buffer'],
