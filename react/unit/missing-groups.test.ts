@@ -114,11 +114,6 @@ void test('warns only about the statistics a disabled source takes away', () => 
     )
 })
 
-/** PW density at 250m comes from the National Census only; at 64km, from GHSL too. */
-const californiaDensities: StatPath[] = [...california, 'ad_0.25', 'ad_64', 'gpw_pw_density_64']
-
-const densityGroups: EnabledKey[] = ['show_stat_group_ad_0.25', 'show_stat_group_ad_64']
-
 void test('warnings come in statistic tree order, whatever their reasons', () => {
     // Issue #2599: the 64km warning has the same reason as the population one, and used to come
     // right after it.
