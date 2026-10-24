@@ -3,17 +3,17 @@ import * as idb from 'idb'
 
 type Destination = 'console' | 'buffer'
 
-const enableDebugLogging = {
+type Key = 'search' | 'searchPerformance' | 'waitForLoading' | 'undoRedo' | 'mapExport'
+
+const enableDebugLogging: Record<Key, Destination[]> = {
     search: ['buffer'],
     searchPerformance: ['buffer'],
     waitForLoading: ['buffer'],
     undoRedo: ['buffer'],
     mapExport: ['buffer'],
-} satisfies Record<string, Destination[]>
+}
 
-type Key = keyof typeof enableDebugLogging
-
-export const debugBufferEnabled = Object.values<Destination[]>(enableDebugLogging).some(destinations => destinations.includes('buffer'))
+export const debugBufferEnabled = Object.values(enableDebugLogging).some(destinations => destinations.includes('buffer'))
 
 const maxBufferEntries = 100_000
 // Workers are named after their page's id so their entries can be correlated
@@ -63,7 +63,7 @@ export async function downloadDebugBuffer(): Promise<void> {
 }
 
 export function makeDebugLogger(...categories: [Key, ...Key[]]): (...args: unknown[]) => void {
-    const destinations = categories.flatMap((category): Destination[] => enableDebugLogging[category])
+    const destinations = categories.flatMap(category => enableDebugLogging[category])
     const toConsole = destinations.includes('console')
     const toBuffer = destinations.includes('buffer')
     if (!toConsole && !toBuffer) {
