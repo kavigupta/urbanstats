@@ -83,7 +83,7 @@ export async function loadProtobuf(filePath: string, name: 'ShardIndex'): Promis
 export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | CongressionalRepresentativeTable | ConsolidatedShapes | ConsolidatedArticles | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | ArticleUniverseList | DefaultUniverseTable | ShardIndex | undefined> {
     let perfCheckpoint = performance.now()
 
-    const arr = name === 'SearchIndex' ? await loadZstd(filePath) : await loadGzipped(filePath, errorOnMissing)
+    const arr = filePath.endsWith('.zst') ? await loadZstd(filePath) : await loadGzipped(filePath, errorOnMissing)
     if (arr === undefined) {
         return undefined
     }
