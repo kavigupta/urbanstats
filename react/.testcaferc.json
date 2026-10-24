@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "typescript": { "configPath": "tsconfig.json"}
+        "typescript": { "configPath": "tsconfig.json", "customCompilerModulePath": "node_modules/typescript" }
     },
     "screenshots": {
         "thumbnails": false
