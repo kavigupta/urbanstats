@@ -39,18 +39,13 @@ def statistic_data_source_country() -> List[Optional[List[str]]]:
     """
     The countries whose statistics agencies each statistic's data comes from.
     """
-    collection_by_statistic = {
-        statistic: collection
+    countries_by_statistic = {
+        statistic: countries
         for collection in statistic_collections
-        for statistic in collection.name_for_each_statistic()
+        for statistic, countries in collection.countries_for_each_statistic().items()
     }
     return [
-        list(
-            collection_by_statistic[statistic].data_source_countries_for_statistic(
-                statistic
-            )
-        )
-        or None
+        list(countries_by_statistic[statistic]) or None
         for statistic in internal_statistic_names()
     ]
 

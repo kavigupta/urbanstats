@@ -97,3 +97,5 @@ INTERNATIONAL_PROVIDERS = [
         allow_self_universe=False,  # handled separately for countries / continents.
     ),
 ]
+
+SUBNATIONAL_PROVIDERS = [STATE_PROVIDER, PROVINCE_PROVIDER, AUSTRALIAN_STATE_PROVIDER]

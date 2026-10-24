@@ -575,3 +575,13 @@ Merge household size and commute time into National Census statistics (#2596)
 757     order
 1487    data
 3387    total
+
+Add Australian states as universes (#2605)
+
+56      index
+125     consolidated
+178     quiz_sampling_info
+691     shape
+757     order
+1487    data
+3387    total

@@ -6,6 +6,7 @@ import { UnitType } from '../utils/unit'
 
 import { UrbanStatsASTExpression } from './ast'
 import { Color, deconstructColor, hexToColor } from './constants/color-utils'
+import type { InsetNode, SplitDirection } from './constants/insets'
 import { CMap, CMapRGB, ClusterMap, MissingData, Outline, PMap } from './constants/map'
 import { RampT } from './constants/ramp'
 import { RichTextAttributes, RichTextDocument, RichTextSegment } from './constants/rich-text'
@@ -17,16 +18,13 @@ import { ConstantCategory } from './documentation-category'
 import { LocInfo, noLocation } from './location'
 import { unparse } from './parser'
 
-// Define Inset and Insets types locally to avoid import issues
-interface Inset { bottomLeft: [number, number], topRight: [number, number], coordBox?: [number, number, number, number], mainMap: boolean, name?: string }
-type Insets = Inset[]
-
 // Define the tagged union for opaque values
 export type USSOpaqueValue =
     | { type: 'opaque', opaqueType: 'color', value: Color }
     | { type: 'opaque', opaqueType: 'scale', value: Scale }
-    | { type: 'opaque', opaqueType: 'inset', value: Inset }
-    | { type: 'opaque', opaqueType: 'insets', value: Insets }
+    | { type: 'opaque', opaqueType: 'inset', value: InsetNode }
+    | { type: 'opaque', opaqueType: 'insets', value: InsetNode[] }
+    | { type: 'opaque', opaqueType: 'splitDirection', value: SplitDirection }
     | { type: 'opaque', opaqueType: 'cMap', value: CMap }
     | { type: 'opaque', opaqueType: 'cMapRGB', value: CMapRGB }
     | { type: 'opaque', opaqueType: 'pMap', value: PMap }
@@ -472,6 +470,7 @@ export function renderValue(input: USSValue): string {
                     case 'richTextDocument':
                     case 'richTextSegment':
                     case 'richTextAlign':
+                    case 'splitDirection':
                     case 'richTextList':
                         return `[${opaqueValue.opaqueType} object]`
                     case 'color':

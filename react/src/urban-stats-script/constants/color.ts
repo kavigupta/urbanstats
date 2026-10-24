@@ -1,10 +1,10 @@
 import hueColors from '../../data/hueColors'
+import { camelToHuman } from '../../utils/text'
 import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
 import { USSRawValue, USSType, USSValue, createConstantExpression } from '../types-values'
 
 import { Color, doRender, hexToColor, hsvColorExpression, rgbColorExpression } from './color-utils'
-import { camelToHuman } from './utils'
 
 export const colorType = { type: 'opaque', name: 'color' } satisfies USSType
 

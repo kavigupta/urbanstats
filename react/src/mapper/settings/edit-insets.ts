@@ -1,8 +1,9 @@
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
-import { deconstruct as deconstructInset, Inset } from '../../urban-stats-script/constants/insets'
+import { deconstruct as deconstructInset, Inset, InsetNode, isSplit, layoutInsets, listAt, mapList, mapNode, SplitCell, SplitDirection, splitDirectionIdentifierToValue, SplitInset } from '../../urban-stats-script/constants/insets'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import * as l from '../../urban-stats-script/literal-parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
+import { fitCoordBox } from '../../utils/coordinates'
 import { assert } from '../../utils/defensive'
 import { loadInsetExpression, loadInsets } from '../context'
 
@@ -16,7 +17,7 @@ export const neswSchema = l.object({
     west: l.number(),
 })
 
-const insetSchema = l.transformExpr(l.deconstruct(l.call({ fn: l.identifier('constructInset'), unnamedArgs: [], namedArgs: {
+const leafSchema = l.transformExpr(l.deconstruct(l.call({ fn: l.identifier('constructInset'), unnamedArgs: [], namedArgs: {
     mainMap: l.boolean(),
     name: l.string(),
     screenBounds: neswSchema,
@@ -30,6 +31,22 @@ const insetSchema = l.transformExpr(l.deconstruct(l.call({ fn: l.identifier('con
     name,
 } satisfies Inset))
 
+const splitSchema: l.LiteralExprParser<SplitInset> = l.transformExpr(l.deconstruct(l.call({ fn: l.identifier('constructSplitInset'), unnamedArgs: [l.vector(l.object({
+    insets: l.vector({ parse: (...args) => insetSchema.parse(...args) }),
+    proportion: l.number(),
+}))], namedArgs: {
+    direction: l.transformExpr(l.union(Object.keys(splitDirectionIdentifierToValue).map(l.identifier)), identifier => splitDirectionIdentifierToValue[identifier]),
+    screenBounds: neswSchema,
+} })),
+({ unnamedArgs: [children], namedArgs: { direction, screenBounds } }) => ({
+    bottomLeft: [screenBounds.west, screenBounds.south],
+    topRight: [screenBounds.east, screenBounds.north],
+    direction,
+    children,
+} satisfies SplitInset))
+
+const insetSchema: l.LiteralExprParser<InsetNode> = l.union<InsetNode>([leafSchema, splitSchema])
+
 const constructInsetsSchema = l.transformExpr(l.maybeAutoUXNode(l.call({ fn: l.identifier('constructInsets'), namedArgs: {}, unnamedArgs: [l.editableVector(insetSchema)] })), call => call.expr.unnamedArgs[0])
 
 const mapSchema = mapUssParser(l.call({
@@ -40,7 +57,7 @@ const mapSchema = mapUssParser(l.call({
     },
 }), validMapperOutputs)
 
-export function getInsets(settings: MapSettings, typeEnvironment: TypeEnvironment): Inset[] | undefined {
+export function getInsets(settings: MapSettings, typeEnvironment: TypeEnvironment): InsetNode[] | undefined {
     if (settings.script.uss.type === 'statements') {
         try {
             const parseResult = mapSchema(settings.script.uss, typeEnvironment).namedArgs.insets
@@ -61,8 +78,57 @@ export function getInsets(settings: MapSettings, typeEnvironment: TypeEnvironmen
     return undefined
 }
 
+/** Splits a main map's whole list of insets, or another inset by itself */
+export function splitInsets(insets: InsetNode[], path: number[], direction: SplitDirection): InsetNode[] {
+    const listPath = path.slice(0, -1)
+    const list = listAt(insets, listPath)
+    const leaf = list[path[path.length - 1]]
+    assert(!isSplit(leaf), 'Splitting a split')
+
+    const splitPath = listPath.slice(0, -1)
+    const cellIndex = listPath[listPath.length - 1]
+    const parent = listPath.length > 0 ? listAt(insets, splitPath.slice(0, -1))[splitPath[splitPath.length - 1]] : undefined
+    if (parent !== undefined && isSplit(parent) && parent.direction === direction && (leaf.mainMap || list.length === 1)) {
+        return mapNode(insets, splitPath, () => {
+            return [{ ...parent, children: [...parent.children.slice(0, cellIndex + 1), parent.children[cellIndex], ...parent.children.slice(cellIndex + 1)] }]
+        })
+    }
+
+    const cell = (cellInsets: InsetNode[]): SplitCell => ({ insets: cellInsets, proportion: 1 })
+    if (leaf.mainMap) {
+        return mapList(insets, listPath, () => [{ bottomLeft: [0, 0], topRight: [1, 1], direction, children: [cell(list), cell(list)] }])
+    }
+    const copy: Inset = { ...leaf, bottomLeft: [0, 0], topRight: [1, 1] }
+    return mapNode(insets, path, () => [{ bottomLeft: leaf.bottomLeft, topRight: leaf.topRight, direction, children: [cell([copy]), cell([copy])] }])
+}
+
+/** Deleting a main map in a split deletes its cell */
+export function deleteInsets(insets: InsetNode[], path: number[]): InsetNode[] {
+    const leaf = listAt(insets, path.slice(0, -1))[path[path.length - 1]]
+    if (!isSplit(leaf) && leaf.mainMap && path.length > 1) {
+        return mapList(insets, path.slice(0, -1), () => [])
+    }
+    return mapNode(insets, path, () => [])
+}
+
+/**
+ * Saves the map bounds each edited inset shows on a canvas of the given aspect ratio, so that
+ * `computeAspectRatioForInsets` gives the same canvas after a frame is resized without panning.
+ */
+export function fitInsetMapBounds(insets: InsetNode[], original: InsetNode[], canvasAspectRatio: number): InsetNode[] {
+    const unedited = new Set(original)
+    return layoutInsets(insets).leaves.reduce((result, leaf) => {
+        const aspectRatio = (leaf.topRight[0] - leaf.bottomLeft[0]) * canvasAspectRatio / (leaf.topRight[1] - leaf.bottomLeft[1])
+        const coordBox = fitCoordBox(leaf.coordBox, aspectRatio)
+        if (unedited.has(insets[leaf.path[0]]) || coordBox === leaf.coordBox) {
+            return result
+        }
+        return mapNode(result, leaf.path, node => [{ ...node, coordBox }])
+    }, insets)
+}
+
 /** Rescales screen bounds so the insets span the whole canvas in both dimensions. */
-export function normalizeInsetScreenBounds(insets: Inset[]): Inset[] {
+export function normalizeInsetScreenBounds(insets: InsetNode[]): InsetNode[] {
     const scaleAxis = (axis: 0 | 1): (v: number) => number => {
         const values = insets.flatMap(inset => [inset.bottomLeft[axis], inset.topRight[axis]])
         const min = Math.min(...values)
@@ -84,7 +150,7 @@ export function normalizeInsetScreenBounds(insets: Inset[]): Inset[] {
 }
 
 /** `original` is what `getInsets` parsed from these settings, so it lines up with their expressions */
-export function doEditInsets(settings: MapSettings, original: Inset[], edited: Inset[], typeEnvironment: TypeEnvironment): MapUSS {
+export function doEditInsets(settings: MapSettings, original: InsetNode[], edited: InsetNode[], typeEnvironment: TypeEnvironment): MapUSS {
     assert(settings.script.uss.type === 'statements', 'Trying to do an inset edit on USS that is not inset editable')
     const mapInsets = mapSchema(settings.script.uss, typeEnvironment).namedArgs.insets
     assert(settings.geographies.length > 0, 'Trying to do an inset edit on USS that is not inset editable')

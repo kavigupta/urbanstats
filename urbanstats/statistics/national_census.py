@@ -100,15 +100,8 @@ class NationalCensusStatistics(StatisticCollection):
         return statcan_legacy_names(self)
 
     def countries_for_each_statistic(self):
-        """Statistic -> the countries that have it; the rest are NaN for regions in any other."""
+        """Statistic -> the countries that have it. It is NaN for regions in any other."""
         return self.same_for_each_name(tuple(self.country_inputs()))
-
-    @property
-    def data_source_countries(self):
-        return tuple(self.country_inputs())
-
-    def data_source_countries_for_statistic(self, statistic):
-        return self.countries_for_each_statistic()[statistic]
 
     def computed_countries(self, shapefile):
         """
@@ -119,9 +112,7 @@ class NationalCensusStatistics(StatisticCollection):
         countries = [c for c in inputs if c in shapefile.source_country_list]
         if not countries:
             return None
-        by_region = shapefile.source_countries.by_region(shapefile)
-        covered = by_region.map(lambda cs: cs is not None and set(cs) <= set(countries))
-        return countries, covered
+        return countries, regions_within(shapefile, countries)
 
     def summed_counts(self, shapefile):
         """
@@ -152,26 +143,13 @@ class NationalCensusStatistics(StatisticCollection):
             return {}
         counts, _ = computed
         self.mutate_counts(counts)
-        return self.mask_by_statistic_countries(
-            shapefile,
-            {name: counts[name] for name in self.internal_statistic_names_list()},
-        )
+        return {
+            name: counts[name].where(regions_within(shapefile, countries).to_numpy())
+            for name, countries in self.countries_for_each_statistic().items()
+        }
 
-    def mask_by_statistic_countries(self, shapefile, statistics):
-        """Sets each statistic to NaN for regions in a country that does not have it."""
-        by_region = None
-        result = {}
-        for name, values in statistics.items():
-            countries = self.countries_for_each_statistic().get(name)
-            if countries is None or set(countries) >= set(
-                shapefile.source_country_list
-            ):
-                result[name] = values
-                continue
-            if by_region is None:
-                by_region = shapefile.source_countries.by_region(shapefile)
-            has_it = by_region.map(
-                lambda cs, c=countries: cs is not None and set(cs) <= set(c)
-            )
-            result[name] = values.where(has_it.to_numpy())
-        return result
+
+def regions_within(shapefile, countries):
+    """Whether each region lies within the countries, indexed like shapefile.load_file()."""
+    by_region = shapefile.source_countries.by_region(shapefile)
+    return by_region.map(lambda cs: cs is not None and set(cs) <= set(countries))

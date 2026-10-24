@@ -4,7 +4,7 @@ import statistic_variables_info from '../data/statistic_variables_info'
 import { Universe } from '../universe'
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { defaultConstants } from '../urban-stats-script/constants/constants'
-import { deconstruct, Inset, insetNameToConstantName } from '../urban-stats-script/constants/insets'
+import { collapseSplit, deconstruct, Inset, insetNameToConstantName, InsetNode, SplitDirection } from '../urban-stats-script/constants/insets'
 import { Context } from '../urban-stats-script/context'
 import { Effect, InterpretationError } from '../urban-stats-script/interpreter'
 import { noLocation } from '../urban-stats-script/location'
@@ -195,7 +195,7 @@ function normalizeUniverses(universe: Universe | Universe[]): Universe[] {
     return typeof universe === 'string' ? [universe] : Array.from(new Set(universe))
 }
 
-export function loadInsets(universe: Universe | Universe[]): Inset[] {
+export function loadInsets(universe: Universe | Universe[]): InsetNode[] {
     const universes = normalizeUniverses(universe)
     assert(universes.length > 0, 'No universes to load insets for')
     return universes.length === 1 ? insetsFor(universes[0]) : combineInsets(universes)
@@ -219,9 +219,9 @@ function insetsFor(universe: Universe): Inset[] {
 /**
  * Puts several universes on one canvas. Main maps that are close together are merged by `partitionBoxes`,
  * as on the comparison map, and the merged maps split the screen area the original main maps took up.
- * Every other inset is moved and scaled with the part of the new main map that its universe covers.
+ * Every other inset goes in the cell of its universe's main map, over the part of it that its universe covers.
  */
-function combineInsets(universes: Universe[]): Inset[] {
+function combineInsets(universes: Universe[]): InsetNode[] {
     const perUniverse = universes.map(universe => insetsFor(universe).map((inset, i) => ({ ...inset, name: insets[universe][i].name })))
     const mains = perUniverse.map((universeInsets) => {
         const main = universeInsets.find(inset => inset.mainMap)
@@ -234,20 +234,25 @@ function combineInsets(universes: Universe[]): Inset[] {
         coordBox: extendCoordBoxes(group.map(i => mains[i].coordBox)),
         name: group.map(i => mains[i].name).join(' + '),
     }))
-    const mainMaps = layOutMainMaps(groups, extendCoordBoxes(mains.map(screenBox)))
-    const groupOfUniverse = new Map(grouping.flatMap((group, g) => group.map(i => [i, g] as const)))
 
-    const others = perUniverse.flatMap((universeInsets, u) => {
-        const g = groupOfUniverse.get(u)!
-        // The part of its group's map this universe covers, which is the whole map when it has one to itself
-        const covers = remapBox(mercatorBox(mains[u].coordBox), mercatorBox(groups[g].coordBox), screenBox(mainMaps[g]))
-        return universeInsets.filter(inset => !inset.mainMap).map(inset => ({
-            ...inset,
-            ...screenBounds(remapBox(screenBox(inset), screenBox(mains[u]), covers)),
-        }))
+    const cells = grouping.map((group, g): InsetNode[] => [
+        { bottomLeft: [0, 0], topRight: [1, 1], coordBox: groups[g].coordBox, mainMap: true, name: groups[g].name },
+        ...group.flatMap((u) => {
+            // The part of the cell this universe covers, which is the whole cell when it has one to itself
+            const covers = remapBox(mercatorBox(mains[u].coordBox), mercatorBox(groups[g].coordBox), [0, 0, 1, 1])
+            return perUniverse[u].filter(inset => !inset.mainMap).map(inset => ({
+                ...inset,
+                ...screenBounds(remapBox(screenBox(inset), screenBox(mains[u]), covers)),
+            }))
+        }),
+    ])
+
+    const order = mainMapOrder(groups)
+    return collapseSplit({
+        ...screenBounds(extendCoordBoxes(mains.map(screenBox))),
+        direction: order.direction,
+        children: order.groups.map(g => ({ insets: cells[g], proportion: 1 })),
     })
-
-    return [...mainMaps, ...others]
 }
 
 /** Higher than the comparison map's, so that distant universes get maps of their own rather than an ocean between them. */
@@ -269,8 +274,8 @@ function remapBox(box: CoordBox, from: CoordBox, to: CoordBox): CoordBox {
     return [axis(box[0], 0), axis(box[1], 1), axis(box[2], 0), axis(box[3], 1)]
 }
 
-/** Splits the screen space the old main maps took along whichever axis the maps are more spread over. */
-function layOutMainMaps(groups: { coordBox: CoordBox, name: string }[], [west, south, east, north]: CoordBox): Inset[] {
+/** Lays the maps out along whichever axis they are more spread over, in the order they are on the globe. */
+function mainMapOrder(groups: { coordBox: CoordBox }[]): { direction: SplitDirection, groups: number[] } {
     const overall = mercatorBox(extendCoordBoxes(groups.map(group => group.coordBox)))
     const axis = overall[2] - overall[0] >= overall[3] - overall[1] ? 0 : 1
     const center = (box: CoordBox): number => {
@@ -278,20 +283,8 @@ function layOutMainMaps(groups: { coordBox: CoordBox, name: string }[], [west, s
         return (projected[axis] + projected[axis + 2]) / 2
     }
     const order = groups.map((_, i) => i).sort((a, b) => center(groups[a].coordBox) - center(groups[b].coordBox))
-
-    const laidOut: Inset[] = []
-    order.forEach((group, position) => {
-        const at = (offset: number): number => (position + offset) / order.length
-        laidOut[group] = {
-            ...screenBounds(axis === 0
-                ? [west + (east - west) * at(0), south, west + (east - west) * at(1), north]
-                : [west, south + (north - south) * at(0), east, south + (north - south) * at(1)]),
-            coordBox: groups[group].coordBox,
-            mainMap: true,
-            name: groups[group].name,
-        }
-    })
-    return laidOut
+    // Vertical splits run north to south
+    return axis === 0 ? { direction: 'horizontal', groups: order } : { direction: 'vertical', groups: order.reverse() }
 }
 
 export function loadInsetExpression(universe: Universe | Universe[]): UrbanStatsASTExpression {
