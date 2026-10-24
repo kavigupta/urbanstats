@@ -16,7 +16,8 @@ type Key = keyof typeof enableDebugLogging
 export const debugBufferEnabled = Object.values<Destination[]>(enableDebugLogging).some(destinations => destinations.includes('buffer'))
 
 const maxBufferEntries = 100_000
-const tabId = Math.random().toString(36).slice(2, 8)
+// Workers are named after their page's id so their entries can be correlated
+export const debugTabId = typeof window === 'undefined' ? self.name : Math.random().toString(36).slice(2, 8)
 
 interface Entry { time: number, tab: string, categories: string, text: string }
 
@@ -75,7 +76,7 @@ export function makeDebugLogger(...categories: [Key, ...Key[]]): (...args: unkno
             console.log(`[${label}]`, ...args)
         }
         if (toBuffer) {
-            const entry = { time: Date.now(), tab: tabId, categories: label, text: args.map(formatArg).join(' ') }
+            const entry = { time: Date.now(), tab: debugTabId, categories: label, text: args.map(formatArg).join(' ') }
             void getDb().then(db => insert(db, entry))
         }
     }

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 
 import validGeographies from '../data/mapper/used_geographies'
 import { Universe } from '../universe'
+import { debugTabId } from '../utils/debug-logging'
 
 import { UrbanStatsASTStatement } from './ast'
 import { EditorError } from './editor-utils'
@@ -57,7 +58,7 @@ let sharedUSSWorker: USSWorker | undefined
 const terminationDelay = 10_000
 
 function createUSSWorker(): USSWorker {
-    const worker = new Worker(new URL('./worker', import.meta.url), { name: 'sharedUSSWorker' })
+    const worker = new Worker(new URL('./worker', import.meta.url), { name: `${debugTabId}/uss` })
     // The worker may return responses out of order, so we need to give them identifiers
     const messageQueue = new Map<number, (result: USSExecutionResult) => void>()
     worker.addEventListener('message', (message: MessageEvent<{ result: USSExecutionResult, id: number }>) => {
