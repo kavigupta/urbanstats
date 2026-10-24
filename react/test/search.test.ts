@@ -268,7 +268,7 @@ test('subsequent loading indicator', async (t) => {
     await waitForLoading()
 
     // Block search completion messages
-    await (await workerSession).Runtime.evaluate({ expression: /{(.+)}/s.exec(swapPostMessage.toString())![1] })
+    await (await workerSession).Runtime.evaluate({ expression: /{([\s\S]+)}/.exec(swapPostMessage.toString())![1] })
 
     await t
         .click(searchField)
