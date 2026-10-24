@@ -7,6 +7,7 @@ import { Sidebar } from '../components/sidebar'
 import '../common.css'
 import '../components/article.css'
 import { TestUtils } from '../utils/TestUtils'
+import { debugBufferEnabled, downloadDebugBuffer } from '../utils/debug-logging'
 import { useMobileLayout } from '../utils/responsive'
 import { zIndex } from '../utils/zIndex'
 
@@ -157,6 +158,12 @@ function TemplateFooter(): ReactNode {
             <Support />
             {' '}
             <Store />
+            {debugBufferEnabled && (
+                <>
+                    {' '}
+                    <a href="#" onClick={(e) => { e.preventDefault(); void downloadDebugBuffer() }}>Download debug log</a>
+                </>
+            )}
         </div>
     )
 }
