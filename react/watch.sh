@@ -4,7 +4,7 @@ set -e
 
 build_site() {
     (cd .. && python create_website.py --mode dev --target scripts --site-folder $1)
-    built_head=$(git -C $1 rev-parse HEAD)
+    built_head=$(git -C $1 rev-parse HEAD 2>/dev/null || true)
 }
 build_site $1
 
@@ -30,7 +30,7 @@ log_tail() {
 
 while true; do
     # The site repository was reset since the last build, wiping the generated scripts.
-    [ "$(git -C $1 rev-parse HEAD)" = "$built_head" ] || build_site $1
+    [ "$(git -C $1 rev-parse HEAD 2>/dev/null || true)" = "$built_head" ] || build_site $1
     FORCE_COLOR=1 rspack serve --mode=development --watch --env directory=$1 2>&1 | log_tail
     echo 'Restarting watcher... Press ^C again to stop watching.'
     sleep 1
