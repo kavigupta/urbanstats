@@ -65,6 +65,18 @@ async function checkText(t: TestController, words: string, emoji: string): Promi
     await t.expect(emojiText).eql(emoji)
 }
 
+function customQuizURL(quiz: object): string {
+    const quizStr = JSON.stringify(quiz)
+    const quizBuffer = Buffer.from(quizStr)
+    const quizBufferGzip = gzipSync(quizBuffer)
+    const quizBase64 = quizBufferGzip.toString('base64')
+    const params = new URLSearchParams()
+    params.set('mode', 'custom')
+    params.set('quizContent', quizBase64)
+    const url = `${target}/quiz.html#${params.toString()}`
+    return url
+}
+
 export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void {
     quizFixture(
         'quiz clickthrough test on empty background',
@@ -450,6 +462,26 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await t.navigateTo('/quiz.html#date=95')
         await checkText(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
     })
+
+    quizFixture('custom quiz long names', customQuizURL({
+        name: 'long names',
+        questions: [
+            {
+                stat_column: 'Population',
+                stat_path: 'population',
+                question: 'higher population',
+                longname_a: 'Thiruvananthapuram Urban Center, India',
+                longname_b: 'Massachusetts, USA',
+                stat_a: 2787000,
+                stat_b: 7029917,
+                kind: 'juxtastat',
+            },
+        ],
+    }), {}, '', platform)
+
+    test('custom-quiz-long-names', async (t) => {
+        await screencap(t)
+    })
 }
 
 export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobile' }): void {
@@ -771,18 +803,6 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
         // Emoji are double length
         await t.expect(copies[0]).match(/^Retrostat Week [0-9]+ [012345]\/5\n\n[🟩🟥]{10}\n\nhttps:\/\/juxtastat\.org\/#mode=retro$/)
     })
-
-    function customQuizURL(quiz: object): string {
-        const quizStr = JSON.stringify(quiz)
-        const quizBuffer = Buffer.from(quizStr)
-        const quizBufferGzip = gzipSync(quizBuffer)
-        const quizBase64 = quizBufferGzip.toString('base64')
-        const params = new URLSearchParams()
-        params.set('mode', 'custom')
-        params.set('quizContent', quizBase64)
-        const url = `${target}/quiz.html#${params.toString()}`
-        return url
-    }
 
     const quiz5Q = {
         name: 'this is a testing quiz',
