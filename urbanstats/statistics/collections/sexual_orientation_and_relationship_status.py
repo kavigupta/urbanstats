@@ -1,17 +1,80 @@
+from dataclasses import dataclass
+
+import pandas as pd
+
 from urbanstats.acs.load import ACSDataEntity
 from urbanstats.games.quiz_question_metadata import (
     SORS,
     QuizQuestionDescriptor,
     QuizQuestionSkip,
 )
-from urbanstats.statistics.statistic_collection import ACSStatisticsColection
-from urbanstats.statistics.utils import fractionalize
+from urbanstats.statistics.national_census import (
+    ACSCounts,
+    AustralianCounts,
+    NationalCensusStatistics,
+    australian_counts,
+)
+
+US_ONLY = ("sors_cohabiting_partnered_gay", "sors_cohabiting_partnered_straight")
 
 
-class SexualOrientationRelationshipStatusStatistics(ACSStatisticsColection):
+@dataclass(frozen=True)
+class USRelationshipCounts(ACSCounts):
+    def compute(self, shapefile):
+        counts = super().compute(shapefile)
+        counts["household_type_by_relationship_partner"] = (
+            counts["household_type_by_relationship_straight"]
+            + counts["household_type_by_relationship_gay"]
+        )
+        return counts
+
+
+@dataclass(frozen=True)
+class AustralianRelationshipCounts(AustralianCounts):
+    """
+    In the US's columns, where each household has one householder and partners are those of the
+    householder, one per couple. ABS counts both partners in every couple, and every member of a
+    group household, so one of each group household's members is taken as its householder.
+    """
+
+    def compute(self, shapefile):
+        c = super().compute(shapefile)
+        group_households = australian_counts(
+            "G35",
+            {
+                "group_households": [
+                    f"Num_Psns_UR_{n}_NonFamHhold" for n in ["2", "3", "4", "5", "6mo"]
+                ]
+            },
+            "dwellings",
+            shapefile.geometry,
+        ).group_households
+        couples = (c.registered_partner + c.de_facto_partner) / 2
+        return pd.DataFrame(
+            {
+                "household_type_by_relationship_householder": c.lone_person
+                + c.lone_parent
+                + group_households
+                + couples,
+                "household_type_by_relationship_partner": couples,
+                "household_type_by_relationship_child": c.child_under_15
+                + c.dependent_student
+                + c.non_dependent_child,
+                "household_type_by_relationship_other": c.other_related
+                + c.unrelated_in_family_household
+                + (c.group_household_member - group_households).clip(lower=0)
+                + c.in_non_private_dwellings,
+            }
+        )
+
+
+class SexualOrientationRelationshipStatusStatistics(NationalCensusStatistics):
+    version = 1
+
     def name_for_each_statistic(self):
         return {
             "sors_unpartnered_householder": "Not Cohabiting With Partner %",
+            "sors_cohabiting_partnered": "Cohabiting With Partner %",
             "sors_cohabiting_partnered_gay": "Cohabiting With Partner (Gay) %",
             "sors_cohabiting_partnered_straight": "Cohabiting With Partner (Straight) %",
             "sors_child": "Living With Parents %",
@@ -24,6 +87,7 @@ class SexualOrientationRelationshipStatusStatistics(ACSStatisticsColection):
     def varname_for_each_statistic(self):
         return {
             "sors_unpartnered_householder": "single_householder",
+            "sors_cohabiting_partnered": "cohabiting",
             "sors_cohabiting_partnered_gay": "cohabiting_gay",
             "sors_cohabiting_partnered_straight": "cohabiting_straight",
             "sors_child": "living_with_parents",
@@ -43,46 +107,66 @@ class SexualOrientationRelationshipStatusStatistics(ACSStatisticsColection):
             ),
             **QuizQuestionSkip.several(
                 "sors_unpartnered_householder",
+                "sors_cohabiting_partnered",
                 "sors_cohabiting_partnered_straight",
                 "sors_child",
                 "sors_other",
             ),
         }
 
-    def mutate_acs_results(self, statistics_table):
-        fractionalize(
-            statistics_table,
-            "household_type_by_relationship_other",
-            "household_type_by_relationship_child",
-            "household_type_by_relationship_householder",
-            "household_type_by_relationship_straight",
-            "household_type_by_relationship_gay",
-        )
-        statistics_table["sors_unpartnered_householder"] = (
-            statistics_table["household_type_by_relationship_householder"]
-            - statistics_table["household_type_by_relationship_straight"]
-            - statistics_table["household_type_by_relationship_gay"]
-        )
-        del statistics_table["household_type_by_relationship_householder"]
+    def countries_for_each_statistic(self):
+        return {
+            name: ("USA",) if name in US_ONLY else ("USA", "Australia")
+            for name in self.internal_statistic_names_list()
+        }
+
+    def country_inputs(self):
+        return {
+            "USA": USRelationshipCounts(
+                self.acs_entity_dict()["household_type_by_relationship"]
+            ),
+            "Australia": AustralianRelationshipCounts(
+                {
+                    # Visitors are left out, as the US counts people where they usually live.
+                    "G27": {
+                        "registered_partner": ["P_Ptn_in_RM_Tot"],
+                        "de_facto_partner": ["P_Ptn_in_DFM_Tot"],
+                        "lone_parent": ["P_LonePnt_Tot"],
+                        "child_under_15": ["P_CU15_Tot"],
+                        "dependent_student": ["P_DpStu_Tot"],
+                        "non_dependent_child": ["P_NDpChl_Tot"],
+                        "other_related": ["P_OthRI_Tot"],
+                        "unrelated_in_family_household": ["P_URI_in_FH_Tot"],
+                        "group_household_member": ["P_GrpH_Mem_Tot"],
+                        "lone_person": ["P_LonePsn_Tot"],
+                    },
+                    # G27 only counts private dwellings, so this is the US's group quarters
+                    "G01": {"in_non_private_dwellings": ["Count_Persons_other_dwgs_P"]},
+                }
+            ),
+        }
+
+    def mutate_counts(self, counts):
+        # Australia has no split between same-sex and opposite-sex couples
         for coupled in ["straight", "gay"]:
-            statistics_table[f"sors_cohabiting_partnered_{coupled}"] = (
-                statistics_table[f"household_type_by_relationship_{coupled}"] * 2
+            if f"household_type_by_relationship_{coupled}" not in counts:
+                counts[f"household_type_by_relationship_{coupled}"] = 0
+        householder = counts.household_type_by_relationship_householder
+        partner = counts.household_type_by_relationship_partner
+        total = (
+            counts.household_type_by_relationship_other
+            + counts.household_type_by_relationship_child
+            + householder
+            + partner
+        )
+        counts["sors_unpartnered_householder"] = (householder - partner) / total
+        counts["sors_cohabiting_partnered"] = partner * 2 / total
+        for coupled in ["straight", "gay"]:
+            counts[f"sors_cohabiting_partnered_{coupled}"] = (
+                counts[f"household_type_by_relationship_{coupled}"] * 2 / total
             )
-            del statistics_table[f"household_type_by_relationship_{coupled}"]
-        statistics_table["sors_child"] = statistics_table[
-            "household_type_by_relationship_child"
-        ]
-        del statistics_table["household_type_by_relationship_child"]
-        statistics_table["sors_other"] = statistics_table[
-            "household_type_by_relationship_other"
-        ]
-        del statistics_table["household_type_by_relationship_other"]
-
-    def acs_name(self):
-        raise NotImplementedError
-
-    def acs_entity(self):
-        raise NotImplementedError
+        counts["sors_child"] = counts.household_type_by_relationship_child / total
+        counts["sors_other"] = counts.household_type_by_relationship_other / total
 
     def acs_entity_dict(self):
         return {

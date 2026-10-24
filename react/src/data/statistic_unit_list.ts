@@ -403,6 +403,7 @@ export default [
     "percentage",
     "percentage",
     "percentage",
+    "percentage",
     "fatalities",
     "fatalitiesPerCapita",
     "fatalities",

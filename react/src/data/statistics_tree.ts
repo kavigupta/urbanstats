@@ -639,7 +639,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 428
+                                        "column": 429
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -658,7 +658,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 430
+                                        "column": 431
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -677,7 +677,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 429
+                                        "column": 430
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -3306,7 +3306,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 422
+                                        "column": 423
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3325,7 +3325,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 424
+                                        "column": 425
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -3344,7 +3344,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 423
+                                        "column": 424
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -3634,7 +3634,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 436
+                                        "column": 437
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3663,7 +3663,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 437
+                                        "column": 438
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3692,7 +3692,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 438
+                                        "column": 439
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3721,7 +3721,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 439
+                                        "column": 440
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3750,7 +3750,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 440
+                                        "column": 441
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3779,7 +3779,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 441
+                                        "column": 442
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3892,7 +3892,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 416
+                                        "column": 417
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3921,7 +3921,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 414
+                                        "column": 415
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3950,7 +3950,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 420
+                                        "column": 421
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3979,7 +3979,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 418
+                                        "column": 419
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4005,7 +4005,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 410
+                                        "column": 411
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4034,7 +4034,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 412
+                                        "column": 413
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4063,7 +4063,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 408
+                                        "column": 409
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4092,7 +4092,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 409
+                                        "column": 410
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4121,7 +4121,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 411
+                                        "column": 412
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4150,7 +4150,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 427
+                                        "column": 428
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4179,7 +4179,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 425
+                                        "column": 426
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4208,7 +4208,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 426
+                                        "column": 427
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4234,7 +4234,7 @@ export const rawStatsTree = [
                                             "category": "Traffic Fatalities",
                                             "name": "NHTSA FARS"
                                         },
-                                        "column": 405
+                                        "column": 406
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4260,7 +4260,7 @@ export const rawStatsTree = [
                                             "category": "Traffic Fatalities",
                                             "name": "NHTSA FARS"
                                         },
-                                        "column": 407
+                                        "column": 408
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4286,7 +4286,7 @@ export const rawStatsTree = [
                                             "category": "Traffic Fatalities",
                                             "name": "NHTSA FARS"
                                         },
-                                        "column": 404
+                                        "column": 405
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4312,7 +4312,7 @@ export const rawStatsTree = [
                                             "category": "Traffic Fatalities",
                                             "name": "NHTSA FARS"
                                         },
-                                        "column": 406
+                                        "column": 407
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6729,7 +6729,36 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 403
+                                        "column": 404
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "sors_cohabiting_partnered",
+                "name": "Cohabiting With Partner %",
+                "subcategory": {
+                    "id": "household_relationship",
+                    "name": "Household Relationship"
+                },
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Cohabiting With Partner %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "National Census"
+                                        },
+                                        "column": 400
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6758,7 +6787,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 400
+                                        "column": 401
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6787,7 +6816,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 401
+                                        "column": 402
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6845,7 +6874,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 402
+                                        "column": 403
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7909,7 +7938,7 @@ export const rawStatsTree = [
                                             "category": "Distance from Features",
                                             "name": "Feature Datasets"
                                         },
-                                        "column": 434
+                                        "column": 435
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7961,7 +7990,7 @@ export const rawStatsTree = [
                                             "category": "Distance from Features",
                                             "name": "Feature Datasets"
                                         },
-                                        "column": 435
+                                        "column": 436
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8013,7 +8042,7 @@ export const rawStatsTree = [
                                             "category": "Distance from Features",
                                             "name": "Feature Datasets"
                                         },
-                                        "column": 433
+                                        "column": 434
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8065,7 +8094,7 @@ export const rawStatsTree = [
                                             "category": "Distance from Features",
                                             "name": "Feature Datasets"
                                         },
-                                        "column": 432
+                                        "column": 433
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8565,7 +8594,7 @@ export const rawStatsTree = [
                                             "category": "Weather",
                                             "name": "ERA5"
                                         },
-                                        "column": 431
+                                        "column": 432
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10323,7 +10352,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 415
+                                        "column": 416
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10349,7 +10378,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 413
+                                        "column": 414
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10375,7 +10404,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 419
+                                        "column": 420
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10401,7 +10430,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 417
+                                        "column": 418
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10427,7 +10456,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "National Census"
                                         },
-                                        "column": 421
+                                        "column": 422
                                     }
                                 ],
                                 "indentedName": "2020"

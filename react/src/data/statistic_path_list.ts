@@ -399,6 +399,7 @@ export default [
     "segregation_250_diff_2010",
     "snowfall_4",
     "sors_child",
+    "sors_cohabiting_partnered",
     "sors_cohabiting_partnered_gay",
     "sors_cohabiting_partnered_straight",
     "sors_other",

@@ -414,8 +414,8 @@ export function DataCreditPanel(): ReactNode {
                             Citizenship, language, generation, commute mode and time, industry, marriage, household size, and renter %
                             are also available in Canada, from the 2021 Canadian Census (see Canadian Data below), and the two countries&apos; values
                             are combined into one National Census statistic. Language, generation, marriage, born outside the
-                            country, undergrad and graduate degrees, and degree field are also available in Australia, from the 2021
-                            Australian Census (see Australian Data below), and are combined in the same way.
+                            country, undergrad and graduate degrees, degree field, and household relationship are also available in
+                            Australia, from the 2021 Australian Census (see Australian Data below), and are combined in the same way.
 
                             <NRef name="citizenship">Citizenship</NRef>
                             <div>
@@ -626,7 +626,8 @@ export function DataCreditPanel(): ReactNode {
                                     people in relationships are couples; this is not a perfect assumption, but it is
                                     the best we can do). We correspondingly double the number of people who are not
                                     a householder but are cohabiting with a partner to get the number of people
-                                    who are cohabiting with a partner. Finally, all non-householders who are not
+                                    who are cohabiting with a partner, which is split into same-sex (gay) and opposite-sex
+                                    (straight) couples. Finally, all non-householders who are not
                                     cohabiting with a partner are divided into children (including foster children,
                                     stepchildren, and grandchildren) and a catch-all other category.
                                 </p>
@@ -1126,7 +1127,10 @@ export function DataCreditPanel(): ReactNode {
                                     of people who finished high school, so only undergrad and graduate degrees are available;
                                     graduate diplomas and certificates count as undergrad. As with Canada, the split between degree
                                     fields is of every post-school qualification, so we apply it to the people with at least an
-                                    undergrad degree. For Income, we use thresholds in AUD rather than USD.
+                                    undergrad degree. For Household Relationship, the data does not split couples into same-sex and
+                                    opposite-sex, so only Cohabiting With Partner % is available; one member of each group household
+                                    counts as its householder, and people in non-private dwellings count as Other, as the US&apos;s
+                                    group quarters do. For Income, we use thresholds in AUD rather than USD.
                                 </p>
                             </div>
                         </div>

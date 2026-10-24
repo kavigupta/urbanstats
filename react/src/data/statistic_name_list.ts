@@ -399,6 +399,7 @@ export default [
     "Segregation Change (2010-2020) %",
     "Snowfall [rain-equivalent]",
     "Living With Parents %",
+    "Cohabiting With Partner %",
     "Cohabiting With Partner (Gay) %",
     "Cohabiting With Partner (Straight) %",
     "Other Living Situation %",

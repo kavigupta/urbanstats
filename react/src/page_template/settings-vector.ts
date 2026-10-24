@@ -508,6 +508,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_individual_income_under_52k_australia', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_individual_income_52k_to_104k_australia', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_individual_income_over_104k_australia', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_sors_cohabiting_partnered', coder: booleanSettingCoder }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 

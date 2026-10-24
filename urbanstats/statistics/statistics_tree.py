@@ -1119,6 +1119,7 @@ statistics_tree = StatisticTree(
                     "Household Relationship",
                     just_2020(
                         "sors_unpartnered_householder",
+                        "sors_cohabiting_partnered",
                         "sors_cohabiting_partnered_gay",
                         "sors_cohabiting_partnered_straight",
                         "sors_child",
