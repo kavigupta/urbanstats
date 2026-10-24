@@ -10,8 +10,8 @@ import { GeographyKind } from '../src/urban-stats-script/workerManager'
 
 // A National Census statistic, covering the USA and Canada, with a GHSL variant
 const censusPopulation = 'Population' satisfies StatName
-// A Canadian census statistic with no variant from any other source
-const statCanOnly = 'French at Home % [StatCan]' satisfies StatName
+// A National Census statistic only Canada has, with no variant from any other source
+const canadaOnly = 'French at Home %' satisfies StatName
 const ghslPopulation = 'Population [GHS-POP]' satisfies StatName
 // A US Census statistic with no variant from any other source
 const usCensusOnly = 'Arthritis %' satisfies StatName
@@ -126,7 +126,7 @@ void describe('crossSourceBorderExclusion', () => {
 
         void test('is silent when the statistic reaches none of the region set', async () => {
             // StatCan has no data for US urban centers
-            assert.equal(await exclusion(statCanOnly, 'Urban Center', 'USA'), undefined)
+            assert.equal(await exclusion(canadaOnly, 'Urban Center', 'USA'), undefined)
         })
 
         void test('is silent for a data gap in a non-crossing type inside its country', async () => {

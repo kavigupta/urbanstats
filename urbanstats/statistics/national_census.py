@@ -6,7 +6,10 @@ import numpy as np
 import pandas as pd
 
 from urbanstats.acs.load import aggregated_acs_data, aggregated_acs_data_us_pr
-from urbanstats.statistics.statistic_collection import StatisticCollection
+from urbanstats.statistics.statistic_collection import (
+    StatisticCollection,
+    statcan_legacy_names,
+)
 
 
 @dataclass(frozen=True)
@@ -57,10 +60,7 @@ class NationalCensusStatistics(StatisticCollection):
 
     def legacy_statistic_names(self):
         # Canada's, from before the two countries' statistics were merged
-        return {
-            f"{name} [StatCan]": name
-            for name in self.name_for_each_statistic().values()
-        }
+        return statcan_legacy_names(self)
 
     @property
     def data_source_countries(self):

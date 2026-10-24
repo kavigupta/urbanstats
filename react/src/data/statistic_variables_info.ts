@@ -546,7 +546,7 @@ export default {
         },
         {
             "varName": "french_at_home",
-            "humanReadableName": "French at Home % [StatCan]",
+            "humanReadableName": "French at Home %",
             "comesFromMultiSourceSet": false,
             "order": 68,
             "index": 268,
@@ -554,7 +554,7 @@ export default {
         },
         {
             "varName": "other_non_french_at_home",
-            "humanReadableName": "Other (non-French) at Home % [StatCan]",
+            "humanReadableName": "Other (non-French) at Home %",
             "comesFromMultiSourceSet": false,
             "order": 69,
             "index": 270,
@@ -569,72 +569,72 @@ export default {
             "deprecated": null
         },
         {
-            "varName": "religion_no_statcan",
-            "humanReadableName": "No religion % [Canadian Census]",
+            "varName": "religion_no_census",
+            "humanReadableName": "No religion % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 71,
             "index": 364,
             "deprecated": null
         },
         {
-            "varName": "religion_catholic_statcan",
-            "humanReadableName": "Catholic % [Canadian Census]",
+            "varName": "religion_catholic_census",
+            "humanReadableName": "Catholic % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 72,
             "index": 360,
             "deprecated": null
         },
         {
-            "varName": "religion_protestant_statcan",
-            "humanReadableName": "Protestant (non-Catholic Christian) % [Canadian Census]",
+            "varName": "religion_protestant_census",
+            "humanReadableName": "Protestant (non-Catholic Christian) % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 73,
             "index": 366,
             "deprecated": null
         },
         {
-            "varName": "religion_hindu_statcan",
-            "humanReadableName": "Hindu % [Canadian Census]",
+            "varName": "religion_hindu_census",
+            "humanReadableName": "Hindu % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 74,
             "index": 361,
             "deprecated": null
         },
         {
-            "varName": "religion_jewish_statcan",
-            "humanReadableName": "Jewish % [Canadian Census]",
+            "varName": "religion_jewish_census",
+            "humanReadableName": "Jewish % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 75,
             "index": 362,
             "deprecated": null
         },
         {
-            "varName": "religion_muslim_statcan",
-            "humanReadableName": "Muslim % [Canadian Census]",
+            "varName": "religion_muslim_census",
+            "humanReadableName": "Muslim % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 76,
             "index": 363,
             "deprecated": null
         },
         {
-            "varName": "religion_sikh_statcan",
-            "humanReadableName": "Sikh % [Canadian Census]",
+            "varName": "religion_sikh_census",
+            "humanReadableName": "Sikh % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 77,
             "index": 367,
             "deprecated": null
         },
         {
-            "varName": "religion_buddhist_statcan",
-            "humanReadableName": "Buddhist % [Canadian Census]",
+            "varName": "religion_buddhist_census",
+            "humanReadableName": "Buddhist % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 78,
             "index": 359,
             "deprecated": null
         },
         {
-            "varName": "religion_other_statcan",
-            "humanReadableName": "Other religion % [Canadian Census]",
+            "varName": "religion_other_census",
+            "humanReadableName": "Other religion % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 79,
             "index": 365,
@@ -714,7 +714,7 @@ export default {
         },
         {
             "varName": "stem_degree_statcan",
-            "humanReadableName": "Undergrad STEM [25-64] % [StatCan]",
+            "humanReadableName": "Undergrad STEM [25-64] %",
             "comesFromMultiSourceSet": false,
             "order": 89,
             "index": 177,
@@ -722,7 +722,7 @@ export default {
         },
         {
             "varName": "humanities_degree_statcan",
-            "humanReadableName": "Undergrad Humanities [25-64] % [StatCan]",
+            "humanReadableName": "Undergrad Humanities [25-64] %",
             "comesFromMultiSourceSet": false,
             "order": 90,
             "index": 175,
@@ -730,7 +730,7 @@ export default {
         },
         {
             "varName": "business_degree_statcan",
-            "humanReadableName": "Undergrad Business [25-64] % [StatCan]",
+            "humanReadableName": "Undergrad Business [25-64] %",
             "comesFromMultiSourceSet": false,
             "order": 91,
             "index": 173,
@@ -1146,7 +1146,7 @@ export default {
         },
         {
             "varName": "housing_cost_30_percent_or_more",
-            "humanReadableName": "Housing Cost/Income > 30% [StatCan]",
+            "humanReadableName": "Housing Cost/Income > 30%",
             "comesFromMultiSourceSet": false,
             "order": 143,
             "index": 375,
@@ -1922,7 +1922,7 @@ export default {
         },
         {
             "varName": "occupation_legislative_senior_management",
-            "humanReadableName": "Legislative and senior management occupations % [StatCan]",
+            "humanReadableName": "Legislative and senior management occupations %",
             "comesFromMultiSourceSet": false,
             "order": 240,
             "index": 330,
@@ -1930,7 +1930,7 @@ export default {
         },
         {
             "varName": "occupation_business_finance_admin",
-            "humanReadableName": "Business, finance and administration occupations % [StatCan]",
+            "humanReadableName": "Business, finance and administration occupations %",
             "comesFromMultiSourceSet": false,
             "order": 241,
             "index": 314,
@@ -1938,7 +1938,7 @@ export default {
         },
         {
             "varName": "occupation_natural_applied_sciences",
-            "humanReadableName": "Natural and applied sciences occupations % [StatCan]",
+            "humanReadableName": "Natural and applied sciences occupations %",
             "comesFromMultiSourceSet": false,
             "order": 242,
             "index": 335,
@@ -1946,7 +1946,7 @@ export default {
         },
         {
             "varName": "occupation_health",
-            "humanReadableName": "Health occupations % [StatCan]",
+            "humanReadableName": "Health occupations %",
             "comesFromMultiSourceSet": false,
             "order": 243,
             "index": 323,
@@ -1954,7 +1954,7 @@ export default {
         },
         {
             "varName": "occupation_education_law_social_community_government",
-            "humanReadableName": "Education, law, social, community and government occupations % [StatCan]",
+            "humanReadableName": "Education, law, social, community and government occupations %",
             "comesFromMultiSourceSet": false,
             "order": 244,
             "index": 318,
@@ -1962,7 +1962,7 @@ export default {
         },
         {
             "varName": "occupation_art_culture_recreation_sport",
-            "humanReadableName": "Art, culture, recreation and sport occupations % [StatCan]",
+            "humanReadableName": "Art, culture, recreation and sport occupations %",
             "comesFromMultiSourceSet": false,
             "order": 245,
             "index": 310,
@@ -1970,7 +1970,7 @@ export default {
         },
         {
             "varName": "occupation_sales_service",
-            "humanReadableName": "Sales and service occupations % [StatCan]",
+            "humanReadableName": "Sales and service occupations %",
             "comesFromMultiSourceSet": false,
             "order": 246,
             "index": 341,
@@ -1978,7 +1978,7 @@ export default {
         },
         {
             "varName": "occupation_trades_transport_equipment",
-            "humanReadableName": "Trades, transport and equipment operators occupations % [StatCan]",
+            "humanReadableName": "Trades, transport and equipment operators occupations %",
             "comesFromMultiSourceSet": false,
             "order": 247,
             "index": 342,
@@ -1986,7 +1986,7 @@ export default {
         },
         {
             "varName": "occupation_natural_resources_agriculture",
-            "humanReadableName": "Natural resources and agriculture occupations % [StatCan]",
+            "humanReadableName": "Natural resources and agriculture occupations %",
             "comesFromMultiSourceSet": false,
             "order": 248,
             "index": 336,
@@ -1994,7 +1994,7 @@ export default {
         },
         {
             "varName": "occupation_manufacturing_utilities",
-            "humanReadableName": "Manufacturing and utilities occupations % [StatCan]",
+            "humanReadableName": "Manufacturing and utilities occupations %",
             "comesFromMultiSourceSet": false,
             "order": 249,
             "index": 333,
@@ -3686,7 +3686,7 @@ export default {
             "religion_no",
             {
                 "individualVariables": [
-                    "religion_no_statcan"
+                    "religion_no_census"
                 ],
                 "humanReadableName": "No religion %"
             }
@@ -3695,7 +3695,7 @@ export default {
             "religion_catholic",
             {
                 "individualVariables": [
-                    "religion_catholic_statcan"
+                    "religion_catholic_census"
                 ],
                 "humanReadableName": "Catholic %"
             }
@@ -3704,7 +3704,7 @@ export default {
             "religion_protestant",
             {
                 "individualVariables": [
-                    "religion_protestant_statcan"
+                    "religion_protestant_census"
                 ],
                 "humanReadableName": "Protestant (non-Catholic Christian) %"
             }
@@ -3713,7 +3713,7 @@ export default {
             "religion_hindu",
             {
                 "individualVariables": [
-                    "religion_hindu_statcan"
+                    "religion_hindu_census"
                 ],
                 "humanReadableName": "Hindu %"
             }
@@ -3722,7 +3722,7 @@ export default {
             "religion_jewish",
             {
                 "individualVariables": [
-                    "religion_jewish_statcan"
+                    "religion_jewish_census"
                 ],
                 "humanReadableName": "Jewish %"
             }
@@ -3731,7 +3731,7 @@ export default {
             "religion_muslim",
             {
                 "individualVariables": [
-                    "religion_muslim_statcan"
+                    "religion_muslim_census"
                 ],
                 "humanReadableName": "Muslim %"
             }
@@ -3740,7 +3740,7 @@ export default {
             "religion_sikh",
             {
                 "individualVariables": [
-                    "religion_sikh_statcan"
+                    "religion_sikh_census"
                 ],
                 "humanReadableName": "Sikh %"
             }
@@ -3749,7 +3749,7 @@ export default {
             "religion_buddhist",
             {
                 "individualVariables": [
-                    "religion_buddhist_statcan"
+                    "religion_buddhist_census"
                 ],
                 "humanReadableName": "Buddhist %"
             }
@@ -3758,7 +3758,7 @@ export default {
             "religion_other",
             {
                 "individualVariables": [
-                    "religion_other_statcan"
+                    "religion_other_census"
                 ],
                 "humanReadableName": "Other religion %"
             }

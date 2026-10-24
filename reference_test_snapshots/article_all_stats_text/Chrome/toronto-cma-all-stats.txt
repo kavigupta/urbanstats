@@ -26,8 +26,8 @@ Citizen by Naturalization %: 0.353986918926239
 Non-citizen %: 0.15268053114414215
 Only English at Home %: 0.7278169989585876
 Spanish at Home %: 0.012103237211704254
-French at Home % [StatCan]: 0.006020780652761459
-Other (non-French) at Home % [StatCan]: 0.25405898690223694
+French at Home %: 0.006020780652761459
+Other (non-French) at Home %: 0.25405898690223694
 Other at Home %: 0.2600797712802887
 No religion %: 0.2663325369358063
 Catholic %: 0.25029706954956055
@@ -41,9 +41,9 @@ Other religion %: 0.01881658285856247
 High school diploma [25-64] %: 0.920540988445282
 Bachelor's degree [25-64] %: 0.46075546741485596
 Graduate degree [25-64] %: 0.13565964996814728
-Undergrad STEM [25-64] % [StatCan]: 0.1887807697057724
-Undergrad Humanities [25-64] % [StatCan]: 0.14923186600208282
-Undergrad Business [25-64] % [StatCan]: 0.12274281680583954
+Undergrad STEM [25-64] %: 0.1887807697057724
+Undergrad Humanities [25-64] %: 0.14923186600208282
+Undergrad Business [25-64] %: 0.12274281680583954
 Silent %: 0.07007359713315964
 Boomer %: 0.22373467683792114
 Gen X %: 0.2034255713224411
@@ -62,7 +62,7 @@ Housing Units per Adult: 0.47673672437667847
 Housing Units per Person: 0.3859820067882538
 PW Household Size: 3.5656511783599854
 Renter %: 0.34852784872055054
-Housing Cost/Income > 30% [StatCan]: 0.30452653765678406
+Housing Cost/Income > 30%: 0.30452653765678406
 Commute Car %: 0.7735636830329895
 Commute Bike %: 0.007107836194336414
 Commute Walk %: 0.04202236980199814
@@ -93,16 +93,16 @@ Employed in Retail trade %: 0.10905474424362183
 Employed in Transportation and warehousing %: 0.06260627508163452
 Employed in Utilities %: 0.002892741234973073
 Employed in Wholesale trade %: 0.03912712261080742
-Legislative and senior management occupations % [StatCan]: 0.013439998961985111
-Business, finance and administration occupations % [StatCan]: 0.2185390144586563
-Natural and applied sciences occupations % [StatCan]: 0.1142101064324379
-Health occupations % [StatCan]: 0.06675952672958374
-Education, law, social, community and government occupations % [StatCan]: 0.112188421189785
-Art, culture, recreation and sport occupations % [StatCan]: 0.038444407284259796
-Sales and service occupations % [StatCan]: 0.2421058714389801
-Trades, transport and equipment operators occupations % [StatCan]: 0.14505738019943237
-Natural resources and agriculture occupations % [StatCan]: 0.005084920208901167
-Manufacturing and utilities occupations % [StatCan]: 0.04417034983634949
+Legislative and senior management occupations %: 0.013439998961985111
+Business, finance and administration occupations %: 0.2185390144586563
+Natural and applied sciences occupations %: 0.1142101064324379
+Health occupations %: 0.06675952672958374
+Education, law, social, community and government occupations %: 0.112188421189785
+Art, culture, recreation and sport occupations %: 0.038444407284259796
+Sales and service occupations %: 0.2421058714389801
+Trades, transport and equipment operators occupations %: 0.14505738019943237
+Natural resources and agriculture occupations %: 0.005084920208901167
+Manufacturing and utilities occupations %: 0.04417034983634949
 Never Married %: 0.3687266707420349
 Married (not divorced) %: 0.5403222441673279
 Divorced %: 0.0909510999917984
@@ -272,10 +272,10 @@ Only English at Home % (Rank): 117
 Only English at Home % (Percentile): 35
 Spanish at Home % (Rank): 8
 Spanish at Home % (Percentile): 59
-French at Home % [StatCan] (Rank): 72
-French at Home % [StatCan] (Percentile): 35
-Other (non-French) at Home % [StatCan] (Rank): 2
-Other (non-French) at Home % [StatCan] (Percentile): 71
+French at Home % (Rank): 72
+French at Home % (Percentile): 35
+Other (non-French) at Home % (Rank): 2
+Other (non-French) at Home % (Percentile): 71
 Other at Home % (Rank): 39
 Other at Home % (Percentile): 44
 No religion % (Rank): 120
@@ -302,12 +302,12 @@ Bachelor's degree [25-64] % (Rank): 1
 Bachelor's degree [25-64] % (Percentile): 80
 Graduate degree [25-64] % (Rank): 2
 Graduate degree [25-64] % (Percentile): 75
-Undergrad STEM [25-64] % [StatCan] (Rank): 4
-Undergrad STEM [25-64] % [StatCan] (Percentile): 75
-Undergrad Humanities [25-64] % [StatCan] (Rank): 2
-Undergrad Humanities [25-64] % [StatCan] (Percentile): 75
-Undergrad Business [25-64] % [StatCan] (Rank): 1
-Undergrad Business [25-64] % [StatCan] (Percentile): 80
+Undergrad STEM [25-64] % (Rank): 4
+Undergrad STEM [25-64] % (Percentile): 75
+Undergrad Humanities [25-64] % (Rank): 2
+Undergrad Humanities [25-64] % (Percentile): 75
+Undergrad Business [25-64] % (Rank): 1
+Undergrad Business [25-64] % (Percentile): 80
 Silent % (Rank): 125
 Silent % (Percentile): 18
 Boomer % (Rank): 128
@@ -344,8 +344,8 @@ PW Household Size (Rank): 9
 PW Household Size (Percentile): 77
 Renter % (Rank): 47
 Renter % (Percentile): 41
-Housing Cost/Income > 30% [StatCan] (Rank): 1
-Housing Cost/Income > 30% [StatCan] (Percentile): 80
+Housing Cost/Income > 30% (Rank): 1
+Housing Cost/Income > 30% (Percentile): 80
 Commute Car % (Rank): 148
 Commute Car % (Percentile): 24
 Commute Bike % (Rank): 28
@@ -406,26 +406,26 @@ Employed in Utilities % (Rank): 90
 Employed in Utilities % (Percentile): 23
 Employed in Wholesale trade % (Rank): 11
 Employed in Wholesale trade % (Percentile): 62
-Legislative and senior management occupations % [StatCan] (Rank): 19
-Legislative and senior management occupations % [StatCan] (Percentile): 61
-Business, finance and administration occupations % [StatCan] (Rank): 1
-Business, finance and administration occupations % [StatCan] (Percentile): 80
-Natural and applied sciences occupations % [StatCan] (Rank): 4
-Natural and applied sciences occupations % [StatCan] (Percentile): 68
-Health occupations % [StatCan] (Rank): 144
-Health occupations % [StatCan] (Percentile): 2
-Education, law, social, community and government occupations % [StatCan] (Rank): 109
-Education, law, social, community and government occupations % [StatCan] (Percentile): 12
-Art, culture, recreation and sport occupations % [StatCan] (Rank): 11
-Art, culture, recreation and sport occupations % [StatCan] (Percentile): 55
-Sales and service occupations % [StatCan] (Rank): 132
-Sales and service occupations % [StatCan] (Percentile): 11
-Trades, transport and equipment operators occupations % [StatCan] (Rank): 147
-Trades, transport and equipment operators occupations % [StatCan] (Percentile): 22
-Natural resources and agriculture occupations % [StatCan] (Rank): 152
-Natural resources and agriculture occupations % [StatCan] (Percentile): 13
-Manufacturing and utilities occupations % [StatCan] (Rank): 83
-Manufacturing and utilities occupations % [StatCan] (Percentile): 55
+Legislative and senior management occupations % (Rank): 19
+Legislative and senior management occupations % (Percentile): 61
+Business, finance and administration occupations % (Rank): 1
+Business, finance and administration occupations % (Percentile): 80
+Natural and applied sciences occupations % (Rank): 4
+Natural and applied sciences occupations % (Percentile): 68
+Health occupations % (Rank): 144
+Health occupations % (Percentile): 2
+Education, law, social, community and government occupations % (Rank): 109
+Education, law, social, community and government occupations % (Percentile): 12
+Art, culture, recreation and sport occupations % (Rank): 11
+Art, culture, recreation and sport occupations % (Percentile): 55
+Sales and service occupations % (Rank): 132
+Sales and service occupations % (Percentile): 11
+Trades, transport and equipment operators occupations % (Rank): 147
+Trades, transport and equipment operators occupations % (Percentile): 22
+Natural resources and agriculture occupations % (Rank): 152
+Natural resources and agriculture occupations % (Percentile): 13
+Manufacturing and utilities occupations % (Rank): 83
+Manufacturing and utilities occupations % (Percentile): 55
 Never Married % (Rank): 69
 Never Married % (Percentile): 32
 Married (not divorced) % (Rank): 48

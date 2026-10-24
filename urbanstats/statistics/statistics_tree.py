@@ -332,13 +332,6 @@ population_census = Source(
     priority=1,
     variable_suffix="census",
 )
-population_canada = Source(
-    "Population",
-    "Canadian Census",
-    is_default=True,
-    priority=2,
-    variable_suffix="statcan",
-)
 population_ghsl = Source(
     "Population", "GHSL", is_default=False, priority=10, variable_suffix="ghsl"
 )
@@ -514,8 +507,8 @@ def just_2020_multi_source(
     *col_names: str, year: int = 2020
 ) -> Dict[str, StatisticGroup]:
     """
-    Even with a single source, these are multi-source statistics named after the US column, so their
-    variable names do not change when a source is added.
+    Even with a single source, these are multi-source statistics, so their variable names do not
+    change when a source is added.
     """
     return {
         col_name: StatisticGroup(
@@ -531,27 +524,6 @@ def just_2020_multi_source(
             group_name_statcol=col_name,
         )
         for col_name in col_names
-    }
-
-
-def just_2020_canada_multi_source(
-    *canada_col_names: str, year: int = 2020
-) -> Dict[str, StatisticGroup]:
-    """Like just_2020_multi_source, for statistics the US does not have, named after the Canadian column."""
-    return {
-        col_name: StatisticGroup(
-            {
-                year: [
-                    MultiSource(
-                        {population_canada: col_name},
-                        col_name,
-                        indented_name="2020",
-                    )
-                ]
-            },
-            group_name_statcol=col_name,
-        )
-        for col_name in canada_col_names
     }
 
 
@@ -767,7 +739,7 @@ statistics_tree = StatisticTree(
                     just_2020(
                         "language_french_canada",
                         "language_other_non_french_canada",
-                        source=population_canada,
+                        source=population_census,
                     ),
                     just_2020(
                         "language_other",
@@ -779,7 +751,7 @@ statistics_tree = StatisticTree(
         "religion": StatisticCategory(
             name="Religion",
             contents={
-                **just_2020_canada_multi_source(
+                **just_2020_multi_source(
                     "religion_no_religion_canada",
                     "religion_catholic_canada",
                     "religion_protestant_canada",
@@ -807,7 +779,7 @@ statistics_tree = StatisticTree(
                         "education_high_school_canada",
                         "education_ugrad_canada",
                         "education_grad_canada",
-                        source=population_canada,
+                        source=population_census,
                     ),
                 ),
                 **in_subcategory(
@@ -822,7 +794,7 @@ statistics_tree = StatisticTree(
                         "education_field_stem_canada",
                         "education_field_humanities_canada",
                         "education_field_business_canada",
-                        source=population_canada,
+                        source=population_census,
                     ),
                 ),
                 **just_2020(
@@ -854,7 +826,7 @@ statistics_tree = StatisticTree(
                 **just_2020(
                     "lico_at_canada",
                     "lim_at_canada",
-                    source=population_canada,
+                    source=population_census,
                 ),
                 **in_subcategory(
                     "household_income",
@@ -869,7 +841,7 @@ statistics_tree = StatisticTree(
                         "household_income_under_50cad",
                         "household_income_50_to_100cad",
                         "household_income_above_100_cad",
-                        source=population_canada,
+                        source=population_census,
                     ),
                 ),
                 **in_subcategory(
@@ -885,7 +857,7 @@ statistics_tree = StatisticTree(
                         "individual_income_under_50cad",
                         "individual_income_50_to_100cad",
                         "individual_income_above_100_cad",
-                        source=population_canada,
+                        source=population_census,
                     ),
                 ),
             },
@@ -947,7 +919,7 @@ statistics_tree = StatisticTree(
                 ),
                 **just_2020(
                     "rent_burden_over_30_canada",
-                    source=population_canada,
+                    source=population_census,
                 ),
             },
         ),
@@ -1123,7 +1095,7 @@ statistics_tree = StatisticTree(
                     "occupation_trades_transport_equipment_canada",
                     "occupation_natural_resources_agriculture_canada",
                     "occupation_manufacturing_utilities_canada",
-                    source=population_canada,
+                    source=population_census,
                 ),
             },
         ),

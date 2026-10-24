@@ -4,7 +4,10 @@ from urbanstats.games.quiz_question_metadata import (
     QuizQuestionDescriptor,
     QuizQuestionSkip,
 )
-from urbanstats.statistics.statistic_collection import CanadaStatistics
+from urbanstats.statistics.statistic_collection import (
+    CanadaStatistics,
+    statcan_legacy_names,
+)
 
 
 class CensusCanadaReligion(CanadaStatistics):
@@ -51,13 +54,9 @@ class CensusCanadaReligion(CanadaStatistics):
         )
 
     def legacy_statistic_names(self):
-        return {
-            f"{name} [StatCan]": name
-            for name in self.name_for_each_statistic().values()
-        }
+        return statcan_legacy_names(self)
 
     def name_for_each_statistic(self):
-        # no source tag, as these name rows that other countries' sources share
         return {
             "religion_catholic_canada": "Catholic %",
             "religion_protestant_canada": "Protestant (non-Catholic Christian) %",

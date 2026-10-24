@@ -5,7 +5,10 @@ import pandas as pd
 
 from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import RENT_BURDEN, QuizQuestionDescriptor
-from urbanstats.statistics.statistic_collection import CanadaStatistics
+from urbanstats.statistics.statistic_collection import (
+    CanadaStatistics,
+    statcan_legacy_names,
+)
 from urbanstats.statistics.utils import fractionalize
 
 
@@ -46,8 +49,11 @@ class CensusCanadaHousingRent(CanadaStatistics):
 
     version = 5
 
+    def legacy_statistic_names(self):
+        return statcan_legacy_names(self)
+
     def name_for_each_statistic(self):
-        return {"rent_burden_over_30_canada": "Housing Cost/Income > 30% [StatCan]"}
+        return {"rent_burden_over_30_canada": "Housing Cost/Income > 30%"}
 
     def unit_for_each_statistic(self):
         return self.same_for_each_name("percentage")

@@ -22,7 +22,10 @@ from urbanstats.games.quiz_question_metadata import (
 )
 from urbanstats.geometry.census_aggregation import Crosswalk, aggregate_by_census_block
 from urbanstats.statistics.extra_statistics import HistogramSpec
-from urbanstats.statistics.statistic_collection import USAStatistics
+from urbanstats.statistics.statistic_collection import (
+    USAStatistics,
+    statcan_legacy_names,
+)
 
 DENSITY_EXPLANATION_PW = (
     "!TOOLTIP Population-weighted density is computed by computing the density"
@@ -389,10 +392,7 @@ class CensusChange2010(CensusChange):
 
     def legacy_statistic_names(self):
         # Canada's, from before the two countries' statistics were merged
-        return {
-            f"{name} [StatCan]": name
-            for name in self.name_for_each_statistic().values()
-        }
+        return statcan_legacy_names(self)
 
     @property
     def data_source_countries(self):

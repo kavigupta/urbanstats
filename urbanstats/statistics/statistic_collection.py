@@ -146,6 +146,14 @@ class USAStatisticsCounties(USAStatistics):
         )
 
 
+def statcan_legacy_names(collection):
+    """The names the collection's statistics had with a " [StatCan]" label, mapped to their names now."""
+    return {
+        f"{name} [StatCan]": name
+        for name in collection.name_for_each_statistic().values()
+    }
+
+
 class CanadaStatistics(StatisticCollection):
     data_source_country = "Canada"
 
