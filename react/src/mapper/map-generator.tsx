@@ -82,6 +82,7 @@ export interface MapGenerator<T = unknown> {
     exportCSV?: CSVExportData
     errors: EditorError[]
     assignments: AssignmentsResult
+    aspectRatio?: number
 }
 
 async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnvironment }: {
@@ -157,24 +158,24 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
 
     const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, geographies, cache, label, derivedUnit: rampLabelling.unit })
 
+    const featuresByCoordBox = new Map<CoordBox, GeoJSON.Feature[]>()
+    const featuresIn = (coordBox: CoordBox): GeoJSON.Feature[] => {
+        if (!featuresByCoordBox.has(coordBox)) {
+            featuresByCoordBox.set(coordBox, features.filter(feature => overlaps(feature, coordBox)))
+        }
+        return featuresByCoordBox.get(coordBox)!
+    }
+    const acceptedInsets = keepInsets(mapResultMain.value.insets, coordBox => featuresIn(coordBox).length > 0)
+        .map(inset => ({ inset, insetFeatures: inset.mainMap ? features : featuresIn(inset.coordBox) }))
+
+    // Don't change the aspect ratio while editing, otherwise things get nasty
+    const aspectRatio = computeAspectRatioForInsets(acceptedInsets.map(({ inset }) => inset))
+
     function MapComponent({ props, exportImageRef }: { props: MapUIProps<{ loading: boolean }>, exportImageRef: (fn: () => Promise<HTMLCanvasElement>) => void }): ReactNode {
         const mapsRef: (MapRef | null)[] = []
 
         const mapsContainerRef = useRef<HTMLDivElement>(null)
         const wholeRenderRef = useRef<HTMLDivElement>(null)
-
-        const featuresByCoordBox = new Map<CoordBox, GeoJSON.Feature[]>()
-        const featuresIn = (coordBox: CoordBox): GeoJSON.Feature[] => {
-            if (!featuresByCoordBox.has(coordBox)) {
-                featuresByCoordBox.set(coordBox, features.filter(feature => overlaps(feature, coordBox)))
-            }
-            return featuresByCoordBox.get(coordBox)!
-        }
-        const acceptedInsets = keepInsets(mapResultMain.value.insets, coordBox => featuresIn(coordBox).length > 0)
-            .map(inset => ({ inset, insetFeatures: inset.mainMap ? features : featuresIn(inset.coordBox) }))
-
-        // Don't change the aspect ratio while editing, otherwise things get nasty
-        const aspectRatio = computeAspectRatioForInsets(acceptedInsets.map(({ inset }) => inset))
 
         const maybeEditingInsets = props.mode === 'insets'
             ? props.editInsets.edited.map(inset => ({ inset, insetFeatures: filterOverlaps(inset, features) }))
@@ -276,6 +277,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
         errors: execResult.error,
         exportCSV: csvExportCallback,
         exportGeoJSON: () => exportAsGeoJSON(features),
+        aspectRatio,
         ui: (props) => {
             let exportImage: () => Promise<HTMLCanvasElement>
 

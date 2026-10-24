@@ -3,6 +3,7 @@ import { deconstruct as deconstructInset, Inset } from '../../urban-stats-script
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import * as l from '../../urban-stats-script/literal-parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
+import { fitCoordBox } from '../../utils/coordinates'
 import { assert } from '../../utils/defensive'
 import { loadInsetExpression, loadInsets } from '../context'
 
@@ -59,6 +60,19 @@ export function getInsets(settings: MapSettings, typeEnvironment: TypeEnvironmen
         }
     }
     return undefined
+}
+
+/**
+ * Saves the map bounds each edited inset shows on a canvas of the given aspect ratio, so that
+ * `computeAspectRatioForInsets` gives the same canvas after a frame is resized without panning.
+ */
+export function fitInsetMapBounds(insets: Inset[], original: Inset[], canvasAspectRatio: number): Inset[] {
+    const unedited = new Set(original)
+    return insets.map((inset) => {
+        const aspectRatio = (inset.topRight[0] - inset.bottomLeft[0]) * canvasAspectRatio / (inset.topRight[1] - inset.bottomLeft[1])
+        const coordBox = fitCoordBox(inset.coordBox, aspectRatio)
+        return unedited.has(inset) || coordBox === inset.coordBox ? inset : { ...inset, coordBox }
+    })
 }
 
 /** Rescales screen bounds so the insets span the whole canvas in both dimensions. */

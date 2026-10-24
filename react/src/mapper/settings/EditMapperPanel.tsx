@@ -32,7 +32,7 @@ import { ImportExportCode } from './ImportExportCode'
 import { mapSettingsContext } from './MapSettingsContext'
 import { MapperSettings } from './MapperSettings'
 import { Selection, SelectionContext } from './SelectionContext'
-import { doEditInsets, getInsets, normalizeInsetScreenBounds } from './edit-insets'
+import { doEditInsets, fitInsetMapBounds, getInsets, normalizeInsetScreenBounds } from './edit-insets'
 import { getTextBoxes, scriptWithNewTextBoxes } from './edit-text-boxes'
 import { validMapperOutputs } from './map-uss'
 import { mapPageTitle, MapEditorMode, MapSettings, universesOf } from './utils'
@@ -329,7 +329,9 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                                 <button
                                     style={{ height: isMobile ? 30 : undefined }}
                                     onClick={() => {
-                                        setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, originalInsets, normalizeInsetScreenBounds(editedInsets), typeEnvironment) } }, {})
+                                        assert(mapGenerator.aspectRatio !== undefined, 'Insets were edited without a rendered map')
+                                        const fitted = normalizeInsetScreenBounds(fitInsetMapBounds(editedInsets, originalInsets, mapGenerator.aspectRatio))
+                                        setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, originalInsets, fitted, typeEnvironment) } }, {})
                                         setMapEditorMode('uss')
                                     }}
                                     disabled={!canUndo}
