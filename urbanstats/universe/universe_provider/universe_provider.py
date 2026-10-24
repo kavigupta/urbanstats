@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Tuple
 
 import us
 
@@ -39,6 +39,7 @@ class UniverseProvider(ABC):
 @dataclass
 class UrbanCenterlikeStateUniverseProvider(UniverseProvider):
     suffixes: Any  # SubnationalSuffixes, which has the subnational regions of each region
+    countries: Tuple[str] = ("US", "CA", "AU")
 
     def relevant_shapefiles(self):
         return []
@@ -56,6 +57,8 @@ class UrbanCenterlikeStateUniverseProvider(UniverseProvider):
         return None
 
     def universes_for_shapefile(self, names_by_key, names, table):
+        expected = ("US", "CA", "AU")
+        assert self.countries == expected, f"Unexpected countries: {self.countries}"
         result = {}
         computed = compute_subnational_suffixes(self.suffixes)
         codes_by_row = computed.subnationals_ISO_CODE.loc[table.index]
