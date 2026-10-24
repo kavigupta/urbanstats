@@ -26,7 +26,8 @@ interface DebugLogDB extends idb.DBSchema {
 }
 
 let dbPromise: Promise<idb.IDBPDatabase<DebugLogDB>> | undefined
-function getDb(): Promise<idb.IDBPDatabase<DebugLogDB>> {
+// async so that a synchronous throw from indexedDB.open becomes a rejection
+async function getDb(): Promise<idb.IDBPDatabase<DebugLogDB>> {
     dbPromise ??= idb.openDB<DebugLogDB>('DebugLog', 1, {
         upgrade(database) {
             database.createObjectStore('entries', { autoIncrement: true })
@@ -77,7 +78,8 @@ export function makeDebugLogger(...categories: [Key, ...Key[]]): (...args: unkno
         }
         if (toBuffer) {
             const entry = { time: Date.now(), tab: debugTabId, categories: label, text: args.map(formatArg).join(' ') }
-            void getDb().then(db => insert(db, entry))
+            // Debug logging must not break the app if IndexedDB is unavailable
+            getDb().then(db => insert(db, entry)).catch(() => undefined)
         }
     }
 }
