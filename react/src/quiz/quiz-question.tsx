@@ -105,6 +105,7 @@ function QuizQuestion(props: QuizQuestionProps & {
         alignItems: 'center',
         flexDirection: 'column',
         padding: '0.5em',
+        containerType: 'inline-size',
     }
 
     const rowStyle = { display: 'flex', justifyContent: 'center', width: '90%', margin: 'auto' }
@@ -126,7 +127,9 @@ function QuizQuestion(props: QuizQuestionProps & {
                     <div {...withButtonRole(`Select ${props.getOption('a')}`, () => { props.onSelect('A') })} id="quiz-answer-button-a" className={buttonA} style={buttonStyle}>
                         <span style={{ margin: 'auto' }}>
                             <div className={`centered_text ${quizTextCSS}`}>
-                                {props.getOption('a')}
+                                <div style={fitWidthStyle(props.getOption('a'))}>
+                                    {props.getOption('a')}
+                                </div>
                             </div>
                         </span>
                     </div>
@@ -135,7 +138,9 @@ function QuizQuestion(props: QuizQuestionProps & {
                     <div {...withButtonRole(`Select ${props.getOption('b')}`, () => { props.onSelect('B') })} id="quiz-answer-button-b" className={buttonB} style={buttonStyle}>
                         <span style={{ margin: 'auto' }}>
                             <div className={`centered_text ${quizTextCSS}`}>
-                                {props.getOption('b')}
+                                <div style={fitWidthStyle(props.getOption('b'))}>
+                                    {props.getOption('b')}
+                                </div>
                             </div>
                         </span>
                     </div>
@@ -162,6 +167,12 @@ function QuizQuestion(props: QuizQuestionProps & {
                     )}
         </div>
     )
+}
+
+// Shrinks the text so its longest word fits the button, estimating word width from character count
+function fitWidthStyle(text: string): React.CSSProperties {
+    const longestWord = Math.max(...text.split(/[\s-]/).map(word => word.length))
+    return { fontSize: `min(1em, calc(100cqi / ${longestWord * 0.5}))`, overflowWrap: 'anywhere' }
 }
 
 function RetroQuizQuestion(props: QuizQuestionProps & { question: RetroQuestion }): ReactNode {
