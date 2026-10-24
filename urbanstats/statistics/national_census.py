@@ -62,9 +62,9 @@ class NationalCensusStatistics(StatisticCollection):
         # Canada's, from before the two countries' statistics were merged
         return statcan_legacy_names(self)
 
-    @property
-    def data_source_countries(self):
-        return tuple(self.country_inputs())
+    def countries_for_each_statistic(self):
+        """Statistic -> the countries that have it. It is NaN for regions in any other."""
+        return self.same_for_each_name(tuple(self.country_inputs()))
 
     def computed_countries(self, shapefile):
         """
@@ -75,9 +75,7 @@ class NationalCensusStatistics(StatisticCollection):
         countries = [c for c in inputs if c in shapefile.source_country_list]
         if not countries:
             return None
-        by_region = shapefile.source_countries.by_region(shapefile)
-        covered = by_region.map(lambda cs: cs is not None and set(cs) <= set(countries))
-        return countries, covered
+        return countries, regions_within(shapefile, countries)
 
     def summed_counts(self, shapefile):
         """
@@ -108,4 +106,13 @@ class NationalCensusStatistics(StatisticCollection):
             return {}
         counts, _ = computed
         self.mutate_counts(counts)
-        return {name: counts[name] for name in self.internal_statistic_names_list()}
+        return {
+            name: counts[name].where(regions_within(shapefile, countries).to_numpy())
+            for name, countries in self.countries_for_each_statistic().items()
+        }
+
+
+def regions_within(shapefile, countries):
+    """Whether each region lies within the countries, indexed like shapefile.load_file()."""
+    by_region = shapefile.source_countries.by_region(shapefile)
+    return by_region.map(lambda cs: cs is not None and set(cs) <= set(countries))

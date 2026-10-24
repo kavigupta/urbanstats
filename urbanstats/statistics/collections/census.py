@@ -394,9 +394,8 @@ class CensusChange2010(CensusChange):
         # Canada's, from before the two countries' statistics were merged
         return statcan_legacy_names(self)
 
-    @property
-    def data_source_countries(self):
-        return ("USA", "Canada")
+    def countries_for_each_statistic(self):
+        return self.same_for_each_name(("USA", "Canada"))
 
     def year(self):
         return 2010

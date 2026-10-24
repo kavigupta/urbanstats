@@ -14,12 +14,11 @@ from urbanstats.geometry.shapefiles.shapefile import EmptyShapefileError
 class StatisticCollection(ABC):
     data_source_country = None
 
-    @property
-    def data_source_countries(self):
-        """The countries whose statistics agencies the data comes from, if any."""
+    def countries_for_each_statistic(self):
+        """Statistic -> the countries whose statistics agencies its data comes from, if any."""
         if self.data_source_country is None:
-            return ()
-        return (self.data_source_country,)
+            return self.same_for_each_name(())
+        return self.same_for_each_name((self.data_source_country,))
 
     def __init__(self):
         quiz_questions = set(self.quiz_question_descriptors())
