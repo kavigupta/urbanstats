@@ -27,6 +27,7 @@ if [ "$(git -C "$site" rev-parse HEAD)" = "$(git -C "$site" rev-parse origin/mai
     echo "$site is up to date"
     exit 0
 fi
+git -C "$site" merge-base --is-ancestor HEAD origin/main || { echo "$site has commits not on origin/main" >&2; exit 1; }
 
 git -C "$site" reset --hard origin/main
 
@@ -41,3 +42,4 @@ until grep -qs 'Rspack compiled' dev-server.log; do
     sleep 2
 done
 grep 'Rspack compiled' dev-server.log
+grep -q 'Rspack compiled successfully' dev-server.log
