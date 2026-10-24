@@ -6,24 +6,29 @@ import { safeReload, searchField, target, urbanstatsFixture, waitForDownload, wa
 
 urbanstatsFixture('debug log', `${target}/`)
 
+async function downloadDebugLog(t: TestController): Promise<{ tab: string, text: string }[]> {
+    const laterThan = Date.now()
+    await t.click(Selector('a').withExactText('Download debug log'))
+    return fs.readFileSync(await waitForDownload(t, laterThan, '.txt'), 'utf-8').trim().split('\n').map((line) => {
+        const [, tab, text] = /^\S+ (\S+) \[[^\]]*\] (.*)$/.exec(line)!
+        return { tab, text }
+    })
+}
+
 test('debug-log-persists-and-correlates-workers', async (t) => {
     await t
         .click(searchField)
         .typeText(searchField, 'Pasadena')
     await waitForSelectedSearchResult(t)
 
+    const pageTab = (await downloadDebugLog(t)).reverse().find(({ tab, text }) => !tab.includes('/') && text.startsWith('Requested new search worker'))!.tab
+    const executedOnPage = ({ tab, text }: { tab: string, text: string }): boolean => tab === `${pageTab}/search` && text.endsWith('ms to execute search')
+    // The worker's write may not have committed yet
+    while (!(await downloadDebugLog(t)).some(executedOnPage)) {
+        await t.wait(100)
+    }
+
     await safeReload(t)
 
-    const laterThan = Date.now()
-    await t.click(Selector('a').withExactText('Download debug log'))
-    const lines = fs.readFileSync(await waitForDownload(t, laterThan, '.txt'), 'utf-8').trim().split('\n').map((line) => {
-        const [, tab, text] = /^\S+ (\S+) \[[^\]]*\] (.*)$/.exec(line)!
-        return { tab, text }
-    })
-
-    // Only the search typed before the reload executes one
-    const executed = lines.find(({ text }) => text.endsWith('ms to execute search'))
-    await t.expect(executed?.tab.endsWith('/search')).ok()
-    const pageTab = executed!.tab.slice(0, -'/search'.length)
-    await t.expect(lines.some(({ tab, text }) => tab === pageTab && text.startsWith('Requested new search worker'))).ok()
+    await t.expect((await downloadDebugLog(t)).some(executedOnPage)).ok()
 })

@@ -1,4 +1,3 @@
-import { saveAs } from 'file-saver'
 import * as idb from 'idb'
 
 type Destination = 'console' | 'buffer'
@@ -17,7 +16,7 @@ export const debugBufferEnabled = Object.values<Destination[]>(enableDebugLoggin
 
 const maxBufferEntries = 100_000
 // Workers are named after their page's id so their entries can be correlated
-export const debugTabId = typeof window === 'undefined' ? self.name : Math.random().toString(36).slice(2, 8)
+export const debugTabId = typeof window === 'undefined' && typeof self !== 'undefined' ? self.name : Math.random().toString(36).slice(2, 8)
 
 interface Entry { time: number, tab: string, categories: string, text: string }
 
@@ -57,10 +56,9 @@ function formatArg(arg: unknown): string {
     }
 }
 
-export async function downloadDebugBuffer(): Promise<void> {
+export async function debugBufferText(): Promise<string> {
     const entries = await (await getDb()).getAll('entries')
-    const text = entries.map(entry => `${new Date(entry.time).toISOString()} ${entry.tab} [${entry.categories}] ${entry.text}\n`).join('')
-    saveAs(new Blob([text], { type: 'text/plain' }), 'urbanstats-debug-log.txt')
+    return entries.map(entry => `${new Date(entry.time).toISOString()} ${entry.tab} [${entry.categories}] ${entry.text.replaceAll('\n', '\\n')}\n`).join('')
 }
 
 export function makeDebugLogger(...categories: [Key, ...Key[]]): (...args: unknown[]) => void {
