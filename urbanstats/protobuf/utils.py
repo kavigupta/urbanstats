@@ -2,6 +2,8 @@ import gzip
 import os
 from typing import Any, List, Mapping
 
+import zstandard
+
 from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 
 from . import data_files_pb2
@@ -70,7 +72,22 @@ def save_search_index(longnames, types, universe_idxs_list, path, *, symlinks):
         metadata = data_files_pb2.SearchIndexMetadata(type=orders[idx], is_symlink=True)
         metadata.universe_idxs.extend(universe_idxs_list[idx])
         res.metadata.append(metadata)
-    write_gzip(res, path)
+    write_search_index(res, path)
+
+
+def write_search_index(by_population: Any, path: str) -> None:
+    size = len(by_population.elements)
+    assert size < 2**24
+    ranks = sorted(range(size), key=lambda rank: by_population.elements[rank][::-1])
+    res = data_files_pb2.SearchIndex()
+    res.elements.extend(by_population.elements[rank] for rank in ranks)
+    res.metadata.extend(by_population.metadata[rank] for rank in ranks)
+    res.population_ranks = bytes(
+        (rank >> shift) & 0xFF for shift in (0, 8, 16) for rank in ranks
+    )
+    ensure_writeable(path)
+    with open(path, "wb") as f:
+        f.write(zstandard.ZstdCompressor(level=19).compress(res.SerializeToString()))
 
 
 def ensure_writeable(path: str) -> None:

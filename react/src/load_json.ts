@@ -1,3 +1,5 @@
+import { decompress as zstdDecompress } from 'fzstd'
+
 import data_links from './data/data_links'
 import order_links from './data/order_links'
 import statistic_path_list from './data/statistic_path_list'
@@ -52,6 +54,12 @@ export async function loadGzipped(filePath: string, errorOnMissing: boolean = tr
     return await gunzip(response.body)
 }
 
+async function loadZstd(filePath: string): Promise<Uint8Array> {
+    const response = await fetch(filePath)
+    assert(response.ok, `Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
+    return zstdDecompress(new Uint8Array(await response.arrayBuffer()))
+}
+
 // Load a protobuf file from the server
 export async function loadProtobuf(filePath: string, name: 'Article', errorOnMissing: boolean): Promise<Article | undefined>
 export async function loadProtobuf(filePath: string, name: 'Feature', errorOnMissing: boolean): Promise<Feature>
@@ -75,7 +83,7 @@ export async function loadProtobuf(filePath: string, name: 'ShardIndex'): Promis
 export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | CongressionalRepresentativeTable | ConsolidatedShapes | ConsolidatedArticles | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | ArticleUniverseList | DefaultUniverseTable | ShardIndex | undefined> {
     let perfCheckpoint = performance.now()
 
-    const arr = await loadGzipped(filePath, errorOnMissing)
+    const arr = name === 'SearchIndex' ? await loadZstd(filePath) : await loadGzipped(filePath, errorOnMissing)
     if (arr === undefined) {
         return undefined
     }
@@ -111,6 +119,16 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
     }
     else if (name === 'SearchIndex') {
         const result = SearchIndex.decode(arr)
+        const size = result.elements.length
+        const elements = new Array<typeof result.elements[number]>(size)
+        const metadata = new Array<typeof result.metadata[number]>(size)
+        for (let i = 0; i < size; i++) {
+            const rank = result.populationRanks[i] | (result.populationRanks[size + i] << 8) | (result.populationRanks[2 * size + i] << 16)
+            elements[rank] = result.elements[i]
+            metadata[rank] = result.metadata[i]
+        }
+        result.elements = elements
+        result.metadata = metadata
         debugPerformance(`Took ${performance.now() - perfCheckpoint}ms to decode search index`)
         return result
     }

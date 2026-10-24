@@ -2706,6 +2706,9 @@ export interface ISearchIndex {
 
     /** SearchIndex metadata */
     metadata?: (ISearchIndexMetadata[]|null);
+
+    /** SearchIndex populationRanks */
+    populationRanks?: (Uint8Array|null);
 }
 
 /** Represents a SearchIndex. */
@@ -2722,6 +2725,9 @@ export class SearchIndex implements ISearchIndex {
 
     /** SearchIndex metadata. */
     public metadata: ISearchIndexMetadata[];
+
+    /** SearchIndex populationRanks. */
+    public populationRanks: Uint8Array;
 
     /**
      * Creates a new SearchIndex instance using the specified properties.
