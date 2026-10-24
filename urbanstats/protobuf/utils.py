@@ -79,12 +79,13 @@ def write_search_index(by_population: Any, path: str) -> None:
     size = len(by_population.elements)
     assert size < 2**24
     ranks = sorted(range(size), key=lambda rank: by_population.elements[rank][::-1])
-    res = data_files_pb2.SearchIndex()
+    res = data_files_pb2.SearchIndex(
+        population_ranks=bytes(
+            (rank >> shift) & 0xFF for shift in (0, 8, 16) for rank in ranks
+        )
+    )
     res.elements.extend(by_population.elements[rank] for rank in ranks)
     res.metadata.extend(by_population.metadata[rank] for rank in ranks)
-    res.population_ranks = bytes(
-        (rank >> shift) & 0xFF for shift in (0, 8, 16) for rank in ranks
-    )
     ensure_writeable(path)
     with open(path, "wb") as f:
         f.write(zstandard.ZstdCompressor(level=19).compress(res.SerializeToString()))
