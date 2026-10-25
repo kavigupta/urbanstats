@@ -293,6 +293,10 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
 
     const patternSignature = toSignature(pattern)
 
+    // Per pattern token, the bitap result + 1 for each distinct index token, or 0 if not computed yet
+    const numDistinctTokens = searchIndex.tokenOffsets.length - 1
+    const bitapCaches = patternTokens.map(() => new Uint8Array(numDistinctTokens))
+
     let entriesPatternSkips = 0
     let entriesPatternChecks = 0
 
@@ -334,6 +338,7 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
         let numSwapsOverlaps = 0
 
         for (const [patternTokenIndex, needle] of patternTokens.entries()) {
+            const bitapCache = bitapCaches[patternTokenIndex]
             let tokenMatchScore = maxErrors + 1
             let tokenPositionScore = Math.max(patternTokens.length, searchIndex.lengthOfLongestToken)
             let tokenIncompleteMatch = true
@@ -344,8 +349,12 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
                 const tokenId = searchIndex.tokenIds[j]
                 haystack.start = searchIndex.tokenOffsets[tokenId]
                 haystack.end = searchIndex.tokenOffsets[tokenId + 1]
-                haystack.signature = searchIndex.tokenSignatures[tokenId]
-                const searchResult = bitap(haystack, needle, maxErrors)
+                let searchResult = bitapCache[tokenId] - 1
+                if (searchResult === -1) {
+                    haystack.signature = searchIndex.tokenSignatures[tokenId]
+                    searchResult = bitap(haystack, needle, maxErrors)
+                    bitapCache[tokenId] = searchResult + 1
+                }
                 const positionResult = Math.abs(patternTokenIndex - entryTokenIndex)
                 const incompleteMatchResult = Math.abs((haystack.end - haystack.start) - needle.length) - searchResult !== 0
                 if (searchResult < tokenMatchScore || (searchResult <= tokenMatchScore && positionResult < tokenPositionScore) || (searchResult <= tokenMatchScore && positionResult <= tokenPositionScore && incompleteMatchResult < tokenIncompleteMatch)) {
