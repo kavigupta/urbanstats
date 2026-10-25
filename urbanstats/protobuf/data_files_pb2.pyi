@@ -371,15 +371,18 @@ class SearchIndexMetadata(_message.Message):
     ) -> None: ...
 
 class SearchIndex(_message.Message):
-    __slots__ = ("elements", "metadata")
+    __slots__ = ("elements", "metadata", "population_ranks")
     ELEMENTS_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
+    POPULATION_RANKS_FIELD_NUMBER: _ClassVar[int]
     elements: _containers.RepeatedScalarFieldContainer[str]
     metadata: _containers.RepeatedCompositeFieldContainer[SearchIndexMetadata]
+    population_ranks: bytes
     def __init__(
         self,
         elements: _Optional[_Iterable[str]] = ...,
         metadata: _Optional[_Iterable[_Union[SearchIndexMetadata, _Mapping]]] = ...,
+        population_ranks: _Optional[bytes] = ...,
     ) -> None: ...
 
 class OrderList(_message.Message):

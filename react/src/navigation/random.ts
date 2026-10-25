@@ -17,7 +17,7 @@ function inUniverse(index: SearchIndex, idx: number, filterUniverseIdx: number):
 
 export async function byPopulation(universe: string | undefined): Promise<() => string> {
     const [index, populations] = await Promise.all([
-        loadProtobuf('/index/pages_all.gz', 'SearchIndex'),
+        loadProtobuf('/index/pages_all.zst', 'SearchIndex'),
         loadJSON('/index/best_population_estimate.json') as Promise<number[]>,
     ])
     const filterUniverseIdx = universe !== undefined ? universeIdx(universe) : undefined
@@ -45,7 +45,7 @@ export async function byPopulation(universe: string | undefined): Promise<() => 
 }
 
 export async function uniform(universe: string | undefined): Promise<() => string> {
-    const index = (await loadProtobuf('/index/pages_all.gz', 'SearchIndex'))
+    const index = (await loadProtobuf('/index/pages_all.zst', 'SearchIndex'))
     const filterUniverseIdx = universe !== undefined ? universeIdx(universe) : undefined
     const entries: number[] = []
     for (let i = 0; i < index.elements.length; i++) {

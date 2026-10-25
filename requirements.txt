@@ -5,6 +5,7 @@ cdsapi
 xarray
 suncalc
 protobuf==6.33.5
+zstandard==0.25.0
 geotiff
 imagecodecs
 git+https://github.com/kavigupta/python-us.git

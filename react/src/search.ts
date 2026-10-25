@@ -510,7 +510,7 @@ function makeSearchFunction(searchIndex: NormalizedSearchIndex): (params: Search
 
 async function createIndexNoCache(reportStatus: ReportStatus): Promise<NormalizedSearchIndex> {
     await reportStatus('Loading search index from network...')
-    const rawIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
+    const rawIndex = await loadProtobuf('/index/pages_all.zst', 'SearchIndex')
     await reportStatus('Processing search index...')
     return processRawSearchIndex(rawIndex)
 }
@@ -533,7 +533,7 @@ function processRawSearchIndex(searchIndex: { elements: string[], metadata: ISea
 export async function getIndexCacheKey(): Promise<string | undefined> {
     try {
         const start = performance.now()
-        const resources = ['/scripts/index.js', '/index/pages_all.gz']
+        const resources = ['/scripts/index.js', '/index/pages_all.zst']
         const etags = await Promise.all(resources.map(async (resource) => {
             const response = await fetch(resource, { method: 'HEAD' })
             if (!response.ok) {
