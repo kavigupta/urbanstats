@@ -8,23 +8,6 @@
 unsorted = [
     # G01 Selected Person Characteristics by Sex, counting Persons
     ("G01", "Count_psns_occ_priv_dwgs_P", "Count of Persons in occupied private dwellings Persons"),
-    # G34 Number of Motor Vehicles by Dwellings, counting Occupied private dwellings
-    ("G34", "Num_MVs_per_dweling_0_MVs", "Number of motor vehicles per dwelling No motor vehicles Dwellings"),
-    ("G34", "Num_MVs_per_dweling_1_MVs", "Number of motor vehicles per dwelling One motor vehicle Dwellings"),
-    ("G34", "Num_MVs_per_dweling_2_MVs", "Number of motor vehicles per dwelling Two motor vehicles Dwellings"),
-    ("G34", "Num_MVs_per_dweling_3_MVs", "Number of motor vehicles per dwelling Three motor vehicles Dwellings"),
-    ("G34", "Num_MVs_per_dweling_4mo_MVs", "Number of motor vehicles per dwelling Four or more motor vehicles Dwellings"),
-    ("G34", "Num_MVs_per_dweling_Tot", "Number of motor vehicles per dwelling Total Dwellings"),
-    ("G34", "Num_MVs_NS", "Number of motor vehicles not stated Dwellings"),
-    ("G34", "Total_dwelings", "Total Dwellings"),
-    # G35 Household Composition by Number of Persons Usually Resident, counting Occupied private dwellings
-    ("G35", "Num_Psns_UR_1_Total", "Number of Persons usually resident One Total"),
-    ("G35", "Num_Psns_UR_2_Total", "Number of Persons usually resident Two Total"),
-    ("G35", "Num_Psns_UR_3_Total", "Number of Persons usually resident Three Total"),
-    ("G35", "Num_Psns_UR_4_Total", "Number of Persons usually resident Four Total"),
-    ("G35", "Num_Psns_UR_5_Total", "Number of Persons usually resident Five Total"),
-    ("G35", "Num_Psns_UR_6mo_Total", "Number of Persons usually resident Six or more Total"),
-    ("G35", "Total_Total", "Total Total"),
     # G36 Dwelling Structure, counting Private dwellings and persons in occupied private dwellings
     ("G36", "OPDs_Separate_house_Dwellings", "Occupied private dwellings Separate house Dwellings"),
     ("G36", "OPDs_Separate_house_Persons", "Occupied private dwellings Separate house Persons"),
@@ -9865,4 +9848,23 @@ get_to_these_now = [
     ("G54", "P_Oth_scs_Tot", "PERSONS Other Services Total"),
     ("G54", "P_ID_NS_Tot", "PERSONS Inadequately described Not stated Total"),
     ("G54", "P_Tot_Tot", "PERSONS Total Total"),
+    # Vehicles per household, merged into TransportationVehicleOwnershipStatistics with the US:
+    # none is 0, 1+ is 1 and up, and 2+ is 2 and up. Not stated is left out of the denominator.
+    ("G34", "Num_MVs_per_dweling_0_MVs", "Number of motor vehicles per dwelling No motor vehicles Dwellings"),
+    ("G34", "Num_MVs_per_dweling_1_MVs", "Number of motor vehicles per dwelling One motor vehicle Dwellings"),
+    ("G34", "Num_MVs_per_dweling_2_MVs", "Number of motor vehicles per dwelling Two motor vehicles Dwellings"),
+    ("G34", "Num_MVs_per_dweling_3_MVs", "Number of motor vehicles per dwelling Three motor vehicles Dwellings"),
+    ("G34", "Num_MVs_per_dweling_4mo_MVs", "Number of motor vehicles per dwelling Four or more motor vehicles Dwellings"),
+    ("G34", "Num_MVs_per_dweling_Tot", "Number of motor vehicles per dwelling Total Dwellings"),
+    ("G34", "Num_MVs_NS", "Number of motor vehicles not stated Dwellings"),
+    ("G34", "Total_dwelings", "Total Dwellings"),
+    # Household size, merged into HouseholdSizeStatistics with the US and Canada: 1 to 4 people
+    # each, with 5 and 6+ together as 5+.
+    ("G35", "Num_Psns_UR_1_Total", "Number of Persons usually resident One Total"),
+    ("G35", "Num_Psns_UR_2_Total", "Number of Persons usually resident Two Total"),
+    ("G35", "Num_Psns_UR_3_Total", "Number of Persons usually resident Three Total"),
+    ("G35", "Num_Psns_UR_4_Total", "Number of Persons usually resident Four Total"),
+    ("G35", "Num_Psns_UR_5_Total", "Number of Persons usually resident Five Total"),
+    ("G35", "Num_Psns_UR_6mo_Total", "Number of Persons usually resident Six or more Total"),
+    ("G35", "Total_Total", "Total Total"),
 ]
