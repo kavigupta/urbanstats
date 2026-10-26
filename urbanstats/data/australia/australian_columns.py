@@ -430,16 +430,6 @@ unsorted = [
     ("G41", "Total_NofB_6_or_m", "Total Number of bedrooms Six bedrooms or more"),
     ("G41", "Total_NofB_NS", "Total Number of bedrooms Not stated"),
     ("G41", "Total_Total", "Total Total"),
-    # G43 Selected Labour Force Education and Migration Characteristics by Sex, counting Persons
-    ("G43", "P_15_yrs_over_P", "Persons aged 15 years and over Persons"),
-    ("G43", "non_sch_qual_PostGrad_Dgre_P", "Highest non school qualifications Postgraduate Degree Level Persons"),
-    ("G43", "non_sch_qual_Gr_Dip_Gr_Crt_P", "Highest non school qualifications Graduate Diploma and Graduate Certificate Level Persons"),
-    ("G43", "non_sch_qual_Bchelr_Degree_P", "Highest non school qualifications Bachelor Degree Level Persons"),
-    ("G43", "non_sch_qual_Advnd_Dip_Dip_P", "Highest non school qualifications Advanced Diploma and Diploma Level Persons"),
-    ("G43", "non_sch_qual_Cert3a4_Level_P", "Highest non school qualifications Certificate Level Certificate III and IV Level Persons"),
-    ("G43", "non_sch_qual_Cert1a2_Level_P", "Highest non school qualifications Certificate Level Certificate I and II Level Persons"),
-    ("G43", "non_sch_qual_Certnfd_Level_P", "Highest non school qualifications Certificate Level Certificate Level nfd Persons"),
-    ("G43", "non_sch_qual_CertTot_Level_P", "Highest non school qualifications Certificate Level Total Certificate Level Persons"),
 ]
 
 # vulture: ignore -- these are lists of cells used to track progress on
@@ -8005,6 +7995,16 @@ unused = [
     ("G53", "P_ToT_Cert", "PERSONS Total Certificate Level"),
     ("G53", "P_ToT_ID_NS", "PERSONS Total Inadequately described Not stated"),
     ("G53", "P_ToT_ToT", "PERSONS Total Total"),
+    # qualification levels and the 15+ count, for everyone 15+; education uses G49's 25+ counts
+    ("G43", "P_15_yrs_over_P", "Persons aged 15 years and over Persons"),
+    ("G43", "non_sch_qual_PostGrad_Dgre_P", "Highest non school qualifications Postgraduate Degree Level Persons"),
+    ("G43", "non_sch_qual_Gr_Dip_Gr_Crt_P", "Highest non school qualifications Graduate Diploma and Graduate Certificate Level Persons"),
+    ("G43", "non_sch_qual_Bchelr_Degree_P", "Highest non school qualifications Bachelor Degree Level Persons"),
+    ("G43", "non_sch_qual_Advnd_Dip_Dip_P", "Highest non school qualifications Advanced Diploma and Diploma Level Persons"),
+    ("G43", "non_sch_qual_Cert3a4_Level_P", "Highest non school qualifications Certificate Level Certificate III and IV Level Persons"),
+    ("G43", "non_sch_qual_Cert1a2_Level_P", "Highest non school qualifications Certificate Level Certificate I and II Level Persons"),
+    ("G43", "non_sch_qual_Certnfd_Level_P", "Highest non school qualifications Certificate Level Certificate Level nfd Persons"),
+    ("G43", "non_sch_qual_CertTot_Level_P", "Highest non school qualifications Certificate Level Total Certificate Level Persons"),
 ]
 
 # vulture: ignore -- these are lists of cells used to track progress on
