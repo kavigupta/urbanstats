@@ -5,6 +5,7 @@ import pandas as pd
 import tqdm
 from permacache import permacache
 
+from urbanstats.data.australia.mesh_blocks import australia_mesh_blocks
 from urbanstats.data.canada.canada_blocks import load_canada_db_shapefile
 from urbanstats.data.census_blocks import census_block_points
 from urbanstats.geometry.weighted_statistics import geometric_median_by_group
@@ -22,6 +23,10 @@ class Crosswalk:
     @staticmethod
     def compute_canada(year, geometry):
         return _compute_crosswalk_canada(year, geometry)
+
+    @staticmethod
+    def compute_australia(geometry):
+        return _compute_crosswalk_australia(geometry)
 
     def compute_sum_by_shapefile(self, values):
         """
@@ -89,6 +94,12 @@ def _compute_crosswalk_canada(year, geometry):
     return _compute_crosswalk_for_geometry_row(geometry_row, geometry)
 
 
+@permacache("urbanstats/geometry/census_aggregation/_compute_crosswalk_australia_2")
+def _compute_crosswalk_australia(geometry):
+    geometry_row = australia_mesh_blocks()[["geometry"]]
+    return _compute_crosswalk_for_geometry_row(geometry_row, geometry)
+
+
 def _compute_crosswalk_for_geometry_row(geometry_row, geometry):
     s = geometry.load_rows().reset_index(drop=True)
     c = s.sjoin(
@@ -107,4 +118,9 @@ def aggregate_by_census_block(year, geometry, values):
 
 def aggregate_by_census_block_canada(year, geometry, values):
     crosswalk = Crosswalk.compute_canada(year, geometry)
+    return crosswalk.compute_sum_by_shapefile_dataframe(geometry, values)
+
+
+def aggregate_by_mesh_block_australia(geometry, values):
+    crosswalk = Crosswalk.compute_australia(geometry)
     return crosswalk.compute_sum_by_shapefile_dataframe(geometry, values)
