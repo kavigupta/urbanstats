@@ -6,8 +6,6 @@
 
 # vulture: ignore -- these are lists of cells used to track progress on
 unsorted = [
-    # G01 Selected Person Characteristics by Sex, counting Persons
-    ("G01", "Count_psns_occ_priv_dwgs_P", "Count of Persons in occupied private dwellings Persons"),
     # G36 Dwelling Structure, counting Private dwellings and persons in occupied private dwellings
     ("G36", "OPDs_Separate_house_Dwellings", "Occupied private dwellings Separate house Dwellings"),
     ("G36", "OPDs_Separate_house_Persons", "Occupied private dwellings Separate house Persons"),
@@ -7887,6 +7885,8 @@ unused = [
     ("G37", "Total_DS_Oth_dwell", "Total Dwelling structure Other dwelling"),
     ("G37", "Total_DS_not_stated", "Total Dwelling structure not stated"),
     ("G37", "Total_Total", "Total Total"),
+    # people in private dwellings; G27 covers them by relationship
+    ("G01", "Count_psns_occ_priv_dwgs_P", "Count of Persons in occupied private dwellings Persons"),
 ]
 
 # vulture: ignore -- these are lists of cells used to track progress on
