@@ -6,45 +6,6 @@
 
 # vulture: ignore -- these are lists of cells used to track progress on
 unsorted = [
-    # G36 Dwelling Structure, counting Private dwellings and persons in occupied private dwellings
-    ("G36", "OPDs_Separate_house_Dwellings", "Occupied private dwellings Separate house Dwellings"),
-    ("G36", "OPDs_Separate_house_Persons", "Occupied private dwellings Separate house Persons"),
-    ("G36", "OPDs_SD_r_t_h_th_1_sty_Dwgs", "Occupied private dwellings Semi detached row or terrace house townhouse etc with One storey Dwellings"),
-    ("G36", "OPDs_SD_r_t_h_th_1_sty_Psns", "Occupied private dwellings Semi detached row or terrace house townhouse etc with One storey Persons"),
-    ("G36", "OPDs_SD_r_t_h_th_2_m_sty_Dwgs", "Occupied private dwellings Semi detached row or terrace house townhouse etc with Two or more storeys Dwellings"),
-    ("G36", "OPDs_SD_r_t_h_th_2_m_sty_Psns", "Occupied private dwellings Semi detached row or terrace house townhouse etc with Two or more storeys Persons"),
-    ("G36", "OPDs_SD_r_t_h_th_Tot_Dwgs", "Occupied private dwellings Semi detached row or terrace house townhouse etc with Total Dwellings"),
-    ("G36", "OPDs_SD_r_t_h_th_Tot_Psns", "Occupied private dwellings Semi detached row or terrace house townhouse etc with Total Persons"),
-    ("G36", "OPDs_F_ap_I_1or2_sty_blk_Ds", "Occupied private dwellings Flat or apartment In a one or two storey block Dwellings"),
-    ("G36", "OPDs_F_ap_I_1or2_sty_blk_Ps", "Occupied private dwellings Flat or apartment In a one or two storey block Persons"),
-    ("G36", "OPDs_F_ap_I_3_sty_blk_Dwgs", "Occupied private dwellings Flat or apartment In a three storey block Dwellings"),
-    ("G36", "OPDs_F_ap_I_3_sty_blk_Psns", "Occupied private dwellings Flat or apartment In a three storey block Persons"),
-    ("G36", "OPDs_F_ap_I_4to8_sty_blk_Ds", "Occupied private dwellings Flat or apartment In a four to eight storey block Dwellings"),
-    ("G36", "OPDs_F_ap_I_4to8_sty_blk_Ps", "Occupied private dwellings Flat or apartment In a four to eight storey block Persons"),
-    ("G36", "OPDs_F_ap_I_9_m_sty_blk_Ds", "Occupied private dwellings Flat or apartment In a nine or more storey block Dwellings"),
-    ("G36", "OPDs_F_ap_I_9_m_sty_blk_Ps", "Occupied private dwellings Flat or apartment In a nine or more storey block Persons"),
-    ("G36", "OPDs_Flt_apt_Att_house_Ds", "Occupied private dwellings Flat or apartment Attached to a house Dwellings"),
-    ("G36", "OPDs_Flt_apt_Att_house_Ps", "Occupied private dwellings Flat or apartment Attached to a house Persons"),
-    ("G36", "OPDs_Flt_apart_Tot_Dwgs", "Occupied private dwellings Flat or apartment Total Dwellings"),
-    ("G36", "OPDs_Flt_apart_Tot_Psns", "Occupied private dwellings Flat or apartment Total Persons"),
-    ("G36", "OPDs_Oth_dwg_Cvn_Ds", "Occupied private dwellings Other dwelling Caravan Dwellings"),
-    ("G36", "OPDs_Oth_dw_Cvn_Ps", "Occupied private dwellings Other dwelling Caravan Persons"),
-    ("G36", "OPDs_Oth_dwg_cab_hboat_Ds", "Occupied private dwellings Other dwelling Cabin houseboat Dwellings"),
-    ("G36", "OPDs_Oth_dwg_cab_hboat_Ps", "Occupied private dwellings Other dwelling Cabin houseboat Persons"),
-    ("G36", "OPDs_Ot_dwg_Im_hm_tnt_SO_Ds", "Occupied private dwellings Other dwelling Improvised home tent sleepers out Dwellings"),
-    ("G36", "OPDs_Ot_dwg_Im_hm_tnt_SO_Ps", "Occupied private dwellings Other dwelling Improvised home tent sleepers out Persons"),
-    ("G36", "OPDs_Ot_dwg_Hs_f_att_sh_of_Ds", "Occupied private dwellings Other dwelling House or flat attached to a shop office etc Dwellings"),
-    ("G36", "OPDs_Ot_dwg_Hs_f_att_sh_of_Ps", "Occupied private dwellings Other dwelling House or flat attached to a shop office etc Persons"),
-    ("G36", "OPDs_Other_dwelling_Tot_Dwgs", "Occupied private dwellings Other dwelling Total Dwellings"),
-    ("G36", "OPDs_Other_dwelling_Tot_Psns", "Occupied private dwellings Other dwelling Total Persons"),
-    ("G36", "OPDs_Dwlling_structur_NS_Dwgs", "Occupied private dwellings Dwelling structure not stated Dwellings"),
-    ("G36", "OPDs_Dwlling_structur_NS_Psns", "Occupied private dwellings Dwelling structure not stated Persons"),
-    ("G36", "OPDs_Tot_OPDs_Dwellings", "Occupied private dwellings Total occupied private dwellings Dwellings"),
-    ("G36", "OPDs_Tot_OPDs_Persons", "Occupied private dwellings Total occupied private dwellings Persons"),
-    ("G36", "Unoccupied_PDs_Dwgs", "Unoccupied private dwellings Dwellings"),
-    ("G36", "Unoccupied_PDs_Psns", "Unoccupied private dwellings Persons"),
-    ("G36", "Total_PDs_Dwellings", "Total private dwellings Dwellings"),
-    ("G36", "Total_PDs_Persons", "Total private dwellings Persons"),
     # G38 Mortgage Repayment (Monthly) by Dwelling Structure, counting Occupied private dwellings being purchased
     ("G38", "M_0_299_DS_DS_Sept_house", "0 299 Dwelling structure Separate house"),
     ("G38", "M_0_299_DS_DS_sd_row_tce_hs_t", "0 299 Dwelling structure Semi detached row or terrace house townhouse etc"),
@@ -7887,6 +7848,37 @@ unused = [
     ("G37", "Total_Total", "Total Total"),
     # people in private dwellings; G27 covers them by relationship
     ("G01", "Count_psns_occ_priv_dwgs_P", "Count of Persons in occupied private dwellings Persons"),
+    # dwelling structure subtypes and dwelling counts; the persons totals are in get_to_these_later
+    ("G36", "OPDs_Separate_house_Dwellings", "Occupied private dwellings Separate house Dwellings"),
+    ("G36", "OPDs_SD_r_t_h_th_1_sty_Dwgs", "Occupied private dwellings Semi detached row or terrace house townhouse etc with One storey Dwellings"),
+    ("G36", "OPDs_SD_r_t_h_th_1_sty_Psns", "Occupied private dwellings Semi detached row or terrace house townhouse etc with One storey Persons"),
+    ("G36", "OPDs_SD_r_t_h_th_2_m_sty_Dwgs", "Occupied private dwellings Semi detached row or terrace house townhouse etc with Two or more storeys Dwellings"),
+    ("G36", "OPDs_SD_r_t_h_th_2_m_sty_Psns", "Occupied private dwellings Semi detached row or terrace house townhouse etc with Two or more storeys Persons"),
+    ("G36", "OPDs_SD_r_t_h_th_Tot_Dwgs", "Occupied private dwellings Semi detached row or terrace house townhouse etc with Total Dwellings"),
+    ("G36", "OPDs_F_ap_I_1or2_sty_blk_Ds", "Occupied private dwellings Flat or apartment In a one or two storey block Dwellings"),
+    ("G36", "OPDs_F_ap_I_1or2_sty_blk_Ps", "Occupied private dwellings Flat or apartment In a one or two storey block Persons"),
+    ("G36", "OPDs_F_ap_I_3_sty_blk_Dwgs", "Occupied private dwellings Flat or apartment In a three storey block Dwellings"),
+    ("G36", "OPDs_F_ap_I_3_sty_blk_Psns", "Occupied private dwellings Flat or apartment In a three storey block Persons"),
+    ("G36", "OPDs_F_ap_I_4to8_sty_blk_Ds", "Occupied private dwellings Flat or apartment In a four to eight storey block Dwellings"),
+    ("G36", "OPDs_F_ap_I_4to8_sty_blk_Ps", "Occupied private dwellings Flat or apartment In a four to eight storey block Persons"),
+    ("G36", "OPDs_F_ap_I_9_m_sty_blk_Ds", "Occupied private dwellings Flat or apartment In a nine or more storey block Dwellings"),
+    ("G36", "OPDs_F_ap_I_9_m_sty_blk_Ps", "Occupied private dwellings Flat or apartment In a nine or more storey block Persons"),
+    ("G36", "OPDs_Flt_apt_Att_house_Ds", "Occupied private dwellings Flat or apartment Attached to a house Dwellings"),
+    ("G36", "OPDs_Flt_apt_Att_house_Ps", "Occupied private dwellings Flat or apartment Attached to a house Persons"),
+    ("G36", "OPDs_Flt_apart_Tot_Dwgs", "Occupied private dwellings Flat or apartment Total Dwellings"),
+    ("G36", "OPDs_Oth_dwg_Cvn_Ds", "Occupied private dwellings Other dwelling Caravan Dwellings"),
+    ("G36", "OPDs_Oth_dw_Cvn_Ps", "Occupied private dwellings Other dwelling Caravan Persons"),
+    ("G36", "OPDs_Oth_dwg_cab_hboat_Ds", "Occupied private dwellings Other dwelling Cabin houseboat Dwellings"),
+    ("G36", "OPDs_Oth_dwg_cab_hboat_Ps", "Occupied private dwellings Other dwelling Cabin houseboat Persons"),
+    ("G36", "OPDs_Ot_dwg_Im_hm_tnt_SO_Ds", "Occupied private dwellings Other dwelling Improvised home tent sleepers out Dwellings"),
+    ("G36", "OPDs_Ot_dwg_Im_hm_tnt_SO_Ps", "Occupied private dwellings Other dwelling Improvised home tent sleepers out Persons"),
+    ("G36", "OPDs_Ot_dwg_Hs_f_att_sh_of_Ds", "Occupied private dwellings Other dwelling House or flat attached to a shop office etc Dwellings"),
+    ("G36", "OPDs_Ot_dwg_Hs_f_att_sh_of_Ps", "Occupied private dwellings Other dwelling House or flat attached to a shop office etc Persons"),
+    ("G36", "OPDs_Other_dwelling_Tot_Dwgs", "Occupied private dwellings Other dwelling Total Dwellings"),
+    ("G36", "OPDs_Dwlling_structur_NS_Dwgs", "Occupied private dwellings Dwelling structure not stated Dwellings"),
+    ("G36", "OPDs_Tot_OPDs_Dwellings", "Occupied private dwellings Total occupied private dwellings Dwellings"),
+    ("G36", "Unoccupied_PDs_Psns", "Unoccupied private dwellings Persons"),
+    ("G36", "Total_PDs_Persons", "Total private dwellings Persons"),
 ]
 
 # vulture: ignore -- these are lists of cells used to track progress on
@@ -9454,6 +9446,14 @@ get_to_these_later = [
     ("G40", "Tot_LT_Other_Lld_type", "Total Landlord type Other landlord type"),
     ("G40", "Tot_LT_Lld_type_ns", "Total Landlord type Not stated"),
     ("G40", "Tot_Tot", "Total Total"),
+    # Share of people by dwelling structure (house, semi-detached, flat, other), a new statistic.
+    # The ACS (units in structure) and the Canadian census (structural type of dwelling) have it too.
+    ("G36", "OPDs_Separate_house_Persons", "Occupied private dwellings Separate house Persons"),
+    ("G36", "OPDs_SD_r_t_h_th_Tot_Psns", "Occupied private dwellings Semi detached row or terrace house townhouse etc with Total Persons"),
+    ("G36", "OPDs_Flt_apart_Tot_Psns", "Occupied private dwellings Flat or apartment Total Persons"),
+    ("G36", "OPDs_Other_dwelling_Tot_Psns", "Occupied private dwellings Other dwelling Total Persons"),
+    ("G36", "OPDs_Dwlling_structur_NS_Psns", "Occupied private dwellings Dwelling structure not stated Persons"),
+    ("G36", "OPDs_Tot_OPDs_Persons", "Occupied private dwellings Total occupied private dwellings Persons"),
 ]
 
 # vulture: ignore -- these are lists of cells used to track progress on
@@ -9873,4 +9873,8 @@ get_to_these_now = [
     ("G37", "R_Tot_Total", "Rented Total Total"),
     ("G37", "Oth_ten_type_Total", "Other tenure type Total"),
     ("G37", "Ten_type_NS_Total", "Tenure type not stated Total"),
+    # Vacancy %, merged with the US one. The ABS counts a dwelling as unoccupied if nobody was
+    # there on census night, even if its residents were only away, so it reads higher than the US's.
+    ("G36", "Unoccupied_PDs_Dwgs", "Unoccupied private dwellings Dwellings"),
+    ("G36", "Total_PDs_Dwellings", "Total private dwellings Dwellings"),
 ]
