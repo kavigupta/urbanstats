@@ -339,7 +339,7 @@ export async function mapCard(origin: string, pageData: Extract<PageData, { kind
     const unit = rampLabelling.unit
     const label = map.label ?? rampLabelling.label
     return {
-        label: label === undefined ? '' : reifyString(label, {}),
+        label: label === undefined ? '' : reifyString(label, { unicode: true }),
         contents,
         opacity: map.opacity,
         insets: layoutInsets(keepInsets(map.insets, coordBox => hasContent(contents, coordBox))).leaves,
