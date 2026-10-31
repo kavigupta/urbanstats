@@ -369,7 +369,7 @@ const value: {names: string[], dataCredits: {text: string | null, linkText: stri
             {
                 "text": null,
                 "linkText": "TX redistricting (for 2026 election): TX Capitol",
-                "link": "https://data.capitol.texas.gov/dataset/planc2308"
+                "link": "https://data.capitol.texas.gov/dataset/planc2333"
             },
             {
                 "text": null,
