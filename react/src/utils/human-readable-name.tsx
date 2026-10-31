@@ -90,7 +90,7 @@ export function reifyString(elements: HumanReadableElement[] | string, settings:
                 return `\`${element.value}\``
             case 'subscript':
             case 'superscript': {
-                const inner = reifyString(element.value, settings)
+                const inner = reifyString(element.value, { ...settings, unicode: false })
                 const scripted = settings.unicode ? inUnicodeScript(inner, unicodeScripts[element.type]) : undefined
                 return scripted ?? `${element.type === 'subscript' ? '_' : '^'}{${inner}}`
             }

@@ -36,8 +36,8 @@ void describe('reifyString', () => {
 void describe('reifyString with unicode', () => {
     void test('writes scripts in Unicode where it has them, and the syntax otherwise', () => {
         assert.equal(
-            reifyString(parseHumanReadableTemplate('log_{10}(Density)^{2}, sin^{-1}, x_{max}, 10^{0.5}'), { unicode: true }),
-            'log₁₀(Density)², sin⁻¹, x_{max}, 10^{0.5}',
+            reifyString(parseHumanReadableTemplate('log_{10}(Density)^{2}, sin^{-1}, x_{max}, 10^{0.5}, x^{2^{3}}'), { unicode: true }),
+            'log₁₀(Density)², sin⁻¹, x_{max}, 10^{0.5}, x^{2^{3}}',
         )
     })
 })
