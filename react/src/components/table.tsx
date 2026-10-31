@@ -909,7 +909,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                 <ComparisonColorBar highlightIndex={props.highlightIndex} />
             )}
             <div
-                key={`statName_${reifyString(props.renderedStatname, {})}`}
+                key={`statName_${reifyString(props.renderedStatname, { unicode: false })}`}
                 style={{ width: `${width}%`, padding: '1px', paddingLeft: props.isIndented ? '1em' : '1px', textAlign: props.center ? 'center' : undefined }}
             >
                 <span className="serif value" style={{ display: 'flex', alignItems: 'center', justifyContent: props.center ? 'center' : 'flex-start', gap: '0.25em' }}>
@@ -937,7 +937,7 @@ function displayName(props: StatisticNameCellProps): HumanReadableName {
 
 function SortButton(props: StatisticNameCellProps & { sortInfo: NonNullable<StatisticNameCellProps['sortInfo']> }): ReactNode {
     const unitSettings = useUnitSettings()
-    const sortButtonLabel = `Sort by ${reifyString(displayName(props), unitSettings)}${
+    const sortButtonLabel = `Sort by ${reifyString(displayName(props), { ...unitSettings, unicode: true })}${
         props.sortInfo.sortDirection === 'up'
             ? ', currently ascending'
             : props.sortInfo.sortDirection === 'down' ? ', currently descending' : ''

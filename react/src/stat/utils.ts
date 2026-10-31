@@ -41,7 +41,7 @@ export function parseStatUSS(uss: string, geographies: GeographySelection[]): Ma
 /** @public this is included dynamically */
 export function tableTitle(uss: MapUSS, geographies: GeographySelection[], settings: UnitSettings): string | undefined {
     const label = tableLabel(uss, defaultTypeEnvironment(universesOf(geographies)))
-    return label === undefined ? undefined : reifyString(label, settings)
+    return label === undefined ? undefined : reifyString(label, { ...settings, unicode: true })
 }
 
 /** What a table is titled before it runs, the way `mapPageTitle` titles a map. */
