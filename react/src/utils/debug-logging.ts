@@ -58,7 +58,7 @@ function formatArg(arg: unknown): string {
 
 export async function debugBufferText(): Promise<string> {
     const entries = await (await getDb()).getAll('entries')
-    return `User agent: ${navigator.userAgent}\n` + entries.map(entry => `${new Date(entry.time).toISOString()} ${entry.tab} [${entry.categories}] ${entry.text.replaceAll('\n', '\\n')}\n`).join('')
+    return `User agent: ${navigator.userAgent}\n${entries.map(entry => `${new Date(entry.time).toISOString()} ${entry.tab} [${entry.categories}] ${entry.text.replaceAll('\n', '\\n')}\n`).join('')}`
 }
 
 export function makeDebugLogger(...categories: [Key, ...Key[]]): (...args: unknown[]) => void {
