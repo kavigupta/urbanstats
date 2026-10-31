@@ -9,7 +9,9 @@ urbanstatsFixture('debug log', `${target}/`)
 async function downloadDebugLog(t: TestController): Promise<{ tab: string, text: string }[]> {
     const laterThan = Date.now()
     await t.click(Selector('a').withExactText('Download debug log'))
-    return fs.readFileSync(await waitForDownload(t, laterThan, '.txt'), 'utf-8').trim().split('\n').map((line) => {
+    const [userAgent, ...lines] = fs.readFileSync(await waitForDownload(t, laterThan, '.txt'), 'utf-8').trim().split('\n')
+    await t.expect(userAgent).match(/^User agent: Mozilla/)
+    return lines.map((line) => {
         const [, tab, text] = /^\S+ (\S+) \[[^\]]*\] (.*)$/.exec(line)!
         return { tab, text }
     })
