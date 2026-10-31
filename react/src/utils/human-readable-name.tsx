@@ -64,12 +64,14 @@ export interface ReifySettings extends UnitSettings {
 }
 
 const unicodeScripts = {
-    subscript: scriptTable('₀₁₂₃₄₅₆₇₈₉₊₋₋₌₍₎'),
-    superscript: scriptTable('⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁻⁼⁽⁾'),
-}
-
-function scriptTable(scripted: string): Map<string, string> {
-    return new Map(Array.from('0123456789+-\u2212=()', (char, index) => [char, scripted[index]]))
+    subscript: new Map([
+        ['0', '₀'], ['1', '₁'], ['2', '₂'], ['3', '₃'], ['4', '₄'], ['5', '₅'], ['6', '₆'], ['7', '₇'], ['8', '₈'], ['9', '₉'],
+        ['+', '₊'], ['-', '₋'], ['\u2212', '₋'], ['=', '₌'], ['(', '₍'], [')', '₎'],
+    ]),
+    superscript: new Map([
+        ['0', '⁰'], ['1', '¹'], ['2', '²'], ['3', '³'], ['4', '⁴'], ['5', '⁵'], ['6', '⁶'], ['7', '⁷'], ['8', '⁸'], ['9', '⁹'],
+        ['+', '⁺'], ['-', '⁻'], ['\u2212', '⁻'], ['=', '⁼'], ['(', '⁽'], [')', '⁾'],
+    ]),
 }
 
 /** Undefined when Unicode lacks a character's script. */
