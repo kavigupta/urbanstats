@@ -103,7 +103,7 @@ export function StatisticPanelTable({ view, stat, data, universeByName, set, tab
     const headerSpecs: CellSpec[] = data.table.map((col, colIndex) => ({
         type: 'statistic-name',
         renderedStatname: col.name,
-        longname: reifyString(col.name, {}),
+        longname: reifyString(col.name, { unicode: false }),
         currentUniverse,
         sortInfo: {
             onSort: () => {

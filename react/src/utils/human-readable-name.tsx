@@ -9,7 +9,7 @@ import { trimTrailingZeros } from './text'
  * A quantity written out, for a title, a card or a file, where there is no reader to ask what
  * units they read in. On a page `reifyReact` asks, and writes it in those.
  */
-export function writtenPlainly(value: number, unit: StoredUnit, settings: UnitSettings): string {
+export function writtenPlainly(value: number, unit: StoredUnit, settings: ReifySettings): string {
     const written = writeQuantity(value, unit, settings, 'afterNumber')
     return `${trimTrailingZeros(written.renderedValue)}${reifyString(written.unitName, settings)}`
 }
@@ -58,7 +58,29 @@ function writtenQuantity(value: number, unit: StoredUnit, settings: UnitSettings
     )
 }
 
-export function reifyString(elements: HumanReadableElement[] | string, settings: UnitSettings): string {
+export interface ReifySettings extends UnitSettings {
+    /** km² rather than km^{2}, for text without markup. The syntax parses back into the same elements. */
+    unicode: boolean
+}
+
+const unicodeScripts = {
+    subscript: new Map([
+        ['0', '₀'], ['1', '₁'], ['2', '₂'], ['3', '₃'], ['4', '₄'], ['5', '₅'], ['6', '₆'], ['7', '₇'], ['8', '₈'], ['9', '₉'],
+        ['+', '₊'], ['-', '₋'], ['\u2212', '₋'], ['=', '₌'], ['(', '₍'], [')', '₎'],
+    ]),
+    superscript: new Map([
+        ['0', '⁰'], ['1', '¹'], ['2', '²'], ['3', '³'], ['4', '⁴'], ['5', '⁵'], ['6', '⁶'], ['7', '⁷'], ['8', '⁸'], ['9', '⁹'],
+        ['+', '⁺'], ['-', '⁻'], ['\u2212', '⁻'], ['=', '⁼'], ['(', '⁽'], [')', '⁾'],
+    ]),
+}
+
+/** Undefined when Unicode lacks a character's script. */
+function inUnicodeScript(text: string, table: Map<string, string>): string | undefined {
+    const chars = Array.from(text, char => table.get(char))
+    return chars.every(char => char !== undefined) ? chars.join('') : undefined
+}
+
+export function reifyString(elements: HumanReadableElement[] | string, settings: ReifySettings): string {
     if (typeof elements === 'string') return elements
     return elements.map((element) => {
         switch (element.type) {
@@ -67,9 +89,11 @@ export function reifyString(elements: HumanReadableElement[] | string, settings:
             case 'code':
                 return `\`${element.value}\``
             case 'subscript':
-                return `_{${reifyString(element.value, settings)}}`
-            case 'superscript':
-                return `^{${reifyString(element.value, settings)}}`
+            case 'superscript': {
+                const inner = reifyString(element.value, { ...settings, unicode: false })
+                const scripted = settings.unicode ? inUnicodeScript(inner, unicodeScripts[element.type]) : undefined
+                return scripted ?? `${element.type === 'subscript' ? '_' : '^'}{${inner}}`
+            }
             case 'where':
                 return ` where ${reifyString(element.value, settings)}`
             case 'parens':

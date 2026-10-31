@@ -195,8 +195,8 @@ function humanReadable(name: HumanReadableName, fontSize: number, units: Units):
             case 'parens':
                 return ['(', ...humanReadable(element.value, fontSize, units), ')']
             case 'quantity': {
-                // writeQuantity rather than writtenPlainly, which would flatten mi^{2} into those
-                // literal characters instead of leaving the exponent for the superscript case below
+                // writeQuantity rather than writtenPlainly, which would flatten mi^{2} into mi²
+                // instead of leaving the exponent for the superscript case below
                 const { renderedValue, unitName } = writeQuantity(element.value, element.unit, readerOf(units), 'afterNumber')
                 return [narrowSpaces(trimTrailingZeros(renderedValue)), ...humanReadable(unitName, fontSize, units)]
             }
@@ -745,7 +745,7 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
     const padding = { x: 48, y: 36 }
     const content = width - padding.x * 2
     // Leaves room for the flag.
-    const titleSize = sizeToFit([reifyString(statistic.title, readerOf(statistic.units))], content - 140, 1, 54, 26, boldCharacterWidth)
+    const titleSize = sizeToFit([reifyString(statistic.title, { ...readerOf(statistic.units), unicode: true })], content - 140, 1, 54, 26, boldCharacterWidth)
 
     const valueColumn = Math.min(260, (content - rankColumn) * 0.62 / statistic.columns.length)
     const nameColumn = content - rankColumn - valueColumn * statistic.columns.length
@@ -759,10 +759,10 @@ export function statisticEmbedCard(statistic: StatisticCard, { width, height }: 
     // Several columns are labelled by headers instead of the title. A single column's header would
     // repeat the title, so it's left out.
     const columnHeaders = statistic.columns.length > 1
-        ? sizeToFit(statistic.columns.map(column => reifyString(column.name, readerOf(statistic.units))), valueColumn - cellPadding * 2, 2, 30, 14, boldCharacterWidth)
+        ? sizeToFit(statistic.columns.map(column => reifyString(column.name, { ...readerOf(statistic.units), unicode: true })), valueColumn - cellPadding * 2, 2, 30, 14, boldCharacterWidth)
         : undefined
     // The geographies and filter, which neither the title nor the headers say.
-    const note = `${statistic.heading}${statistic.filter === undefined ? '' : ` where ${reifyString(statistic.filter, readerOf(statistic.units))}`}`
+    const note = `${statistic.heading}${statistic.filter === undefined ? '' : ` where ${reifyString(statistic.filter, { ...readerOf(statistic.units), unicode: true })}`}`
     const noteSize = columnHeaders === undefined
         // Under the title, beside the flag
         ? sizeToFit([note], content - 140, 1, 26, 14)

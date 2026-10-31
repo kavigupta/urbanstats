@@ -106,7 +106,7 @@ export function StatisticPanelPage({ view, stat, data, universeByName, set, load
             fullWidth={view.edit}
             showFooter={!splitLayout}
             screencap={data && ((...args) => createScreenshot(() => ({
-                path: `${sanitize(reifyString(data.renderedStatname, unitSettings))}.png`,
+                path: `${sanitize(reifyString(data.renderedStatname, { ...unitSettings, unicode: false }))}.png`,
                 overallWidth: tableRef.current!.offsetWidth * 2,
                 elementsToRender: [
                     headersRef.current!,
@@ -116,7 +116,7 @@ export function StatisticPanelPage({ view, stat, data, universeByName, set, load
             }), ...args))}
             csvExportCallback={data && (() => ({
                 csvData: generateStatisticsPanelCSVData(data.articleNames, data.table, data.hideOrdinalsPercentiles, unitSettings),
-                csvFilename: `${sanitize(reifyString(data.renderedStatname, unitSettings))}.csv`,
+                csvFilename: `${sanitize(reifyString(data.renderedStatname, { ...unitSettings, unicode: false }))}.csv`,
             }))}
         >
             {!splitLayout && headers}
