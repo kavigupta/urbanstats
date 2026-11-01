@@ -1,4 +1,15 @@
 from urbanstats.geometry.shapefiles.shapefile import multiple_localized_type_names
+from urbanstats.geometry.shapefiles.shapefiles.australian import (
+    AUSTRALIAN_FEDERAL_ELECTORATES,
+    AUSTRALIAN_LGAS,
+    AUSTRALIAN_POSTCODES,
+    AUSTRALIAN_SA2S,
+    AUSTRALIAN_SALS,
+    AUSTRALIAN_STATE_LOWER_HOUSE_DISTRICTS,
+    AUSTRALIAN_STATE_UPPER_HOUSE_REGIONS,
+    AUSTRALIAN_SUAS,
+    AUSTRALIAN_UCLS,
+)
 from urbanstats.geometry.shapefiles.shapefiles.canadian_census_divisions import (
     CANADIAN_CENSUS_DIVISIONS,
 )
@@ -70,6 +81,15 @@ shapefiles = dict(
     canadian_population_centers=CANADIAN_CENSUS_POPULATION_CENTERS,
     candian_cmas=CANADIAN_CENSUS_METROPOLITAN_AREAS,
     canadian_districts=CANADIAN_DISTRICTS,
+    australian_lgas=AUSTRALIAN_LGAS,
+    australian_sa2s=AUSTRALIAN_SA2S,
+    australian_suas=AUSTRALIAN_SUAS,
+    australian_ucls=AUSTRALIAN_UCLS,
+    australian_sals=AUSTRALIAN_SALS,
+    australian_postcodes=AUSTRALIAN_POSTCODES,
+    australian_federal_electorates=AUSTRALIAN_FEDERAL_ELECTORATES,
+    australian_state_lower_house_districts=AUSTRALIAN_STATE_LOWER_HOUSE_DISTRICTS,
+    australian_state_upper_house_regions=AUSTRALIAN_STATE_UPPER_HOUSE_REGIONS,
     # International
     continents=CONTINENTS,
     countries=COUNTRIES,

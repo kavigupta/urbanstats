@@ -1,11 +1,15 @@
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import numpy as np
 import pandas as pd
+from permacache import permacache, stable_hash
 
 from urbanstats.acs.load import aggregated_acs_data, aggregated_acs_data_us_pr
+from urbanstats.data.australia.abs_tables import sa1_table
+from urbanstats.data.australia.mesh_blocks import disaggregated_from_sa1
+from urbanstats.geometry.census_aggregation import aggregate_by_mesh_block_australia
 from urbanstats.statistics.statistic_collection import (
     StatisticCollection,
     statcan_legacy_names,
@@ -41,6 +45,37 @@ class StatCanCounts:
         return self.census_tables.compute(2021, shapefile)
 
 
+@dataclass(frozen=True)
+class AustralianCounts:
+    """
+    Counts from the ABS DataPack, which is by SA1, split across each SA1's mesh blocks in proportion
+    to `weight` ("population" or "dwellings").
+    """
+
+    # DataPack table -> (column -> the short-header codes summed into it)
+    tables: Dict[str, Dict[str, List[str]]]
+    weight: str = "population"
+
+    def compute(self, shapefile):
+        return pd.concat(
+            [
+                australian_counts(table, cells, self.weight, shapefile.geometry)
+                for table, cells in self.tables.items()
+            ],
+            axis=1,
+        )
+
+
+@permacache(
+    "urbanstats/statistics/national_census/australian_counts",
+    key_function=dict(cells=stable_hash),
+)
+def australian_counts(table, cells, weight, geometry):
+    return aggregate_by_mesh_block_australia(
+        geometry, disaggregated_from_sa1(sa1_table(table, cells), weight)
+    )
+
+
 class NationalCensusStatistics(StatisticCollection):
     """
     Statistics several countries' censuses define the same way. Each country's counts are summed
@@ -60,6 +95,8 @@ class NationalCensusStatistics(StatisticCollection):
 
     def legacy_statistic_names(self):
         # Canada's, from before the two countries' statistics were merged
+        if "Canada" not in self.country_inputs():
+            return {}
         return statcan_legacy_names(self)
 
     def countries_for_each_statistic(self):
