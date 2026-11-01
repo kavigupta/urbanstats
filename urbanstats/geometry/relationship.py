@@ -154,7 +154,7 @@ tiers = [
         "School District",
         "CA Census Subdivision",
         "AU SA2",
-        "AU Urban Centre",
+        "AU UCL",
         "AU Suburb",
     ],
     ["Neighborhood", "ZIP", "AU Postcode"],

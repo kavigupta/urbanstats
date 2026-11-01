@@ -7,7 +7,13 @@ from urbanstats.universe.universe_provider.constants import australia_domestic_p
 PROCESSED = "named_region_shapefiles/australia/data/processed"
 
 # ABS includes rows for people it cannot place, e.g. "No usual address (NSW)"
-NOT_PLACES = ("Not in any", "No usual address", "Migratory", "Outside Australia")
+NOT_PLACES = (
+    "Not in any",
+    "No usual address",
+    "Migratory",
+    "Outside Australia",
+    "Remainder of State/Territory",
+)
 
 # SUAs and postcodes can span states, so their layers have no state column
 LAYERS_WITHOUT_STATE = ("SUA", "POA")
@@ -96,11 +102,11 @@ AUSTRALIAN_SUAS = abs_shapefile(
 AUSTRALIAN_UCLS = abs_shapefile(
     layer="UCL",
     name_column="UCL_NAME21",
-    kind="Urban Centre",
-    type_name="AU Urban Centre",
+    kind="UCL",
+    type_name="AU UCL",
     type_category="International City",
     abbreviation="AUUC",
-    version=2,
+    version=3,
     in_wikidata=True,
     include_in_syau=True,
 )
