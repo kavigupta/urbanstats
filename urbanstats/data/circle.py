@@ -627,7 +627,7 @@ def circle_shapefile_object(country_shapefile, population):
             [*INTERNATIONAL_PROVIDERS, *SUBNATIONAL_PROVIDERS]
         ),
         source_countries=ContainedWithinCountries(
-            {"USA": "US " + name, "Canada": "CA " + name}
+            {"USA": "US " + name, "Canada": "CA " + name, "Australia": "AU " + name}
         ),
         cross_source_borders=CrossSourceBorders(
             can_straddle=True,
