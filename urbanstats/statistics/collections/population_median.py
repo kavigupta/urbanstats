@@ -4,11 +4,11 @@ from urbanstats.games.quiz_question_metadata import QuizQuestionSkip
 from urbanstats.statistics.statistic_collection import GeographicStatistics
 
 # most preferred first
-SOURCES = ("usa", "canada", "gpw")
+SOURCES = ("usa", "canada", "australia", "gpw")
 
 
 class PopulationMedianStatistics(GeographicStatistics):
-    version = 2
+    version = 3
 
     def name_for_each_statistic(self):
         return {

@@ -3,6 +3,7 @@ import numpy as np
 import tqdm.auto as tqdm
 from permacache import permacache
 
+from urbanstats.data.australia.mesh_blocks import australia_mesh_blocks_with_densities
 from urbanstats.data.canada.canada_density import canada_shapefile_with_densities
 from urbanstats.data.census_blocks import all_densities_gpd
 from urbanstats.data.gpw import produce_histogram
@@ -19,6 +20,13 @@ def census_histogram(geometry, year):
 def census_histogram_canada(geometry, year):
     table = canada_shapefile_with_densities(year)
     density_keys = [x for x in table if x.startswith("canada_density")]
+    return generic_histogram(geometry, table, density_keys)
+
+
+@permacache("urbanstats/data/census_histogram/census_histogram_australia_2")
+def census_histogram_australia(geometry):
+    table = australia_mesh_blocks_with_densities()
+    density_keys = [x for x in table if x.startswith("australia_density")]
     return generic_histogram(geometry, table, density_keys)
 
 

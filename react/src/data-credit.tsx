@@ -167,7 +167,8 @@ export function DataCreditPanel(): ReactNode {
                             All data listed in this section is collected from the 2020 US Census. Population, density,
                             race, and housing units per person and per adult are also available in Canada, from the 2021
                             Canadian Census (see Canadian Data below), and the two countries&apos; values are combined into
-                            one National Census statistic.
+                            one National Census statistic. Population and density are also available in Australia, from the
+                            2021 Australian Census (see Australian Data below), and are combined in the same way.
 
                             <NRef name="population">Population</NRef>
                             <div>
@@ -196,8 +197,8 @@ export function DataCreditPanel(): ReactNode {
                             <div>
                                 <p>
                                     The population median is the point with the smallest average great-circle distance to
-                                    the region&apos;s residents. It is computed from 2020 US Census blocks or 2021 Canada dissemination
-                                    blocks where available, and GHS-POP grid cells when not.
+                                    the region&apos;s residents. It is computed from 2020 US Census blocks, 2021 Canada dissemination
+                                    blocks, or 2021 Australia mesh blocks where available, and GHS-POP grid cells when not.
                                 </p>
                             </div>
                             <NRef name="race">Race</NRef>
@@ -1099,6 +1100,16 @@ export function DataCreditPanel(): ReactNode {
                                     (French, English and French, French and non-official language(s), English, French and non-official
                                     language(s)) as French. Spanish is kept as its own category.
                                 </p>
+                            </div>
+                        </div>
+                        <h1>Australian Data</h1>
+                        <div>
+                            <NRef name="australian-census" h="h2">Census Data</NRef>
+                            <div>
+                                For population and density, we use mesh block counts from the 2021 Australian Census, available
+                                {' '}
+                                <a href="https://www.abs.gov.au/census/guide-census-data/mesh-block-counts/2021">from the ABS</a>
+                                , computing the same metrics as for the US Census with mesh blocks in place of census blocks.
                             </div>
                         </div>
                         <h1> Flags </h1>
