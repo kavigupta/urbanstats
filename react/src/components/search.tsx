@@ -138,9 +138,10 @@ export function SearchBox(props: {
             onBlur={() => {
                 searchFocused.current = false
                 // Keep a worker that's still building so refocusing reuses it rather than building a second index
-                const worker = searchWorker.current
-                void worker?.indexBuilt.then(() => {
-                    if (!searchFocused.current && searchWorker.current === worker) {
+                // Weak so a worker whose build never finishes can still be collected and closed
+                const worker = searchWorker.current && new WeakRef(searchWorker.current)
+                void searchWorker.current?.indexBuilt.then(() => {
+                    if (!searchFocused.current && searchWorker.current === worker?.deref()) {
                         searchWorker.current = undefined
                         setWorkerStatusProperty(defaultWorkerStatusProperty)
                     }
