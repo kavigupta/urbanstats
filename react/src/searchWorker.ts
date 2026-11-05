@@ -16,10 +16,14 @@ onmessage = async (message: MessageEvent) => {
     const contents = message.data as SearchWorkerInputMessage
     if (contents.type === 'close') {
         // Terminating would abort an in-progress cache write
-        await searchIndex
-        await waitForCacheWrite()
-        await flushDebugLog()
-        close()
+        try {
+            await searchIndex
+            await waitForCacheWrite()
+            await flushDebugLog()
+        }
+        finally {
+            close()
+        }
     }
     else if (searchIndex === undefined) {
         assert(contents.type === 'configure', 'First message must be a configuration message')

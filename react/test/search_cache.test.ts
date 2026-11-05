@@ -48,9 +48,9 @@ test('search index cache write survives the worker being dropped', async (t) => 
 
     const tabsBeforeReload = new Set(results.map(({ tab }) => tab))
     let afterReload: { tab: string, text: string } | undefined
-    while (afterReload === undefined) {
+    for (let attempt = 0; attempt < 100 && afterReload === undefined; attempt++) {
         await t.wait(100)
         afterReload = (await cacheResults()).find(({ tab }) => !tabsBeforeReload.has(tab))
     }
-    await t.expect(afterReload.text).eql('Cache hit')
+    await t.expect(afterReload?.text).eql('Cache hit')
 })
