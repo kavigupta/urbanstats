@@ -89,11 +89,11 @@ export class TestUtils {
         }
     }
 
-    /** A map drawing a fallback tile looks finished but draws coarser outlines than the settled one. */
     debugLog(): Promise<Entry[]> {
         return debugBufferEntries()
     }
 
+    /** A map drawing a fallback tile looks finished but draws coarser outlines than the settled one. */
     async waitForMapsToRender(): Promise<void> {
         const deadline = Date.now() + mapRenderTimeoutMs
         while (true) {

@@ -66,9 +66,9 @@ export async function debugBufferText(): Promise<string> {
     return `User agent: ${navigator.userAgent}\n${entries.map(entry => `${new Date(entry.time).toISOString()} ${entry.tab} [${entry.categories}] ${entry.text.replaceAll('\n', '\\n')}\n`).join('')}`
 }
 
-let pendingInserts: Promise<unknown> = Promise.resolve()
+let pendingInserts: Promise<void> = Promise.resolve()
 
-export function flushDebugLog(): Promise<unknown> {
+export function flushDebugLog(): Promise<void> {
     return pendingInserts
 }
 
@@ -88,7 +88,7 @@ export function makeDebugLogger(...categories: [Key, ...Key[]]): (...args: unkno
         if (toBuffer) {
             const entry = { time: Date.now(), tab: debugTabId, categories: label, text: args.map(formatArg).join(' ') }
             // Debug logging must not break the app if IndexedDB is unavailable
-            pendingInserts = Promise.all([pendingInserts, getDb().then(db => insert(db, entry)).catch(() => undefined)])
+            pendingInserts = Promise.all([pendingInserts, getDb().then(db => insert(db, entry)).catch(() => undefined)]).then(() => undefined)
         }
     }
 }
