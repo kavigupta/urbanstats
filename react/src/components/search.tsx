@@ -157,7 +157,7 @@ function SingleSearchResult(props: SearchResult): ReactNode {
     )
 }
 
-const workerTerminatorRegistry = new FinalizationRegistry<Worker>((worker) => { worker.terminate() })
+const workerTerminatorRegistry = new FinalizationRegistry<Worker>((worker) => { worker.postMessage({ type: 'close' } satisfies SearchWorkerInputMessage) })
 
 interface SearchWorker {
     executeSearch: (params: SearchParams) => Promise<SearchResult[]>
