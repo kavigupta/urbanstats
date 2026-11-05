@@ -1,8 +1,8 @@
-import { createIndex, SearchIndexConfig, SearchParams, SearchResult, simulateSlowSearchDelayMs } from './search'
-import { makeDebugLogger } from './utils/debug-logging'
+import { createIndex, SearchIndexConfig, SearchParams, SearchResult, simulateSlowSearchDelayMs, waitForCacheWrite } from './search'
+import { flushDebugLog, makeDebugLogger } from './utils/debug-logging'
 import { assert } from './utils/defensive'
 
-export type SearchWorkerInputMessage = { type: 'configure', config: SearchIndexConfig } | { type: 'search', params: SearchParams }
+export type SearchWorkerInputMessage = { type: 'configure', config: SearchIndexConfig } | { type: 'search', params: SearchParams } | { type: 'close' }
 export type SearchWorkerOutputMessage = { type: 'result', results: SearchResult[] } | { type: 'status', status: SearchWorkerStatus }
 export type SearchWorkerStatus = { status: 'ready' } | { status: 'loading', message: string }
 
@@ -14,7 +14,18 @@ let searchIndex: undefined | ReturnType<typeof createIndex>
 
 onmessage = async (message: MessageEvent) => {
     const contents = message.data as SearchWorkerInputMessage
-    if (searchIndex === undefined) {
+    if (contents.type === 'close') {
+        // Terminating would abort an in-progress cache write
+        try {
+            await searchIndex
+            await waitForCacheWrite()
+            await flushDebugLog()
+        }
+        finally {
+            close()
+        }
+    }
+    else if (searchIndex === undefined) {
         assert(contents.type === 'configure', 'First message must be a configuration message')
         searchIndex = createIndex(contents.config, status => outputStatus({ status: 'loading', message: `Building index: ${status}` }))
         void searchIndex.then(() => outputStatus({ status: 'ready' }))
