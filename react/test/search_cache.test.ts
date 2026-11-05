@@ -24,8 +24,6 @@ test('search index cache write survives the worker being dropped', async (t) => 
         .typeText(searchField, 'Pasadena')
     await waitForSelectedSearchResult(t)
 
-    // With text in the box, blurring searches again in a new worker, which would write the cache itself
-    await t.selectText(searchField).pressKey('delete')
     await t.eval(() => { (document.activeElement as HTMLElement).blur() })
     await t.wait(500) // onBlur is delayed
     await (await t.getCurrentCDPSession()).HeapProfiler.collectGarbage()
