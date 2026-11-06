@@ -223,6 +223,35 @@ const value: Record<string, number[]> = {
         316,
         120
     ],
+    "AU Postcode": [
+        195,
+        195,
+        46
+    ],
+    "AU SA2": [
+        213,
+        213,
+        10
+    ],
+    "AU Suburb": [
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        16
+    ],
+    "AU UCL": [
+        287,
+        149
+    ],
     "CA Census Subdivision": [
         106,
         106,
