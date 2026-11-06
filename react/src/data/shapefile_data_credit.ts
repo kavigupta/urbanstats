@@ -89,9 +89,9 @@ const value: {names: string[], dataCredits: {text: string | null, linkText: stri
         "names": [
             "AU LGA",
             "AU Significant Urban Area",
-            "AU UCL",
             "AU Suburb",
             "AU SA2",
+            "AU UCL",
             "AU Postcode",
             "AU Federal Electorate",
             "AU State Lower House District",

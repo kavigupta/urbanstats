@@ -54,7 +54,7 @@ const value: Record<string, string> = {
     "AU LGA": "US Subdivision",
     "AU SA2": "Census",
     "AU Significant Urban Area": "International City",
-    "AU UCL": "International City",
+    "AU UCL": "Census",
     "AU Suburb": "International City",
     "AU Postcode": "Small",
     "AU Federal Electorate": "Political",
