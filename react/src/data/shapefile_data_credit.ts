@@ -87,6 +87,26 @@ const value: {names: string[], dataCredits: {text: string | null, linkText: stri
     },
     {
         "names": [
+            "AU LGA",
+            "AU Significant Urban Area",
+            "AU Urban Centre",
+            "AU Suburb",
+            "AU SA2",
+            "AU Postcode",
+            "AU Federal Electorate",
+            "AU State Lower House District",
+            "AU State Upper House Region"
+        ],
+        "dataCredits": [
+            {
+                "text": null,
+                "linkText": "Australian Bureau of Statistics",
+                "link": "https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/access-and-downloads/digital-boundary-files"
+            }
+        ]
+    },
+    {
+        "names": [
             "CSA",
             "MSA",
             "Urban Area",

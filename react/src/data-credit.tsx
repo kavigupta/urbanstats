@@ -167,7 +167,8 @@ export function DataCreditPanel(): ReactNode {
                             All data listed in this section is collected from the 2020 US Census. Population, density,
                             race, and housing units per person and per adult are also available in Canada, from the 2021
                             Canadian Census (see Canadian Data below), and the two countries&apos; values are combined into
-                            one National Census statistic.
+                            one National Census statistic. Population and density are also available in Australia, from the
+                            2021 Australian Census (see Australian Data below), and are combined in the same way.
 
                             <NRef name="population">Population</NRef>
                             <div>
@@ -196,8 +197,8 @@ export function DataCreditPanel(): ReactNode {
                             <div>
                                 <p>
                                     The population median is the point with the smallest average great-circle distance to
-                                    the region&apos;s residents. It is computed from 2020 US Census blocks or 2021 Canada dissemination
-                                    blocks where available, and GHS-POP grid cells when not.
+                                    the region&apos;s residents. It is computed from 2020 US Census blocks, 2021 Canada dissemination
+                                    blocks, or 2021 Australia mesh blocks where available, and GHS-POP grid cells when not.
                                 </p>
                             </div>
                             <NRef name="race">Race</NRef>
@@ -412,7 +413,9 @@ export function DataCreditPanel(): ReactNode {
                             All data listed in this section is collected from the 2021 American Community Survey 5-year estimates.
                             Citizenship, language, generation, commute mode and time, industry, marriage, household size, and renter %
                             are also available in Canada, from the 2021 Canadian Census (see Canadian Data below), and the two countries&apos; values
-                            are combined into one National Census statistic.
+                            are combined into one National Census statistic. Language, generation, marriage, born outside the
+                            country, undergrad and graduate degrees, degree field, and household relationship are also available in
+                            Australia, from the 2021 Australian Census (see Australian Data below), and are combined in the same way.
 
                             <NRef name="citizenship">Citizenship</NRef>
                             <div>
@@ -623,7 +626,8 @@ export function DataCreditPanel(): ReactNode {
                                     people in relationships are couples; this is not a perfect assumption, but it is
                                     the best we can do). We correspondingly double the number of people who are not
                                     a householder but are cohabiting with a partner to get the number of people
-                                    who are cohabiting with a partner. Finally, all non-householders who are not
+                                    who are cohabiting with a partner, which is split into same-sex (gay) and opposite-sex
+                                    (straight) couples. Finally, all non-householders who are not
                                     cohabiting with a partner are divided into children (including foster children,
                                     stepchildren, and grandchildren) and a catch-all other category.
                                 </p>
@@ -1098,6 +1102,35 @@ export function DataCreditPanel(): ReactNode {
                                     English and non-official language(s) as English-only, and group all French-inclusive responses
                                     (French, English and French, French and non-official language(s), English, French and non-official
                                     language(s)) as French. Spanish is kept as its own category.
+                                </p>
+                            </div>
+                        </div>
+                        <h1>Australian Data</h1>
+                        <div>
+                            <NRef name="australian-census" h="h2">Census Data</NRef>
+                            <div>
+                                For population and density, we use mesh block counts from the 2021 Australian Census, available
+                                {' '}
+                                <a href="https://www.abs.gov.au/census/guide-census-data/mesh-block-counts/2021">from the ABS</a>
+                                , computing the same metrics as for the US Census with mesh blocks in place of census blocks.
+                                For all other statistics, we use SA1-level data from the 2021 Census
+                                {' '}
+                                <a href="https://www.abs.gov.au/census/find-census-data/datapacks">DataPacks</a>
+                                . We treat these as effectively equivalent to ACS data published by census tract, disaggregating
+                                them to the mesh block level using population (or, for household income, dwellings) as a weight,
+                                and then aggregating to the geography of interest.
+                                <p>
+                                    For Generation and Marriage, we use the same definitions as the US data. For Language, Other at
+                                    Home % is everyone who speaks a language other than English at home, less Spanish speakers.
+                                    For Religion, we use the Canadian categories, leaving out people who did not state a religion.
+                                    For Birthplace, only Born outside country % is available. For Education, the data has no count
+                                    of people who finished high school, so only undergrad and graduate degrees are available;
+                                    graduate diplomas and certificates count as undergrad. As with Canada, the split between degree
+                                    fields is of every post-school qualification, so we apply it to the people with at least an
+                                    undergrad degree. For Household Relationship, the data does not split couples into same-sex and
+                                    opposite-sex, so only Cohabiting With Partner % is available; one member of each group household
+                                    counts as its householder, and people in non-private dwellings count as Other, as the US&apos;s
+                                    group quarters do. For Income, we use thresholds in AUD rather than USD.
                                 </p>
                             </div>
                         </div>

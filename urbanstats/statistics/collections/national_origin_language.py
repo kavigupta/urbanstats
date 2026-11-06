@@ -12,6 +12,7 @@ from urbanstats.statistics.collections.census_canada_language import (
 )
 from urbanstats.statistics.national_census import (
     ACSCounts,
+    AustralianCounts,
     NationalCensusStatistics,
     StatCanCounts,
 )
@@ -19,7 +20,7 @@ from urbanstats.statistics.utils import fractionalize
 
 
 class NationalOriginLanguageStatistics(NationalCensusStatistics):
-    version = 1
+    version = 2
 
     def legacy_statistic_names(self):
         # Canada's, from before the two countries' statistics were merged
@@ -72,6 +73,17 @@ class NationalOriginLanguageStatistics(NationalCensusStatistics):
         return {
             "USA": ACSCounts(self.acs_entity()),
             "Canada": CanadianLanguageCounts(canadian_language_tables()),
+            "Australia": AustralianLanguageCounts(
+                {
+                    "G13": {
+                        "language_english_only": ["PSEO_Tot"],
+                        "language_spanish": ["POL_Spanish_Tot"],
+                        # Everyone who uses a language other than English. Language not stated is a
+                        # separate cell, so is left out.
+                        "language_not_english": ["POL_Tot_Tot"],
+                    }
+                }
+            ),
         }
 
     def acs_entity(self):
@@ -122,5 +134,24 @@ class CanadianLanguageCounts(StatCanCounts):
                 "language_spanish": counts["language_spanish"],
                 "language_other": counts["language_french"]
                 + counts["language_other_non_french"],
+            }
+        )
+
+
+class AustralianLanguageCounts(AustralianCounts):
+    """
+    Other is everything but English and Spanish, rather than a sum of the ~40 languages in it, which
+    comes up 2% short because perturbation zeroes small cells.
+    """
+
+    def compute(self, shapefile):
+        counts = super().compute(shapefile)
+        return pd.DataFrame(
+            {
+                "language_english_only": counts["language_english_only"],
+                "language_spanish": counts["language_spanish"],
+                "language_other": (
+                    counts["language_not_english"] - counts["language_spanish"]
+                ).clip(lower=0),
             }
         )

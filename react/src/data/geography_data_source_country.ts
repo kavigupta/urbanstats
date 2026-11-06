@@ -50,6 +50,15 @@ const value: Record<string, string> = {
     "CA Census Subdivision": "Canada",
     "CA Population Center": "Canada",
     "CA CMA": "Canada",
-    "CA Riding": "Canada"
+    "CA Riding": "Canada",
+    "AU LGA": "Australia",
+    "AU SA2": "Australia",
+    "AU Significant Urban Area": "Australia",
+    "AU Urban Centre": "Australia",
+    "AU Suburb": "Australia",
+    "AU Postcode": "Australia",
+    "AU Federal Electorate": "Australia",
+    "AU State Lower House District": "Australia",
+    "AU State Upper House Region": "Australia"
 }
 export default value

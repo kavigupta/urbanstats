@@ -7,6 +7,7 @@ from urbanstats.games.quiz_question_metadata import (
 )
 from urbanstats.statistics.national_census import (
     ACSCounts,
+    AustralianCounts,
     NationalCensusStatistics,
     StatCanCounts,
 )
@@ -14,7 +15,7 @@ from urbanstats.statistics.utils import fractionalize
 
 
 class MarriageStatistics(NationalCensusStatistics):
-    version = 1
+    version = 2
 
     def name_for_each_statistic(self):
         return {
@@ -58,6 +59,22 @@ class MarriageStatistics(NationalCensusStatistics):
         return {
             "USA": ACSCounts(self.acs_entity()),
             "Canada": StatCanCounts(self.census_tables_canada()),
+            "Australia": AustralianCounts(self.abs_tables()),
+        }
+
+    def abs_tables(self):
+        # Registered (legal) marital status, persons 15+. As in the US, separated people are still
+        # married and widowed people count as married.
+        return {
+            "G05": {
+                "marriage_never_married": ["P_Tot_Never_married"],
+                "marriage_married_not_divorced": [
+                    "P_Tot_Married",
+                    "P_Tot_Separated",
+                    "P_Tot_Widowed",
+                ],
+                "marriage_divorced": ["P_Tot_Divorced"],
+            }
         }
 
     def census_tables_canada(self):
