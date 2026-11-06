@@ -37,9 +37,11 @@ def abs_shapefile(
     include_in_syau=False,
     gridded_data=False,
 ):
-    """`kind` is what the region is called after its name, e.g. "LGA" in "Brisbane LGA"."""
+    """`kind` is what the region is called after its name, e.g. "LGA" in "Brisbane LGA", or None."""
     # pylint: disable=too-many-arguments
-    shortname = column(name_column) + f" {kind}"
+    shortname = column(name_column)
+    if kind is not None:
+        shortname = shortname + f" {kind}"
     state = "" if layer in LAYERS_WITHOUT_STATE else ", " + column("STE_NAME21")
 
     return make_shapefile(
@@ -124,11 +126,11 @@ AUSTRALIAN_SALS = abs_shapefile(
 AUSTRALIAN_POSTCODES = abs_shapefile(
     layer="POA",
     name_column="POA_NAME21",
-    kind="Postcode",
+    kind=None,
     type_name="AU Postcode",
     type_category="Small",
     abbreviation="ZIP",
-    version=1,
+    version=2,
 )
 AUSTRALIAN_FEDERAL_ELECTORATES = abs_shapefile(
     layer="CED",
