@@ -80,6 +80,15 @@ def canada_domestic_provider(overrides=None):
     )
 
 
+def australia_domestic_provider():
+    return CombinedUniverseProvider(
+        [
+            ConstantUniverseProvider(["world", "Oceania", "Australia"]),
+            AUSTRALIAN_STATE_PROVIDER,
+        ]
+    )
+
+
 INTERNATIONAL_PROVIDERS = [
     ConstantUniverseProvider(["world"]),
     ContainedWithinUniverseProvider(

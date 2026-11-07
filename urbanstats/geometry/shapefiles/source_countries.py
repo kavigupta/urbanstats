@@ -11,7 +11,7 @@ from urbanstats.geometry.relationship_equirectangular import compute_relationshi
 from urbanstats.geometry.shapefiles.longnames import shapefile_longnames
 
 # The countries whose statistics agencies are data sources
-SOURCE_COUNTRIES = ("USA", "Canada")
+SOURCE_COUNTRIES = ("USA", "Canada", "Australia")
 
 
 class SourceCountries(ABC):
@@ -166,8 +166,8 @@ def _subnational_source_countries(subnational):
     country = extract_country_longname(subnational)
     if country == "USA" and valid_state(subnational.NAME):
         return ("USA",)
-    if country == "Canada":
-        return ("Canada",)
+    if country in ("Canada", "Australia"):
+        return (country,)
     # including the US territories other than Puerto Rico, which aren't in the census
     return None
 

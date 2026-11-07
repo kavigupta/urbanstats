@@ -32,7 +32,9 @@ COUNTRIES = make_shapefile(
             SelfUniverseProvider(),
         ]
     ),
-    source_countries=IsCountry({"USA": "USA", "Canada": "Canada"}),
+    source_countries=IsCountry(
+        {"USA": "USA", "Canada": "Canada", "Australia": "Australia"}
+    ),
     cross_source_borders=CrossSourceBorders(can_straddle=False),
     abbreviation="CTRY",
     data_credit=SUBNATIONAL_REGIONS.metadata.data_credit,

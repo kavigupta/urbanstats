@@ -1,4 +1,5 @@
 const value: Record<string, string> = {
+    "Australia": "Australia",
     "Canada": "Canada",
     "USA": "USA",
     "Alabama, USA": "USA",
@@ -69,6 +70,14 @@ const value: Record<string, string> = {
     "Prince Edward Island, Canada": "Canada",
     "Quebec, Canada": "Canada",
     "Saskatchewan, Canada": "Canada",
-    "Yukon, Canada": "Canada"
+    "Yukon, Canada": "Canada",
+    "Australian Capital Territory, Australia": "Australia",
+    "New South Wales, Australia": "Australia",
+    "Northern Territory, Australia": "Australia",
+    "Queensland, Australia": "Australia",
+    "South Australia, Australia": "Australia",
+    "Tasmania, Australia": "Australia",
+    "Victoria, Australia": "Australia",
+    "Western Australia, Australia": "Australia"
 }
 export default value
