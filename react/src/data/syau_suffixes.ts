@@ -15,7 +15,6 @@ const value: string[] = [
     "ccd",
     "village",
     "hsa",
-    "postcode",
     "borough",
     "sa2",
     "ucl",
