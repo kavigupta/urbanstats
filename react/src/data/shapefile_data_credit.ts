@@ -88,8 +88,8 @@ const value: {names: string[], dataCredits: {text: string | null, linkText: stri
     {
         "names": [
             "AU LGA",
-            "AU Significant Urban Area",
             "AU Suburb",
+            "AU Significant Urban Area",
             "AU SA2",
             "AU UCL",
             "AU Postcode",

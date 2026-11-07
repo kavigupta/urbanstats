@@ -53,7 +53,7 @@ const value: Record<string, string> = {
     "CA Riding": "Political",
     "AU LGA": "US Subdivision",
     "AU SA2": "Census",
-    "AU Significant Urban Area": "International City",
+    "AU Significant Urban Area": "Census",
     "AU UCL": "Census",
     "AU Suburb": "International City",
     "AU Postcode": "Small",
