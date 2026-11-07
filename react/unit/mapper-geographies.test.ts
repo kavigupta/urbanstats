@@ -183,6 +183,45 @@ void test('short names drop what region it is within, but keep what kind of regi
     assert.equal(cities.get('Salt Lake City city, Utah, USA'), 'Salt Lake City city')
 })
 
+void test('each region lists the universes it is in, lined up with its name', async () => {
+    const variables = await mapVariables([usaStates, icelandRegions], 'population', 'universes = geoUniverses\n')
+    const longnames = variables.get('geoName')!.value as string[]
+    const universes = variables.get('geoUniverses')!.value as string[][]
+    assert.equal(universes.length, longnames.length)
+
+    const california = universes[longnames.indexOf('California, USA')]
+    assert.ok(california.includes('USA') && california.includes('California, USA') && !california.includes('Iceland'), california.join())
+    const icelandRow = universes[longnames.findIndex(longname => longname.endsWith(', Iceland'))]
+    assert.ok(icelandRow.includes('Iceland') && !icelandRow.includes('USA'), icelandRow.join())
+})
+
+void test('a repeat request over the same geographies does not reload universes', async () => {
+    const executor = createRequestExecutor()
+    const run = async (): Promise<unknown> => {
+        const result = await executor({
+            descriptor: { kind: 'mapper', geographies: [usaStates, icelandRegions] },
+            stmts: toStatement(mapUSSFromString('universes = geoUniverses\ncMap(data=population, scale=linearScale(), ramp=rampUridis)')),
+        })
+        assert.deepEqual(result.error, [])
+        return result.assignments.variables!.get('geoUniverses')!.value
+    }
+    const first = await run()
+
+    const originalFetch = global.fetch
+    const fetched: unknown[] = []
+    global.fetch = (path, ...args) => {
+        fetched.push(path)
+        return originalFetch(path, ...args)
+    }
+    try {
+        assert.deepEqual(await run(), first)
+    }
+    finally {
+        global.fetch = originalFetch
+    }
+    assert.deepEqual(fetched, [])
+})
+
 void test('clean names drop what kind of region it is and what it is within', async () => {
     const states = await cleanNames(usaStates)
     assert.equal(states.get('California, USA'), 'California')
