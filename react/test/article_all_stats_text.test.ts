@@ -15,6 +15,7 @@ for (const [name, longname] of [
     ['zip-10001', '10001, USA'],
     ['detroit-urban-center', 'Detroit Urban Center, Canada-USA'],
     ['toronto-cma', 'Toronto CMA, ON, Canada'],
+    ['sydney-sua', 'Sydney SUA, Australia'],
     ['india', 'India'],
 ]) {
     urbanstatsFixture(`all stats text ${name}`, `/article.html?longname=${encodeURIComponent(longname)}`)
