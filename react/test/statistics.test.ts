@@ -185,7 +185,7 @@ urbanstatsFixture('statistic ascending descending', `${target}/statistic.html?st
 // get elements on page
 
 async function getElements(): Promise<string[]> {
-    const elements = Selector('div').withText(/, (USA|Canada)$/)
+    const elements = Selector('div').withText(/, (USA|Canada|Australia)$/)
     const texts: string[] = []
     for (let i = 0; i < (await elements.count); i++) {
         texts.push(await elements.nth(i).innerText)
