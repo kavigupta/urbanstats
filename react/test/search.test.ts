@@ -12,6 +12,7 @@ import {
     waitForLoading,
     withInterceptedRequests,
     cdpSessionWithSessionId,
+    debugLog,
 } from './test_utils'
 
 urbanstatsFixture('shorter article test', `${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
@@ -87,6 +88,9 @@ test('search results hidden on blur and shown on refocus', async (t) => {
     // Click outside the search field to blur it
     await t.click(Selector('body'), { offsetX: 10, offsetY: 10 })
     await t.expect(Selector('[data-test-id=selected-search-result]').exists).notOk()
+    await t.wait(1000)
+    const workerRequests = (await debugLog()).filter(({ text }) => text.startsWith('Requested new search worker'))
+    await t.expect(workerRequests.filter(({ tab }) => tab === workerRequests.at(-1)!.tab).length).eql(1)
     // Refocus the search field
     await t.click(searchField)
     await t.expect(Selector('[data-test-id=selected-search-result]').exists).ok()

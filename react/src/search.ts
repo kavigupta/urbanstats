@@ -445,6 +445,12 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
 
 type ReportStatus = (message: string) => Promise<void>
 
+let cacheWrite = Promise.resolve()
+
+export function waitForCacheWrite(): Promise<void> {
+    return cacheWrite
+}
+
 // Potentially cached
 export async function createIndex(config: SearchIndexConfig, reportStatus: ReportStatus): Promise<(params: SearchParams) => SearchResult[]> {
     const statsIndexPromise = config.statsUniverse && createStatsIndex(config.statsUniverse)
@@ -480,11 +486,21 @@ export async function createIndex(config: SearchIndexConfig, reportStatus: Repor
             debugPerformance('Cache miss')
             index = await createIndexNoCache(status => reportStatus(`Cache miss: ${status}`))
 
-            void (async () => {
-                const writeStore = db.transaction('indexes', 'readwrite').objectStore('indexes')
-                const keys = await writeStore.getAllKeys()
-                await Promise.all(keys.map(k => writeStore.delete(k)))
-                await writeStore.put(index, cacheKey)
+            const indexToWrite = index
+            cacheWrite = (async () => {
+                const writeStart = performance.now()
+                try {
+                    const transaction = db.transaction('indexes', 'readwrite')
+                    const writeStore = transaction.objectStore('indexes')
+                    const keys = await writeStore.getAllKeys()
+                    await Promise.all(keys.map(k => writeStore.delete(k)))
+                    await writeStore.put(indexToWrite, cacheKey)
+                    await transaction.done
+                    debugPerformance(`Took ${performance.now() - writeStart}ms to write index to cache`)
+                }
+                catch (error) {
+                    debugPerformance(`Writing index to cache failed after ${performance.now() - writeStart}ms: ${String(error)}`)
+                }
             })()
         }
         else {
