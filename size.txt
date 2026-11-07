@@ -585,3 +585,13 @@ Add Australian states as universes (#2605)
 757     order
 1487    data
 3387    total
+
+Add Australian census geographies (#2618)
+
+59      index
+140     consolidated
+178     quiz_sampling_info
+788     order
+822     shape
+1515    data
+3599    total
