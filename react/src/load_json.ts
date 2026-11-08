@@ -213,7 +213,7 @@ function pullKey(arr: number[], key: string): number {
     throw new Error('index not found')
 }
 
-async function loadUniverses(type: string): Promise<ArticleUniverseList> {
+export async function loadUniverses(type: string): Promise<ArticleUniverseList> {
     return loadProtobuf(`/universes/${type}.gz`, 'ArticleUniverseList')
 }
 

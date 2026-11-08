@@ -30,7 +30,7 @@ async function addVariablesToContext(ctx: Context, stmts: UrbanStatsASTStatement
     const dte = defaultTypeEnvironment(universes)
     const ids = allIdentifiers(stmts, ctx)
 
-    const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geoName', 'geoShortName', 'geoCleanName', 'geo', 'geoCentroid', 'defaultInsets']
+    const variables = [...statistic_variables_info.variableNames.map(v => v.varName), 'geoName', 'geoShortName', 'geoCleanName', 'geoUniverses', 'geo', 'geoCentroid', 'defaultInsets']
 
     // Some variables are always loaded, regardless of whether they are used in the statements
     // This is helpful for some operations, such as CSV export
@@ -115,6 +115,15 @@ export const defaultTypeEnvironment = (universe: Universe | Universe[] | undefin
             humanReadableName: 'Clean Name',
             category: 'mapper',
             longDescription: 'The colloquial name of each region, without what kind of region it is (e.g. "County") or what region it is within (e.g. "California, USA"). For example, Los Angeles County, California, USA is just "Los Angeles".',
+        },
+    })
+
+    te.set('geoUniverses', {
+        type: { type: 'vector', elementType: { type: 'vector', elementType: { type: 'string' } } },
+        documentation: {
+            humanReadableName: 'Universes',
+            category: 'mapper',
+            longDescription: 'The universes each region is in, e.g. ["world", "North America", "USA", "California, USA"] for Los Angeles County, California, USA.',
         },
     })
 
