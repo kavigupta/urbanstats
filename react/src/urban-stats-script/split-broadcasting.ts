@@ -29,6 +29,11 @@ function collectUniqueMaskValues(collectIn: Set<USSPrimitiveRawValue>, mask: USS
     }
 }
 
+// Matches the Set in collectUniqueMaskValues, which groups NaN with NaN
+function sameMaskValue(maskValue: USSRawValue, reference: USSPrimitiveRawValue): boolean {
+    return maskValue === reference || (Number.isNaN(maskValue) && Number.isNaN(reference))
+}
+
 function repeatMany(value: USSValue, count: number): { type: 'success', value: USSValue & { type: USSVectorType } } | { type: 'error', message: string } {
     const vt = value.type
     if (vt.type === 'vector') {
@@ -85,7 +90,7 @@ function indexMaskComposite(value: USSValue, mask: USSValue, reference: USSPrimi
         case 'number':
         case 'string':
         case 'null':
-            const retval = mask.value === reference ? [value.value] : []
+            const retval = sameMaskValue(mask.value, reference) ? [value.value] : []
             return { type: 'success', value: { type: { type: 'vector', elementType: valueType }, value: retval, documentation: value.documentation } }
         case 'vector':
             const maskVector = mask.value as USSRawValue[]
@@ -293,7 +298,7 @@ export function mergeValuesViaMasks(
     const indices = Array.from({ length: values.length }, () => 0)
     const result: (USSValue | undefined)[] = []
     for (let i = 0; i < maskVector.length; i++) {
-        const whichValue = references.indexOf(maskVector[i])
+        const whichValue = references.findIndex(reference => sameMaskValue(maskVector[i], reference))
         assert (whichValue !== -1, `Reference ${references[i]} not found in mask}`)
         // special case null values.
         result.push(values[whichValue].type.type === 'null' ? undefined : index(values[whichValue], indices[whichValue]))
@@ -335,7 +340,7 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
             // Split on string keys standing in for each vector of primitives
             const valuesByKey = new Map<string, USSRawValue>()
             const keys = (mask.value as USSPrimitiveRawValue[][]).map((value) => {
-                const key = JSON.stringify(value.map(x => [typeof x, String(x)]))
+                const key = JSON.stringify(value.map(String))
                 valuesByKey.set(key, value)
                 return key
             })
