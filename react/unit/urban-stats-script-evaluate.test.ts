@@ -692,6 +692,10 @@ void test('evaluate split expressions', (): void => {
         execute(parseProgram('x = [1, 2, 3]; split ([1, 2, 1]) { sum(x) }'), emptyContext()),
         undocValue([4, 2, 4], numVectorType),
     )
+    assert.deepStrictEqual(
+        execute(parseProgram('x = [1, 2, 3]; split ([1, 0 / 0, 1]) { y = sum(x) }; y'), emptyContext()),
+        undocValue([4, 2, 4], numVectorType),
+    )
     assert.throws(
         () => execute(parseProgram('x = [1, 2, 3]; split ([1, 2]) { x }'), emptyContext()),
         (err: Error): boolean => {
