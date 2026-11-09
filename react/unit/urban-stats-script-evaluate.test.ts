@@ -540,21 +540,7 @@ void test('more if expressions', (): void => {
     assert.throws(
         () => execute(parseProgram(codeWNested), emptyContext()),
         (err: Error): boolean => {
-            return err instanceof InterpretationError && err.message === 'Error merging values for variable x: Cannot condition on a mask of type [[boolean]] at 3:9 - 5:10'
-        },
-    )
-    // same as above but the mask's second dimensions don't line up
-    const codeWIncompatibleNested = `
-        x = [[1, 2, 3, 4, 5, 6]]
-        if ([[1, 1, 2, 2, 3]] == 1) {
-            y = x + 1
-        }
-        y
-        `
-    assert.throws(
-        () => execute(parseProgram(codeWIncompatibleNested), emptyContext()),
-        (err: Error): boolean => {
-            return err instanceof InterpretationError && err.message === 'Conditional error: Error indexing variable x: Mask length 5 does not match value length 6 at 3:13-34'
+            return err instanceof InterpretationError && err.message === 'Condition in if statement must be a boolean, but got [boolean] at 3:13-37'
         },
     )
     // does not define y

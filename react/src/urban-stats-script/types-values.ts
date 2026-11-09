@@ -265,7 +265,7 @@ export function createConstantExpression(value: number | string | boolean | null
     }
 }
 
-function isPrimitiveType(type: USSType): boolean {
+export function isPrimitiveType(type: USSType): boolean {
     return type.type === 'number' || type.type === 'string' || type.type === 'boolean' || type.type === 'null'
 }
 

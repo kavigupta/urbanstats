@@ -2,7 +2,7 @@ import { assert } from '../utils/defensive'
 
 import { Context } from './context'
 import { LocInfo } from './location'
-import { getPrimitiveType, renderType, undocValue, unifyType, USSPrimitiveRawValue, USSRawValue, USSType, USSValue, USSVectorType } from './types-values'
+import { getPrimitiveType, isPrimitiveType, renderType, undocValue, unifyType, USSPrimitiveRawValue, USSRawValue, USSType, USSValue, USSVectorType } from './types-values'
 
 function collectUniqueMaskValues(collectIn: Set<USSPrimitiveRawValue>, mask: USSValue): boolean {
     const t = mask.type
@@ -328,6 +328,26 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
      * The function is expected to return a USSValue.
      * If the mask is not a valid mask, an error is thrown.
      */
+    const maskType = mask.type
+    if (maskType.type === 'vector' && maskType.elementType.type === 'vector') {
+        const valueType = maskType.elementType
+        if (valueType.elementType.type === 'elementOfEmptyVector' || isPrimitiveType(valueType.elementType)) {
+            // Split on string keys standing in for each vector of primitives
+            const valuesByKey = new Map<string, USSRawValue>()
+            const keys = (mask.value as USSPrimitiveRawValue[][]).map((value) => {
+                const key = JSON.stringify(value.map(x => [typeof x, String(x)]))
+                valuesByKey.set(key, value)
+                return key
+            })
+            return splitMask(
+                env,
+                { type: { type: 'vector', elementType: { type: 'string' } }, value: keys, documentation: mask.documentation },
+                (key, subEnv) => fn({ type: valueType, value: valuesByKey.get(key.value as string)!, documentation: mask.documentation }, subEnv),
+                errLocCondition,
+                errLocIf,
+            )
+        }
+    }
     const collectIn = new Set<USSPrimitiveRawValue>()
     if (!collectUniqueMaskValues(collectIn, mask)) {
         throw env.error(`Conditional mask must be a vector of numbers, strings, or booleans, but got ${renderType(mask.type)}`, errLocCondition)
@@ -343,7 +363,6 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
     if (uniqueValueArray.length === 0) {
         throw env.error(`Conditional mask must have at least one unique value, but got none`, errLocCondition)
     }
-    const maskType = mask.type
     if (uniqueValueArray.length === 1) {
         // if there is only one unique value, we can just return the result of the function
         return fn({ type: getPrimitiveType(uniqueValueArray[0]), value: uniqueValueArray[0], documentation: mask.documentation }, env)

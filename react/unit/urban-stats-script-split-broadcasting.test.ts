@@ -276,4 +276,17 @@ void test('split mask testing', (): void => {
         ),
         undocValue(9, numType),
     )
+    // each vector of primitives in the mask is one value
+    assert.deepStrictEqual(
+        splitMask(
+            basicContext(),
+            undocValue([[1, 2], [3], [1, 2], [], [3], [1, 2], [], [1], [1, 2]], numMatrixType),
+            (value: USSValue, ctx: Context): USSValue => {
+                return undocValue((value.value as number[]).length * 100 + (ctx.getVariable('a')!.value as USSRawValue[]).length, numType)
+            },
+            defaultLocInfo,
+            defaultLocInfo,
+        ),
+        undocValue([204, 102, 204, 2, 102, 204, 2, 101, 204], numVectorType),
+    )
 })
