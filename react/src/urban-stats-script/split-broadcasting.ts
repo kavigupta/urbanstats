@@ -2,7 +2,7 @@ import { assert } from '../utils/defensive'
 
 import { Context } from './context'
 import { LocInfo } from './location'
-import { getPrimitiveType, renderType, undocValue, unifyType, USSPrimitiveRawValue, USSRawValue, USSType, USSValue, USSVectorType } from './types-values'
+import { getPrimitiveType, isPrimitiveType, renderType, undocValue, unifyType, USSPrimitiveRawValue, USSRawValue, USSType, USSValue, USSVectorType } from './types-values'
 
 function collectUniqueMaskValues(collectIn: Set<USSPrimitiveRawValue>, mask: USSValue): boolean {
     const t = mask.type
@@ -27,6 +27,11 @@ function collectUniqueMaskValues(collectIn: Set<USSPrimitiveRawValue>, mask: USS
             // We don't support objects or functions as masks, so we return false
             return false
     }
+}
+
+// Matches the Set in collectUniqueMaskValues, which groups NaN with NaN
+function sameMaskValue(maskValue: USSRawValue, reference: USSPrimitiveRawValue): boolean {
+    return maskValue === reference || (Number.isNaN(maskValue) && Number.isNaN(reference))
 }
 
 function repeatMany(value: USSValue, count: number): { type: 'success', value: USSValue & { type: USSVectorType } } | { type: 'error', message: string } {
@@ -85,7 +90,7 @@ function indexMaskComposite(value: USSValue, mask: USSValue, reference: USSPrimi
         case 'number':
         case 'string':
         case 'null':
-            const retval = mask.value === reference ? [value.value] : []
+            const retval = sameMaskValue(mask.value, reference) ? [value.value] : []
             return { type: 'success', value: { type: { type: 'vector', elementType: valueType }, value: retval, documentation: value.documentation } }
         case 'vector':
             const maskVector = mask.value as USSRawValue[]
@@ -293,7 +298,7 @@ export function mergeValuesViaMasks(
     const indices = Array.from({ length: values.length }, () => 0)
     const result: (USSValue | undefined)[] = []
     for (let i = 0; i < maskVector.length; i++) {
-        const whichValue = references.indexOf(maskVector[i])
+        const whichValue = references.findIndex(reference => sameMaskValue(maskVector[i], reference))
         assert (whichValue !== -1, `Reference ${references[i]} not found in mask}`)
         // special case null values.
         result.push(values[whichValue].type.type === 'null' ? undefined : index(values[whichValue], indices[whichValue]))
@@ -328,9 +333,29 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
      * The function is expected to return a USSValue.
      * If the mask is not a valid mask, an error is thrown.
      */
+    const maskType = mask.type
+    if (maskType.type === 'vector' && maskType.elementType.type === 'vector') {
+        const valueType = maskType.elementType
+        if (valueType.elementType.type === 'elementOfEmptyVector' || isPrimitiveType(valueType.elementType)) {
+            // Split on string keys standing in for each vector of primitives
+            const valuesByKey = new Map<string, USSRawValue>()
+            const keys = (mask.value as USSPrimitiveRawValue[][]).map((value) => {
+                const key = JSON.stringify(value.map(String))
+                valuesByKey.set(key, value)
+                return key
+            })
+            return splitMask(
+                env,
+                { type: { type: 'vector', elementType: { type: 'string' } }, value: keys, documentation: mask.documentation },
+                (key, subEnv) => fn({ type: valueType, value: valuesByKey.get(key.value as string)!, documentation: mask.documentation }, subEnv),
+                errLocCondition,
+                errLocIf,
+            )
+        }
+    }
     const collectIn = new Set<USSPrimitiveRawValue>()
     if (!collectUniqueMaskValues(collectIn, mask)) {
-        throw env.error(`Conditional mask must be a vector of numbers, strings, or booleans, but got ${renderType(mask.type)}`, errLocCondition)
+        throw env.error(`Conditional mask must be a vector of numbers, strings, booleans, or vectors of those, but got ${renderType(mask.type)}`, errLocCondition)
     }
     const uniqueValueArray = Array.from(collectIn).sort((a, b) => {
         // stringify the values to compare them
@@ -343,7 +368,6 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
     if (uniqueValueArray.length === 0) {
         throw env.error(`Conditional mask must have at least one unique value, but got none`, errLocCondition)
     }
-    const maskType = mask.type
     if (uniqueValueArray.length === 1) {
         // if there is only one unique value, we can just return the result of the function
         return fn({ type: getPrimitiveType(uniqueValueArray[0]), value: uniqueValueArray[0], documentation: mask.documentation }, env)
