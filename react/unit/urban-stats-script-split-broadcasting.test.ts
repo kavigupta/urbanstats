@@ -231,6 +231,7 @@ void test('split mask testing', (): void => {
             lengthFn,
             defaultLocInfo,
             defaultLocInfo,
+            'Conditional',
         ),
         undocValue([5, 5, 5, 4, 4, 5, 5, 4, 4], numVectorType),
     )
@@ -243,6 +244,7 @@ void test('split mask testing', (): void => {
             },
             defaultLocInfo,
             defaultLocInfo,
+            'Conditional',
         ),
         undocValue(9, numType),
     )
@@ -253,6 +255,7 @@ void test('split mask testing', (): void => {
             lengthFn,
             defaultLocInfo,
             defaultLocInfo,
+            'Conditional',
         ),
         undocValue(1, numType),
     )
@@ -263,6 +266,7 @@ void test('split mask testing', (): void => {
             lengthFn,
             defaultLocInfo,
             defaultLocInfo,
+            'Conditional',
         ),
         undocValue([3, 2, 1, 3, 1, 3, 1, 1, 2], numVectorType),
     )
@@ -273,6 +277,7 @@ void test('split mask testing', (): void => {
             lengthFn,
             defaultLocInfo,
             defaultLocInfo,
+            'Conditional',
         ),
         undocValue(9, numType),
     )
@@ -286,6 +291,7 @@ void test('split mask testing', (): void => {
             },
             defaultLocInfo,
             defaultLocInfo,
+            'Conditional',
         ),
         undocValue([204, 102, 204, 2, 102, 204, 2, 101, 204], numVectorType),
     )
@@ -296,6 +302,7 @@ void test('split mask testing', (): void => {
             lengthFn,
             defaultLocInfo,
             defaultLocInfo,
+            'Conditional',
         ),
         undocValue([5, 4, 5, 4, 5, 4, 5, 4, 5], numVectorType),
     )
@@ -306,6 +313,7 @@ void test('split mask testing', (): void => {
             lengthFn,
             defaultLocInfo,
             defaultLocInfo,
+            'Conditional',
         ),
         undocValue([5, 4, 5, 4, 5, 4, 5, 4, 5], numVectorType),
     )
@@ -320,6 +328,7 @@ void test('split mask testing', (): void => {
         },
         defaultLocInfo,
         defaultLocInfo,
+        'Conditional',
     )
     assert.deepStrictEqual(ctx.getVariable('c'), undocValue([5, 4, 5, 4, 5, 4, 5, 4, 5], numVectorType))
 })
