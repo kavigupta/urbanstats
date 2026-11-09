@@ -675,6 +675,25 @@ void test('more if expressions', (): void => {
     )
 })
 
+void test('evaluate split expressions', (): void => {
+    const codeWVectorValues = `
+        x = [1, 2, 3, 10, 20, 30]
+        universes = [["a"], ["a"], ["a"], ["a", "b"], ["a", "b"], ["a", "b"]]
+        split (universes) {
+            y = x - mean(x)
+        }
+        y
+        `
+    assert.deepStrictEqual(
+        execute(parseProgram(codeWVectorValues), emptyContext()),
+        undocValue([-1, 0, 1, -10, 0, 10], numVectorType),
+    )
+    assert.deepStrictEqual(
+        execute(parseProgram('x = [1, 2, 3]; split ([1, 2, 1]) { sum(x) }'), emptyContext()),
+        undocValue([4, 2, 4], numVectorType),
+    )
+})
+
 void test('evaluate if expressions mutations', (): void => {
     const ctx: Context = emptyContext()
     ctx.assignVariable('xs', undocValue([1, 2, 3, 4, 5, 6], numVectorType))

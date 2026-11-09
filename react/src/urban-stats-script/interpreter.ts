@@ -123,6 +123,14 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
                 locationOf(expr),
                 'Conditional',
             )
+        case 'split':
+            return splitMask(
+                env,
+                evaluate(expr.value, env),
+                (_, subEnv: Context): USSValue => execute(expr.body, subEnv),
+                locationOf(expr.value),
+                locationOf(expr),
+            )
         case 'do':
             if (expr.statements.length === 0) {
                 return undocValue(null, { type: 'null' })
