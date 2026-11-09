@@ -6,7 +6,7 @@ import { LocInfo } from '../src/urban-stats-script/location'
 import { indexMask, mergeValuesViaMasks, splitMask } from '../src/urban-stats-script/split-broadcasting'
 import { USSRawValue, USSType, USSValue, USSVectorType, undocValue } from '../src/urban-stats-script/types-values'
 
-import { numMatrixType, numType, numVectorType, testingContext } from './urban-stats-script-utils'
+import { numMatrixType, numType, numVectorType, stringType, testingContext } from './urban-stats-script-utils'
 
 void test('index mask', (): void => {
     // vector/vector
@@ -295,4 +295,37 @@ void test('split mask testing', (): void => {
         ),
         undocValue([204, 102, 204, 2, 102, 204, 2, 101, 204], numVectorType),
     )
+    assert.deepStrictEqual(
+        splitMask(
+            basicContext(),
+            undocValue([NaN, 1, NaN, 1, NaN, 1, NaN, 1, NaN], numVectorType),
+            lengthFn,
+            defaultLocInfo,
+            defaultLocInfo,
+        ),
+        undocValue([5, 4, 5, 4, 5, 4, 5, 4, 5], numVectorType),
+    )
+    assert.deepStrictEqual(
+        splitMask(
+            basicContext(),
+            undocValue([[NaN], [1], [NaN], [1], [NaN], [1], [NaN], [1], [NaN]], numMatrixType),
+            lengthFn,
+            defaultLocInfo,
+            defaultLocInfo,
+        ),
+        undocValue([5, 4, 5, 4, 5, 4, 5, 4, 5], numVectorType),
+    )
+    // variables assigned in each group are merged back
+    const ctx = basicContext()
+    splitMask(
+        ctx,
+        undocValue([['a,b'], ['a', 'b'], ['a,b'], ['a', 'b'], ['a,b'], ['a', 'b'], ['a,b'], ['a', 'b'], ['a,b']], { type: 'vector', elementType: { type: 'vector', elementType: stringType } }),
+        (value: USSValue, subCtx: Context): USSValue => {
+            subCtx.assignVariable('c', lengthFn(value, subCtx))
+            return undocValue(null, { type: 'null' })
+        },
+        defaultLocInfo,
+        defaultLocInfo,
+    )
+    assert.deepStrictEqual(ctx.getVariable('c'), undocValue([5, 4, 5, 4, 5, 4, 5, 4, 5], numVectorType))
 })
