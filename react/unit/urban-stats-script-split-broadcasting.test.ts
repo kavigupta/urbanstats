@@ -302,6 +302,7 @@ void test('split mask testing', (): void => {
             lengthFn,
             defaultLocInfo,
             defaultLocInfo,
+            'Conditional',
         ),
         undocValue([5, 4, 5, 4, 5, 4, 5, 4, 5], numVectorType),
     )
@@ -312,6 +313,7 @@ void test('split mask testing', (): void => {
             lengthFn,
             defaultLocInfo,
             defaultLocInfo,
+            'Conditional',
         ),
         undocValue([5, 4, 5, 4, 5, 4, 5, 4, 5], numVectorType),
     )
@@ -326,6 +328,7 @@ void test('split mask testing', (): void => {
         },
         defaultLocInfo,
         defaultLocInfo,
+        'Conditional',
     )
     assert.deepStrictEqual(ctx.getVariable('c'), undocValue([5, 4, 5, 4, 5, 4, 5, 4, 5], numVectorType))
 })
