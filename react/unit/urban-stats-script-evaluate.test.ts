@@ -761,7 +761,7 @@ void test('evaluate objects', (): void => {
     assert.throws(
         () => evaluate(parseExpr('if ({a: 1, b: 2}) {}'), ctx),
         (err: Error): boolean => {
-            return err instanceof InterpretationError && err.message === 'Conditional mask must be a vector of numbers, strings, or booleans, but got {a: number, b: number} at 1:5-16'
+            return err instanceof InterpretationError && err.message === 'Conditional mask must be a vector of numbers, strings, booleans, or vectors of those, but got {a: number, b: number} at 1:5-16'
         },
     )
     // duplicate keys

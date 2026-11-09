@@ -350,7 +350,7 @@ export function splitMask(env: Context, mask: USSValue, fn: (value: USSValue, su
     }
     const collectIn = new Set<USSPrimitiveRawValue>()
     if (!collectUniqueMaskValues(collectIn, mask)) {
-        throw env.error(`Conditional mask must be a vector of numbers, strings, or booleans, but got ${renderType(mask.type)}`, errLocCondition)
+        throw env.error(`Conditional mask must be a vector of numbers, strings, booleans, or vectors of those, but got ${renderType(mask.type)}`, errLocCondition)
     }
     const uniqueValueArray = Array.from(collectIn).sort((a, b) => {
         // stringify the values to compare them
