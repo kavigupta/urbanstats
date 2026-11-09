@@ -130,6 +130,7 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
                 (_, subEnv: Context): USSValue => execute(expr.body, subEnv),
                 locationOf(expr.value),
                 locationOf(expr),
+                'Split',
             )
         case 'do':
             if (expr.statements.length === 0) {
