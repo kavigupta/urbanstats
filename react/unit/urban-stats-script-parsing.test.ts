@@ -295,6 +295,13 @@ void test('basic if parsing', (): void => {
     )
 })
 
+void test('basic split parsing', (): void => {
+    assert.deepStrictEqual(
+        parseAndRender('split (x) { y = 2 }'),
+        '(expr (split (id x) (assign (id y) (const 2))))',
+    )
+})
+
 void test('more complex if parsing', (): void => {
     assert.deepStrictEqual(
         parseAndRender('regr = linear_regression(y=commute_transit, x0=commute_car, weight=population)'),
@@ -718,6 +725,10 @@ void test('unparse', (): void => {
         'condition (x)\nx = 2;\ny = 3',
     )
     assert.deepStrictEqual(parseThenUnparse('"\\n"'), '"\\n"')
+    assert.deepStrictEqual(
+        parseThenUnparse('split (x) { y = 2; z = 3 }'),
+        'split (x) {\n    y = 2;\n    z = 3\n}',
+    )
 })
 
 void test('well-formatted-uss', (): void => {

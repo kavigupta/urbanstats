@@ -64,6 +64,8 @@ export function toSExp(node: UrbanStatsAST): string {
             return `(statements ${node.result.map(toSExp).join(' ')})`
         case 'if':
             return `(if ${toSExp(node.condition)} ${toSExp(node.then)}${node.else ? ` ${toSExp(node.else)}` : ''})`
+        case 'split':
+            return `(split ${toSExp(node.value)} ${toSExp(node.body)})`
         case 'do':
             return `(do ${node.statements.map(toSExp).join(' ')})`
         case 'condition':
@@ -322,6 +324,10 @@ class ParseState {
             return this.parseIfExpression()
         }
 
+        if (this.consumeKeyword('split')) {
+            return this.parseSplitExpression()
+        }
+
         if (this.consumeKeyword('do')) {
             return this.parseDoExpression()
         }
@@ -429,6 +435,7 @@ class ParseState {
             case 'vectorLiteral':
             case 'objectLiteral':
             case 'if':
+            case 'split':
             case 'do':
             case 'autoUXNode':
             case 'customNode':
@@ -496,6 +503,34 @@ class ParseState {
             condition,
             then,
             else: elseBranch,
+        }
+    }
+
+    parseSplitExpression(): UrbanStatsASTExpression | ParseError {
+        const splitToken = this.tokens[this.index - 1]
+        if (!this.consumeBracket('(')) {
+            return { type: 'error', value: 'Expected opening bracket ( after split', location: this.maybeLastNonEOLToken(-1).location }
+        }
+        const value = this.parseExpression()
+        if (value.type === 'error') {
+            return value
+        }
+        if (!this.consumeBracket(')')) {
+            return { type: 'error', value: 'Expected closing bracket ) after split value', location: this.maybeLastNonEOLToken(-1).location }
+        }
+        if (!this.consumeBracket('{')) {
+            return { type: 'error', value: 'Expected opening bracket { after split value', location: this.maybeLastNonEOLToken(-1).location }
+        }
+        const body = this.parseStatements(true, () => this.consumeBracket('}'), 'Expected } after split block')
+        if (body.type === 'error') {
+            return body
+        }
+        const lastToken = this.tokens[this.index - 1]
+        return {
+            type: 'split',
+            entireLoc: unify(splitToken.location, lastToken.location),
+            value,
+            body,
         }
     }
 
@@ -768,6 +803,10 @@ function leafExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression)
                     helper(n.else)
                 }
                 return true
+            case 'split':
+                helper(n.value)
+                helper(n.body)
+                return true
             case 'do':
                 n.statements.forEach(helper)
                 return true
@@ -1005,6 +1044,12 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
                     : ` else {\n${elseStr}\n${indentSpaces(opts.indent)}}`
             }
             return ifStr
+        case 'split':
+            const splitValueStr = unparse(node.value, { ...opts, expressionalContext: true })
+            const bodyStr = unparse(node.body, { ...opts, indent: opts.indent + 1 })
+            return opts.inline
+                ? `split (${splitValueStr}) { ${bodyStr} }`
+                : `split (${splitValueStr}) {\n${bodyStr}\n${indentSpaces(opts.indent)}}`
         case 'do':
             const doStatements = { type: 'statements' as const, result: node.statements, entireLoc: node.entireLoc }
             const doStr = unparse(doStatements, { ...opts, indent: opts.indent + 1 })

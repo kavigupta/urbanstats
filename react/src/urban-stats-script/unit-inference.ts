@@ -274,6 +274,11 @@ function inferBestEffort(ast: Expression, scope: Scope, wanted: UnitExpectation)
                 },
             }
         }
+        case 'split': {
+            const value = inferWithFallback(ast.value, scope, noUnitExpectation)
+            const body = inferStatement(ast.body, after(scope, value), wanted)
+            return { ...body, ast: { ...ast, value: packExpression(value), body: body.ast } }
+        }
         case 'do': {
             const block = inferBlock(ast.statements, scope, wanted)
             return { ...block, ast: { ...ast, statements: block.ast } }
