@@ -54,7 +54,7 @@ void describe('crossSourceBorderExclusion', () => {
                 kind: 'straddles-border',
                 excludedCount: 9,
                 totalCount: 337,
-                statisticCountries: ['USA', 'Canada'],
+                statisticCountries: ['USA', 'Canada', 'Australia'],
                 alternative: { kind: 'broader-source', statName: ghslPopulation },
             })
         })
@@ -89,9 +89,9 @@ void describe('crossSourceBorderExclusion', () => {
         void test('offers the broader source when the statistic has one', async () => {
             assert.deepEqual(await exclusion(censusPopulation, 'Urban Center', 'world'), {
                 kind: 'outside-jurisdiction',
-                excludedCount: 9784,
+                excludedCount: 9757,
                 totalCount: 10158,
-                statisticCountries: ['USA', 'Canada'],
+                statisticCountries: ['USA', 'Canada', 'Australia'],
                 alternative: { kind: 'broader-source', statName: ghslPopulation },
             })
         })
