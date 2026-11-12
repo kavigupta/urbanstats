@@ -49,10 +49,14 @@ NAMES_WITH_PARENTHESES = (
 def split_parentheticals(name):
     """(before, parts, after), e.g. "Epping (NSW) - West" gives ("Epping", ["NSW"], " - West")."""
     proper = next((p for p in NAMES_WITH_PARENTHESES if name.startswith(p)), "")
-    match = re.fullmatch(r"([^()]*?)((?: \([^()]*\))*)([^()]*)", name[len(proper) :])
-    assert match is not None, name
-    before, parts, after = match.groups()
-    return proper + before, re.findall(r"\(([^()]*)\)", parts), after
+    # alternates text, part, text, part, ..., text
+    pieces = re.split(r" \(([^()]*)\)", name[len(proper) :])
+    texts, parts = pieces[0::2], pieces[1::2]
+    if not parts:
+        return name, [], ""
+    assert all(text == "" for text in texts[1:-1]), name
+    assert not any("(" in text or ")" in text for text in texts), name
+    return proper + texts[0], parts, texts[-1]
 
 
 def handle_parenthetical(part, layer, name):
