@@ -38,6 +38,7 @@ def create_urban_center_like_shapefile(
             {
                 "USA": "US " + kwargs["meta"]["type"],
                 "Canada": "CA " + kwargs["meta"]["type"],
+                "Australia": "AU " + kwargs["meta"]["type"],
             }
         ),
         include_in_syau=True,

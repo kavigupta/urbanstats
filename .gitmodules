@@ -4,3 +4,6 @@
 [submodule "named_region_shapefiles/CanadaGeneralElections"]
 	path = named_region_shapefiles/CanadaGeneralElections
 	url = git@github.com:kavigupta/CanadaGeneralElections.git
+[submodule "named_region_shapefiles/australia"]
+	path = named_region_shapefiles/australia
+	url = git@github.com:kavigupta/australiadata.git

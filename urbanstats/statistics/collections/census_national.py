@@ -1,10 +1,15 @@
 from dataclasses import dataclass
+from typing import Optional
 
 import numpy as np
 import pandas as pd
 
 from urbanstats.data.census_blocks import RADII, format_radius
-from urbanstats.data.census_histogram import census_histogram, census_histogram_canada
+from urbanstats.data.census_histogram import (
+    census_histogram,
+    census_histogram_australia,
+    census_histogram_canada,
+)
 from urbanstats.data.gpw import median_from_histogram
 from urbanstats.games.quiz_question_metadata import (
     HOUSING,
@@ -14,6 +19,7 @@ from urbanstats.games.quiz_question_metadata import (
     QuizQuestionDescriptor,
     QuizQuestionSkip,
 )
+from urbanstats.statistics.collections import census_australia
 from urbanstats.statistics.collections.census import (
     DENSITY_EXPLANATION_PW,
     aggregate_basics_of_year,
@@ -78,6 +84,26 @@ class CanadianCensusBlocks:
         ]
 
 
+@dataclass(frozen=True)
+class AustralianCensusBlocks:
+    """The 2021 census's mesh blocks."""
+
+    def compute(self, shapefile):
+        t = census_australia.compute_census_stats(shapefile.geometry)
+        return pd.DataFrame(
+            {
+                "population": t["population"],
+                **{f"ad_{r}": t[f"australia_density_2021_{r}"] for r in RADII},
+            }
+        )
+
+    def histograms(self, shapefile):
+        return [
+            None if h is None else {r: h[f"australia_density_2021_{r}"] for r in RADII}
+            for h in census_histogram_australia(shapefile.geometry)
+        ]
+
+
 def add_histograms(a, b):
     """Histograms share bins from the lowest one up, so the shorter is padded with zeros."""
     if a is None:
@@ -96,6 +122,8 @@ class CensusDensity(NationalCensusStatistics):
 
     year: int
     canada_year: int
+    # None where there is no Australian census near the year
+    australia_year: Optional[int]
 
     def ysk(self, key):
         return key if self.year == 2020 else f"{key}_{self.year}"
@@ -175,10 +203,13 @@ class CensusDensity(NationalCensusStatistics):
         return ["area"]
 
     def country_inputs(self):
-        return {
+        result = {
             "USA": USCensusBlocks(self.year),
             "Canada": CanadianCensusBlocks(self.canada_year),
         }
+        if self.australia_year is not None:
+            result["Australia"] = AustralianCensusBlocks()
+        return result
 
     def mutate_counts(self, counts):
         raise NotImplementedError("compute_statistics_dictionary is overridden")
@@ -228,6 +259,7 @@ class CensusDensity(NationalCensusStatistics):
         for country, suffix, compute in [
             ("USA", "usa", population_median_point_usa),
             ("Canada", "canada", lambda g: compute_census_median_point(2021, g)),
+            ("Australia", "australia", census_australia.compute_census_median_point),
         ]:
 
             def median(
@@ -258,15 +290,17 @@ class CensusDensity(NationalCensusStatistics):
 
 
 class CensusDensity2020(CensusDensity):
-    version = 1
+    version = 2
     year = 2020
     canada_year = 2021
+    australia_year = 2021
 
 
 class CensusDensity2010(CensusDensity):
     version = 1
     year = 2010
     canada_year = 2011
+    australia_year = None
 
 
 @dataclass(frozen=True)

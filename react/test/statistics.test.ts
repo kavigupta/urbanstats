@@ -227,12 +227,12 @@ test('statistic-ascending-descending-check-click', async (t) => {
         'Yukon, Canada',
         'Northwest Territories, Canada',
         'Prince Edward Island, Canada',
+        'Northern Territory, Australia',
+        'Australian Capital Territory, Australia',
         'Newfoundland and Labrador, Canada',
+        'Tasmania, Australia',
         'Wyoming, USA',
         'Vermont, USA',
-        'District of Columbia, USA',
-        'Alaska, USA',
-        'New Brunswick, Canada',
     ])
     // click the button again
     await t.click(Selector('.testing-order-swap'))

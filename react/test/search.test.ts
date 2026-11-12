@@ -220,6 +220,23 @@ test('default universe canada', async (t) => {
     await t.expect(getLocation()).eql(`${target}/statistic.html?statname=Natural+resources+and+agriculture+occupations+__PCT__&article_type=CA+Riding&start=1&amount=20&universe=Canada`)
 })
 
+test('default universe australia', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'population by lga')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+    await t.expect(getLocation()).eql(`${target}/statistic.html?statname=Population&article_type=AU+LGA&start=1&amount=20&universe=Australia`)
+})
+
+test('search result icon for an australian urban centre', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'Sydney UCL')
+    await waitForSelectedSearchResult(t)
+    await t.expect(Selector('img[src="/icons/search_icons/AU UCL.png"]').exists).ok()
+})
+
 test('rendering of options', async (t) => {
     await t
         .click(searchField)

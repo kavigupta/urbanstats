@@ -183,6 +183,22 @@ test('comparison-american-vs-canada-population-stats', async (t) => {
 })
 
 urbanstatsFixture(
+    'comparison-american-vs-australia-population-stats',
+    `${target}/comparison.html?longnames=%5B"New+South+Wales%2C+Australia"%2C"California%2C+USA"%5D&s=${onlyUSAndCanadaCensus}`,
+)
+
+test('comparison-american-vs-australia-population-stats', async (t) => {
+    await t.expect(await checkboxStatus(t, 'National Census')).eql('enabled')
+    await t.expect(await checkboxStatus(t, 'GHSL')).eql('enabled')
+    await t.expect(await dataValues()).eql(['8.06', '39.5'])
+    await checkTextboxes(t, ['National Census'])
+    // New South Wales's population is from the National Census too, so neither has one
+    await t.expect(await dataValues()).eql([])
+    await checkTextboxes(t, ['National Census', 'GHSL'])
+    await t.expect(await dataValues()).eql(['8.06', '39.5', '8.09', '40.4'])
+})
+
+urbanstatsFixture(
     'comparison-american-vs-international-population-stats',
     `${target}/comparison.html?longnames=%5B"Delhi%2C+India"%2C"California%2C+USA"%5D&s=${onlyUSAndCanadaCensus}`,
 )
