@@ -21,36 +21,88 @@ NOT_PLACES = (
 # SUAs and postcodes can span states, so their layers have no state column
 LAYERS_WITHOUT_STATE = ("SUA", "POA")
 
-STATE_ABBREVIATION = r"(?:NSW|Vic\.|Qld|SA|WA|Tas\.|NT|ACT|OT)"
+STATES = ("NSW", "Vic.", "Qld", "SA", "WA", "Tas.", "NT", "ACT", "OT")
+
+# other names of the place, e.g. Gunbalanya (Oenpelli)
+ALTERNATIVE_NAMES = (
+    "Keeling",
+    "Oenpelli",
+    "Nguiu",
+    "Darnley",
+    "Yam",
+    "Murray",
+    "Ernabella",
+    "Fregon",
+    "La Grange",
+    "One Arm Point",
+    "Ltyentye Purte",
+    "Beswick",
+    "Finke",
+    "Docker River",
+    "Daly River",
+    "Palumpa",
+    "Mungoorbada",
+    "Kintore",
+)
+
+
+def parse_abs_name(name, layer):
+    """
+    The name without the parenthesized parts our longnames make redundant, and whether it is marked
+    as a Locality.
+    """
+    has_state = layer not in LAYERS_WITHOUT_STATE
+    is_locality = False
+    kept = []
+    for piece in re.split(r"( \([^)]*\))", name):
+        match = re.fullmatch(r" \((.*)\)", piece)
+        if match is None:
+            kept.append(piece)
+            continue
+        part = match.group(1)
+        region, _, state = part.rpartition(" - ")
+        if part in STATES:
+            # repeats in another state, e.g. Ashfield (NSW)
+            assert has_state, name
+        elif region and state in STATES:
+            # repeats in the same state, e.g. Enmore (Inner West - NSW)
+            assert has_state, name
+            kept.append(f" ({region})")
+        elif part == "L":
+            # a Locality, a UCL with 200 to 999 people
+            assert layer == "UCL", name
+            is_locality = True
+        elif part.endswith(" Part"):
+            # a UCL split by a state border, e.g. Albury - Wodonga (Albury Part)
+            assert layer == "UCL", name
+            kept.append(piece)
+        elif part in ALTERNATIVE_NAMES:
+            kept.append(piece)
+        elif part in ("North", "South", "East", "West"):
+            # e.g. Perth (North) - Highgate
+            assert layer == "SA2", name
+            kept.append(piece)
+        else:
+            raise ValueError(f"Unrecognized parenthesized part in ABS name {name!r}")
+    return "".join(kept), is_locality
 
 
 @dataclass(frozen=True)
-class WithoutStateDisambiguation(RowFunction):
-    """
-    ABS disambiguates names across all of Australia, but the longname has the state, so e.g.
-    "Ashfield (NSW)" becomes "Ashfield" and "Enmore (Inner West - NSW)" becomes "Enmore (Inner West)".
-    """
-
+class AbsName(RowFunction):
     inner: RowFunction
+    layer: str
 
     def __call__(self, row):
-        name = re.sub(rf" \({STATE_ABBREVIATION}\)", "", self.inner(row))
-        return re.sub(rf" - {STATE_ABBREVIATION}\)", ")", name)
-
-
-LOCALITY_MARKER = " (L)"
+        return parse_abs_name(self.inner(row), self.layer)[0]
 
 
 @dataclass(frozen=True)
 class UclKind(RowFunction):
-    """ABS marks UCLs that are Localities (200 to 999 people) with " (L)"; the rest are Urban Centres."""
-
     inner: RowFunction
 
     def __call__(self, row):
-        if self.inner(row).endswith(LOCALITY_MARKER):
-            return "Locality [UCL]"
-        return "Urban Centre [UCL]"
+        _, is_locality = parse_abs_name(self.inner(row), "UCL")
+        return "Locality [UCL]" if is_locality else "Urban Centre [UCL]"
 
 
 # Wikidata's "Australian Statistical Geography 2021 ID" is the layer's code with its name in front,
@@ -76,17 +128,12 @@ def abs_shapefile(
     RowFunction if it varies by region.
     """
     # pylint: disable=too-many-arguments
-    if layer in LAYERS_WITHOUT_STATE:
-        name = column(name_column)
-        state = ""
-    else:
-        name = WithoutStateDisambiguation(column(name_column))
-        state = ", " + column("STE_NAME21")
-    if layer == "UCL":
-        name = name.removesuffix(LOCALITY_MARKER)
+    name = AbsName(column(name_column), layer)
     shortname = name
     if kind is not None:
         shortname = shortname + " " + kind
+
+    state = "" if layer in LAYERS_WITHOUT_STATE else ", " + column("STE_NAME21")
 
     return make_shapefile(
         geometry_key=f"australian_{layer.lower()}_{version}",
@@ -148,7 +195,7 @@ AUSTRALIAN_SUAS = abs_shapefile(
 AUSTRALIAN_UCLS = abs_shapefile(
     layer="UCL",
     name_column="UCL_NAME21",
-    kind=UclKind(WithoutStateDisambiguation(column("UCL_NAME21"))),
+    kind=UclKind(column("UCL_NAME21")),
     type_name="AU UCL",
     type_category="Census",
     abbreviation="UCL",
