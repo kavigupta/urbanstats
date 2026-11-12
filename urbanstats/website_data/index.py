@@ -40,7 +40,7 @@ def export_index(full: Any, site_folder: str) -> None:
         full.longname,
         full.type,
         containing_universe_idxs(full),
-        f"{site_folder}/index/pages_all.gz",
+        f"{site_folder}/index/pages_all.zst",
         symlinks=compute_symlinks(),
     )
 

@@ -121,7 +121,7 @@ ut_gov = dict(
 
 tx_capitol = dict(
     linkText="TX Capitol",
-    link="https://data.capitol.texas.gov/dataset/planc2308",
+    link="https://data.capitol.texas.gov/dataset/planc2333",
 )
 
 oh_sos_2 = dict(
@@ -179,7 +179,7 @@ all_redistricting = {
 }
 
 version_tag_by_file_name = {
-    "cd118": "_7",
+    "cd118": "_8",
     "sldl": "_6.1",
     "sldu": "_6.1",
 }

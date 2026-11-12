@@ -2,7 +2,8 @@ import { emptyContext } from '../../unit/urban-stats-script-utils'
 import validGeographies from '../data/mapper/used_geographies'
 import statistic_path_list from '../data/statistic_path_list'
 import statistic_variables_info from '../data/statistic_variables_info'
-import { loadOrderingDataProtobuf, loadProtobuf } from '../load_json'
+import universes_ordered from '../data/universes_ordered'
+import { loadOrderingDataProtobuf, loadProtobuf, loadUniverses } from '../load_json'
 import { mapperContext, defaultTypeEnvironment, loadInsets } from '../mapper/context'
 import { indexLink } from '../navigation/links'
 import { assert } from '../utils/defensive'
@@ -23,7 +24,7 @@ interface LoadedGeographies {
     cleannames: string[]
     /** How many of `longnames` each of `geographies` contributed, in order. */
     lengths: number[]
-    dataCache: Map<string, number[]>
+    dataCache: Map<string, number[] | string[][]>
 }
 
 /** Replaced whenever a request asks for geographies other than the ones already loaded. */
@@ -152,6 +153,15 @@ async function mapperContextForRequest(stmts: UrbanStatsASTStatement, geographie
         }
         if (name === 'geoCleanName') {
             return annotateType('geoCleanName', cleannames)
+        }
+        if (name === 'geoUniverses') {
+            const value = dataCache.get(name) ?? (await Promise.all(geographies.map(async (geography) => {
+                const universeIdx = universes_ordered.indexOf(geography.universe)
+                const { universes: rows } = await loadUniverses(geography.geographyKind)
+                return rows.flatMap(({ universeIdxs }) => universeIdxs?.includes(universeIdx) ? [universeIdxs.map(i => universes_ordered[i])] : [])
+            }))).flat()
+            dataCache.set(name, value)
+            return annotateType(name, value)
         }
         if (name === 'geo') {
             return annotateType('geo', longnames.map(longname => ({ type: 'opaque', opaqueType: 'geoFeatureHandle', value: longname })))

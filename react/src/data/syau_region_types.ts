@@ -19,7 +19,7 @@ export default [
     "CA Riding",
     "AU LGA",
     "AU Significant Urban Area",
-    "AU Urban Centre",
+    "AU UCL",
     "AU Suburb",
     "AU Federal Electorate",
     "Continent",

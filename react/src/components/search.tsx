@@ -14,7 +14,7 @@ import { GeographyKind } from '../urban-stats-script/workerManager'
 import { Property } from '../utils/Property'
 import { TestUtils } from '../utils/TestUtils'
 import { withButtonRole } from '../utils/a11y'
-import { makeDebugLogger } from '../utils/debug-logging'
+import { debugTabId, makeDebugLogger } from '../utils/debug-logging'
 
 import { GenericSearchBox } from './search-generic'
 
@@ -42,6 +42,7 @@ export function SearchBox(props: {
     const cacheKeyPromise = useMemo(() => getIndexCacheKey(), [])
     const searchWorker = useRef<SearchWorker | undefined>()
     const searchWorkerConfig = useRef<AsyncConfig | undefined>()
+    const searchFocused = useRef(false)
 
     const [workerStatusProperty, setWorkerStatusProperty] = useState(defaultWorkerStatusProperty)
     const workerStatus = workerStatusProperty.use()
@@ -131,11 +132,20 @@ export function SearchBox(props: {
             onChange={(result) => { props.onChange?.(result.longname) }}
             link={link}
             onFocus={(): void => {
+                searchFocused.current = true
                 createSearchWorkerIfNeeded()
             }}
             onBlur={() => {
-                searchWorker.current = undefined
-                setWorkerStatusProperty(defaultWorkerStatusProperty)
+                searchFocused.current = false
+                // Keep a worker that's still building so refocusing reuses it rather than building a second index
+                // Weak so a worker whose build never finishes can still be collected and closed
+                const worker = searchWorker.current && new WeakRef(searchWorker.current)
+                void searchWorker.current?.indexBuilt.then(() => {
+                    if (!searchFocused.current && searchWorker.current === worker?.deref()) {
+                        searchWorker.current = undefined
+                        setWorkerStatusProperty(defaultWorkerStatusProperty)
+                    }
+                })
             }}
             onTextPresenceChange={props.onTextPresenceChange}
             autoFocus={props.autoFocus}
@@ -157,22 +167,25 @@ function SingleSearchResult(props: SearchResult): ReactNode {
     )
 }
 
-const workerTerminatorRegistry = new FinalizationRegistry<Worker>((worker) => { worker.terminate() })
+const workerTerminatorRegistry = new FinalizationRegistry<Worker>((worker) => { worker.postMessage({ type: 'close' } satisfies SearchWorkerInputMessage) })
 
 interface SearchWorker {
     executeSearch: (params: SearchParams) => Promise<SearchResult[]>
     status: Property<SearchWorkerStatus>
+    indexBuilt: Promise<void>
 }
 
 type AsyncConfig = Omit<SearchIndexConfig, 'cacheKey'> & { cacheKeyPromise: Promise<string | undefined> }
 
 function createSearchWorker(config: AsyncConfig): SearchWorker {
-    const worker = new Worker(new URL('../searchWorker', import.meta.url))
+    const worker = new Worker(new URL('../searchWorker', import.meta.url), { name: `${debugTabId}/search` })
     const { cacheKeyPromise, ...configWithoutPromise } = config
     const configured = cacheKeyPromise.then((cacheKey) => { worker.postMessage({ type: 'configure', config: { ...configWithoutPromise, cacheKey } } satisfies SearchWorkerInputMessage) })
     debugPerformance(`Requested new search worker at timestamp ${Date.now()}`)
     const messageQueue: ((results: SearchResult[]) => void)[] = []
     const statusProperty = new Property<SearchWorkerStatus>({ status: 'loading', message: 'Spawning worker...' })
+    let resolveIndexBuilt: () => void
+    const indexBuilt = new Promise<void>((resolve) => { resolveIndexBuilt = resolve })
     worker.addEventListener('message', (message: MessageEvent<SearchWorkerOutputMessage>) => {
         switch (message.data.type) {
             case 'result':
@@ -180,6 +193,9 @@ function createSearchWorker(config: AsyncConfig): SearchWorker {
                 break
             case 'status':
                 statusProperty.value = message.data.status
+                if (message.data.status.status === 'ready') {
+                    resolveIndexBuilt()
+                }
                 break
         }
     })
@@ -192,6 +208,7 @@ function createSearchWorker(config: AsyncConfig): SearchWorker {
             })
         },
         status: statusProperty,
+        indexBuilt,
     }
     workerTerminatorRegistry.register(result, worker)
     return result

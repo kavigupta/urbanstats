@@ -7,7 +7,13 @@ from urbanstats.universe.universe_provider.constants import australia_domestic_p
 PROCESSED = "named_region_shapefiles/australia/data/processed"
 
 # ABS includes rows for people it cannot place, e.g. "No usual address (NSW)"
-NOT_PLACES = ("Not in any", "No usual address", "Migratory", "Outside Australia")
+NOT_PLACES = (
+    "Not in any",
+    "No usual address",
+    "Migratory",
+    "Outside Australia",
+    "Remainder of State/Territory",
+)
 
 # SUAs and postcodes can span states, so their layers have no state column
 LAYERS_WITHOUT_STATE = ("SUA", "POA")
@@ -31,9 +37,11 @@ def abs_shapefile(
     include_in_syau=False,
     gridded_data=False,
 ):
-    """`kind` is what the region is called after its name, e.g. "LGA" in "Brisbane LGA"."""
+    """`kind` is what the region is called after its name, e.g. "LGA" in "Brisbane LGA", or None."""
     # pylint: disable=too-many-arguments
-    shortname = column(name_column) + f" {kind}"
+    shortname = column(name_column)
+    if kind is not None:
+        shortname = shortname + f" {kind}"
     state = "" if layer in LAYERS_WITHOUT_STATE else ", " + column("STE_NAME21")
 
     return make_shapefile(
@@ -67,7 +75,7 @@ AUSTRALIAN_LGAS = abs_shapefile(
     kind="LGA",
     type_name="AU LGA",
     type_category="US Subdivision",
-    abbreviation="AULG",
+    abbreviation="LGA",
     version=2,
     in_wikidata=True,
     include_in_syau=True,
@@ -87,8 +95,8 @@ AUSTRALIAN_SUAS = abs_shapefile(
     name_column="SUA_NAME21",
     kind="SUA",
     type_name="AU Significant Urban Area",
-    type_category="International City",
-    abbreviation="AUSU",
+    type_category="Census",
+    abbreviation="SUA",
     version=2,
     include_in_syau=True,
     gridded_data=True,
@@ -96,11 +104,11 @@ AUSTRALIAN_SUAS = abs_shapefile(
 AUSTRALIAN_UCLS = abs_shapefile(
     layer="UCL",
     name_column="UCL_NAME21",
-    kind="Urban Centre",
-    type_name="AU Urban Centre",
-    type_category="International City",
-    abbreviation="AUUC",
-    version=2,
+    kind="UCL",
+    type_name="AU UCL",
+    type_category="Census",
+    abbreviation="UCL",
+    version=3,
     in_wikidata=True,
     include_in_syau=True,
 )
@@ -110,7 +118,7 @@ AUSTRALIAN_SALS = abs_shapefile(
     kind="Suburb",
     type_name="AU Suburb",
     type_category="International City",
-    abbreviation="AUSB",
+    abbreviation="NBHD",
     version=2,
     in_wikidata=True,
     include_in_syau=True,
@@ -118,11 +126,11 @@ AUSTRALIAN_SALS = abs_shapefile(
 AUSTRALIAN_POSTCODES = abs_shapefile(
     layer="POA",
     name_column="POA_NAME21",
-    kind="Postcode",
+    kind=None,
     type_name="AU Postcode",
     type_category="Small",
-    abbreviation="AUPC",
-    version=1,
+    abbreviation="ZIP",
+    version=2,
 )
 AUSTRALIAN_FEDERAL_ELECTORATES = abs_shapefile(
     layer="CED",
@@ -130,7 +138,7 @@ AUSTRALIAN_FEDERAL_ELECTORATES = abs_shapefile(
     kind="Division",
     type_name="AU Federal Electorate",
     type_category="Political",
-    abbreviation="AUFE",
+    abbreviation="FDIV",
     version=2,
     in_wikidata=True,
     include_in_syau=True,
@@ -142,7 +150,7 @@ AUSTRALIAN_STATE_LOWER_HOUSE_DISTRICTS = abs_shapefile(
     kind="District",
     type_name="AU State Lower House District",
     type_category="Political",
-    abbreviation="AUSD",
+    abbreviation="STHD",
     version=1,
     gridded_data=True,
 )
@@ -152,7 +160,7 @@ AUSTRALIAN_STATE_UPPER_HOUSE_REGIONS = abs_shapefile(
     kind="Region",
     type_name="AU State Upper House Region",
     type_category="Political",
-    abbreviation="AUSR",
+    abbreviation="STSD",
     version=1,
     gridded_data=True,
 )

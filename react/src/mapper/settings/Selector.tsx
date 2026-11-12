@@ -201,19 +201,19 @@ function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection,
     const doc = typeEnvironment.get(selection.name)?.documentation
     if (doc?.selectorRendering?.kind === 'subtitleLongDescription') {
         return {
-            text: reifyString(doc.humanReadableName, settings),
+            text: reifyString(doc.humanReadableName, { ...settings, unicode: false }),
             node: highlighted => <LongDescriptionSubtitle doc={doc} highlighted={highlighted} />,
         }
     }
     if (doc?.selectorRendering?.kind === 'gradientBackground') {
         const ramp = doc.selectorRendering.ramp
         return {
-            text: reifyString(doc.humanReadableName, settings),
+            text: reifyString(doc.humanReadableName, { ...settings, unicode: false }),
             node: highlighted => <RampSelectorOption name={doc.humanReadableName} ramp={ramp} highlighted={highlighted} />,
         }
     }
     else {
-        return { text: reifyString(doc?.humanReadableName ?? selection.name, settings) }
+        return { text: reifyString(doc?.humanReadableName ?? selection.name, { ...settings, unicode: false }) }
     }
 }
 

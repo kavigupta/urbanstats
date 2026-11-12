@@ -27,7 +27,7 @@ function testMapLabel(testFn: typeof test, code: string, expectedLabel: string, 
         const uss = mapUSSFromString(code)
         const label = mapRampUnitAndLabel(uss, getTypeEnvironment(), stated === undefined ? undefined : unitNamed(stated)).label
         assert.ok(label)
-        assert.equal(reifyString(label, {}), expectedLabel)
+        assert.equal(reifyString(label, { unicode: false }), expectedLabel)
     })
 }
 
@@ -175,7 +175,7 @@ for (const [data, reader, settings, expected] of [
     void test(`${data} to a ${reader} reader`, () => {
         const label = mapRampUnitAndLabel(mapUSSFromString(`cMap(data=${data}, scale=linearScale(), ramp=rampUridis)`), getTypeEnvironment(), undefined).label
         assert.ok(label)
-        assert.equal(reifyString(label, settings), expected)
+        assert.equal(reifyString(label, { ...settings, unicode: false }), expected)
     })
 }
 
@@ -201,16 +201,16 @@ for (const [values, stated, expected] of [
         const uss = mapUSSFromString(`table(columns=[column(values=${values}, unit=${stated})])`)
         const label = tableColumnUnitAndName(uss, getTypeEnvironment(), 0, unitNamed(stated)).name
         assert.ok(label)
-        assert.equal(reifyString(label, {}), expected)
+        assert.equal(reifyString(label, { unicode: false }), expected)
     })
 }
 
 void test('a label reads in the units of whoever is reading it', () => {
     const label = mapRampUnitAndLabel(mapUSSFromString('condition (high_temp > 80 & area > 100)\ncMap(data=population, scale=linearScale(), ramp=rampUridis)'), getTypeEnvironment(), undefined).label
     assert.ok(label)
-    assert.equal(reifyString(label, {}), 'Population where Mean high temp > 80°F and Area > 100km^{2}')
-    assert.equal(reifyString(label, { temperatureUnit: 'celsius' }), 'Population where Mean high temp > 26.7°C and Area > 100km^{2}')
-    assert.equal(reifyString(label, { useImperial: true }), 'Population where Mean high temp > 80°F and Area > 38.6mi^{2}')
+    assert.equal(reifyString(label, { unicode: false }), 'Population where Mean high temp > 80°F and Area > 100km^{2}')
+    assert.equal(reifyString(label, { temperatureUnit: 'celsius', unicode: false }), 'Population where Mean high temp > 26.7°C and Area > 100km^{2}')
+    assert.equal(reifyString(label, { useImperial: true, unicode: false }), 'Population where Mean high temp > 80°F and Area > 38.6mi^{2}')
 })
 
 testMapLabel(test,
@@ -302,7 +302,7 @@ function testTableColumnLabel(testFn: typeof test, code: string, columnIndex: nu
         }
         else {
             assert.ok(label)
-            assert.equal(reifyString(label, {}), expectedLabel)
+            assert.equal(reifyString(label, { unicode: false }), expectedLabel)
         }
     })
 }
@@ -351,7 +351,7 @@ function testTableLabel(testFn: typeof test, code: string, columnNames: HumanRea
         }
         else {
             assert.ok(label)
-            assert.equal(reifyString(label, {}), expectedLabel)
+            assert.equal(reifyString(label, { unicode: false }), expectedLabel)
         }
     })
 }
@@ -417,11 +417,11 @@ for (const [values, declared, expected] of [
     void test(`titled before it runs: ${values}${declared}`, () => {
         const map = mapLabel(mapUSSFromString(`cMap(data=${values}, scale=linearScale(), ramp=rampUridis${declared})`), getTypeEnvironment())
         assert.ok(map)
-        assert.equal(reifyString(map, {}), expected)
+        assert.equal(reifyString(map, { unicode: false }), expected)
 
         const uss = mapUSSFromString(`condition (true)\ntable(columns=[column(values=${values}${declared})])`)
         const table = tableLabel(uss, getTypeEnvironment())
         assert.ok(table)
-        assert.equal(reifyString(table, {}), expected)
+        assert.equal(reifyString(table, { unicode: false }), expected)
     })
 }

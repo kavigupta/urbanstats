@@ -403,7 +403,10 @@ class CensusChange2010(CensusChange):
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
-        if existing_statistics["population"] is None:
+        if (
+            existing_statistics["population"] is None
+            or existing_statistics[f"population_{self.year()}"] is None
+        ):
             return {}
         return self.compute_statistics_dictionary_usa(
             shapefile=shapefile,

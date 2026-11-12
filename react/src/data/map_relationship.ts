@@ -268,8 +268,8 @@ export default [
         "AU Significant Urban Area"
     ],
     [
-        "AU Urban Centre",
-        "AU Urban Centre"
+        "AU UCL",
+        "AU UCL"
     ],
     [
         "AU Suburb",

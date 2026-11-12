@@ -60,6 +60,7 @@ const multiGeographyMap = `/mapper.html?settings=${encodeURIComponent(gzipSync(J
 
 /** A script stating its own label, rather than the default map, whose label has to be derived. */
 const labelledMap = usaMap('County', 'cMap(data=density_pw_1km, label="How dense is it")')
+const scriptLabelledMap = usaMap('County', 'cMap(data=density_pw_1km, label="log_{10}(Density)^{2}")')
 // A circle per geography rather than a filled shape, sized by population so the radii differ.
 const pointMap = usaMap('Urban Center', 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, relativeArea=population)')
 // Counties, dense enough that markers actually merge.
@@ -259,6 +260,12 @@ test('embed-worker-crawler-tags', async (t) => {
         ogTitle: 'How dense is it',
         ogDescription: 'How dense is it mapped over Counties in USA, on Urban Stats.',
         ogImage: `${workerOrigin}/og${labelledMap}`,
+    })
+    await t.expect(await crawlerTags(scriptLabelledMap)).eql({
+        title: 'log₁₀(Density)²',
+        ogTitle: 'log₁₀(Density)²',
+        ogDescription: 'log₁₀(Density)² mapped over Counties in USA, on Urban Stats.',
+        ogImage: `${workerOrigin}/og${scriptLabelledMap}`,
     })
     // The quiz has embed tags of its own, which the Worker has nothing to add to.
     await t.expect(await crawlerTags('/quiz.html')).eql({

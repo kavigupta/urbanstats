@@ -105,6 +105,7 @@
     "dom-to-image-more": "github:lukebrody/dom-to-image-more",
     "fast-png": "^8.0.0",
     "file-saver": "^2.0.5",
+    "fzstd": "^0.1.1",
     "google-protobuf": "^3.21.2",
     "idb": "^8.0.2",
     "indefinite": "^2.5.2",

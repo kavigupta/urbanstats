@@ -293,6 +293,10 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
 
     const patternSignature = toSignature(pattern)
 
+    // Per pattern token, the bitap result + 1 for each distinct index token, or 0 if not computed yet
+    const numDistinctTokens = searchIndex.tokenOffsets.length - 1
+    const bitapCaches = patternTokens.map(() => new Uint8Array(numDistinctTokens))
+
     let entriesPatternSkips = 0
     let entriesPatternChecks = 0
 
@@ -334,6 +338,7 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
         let numSwapsOverlaps = 0
 
         for (const [patternTokenIndex, needle] of patternTokens.entries()) {
+            const bitapCache = bitapCaches[patternTokenIndex]
             let tokenMatchScore = maxErrors + 1
             let tokenPositionScore = Math.max(patternTokens.length, searchIndex.lengthOfLongestToken)
             let tokenIncompleteMatch = true
@@ -344,8 +349,12 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
                 const tokenId = searchIndex.tokenIds[j]
                 haystack.start = searchIndex.tokenOffsets[tokenId]
                 haystack.end = searchIndex.tokenOffsets[tokenId + 1]
-                haystack.signature = searchIndex.tokenSignatures[tokenId]
-                const searchResult = bitap(haystack, needle, maxErrors)
+                let searchResult = bitapCache[tokenId] - 1
+                if (searchResult === -1) {
+                    haystack.signature = searchIndex.tokenSignatures[tokenId]
+                    searchResult = bitap(haystack, needle, maxErrors)
+                    bitapCache[tokenId] = searchResult + 1
+                }
                 const positionResult = Math.abs(patternTokenIndex - entryTokenIndex)
                 const incompleteMatchResult = Math.abs((haystack.end - haystack.start) - needle.length) - searchResult !== 0
                 if (searchResult < tokenMatchScore || (searchResult <= tokenMatchScore && positionResult < tokenPositionScore) || (searchResult <= tokenMatchScore && positionResult <= tokenPositionScore && incompleteMatchResult < tokenIncompleteMatch)) {
@@ -436,6 +445,12 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
 
 type ReportStatus = (message: string) => Promise<void>
 
+let cacheWrite = Promise.resolve()
+
+export function waitForCacheWrite(): Promise<void> {
+    return cacheWrite
+}
+
 // Potentially cached
 export async function createIndex(config: SearchIndexConfig, reportStatus: ReportStatus): Promise<(params: SearchParams) => SearchResult[]> {
     const statsIndexPromise = config.statsUniverse && createStatsIndex(config.statsUniverse)
@@ -471,11 +486,21 @@ export async function createIndex(config: SearchIndexConfig, reportStatus: Repor
             debugPerformance('Cache miss')
             index = await createIndexNoCache(status => reportStatus(`Cache miss: ${status}`))
 
-            void (async () => {
-                const writeStore = db.transaction('indexes', 'readwrite').objectStore('indexes')
-                const keys = await writeStore.getAllKeys()
-                await Promise.all(keys.map(k => writeStore.delete(k)))
-                await writeStore.put(index, cacheKey)
+            const indexToWrite = index
+            cacheWrite = (async () => {
+                const writeStart = performance.now()
+                try {
+                    const transaction = db.transaction('indexes', 'readwrite')
+                    const writeStore = transaction.objectStore('indexes')
+                    const keys = await writeStore.getAllKeys()
+                    await Promise.all(keys.map(k => writeStore.delete(k)))
+                    await writeStore.put(indexToWrite, cacheKey)
+                    await transaction.done
+                    debugPerformance(`Took ${performance.now() - writeStart}ms to write index to cache`)
+                }
+                catch (error) {
+                    debugPerformance(`Writing index to cache failed after ${performance.now() - writeStart}ms: ${String(error)}`)
+                }
             })()
         }
         else {
@@ -510,7 +535,7 @@ function makeSearchFunction(searchIndex: NormalizedSearchIndex): (params: Search
 
 async function createIndexNoCache(reportStatus: ReportStatus): Promise<NormalizedSearchIndex> {
     await reportStatus('Loading search index from network...')
-    const rawIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
+    const rawIndex = await loadProtobuf('/index/pages_all.zst', 'SearchIndex')
     await reportStatus('Processing search index...')
     return processRawSearchIndex(rawIndex)
 }
@@ -533,7 +558,7 @@ function processRawSearchIndex(searchIndex: { elements: string[], metadata: ISea
 export async function getIndexCacheKey(): Promise<string | undefined> {
     try {
         const start = performance.now()
-        const resources = ['/scripts/index.js', '/index/pages_all.gz']
+        const resources = ['/scripts/index.js', '/index/pages_all.zst']
         const etags = await Promise.all(resources.map(async (resource) => {
             const response = await fetch(resource, { method: 'HEAD' })
             if (!response.ok) {

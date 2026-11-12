@@ -337,3 +337,11 @@ test('toronto-cdr-all-stats', async (t) => {
     await checkAllCategoryBoxes(t)
     await screencap(t)
 })
+
+urbanstatsFixture('all stats test australia', `/article.html?longname=Brisbane+LGA%2C+Queensland%2C+Australia`)
+
+test('brisbane-lga-all-stats', async (t) => {
+    await t.resizeWindow(1400, 800)
+    await checkAllCategoryBoxes(t)
+    await screencap(t)
+})

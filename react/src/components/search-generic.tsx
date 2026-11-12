@@ -80,10 +80,13 @@ export function GenericSearchBox<T>(
 
     const doSearch = props.doSearch
 
+    // Blurring with a query shouldn't search again, since that spawns a new search worker
+    const shouldSearch = props.allowEmptyQuery ? isFocused : searchQuery !== ''
+
     // Do the search
     useEffect(() => {
         void (async () => {
-            if ((props.allowEmptyQuery && !isFocused) || (!props.allowEmptyQuery && searchQuery === '')) {
+            if (!shouldSearch) {
                 setMatches([])
                 setFocused(0)
                 return
@@ -99,7 +102,7 @@ export function GenericSearchBox<T>(
             setMatches(result)
             setFocused(f => Math.max(0, Math.min(f, result.length - 1)))
         })()
-    }, [searchQuery, doSearch, props.allowEmptyQuery, isFocused])
+    }, [searchQuery, doSearch, shouldSearch])
 
     return (
         <form

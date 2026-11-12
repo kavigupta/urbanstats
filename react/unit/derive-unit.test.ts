@@ -13,7 +13,7 @@ function written(unit: StoredUnit | undefined, value = 1000, settings: UnitSetti
         return 'nothing'
     }
     const quantity = writeQuantity(value, unit, settings, 'byItself')
-    return `${quantity.renderedValue}${reifyString(quantity.unitName, {})}`
+    return `${quantity.renderedValue}${reifyString(quantity.unitName, { unicode: false })}`
 }
 
 function mapOf(data: string): MapUSS {
@@ -169,7 +169,7 @@ void test('spacing between a number and its unit', () => {
         const unit = unitOfMap(data)
         assert.ok(unit)
         const quantity = writeQuantity(1000, unit, {}, 'afterNumber')
-        return `${quantity.renderedValue}${reifyString(quantity.unitName, {})}`
+        return `${quantity.renderedValue}${reifyString(quantity.unitName, { unicode: false })}`
     }
     assert.equal(inline('traffic_fatalities ** 0.5'), '1\u202f000\u00a0fatalities^{0.5}')
     assert.equal(inline('area / traffic_fatalities'), '1\u202f000km^{2}/fatality')

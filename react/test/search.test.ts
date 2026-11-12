@@ -12,6 +12,7 @@ import {
     waitForLoading,
     withInterceptedRequests,
     cdpSessionWithSessionId,
+    debugLog,
 } from './test_utils'
 
 urbanstatsFixture('shorter article test', `${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
@@ -87,6 +88,9 @@ test('search results hidden on blur and shown on refocus', async (t) => {
     // Click outside the search field to blur it
     await t.click(Selector('body'), { offsetX: 10, offsetY: 10 })
     await t.expect(Selector('[data-test-id=selected-search-result]').exists).notOk()
+    await t.wait(1000)
+    const workerRequests = (await debugLog()).filter(({ text }) => text.startsWith('Requested new search worker'))
+    await t.expect(workerRequests.filter(({ tab }) => tab === workerRequests.at(-1)!.tab).length).eql(1)
     // Refocus the search field
     await t.click(searchField)
     await t.expect(Selector('[data-test-id=selected-search-result]').exists).ok()
@@ -162,17 +166,17 @@ urbanstatsFixture('shorter article test again', `${target}/article.html?longname
 test('search for a MPC', async (t) => {
     await t
         .click(searchField)
-        .typeText(searchField, 'Perth 10MPC')
+        .typeText(searchField, 'Aleppo 10MPC')
     await waitForSelectedSearchResult(t)
     await t.pressKey('enter')
-    await t.expect(getLocation()).match(/article\.html\?longname=Perth\+10MPC%2C\+Australia/)
+    await t.expect(getLocation()).match(/article\.html\?longname=Aleppo\+10MPC%2C\+Turkey-Syria/)
     await waitForLoading()
     await checkSidebarTextboxes(t, ['Include Person Circles'])
     await t.click(searchField)
-        .typeText(searchField, 'Perth 10MPC')
+        .typeText(searchField, 'Aleppo 10MPC')
     await waitForSelectedSearchResult(t)
     await t.pressKey('enter')
-    await t.expect(getLocation()).notMatch(/article\.html\?longname=Perth\+10MPC%2C\+Australia/)
+    await t.expect(getLocation()).notMatch(/article\.html\?longname=Aleppo\+10MPC%2C\+Turkey-Syria/)
     await screencap(t)
     await checkSidebarTextboxes(t, ['Include Person Circles'])
     await screencap(t)
@@ -214,6 +218,23 @@ test('default universe canada', async (t) => {
     await waitForSelectedSearchResult(t)
     await t.pressKey('enter')
     await t.expect(getLocation()).eql(`${target}/statistic.html?statname=Natural+resources+and+agriculture+occupations+__PCT__&article_type=CA+Riding&start=1&amount=20&universe=Canada`)
+})
+
+test('default universe australia', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'population by lga')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+    await t.expect(getLocation()).eql(`${target}/statistic.html?statname=Population&article_type=AU+LGA&start=1&amount=20&universe=Australia`)
+})
+
+test('search result icon for an australian urban centre', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'Sydney UCL')
+    await waitForSelectedSearchResult(t)
+    await t.expect(Selector('img[src="/icons/search_icons/AU UCL.png"]').exists).ok()
 })
 
 test('rendering of options', async (t) => {

@@ -6882,6 +6882,7 @@ export const SearchIndex = $root.SearchIndex = (() => {
      * @interface ISearchIndex
      * @property {Array.<string>|null} [elements] SearchIndex elements
      * @property {Array.<ISearchIndexMetadata>|null} [metadata] SearchIndex metadata
+     * @property {Uint8Array|null} [populationRanks] SearchIndex populationRanks
      */
 
     /**
@@ -6918,6 +6919,14 @@ export const SearchIndex = $root.SearchIndex = (() => {
     SearchIndex.prototype.metadata = $util.emptyArray;
 
     /**
+     * SearchIndex populationRanks.
+     * @member {Uint8Array} populationRanks
+     * @memberof SearchIndex
+     * @instance
+     */
+    SearchIndex.prototype.populationRanks = $util.newBuffer([]);
+
+    /**
      * Creates a new SearchIndex instance using the specified properties.
      * @function create
      * @memberof SearchIndex
@@ -6947,6 +6956,8 @@ export const SearchIndex = $root.SearchIndex = (() => {
         if (message.metadata != null && message.metadata.length)
             for (let i = 0; i < message.metadata.length; ++i)
                 $root.SearchIndexMetadata.encode(message.metadata[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        if (message.populationRanks != null && Object.hasOwnProperty.call(message, "populationRanks"))
+            writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.populationRanks);
         return writer;
     };
 
@@ -6991,6 +7002,10 @@ export const SearchIndex = $root.SearchIndex = (() => {
                     if (!(message.metadata && message.metadata.length))
                         message.metadata = [];
                     message.metadata.push($root.SearchIndexMetadata.decode(reader, reader.uint32()));
+                    break;
+                }
+            case 3: {
+                    message.populationRanks = reader.bytes();
                     break;
                 }
             default:
@@ -7044,6 +7059,9 @@ export const SearchIndex = $root.SearchIndex = (() => {
                     return "metadata." + error;
             }
         }
+        if (message.populationRanks != null && message.hasOwnProperty("populationRanks"))
+            if (!(message.populationRanks && typeof message.populationRanks.length === "number" || $util.isString(message.populationRanks)))
+                return "populationRanks: buffer expected";
         return null;
     };
 
@@ -7076,6 +7094,11 @@ export const SearchIndex = $root.SearchIndex = (() => {
                 message.metadata[i] = $root.SearchIndexMetadata.fromObject(object.metadata[i]);
             }
         }
+        if (object.populationRanks != null)
+            if (typeof object.populationRanks === "string")
+                $util.base64.decode(object.populationRanks, message.populationRanks = $util.newBuffer($util.base64.length(object.populationRanks)), 0);
+            else if (object.populationRanks.length >= 0)
+                message.populationRanks = object.populationRanks;
         return message;
     };
 
@@ -7096,6 +7119,14 @@ export const SearchIndex = $root.SearchIndex = (() => {
             object.elements = [];
             object.metadata = [];
         }
+        if (options.defaults)
+            if (options.bytes === String)
+                object.populationRanks = "";
+            else {
+                object.populationRanks = [];
+                if (options.bytes !== Array)
+                    object.populationRanks = $util.newBuffer(object.populationRanks);
+            }
         if (message.elements && message.elements.length) {
             object.elements = [];
             for (let j = 0; j < message.elements.length; ++j)
@@ -7106,6 +7137,8 @@ export const SearchIndex = $root.SearchIndex = (() => {
             for (let j = 0; j < message.metadata.length; ++j)
                 object.metadata[j] = $root.SearchIndexMetadata.toObject(message.metadata[j], options);
         }
+        if (message.populationRanks != null && message.hasOwnProperty("populationRanks"))
+            object.populationRanks = options.bytes === String ? $util.base64.encode(message.populationRanks, 0, message.populationRanks.length) : options.bytes === Array ? Array.prototype.slice.call(message.populationRanks) : message.populationRanks;
         return object;
     };
 

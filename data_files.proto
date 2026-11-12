@@ -171,6 +171,9 @@ message SearchIndexMetadata {
 message SearchIndex {
     repeated string elements = 1;
     repeated SearchIndexMetadata metadata = 2;
+    // Population rank of each element, as 24-bit ints split into byte planes (all low bytes, then middle, then high).
+    // Elements are sorted by reversed name instead, which compresses better.
+    bytes population_ranks = 3;
 }
 
 message OrderList {

@@ -54,7 +54,7 @@ export default [
     "AU LGA",
     "AU SA2",
     "AU Significant Urban Area",
-    "AU Urban Centre",
+    "AU UCL",
     "AU Suburb",
     "AU Postcode",
     "AU Federal Electorate",

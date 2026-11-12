@@ -144,7 +144,7 @@ for (const [unitType, value, expected] of [
 
 void test('a difference of two latitudes is signed degrees', () => {
     const { renderedValue, unitName } = writeQuantity(-1.5, { ...storedUnits.latitude, unit: { ...storedUnits.latitude.unit, times: 0 } }, {}, 'afterNumber')
-    assert.equal(`${renderedValue}${reifyString(unitName, {})}`, '-1.5000°')
+    assert.equal(`${renderedValue}${reifyString(unitName, { unicode: false })}`, '-1.5000°')
 })
 
 for (const [value, expected] of [
@@ -360,7 +360,7 @@ for (const [unitType, dimensions, toBaseUnits, value, asStatistic, asDerived] of
 ] as ['contaminantLevel' | 'distancePerYear' | 'density', Dimension[], number, number, string, string][]) {
     const write = (stored: StoredUnit): string => {
         const written = writeQuantity(value, stored, {}, 'byItself')
-        return `${written.renderedValue}${reifyString(written.unitName, {})}`
+        return `${written.renderedValue}${reifyString(written.unitName, { unicode: false })}`
     }
     void test(`${unitType} keeps its units, where the same dimensions on their own do not`, () => {
         assert.equal(write(storedUnits[unitType]), asStatistic)
@@ -385,6 +385,6 @@ for (const [times, value, temperatureUnit, expected] of [
         const temperature = unitTypeToStoredUnit('temperature')
         const stored: StoredUnit = { ...temperature, unit: { ...temperature.unit, times } }
         const written = writeQuantity(value, stored, { temperatureUnit }, 'byItself')
-        assert.equal(`${written.renderedValue}${reifyString(written.unitName, {})}`, expected)
+        assert.equal(`${written.renderedValue}${reifyString(written.unitName, { unicode: false })}`, expected)
     })
 }

@@ -192,9 +192,9 @@ export function generateStatisticsPanelCSVData(
     const headerRow: string[] = ['Name']
 
     for (const col of data) {
-        headerRow.push(reifyString(col.name, settings))
+        headerRow.push(reifyString(col.name, { ...settings, unicode: false }))
         if (!hideOrdinalsPercentiles && col.ordinal !== undefined && col.populationPercentile !== undefined) {
-            headerRow.push(`${reifyString(col.name, settings)} Ord`, `${reifyString(col.name, settings)} percentile`)
+            headerRow.push(`${reifyString(col.name, { ...settings, unicode: false })} Ord`, `${reifyString(col.name, { ...settings, unicode: false })} percentile`)
         }
     }
 

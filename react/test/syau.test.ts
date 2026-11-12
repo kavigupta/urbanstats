@@ -261,6 +261,17 @@ test('montreal-cma', async (t) => {
     await t.expect(await allSyauPredictions()).eql(['2. Montréal CMA'])
 })
 
+urbanstatsFixture('australia-lga', '/syau.html#typ=AU+LGA&universe=Australia')
+test('brisbane-lga', async (t) => {
+    await addInputText(t, 'brisbane', '')
+    await t.expect(await allSyauPredictions()).eql(['1. Brisbane LGA'])
+})
+
+test('gold-coast-lga', async (t) => {
+    await addInputText(t, 'gold coast', '')
+    await t.expect(await allSyauPredictions()).eql(['2. Gold Coast LGA'])
+})
+
 urbanstatsFixture('nevada-counties', '/syau.html#typ=County&universe=Nevada%2C+USA')
 
 test('more-precise-percentages', async (t) => {
@@ -345,4 +356,11 @@ test('canada-ridings', async (t) => {
     await t.expect(await allSyauPredictions()).eql([
         '329. Madawaska--Restigouche (Riding)',
     ])
+})
+
+urbanstatsFixture('au-federal-electorates', '/syau.html#typ=AU%20Federal%20Electorate&universe=Australia')
+
+test('australia-federal-electorates', async (t) => {
+    await addInputText(t, 'kingsford smith', '')
+    await t.expect(await allSyauPredictions()).eql(['35. Kingsford Smith Division'])
 })

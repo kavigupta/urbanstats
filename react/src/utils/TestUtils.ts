@@ -4,7 +4,7 @@ import type { ReactElement } from 'react'
 import { keptByNoBasemap, urbanStatsLayerPrefix } from '../components/map-common-utils'
 
 import { elementsWithBadKeys } from './bad-keys'
-import { makeDebugLogger } from './debug-logging'
+import { debugBufferEntries, Entry, makeDebugLogger } from './debug-logging'
 
 /**
  * Indicates whether we're e2e testing.
@@ -87,6 +87,10 @@ export class TestUtils {
                 this.loadingCallbacks.push(resolve)
             })
         }
+    }
+
+    debugLog(): Promise<Entry[]> {
+        return debugBufferEntries()
     }
 
     /** A map drawing a fallback tile looks finished but draws coarser outlines than the settled one. */

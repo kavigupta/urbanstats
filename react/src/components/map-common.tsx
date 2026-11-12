@@ -45,6 +45,7 @@ function CommonMaplibreMapImpl(props: CommonMapProps, ref: React.Ref<MapRef>): R
             ref={ref}
             mapStyle="https://tiles.openfreemap.org/styles/bright"
             maxPitch={0}
+            dragRotate={false}
             pitchWithRotate={false}
             touchPitch={false}
             canvasContextAttributes={{
@@ -65,6 +66,7 @@ function CommonMaplibreMapImpl(props: CommonMapProps, ref: React.Ref<MapRef>): R
             {props.children}
             <ExposeMapForTesting id={testId} />
             <SynchronizeMapWithScreenshots />
+            <DisableRotation />
         </Map>
     )
 }
@@ -99,6 +101,15 @@ function ExposeMapForTesting({ id }: { id: string }): ReactNode {
             TestUtils.shared.maps.delete(id)
         }
     }, [map, id])
+    return null
+}
+
+function DisableRotation(): ReactNode {
+    const map = useMap().current!.getMap()
+    useEffect(() => {
+        map.touchZoomRotate.disableRotation()
+        map.keyboard.disableRotation()
+    }, [map])
     return null
 }
 

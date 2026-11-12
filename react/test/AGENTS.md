@@ -18,6 +18,9 @@ That's the whole thing. In particular:
   doesn't start or manage it. If nothing is serving the site, ask rather than
   starting your own — `npm run watch` needs the path to the site repository, which
   you have no way to guess.
+- **Tests failing on main often mean a stale site repository.** Run `./refresh-site.sh`
+  before investigating. It resets the site repository this checkout's watcher serves to
+  `origin/main` if it's behind, and waits for the rebuild.
 - `--test` is required. It may be a glob (`'test/mapper-*.test.ts'`); quote it so the
   shell doesn't expand it first. To narrow further, use `test.only` inside the test file.
 - Don't run the whole suite. The runner works through the matched files one at a

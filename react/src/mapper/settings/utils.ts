@@ -78,7 +78,7 @@ export function describeGeographies(geographies: GeographySelection[]): string {
 /** What a map is titled before it runs. */
 export function mapTitle(mapSettings: MapSettings, settings: UnitSettings): string | undefined {
     const label = mapLabel(mapSettings.script.uss, defaultTypeEnvironment(universesOf(mapSettings.geographies)))
-    return label === undefined ? undefined : reifyString(label, settings)
+    return label === undefined ? undefined : reifyString(label, { ...settings, unicode: true })
 }
 
 export function mapPageTitle(mapSettings: MapSettings, settings: UnitSettings): string {
