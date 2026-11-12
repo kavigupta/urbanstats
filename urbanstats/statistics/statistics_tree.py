@@ -843,6 +843,12 @@ statistics_tree = StatisticTree(
                         "household_income_above_100_cad",
                         source=population_census,
                     ),
+                    just_2020(
+                        "household_income_under_52k_australia",
+                        "household_income_52k_to_104k_australia",
+                        "household_income_over_104k_australia",
+                        source=population_census,
+                    ),
                 ),
                 **in_subcategory(
                     "individual_income",
@@ -857,6 +863,12 @@ statistics_tree = StatisticTree(
                         "individual_income_under_50cad",
                         "individual_income_50_to_100cad",
                         "individual_income_above_100_cad",
+                        source=population_census,
+                    ),
+                    just_2020(
+                        "individual_income_under_52k_australia",
+                        "individual_income_52k_to_104k_australia",
+                        "individual_income_over_104k_australia",
                         source=population_census,
                     ),
                 ),
@@ -1107,6 +1119,7 @@ statistics_tree = StatisticTree(
                     "Household Relationship",
                     just_2020(
                         "sors_unpartnered_householder",
+                        "sors_cohabiting_partnered",
                         "sors_cohabiting_partnered_gay",
                         "sors_cohabiting_partnered_straight",
                         "sors_child",

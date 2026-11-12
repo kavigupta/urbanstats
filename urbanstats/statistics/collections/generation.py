@@ -4,6 +4,7 @@ from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import GENERATION, QuizQuestionDescriptor
 from urbanstats.statistics.national_census import (
     ACSCounts,
+    AustralianCounts,
     NationalCensusStatistics,
     StatCanCounts,
 )
@@ -11,7 +12,7 @@ from urbanstats.statistics.utils import fractionalize
 
 
 class GenerationStatistics(NationalCensusStatistics):
-    version = 1
+    version = 2
 
     def name_for_each_statistic(self):
         return {
@@ -59,6 +60,50 @@ class GenerationStatistics(NationalCensusStatistics):
         return {
             "USA": ACSCounts(self.acs_entity()),
             "Canada": StatCanCounts(self.census_tables_canada()),
+            "Australia": AustralianCounts(self.abs_tables()),
+        }
+
+    def abs_tables(self):
+        # ABS perturbs each cell independently and zeroes small counts, so summing many tiny cells
+        # loses population: the 80 single-year columns lost 1.86% of Australia, versus 0.41% from
+        # 5-year groups, which are used except for 75 to 79, where there are only single years.
+        return {
+            "G04": {
+                "generation_genalpha": ["Age_yr_0_4_P", "Age_yr_5_9_P"],
+                "generation_genz": [
+                    "Age_yr_10_14_P",
+                    "Age_yr_15_19_P",
+                    "Age_yr_20_24_P",
+                ],
+                "generation_millenial": [
+                    "Age_yr_25_29_P",
+                    "Age_yr_30_34_P",
+                    "Age_yr_35_39_P",
+                ],
+                "generation_genx": [
+                    "Age_yr_40_44_P",
+                    "Age_yr_45_49_P",
+                    "Age_yr_50_54_P",
+                ],
+                "generation_boomer": [
+                    "Age_yr_55_59_P",
+                    "Age_yr_60_64_P",
+                    "Age_yr_65_69_P",
+                    "Age_yr_70_74_P",
+                ],
+                "generation_silent": [
+                    "Age_yr_75_P",
+                    "Age_yr_76_P",
+                    "Age_yr_77_P",
+                    "Age_yr_78_P",
+                    "Age_yr_79_P",
+                    "Age_yr_80_84_P",
+                    "Age_yr_85_89_P",
+                    "Age_yr_90_94_P",
+                    "Age_yr_95_99_P",
+                    "Age_yr_100_yr_over_P",
+                ],
+            }
         }
 
     def census_tables_canada(self):
