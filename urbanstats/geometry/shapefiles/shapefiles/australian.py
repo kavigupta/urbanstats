@@ -120,7 +120,7 @@ AUSTRALIAN_LGAS = abs_shapefile(
     type_name="AU LGA",
     type_category="US Subdivision",
     abbreviation="LGA",
-    version=3,
+    version=2,
     in_wikidata=True,
     include_in_syau=True,
     gridded_data=True,
@@ -132,7 +132,7 @@ AUSTRALIAN_SA2S = abs_shapefile(
     type_name="AU SA2",
     type_category="Census",
     abbreviation="AUS2",
-    version=2,
+    version=1,
 )
 AUSTRALIAN_SUAS = abs_shapefile(
     layer="SUA",
@@ -152,7 +152,7 @@ AUSTRALIAN_UCLS = abs_shapefile(
     type_name="AU UCL",
     type_category="Census",
     abbreviation="UCL",
-    version=5,
+    version=3,
     in_wikidata=True,
     include_in_syau=True,
 )
@@ -163,7 +163,7 @@ AUSTRALIAN_SALS = abs_shapefile(
     type_name="AU Suburb",
     type_category="International City",
     abbreviation="NBHD",
-    version=3,
+    version=2,
     in_wikidata=True,
     include_in_syau=True,
 )
