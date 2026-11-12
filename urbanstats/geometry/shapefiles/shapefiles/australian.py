@@ -61,27 +61,28 @@ def split_parentheticals(name):
 
 def handle_parenthetical(part, layer, name):
     """The part as it goes in our name, or None to leave it out."""
-    region, _, state = part.rpartition(" - ")
     if part in STATES:
         # repeats in another state, e.g. Ashfield (NSW)
         assert layer not in LAYERS_WITHOUT_STATE, name
         return None
-    if region and state in STATES:
-        # repeats in the same state, e.g. Enmore (Inner West - NSW)
-        assert layer not in LAYERS_WITHOUT_STATE, name
-        return region
     if part == "L":
         # a Locality, a UCL with 200 to 999 people, which UclKind puts in the type instead
         assert layer == "UCL", name
         return None
-    if part.endswith(" Part"):
-        # a UCL split by a state border, e.g. Albury - Wodonga (Albury Part)
-        assert layer == "UCL", name
-        return part
     if part in ("North", "South", "East", "West"):
         # e.g. Perth (North) - Highgate
         assert layer == "SA2", name
         return part
+    if part.endswith(" Part"):
+        # a UCL split by a state border, e.g. Albury - Wodonga (Albury Part)
+        assert layer == "UCL", name
+        return part
+    if " - " in part:
+        # repeats in the same state, e.g. Enmore (Inner West - NSW)
+        region, _, state = part.rpartition(" - ")
+        assert state in STATES, name
+        assert layer not in LAYERS_WITHOUT_STATE, name
+        return region
     raise ValueError(f"Unrecognized parenthesized part in ABS name {name!r}")
 
 
