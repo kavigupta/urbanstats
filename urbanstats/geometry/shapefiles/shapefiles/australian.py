@@ -1,5 +1,8 @@
+import re
+from dataclasses import dataclass
+
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
-from urbanstats.geometry.shapefiles.row_functions import column
+from urbanstats.geometry.shapefiles.row_functions import RowFunction, column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import australia_domestic_provider
@@ -17,6 +20,22 @@ NOT_PLACES = (
 
 # SUAs and postcodes can span states, so their layers have no state column
 LAYERS_WITHOUT_STATE = ("SUA", "POA")
+
+STATE_ABBREVIATION = r"(?:NSW|Vic\.|Qld|SA|WA|Tas\.|NT|ACT|OT)"
+
+
+@dataclass(frozen=True)
+class WithoutStateDisambiguation(RowFunction):
+    """
+    ABS disambiguates names across all of Australia, but the longname has the state, so e.g.
+    "Ashfield (NSW)" becomes "Ashfield" and "Enmore (Inner West - NSW)" becomes "Enmore (Inner West)".
+    """
+
+    inner: RowFunction
+
+    def __call__(self, row):
+        name = re.sub(rf" \({STATE_ABBREVIATION}\)", "", self.inner(row))
+        return re.sub(rf" - {STATE_ABBREVIATION}\)", ")", name)
 
 
 # Wikidata's "Australian Statistical Geography 2021 ID" is the layer's code with its name in front,
@@ -39,16 +58,21 @@ def abs_shapefile(
 ):
     """`kind` is what the region is called after its name, e.g. "LGA" in "Brisbane LGA", or None."""
     # pylint: disable=too-many-arguments
-    shortname = column(name_column)
+    if layer in LAYERS_WITHOUT_STATE:
+        name = column(name_column)
+        state = ""
+    else:
+        name = WithoutStateDisambiguation(column(name_column))
+        state = ", " + column("STE_NAME21")
+    shortname = name
     if kind is not None:
         shortname = shortname + f" {kind}"
-    state = "" if layer in LAYERS_WITHOUT_STATE else ", " + column("STE_NAME21")
 
     return make_shapefile(
         geometry_key=f"australian_{layer.lower()}_{version}",
         path=f"{PROCESSED}/{layer}_2021_AUST_SHP.zip",
         shortname_extractor=shortname,
-        cleanname_extractor=column(name_column),
+        cleanname_extractor=name,
         longname_extractor=shortname + state + ", Australia",
         additional_columns_computer=(
             {"asgs_id": layer + column(f"{layer}_CODE21")} if in_wikidata else {}
@@ -76,7 +100,7 @@ AUSTRALIAN_LGAS = abs_shapefile(
     type_name="AU LGA",
     type_category="US Subdivision",
     abbreviation="LGA",
-    version=2,
+    version=3,
     in_wikidata=True,
     include_in_syau=True,
     gridded_data=True,
@@ -88,7 +112,7 @@ AUSTRALIAN_SA2S = abs_shapefile(
     type_name="AU SA2",
     type_category="Census",
     abbreviation="AUS2",
-    version=1,
+    version=2,
 )
 AUSTRALIAN_SUAS = abs_shapefile(
     layer="SUA",
@@ -108,7 +132,7 @@ AUSTRALIAN_UCLS = abs_shapefile(
     type_name="AU UCL",
     type_category="Census",
     abbreviation="UCL",
-    version=3,
+    version=4,
     in_wikidata=True,
     include_in_syau=True,
 )
@@ -119,7 +143,7 @@ AUSTRALIAN_SALS = abs_shapefile(
     type_name="AU Suburb",
     type_category="International City",
     abbreviation="NBHD",
-    version=2,
+    version=3,
     in_wikidata=True,
     include_in_syau=True,
 )
