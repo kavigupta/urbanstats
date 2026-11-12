@@ -23,68 +23,62 @@ LAYERS_WITHOUT_STATE = ("SUA", "POA")
 
 STATES = ("NSW", "Vic.", "Qld", "SA", "WA", "Tas.", "NT", "ACT", "OT")
 
-# other names of the place, e.g. Gunbalanya (Oenpelli)
-ALTERNATIVE_NAMES = (
-    "Keeling",
-    "Oenpelli",
-    "Nguiu",
-    "Darnley",
-    "Yam",
-    "Murray",
-    "Ernabella",
-    "Fregon",
-    "La Grange",
-    "One Arm Point",
-    "Ltyentye Purte",
-    "Beswick",
-    "Finke",
-    "Docker River",
-    "Daly River",
-    "Palumpa",
-    "Mungoorbada",
-    "Kintore",
+# places whose names have parentheses in them, which are not part of the ABS's disambiguation
+NAMES_WITH_PARENTHESES = (
+    "Cocos (Keeling) Islands",
+    "Erub (Darnley) Island",
+    "Iama (Yam) Island",
+    "Mer (Murray) Island",
+    "Pukatja (Ernabella)",
+    "Kaltjiti (Fregon)",
+    "Bidyadanga (La Grange)",
+    "Bardi (One Arm Point)",
+    "Gunbalanya (Oenpelli)",
+    "Wurrumiyanga (Nguiu)",
+    "Santa Teresa (Ltyentye Purte)",
+    "Wugular (Beswick)",
+    "Apatula (Finke)",
+    "Kaltukatjara (Docker River)",
+    "Nauiyu Nambiyu (Daly River)",
+    "Nganmarriyanga (Palumpa)",
+    "Robinson River (Mungoorbada)",
+    "Walungurru (Kintore)",
 )
 
 
-def parse_abs_name(name, layer):
-    """
-    The name without the parenthesized parts our longnames make redundant, and whether it is marked
-    as a Locality.
-    """
-    has_state = layer not in LAYERS_WITHOUT_STATE
-    is_locality = False
-    kept = []
-    for piece in re.split(r"( \([^)]*\))", name):
-        match = re.fullmatch(r" \((.*)\)", piece)
-        if match is None:
-            kept.append(piece)
-            continue
-        part = match.group(1)
-        region, _, state = part.rpartition(" - ")
-        if part in STATES:
-            # repeats in another state, e.g. Ashfield (NSW)
-            assert has_state, name
-        elif region and state in STATES:
-            # repeats in the same state, e.g. Enmore (Inner West - NSW)
-            assert has_state, name
-            kept.append(f" ({region})")
-        elif part == "L":
-            # a Locality, a UCL with 200 to 999 people
-            assert layer == "UCL", name
-            is_locality = True
-        elif part.endswith(" Part"):
-            # a UCL split by a state border, e.g. Albury - Wodonga (Albury Part)
-            assert layer == "UCL", name
-            kept.append(piece)
-        elif part in ALTERNATIVE_NAMES:
-            kept.append(piece)
-        elif part in ("North", "South", "East", "West"):
-            # e.g. Perth (North) - Highgate
-            assert layer == "SA2", name
-            kept.append(piece)
-        else:
-            raise ValueError(f"Unrecognized parenthesized part in ABS name {name!r}")
-    return "".join(kept), is_locality
+def split_parentheticals(name):
+    """(before, parts, after), e.g. "Epping (NSW) - West" gives ("Epping", ["NSW"], " - West")."""
+    proper = next((p for p in NAMES_WITH_PARENTHESES if name.startswith(p)), "")
+    match = re.fullmatch(r"([^()]*?)((?: \([^()]*\))*)([^()]*)", name[len(proper) :])
+    assert match is not None, name
+    before, parts, after = match.groups()
+    return proper + before, re.findall(r"\(([^()]*)\)", parts), after
+
+
+def handle_parenthetical(part, layer, name):
+    """The part as it goes in our name, or None to leave it out."""
+    region, _, state = part.rpartition(" - ")
+    if part in STATES:
+        # repeats in another state, e.g. Ashfield (NSW)
+        assert layer not in LAYERS_WITHOUT_STATE, name
+        return None
+    if region and state in STATES:
+        # repeats in the same state, e.g. Enmore (Inner West - NSW)
+        assert layer not in LAYERS_WITHOUT_STATE, name
+        return region
+    if part == "L":
+        # a Locality, a UCL with 200 to 999 people, which UclKind puts in the type instead
+        assert layer == "UCL", name
+        return None
+    if part.endswith(" Part"):
+        # a UCL split by a state border, e.g. Albury - Wodonga (Albury Part)
+        assert layer == "UCL", name
+        return part
+    if part in ("North", "South", "East", "West"):
+        # e.g. Perth (North) - Highgate
+        assert layer == "SA2", name
+        return part
+    raise ValueError(f"Unrecognized parenthesized part in ABS name {name!r}")
 
 
 @dataclass(frozen=True)
@@ -93,7 +87,10 @@ class AbsName(RowFunction):
     layer: str
 
     def __call__(self, row):
-        return parse_abs_name(self.inner(row), self.layer)[0]
+        name = self.inner(row)
+        before, parts, after = split_parentheticals(name)
+        kept = [handle_parenthetical(part, self.layer, name) for part in parts]
+        return before + "".join(f" ({p})" for p in kept if p is not None) + after
 
 
 @dataclass(frozen=True)
@@ -101,8 +98,8 @@ class UclKind(RowFunction):
     inner: RowFunction
 
     def __call__(self, row):
-        _, is_locality = parse_abs_name(self.inner(row), "UCL")
-        return "Locality [UCL]" if is_locality else "Urban Centre [UCL]"
+        _, parts, _ = split_parentheticals(self.inner(row))
+        return "Locality [UCL]" if "L" in parts else "Urban Centre [UCL]"
 
 
 # Wikidata's "Australian Statistical Geography 2021 ID" is the layer's code with its name in front,
