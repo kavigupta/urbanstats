@@ -38,6 +38,21 @@ class WithoutStateDisambiguation(RowFunction):
         return re.sub(rf" - {STATE_ABBREVIATION}\)", ")", name)
 
 
+LOCALITY_MARKER = " (L)"
+
+
+@dataclass(frozen=True)
+class UclKind(RowFunction):
+    """ABS marks UCLs that are Localities (200 to 999 people) with " (L)"; the rest are Urban Centres."""
+
+    inner: RowFunction
+
+    def __call__(self, row):
+        if self.inner(row).endswith(LOCALITY_MARKER):
+            return "Locality [UCL]"
+        return "Urban Centre [UCL]"
+
+
 # Wikidata's "Australian Statistical Geography 2021 ID" is the layer's code with its name in front,
 # e.g. LGA31000. It only covers some layers.
 ASGS_2021_ID = SimpleWikidataSourcer("wdt:P10112", "asgs_id")
@@ -56,7 +71,10 @@ def abs_shapefile(
     include_in_syau=False,
     gridded_data=False,
 ):
-    """`kind` is what the region is called after its name, e.g. "LGA" in "Brisbane LGA", or None."""
+    """
+    `kind` is what the region is called after its name, e.g. "LGA" in "Brisbane LGA", or None, or a
+    RowFunction if it varies by region.
+    """
     # pylint: disable=too-many-arguments
     if layer in LAYERS_WITHOUT_STATE:
         name = column(name_column)
@@ -64,9 +82,11 @@ def abs_shapefile(
     else:
         name = WithoutStateDisambiguation(column(name_column))
         state = ", " + column("STE_NAME21")
+    if layer == "UCL":
+        name = name.removesuffix(LOCALITY_MARKER)
     shortname = name
     if kind is not None:
-        shortname = shortname + f" {kind}"
+        shortname = shortname + " " + kind
 
     return make_shapefile(
         geometry_key=f"australian_{layer.lower()}_{version}",
@@ -128,11 +148,11 @@ AUSTRALIAN_SUAS = abs_shapefile(
 AUSTRALIAN_UCLS = abs_shapefile(
     layer="UCL",
     name_column="UCL_NAME21",
-    kind="UCL",
+    kind=UclKind(WithoutStateDisambiguation(column("UCL_NAME21"))),
     type_name="AU UCL",
     type_category="Census",
     abbreviation="UCL",
-    version=4,
+    version=5,
     in_wikidata=True,
     include_in_syau=True,
 )
