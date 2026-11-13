@@ -1,5 +1,8 @@
+import re
+from dataclasses import dataclass
+
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
-from urbanstats.geometry.shapefiles.row_functions import column
+from urbanstats.geometry.shapefiles.row_functions import RowFunction, column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import australia_domestic_provider
@@ -17,6 +20,91 @@ NOT_PLACES = (
 
 # SUAs and postcodes can span states, so their layers have no state column
 LAYERS_WITHOUT_STATE = ("SUA", "POA")
+
+STATES = ("NSW", "Vic.", "Qld", "SA", "WA", "Tas.", "NT", "ACT", "OT")
+
+# places whose names have parentheses in them, which are not part of the ABS's disambiguation
+NAMES_WITH_PARENTHESES = (
+    "Cocos (Keeling) Islands",
+    "Erub (Darnley) Island",
+    "Iama (Yam) Island",
+    "Mer (Murray) Island",
+    "Pukatja (Ernabella)",
+    "Kaltjiti (Fregon)",
+    "Bidyadanga (La Grange)",
+    "Bardi (One Arm Point)",
+    "Gunbalanya (Oenpelli)",
+    "Wurrumiyanga (Nguiu)",
+    "Santa Teresa (Ltyentye Purte)",
+    "Wugular (Beswick)",
+    "Apatula (Finke)",
+    "Kaltukatjara (Docker River)",
+    "Nauiyu Nambiyu (Daly River)",
+    "Nganmarriyanga (Palumpa)",
+    "Robinson River (Mungoorbada)",
+    "Walungurru (Kintore)",
+)
+
+
+def split_parentheticals(name):
+    """(before, parts, after), e.g. "Epping (NSW) - West" gives ("Epping", ["NSW"], " - West")."""
+    proper = next((p for p in NAMES_WITH_PARENTHESES if name.startswith(p)), "")
+    # alternates text, part, text, part, ..., text
+    pieces = re.split(r" \(([^()]*)\)", name[len(proper) :])
+    texts, parts = pieces[0::2], pieces[1::2]
+    if not parts:
+        return name, [], ""
+    assert all(text == "" for text in texts[1:-1]), name
+    assert not any("(" in text or ")" in text for text in texts), name
+    return proper + texts[0], parts, texts[-1]
+
+
+def handle_parenthetical(part, layer, name):
+    """The part as it goes in our name, or None to leave it out."""
+    if part in STATES:
+        # repeats in another state, e.g. Ashfield (NSW)
+        assert layer not in LAYERS_WITHOUT_STATE, name
+        return None
+    if part == "L":
+        # a Locality, a UCL with 200 to 999 people, which UclKind puts in the type instead
+        assert layer == "UCL", name
+        return None
+    if part in ("North", "South", "East", "West"):
+        # e.g. Perth (North) - Highgate
+        assert layer == "SA2", name
+        return part
+    if part.endswith(" Part"):
+        # a UCL split by a state border, e.g. Albury - Wodonga (Albury Part)
+        assert layer == "UCL", name
+        return part
+    if " - " in part:
+        # repeats in the same state, e.g. Enmore (Inner West - NSW)
+        region, _, state = part.rpartition(" - ")
+        assert state in STATES, name
+        assert layer not in LAYERS_WITHOUT_STATE, name
+        return region
+    raise ValueError(f"Unrecognized parenthesized part in ABS name {name!r}")
+
+
+@dataclass(frozen=True)
+class AbsName(RowFunction):
+    inner: RowFunction
+    layer: str
+
+    def __call__(self, row):
+        name = self.inner(row)
+        before, parts, after = split_parentheticals(name)
+        kept = [handle_parenthetical(part, self.layer, name) for part in parts]
+        return before + "".join(f" ({p})" for p in kept if p is not None) + after
+
+
+@dataclass(frozen=True)
+class UclKind(RowFunction):
+    inner: RowFunction
+
+    def __call__(self, row):
+        _, parts, _ = split_parentheticals(self.inner(row))
+        return "Locality [UCL]" if "L" in parts else "Urban Centre [UCL]"
 
 
 # Wikidata's "Australian Statistical Geography 2021 ID" is the layer's code with its name in front,
@@ -37,18 +125,23 @@ def abs_shapefile(
     include_in_syau=False,
     gridded_data=False,
 ):
-    """`kind` is what the region is called after its name, e.g. "LGA" in "Brisbane LGA", or None."""
+    """
+    `kind` is what the region is called after its name, e.g. "LGA" in "Brisbane LGA", or None, or a
+    RowFunction if it varies by region.
+    """
     # pylint: disable=too-many-arguments
-    shortname = column(name_column)
+    name = AbsName(column(name_column), layer)
+    shortname = name
     if kind is not None:
-        shortname = shortname + f" {kind}"
+        shortname = shortname + " " + kind
+
     state = "" if layer in LAYERS_WITHOUT_STATE else ", " + column("STE_NAME21")
 
     return make_shapefile(
         geometry_key=f"australian_{layer.lower()}_{version}",
         path=f"{PROCESSED}/{layer}_2021_AUST_SHP.zip",
         shortname_extractor=shortname,
-        cleanname_extractor=column(name_column),
+        cleanname_extractor=name,
         longname_extractor=shortname + state + ", Australia",
         additional_columns_computer=(
             {"asgs_id": layer + column(f"{layer}_CODE21")} if in_wikidata else {}
@@ -104,7 +197,7 @@ AUSTRALIAN_SUAS = abs_shapefile(
 AUSTRALIAN_UCLS = abs_shapefile(
     layer="UCL",
     name_column="UCL_NAME21",
-    kind="UCL",
+    kind=UclKind(column("UCL_NAME21")),
     type_name="AU UCL",
     type_category="Census",
     abbreviation="UCL",
