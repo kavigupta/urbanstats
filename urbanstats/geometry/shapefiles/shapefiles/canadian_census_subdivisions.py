@@ -108,8 +108,8 @@ CANADIAN_CENSUS_SUBDIVISIONS = make_shapefile(
     geometry_key="canadian_census_subdivisions_3",
     path=load_csd_shapefile,
     path_inputs=(
-        COUNTRIES.names,
-        SUBNATIONAL_REGIONS.names,
+        COUNTRIES.geometry,
+        SUBNATIONAL_REGIONS.geometry,
         CANADIAN_CENSUS_DIVISIONS.names,
         CANADIAN_CENSUS_DIVISIONS.identified,
     ),
