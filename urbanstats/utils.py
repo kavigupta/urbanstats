@@ -100,6 +100,22 @@ def to_cardinal_direction(angle_revolutions: float) -> str:
         0.6875: "South-Southwest",
         0.8125: "South-Southeast",
         0.9375: "East-Southeast",
+        0.03125: "East by North",
+        0.09375: "Northeast by East",
+        0.15625: "Northeast by North",
+        0.21875: "North by East",
+        0.28125: "North by West",
+        0.34375: "Northwest by North",
+        0.40625: "Northwest by West",
+        0.46875: "West by North",
+        0.53125: "West by South",
+        0.59375: "Southwest by West",
+        0.65625: "Southwest by South",
+        0.71875: "South by West",
+        0.78125: "South by East",
+        0.84375: "Southeast by South",
+        0.90625: "Southeast by East",
+        0.96875: "East by South",
     }[angle_revolutions]
 
 
