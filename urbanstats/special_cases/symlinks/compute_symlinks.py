@@ -19,6 +19,9 @@ from .symlinks_from_metropolitan_cluster_pruning import (
     symlinks_from_metropolitan_cluster_pruning,
 )
 from .symlinks_from_subnational_usa_fixes import symlinks_from_subnational_usa_fixes
+from .symlinks_from_urban_center_latin_names import (
+    symlinks_from_urban_center_latin_names,
+)
 
 
 def symlinks_most_recent_year() -> Dict[str, str]:
@@ -61,6 +64,7 @@ def compute_symlinks() -> Dict[str, str]:
     symlinks.update(symlinks_from_district_rename)
     symlinks.update(symlinks_from_metropolitan_cluster_pruning)
     symlinks.update(symlinks_from_circle_renaming)
+    symlinks.update(symlinks_from_urban_center_latin_names)
     symlinks.update(symlinks_most_recent_year())
 
     # pylint: disable=consider-using-dict-items
