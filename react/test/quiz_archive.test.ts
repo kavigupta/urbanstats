@@ -16,6 +16,11 @@ function archiveTest(name: string, keys: [string, string, string], liveUrl: stri
     }, '', 'desktop')
 
     test(`${name}-archive-play-is-reported-and-breaks-streak`, async (t) => {
+        const todayCellIsVisible = ClientFunction(() => {
+            const rect = Array.from(document.querySelectorAll('a[data-archive-quiz]:not([data-archive-quiz^="W"])')).at(-1)?.getBoundingClientRect()
+            return rect !== undefined && rect.top >= 0 && rect.bottom <= window.innerHeight
+        })
+        await t.expect(todayCellIsVisible()).ok()
         const retrostatCells = await t.eval(() => Array.from(document.querySelectorAll('a[data-archive-quiz^="W"]'), cell => cell.getAttribute('data-archive-quiz'))) as string[]
         await t.expect(new Set(retrostatCells).size).eql(retrostatCells.length)
         await t.click(Selector('a').withAttribute('data-archive-quiz', keys[1]))

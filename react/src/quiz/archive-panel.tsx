@@ -24,6 +24,8 @@ export function ArchivePanel({ highlight }: { highlight: string | undefined }): 
 
     const today = getDailyOffsetNumber()
     const currentWeek = getRetrostatOffsetNumber()
+    // Opened without a quiz to return to, show today's
+    const highlightKey = highlight ?? today.toString()
 
     // Sunday-first rows of day numbers, by month
     const months = new Map<string, (number | undefined)[][]>()
@@ -71,7 +73,7 @@ export function ArchivePanel({ highlight }: { highlight: string | undefined }): 
                                                     pattern={getCorrectPattern(history, day)}
                                                     label={dayStart(day).getDate().toString()}
                                                     wide={false}
-                                                    highlighted={highlight === day.toString()}
+                                                    highlighted={highlightKey === day.toString()}
                                                     descriptor={{ kind: 'quiz', mode: undefined, date: day === today ? undefined : day }}
                                                 />
                                             )),
@@ -83,7 +85,7 @@ export function ArchivePanel({ highlight }: { highlight: string | undefined }): 
                                                     pattern={getCorrectPattern(history, `W${week}`)}
                                                     label={`Retrostat ${weekRangeFormat.formatRange(dayStart(saturday - 6), dayStart(saturday))}`}
                                                     wide={true}
-                                                    highlighted={highlight === `W${week}`}
+                                                    highlighted={highlightKey === `W${week}`}
                                                     descriptor={{ kind: 'quiz', mode: 'retro', date: week === currentWeek ? undefined : week }}
                                                 />
                                             )]
@@ -106,7 +108,10 @@ function ArchiveCell({ historyKey, pattern, label, wide, highlighted, descriptor
 
     useEffect(() => {
         if (highlighted) {
-            ref.current?.scrollIntoView({ block: 'center', behavior: 'instant' })
+            const scroll = (): void => { ref.current?.scrollIntoView({ block: 'center', behavior: 'instant' }) }
+            scroll()
+            // Loading fonts reflows the months above
+            void document.fonts.ready.then(scroll)
         }
     }, [highlighted])
 
