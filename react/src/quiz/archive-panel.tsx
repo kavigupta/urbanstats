@@ -15,6 +15,7 @@ const quizLength = 5
 const calendarCellHeight = '2.2em'
 const wideCellHeight = '1.8em'
 const weekRangeFormat = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' })
+const monthFormat = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' })
 
 export function ArchivePanel({ highlight }: { highlight: string | undefined }): ReactNode {
     const history = QuizModel.shared.history.use()
@@ -28,7 +29,7 @@ export function ArchivePanel({ highlight }: { highlight: string | undefined }): 
     const months = new Map<string, (number | undefined)[][]>()
     for (let day = 0; day <= today; day++) {
         const date = dayStart(day)
-        const label = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        const label = monthFormat.format(date)
         const rows = months.get(label) ?? []
         months.set(label, rows)
         const firstWeekday = new Date(date.getFullYear(), date.getMonth(), 1).getDay()

@@ -22,6 +22,7 @@ function archiveTest(name: string, keys: [string, string, string], liveUrl: stri
         await clickButton(t, 'a')
         await t.expect(Selector('#quiz-timer').exists).notOk()
         await t.expect(await runQuery(t, `SELECT user, ${column} FROM ${table} WHERE archive = 1`)).eql(archiveRow)
+        await t.expect(Selector('a').withExactText(`Play ${name === 'juxtastat' ? 'Juxtastat' : 'Retrostat'}`).exists).ok()
 
         await t.click(Selector('a').withExactText('Archive'))
         await t.expect(ClientFunction(() => location.hash)()).eql(`#mode=archive&date=${keys[1]}`)
