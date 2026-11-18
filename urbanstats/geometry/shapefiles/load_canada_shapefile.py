@@ -44,9 +44,9 @@ province_abbr_to_province = {
     key_function=dict(countries=stable_hash),
 )
 def compute_canada_shape(countries):
-    sh = countries.load()
-    sh = sh[sh.longname == "Canada"]
-    return sh.iloc[0].geometry
+    sh = countries.load_rows()
+    [geo] = sh[sh.ISO_CC == "CA"].geometry
+    return geo
 
 
 @permacache(
@@ -54,12 +54,10 @@ def compute_canada_shape(countries):
     key_function=dict(subnationals=stable_hash),
 )
 def compute_qconmt(subnationals):
-    sh = subnationals.load()
-    geos = [
-        sh[sh.longname == province].geometry.iloc[0]
-        for province in ["Quebec, Canada", "Ontario, Canada", "Manitoba, Canada"]
-    ]
-    return shapely.ops.unary_union(geos)
+    sh = subnationals.load_rows()
+    sh = sh[(sh.ISO_CC == "CA") & sh.ISO_SUB.isin(["QC", "ON", "MB"])]
+    assert sh.shape[0] == 3
+    return shapely.ops.unary_union(list(sh.geometry))
 
 
 @permacache(

@@ -47,7 +47,7 @@ symlinkTest('usa-comparison', '/comparison.html?longnames=%5B%22United+States+of
 
 symlinkTest('fixed-subnationals-1',
     '/article.html?longname=Ciudad+Ojeda+5MPC%2C+Venezuela-USA-France',
-    '/article.html?longname=Ciudad+Ojeda+5MPC%2C+Venezuela-France-USA',
+    '/article.html?longname=Ciudad+Ojeda+5MPC%2C+Venezuela-Dominican+Republic-France',
 )
 
 symlinkTest('fixed-subnationals-2',
@@ -56,6 +56,6 @@ symlinkTest('fixed-subnationals-2',
 )
 
 symlinkTest('fixed-subnationals-3',
-    '/article.html?longname=Virginia+Beach+20MPC%2C+USA',
     '/article.html?longname=Virginia+Beach+20MPC%2C+USA-Canada',
+    '/article.html?longname=Virginia+Beach+20MPC%2C+USA',
 )

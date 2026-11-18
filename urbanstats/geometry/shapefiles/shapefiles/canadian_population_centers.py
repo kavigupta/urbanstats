@@ -45,7 +45,7 @@ def load_pcs(countries, subnationals):
 CANADIAN_CENSUS_POPULATION_CENTERS = make_shapefile(
     geometry_key="census_pcs_2",
     path=load_pcs,
-    path_inputs=(COUNTRIES.names, SUBNATIONAL_REGIONS.names),
+    path_inputs=(COUNTRIES.geometry, SUBNATIONAL_REGIONS.geometry),
     shortname_extractor=column("PCNAME") + " Population Center",
     cleanname_extractor=column("PCNAME"),
     longname_extractor=column("PCNAME")
