@@ -34,6 +34,7 @@ export type UrbanStatsASTExpression<M = unknown> = (
     { type: 'objectLiteral', entireLoc: LocInfo, properties: [string, UrbanStatsASTExpression<M>][] } |
     { type: 'vectorLiteral', entireLoc: LocInfo, elements: UrbanStatsASTExpression<M>[] } |
     { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression<M>, then: UrbanStatsASTStatement<M>, else?: UrbanStatsASTStatement<M> } |
+    { type: 'split', entireLoc: LocInfo, value: UrbanStatsASTExpression<M>, body: UrbanStatsASTStatement<M> } |
     { type: 'do', entireLoc: LocInfo, statements: UrbanStatsASTStatement<M>[] } |
     // for internal purposes only
     { type: 'customNode', entireLoc: LocInfo, expr: UrbanStatsASTStatement<M>, originalCode: string, expectedType?: USSType[] } |
@@ -85,6 +86,7 @@ export function locationOf(node: UrbanStatsAST): LocInfo {
         case 'objectLiteral':
         case 'vectorLiteral':
         case 'if':
+        case 'split':
         case 'do':
         case 'condition':
         case 'statements':
@@ -160,6 +162,10 @@ export function getAllParseErrors(node: UrbanStatsAST): ParseError[] {
                 if (n.else) {
                     collectErrors(n.else)
                 }
+                break
+            case 'split':
+                collectErrors(n.value)
+                collectErrors(n.body)
                 break
             case 'do':
                 n.statements.forEach(collectErrors)

@@ -29,6 +29,7 @@ function isExpressionNode(n: UrbanStatsASTStatement | UrbanStatsASTExpression): 
         case 'expression':
         case 'statements':
         case 'if':
+        case 'split':
         case 'do':
         case 'condition':
             return false
