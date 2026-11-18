@@ -10,6 +10,7 @@ origins = [f"http://localhost:{port()}", "https://urbanstats.org"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=rf"http://[^/]+\.local:{port()}",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
