@@ -14,7 +14,16 @@
       "url": "https://tiles.openfreemap.org/planet"
     }
   },
-  "sprite": "https://tiles.openfreemap.org/sprites/ofm_f384/ofm",
+  "sprite": [
+    {
+      "id": "default",
+      "url": "https://tiles.openfreemap.org/sprites/ofm_f384/ofm"
+    },
+    {
+      "id": "urbanstats",
+      "url": "/sprites/urbanstats"
+    }
+  ],
   "glyphs": "/fonts/{fontstack}/{range}.pbf",
   "layers": [
     {
@@ -22,6 +31,573 @@
       "type": "background",
       "paint": {
         "background-color": "#fff8f0"
+      }
+    },
+    {
+      "id": "boundary_3-highlight",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "boundary",
+      "minzoom": 5,
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "typeof",
+            [
+              "get",
+              "admin_level"
+            ]
+          ],
+          "number"
+        ],
+        [
+          ">=",
+          [
+            "get",
+            "admin_level"
+          ],
+          3
+        ],
+        [
+          "<=",
+          [
+            "get",
+            "admin_level"
+          ],
+          6
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "disputed"
+          ],
+          1
+        ],
+        [
+          "!",
+          [
+            "has",
+            "claimed_by"
+          ]
+        ]
+      ],
+      "paint": {
+        "line-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          5,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            "#fde8cd",
+            [
+              3,
+              4
+            ],
+            "#fff8f0",
+            "#fff8f0"
+          ],
+          8,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            "#fcddb3",
+            [
+              3,
+              4
+            ],
+            "#feecd6",
+            "#fff8f0"
+          ],
+          11,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            "#fbd198",
+            [
+              3,
+              4
+            ],
+            "#fcd9aa",
+            "#fef0de"
+          ],
+          15,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            "#fac987",
+            [
+              3,
+              4
+            ],
+            "#fac987",
+            "#fbd5a1"
+          ]
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          3,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            4.0,
+            [
+              3,
+              4
+            ],
+            2.5,
+            1.5
+          ],
+          8,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            8.0,
+            [
+              3,
+              4
+            ],
+            5.5,
+            3.0
+          ],
+          14,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            12.5,
+            [
+              3,
+              4
+            ],
+            9.0,
+            5.5
+          ]
+        ]
+      },
+      "layout": {
+        "line-join": "round",
+        "line-cap": "round",
+        "line-sort-key": [
+          "-",
+          0,
+          [
+            "coalesce",
+            [
+              "get",
+              "admin_level"
+            ],
+            10
+          ]
+        ]
+      }
+    },
+    {
+      "id": "boundary_2-highlight",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "boundary",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          2
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "disputed"
+          ],
+          1
+        ],
+        [
+          "!",
+          [
+            "has",
+            "claimed_by"
+          ]
+        ],
+        [
+          "any",
+          [
+            "!=",
+            [
+              "get",
+              "maritime"
+            ],
+            1
+          ],
+          [
+            "all",
+            [
+              "has",
+              "adm0_l"
+            ],
+            [
+              "has",
+              "adm0_r"
+            ]
+          ]
+        ]
+      ],
+      "layout": {
+        "line-join": "round",
+        "line-cap": "round",
+        "line-sort-key": [
+          "-",
+          0,
+          [
+            "coalesce",
+            [
+              "get",
+              "admin_level"
+            ],
+            10
+          ]
+        ]
+      },
+      "paint": {
+        "line-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          5,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            "#fde8cd",
+            [
+              3,
+              4
+            ],
+            "#fff8f0",
+            "#fff8f0"
+          ],
+          8,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            "#fcddb3",
+            [
+              3,
+              4
+            ],
+            "#feecd6",
+            "#fff8f0"
+          ],
+          11,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            "#fbd198",
+            [
+              3,
+              4
+            ],
+            "#fcd9aa",
+            "#fef0de"
+          ],
+          15,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            "#fac987",
+            [
+              3,
+              4
+            ],
+            "#fac987",
+            "#fbd5a1"
+          ]
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          3,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            4.0,
+            [
+              3,
+              4
+            ],
+            2.5,
+            1.5
+          ],
+          8,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            8.0,
+            [
+              3,
+              4
+            ],
+            5.5,
+            3.0
+          ],
+          14,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            12.5,
+            [
+              3,
+              4
+            ],
+            9.0,
+            5.5
+          ]
+        ]
+      }
+    },
+    {
+      "id": "boundary_disputed-highlight",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "boundary",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "disputed"
+          ],
+          1
+        ]
+      ],
+      "paint": {
+        "line-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          5,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            "#fde8cd",
+            [
+              3,
+              4
+            ],
+            "#fff8f0",
+            "#fff8f0"
+          ],
+          8,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            "#fcddb3",
+            [
+              3,
+              4
+            ],
+            "#feecd6",
+            "#fff8f0"
+          ],
+          11,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            "#fbd198",
+            [
+              3,
+              4
+            ],
+            "#fcd9aa",
+            "#fef0de"
+          ],
+          15,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            "#fac987",
+            [
+              3,
+              4
+            ],
+            "#fac987",
+            "#fbd5a1"
+          ]
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          3,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            4.0,
+            [
+              3,
+              4
+            ],
+            2.5,
+            1.5
+          ],
+          8,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            8.0,
+            [
+              3,
+              4
+            ],
+            5.5,
+            3.0
+          ],
+          14,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            12.5,
+            [
+              3,
+              4
+            ],
+            9.0,
+            5.5
+          ]
+        ]
+      },
+      "layout": {
+        "line-join": "round",
+        "line-cap": "round",
+        "line-sort-key": [
+          "-",
+          0,
+          [
+            "coalesce",
+            [
+              "get",
+              "admin_level"
+            ],
+            10
+          ]
+        ]
       }
     },
     {
@@ -178,7 +754,8 @@
         "cemetery"
       ],
       "paint": {
-        "fill-color": "#b9d896"
+        "fill-color": "#e0e4dd",
+        "fill-pattern": "urbanstats:grass"
       }
     },
     {
@@ -233,28 +810,6 @@
       }
     },
     {
-      "id": "park",
-      "type": "fill",
-      "source": "openmaptiles",
-      "source-layer": "park",
-      "filter": [
-        "match",
-        [
-          "geometry-type"
-        ],
-        [
-          "MultiPolygon",
-          "Polygon"
-        ],
-        true,
-        false
-      ],
-      "paint": {
-        "fill-color": "#b9d896",
-        "fill-opacity": 1
-      }
-    },
-    {
       "id": "landcover-wood",
       "type": "fill",
       "source": "openmaptiles",
@@ -277,9 +832,10 @@
           9,
           true
         ],
-        "fill-color": "#a7d080",
-        "fill-opacity": 0.8,
-        "fill-outline-color": "rgba(0,0,0,0)"
+        "fill-color": "#6a4",
+        "fill-opacity": 1,
+        "fill-outline-color": "rgba(0,0,0,0)",
+        "fill-pattern": "urbanstats:wood"
       }
     },
     {
@@ -296,8 +852,9 @@
         "grass"
       ],
       "paint": {
-        "fill-color": "#b9d896",
-        "fill-opacity": 0.6
+        "fill-color": "#d8e8c8",
+        "fill-opacity": 1,
+        "fill-pattern": "urbanstats:grass"
       }
     },
     {
@@ -314,8 +871,59 @@
         "public_park"
       ],
       "paint": {
-        "fill-color": "#b9d896",
-        "fill-opacity": 1
+        "fill-color": "#d8e8c8",
+        "fill-opacity": 1,
+        "fill-pattern": "urbanstats:park"
+      }
+    },
+    {
+      "id": "park",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "park",
+      "filter": [
+        "match",
+        [
+          "geometry-type"
+        ],
+        [
+          "MultiPolygon",
+          "Polygon"
+        ],
+        true,
+        false
+      ],
+      "paint": {
+        "fill-color": "#d8e8c8",
+        "fill-opacity": 1,
+        "fill-pattern": "urbanstats:park"
+      }
+    },
+    {
+      "id": "park-edge",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "park",
+      "filter": [
+        "match",
+        [
+          "geometry-type"
+        ],
+        [
+          "MultiPolygon",
+          "Polygon"
+        ],
+        true,
+        false
+      ],
+      "minzoom": 10,
+      "paint": {
+        "line-color": "#4e525a",
+        "line-width": 1,
+        "line-dasharray": [
+          4,
+          3
+        ]
       }
     },
     {
@@ -711,366 +1319,6 @@
       }
     },
     {
-      "id": "boundary_3-highlight",
-      "type": "line",
-      "source": "openmaptiles",
-      "source-layer": "boundary",
-      "minzoom": 5,
-      "filter": [
-        "all",
-        [
-          "==",
-          [
-            "typeof",
-            [
-              "get",
-              "admin_level"
-            ]
-          ],
-          "number"
-        ],
-        [
-          ">=",
-          [
-            "get",
-            "admin_level"
-          ],
-          3
-        ],
-        [
-          "<=",
-          [
-            "get",
-            "admin_level"
-          ],
-          6
-        ],
-        [
-          "!=",
-          [
-            "get",
-            "disputed"
-          ],
-          1
-        ],
-        [
-          "!",
-          [
-            "has",
-            "claimed_by"
-          ]
-        ]
-      ],
-      "paint": {
-        "line-color": "#f7aa41",
-        "line-width": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          3,
-          [
-            "match",
-            [
-              "get",
-              "admin_level"
-            ],
-            2,
-            4.0,
-            [
-              3,
-              4
-            ],
-            2.5,
-            1.5
-          ],
-          8,
-          [
-            "match",
-            [
-              "get",
-              "admin_level"
-            ],
-            2,
-            8.0,
-            [
-              3,
-              4
-            ],
-            5.5,
-            3.0
-          ],
-          14,
-          [
-            "match",
-            [
-              "get",
-              "admin_level"
-            ],
-            2,
-            12.5,
-            [
-              3,
-              4
-            ],
-            9.0,
-            5.5
-          ]
-        ],
-        "line-opacity": [
-          "match",
-          [
-            "get",
-            "admin_level"
-          ],
-          2,
-          0.35,
-          [
-            3,
-            4
-          ],
-          0.35,
-          0.2
-        ]
-      },
-      "layout": {
-        "line-join": "round",
-        "line-cap": "round"
-      }
-    },
-    {
-      "id": "boundary_2-highlight",
-      "type": "line",
-      "source": "openmaptiles",
-      "source-layer": "boundary",
-      "filter": [
-        "all",
-        [
-          "==",
-          [
-            "get",
-            "admin_level"
-          ],
-          2
-        ],
-        [
-          "!=",
-          [
-            "get",
-            "disputed"
-          ],
-          1
-        ],
-        [
-          "!",
-          [
-            "has",
-            "claimed_by"
-          ]
-        ],
-        [
-          "any",
-          [
-            "!=",
-            [
-              "get",
-              "maritime"
-            ],
-            1
-          ],
-          [
-            "all",
-            [
-              "has",
-              "adm0_l"
-            ],
-            [
-              "has",
-              "adm0_r"
-            ]
-          ]
-        ]
-      ],
-      "layout": {
-        "line-join": "round",
-        "line-cap": "round"
-      },
-      "paint": {
-        "line-color": "#f7aa41",
-        "line-width": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          3,
-          [
-            "match",
-            [
-              "get",
-              "admin_level"
-            ],
-            2,
-            4.0,
-            [
-              3,
-              4
-            ],
-            2.5,
-            1.5
-          ],
-          8,
-          [
-            "match",
-            [
-              "get",
-              "admin_level"
-            ],
-            2,
-            8.0,
-            [
-              3,
-              4
-            ],
-            5.5,
-            3.0
-          ],
-          14,
-          [
-            "match",
-            [
-              "get",
-              "admin_level"
-            ],
-            2,
-            12.5,
-            [
-              3,
-              4
-            ],
-            9.0,
-            5.5
-          ]
-        ],
-        "line-opacity": [
-          "match",
-          [
-            "get",
-            "admin_level"
-          ],
-          2,
-          0.35,
-          [
-            3,
-            4
-          ],
-          0.35,
-          0.2
-        ]
-      }
-    },
-    {
-      "id": "boundary_disputed-highlight",
-      "type": "line",
-      "source": "openmaptiles",
-      "source-layer": "boundary",
-      "filter": [
-        "all",
-        [
-          "==",
-          [
-            "get",
-            "disputed"
-          ],
-          1
-        ]
-      ],
-      "paint": {
-        "line-color": "#f7aa41",
-        "line-width": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          3,
-          [
-            "match",
-            [
-              "get",
-              "admin_level"
-            ],
-            2,
-            4.0,
-            [
-              3,
-              4
-            ],
-            2.5,
-            1.5
-          ],
-          8,
-          [
-            "match",
-            [
-              "get",
-              "admin_level"
-            ],
-            2,
-            8.0,
-            [
-              3,
-              4
-            ],
-            5.5,
-            3.0
-          ],
-          14,
-          [
-            "match",
-            [
-              "get",
-              "admin_level"
-            ],
-            2,
-            12.5,
-            [
-              3,
-              4
-            ],
-            9.0,
-            5.5
-          ]
-        ],
-        "line-opacity": [
-          "match",
-          [
-            "get",
-            "admin_level"
-          ],
-          2,
-          0.35,
-          [
-            3,
-            4
-          ],
-          0.35,
-          0.2
-        ]
-      },
-      "layout": {
-        "line-join": "round",
-        "line-cap": "round"
-      }
-    },
-    {
       "id": "water",
       "type": "fill",
       "source": "openmaptiles",
@@ -1294,13 +1542,26 @@
           [
             "zoom"
           ],
-          12,
-          0.6,
-          14,
+          6,
+          1.25,
+          8,
+          1.375,
+          10,
           1.5,
+          12,
+          1.625,
+          12.5,
+          1.6875,
+          13,
+          4.550000000000001,
+          15,
+          5.2,
+          17,
+          8.450000000000001,
           20,
-          5
-        ]
+          16.25
+        ],
+        "line-blur": 0.4
       }
     },
     {
@@ -1602,15 +1863,26 @@
           [
             "zoom"
           ],
-          5,
-          0.6,
+          6,
+          1.6,
+          8,
+          1.7600000000000002,
+          8.5,
+          1.8,
+          9,
+          4.14,
           10,
-          1.5,
-          14,
-          3,
+          4.32,
+          12,
+          4.680000000000001,
+          15,
+          5.760000000000001,
+          17,
+          9.360000000000001,
           20,
-          8
-        ]
+          18.0
+        ],
+        "line-blur": 0.4
       }
     },
     {
@@ -1659,13 +1931,18 @@
           [
             "zoom"
           ],
-          13,
+          12.5,
           0,
-          14,
-          0.6,
+          13,
+          1.7500000000000002,
+          15,
+          2.0,
+          17,
+          3.25,
           20,
-          3
-        ]
+          6.25
+        ],
+        "line-blur": 0.4
       }
     },
     {
@@ -1723,6 +2000,12 @@
           [
             "zoom"
           ],
+          6,
+          1,
+          8,
+          1.1,
+          10,
+          1.2,
           12,
           1.3,
           15,
@@ -1802,14 +2085,20 @@
           [
             "zoom"
           ],
+          6,
+          1.25,
           8,
-          1,
-          14,
-          1.2,
-          16,
-          1.4,
+          1.375,
+          10,
+          1.5,
+          12,
+          1.625,
+          15,
+          2.0,
+          17,
+          3.25,
           20,
-          3.5
+          6.25
         ],
         "line-blur": 0.4
       }
@@ -1865,6 +2154,12 @@
           [
             "zoom"
           ],
+          6,
+          1,
+          8,
+          1.1,
+          10,
+          1.2,
           12,
           1.3,
           15,
@@ -1942,14 +2237,20 @@
           [
             "zoom"
           ],
+          6,
+          1.25,
           8,
-          1,
-          14,
-          1.2,
-          16,
-          1.4,
+          1.375,
+          10,
+          1.5,
+          12,
+          1.625,
+          15,
+          2.0,
+          17,
+          3.25,
           20,
-          3.5
+          6.25
         ],
         "line-blur": 0.4
       }
@@ -2006,14 +2307,21 @@
             "zoom"
           ],
           6,
-          0.5,
+          1.6,
+          8,
+          1.7600000000000002,
           10,
-          1,
-          14,
-          2,
+          1.92,
+          12,
+          2.08,
+          15,
+          2.5600000000000005,
+          17,
+          4.16,
           20,
-          5
-        ]
+          8.0
+        ],
+        "line-blur": 0.4
       }
     },
     {
@@ -2062,15 +2370,22 @@
           [
             "zoom"
           ],
-          7,
+          8.5,
           0,
+          9,
+          1.8399999999999999,
           10,
-          0.6,
-          14,
-          1.5,
+          1.92,
+          12,
+          2.08,
+          15,
+          2.5600000000000005,
+          17,
+          4.16,
           20,
-          5
-        ]
+          8.0
+        ],
+        "line-blur": 0.4
       }
     },
     {
@@ -2107,17 +2422,25 @@
           "interpolate",
           [
             "exponential",
-            1.4
+            1.2
           ],
           [
             "zoom"
           ],
-          14,
-          0.4,
+          6,
+          1,
+          8,
+          1.1,
+          10,
+          1.2,
+          12,
+          1.3,
           15,
-          0.75,
+          1.6,
+          17,
+          2.6,
           20,
-          2
+          5
         ],
         "line-blur": 0.4
       }
@@ -2570,13 +2893,26 @@
           [
             "zoom"
           ],
-          12,
-          0.6,
-          14,
+          6,
+          1.25,
+          8,
+          1.375,
+          10,
           1.5,
+          12,
+          1.625,
+          12.5,
+          1.6875,
+          13,
+          4.550000000000001,
+          15,
+          5.2,
+          17,
+          8.450000000000001,
           20,
-          5
-        ]
+          16.25
+        ],
+        "line-blur": 0.4
       }
     },
     {
@@ -2989,15 +3325,26 @@
           [
             "zoom"
           ],
-          5,
-          0.6,
+          6,
+          1.6,
+          8,
+          1.7600000000000002,
+          8.5,
+          1.8,
+          9,
+          4.14,
           10,
-          1.5,
-          14,
-          3,
+          4.32,
+          12,
+          4.680000000000001,
+          15,
+          5.760000000000001,
+          17,
+          9.360000000000001,
           20,
-          8
-        ]
+          18.0
+        ],
+        "line-blur": 0.4
       }
     },
     {
@@ -3053,13 +3400,18 @@
           [
             "zoom"
           ],
-          13,
+          12.5,
           0,
-          14,
-          0.6,
+          13,
+          1.7500000000000002,
+          15,
+          2.0,
+          17,
+          3.25,
           20,
-          3
-        ]
+          6.25
+        ],
+        "line-blur": 0.4
       }
     },
     {
@@ -3136,14 +3488,20 @@
           [
             "zoom"
           ],
+          6,
+          1.25,
           8,
-          1,
-          14,
-          1.2,
-          16,
-          1.4,
+          1.375,
+          10,
+          1.5,
+          12,
+          1.625,
+          15,
+          2.0,
+          17,
+          3.25,
           20,
-          3.5
+          6.25
         ],
         "line-blur": 0.4
       }
@@ -3218,6 +3576,12 @@
           [
             "zoom"
           ],
+          6,
+          1,
+          8,
+          1.1,
+          10,
+          1.2,
           12,
           1.3,
           15,
@@ -3301,14 +3665,20 @@
           [
             "zoom"
           ],
+          6,
+          1.25,
           8,
-          1,
-          14,
-          1.2,
-          16,
-          1.4,
+          1.375,
+          10,
+          1.5,
+          12,
+          1.625,
+          15,
+          2.0,
+          17,
+          3.25,
           20,
-          3.5
+          6.25
         ],
         "line-blur": 0.4
       }
@@ -3382,14 +3752,21 @@
             "zoom"
           ],
           6,
-          0.5,
+          1.6,
+          8,
+          1.7600000000000002,
           10,
-          1,
-          14,
-          2,
+          1.92,
+          12,
+          2.08,
+          15,
+          2.5600000000000005,
+          17,
+          4.16,
           20,
-          5
-        ]
+          8.0
+        ],
+        "line-blur": 0.4
       }
     },
     {
@@ -3461,14 +3838,21 @@
             "zoom"
           ],
           6,
-          0.5,
+          1.6,
+          8,
+          1.7600000000000002,
           10,
-          1,
-          14,
-          2,
+          1.92,
+          12,
+          2.08,
+          15,
+          2.5600000000000005,
+          17,
+          4.16,
           20,
-          5
-        ]
+          8.0
+        ],
+        "line-blur": 0.4
       }
     },
     {
@@ -3536,15 +3920,22 @@
           [
             "zoom"
           ],
-          7,
+          8.5,
           0,
+          9,
+          1.8399999999999999,
           10,
-          0.6,
-          14,
-          1.5,
+          1.92,
+          12,
+          2.08,
+          15,
+          2.5600000000000005,
+          17,
+          4.16,
           20,
-          5
-        ]
+          8.0
+        ],
+        "line-blur": 0.4
       }
     },
     {
@@ -3593,15 +3984,25 @@
           "interpolate",
           [
             "exponential",
-            1.4
+            1.2
           ],
           [
             "zoom"
           ],
-          14,
-          0.4,
+          6,
+          1,
+          8,
+          1.1,
+          10,
+          1.2,
+          12,
+          1.3,
+          15,
+          1.6,
+          17,
+          2.6,
           20,
-          1
+          5
         ],
         "line-blur": 0.4
       }
@@ -3656,7 +4057,7 @@
           "interpolate",
           [
             "exponential",
-            1.4
+            1.2
           ],
           [
             "zoom"
@@ -3664,9 +4065,11 @@
           14.5,
           0,
           15,
-          2,
+          4.800000000000001,
+          17,
+          7.800000000000001,
           20,
-          6
+          15
         ],
         "line-blur": 0.4
       }
@@ -3709,15 +4112,25 @@
           "interpolate",
           [
             "exponential",
-            1.4
+            1.2
           ],
           [
             "zoom"
           ],
-          14,
-          0.4,
+          6,
+          1,
+          8,
+          1.1,
+          10,
+          1.2,
+          12,
+          1.3,
+          15,
+          1.6,
+          17,
+          2.6,
           20,
-          1
+          5
         ],
         "line-blur": 0.4
       },
@@ -3765,7 +4178,7 @@
           "interpolate",
           [
             "exponential",
-            1.4
+            1.2
           ],
           [
             "zoom"
@@ -3773,9 +4186,11 @@
           14.5,
           0,
           15,
-          2,
+          4.800000000000001,
+          17,
+          7.800000000000001,
           20,
-          6
+          15
         ],
         "line-blur": 0.4
       },
@@ -3835,17 +4250,25 @@
           "interpolate",
           [
             "exponential",
-            1.4
+            1.2
           ],
           [
             "zoom"
           ],
-          14,
-          0.4,
+          6,
+          1,
+          8,
+          1.1,
+          10,
+          1.2,
+          12,
+          1.3,
           15,
-          0.75,
+          1.6,
+          17,
+          2.6,
           20,
-          2
+          5
         ],
         "line-blur": 0.4
       }
@@ -3908,7 +4331,7 @@
           "interpolate",
           [
             "exponential",
-            1.4
+            1.2
           ],
           [
             "zoom"
@@ -3916,9 +4339,11 @@
           14.5,
           0,
           15,
-          3,
+          4.800000000000001,
+          17,
+          7.800000000000001,
           20,
-          8
+          15
         ],
         "line-blur": 0.4
       }
@@ -3970,13 +4395,26 @@
           [
             "zoom"
           ],
-          12,
-          0.6,
-          14,
+          6,
+          1.25,
+          8,
+          1.375,
+          10,
           1.5,
+          12,
+          1.625,
+          12.5,
+          1.6875,
+          13,
+          4.550000000000001,
+          15,
+          5.2,
+          17,
+          8.450000000000001,
           20,
-          5
-        ]
+          16.25
+        ],
+        "line-blur": 0.4
       }
     },
     {
@@ -4216,15 +4654,26 @@
           [
             "zoom"
           ],
-          5,
-          0.6,
+          6,
+          1.6,
+          8,
+          1.7600000000000002,
+          8.5,
+          1.8,
+          9,
+          4.14,
           10,
-          1.5,
-          14,
-          3,
+          4.32,
+          12,
+          4.680000000000001,
+          15,
+          5.760000000000001,
+          17,
+          9.360000000000001,
           20,
-          8
-        ]
+          18.0
+        ],
+        "line-blur": 0.4
       }
     },
     {
@@ -4342,13 +4791,18 @@
           [
             "zoom"
           ],
-          13,
+          12.5,
           0,
-          14,
-          0.6,
+          13,
+          1.7500000000000002,
+          15,
+          2.0,
+          17,
+          3.25,
           20,
-          3
-        ]
+          6.25
+        ],
+        "line-blur": 0.4
       }
     },
     {
@@ -4418,14 +4872,20 @@
           [
             "zoom"
           ],
+          6,
+          1.25,
           8,
-          1,
-          14,
-          1.2,
-          16,
-          1.4,
+          1.375,
+          10,
+          1.5,
+          12,
+          1.625,
+          15,
+          2.0,
+          17,
+          3.25,
           20,
-          3.5
+          6.25
         ],
         "line-blur": 0.4
       }
@@ -4500,6 +4960,12 @@
           [
             "zoom"
           ],
+          6,
+          1,
+          8,
+          1.1,
+          10,
+          1.2,
           12,
           1.3,
           15,
@@ -4577,14 +5043,20 @@
           [
             "zoom"
           ],
+          6,
+          1.25,
           8,
-          1,
-          14,
-          1.2,
-          16,
-          1.4,
+          1.375,
+          10,
+          1.5,
+          12,
+          1.625,
+          15,
+          2.0,
+          17,
+          3.25,
           20,
-          3.5
+          6.25
         ],
         "line-blur": 0.4
       }
@@ -4641,14 +5113,21 @@
             "zoom"
           ],
           6,
-          0.5,
+          1.6,
+          8,
+          1.7600000000000002,
           10,
-          1,
-          14,
-          2,
+          1.92,
+          12,
+          2.08,
+          15,
+          2.5600000000000005,
+          17,
+          4.16,
           20,
-          5
-        ]
+          8.0
+        ],
+        "line-blur": 0.4
       }
     },
     {
@@ -4697,15 +5176,22 @@
           [
             "zoom"
           ],
-          7,
+          8.5,
           0,
+          9,
+          1.8399999999999999,
           10,
-          0.6,
-          14,
-          1.5,
+          1.92,
+          12,
+          2.08,
+          15,
+          2.5600000000000005,
+          17,
+          4.16,
           20,
-          5
-        ]
+          8.0
+        ],
+        "line-blur": 0.4
       }
     },
     {
@@ -4738,17 +5224,25 @@
           "interpolate",
           [
             "exponential",
-            1.4
+            1.2
           ],
           [
             "zoom"
           ],
-          14,
-          0.4,
+          6,
+          1,
+          8,
+          1.1,
+          10,
+          1.2,
+          12,
+          1.3,
           15,
-          0.75,
+          1.6,
+          17,
+          2.6,
           20,
-          2
+          5
         ],
         "line-blur": 0.4
       }
@@ -4787,7 +5281,7 @@
           "interpolate",
           [
             "exponential",
-            1.4
+            1.2
           ],
           [
             "zoom"
@@ -4795,9 +5289,11 @@
           14.5,
           0,
           15,
-          3,
+          4.800000000000001,
+          17,
+          7.800000000000001,
           20,
-          8
+          15
         ],
         "line-blur": 0.4
       }
@@ -4989,6 +5485,33 @@
           2,
           1,
           2
+        ],
+        "line-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            1,
+            [
+              3,
+              4
+            ],
+            1,
+            0
+          ],
+          9,
+          1
         ]
       }
     },
@@ -5113,6 +5636,33 @@
           2,
           1,
           2
+        ],
+        "line-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            1,
+            [
+              3,
+              4
+            ],
+            1,
+            0
+          ],
+          9,
+          1
         ]
       }
     },
@@ -5196,6 +5746,33 @@
           2,
           1,
           2
+        ],
+        "line-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          [
+            "match",
+            [
+              "get",
+              "admin_level"
+            ],
+            2,
+            1,
+            [
+              3,
+              4
+            ],
+            1,
+            0
+          ],
+          9,
+          1
         ]
       }
     },
@@ -5855,32 +6432,20 @@
       }
     },
     {
-      "id": "poi_transit",
+      "id": "poi_bus",
       "type": "symbol",
       "source": "openmaptiles",
       "source-layer": "poi",
       "filter": [
-        "match",
+        "==",
         [
           "get",
           "class"
         ],
-        [
-          "airport",
-          "bus",
-          "rail"
-        ],
-        true,
-        false
+        "bus"
       ],
       "layout": {
-        "icon-image": [
-          "to-string",
-          [
-            "get",
-            "class"
-          ]
-        ],
+        "icon-image": "bus_11",
         "icon-size": 0.7,
         "text-anchor": "left",
         "text-field": [
@@ -5918,17 +6483,18 @@
         ],
         "text-max-width": 9,
         "text-offset": [
-          0.9,
+          0.8,
           0
         ],
-        "text-size": 12
+        "text-size": 11
       },
       "paint": {
         "text-color": "#2e5a80",
         "text-halo-blur": 0.5,
         "text-halo-color": "#fff8f0",
         "text-halo-width": 1
-      }
+      },
+      "minzoom": 16
     },
     {
       "id": "highway-name-minor",
@@ -6774,7 +7340,7 @@
         "text-font": [
           "Jost Medium"
         ],
-        "text-letter-spacing": 0.3,
+        "text-letter-spacing": 0.45,
         "text-max-width": 9,
         "text-size": [
           "interpolate",
@@ -6796,6 +7362,87 @@
       "paint": {
         "text-color": "#000000",
         "text-halo-blur": 1,
+        "text-halo-color": "#fff8f0",
+        "text-halo-width": 1
+      }
+    },
+    {
+      "id": "poi_transit",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "poi",
+      "filter": [
+        "match",
+        [
+          "get",
+          "class"
+        ],
+        [
+          "airport",
+          "railway"
+        ],
+        true,
+        false
+      ],
+      "layout": {
+        "icon-image": [
+          "to-string",
+          [
+            "get",
+            "class"
+          ]
+        ],
+        "icon-size": 0.9,
+        "text-anchor": "left",
+        "text-field": [
+          "case",
+          [
+            "has",
+            "name:nonlatin"
+          ],
+          [
+            "concat",
+            [
+              "get",
+              "name:latin"
+            ],
+            "\n",
+            [
+              "get",
+              "name:nonlatin"
+            ]
+          ],
+          [
+            "coalesce",
+            [
+              "get",
+              "name_en"
+            ],
+            [
+              "get",
+              "name"
+            ]
+          ]
+        ],
+        "text-font": [
+          "Jost Italic"
+        ],
+        "text-max-width": 9,
+        "text-offset": [
+          1.1,
+          0
+        ],
+        "text-size": 12,
+        "text-optional": true,
+        "icon-padding": 12,
+        "symbol-sort-key": [
+          "get",
+          "rank"
+        ]
+      },
+      "paint": {
+        "text-color": "#2e5a80",
+        "text-halo-blur": 0.5,
         "text-halo-color": "#fff8f0",
         "text-halo-width": 1
       }
@@ -7111,7 +7758,7 @@
           ]
         ],
         "text-font": [
-          "Jost Bold"
+          "Jost 550"
         ],
         "text-max-width": 8,
         "text-offset": [
@@ -7212,7 +7859,7 @@
           ]
         ],
         "text-font": [
-          "Jost Bold"
+          "Jost 550"
         ],
         "text-max-width": 8,
         "text-offset": [

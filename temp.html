@@ -60,14 +60,18 @@
             const transformRequest = (url, resourceType) => {
                 const match = resourceType === 'Glyphs' && /\/fonts\/Jost(?: |%20)(\w+)\/(\d+)-(\d+)\.pbf$/.exec(url)
                 if (match && !jostRanges.has(Number(match[2]))) {
-                    const noto = { Regular: 'Regular', Medium: 'Regular', Bold: 'Bold', Italic: 'Italic' }[match[1]]
+                    const noto = { Regular: 'Regular', Medium: 'Regular', 550: 'Bold', Bold: 'Bold', Italic: 'Italic' }[match[1]]
                     return { url: `https://tiles.openfreemap.org/fonts/Noto%20Sans%20${noto}/${match[2]}-${match[3]}.pbf` }
                 }
                 return { url: new URL(url, location.href).href }
             }
 
+            // MapLibre requires sprite URLs to be absolute, and checks before transformRequest
+            const style = await (await fetch('/style.json')).json()
+            style.sprite = style.sprite.map(sprite => ({ ...sprite, url: new URL(sprite.url, location.href).href }))
+
             const map = new maplibregl.Map({
-                style: '/style.json',
+                style,
                 transformRequest,
                 center: nyc.center,
                 zoom: nyc.zoom,

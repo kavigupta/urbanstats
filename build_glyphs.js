@@ -17,6 +17,7 @@ const fontDir = '../population_density/react/src/fonts'
 const fonts = {
     'Jost Regular': ['Jost-VariableFont_wght.ttf', 400, 'Noto Sans Regular'],
     'Jost Medium': ['Jost-VariableFont_wght.ttf', 500, 'Noto Sans Regular'],
+    'Jost 550': ['Jost-VariableFont_wght.ttf', 550, 'Noto Sans Bold'],
     'Jost Bold': ['Jost-VariableFont_wght.ttf', 700, 'Noto Sans Bold'],
     'Jost Italic': ['Jost-Italic-VariableFont_wght.ttf', 400, 'Noto Sans Italic'],
 }
