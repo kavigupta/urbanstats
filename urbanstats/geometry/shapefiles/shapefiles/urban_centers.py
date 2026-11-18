@@ -7,10 +7,12 @@ from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
 )
 from urbanstats.geometry.shapefiles.source_countries import ContainedWithinCountries
 from urbanstats.special_cases.ghsl_urban_center import (
+    LatinSubnationalSuffixes,
     SubnationalSuffixedName,
     SubnationalSuffixes,
     load_ghsl_urban_centers,
 )
+from urbanstats.special_cases.ghsl_urban_center_latin_names import LATIN_NAMES
 from urbanstats.universe.universe_provider.combined_universe_provider import (
     CombinedUniverseProvider,
 )
@@ -21,7 +23,7 @@ from urbanstats.universe.universe_provider.universe_provider import (
 
 
 def create_urban_center_like_shapefile(
-    *, name_column, more_general_direction, overrides, **kwargs
+    *, name_column, more_general_direction, overrides, latin_names=None, **kwargs
 ):
     # the names are computed among all the regions, so they're added once the geometry exists
     shapefile = make_shapefile(
@@ -44,13 +46,19 @@ def create_urban_center_like_shapefile(
         include_in_syau=True,
         **kwargs,
     )
-    suffixes = SubnationalSuffixes(
+    suffixes_args = dict(
         regions=shapefile.geometry,
         subnationals=SUBNATIONAL_REGIONS.geometry,
         name_column=name_column,
         more_general_direction=more_general_direction,
         overrides=overrides,
     )
+    if latin_names is None:
+        suffixes = SubnationalSuffixes(**suffixes_args)
+    else:
+        suffixes = LatinSubnationalSuffixes(
+            **suffixes_args, latin_names=tuple(latin_names.items())
+        )
 
     def name(part):
         return SubnationalSuffixedName(suffixes, kwargs["meta"]["type"], part)
@@ -74,6 +82,7 @@ URBAN_CENTERS = create_urban_center_like_shapefile(
     name_column="UC_NM_MN",
     more_general_direction=False,
     overrides=(("Venice", "IT34"),),
+    latin_names=LATIN_NAMES,
     meta=dict(type="Urban Center", source="GHSL", type_category="International City"),
     geometry_key="urban_centers_6",
     cross_source_borders=CrossSourceBorders(
