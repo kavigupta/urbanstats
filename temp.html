@@ -52,11 +52,22 @@
             pitch: 0,
         }
 
-        function initMap() {
+        async function initMap() {
             if (window.map) return
+
+            // only the ranges Jost covers are served locally; the rest come from OpenFreeMap's Noto
+            const jostRanges = new Set(await (await fetch('/fonts/ranges.json')).json())
+            const transformRequest = (url, resourceType) => {
+                const match = resourceType === 'Glyphs' && /\/fonts\/Jost%20(\w+)\/(\d+)-(\d+)\.pbf$/.exec(url)
+                if (match && !jostRanges.has(Number(match[2]))) {
+                    return { url: `https://tiles.openfreemap.org/fonts/Noto%20Sans%20${match[1]}/${match[2]}-${match[3]}.pbf` }
+                }
+                return { url: new URL(url, location.href).href }
+            }
 
             const map = new maplibregl.Map({
                 style: '/style.json',
+                transformRequest,
                 center: nyc.center,
                 zoom: nyc.zoom,
                 bearing: nyc.bearing,

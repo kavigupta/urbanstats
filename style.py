@@ -129,11 +129,19 @@ for layer in result["layers"]:
     if layer["type"] == "symbol" and "text-halo-color" in layer.get("paint", {}):
         paints.setdefault(ident, {"text-halo-color": PAPER})
 
+# footpaths, which include the sidewalks mapped along both sides of most streets
+result["layers"] = [layer for layer in result["layers"] if not layer["id"].endswith(("-path", "-path-casing"))]
+
 for layer in result["layers"]:
     layer.setdefault("paint", {}).update(paints.get(layer["id"], {}))
     # yards and sidings
     if layer["id"].startswith("railway-service"):
         layer["minzoom"] = 15
+    if "text-font" in layer.get("layout", {}):
+        layer["layout"]["text-font"] = [f.replace("Noto Sans", "Jost") for f in layer["layout"]["text-font"]]
+
+# relative, so temp.html can resolve it against wherever it is served; see build_glyphs.js
+result["glyphs"] = "/fonts/{fontstack}/{range}.pbf"
 
 with open("style.json", "w") as f:
     json.dump(result, f, indent=2)

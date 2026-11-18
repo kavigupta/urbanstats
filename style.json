@@ -15,7 +15,7 @@
     }
   },
   "sprite": "https://tiles.openfreemap.org/sprites/ofm_f384/ofm",
-  "glyphs": "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
+  "glyphs": "/fonts/{fontstack}/{range}.pbf",
   "layers": [
     {
       "id": "background",
@@ -1285,64 +1285,6 @@
           3,
           20,
           8
-        ]
-      }
-    },
-    {
-      "id": "tunnel-path",
-      "type": "line",
-      "source": "openmaptiles",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "match",
-          [
-            "geometry-type"
-          ],
-          [
-            "LineString",
-            "MultiLineString"
-          ],
-          true,
-          false
-        ],
-        [
-          "==",
-          [
-            "get",
-            "brunnel"
-          ],
-          "tunnel"
-        ],
-        [
-          "==",
-          [
-            "get",
-            "class"
-          ],
-          "path"
-        ]
-      ],
-      "paint": {
-        "line-color": "#b0aeab",
-        "line-dasharray": [
-          1.5,
-          0.75
-        ],
-        "line-width": [
-          "interpolate",
-          [
-            "exponential",
-            1.2
-          ],
-          [
-            "zoom"
-          ],
-          15,
-          1.2,
-          20,
-          4
         ]
       }
     },
@@ -2731,69 +2673,6 @@
       }
     },
     {
-      "id": "highway-path",
-      "type": "line",
-      "source": "openmaptiles",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "match",
-          [
-            "geometry-type"
-          ],
-          [
-            "LineString",
-            "MultiLineString"
-          ],
-          true,
-          false
-        ],
-        [
-          "match",
-          [
-            "get",
-            "brunnel"
-          ],
-          [
-            "bridge",
-            "tunnel"
-          ],
-          false,
-          true
-        ],
-        [
-          "==",
-          [
-            "get",
-            "class"
-          ],
-          "path"
-        ]
-      ],
-      "paint": {
-        "line-color": "#b0aeab",
-        "line-dasharray": [
-          1.5,
-          0.75
-        ],
-        "line-width": [
-          "interpolate",
-          [
-            "exponential",
-            1.2
-          ],
-          [
-            "zoom"
-          ],
-          15,
-          1.2,
-          20,
-          4
-        ]
-      }
-    },
-    {
       "id": "highway-motorway-link",
       "type": "line",
       "source": "openmaptiles",
@@ -4053,118 +3932,6 @@
       }
     },
     {
-      "id": "bridge-path-casing",
-      "type": "line",
-      "source": "openmaptiles",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "match",
-          [
-            "geometry-type"
-          ],
-          [
-            "LineString",
-            "MultiLineString"
-          ],
-          true,
-          false
-        ],
-        [
-          "==",
-          [
-            "get",
-            "brunnel"
-          ],
-          "bridge"
-        ],
-        [
-          "==",
-          [
-            "get",
-            "class"
-          ],
-          "path"
-        ]
-      ],
-      "paint": {
-        "line-color": "#b0aeab",
-        "line-width": [
-          "interpolate",
-          [
-            "exponential",
-            1.2
-          ],
-          [
-            "zoom"
-          ],
-          15,
-          1.2,
-          20,
-          18
-        ]
-      }
-    },
-    {
-      "id": "bridge-path",
-      "type": "line",
-      "source": "openmaptiles",
-      "source-layer": "transportation",
-      "filter": [
-        "all",
-        [
-          "match",
-          [
-            "geometry-type"
-          ],
-          [
-            "LineString",
-            "MultiLineString"
-          ],
-          true,
-          false
-        ],
-        [
-          "==",
-          [
-            "get",
-            "brunnel"
-          ],
-          "bridge"
-        ],
-        [
-          "==",
-          [
-            "get",
-            "class"
-          ],
-          "path"
-        ]
-      ],
-      "paint": {
-        "line-color": "#b0aeab",
-        "line-dasharray": [
-          1.5,
-          0.75
-        ],
-        "line-width": [
-          "interpolate",
-          [
-            "exponential",
-            1.2
-          ],
-          [
-            "zoom"
-          ],
-          15,
-          1.2,
-          20,
-          4
-        ]
-      }
-    },
-    {
       "id": "bridge-motorway-link",
       "type": "line",
       "source": "openmaptiles",
@@ -5084,7 +4851,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Italic"
+          "Jost Italic"
         ],
         "text-letter-spacing": 0.2,
         "text-max-width": 5,
@@ -5145,7 +4912,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Italic"
+          "Jost Italic"
         ],
         "text-letter-spacing": 0.2,
         "text-max-width": 5,
@@ -5220,7 +4987,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Italic"
+          "Jost Italic"
         ],
         "text-letter-spacing": 0.2,
         "text-max-width": 5,
@@ -5313,7 +5080,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Italic"
+          "Jost Italic"
         ],
         "text-max-width": 9,
         "text-offset": [
@@ -5418,7 +5185,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Italic"
+          "Jost Italic"
         ],
         "text-max-width": 9,
         "text-offset": [
@@ -5523,7 +5290,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Italic"
+          "Jost Italic"
         ],
         "text-max-width": 9,
         "text-offset": [
@@ -5599,7 +5366,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Italic"
+          "Jost Italic"
         ],
         "text-max-width": 9,
         "text-offset": [
@@ -5613,76 +5380,6 @@
         "text-halo-blur": 0.5,
         "text-halo-color": "#fff8f0",
         "text-halo-width": 1
-      }
-    },
-    {
-      "id": "highway-name-path",
-      "type": "symbol",
-      "source": "openmaptiles",
-      "source-layer": "transportation_name",
-      "minzoom": 15.5,
-      "filter": [
-        "==",
-        [
-          "get",
-          "class"
-        ],
-        "path"
-      ],
-      "layout": {
-        "symbol-placement": "line",
-        "text-field": [
-          "case",
-          [
-            "has",
-            "name:nonlatin"
-          ],
-          [
-            "concat",
-            [
-              "get",
-              "name:latin"
-            ],
-            " ",
-            [
-              "get",
-              "name:nonlatin"
-            ]
-          ],
-          [
-            "coalesce",
-            [
-              "get",
-              "name_en"
-            ],
-            [
-              "get",
-              "name"
-            ]
-          ]
-        ],
-        "text-font": [
-          "Noto Sans Regular"
-        ],
-        "text-rotation-alignment": "map",
-        "text-size": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          13,
-          12,
-          14,
-          13
-        ]
-      },
-      "paint": {
-        "text-color": "hsl(30,23%,62%)",
-        "text-halo-color": "#fff8f0",
-        "text-halo-width": 0.5
       }
     },
     {
@@ -5753,7 +5450,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Regular"
+          "Jost Regular"
         ],
         "text-rotation-alignment": "map",
         "text-size": [
@@ -5830,7 +5527,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Regular"
+          "Jost Regular"
         ],
         "text-rotation-alignment": "map",
         "text-size": [
@@ -5925,7 +5622,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Regular"
+          "Jost Regular"
         ],
         "text-rotation-alignment": "viewport",
         "text-size": 10
@@ -6008,7 +5705,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Regular"
+          "Jost Regular"
         ],
         "text-rotation-alignment": "viewport",
         "text-size": 10
@@ -6090,7 +5787,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Regular"
+          "Jost Regular"
         ],
         "text-rotation-alignment": "viewport",
         "text-size": 10
@@ -6145,7 +5842,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Regular"
+          "Jost Regular"
         ],
         "text-max-width": 9,
         "text-offset": [
@@ -6218,7 +5915,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Italic"
+          "Jost Italic"
         ],
         "text-letter-spacing": 0.1,
         "text-max-width": 9,
@@ -6303,7 +6000,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Regular"
+          "Jost Regular"
         ],
         "text-max-width": 8,
         "text-size": [
@@ -6387,7 +6084,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Regular"
+          "Jost Regular"
         ],
         "text-max-width": 8,
         "text-size": [
@@ -6459,7 +6156,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Italic"
+          "Jost Italic"
         ],
         "text-letter-spacing": 0.2,
         "text-max-width": 9,
@@ -6555,7 +6252,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Regular"
+          "Jost Regular"
         ],
         "text-max-width": 8,
         "text-offset": [
@@ -6656,7 +6353,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Bold"
+          "Jost Bold"
         ],
         "text-max-width": 8,
         "text-offset": [
@@ -6745,7 +6442,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Bold"
+          "Jost Bold"
         ],
         "text-max-width": 6.25,
         "text-size": [
@@ -6826,7 +6523,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Bold"
+          "Jost Bold"
         ],
         "text-max-width": 6.25,
         "text-size": [
@@ -6907,7 +6604,7 @@
           ]
         ],
         "text-font": [
-          "Noto Sans Bold"
+          "Jost Bold"
         ],
         "text-max-width": 6.25,
         "text-size": [
