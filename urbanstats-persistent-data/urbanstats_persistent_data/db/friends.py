@@ -196,7 +196,7 @@ def _compute_summary_stats(
     # Get all stats for this user, ordered by day/week
     c.execute(
         (
-            f"SELECT {problem_column}, corrects FROM {table} "
+            f"SELECT {problem_column}, corrects, archive FROM {table} "
             f"WHERE user IN {sqlTuple(len(for_users))} "
             f"ORDER BY {problem_column} ASC"
         ),
@@ -214,13 +214,15 @@ def _compute_summary_stats(
         )
 
     # Convert to scores (number of correct answers) and track problem identifiers
-    scores, problem_ids = extract_scores_and_problem_ids(rows)
+    scores, _ = extract_scores_and_problem_ids(rows)
 
     # Calculate statistics
     num_plays = len(scores)
     mean_score = sum(scores) / num_plays if num_plays > 0 else 0.0
 
-    max_streak, current_streak = compute_streaks(scores, problem_ids)
+    max_streak, current_streak = compute_streaks(
+        *extract_scores_and_problem_ids([row for row in rows if not row[2]])
+    )
 
     return FriendSummaryStats(
         friends=True,

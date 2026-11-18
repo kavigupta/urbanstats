@@ -16,11 +16,10 @@ async function registerUser(): Promise<void> {
     })
 }
 
-async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: '/juxtastat/latest_day' | '/retrostat/latest_week', endpointStore: '/juxtastat/store_user_stats' | '/retrostat/store_user_stats', parseDay: (day: string) => number, isDone: (correctPattern: boolean[]) => boolean): Promise<void> {
+async function reportToServerGeneric(wholeHistory: QuizHistory, endpointPlayed: '/juxtastat/played_days' | '/retrostat/played_weeks', endpointStore: '/juxtastat/store_user_stats' | '/retrostat/store_user_stats', parseDay: (day: string) => number, isDone: (correctPattern: boolean[]) => boolean): Promise<void> {
     await registerUser()
 
-    // fetch from latest_day endpoint
-    const { data } = await persistentClient.GET(endpointLatest, {
+    const { data } = await persistentClient.GET(endpointPlayed, {
         params: {
             header: QuizModel.shared.userHeaders(),
         },
@@ -29,23 +28,22 @@ async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: 
     if (data === undefined) {
         return
     }
-    const latestDay = data.latest_day
-    const update = Object.keys(wholeHistory)
-        .filter(day => parseDay(day) > latestDay)
-        .map<[number, boolean[]]>(day => [
-            parseDay(day),
-            wholeHistory[day].correct_pattern.map(b => b === 1 || b === true),
-        ])
+    const mask = atob(data.mask)
+    // charCodeAt past the end is NaN, which shifts to 0
+    const isUnreported = (id: number): boolean => id >= 0 && ((mask.charCodeAt(id >> 3) >> (id & 7)) & 1) === 0
+    const correctPattern = (day: string): boolean[] => wholeHistory[day].correct_pattern.map(correct => correct === 1 || correct === true)
+    const unreported = Object.keys(wholeHistory)
+        .filter(day => isUnreported(parseDay(day)))
         // Don't report in-progress quizzes; an incomplete pattern would be stored
         // as a truncated final score (see issue #1900).
-        .filter(([, correctPattern]) => isDone(correctPattern))
+        .filter(day => isDone(correctPattern(day)))
 
     await persistentClient.POST(endpointStore, {
         params: {
             header: QuizModel.shared.userHeaders(),
         },
         body: {
-            day_stats: update,
+            day_stats: unreported.map<[number, boolean[], boolean]>(day => [parseDay(day), correctPattern(day), wholeHistory[day].archive === true]),
         },
     })
 }
@@ -160,9 +158,9 @@ function parseInfiniteSeedVersion(day: string): [string, number] | undefined {
 export async function reportToServer(wholeHistory: QuizHistory, kind: QuizKindWithStats, isDone: (correctPattern: boolean[]) => boolean): Promise<void> {
     switch (kind) {
         case 'juxtastat':
-        { await reportToServerGeneric(wholeHistory, '/juxtastat/latest_day', '/juxtastat/store_user_stats', parseJuxtastatDay, isDone); return }
+        { await reportToServerGeneric(wholeHistory, '/juxtastat/played_days', '/juxtastat/store_user_stats', parseJuxtastatDay, isDone); return }
         case 'retrostat':
-        { await reportToServerGeneric(wholeHistory, '/retrostat/latest_week', '/retrostat/store_user_stats', parseRetrostatWeek, isDone); return }
+        { await reportToServerGeneric(wholeHistory, '/retrostat/played_weeks', '/retrostat/store_user_stats', parseRetrostatWeek, isDone); return }
         case 'infinite':
         { await reportToServerInfinite(wholeHistory); return }
     }

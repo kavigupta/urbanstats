@@ -36,7 +36,7 @@ def store_juxtastat_stats(
     response = client.post(
         "/juxtastat/store_user_stats",
         headers=identity,
-        json={"day_stats": [[day, corrects]]},
+        json={"day_stats": [[day, corrects, False]]},
     )
     assert response.status_code == 204
     return response
@@ -62,7 +62,7 @@ def store_retrostat_stats(
     response = client.post(
         "/retrostat/store_user_stats",
         headers=identity,
-        json={"day_stats": [[day, corrects]]},
+        json={"day_stats": [[day, corrects, False]]},
     )
     assert response.status_code == 204
     return response

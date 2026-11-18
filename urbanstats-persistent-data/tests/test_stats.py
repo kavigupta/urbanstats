@@ -1,3 +1,7 @@
+import base64
+
+import pytest
+
 from .utils import (
     check_has_infinite_stats,
     create_identity,
@@ -97,7 +101,7 @@ def test_store_user_stats_invalid_secureid(client):
     response = client.post(
         "/juxtastat/store_user_stats",
         headers=create_identity("1", "12"),
-        json={"day_stats": [[1, [True, True, True, True, True]]]},
+        json={"day_stats": [[1, [True, True, True, True, True], False]]},
     )
     assert response.status_code == 401
     assert response.json() == expected_error
@@ -141,3 +145,29 @@ def test_retro_per_question(client):
 def test_404_not_found(client):
     response = client.get("/nonexistent/endpoint", headers=identity_1)
     assert response.status_code == 404
+
+
+@pytest.mark.parametrize(
+    "kind, store, mask_path",
+    [
+        ("juxtastat", store_juxtastat_stats, "/juxtastat/played_days"),
+        ("retrostat", store_retrostat_stats, "/retrostat/played_weeks"),
+    ],
+)
+def test_played_mask_includes_out_of_order_problems(client, kind, store, mask_path):
+    identity = create_identity("9", "99")
+    register_user(client, identity)
+    for problem in [100, 3]:
+        store(client, identity, problem, [True] * 5)
+    response = client.post(
+        f"/{kind}/store_user_stats",
+        headers=identity,
+        json={"day_stats": [[9, [True] * 5, True]]},
+    )
+    assert response.status_code == 204
+
+    response = client.get(mask_path, headers=identity)
+    assert response.status_code == 200
+    mask = base64.b64decode(response.json()["mask"])
+    played = {day for day in range(len(mask) * 8) if mask[day // 8] >> (day % 8) & 1}
+    assert played == {3, 9, 100}

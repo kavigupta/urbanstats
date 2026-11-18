@@ -54,6 +54,14 @@ def _create_tables(s: DbSession) -> None:
         )"""
     )
 
+    # archive plays don't count towards streaks. Production tables predate this column
+    for table in table_for_quiz_kind.values():
+        columns = [row[1] for row in s.c.execute(f"PRAGMA table_info({table})")]
+        if "archive" not in columns:
+            s.c.execute(
+                f"ALTER TABLE {table} ADD COLUMN archive integer NOT NULL DEFAULT 0"
+            )
+
     # user to domain name
     s.c.execute(
         """

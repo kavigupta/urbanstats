@@ -49,7 +49,9 @@ export function computeUserStatisticsData(
         }
         else {
             const amount = histI.correct_pattern.reduce((partialSum: number, a) => partialSum + (a ? 1 : 0), 0)
-            historicalCorrect[i] = amount
+            if (!histI.archive) {
+                historicalCorrect[i] = amount
+            }
             frequencies[amount] += 1
             playedGames.push(amount)
         }

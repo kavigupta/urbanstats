@@ -1,9 +1,15 @@
+import base64
 import time
 import typing as t
 
 from pydantic import BaseModel
 
-from ..db.utils import DbSession
+from ..db.utils import (
+    DbSession,
+    QuizKind,
+    problem_id_for_quiz_kind,
+    table_for_quiz_kind,
+)
 from ..dependencies.authenticate import AuthenticatedRequest
 from ..utils import corrects_to_bytes
 from .utils import sqlTuple
@@ -38,6 +44,24 @@ def latest_week_retrostat(req: AuthenticatedRequest) -> int:
     return latest_day_from_table(req, "JuxtaStatIndividualStatsRetrostat", "week")
 
 
+def played_mask(req: AuthenticatedRequest, quiz_kind: QuizKind) -> str:
+    """
+    Base64 of a little-endian bitmask of the days or weeks this user has stats for.
+    """
+    column = problem_id_for_quiz_kind[quiz_kind]
+    # The upper bound keeps a bogus reported day from allocating a huge mask
+    req.s.c.execute(
+        f"SELECT {column} FROM {table_for_quiz_kind[quiz_kind]} "
+        f"WHERE user IN {sqlTuple(len(req.associated_user_ids))} AND {column} >= 0 AND {column} < 100000",
+        list(req.associated_user_ids),
+    )
+    played = [row[0] for row in req.s.c.fetchall()]
+    mask = bytearray(max(played, default=-1) // 8 + 1)
+    for problem_id in played:
+        mask[problem_id // 8] |= 1 << (problem_id % 8)
+    return base64.b64encode(mask).decode()
+
+
 def corrects_to_bitvector(corrects: t.List[bool]) -> int:
     return sum(2**i for i, correct in enumerate(corrects) if correct)
 
@@ -48,29 +72,35 @@ def bitvector_to_corrects(bitvector: int) -> t.List[bool]:
 
 def store_user_stats_into_table(
     req: AuthenticatedRequest,
-    day_stats: t.List[t.Tuple[int, t.List[bool]]],
+    day_stats: t.List[t.Tuple[int, t.List[bool], bool]],
     table_name: str,
 ) -> None:
     # ignore latest day here, it is up to the client to filter out old stats
     # we want to be able to update stats for old days
     time_unix_millis = round(time.time() * 1000)
     req.s.c.executemany(
-        f"INSERT OR REPLACE INTO {table_name} VALUES (?, ?, ?, ?)",
+        f"INSERT OR REPLACE INTO {table_name} VALUES (?, ?, ?, ?, ?)",
         [
-            (req.user_id, day, corrects_to_bitvector(corrects), time_unix_millis)
-            for day, corrects in day_stats
+            (
+                req.user_id,
+                day,
+                corrects_to_bitvector(corrects),
+                time_unix_millis,
+                archive,
+            )
+            for day, corrects, archive in day_stats
         ],
     )
 
 
 def store_user_stats(
-    req: AuthenticatedRequest, day_stats: t.List[t.Tuple[int, t.List[bool]]]
+    req: AuthenticatedRequest, day_stats: t.List[t.Tuple[int, t.List[bool], bool]]
 ) -> None:
     store_user_stats_into_table(req, day_stats, "JuxtaStatIndividualStats")
 
 
 def store_user_stats_retrostat(
-    req: AuthenticatedRequest, week_stats: t.List[t.Tuple[int, t.List[bool]]]
+    req: AuthenticatedRequest, week_stats: t.List[t.Tuple[int, t.List[bool], bool]]
 ) -> None:
     store_user_stats_into_table(req, week_stats, "JuxtaStatIndividualStatsRetrostat")
 
