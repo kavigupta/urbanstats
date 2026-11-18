@@ -67,6 +67,7 @@ export function ArchivePanel({ highlight }: { highlight: string | undefined }): 
                                                 <ArchiveCell
                                                     key={day}
                                                     historyKey={day}
+                                                    pattern={getCorrectPattern(history, day)}
                                                     label={dayStart(day).getDate().toString()}
                                                     wide={false}
                                                     highlighted={highlight === day.toString()}
@@ -78,6 +79,7 @@ export function ArchivePanel({ highlight }: { highlight: string | undefined }): 
                                                 <ArchiveCell
                                                     key={`W${week}`}
                                                     historyKey={`W${week}`}
+                                                    pattern={getCorrectPattern(history, `W${week}`)}
                                                     label={`Retrostat ${weekRangeFormat.formatRange(dayStart(saturday - 6), dayStart(saturday))}`}
                                                     wide={true}
                                                     highlighted={highlight === `W${week}`}
@@ -95,8 +97,7 @@ export function ArchivePanel({ highlight }: { highlight: string | undefined }): 
     )
 }
 
-function ArchiveCell({ historyKey, label, wide, highlighted, descriptor }: { historyKey: string | number, label: string, wide: boolean, highlighted: boolean, descriptor: PageDescriptor }): ReactNode {
-    const history = QuizModel.shared.history.use()
+function ArchiveCell({ historyKey, pattern, label, wide, highlighted, descriptor }: { historyKey: string | number, pattern: boolean[], label: string, wide: boolean, highlighted: boolean, descriptor: PageDescriptor }): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     const navContext = useContext(Navigator.Context)
@@ -108,7 +109,6 @@ function ArchiveCell({ historyKey, label, wide, highlighted, descriptor }: { his
         }
     }, [highlighted])
 
-    const pattern = getCorrectPattern(history, historyKey)
     const score = pattern.filter(correct => correct).length
     const done = pattern.length >= quizLength
     return (
