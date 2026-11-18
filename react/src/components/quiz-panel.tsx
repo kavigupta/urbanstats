@@ -261,7 +261,9 @@ export function OtherQuizzesButtons(): ReactNode {
     const navContext = useContext(Navigator.Context)
 
     const { current } = navContext.usePageState()
-    const currentQuizMode = current.descriptor.kind === 'quiz' ? current.descriptor.mode : 'notAQuiz'
+    // Finishing a past quiz shouldn't hide today's
+    const isArchivePlay = current.data.kind === 'quiz' && 'archive' in current.data.quizDescriptor && current.data.quizDescriptor.archive
+    const currentQuizMode = current.descriptor.kind === 'quiz' && !isArchivePlay ? current.descriptor.mode : 'notAQuiz'
 
     const otherQuizPages: QuizPageDescriptor[] = useMemo(() => ([
         { kind: 'quiz', mode: undefined },
