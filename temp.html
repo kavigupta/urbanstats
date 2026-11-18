@@ -10,24 +10,17 @@
     <!-- <meta name="generator" content="Astro v5.4.0"> -->
     <!-- <link rel="icon" href="/favicon.ico" sizes="any"> -->
     <!--    <meta property="og:title" content="" />--><!--    <meta property="og:type" content="" />--><!--    <meta property="og:url" content="" />--><!--    <meta property="og:image" content="" />-->
-    <!-- <link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet"> -->
+    <link href="https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.css" rel="stylesheet">
     <!-- <link rel="sitemap" href="/sitemap-index.xml"> -->
     <!-- <link rel="canonical" href="https://openfreemap.org/quick_start/"> -->
     <style>
-        *,
-        .container {
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-            padding: 0 20px
+        body {
+            margin: 0
         }
 
-
         #map-container {
-            width: 100%;
-            height: 500px;
-            margin-bottom: 24px;
-            position: relative
+            width: 100vw;
+            height: 100vh
         }
 
     </style>
@@ -36,7 +29,7 @@
 <body>
     <div id="map-container">
     </div>
-    <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.js"></script>
     <script>
         const london3d = {
             center: [-0.114, 51.506],
