@@ -23,6 +23,11 @@ function archiveTest(name: string, keys: [string, string, string], liveUrl: stri
         await t.expect(Selector('#quiz-timer').exists).notOk()
         await t.expect(await runQuery(t, `SELECT user, ${column} FROM ${table} WHERE archive = 1`)).eql(archiveRow)
 
+        await t.click(Selector('a').withExactText('Next Quiz'))
+        await t.expect(ClientFunction(() => location.hash)()).contains(`date=${keys[2].replaceAll('W', '')}`)
+        await t.click(Selector('a').withExactText('Previous Quiz'))
+        await t.expect(ClientFunction(() => location.hash)()).contains(`date=${keys[1].replaceAll('W', '')}`)
+
         await t.click(Selector('a').withExactText('Archive'))
         await t.expect(ClientFunction(() => location.hash)()).eql(`#mode=archive&date=${keys[1]}`)
         const playedCellIsVisible = ClientFunction((key: string) => {

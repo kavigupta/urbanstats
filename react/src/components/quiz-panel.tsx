@@ -10,10 +10,12 @@ import '../common.css'
 import './quiz.css'
 import { AuthenticationStateMachine } from '../quiz/AuthenticationStateMachine'
 import { SignedOutPanel } from '../quiz/SignedOutPanel'
+import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
 import { validQuizInfiniteVersions } from '../quiz/infinite'
-import { QuizDescriptor, QuizHistory, QuizModel, QuizQuestion, QuizQuestionsModel, aCorrect, getCorrectPattern, nameOfQuizKind } from '../quiz/quiz'
+import { QuizDescriptor, QuizDescriptorWithTime, QuizHistory, QuizModel, QuizQuestion, QuizQuestionsModel, aCorrect, getCorrectPattern, nameOfQuizKind } from '../quiz/quiz'
 import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { QuizResult } from '../quiz/quiz-result'
+import { parseTimeIdentifier } from '../quiz/statistics'
 import { TestUtils } from '../utils/TestUtils'
 import { useHeaderTextClass } from '../utils/responsive'
 
@@ -215,6 +217,30 @@ export function ArchiveButton({ quizName }: { quizName: QuizDescriptor['name'] }
             {...navContext.link({ kind: 'quiz', mode: 'archive', date: quizName.toString() }, { scroll: { kind: 'none' } })}
         >
             Archive
+        </a>
+    )
+}
+
+export function AdjacentQuizButton({ quiz, offset, label }: { quiz: QuizDescriptorWithTime, offset: -1 | 1, label: string }): ReactNode {
+    const colors = useColors()
+    const navContext = useContext(Navigator.Context)
+
+    const current = quiz.kind === 'juxtastat' ? getDailyOffsetNumber() : getRetrostatOffsetNumber()
+    const target = parseTimeIdentifier(quiz.kind, quiz.name.toString()) + offset
+    if (target < 0 || target > current) {
+        return null
+    }
+
+    return (
+        <a
+            style={{
+                ...buttonStyle(colors.hueColors.blue, colors.buttonTextWhite),
+                width: '30%',
+                textDecoration: 'none',
+            }}
+            {...navContext.link({ kind: 'quiz', mode: quiz.kind === 'retrostat' ? 'retro' : undefined, date: target === current ? undefined : target }, { scroll: { kind: 'position', top: 0 } })}
+        >
+            {label}
         </a>
     )
 }
