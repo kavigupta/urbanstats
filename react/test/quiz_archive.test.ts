@@ -49,3 +49,25 @@ function archiveTest(name: string, keys: [string, string, string], liveUrl: stri
 
 archiveTest('juxtastat', ['98', '99', '100'], 'quiz.html#date=100', 'JuxtaStatIndividualStats', 'day', '7|99\n')
 archiveTest('retrostat', ['W37', 'W38', 'W39'], 'quiz.html#mode=retro&date=39', 'JuxtaStatIndividualStatsRetrostat', 'week', '7|38\n')
+
+// getDailyOffsetNumber and getRetrostatOffsetNumber, which can't be imported here since their module touches window
+const today = Math.round((new Date().setHours(0, 0, 0, 0) - new Date(2023, 8, 2).valueOf()) / (24 * 60 * 60 * 1000))
+const thisWeek = Math.floor((today - 1) / 7) - 11
+
+function nextToLiveTest(name: string, current: number, historyKey: (offset: number) => string, modeParam: string): void {
+    quizFixture(`${name} next to live`, `${target}/quiz.html#${modeParam === '' ? '' : `${modeParam}&`}date=${current - 1}`, {
+        testQuizArchive: 'true',
+        quiz_history: JSON.stringify({ [historyKey(current - 1)]: win, [historyKey(current)]: win }),
+    }, '', 'desktop')
+
+    test(`${name}-next-from-latest-past-quiz-opens-the-live-one`, async (t) => {
+        await t.click(Selector('a').withExactText('Next Quiz'))
+        await t.expect(ClientFunction(() => location.hash)()).eql(modeParam === '' ? '' : `#${modeParam}`)
+        await t.expect(Selector('#quiz-timer').exists).ok()
+        await t.expect(Selector('a').withExactText('Next Quiz').exists).notOk()
+        await t.expect(Selector('a').withExactText('Previous Quiz').exists).ok()
+    })
+}
+
+nextToLiveTest('juxtastat', today, offset => offset.toString(), '')
+nextToLiveTest('retrostat', thisWeek, offset => `W${offset}`, 'mode=retro')
