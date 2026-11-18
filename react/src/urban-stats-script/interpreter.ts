@@ -121,6 +121,7 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
                 },
                 locationOf(expr.condition),
                 locationOf(expr),
+                'Conditional',
             )
         case 'do':
             if (expr.statements.length === 0) {
