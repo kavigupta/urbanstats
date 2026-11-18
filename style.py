@@ -25,6 +25,10 @@ WATER_LABEL = mix(hue_colors["cyan"], "#000000", 0.65)
 # and more of parks than grass
 GREEN_LIGHT = mix(hue_colors["green"], PAPER, 0.65)
 GREEN_DARK = mix(hue_colors["green"], PAPER, 0.4)
+# scrub and heath, e.g. sagebrush, which the tiles class as grass, in a dry mottle between sand and grass
+SCRUB_LIGHT = mix(hue_colors["yellow"], PAPER, 0.75)
+SCRUB_DARK = mix(mix(hue_colors["yellow"], hue_colors["green"], 0.5), PAPER, 0.55)
+SAND = mix(hue_colors["yellow"], PAPER, 0.65)
 RED = hue_colors["red"]
 ORANGE = hue_colors["orange"]
 STREET = mix(hue_colors["grey"], PAPER, 0.45)
@@ -88,7 +92,12 @@ def base_width(zoom):
     zoom = min(max(zoom, zooms[0]), zooms[-1])
     lo = max(z for z in zooms if z <= zoom)
     hi = min(z for z in zooms if z >= zoom)
-    return BASE_WIDTH[lo] if lo == hi else BASE_WIDTH[lo] + (BASE_WIDTH[hi] - BASE_WIDTH[lo]) * (zoom - lo) / (hi - lo)
+    return (
+        BASE_WIDTH[lo]
+        if lo == hi
+        else BASE_WIDTH[lo]
+        + (BASE_WIDTH[hi] - BASE_WIDTH[lo]) * (zoom - lo) / (hi - lo)
+    )
 
 
 def width_stops(scale, below=None, above=None):
@@ -130,7 +139,11 @@ def outlined(fill_scale, from_zoom):
 
 def rail_paint(ident):
     if ident.endswith("-hatching"):
-        return {"line-color": RAIL, "line-blur": INK_BLUR, "line-width": scaled(RAIL_HATCHING_SCALE, 15)}
+        return {
+            "line-color": RAIL,
+            "line-blur": INK_BLUR,
+            "line-width": scaled(RAIL_HATCHING_SCALE, 15),
+        }
     return {"line-color": RAIL, "line-blur": INK_BLUR, "line-width": scaled(RAIL_SCALE)}
 
 
@@ -144,10 +157,14 @@ paints = {
     "landuse-hospital": {"fill-color": INDUSTRIAL},
     "landuse-school": {"fill-color": INDUSTRIAL},
     "landuse-cemetery": {"fill-pattern": "urbanstats:grass"},
-    "park": {"fill-pattern": "urbanstats:park", "fill-opacity": 1},
     "landcover-grass-park": {"fill-pattern": "urbanstats:park", "fill-opacity": 1},
     "landcover-grass": {"fill-pattern": "urbanstats:grass", "fill-opacity": 1},
-    "landcover-wood": {"fill-pattern": "urbanstats:wood", "fill-opacity": 1, "fill-outline-color": "rgba(0,0,0,0)"},
+    "landcover-sand": {"fill-color": SAND},
+    "landcover-wood": {
+        "fill-pattern": "urbanstats:wood",
+        "fill-opacity": 1,
+        "fill-outline-color": "rgba(0,0,0,0)",
+    },
     "water": {"fill-color": WATER},
     "water-intermittent": {"fill-color": WATER, "fill-opacity": 0.5},
     "aeroway-area": {"fill-color": AIRPORT},
@@ -187,11 +204,17 @@ for layer in result["layers"]:
         casing = ident.endswith("-casing")
         if kind in ("motorway", "motorway-link"):
             outline, fill = (
-                outlined(MOTORWAY_SCALE, 9) if kind == "motorway" else outlined(MOTORWAY_LINK_SCALE, 13)
+                outlined(MOTORWAY_SCALE, 9)
+                if kind == "motorway"
+                else outlined(MOTORWAY_LINK_SCALE, 13)
             )
             paints.setdefault(
                 ident,
-                {"line-color": RED if casing else ORANGE, "line-width": outline if casing else fill, "line-blur": INK_BLUR},
+                {
+                    "line-color": RED if casing else ORANGE,
+                    "line-width": outline if casing else fill,
+                    "line-blur": INK_BLUR,
+                },
             )
             continue
         elif kind in ("trunk", "primary", "trunk-primary"):
@@ -199,7 +222,12 @@ for layer in result["layers"]:
                 paints.setdefault(ident, {"line-opacity": 0})
             else:
                 paints.setdefault(
-                    ident, {"line-color": RED, "line-width": scaled(MAJOR_ROAD_SCALE), "line-blur": INK_BLUR}
+                    ident,
+                    {
+                        "line-color": RED,
+                        "line-width": scaled(MAJOR_ROAD_SCALE),
+                        "line-blur": INK_BLUR,
+                    },
                 )
             continue
         elif kind in ("secondary-tertiary", "link", "minor", "service-track", "street"):
@@ -244,7 +272,8 @@ for layer in result["layers"]:
 result["layers"] = [
     layer
     for layer in result["layers"]
-    if not layer["id"].endswith(("-path", "-path-casing")) and layer["id"] not in ("building-top", "ferry")
+    if not layer["id"].endswith(("-path", "-path-casing"))
+    and layer["id"] not in ("building-top", "ferry")
 ]
 
 for layer in result["layers"]:
@@ -265,9 +294,9 @@ for layer in result["layers"]:
         ]
     if "text-font" in layer.get("layout", {}):
         layer["layout"]["text-font"] = [
-            LABEL_FONTS.get(layer["id"], f.replace("Noto Sans", "Jost")) for f in layer["layout"]["text-font"]
+            LABEL_FONTS.get(layer["id"], f.replace("Noto Sans", "Jost"))
+            for f in layer["layout"]["text-font"]
         ]
-
 
 
 def place_label(base, ident, classes, layout, minzoom=None):
@@ -275,7 +304,11 @@ def place_label(base, ident, classes, layout, minzoom=None):
     layer = json.loads(json.dumps(base))
     layer["id"] = ident
     if classes is not None:
-        layer["filter"] = ["all", base["filter"], ["match", ["get", "class"], classes, True, False]]
+        layer["filter"] = [
+            "all",
+            base["filter"],
+            ["match", ["get", "class"], classes, True, False],
+        ]
     layer["layout"].update(layout)
     if minzoom is not None:
         layer["minzoom"] = minzoom
@@ -300,15 +333,25 @@ split = [
     ),
     place_label(other, "label_neighbourhood", ["quarter", "neighbourhood"], {}),
     # boroughs and counties often share their island's name, and cover it at low zoom
-    place_label(other, "label_island", ["island"], {"text-transform": "none"}, minzoom=12),
-    place_label(other, "label_minor_place", None, {"text-font": ["Jost Regular"], "text-transform": "none"}),
+    place_label(
+        other, "label_island", ["island"], {"text-transform": "none"}, minzoom=12
+    ),
+    place_label(
+        other,
+        "label_minor_place",
+        None,
+        {"text-font": ["Jost Regular"], "text-transform": "none"},
+    ),
 ]
 split[0]["paint"]["text-color"] = "#000000"
-split[-1]["filter"] = ["all", other["filter"], ["match", ["get", "class"], split_classes, False, True]]
+split[-1]["filter"] = [
+    "all",
+    other["filter"],
+    ["match", ["get", "class"], split_classes, False, True],
+]
 index = result["layers"].index(other)
 # later layers win label collisions, so boroughs go last
 result["layers"][index : index + 1] = split[::-1]
-
 
 
 def by_admin_level(country, state, county):
@@ -331,17 +374,31 @@ def border_width(scale):
 
 boundaries = [layer for layer in result["layers"] if layer["id"].startswith("boundary")]
 for layer in boundaries:
-    layer["filter"] = [c for c in layer["filter"] if c != ["!=", ["get", "maritime"], 1]]
+    layer["filter"] = [
+        c for c in layer["filter"] if c != ["!=", ["get", "maritime"], 1]
+    ]
     if layer["id"] == "boundary_2":
         # maritime country borders with only one country next to them face international waters
         layer["filter"].append(
-            ["any", ["!=", ["get", "maritime"], 1], ["all", ["has", "adm0_l"], ["has", "adm0_r"]]]
+            [
+                "any",
+                ["!=", ["get", "maritime"], 1],
+                ["all", ["has", "adm0_l"], ["has", "adm0_r"]],
+            ]
         )
     layer["paint"] = {
         "line-color": BORDER,
         "line-width": border_width(1),
         "line-dasharray": [6, 2, 1, 2],
-        "line-opacity": ["interpolate", ["linear"], ["zoom"], 7, by_admin_level(1, 1, 0), 9, 1],
+        "line-opacity": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            7,
+            by_admin_level(1, 1, 0),
+            9,
+            1,
+        ],
     }
 
 # a wide band along borders, like the colored edging on old atlases
@@ -350,10 +407,19 @@ for layer in boundaries:
     highlight = json.loads(json.dumps(layer))
     highlight["id"] = layer["id"] + "-highlight"
     # bigger divisions on top, so a fainter county band doesn't cut through a state's
-    highlight["layout"] = {"line-join": "round", "line-cap": "round", "line-sort-key": ["-", 0, ["coalesce", ["get", "admin_level"], 10]]}
+    highlight["layout"] = {
+        "line-join": "round",
+        "line-cap": "round",
+        "line-sort-key": ["-", 0, ["coalesce", ["get", "admin_level"], 10]],
+    }
     # opaque, mixed with the paper by how strong the band is, since transparent bands darken where they overlap;
     # fainter zoomed out, where many bands are close together, with smaller divisions fading in later
-    strength = {5: (0.2, 0, 0), 8: (0.35, 0.15, 0), 11: (0.5, 0.4, 0.1), 15: (0.6, 0.6, 0.45)}
+    strength = {
+        5: (0.2, 0, 0),
+        8: (0.35, 0.15, 0),
+        11: (0.5, 0.4, 0.1),
+        15: (0.6, 0.6, 0.45),
+    }
     highlight["paint"] = {
         "line-color": [
             "interpolate",
@@ -362,7 +428,12 @@ for layer in boundaries:
             *[
                 x
                 for zoom, levels in strength.items()
-                for x in (zoom, by_admin_level(*[mix(BORDER_HIGHLIGHT, PAPER, 1 - a) for a in levels]))
+                for x in (
+                    zoom,
+                    by_admin_level(
+                        *[mix(BORDER_HIGHLIGHT, PAPER, 1 - a) for a in levels]
+                    ),
+                )
             ],
         ],
         "line-width": border_width(5),
@@ -379,21 +450,33 @@ bus = json.loads(json.dumps(transit))
 bus["id"] = "poi_bus"
 bus["filter"] = ["==", ["get", "class"], "bus"]
 bus["minzoom"] = 16
-bus["layout"].update({"icon-image": "bus_11", "icon-size": 0.7, "text-size": 11, "text-offset": [0.8, 0]})
+bus["layout"].update(
+    {"icon-image": "bus_11", "icon-size": 0.7, "text-size": 11, "text-offset": [0.8, 0]}
+)
 transit["filter"] = ["match", ["get", "class"], ["airport", "railway"], True, False]
 # the large train icon for every station, subway included
-transit["layout"].update({"icon-image": ["to-string", ["get", "class"]], "icon-size": 0.9, "text-offset": [1.1, 0]})
+transit["layout"].update(
+    {
+        "icon-image": ["to-string", ["get", "class"]],
+        "icon-size": 0.9,
+        "text-offset": [1.1, 0],
+    }
+)
 result["layers"].insert(result["layers"].index(transit), bus)
 # after road labels and neighborhood names, which hid e.g. Kendall/MIT under the MIT label, but before towns and
 # cities; the icon still shows when the name doesn't fit
 result["layers"].remove(transit)
-result["layers"].insert(next(i for i, layer in enumerate(result["layers"]) if layer["id"] == "label_village"), transit)
+result["layers"].insert(
+    next(
+        i for i, layer in enumerate(result["layers"]) if layer["id"] == "label_village"
+    ),
+    transit,
+)
 transit["layout"]["text-optional"] = True
 # a stop served by several kinds of train often has a station for each, e.g. Porter on the Red Line and the
 # commuter rail; padding makes them collide so only the best-ranked one shows
 transit["layout"]["icon-padding"] = 12
 transit["layout"]["symbol-sort-key"] = ["get", "rank"]
-
 
 
 def wrapping_noise(size, cells, rng):
@@ -403,7 +486,9 @@ def wrapping_noise(size, cells, rng):
     for x in range(3):
         for y in range(3):
             tiled.paste(noise, (x * cells, y * cells))
-    return np.asarray(tiled.resize((size * 3, size * 3), Image.BICUBIC), dtype=float)[size : 2 * size, size : 2 * size]
+    return np.asarray(tiled.resize((size * 3, size * 3), Image.BICUBIC), dtype=float)[
+        size : 2 * size, size : 2 * size
+    ]
 
 
 def blotches(size, cells, coverage, seed):
@@ -412,7 +497,9 @@ def blotches(size, cells, coverage, seed):
     wrapping around its edges. Coarser noise makes them denser in some places than others, which hides the repeat.
     """
     rng = np.random.default_rng(seed)
-    smooth = wrapping_noise(size, cells, rng) + 0.6 * wrapping_noise(size, cells // 4, rng)
+    smooth = wrapping_noise(size, cells, rng) + 0.6 * wrapping_noise(
+        size, cells // 4, rng
+    )
     return smooth > np.quantile(smooth, 1 - coverage)
 
 
@@ -420,7 +507,9 @@ def mottled(color, blotch_color, coverage, pixel_ratio, size=256, cells=64):
     """A tile of `color` with blotches of `blotch_color` covering `coverage` of it, like the parks on print maps."""
     n = size * pixel_ratio
     mask = blotches(n, cells, coverage, seed=0)
-    pixels = np.where(mask[:, :, None], np.array(blotch_color), np.array(color)).astype(np.uint8)
+    pixels = np.where(mask[:, :, None], np.array(blotch_color), np.array(color)).astype(
+        np.uint8
+    )
     return Image.fromarray(pixels)
 
 
@@ -428,11 +517,23 @@ def write_sprite(path, images):
     """A MapLibre sprite sheet at 1x and 2x, the images side by side."""
     for pixel_ratio, suffix in ((1, ""), (2, "@2x")):
         tiles = {name: make(pixel_ratio) for name, make in images.items()}
-        sheet = Image.new("RGB", (sum(t.width for t in tiles.values()), max(t.height for t in tiles.values())))
+        sheet = Image.new(
+            "RGB",
+            (
+                sum(t.width for t in tiles.values()),
+                max(t.height for t in tiles.values()),
+            ),
+        )
         index, x = {}, 0
         for name, tile in tiles.items():
             sheet.paste(tile, (x, 0))
-            index[name] = {"x": x, "y": 0, "width": tile.width, "height": tile.height, "pixelRatio": pixel_ratio}
+            index[name] = {
+                "x": x,
+                "y": 0,
+                "width": tile.width,
+                "height": tile.height,
+                "pixelRatio": pixel_ratio,
+            }
             x += tile.width
         sheet.save(f"{path}{suffix}.png")
         with open(f"{path}{suffix}.json", "w") as f:
@@ -443,23 +544,49 @@ def hex_rgb(color):
     return tuple(int(color[i : i + 2], 16) for i in (1, 3, 5))
 
 
-# above the grass and wood land cover, which otherwise hides the park pattern in patches
+DRY_GRASS = ["scrub", "heath"]
+grass = next(layer for layer in result["layers"] if layer["id"] == "landcover-grass")
+scrub = json.loads(json.dumps(grass))
+scrub["id"] = "landcover-scrub"
+scrub["filter"] = ["all", grass["filter"], ["match", ["get", "subclass"], DRY_GRASS, True, False]]
+scrub["paint"]["fill-pattern"] = "urbanstats:scrub"
+grass["filter"] = ["all", grass["filter"], ["match", ["get", "subclass"], DRY_GRASS, False, True]]
+result["layers"].insert(result["layers"].index(grass) + 1, scrub)
+
+# the park layer is every kind of protected area, from parks to reservations (classed nature_reserve, like
+# the Muscogee Nation, which covers most of Tulsa) and planning boundaries (Adirondack Park, with whole towns
+# inside), so green comes from the land cover
 park = next(layer for layer in result["layers"] if layer["id"] == "park")
 result["layers"].remove(park)
-result["layers"].insert(
-    next(i for i, layer in enumerate(result["layers"]) if layer["id"] == "landcover-grass-park") + 1, park
+after_land_cover = (
+    next(
+        i
+        for i, layer in enumerate(result["layers"])
+        if layer["id"] == "landcover-grass-park"
+    )
+    + 1
 )
-# a dashed edge around parks, as on print maps
+# except the classes that are reliably parkland without towns inside; the high Sierra, for one, is almost all
+# national park and wilderness but has little land cover mapped
 result["layers"].insert(
-    result["layers"].index(park) + 1,
+    after_land_cover,
     {
-        "id": "park-edge",
-        "type": "line",
+        "id": "park-fill",
+        "type": "fill",
         "source": park["source"],
         "source-layer": park["source-layer"],
-        "filter": park["filter"],
-        "minzoom": 10,
-        "paint": {"line-color": hue_colors["darkGrey"], "line-width": 1, "line-dasharray": [4, 3]},
+        "filter": [
+            "all",
+            park["filter"],
+            [
+                "match",
+                ["get", "class"],
+                ["national_park", "wilderness_preserve", "State Park"],
+                True,
+                False,
+            ],
+        ],
+        "paint": {"fill-pattern": "urbanstats:park"},
     },
 )
 
@@ -467,15 +594,70 @@ os.makedirs("sprites", exist_ok=True)
 write_sprite(
     "sprites/urbanstats",
     {
-        name: lambda ratio, coverage=coverage: mottled(hex_rgb(GREEN_LIGHT), hex_rgb(GREEN_DARK), coverage, ratio)
+        name: lambda ratio, coverage=coverage: mottled(
+            hex_rgb(GREEN_LIGHT), hex_rgb(GREEN_DARK), coverage, ratio
+        )
         for name, coverage in (("grass", 0.35), ("park", 0.55), ("wood", 0.75))
-    },
+    }
+    | {"scrub": lambda ratio: mottled(hex_rgb(SCRUB_LIGHT), hex_rgb(SCRUB_DARK), 0.45, ratio)},
 )
 result["sprite"] = [
     {"id": "default", "url": result["sprite"]},
     # relative like the glyphs, see temp.html
     {"id": "urbanstats", "url": "/sprites/urbanstats"},
 ]
+
+# tunnels are dashed, each dash TUNNEL_DASH base widths long whatever the line's width; dash arrays are in line
+# widths, so each is divided by its line's scale, which also keeps a motorway's outline and fill dashes in step
+TUNNEL_DASH = [8, 4]
+tunnel_scales = {
+    "tunnel-motorway-casing": MOTORWAY_SCALE + 2,
+    "tunnel-motorway": MOTORWAY_SCALE,
+    "tunnel-motorway-link-casing": MOTORWAY_LINK_SCALE + 2,
+    "tunnel-motorway-link": MOTORWAY_LINK_SCALE,
+    "tunnel-trunk-primary": MAJOR_ROAD_SCALE,
+    "tunnel-secondary-tertiary": MEDIUM_ROAD_SCALE,
+    "tunnel-link": MEDIUM_ROAD_SCALE,
+    "tunnel-minor": STREET_SCALE,
+    "tunnel-service-track": STREET_SCALE,
+    "tunnel-railway": RAIL_SCALE,
+}
+for layer in result["layers"]:
+    if layer["id"] in tunnel_scales:
+        layer["paint"]["line-dasharray"] = [
+            x / tunnel_scales[layer["id"]] for x in TUNNEL_DASH
+        ]
+
+# street names in small capitals beside the street rather than on it; MapLibre flips line labels to stay upright,
+# which also flips the offset, so a name can land on either side
+for layer in result["layers"]:
+    if layer["id"].startswith("highway-name"):
+        layer["layout"].update(
+            {
+                "text-transform": "uppercase",
+                "text-size": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    13,
+                    9,
+                    16,
+                    10,
+                    20,
+                    12,
+                ],
+                "text-letter-spacing": 0.08,
+                "text-offset": [0, -0.9],
+            }
+        )
+        layer["paint"].update({"text-halo-color": PAPER, "text-halo-width": 1})
+
+# wider halos, so labels stand clear of the roads beneath them; water labels have none
+for layer in result["layers"]:
+    if layer.get("paint", {}).get("text-halo-width"):
+        layer["paint"]["text-halo-width"] = (
+            2 if layer["id"].startswith("label_") else 1.5
+        )
 
 # relative, so temp.html can resolve it against wherever it is served; see build_glyphs.js
 result["glyphs"] = "/fonts/{fontstack}/{range}.pbf"
