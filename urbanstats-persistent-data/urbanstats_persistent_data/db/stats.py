@@ -75,8 +75,7 @@ def store_user_stats_into_table(
     day_stats: t.List[t.Tuple[int, t.List[bool], bool]],
     table_name: str,
 ) -> None:
-    # ignore latest day here, it is up to the client to filter out old stats
-    # we want to be able to update stats for old days
+    # No filtering: the client sends only quizzes missing from played_mask, which can be old (e.g. archive) days
     time_unix_millis = round(time.time() * 1000)
     req.s.c.executemany(
         f"INSERT OR REPLACE INTO {table_name} VALUES (?, ?, ?, ?, ?)",
