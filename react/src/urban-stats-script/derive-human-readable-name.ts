@@ -235,6 +235,7 @@ function describe(ast: Expression | UrbanStatsASTStatement<UnitInferenceMetadata
         case 'objectLiteral':
         case 'vectorLiteral':
         case 'if':
+        case 'split':
         case 'attribute':
         case 'parseError':
             return undefined
