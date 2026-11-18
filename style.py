@@ -1,18 +1,29 @@
 import json
 
+from urbanstats.website_data.colors import hue_colors
+
 with open("bright.json", "r") as f:
     result = json.load(f)
 
-PAPER = "#f4f1e6"
-WATER = "#62b8aa"
-WATER_LABEL = "#1d5c55"
-PARK = "#c8d76c"
-WOOD = "#b2c95e"
-RED = "#d23a32"
-ORANGE = "#f2a04b"
-STREET = "#c4bfb5"
+
+def mix(color, other, fraction):
+    """`fraction` of the way from `color` to `other`."""
+    a = [int(color[i : i + 2], 16) for i in (1, 3, 5)]
+    b = [int(other[i : i + 2], 16) for i in (1, 3, 5)]
+    return "#" + "".join(f"{round(x + (y - x) * fraction):02x}" for x, y in zip(a, b))
+
+
+# light mode background
+PAPER = "#fff8f0"
+WATER = mix(hue_colors["cyan"], PAPER, 0.45)
+WATER_LABEL = mix(hue_colors["cyan"], "#000000", 0.5)
+PARK = mix(hue_colors["green"], PAPER, 0.4)
+WOOD = mix(hue_colors["green"], PAPER, 0.25)
+RED = hue_colors["red"]
+ORANGE = hue_colors["orange"]
+STREET = mix(hue_colors["grey"], PAPER, 0.55)
 STREET_WIDTH = [12, 0.3, 14, 0.6, 16, 1.2, 20, 3]
-MEDIUM_ROAD = "#1e1e1e"
+MEDIUM_ROAD = hue_colors["darkGrey"]
 MEDIUM_ROAD_WIDTH = [8, 0.3, 12, 0.6, 16, 1.4, 20, 3.5]
 MAJOR_ROAD_WIDTH = [6, 0.5, 10, 1, 14, 2, 20, 5]
 # (kind, is casing): the casing is the red outline, the inner line the orange fill
@@ -22,10 +33,14 @@ MOTORWAY_WIDTHS = {
     ("motorway-link", True): [12, 0.6, 14, 1.5, 20, 5],
     ("motorway-link", False): [13, 0, 14, 0.6, 20, 3],
 }
-BORDER = "#e3cf3f"
-RAIL = "#8a857c"
-AIRPORT = "#d3cadb"
-INDUSTRIAL = "#efd3d3"
+BORDER = hue_colors["yellow"]
+RAIL = hue_colors["grey"]
+AIRPORT = mix(hue_colors["purple"], PAPER, 0.7)
+INDUSTRIAL = mix(hue_colors["pink"], PAPER, 0.8)
+RUNWAY = mix(hue_colors["purple"], PAPER, 0.5)
+# light mode slightlyDifferentBackground
+BUILDING = "#f7f1e8"
+PATH = mix(hue_colors["grey"], PAPER, 0.3)
 
 def width(stops):
     return ["interpolate", ["exponential", 1.2], ["zoom"], *stops]
@@ -48,15 +63,15 @@ paints = {
     "water": {"fill-color": WATER},
     "water-intermittent": {"fill-color": WATER, "fill-opacity": 0.5},
     "aeroway-area": {"fill-color": AIRPORT},
-    "aeroway-runway": {"line-color": "#b9aec4"},
-    "aeroway-taxiway": {"line-color": "#b9aec4"},
-    "aeroway-runway-casing": {"line-color": "#b9aec4"},
-    "aeroway-taxiway-casing": {"line-color": "#b9aec4"},
+    "aeroway-runway": {"line-color": RUNWAY},
+    "aeroway-taxiway": {"line-color": RUNWAY},
+    "aeroway-runway-casing": {"line-color": RUNWAY},
+    "aeroway-taxiway-casing": {"line-color": RUNWAY},
     "road_area_pier": {"fill-color": PAPER},
     "road_pier": {"line-color": PAPER},
     "highway-area": {"fill-color": PAPER, "fill-outline-color": STREET},
-    "building": {"fill-color": "#ebe6d6"},
-    "building-top": {"fill-color": "#ebe6d6", "fill-outline-color": "#ddd6c4"},
+    "building": {"fill-color": BUILDING},
+    "building-top": {"fill-color": BUILDING, "fill-outline-color": mix(hue_colors["grey"], PAPER, 0.7)},
     "ferry": {"line-color": WATER_LABEL},
     "boundary_3": {"line-color": BORDER},
     "boundary_2": {"line-color": BORDER},
@@ -103,7 +118,7 @@ for layer in result["layers"]:
                 )
             continue
         elif kind in ("path", "path-casing"):
-            color = "#a8a296"
+            color = PATH
         elif kind.startswith("railway"):
             color = RAIL
         else:
