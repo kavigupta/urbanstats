@@ -23,10 +23,11 @@ function archiveTest(name: string, keys: [string, string, string], liveUrl: stri
         await t.expect(Selector('#quiz-timer').exists).notOk()
         await t.expect(await runQuery(t, `SELECT user, ${column} FROM ${table} WHERE archive = 1`)).eql(archiveRow)
 
+        const hashFor = (key: string): string => `#${key.startsWith('W') ? 'mode=retro&' : ''}date=${key.replaceAll('W', '')}`
         await t.click(Selector('a').withExactText('Next Quiz'))
-        await t.expect(ClientFunction(() => location.hash)()).contains(`date=${keys[2].replaceAll('W', '')}`)
+        await t.expect(ClientFunction(() => location.hash)()).eql(hashFor(keys[2]))
         await t.click(Selector('a').withExactText('Previous Quiz'))
-        await t.expect(ClientFunction(() => location.hash)()).contains(`date=${keys[1].replaceAll('W', '')}`)
+        await t.expect(ClientFunction(() => location.hash)()).eql(hashFor(keys[1]))
 
         await t.click(Selector('a').withExactText('Archive'))
         await t.expect(ClientFunction(() => location.hash)()).eql(`#mode=archive&date=${keys[1]}`)
