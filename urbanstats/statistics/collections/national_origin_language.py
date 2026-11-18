@@ -1,19 +1,48 @@
+import pandas as pd
+
 from urbanstats.acs.load import ACSDataEntity
 from urbanstats.games.quiz_question_metadata import (
     LANGUAGE,
     QuizQuestionDescriptor,
     QuizQuestionSkip,
 )
-from urbanstats.statistics.statistic_collection import ACSStatisticsColection
+from urbanstats.statistics.collections.census_canada_language import (
+    canadian_language_counts,
+    canadian_language_tables,
+)
+from urbanstats.statistics.national_census import (
+    ACSCounts,
+    NationalCensusStatistics,
+    StatCanCounts,
+)
 from urbanstats.statistics.utils import fractionalize
 
 
-class NationalOriginLanguageStatistics(ACSStatisticsColection):
+class NationalOriginLanguageStatistics(NationalCensusStatistics):
+    version = 1
+
+    def legacy_statistic_names(self):
+        # Canada's, from before the two countries' statistics were merged
+        return {
+            "Only English at Home % [StatCan]": "Only English at Home %",
+            "Spanish at Home % [StatCan]": "Spanish at Home %",
+        }
+
     def name_for_each_statistic(self):
         return {
             "language_english_only": "Only English at Home %",
             "language_spanish": "Spanish at Home %",
             "language_other": "Other at Home %",
+        }
+
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
+    def varname_for_each_statistic(self):
+        return {
+            "language_english_only": "english_only",
+            "language_spanish": "spanish",
+            "language_other": "other_languages",
         }
 
     def explanation_page_for_each_statistic(self):
@@ -24,23 +53,26 @@ class NationalOriginLanguageStatistics(ACSStatisticsColection):
             **QuizQuestionDescriptor.several(
                 LANGUAGE,
                 {
-                    "language_english_only": "higher % of people who only speak english at home",
-                    "language_spanish": "higher % of people who speak spanish at home",
+                    "language_english_only": "higher % of people who only speak English at home",
+                    "language_spanish": "higher % of people who speak Spanish at home",
                 },
             ),
             **QuizQuestionSkip.several("language_other"),
         }
 
-    def mutate_acs_results(self, statistics_table):
+    def mutate_counts(self, counts):
         fractionalize(
-            statistics_table,
+            counts,
             "language_english_only",
             "language_spanish",
             "language_other",
         )
 
-    def acs_name(self):
-        return "language"
+    def country_inputs(self):
+        return {
+            "USA": ACSCounts(self.acs_entity()),
+            "Canada": CanadianLanguageCounts(canadian_language_tables()),
+        }
 
     def acs_entity(self):
         return ACSDataEntity(
@@ -76,4 +108,19 @@ class NationalOriginLanguageStatistics(ACSStatisticsColection):
                     "Estimate!!Total:!!65 years and over:!!Speak other languages",
                 ],
             },
+        )
+
+
+class CanadianLanguageCounts(StatCanCounts):
+    """The US's other languages are everything but English only and Spanish, French included."""
+
+    def compute(self, shapefile):
+        counts = canadian_language_counts(super().compute(shapefile))
+        return pd.DataFrame(
+            {
+                "language_english_only": counts["language_english_only"],
+                "language_spanish": counts["language_spanish"],
+                "language_other": counts["language_french"]
+                + counts["language_other_non_french"],
+            }
         )

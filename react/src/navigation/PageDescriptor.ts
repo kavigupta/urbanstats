@@ -1,46 +1,57 @@
-import { gunzipSync } from 'zlib'
-
 import { z } from 'zod'
 
 import { applySettingsParamSettings, settingsConnectionConfig } from '../components/QuerySettingsConnection'
-import { getCountsByArticleType } from '../components/countsByArticleType'
-import { ArticleRow, forType, loadArticles } from '../components/load-article'
-import type { StatisticPanelProps } from '../components/statistic-panel'
-import explanation_pages from '../data/explanation_page'
-import stats from '../data/statistic_list'
-import names from '../data/statistic_name_list' // TODO: Maybe dynamically import these
-import paths from '../data/statistic_path_list'
-import { loadJSON, loadStatisticsPage } from '../load_json'
-import { defaultSettings, MapSettings } from '../mapper/settings'
+import type { ArticlePanel } from '../components/article-panel'
+import type { ComparisonPanel } from '../components/comparison-panel'
+import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
+import { ArticleRow, loadArticles } from '../components/load-article'
+import type { QuizPanel } from '../components/quiz-panel'
+import { LegacyStatName, whatOldQuizzesMeantBy } from '../data/legacy_statistic_columns'
+import valid_geographies from '../data/mapper/used_geographies'
+import statnames from '../data/statistic_name_list'
+import type { DataCreditPanel } from '../data-credit'
+import type { EmbedPreviewPanel } from '../dev/EmbedPreviewPanel'
+import type { SnapshotDiffViewerPanel } from '../dev/SnapshotDiffViewerPanel'
+import { loadJSON } from '../load_json'
+import type { DebugMapTextBoxPanel } from '../mapper/components/DebugMapTextBox'
+import type { MapperPanel } from '../mapper/components/MapperPanel'
+import type { MapSettings } from '../mapper/settings/utils'
 import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
 import { StatGroupSettings } from '../page_template/statistic-settings'
-import { allGroups, CategoryIdentifier, StatName, StatPath, statsTree } from '../page_template/statistic-tree'
+import { allGroups, CategoryIdentifier, StatPath, statsTree } from '../page_template/statistic-tree'
+import { OauthCallbackPanel } from '../quiz/OauthCallbackPanel'
 import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
-import { validQuizInfiniteVersions } from '../quiz/infinite'
-import {
-    QuizQuestionsModel, wrapQuestionsModel, addFriendFromLink, CustomQuizContent, JuxtaQuestionJSON,
-    loadJuxta, loadRetro, QuizDescriptor, RetroQuestionJSON, infiniteQuiz, QuizHistory,
+import type {
+    QuizQuestionsModel, CustomQuizContent, JuxtaQuestionJSON,
+    QuizDescriptor, RetroQuestionJSON, QuizHistory,
 } from '../quiz/quiz'
-import { getInfiniteQuizzes } from '../quiz/statistics'
-import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
-import { Article } from '../utils/protos'
+import type { StatisticPanel } from '../stat/StatisticPanel'
+import type { Statistic, StatSettings } from '../stat/types'
+import { loadSYAUData, SYAUData } from '../syau/load'
+import type { SYAUPanel } from '../syau/syau-panel'
+import { defaultArticleUniverse, defaultComparisonUniverse, Universe, universeSchema } from '../universe'
+import type { DebugEditorPanel } from '../urban-stats-script/DebugEditorPanel'
+import { constantCategories, type ConstantCategory } from '../urban-stats-script/documentation-category'
+import type { USSDocumentationPanel } from '../uss-documentation'
+import type { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
 import { loadArticleFromPossibleSymlink, loadArticlesFromPossibleSymlink as loadArticlesFromPossibleSymlinks } from '../utils/symlinks'
+import { traced } from '../utils/traced'
 import { base64Gunzip } from '../utils/urlParamShort'
 
 import { byPopulation, uniform } from './random'
 
 const articleSchema = z.object({
     longname: z.string(),
-    universe: z.optional(z.string()),
+    universe: z.optional(universeSchema),
     s: z.optional(z.string()),
     category: z.optional(z.string()) as z.ZodOptional<z.ZodType<CategoryIdentifier, z.ZodTypeDef, CategoryIdentifier>>,
 })
 
 const articleSchemaFromParams = z.object({
     longname: z.string(),
-    universe: z.optional(z.string()),
+    universe: z.optional(universeSchema).catch(undefined),
     s: z.optional(z.string()),
     category: z.optional(z.string().transform((s) => {
         if (!statsTree.some(category => category.id === s)) {
@@ -52,45 +63,107 @@ const articleSchemaFromParams = z.object({
 
 const comparisonSchema = z.object({
     longnames: z.array(z.string()),
-    universe: z.optional(z.string()),
+    universe: z.optional(universeSchema),
     s: z.optional(z.string()),
 })
 
 const comparisonSchemaFromParams = z.object({
     longnames: z.string().transform(value => z.array(z.string()).parse(JSON.parse(value))),
-    universe: z.optional(z.string()),
+    universe: z.optional(universeSchema).catch(undefined),
     s: z.optional(z.string()),
 })
 
+const statisticGeographySchema = z.object({ universe: universeSchema, geographyKind: z.enum(valid_geographies) })
+
+/** A geography that no longer exists is dropped, as are all of them if the param is not a list. */
+const statisticGeographiesFromParam = z.string()
+    .transform((value, ctx): unknown => {
+        try {
+            return JSON.parse(value)
+        }
+        catch {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'geographies is not JSON' })
+            return z.NEVER
+        }
+    })
+    // We drop invalid geographies for backwards compatibility
+    .pipe(z.array(z.optional(statisticGeographySchema).catch(undefined)))
+    .transform(geographies => geographies.filter(geography => geography !== undefined))
+
 const statisticSchema = z.object({
-    article_type: z.string(),
-    statname: z.string() as z.ZodType<StatName, z.ZodTypeDef, StatName>,
+    geographies: z.array(statisticGeographySchema),
     start: z.number().int(),
     amount: z.union([z.literal('All'), z.number().int()]),
     order: z.union([z.literal('descending'), z.literal('ascending')]),
     highlight: z.optional(z.string()),
-    universe: z.optional(z.string()),
-})
+    edit: z.optional(z.boolean()),
+    sort_column: z.optional(z.number().int()),
+}).and(
+    z.union([
+        z.object({
+            statname: z.enum(statnames),
+        }),
+        z.object({
+            uss: z.string(),
+        }),
+    ]),
+)
 
-const statisticSchemaFromParams = z.object({
-    article_type: z.string(),
-    statname: z.string().transform(s => s.replaceAll('__PCT__', '%') as StatName),
-    start: z.optional(z.coerce.number().int()).default(1),
-    amount: z.union([z.literal('All'), z.coerce.number().int(), z.undefined().transform(() => 10)]),
-    order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
-    highlight: z.optional(z.string()),
-    universe: z.optional(z.string()),
-})
+// Links from before a statistic was renamed or merged into another
+function currentStatName(statname: string): string {
+    if ((statnames as readonly string[]).includes(statname) || !(statname in whatOldQuizzesMeantBy)) {
+        return statname
+    }
+    return whatOldQuizzesMeantBy[statname as LegacyStatName]
+}
+
+const statisticSchemaFromParams = z.union([
+    z.object({
+        article_type: z.optional(z.enum(valid_geographies)).catch(undefined),
+        geographies: z.optional(statisticGeographiesFromParam).catch(undefined),
+        start: z.optional(z.coerce.number().int()).default(1),
+        amount: z.union([z.literal('All'), z.coerce.number().int(), z.undefined().transform(() => 10)]),
+        order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
+        highlight: z.optional(z.string()),
+        universe: z.optional(universeSchema).catch(undefined),
+        edit: z.union([z.literal('true').transform(() => true), z.literal('false').transform(() => false), z.undefined().transform(() => false)]),
+        sort_column: z.optional(z.coerce.number().int()).default(0),
+    }).and(z.union([
+        z.object({
+            statname: z.string().transform(s => s.replaceAll('__PCT__', '%')).transform(currentStatName).pipe(z.enum(statnames)),
+        }),
+        z.object({
+            uss: z.string(),
+        }),
+    ])).transform(({ article_type, universe, geographies, ...rest }) => ({
+        ...rest,
+        geographies: geographies ?? (article_type === undefined ? [] : [{ universe: universe ?? 'world', geographyKind: article_type }]),
+    })),
+    z.object({}).transform(() => ({
+        geographies: [{ universe: 'USA', geographyKind: 'Subnational Region' } as const],
+        uss: 'customNode(""); condition (true); table(columns=[column(values=density_pw_1km)])',
+        start: 1,
+        amount: 20,
+        order: 'descending' as const,
+        edit: true,
+        sort_column: 0,
+    })),
+])
 
 const randomSchema = z.object({
     sampleby: z.union([z.literal('uniform'), z.literal('population')]),
-    us_only: z.boolean(),
+    universe: z.optional(universeSchema),
 })
 
 const randomSchemaForParams = z.object({
     sampleby: z.union([z.literal('uniform'), z.literal('population'), z.undefined().transform(() => 'uniform' as const)]),
-    us_only: z.union([z.literal('true').transform(() => true), z.literal('false').transform(() => false), z.undefined().transform(() => false)]),
-})
+    universe: z.optional(universeSchema).catch(undefined),
+    // Backward compat: us_only=true maps to universe=USA
+    us_only: z.optional(z.literal('true')),
+}).transform(({ sampleby, universe, us_only }) => ({
+    sampleby,
+    universe: universe ?? (us_only === 'true' ? 'USA' as const : undefined),
+}))
 
 // Should either have all or none friends parameters
 const quizSchema = z.intersection(
@@ -123,6 +196,17 @@ const quizSchema = z.intersection(
     }),
 )
 
+const ussDocumentationSchema = z.object({
+    doc: z.optional(z.enum(constantCategories)),
+    /** URL fragment for in-page anchors (e.g. `#linearScale`), same shape as `URL.hash`. */
+    hash: z.optional(z.string()),
+})
+
+const syauSchema = z.object({
+    typ: z.optional(z.string()),
+    universe: z.optional(universeSchema),
+})
+
 const mapperSchema = z.object({
     settings: z.optional(z.string()),
     view: z.boolean(),
@@ -133,6 +217,28 @@ const mapperSchemaForParams = z.object({
     view: z.union([z.undefined().transform(() => false), z.literal('true').transform(() => true), z.literal('false').transform(() => false)]),
 })
 
+const editorSchema = z.object({
+    undoChunking: z.optional(z.coerce.number().int()),
+    mode: z.optional(z.enum(['uss', 'mapper'])),
+})
+
+// With base, the viewer compares the references at git refs base and head, or base and the working tree.
+// Otherwise, without artifactId and hash, it reads a local test run through the dev server instead of a CI artifact.
+const snapshotDiffViewerSchema = z.object({
+    artifactId: z.optional(z.string()),
+    hash: z.optional(z.string()),
+    base: z.optional(z.string()),
+    head: z.optional(z.string()),
+    // Comma-separated. Restricts the viewer to these tests.
+    tests: z.optional(z.string()),
+    index: z.optional(z.coerce.number()),
+})
+
+const embedPreviewSchema = z.object({
+    target: z.optional(z.string()),
+    ogPort: z.optional(z.coerce.number()),
+})
+
 export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('article') }).and(articleSchema),
     z.object({ kind: z.literal('comparison') }).and(comparisonSchema),
@@ -141,37 +247,59 @@ export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('index') }),
     z.object({ kind: z.literal('about') }),
     z.object({ kind: z.literal('dataCredit'), hash: z.string() }),
+    z.object({ kind: z.literal('ussDocumentation') }).and(ussDocumentationSchema),
     z.object({ kind: z.literal('quiz') }).and(quizSchema),
+    z.object({ kind: z.literal('syau') }).and(syauSchema),
     z.object({ kind: z.literal('mapper') }).and(mapperSchema),
+    z.object({ kind: z.literal('editor') }).and(editorSchema),
+    z.object({ kind: z.literal('oauthCallback'), params: z.record(z.string()) }),
+    z.object({ kind: z.literal('snapshotDiffViewer') }).and(snapshotDiffViewerSchema),
+    z.object({ kind: z.literal('embedPreview') }).and(embedPreviewSchema),
 ])
 
 export type PageDescriptor = z.infer<typeof pageDescriptorSchema>
 export type ExceptionalPageDescriptor = PageDescriptor
-    | { kind: 'initialLoad', url: URL }
+    | { kind: 'initialLoad', url: URL, descriptor: PageDescriptor }
     | { kind: 'error', url: URL }
 
 export type PageData =
-    { kind: 'article', article: Article, universe: string, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][] }
-    | { kind: 'comparison', articles: Article[], universe: string, universes: string[], rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][] }
-    | { kind: 'statistic', universe: string } & StatisticPanelProps
+    { kind: 'article', article: Article, universe: Universe, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], articlePanel: typeof ArticlePanel }
+    | {
+        kind: 'comparison'
+        articles: Article[]
+        universe: Universe
+        universes: readonly Universe[]
+        rows: (settings: StatGroupSettings) => ArticleRow[][]
+        statPaths: StatPath[][]
+        mapPartitions: number[][]
+        comparisonPanel: typeof ComparisonPanel
+    }
+    | { kind: 'statistic', settings: StatSettings, title: string, statisticPanel: typeof StatisticPanel, counts: CountsByUT }
     | { kind: 'index' }
     | { kind: 'about' }
-    | { kind: 'dataCredit' }
-    | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string }
-    | { kind: 'mapper', settings: MapSettings, view: boolean }
+    | { kind: 'dataCredit', dataCreditPanel: typeof DataCreditPanel }
+    | { kind: 'ussDocumentation', ussDocumentationPanel: typeof USSDocumentationPanel, doc?: ConstantCategory, hash?: string }
+    | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
+    | { kind: 'syau', typ: string | undefined, universe: Universe | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
+    | { kind: 'mapper', settings: MapSettings, title: string, view: boolean, mapperPanel: typeof MapperPanel, counts: CountsByUT }
+    | { kind: 'editor', editorPanel: typeof DebugEditorPanel | typeof DebugMapTextBoxPanel, undoChunking?: number }
+    | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true }, oauthCallbackPanel: typeof OauthCallbackPanel }
     | {
         kind: 'error'
         error: unknown
         url: URL
         descriptor?: PageDescriptor // If descriptor is not present, we could not parse it
     }
-    | { kind: 'initialLoad' }
+    | { kind: 'initialLoad', descriptor: PageDescriptor }
+    | { kind: 'snapshotDiffViewer', artifactId?: string, hash?: string, base?: string, head?: string, tests?: string, index: number, panel: typeof SnapshotDiffViewerPanel }
+    | { kind: 'embedPreview', target: string, ogPort: number, panel: typeof EmbedPreviewPanel }
 
 export function pageDescriptorFromURL(url: URL): PageDescriptor {
     /**
      * Remember: When adding a new entrypoint here, you'll also need to add the actual file in `build.py` in order to support initial navigation.
      */
     const params = Object.fromEntries(url.searchParams.entries())
+    const hashParams = Object.fromEntries(new URLSearchParams(url.hash.slice(1)).entries())
     switch (url.pathname) {
         case '/article.html':
             return { kind: 'article', ...articleSchemaFromParams.parse(params) }
@@ -186,17 +314,37 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
         case '/index.html':
             return { kind: 'index' }
         case '/quiz.html':
-            const hashParams = Object.fromEntries(new URLSearchParams(url.hash.slice(1)).entries())
             return { kind: 'quiz', ...quizSchema.parse({ ...params, ...hashParams }) }
+        case '/syau.html':
+            return { kind: 'syau', ...syauSchema.parse({ ...params, ...hashParams }) }
         case '/mapper.html':
             return { kind: 'mapper', ...mapperSchemaForParams.parse(params) }
         case '/about.html':
             return { kind: 'about' }
         case '/data-credit.html':
             return { kind: 'dataCredit', hash: url.hash }
+        case '/uss-documentation.html':
+            return {
+                kind: 'ussDocumentation',
+                ...ussDocumentationSchema.parse(params),
+                ...(url.hash !== '' ? { hash: url.hash } : {}),
+            }
+        case '/editor.html':
+            return { kind: 'editor', ...editorSchema.parse(params) }
+        case '/oauth-callback.html':
+            return { kind: 'oauthCallback', params }
+        case '/snapshot-diff-viewer.html':
+            return { kind: 'snapshotDiffViewer', ...snapshotDiffViewerSchema.parse(params) }
+        case '/embed-preview.html':
+            return { kind: 'embedPreview', ...embedPreviewSchema.parse(params) }
         default:
             throw new Error('404 not found')
     }
+}
+
+// Element ids can contain characters that a URL hash percent-encodes, e.g. spaces
+export function elementIdFromHash(hash: string): string {
+    return decodeURIComponent(hash.substring(1))
 }
 
 export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor): URL {
@@ -222,21 +370,28 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             break
         case 'statistic':
             pathname = '/statistic.html'
+            // One geography keeps naming itself in the scalar params that every older link uses.
+            const statisticGeography = pageDescriptor.geographies.length === 1 ? pageDescriptor.geographies[0] : undefined
             searchParams = {
-                statname: pageDescriptor.statname.replaceAll('%', '__PCT__'),
-                article_type: pageDescriptor.article_type,
+                ...('uss' in pageDescriptor ? { uss: pageDescriptor.uss } : { statname: pageDescriptor.statname.replaceAll('%', '__PCT__') }),
+                article_type: statisticGeography?.geographyKind,
+                geographies: statisticGeography === undefined ? JSON.stringify(pageDescriptor.geographies) : undefined,
                 start: pageDescriptor.start.toString(),
                 amount: pageDescriptor.amount.toString(),
                 order: pageDescriptor.order === 'descending' ? undefined : 'ascending',
                 highlight: pageDescriptor.highlight,
-                universe: pageDescriptor.universe,
+                universe: statisticGeography === undefined || statisticGeography.universe === 'world' ? undefined : statisticGeography.universe,
+                edit: pageDescriptor.edit ? 'true' : undefined,
+                sort_column: pageDescriptor.sort_column === undefined || pageDescriptor.sort_column === 0
+                    ? undefined
+                    : pageDescriptor.sort_column.toString(),
             }
             break
         case 'random':
             pathname = '/random.html'
             searchParams = {
                 sampleby: pageDescriptor.sampleby,
-                us_only: pageDescriptor.us_only ? 'true' : undefined,
+                universe: pageDescriptor.universe,
             }
             break
         case 'index':
@@ -251,6 +406,11 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             pathname = '/data-credit.html'
             searchParams = {}
             hash = pageDescriptor.hash
+            break
+        case 'ussDocumentation':
+            pathname = '/uss-documentation.html'
+            searchParams = { doc: pageDescriptor.doc }
+            hash = pageDescriptor.hash ?? ''
             break
         case 'quiz':
             /**
@@ -272,6 +432,22 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
                 quizResult.hash = `#${hashParams.toString()}`
             }
             return quizResult
+        case 'syau':
+            pathname = '/syau.html'
+            // same situation as the quiz
+            const hashParamsSYAU = {
+                typ: pageDescriptor.typ,
+                universe: pageDescriptor.universe,
+            }
+            const hashParamsString = Object.entries(hashParamsSYAU)
+                .flatMap(([key, value]) => value !== undefined ? [[key, value]] : [])
+                .map(([key, value]) => `${key}=${value}`)
+                .join('&')
+            if (hashParamsString.length > 0) {
+                hash = `#${hashParamsString}`
+            }
+            searchParams = {}
+            break
         case 'mapper':
             pathname = '/mapper.html'
             searchParams = {
@@ -279,9 +455,37 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
                 settings: pageDescriptor.settings,
             }
             break
+        case 'editor':
+            pathname = '/editor.html'
+            searchParams = {
+                mode: pageDescriptor.mode,
+                undoChunking: pageDescriptor.undoChunking?.toString(),
+            }
+            break
+        case 'oauthCallback':
+            pathname = '/oauth-callback.html'
+            searchParams = pageDescriptor.params
+            break
         case 'initialLoad':
         case 'error':
             return pageDescriptor.url
+        case 'snapshotDiffViewer':
+            pathname = '/snapshot-diff-viewer.html'
+            searchParams = {
+                artifactId: pageDescriptor.artifactId,
+                hash: pageDescriptor.hash,
+                base: pageDescriptor.base,
+                head: pageDescriptor.head,
+                tests: pageDescriptor.tests,
+                index: pageDescriptor.index?.toString(),
+            }
+            break
+        case 'embedPreview':
+            pathname = '/embed-preview.html'
+            searchParams = {
+                target: pageDescriptor.target,
+                ogPort: pageDescriptor.ogPort?.toString(),
+            }
     }
     // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
     const result = new URL(window.location.origin)
@@ -296,18 +500,25 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
 }
 
 // Should not do side-effects in this function, since it can race with other calls of itself. Instead, return effects in the effects result value
+// Only use one await per block (or use overlapping promises), so that resources may be loaded in parallel to improve performance
+export async function loadPageDescriptor(newDescriptor: Extract<PageDescriptor, { kind: 'quiz' }>, settings: Settings): Promise<{ pageData: Extract<PageData, { kind: 'quiz' }>, newPageDescriptor: Extract<PageDescriptor, { kind: 'quiz' }>, effects: () => void }>
+export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }>
 export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }> {
     switch (newDescriptor.kind) {
-        case 'article':
-            const article = await loadArticleFromPossibleSymlink(newDescriptor.longname)
+        case 'article': {
+            const [article, panel, countsByArticleType] = await Promise.all([
+                loadArticleFromPossibleSymlink(newDescriptor.longname),
+                import('../components/article-panel'),
+                getCountsByArticleType(),
+            ])
 
-            const defaultUniverse = defaultArticleUniverse(article.universes)
+            const defaultUniverse = defaultArticleUniverse(article.universes as Universe[])
 
             const articleUniverse = newDescriptor.universe !== undefined && article.universes.includes(newDescriptor.universe) ? newDescriptor.universe : defaultUniverse
 
             const displayUniverse = articleUniverse === defaultUniverse ? undefined : articleUniverse
 
-            const { rows: articleRows, statPaths: articleStatPaths } = loadArticles([article], await getCountsByArticleType(), articleUniverse)
+            const { rows: articleRows, statPaths: articleStatPaths } = await loadArticles([article], countsByArticleType, articleUniverse)
 
             return {
                 pageData: {
@@ -316,6 +527,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     universe: articleUniverse,
                     rows: articleRows,
                     statPaths: articleStatPaths,
+                    articlePanel: panel.ArticlePanel,
                 },
                 newPageDescriptor: {
                     ...newDescriptor,
@@ -335,10 +547,17 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     }
                 },
             }
-        case 'comparison':
-            const articles = await loadArticlesFromPossibleSymlinks(newDescriptor.longnames)
+        }
+        case 'comparison': {
+            const [articles, countsByArticleType, panel, mapPartitions] = await Promise.all([
+                loadArticlesFromPossibleSymlinks(newDescriptor.longnames),
+                getCountsByArticleType(),
+                import('../components/comparison-panel'),
+                import('../map-partition').then(({ partitionLongnames }) => partitionLongnames(newDescriptor.longnames)),
+            ])
+
             // intersection of all the data.universes
-            const articleUniverses = articles.map(x => x.universes)
+            const articleUniverses = articles.map(x => x.universes as Universe[])
             const universes = articleUniverses.reduce((a, b) => a.filter(c => b.includes(c)))
 
             const defaultUniverseComparison = defaultComparisonUniverse(articleUniverses, universes)
@@ -347,7 +566,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
 
             const displayComparisonUniverse = comparisonUniverse === defaultUniverseComparison ? undefined : comparisonUniverse
 
-            const { rows: comparisonRows, statPaths: comparisonStatPaths } = loadArticles(articles, await getCountsByArticleType(), comparisonUniverse)
+            const { rows: comparisonRows, statPaths: comparisonStatPaths } = await loadArticles(articles, countsByArticleType, comparisonUniverse)
 
             return {
                 pageData: {
@@ -357,6 +576,8 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     universes,
                     rows: comparisonRows,
                     statPaths: comparisonStatPaths,
+                    comparisonPanel: panel.ComparisonPanel,
+                    mapPartitions,
                 },
                 newPageDescriptor: {
                     ...newDescriptor,
@@ -371,81 +592,125 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     }
                 },
             }
-        case 'statistic':
-            const statUniverse = newDescriptor.universe ?? 'world'
-            const displayStatUniverse = statUniverse !== 'world' ? statUniverse : undefined
+        }
+        case 'statistic': {
+            const counts = getCountsByArticleType()
+            const panel = import('../stat/StatisticPanel')
+            const utils = await import('../stat/utils')
 
-            const statIndex = names.indexOf(newDescriptor.statname)
-            const statpath = paths[statIndex]
-            const statcol = stats[statIndex]
-            const explanationPage = explanation_pages[statIndex]
-
-            const [data, articleNames] = await loadStatisticsPage(statUniverse, statpath, newDescriptor.article_type)
-
-            let parsedAmount: number
-            if (newDescriptor.amount === 'All') {
-                parsedAmount = articleNames.length
+            // Pin the start position correctly to the beginning of the page
+            let start = newDescriptor.start
+            if (newDescriptor.amount !== 'All') {
+                start = start - 1
+                start = start - (start % newDescriptor.amount)
+                start = start + 1
             }
-            else {
-                parsedAmount = newDescriptor.amount
+
+            const { geographies } = newDescriptor
+
+            const stat: Statistic = {
+                geographies,
+                ...('uss' in newDescriptor
+                    ? {
+                            type: 'uss',
+                            uss: utils.parseStatUSS(newDescriptor.uss, geographies),
+                        }
+                    : {
+                            type: 'simple',
+                            statName: newDescriptor.statname,
+                        }),
             }
 
             return {
                 pageData: {
                     kind: 'statistic',
-                    statcol,
-                    statname: newDescriptor.statname,
-                    count: forType(await getCountsByArticleType(), statUniverse, statcol, newDescriptor.article_type),
-                    explanationPage,
-                    order: newDescriptor.order,
-                    highlight: newDescriptor.highlight ?? undefined,
-                    articleType: newDescriptor.article_type,
-                    joinedString: statpath,
-                    start: newDescriptor.start,
-                    amount: parsedAmount,
-                    articleNames,
-                    data,
-                    renderedStatname: newDescriptor.statname,
-                    universe: statUniverse,
-                    // StatisticPanel needs this to compute the set of universes to display
-                    counts: await getCountsByArticleType(),
-
+                    statisticPanel: (await panel).StatisticPanel,
+                    settings: {
+                        stat,
+                        view: {
+                            start,
+                            amount: newDescriptor.amount,
+                            order: newDescriptor.order,
+                            highlight: newDescriptor.highlight,
+                            edit: newDescriptor.edit ?? false,
+                            sortColumn: newDescriptor.sort_column ?? 0,
+                        },
+                    },
+                    title: utils.statPageTitle(stat, settings.unitSettings()),
+                    counts: await counts,
                 },
                 newPageDescriptor: {
                     ...newDescriptor,
-                    universe: displayStatUniverse,
+                    start,
                     highlight: undefined,
                 },
                 effects: () => undefined,
             }
+        }
         case 'random':
             let longname: string
             switch (newDescriptor.sampleby) {
                 case 'uniform':
-                    longname = (await uniform())()
+                    longname = (await uniform(newDescriptor.universe))()
                     break
                 case 'population':
-                    longname = (await byPopulation(newDescriptor.us_only))()
+                    longname = (await byPopulation(newDescriptor.universe))()
                     break
             }
 
             return await loadPageDescriptor({
                 kind: 'article',
                 longname,
+                universe: newDescriptor.universe,
             }, settings)
 
         case 'index':
         case 'about':
-        case 'dataCredit':
             return { pageData: newDescriptor, newPageDescriptor: newDescriptor, effects: () => undefined }
-        case 'quiz':
+
+        case 'dataCredit':
+            return {
+                pageData: {
+                    ...newDescriptor,
+                    dataCreditPanel: (await import('../data-credit')).DataCreditPanel,
+                },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
+
+        case 'ussDocumentation':
+            return {
+                pageData: {
+                    ...newDescriptor,
+                    ussDocumentationPanel: (await import('../uss-documentation')).USSDocumentationPanel,
+                },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
+
+        case 'editor':
+            return {
+                pageData: {
+                    ...newDescriptor,
+                    editorPanel: newDescriptor.mode === 'mapper'
+                        ? (await import('../mapper/components/DebugMapTextBox')).DebugMapTextBoxPanel
+                        : (await import('../urban-stats-script/DebugEditorPanel')).DebugEditorPanel,
+                },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
+
+        case 'quiz': {
             let quiz: QuizQuestionsModel
             let quizDescriptor: QuizDescriptor
             let todayName: string | undefined
             const updatedDescriptor: PageDescriptor = { ...newDescriptor }
+            const panel = import('../components/quiz-panel')
+            const quizImport = import('../quiz/quiz')
             switch (newDescriptor.mode) {
-                case 'custom':
-                    const custom = JSON.parse(base64Gunzip(newDescriptor.quizContent)) as CustomQuizContent
+                case 'custom': {
+                    const { wrapQuestionsModel } = await import('../quiz/quiz')
+                    const custom = JSON.parse(await base64Gunzip(newDescriptor.quizContent)) as CustomQuizContent
                     quizDescriptor = {
                         kind: 'custom',
                         name: custom.name,
@@ -453,18 +718,25 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     quiz = wrapQuestionsModel(custom.questions)
                     todayName = custom.name
                     break
-                case 'retro':
+                }
+                case 'retro': {
                     const retro = newDescriptor.date ?? getRetrostatOffsetNumber()
                     quizDescriptor = {
                         kind: 'retrostat',
                         name: `W${retro}`,
                     }
-                    quiz = wrapQuestionsModel((await loadJSON(`/retrostat/${retro}`) as RetroQuestionJSON[]).map(loadRetro))
+                    const [json, { wrapQuestionsModel, loadRetro }] = await Promise.all([
+                        loadJSON(`/retrostat/${retro}`),
+                        quizImport,
+                    ])
+                    quiz = wrapQuestionsModel((json as RetroQuestionJSON[]).map(loadRetro))
                     todayName = `Week ${retro}`
                     break
-                case 'infinite':
+                }
+                case 'infinite': {
                     if (updatedDescriptor.seed === undefined) {
-                        const [seedVersions] = getInfiniteQuizzes(JSON.parse((localStorage.quiz_history || '{}') as string) as QuizHistory, false)
+                        const { getInfiniteQuizzes } = await import('../quiz/statistics')
+                        const [seedVersions] = getInfiniteQuizzes(JSON.parse((localStorage.quiz_history ?? '{}') as string) as QuizHistory, false)
                         if (seedVersions.length > 0) {
                             const [seed, version] = seedVersions[0]
                             updatedDescriptor.seed = seed
@@ -475,16 +747,22 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                         }
                     }
                     if (updatedDescriptor.v === undefined) {
+                        const { validQuizInfiniteVersions } = await import('../quiz/infinite')
                         updatedDescriptor.v = Math.max(...validQuizInfiniteVersions)
                     }
                     quizDescriptor = { kind: 'infinite', name: `I_${updatedDescriptor.seed}_${updatedDescriptor.v}`, seed: updatedDescriptor.seed, version: updatedDescriptor.v }
-                    quiz = infiniteQuiz(updatedDescriptor.seed, updatedDescriptor.v)
+                    quiz = (await quizImport).infiniteQuiz(updatedDescriptor.seed, updatedDescriptor.v)
                     todayName = undefined
                     break
+                }
                 case undefined:
                     const today = newDescriptor.date ?? getDailyOffsetNumber()
                     quizDescriptor = { kind: 'juxtastat', name: today }
-                    quiz = wrapQuestionsModel((await loadJSON(`/quiz/${today}`) as JuxtaQuestionJSON[]).map(loadJuxta))
+                    const [json, { wrapQuestionsModel, loadJuxta }] = await Promise.all([
+                        loadJSON(`/quiz/${today}`),
+                        import('../quiz/quiz'),
+                    ])
+                    quiz = wrapQuestionsModel((json as JuxtaQuestionJSON[]).map(loadJuxta))
                     todayName = today.toString()
             }
             return {
@@ -494,39 +772,111 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     quiz,
                     parameters: urlFromPageDescriptor(newDescriptor).searchParams.toString(),
                     todayName,
+                    quizPanel: (await panel).QuizPanel,
                 },
                 newPageDescriptor: {
                     ...updatedDescriptor,
                     // Remove friend stuff so it doesn't get triggered again
                     id: undefined,
                     name: undefined,
+
                 },
                 effects: () => {
                     if (newDescriptor.id !== undefined && newDescriptor.name !== undefined) {
-                        void addFriendFromLink(newDescriptor.id, newDescriptor.name.trim())
+                        const friendId = newDescriptor.id
+                        const friendName = newDescriptor.name.trim()
+                        void (async () => {
+                            const { addFriendFromLink } = await import('../quiz/friends')
+                            await addFriendFromLink(friendId, friendName)
+                        })()
                     }
                 },
             }
-        case 'mapper':
+        }
+        case 'syau': {
+            const panel = import('../syau/syau-panel')
+            const counts = await getCountsByArticleType()
+            const syauData = await loadSYAUData(newDescriptor.typ, newDescriptor.universe, counts)
+            return {
+                pageData: {
+                    kind: 'syau',
+                    typ: newDescriptor.typ,
+                    universe: newDescriptor.universe,
+                    counts,
+                    syauData,
+                    syauPanel: (await panel).SYAUPanel,
+                },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
+        }
+        case 'mapper': {
+            const panel = import('../mapper/components/MapperPanel')
+            const utils = await import('../mapper/settings/utils')
+            const counts = getCountsByArticleType()
+            const mapSettings = await utils.mapSettingsFromURLParam(newDescriptor.settings)
             return {
                 pageData: {
                     kind: 'mapper',
                     view: newDescriptor.view,
-                    settings: mapSettingsFromURLParam(newDescriptor.settings),
+                    settings: mapSettings,
+                    title: utils.mapPageTitle(mapSettings, settings.unitSettings()),
+                    mapperPanel: (await panel).MapperPanel,
+                    counts: await counts,
+                },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
+        }
+        case 'oauthCallback': {
+            console.warn('oauth callback: loading')
+            const panel = import('../quiz/OauthCallbackPanel')
+            let result: Extract<PageData, { kind: 'oauthCallback' }>['result']
+            try {
+                const { AuthenticationStateMachine } = await import('../quiz/AuthenticationStateMachine')
+                await AuthenticationStateMachine.shared.completeSignIn(newDescriptor)
+                result = { success: true }
+            }
+            catch (e) {
+                if (e instanceof Error) {
+                    console.error('OAuth error', e.message)
+                    result = { success: false, error: e.message }
+                }
+                else {
+                    console.error('OAuth error', e)
+                    result = { success: false, error: 'Unknown error' }
+                }
+            }
+            console.warn(`oauth callback: rendering ${result.success ? 'success' : 'failure'}`)
+            return {
+                pageData: { kind: 'oauthCallback', result, oauthCallbackPanel: (await traced('oauth callback panel import', () => panel)).OauthCallbackPanel },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
+        }
+        case 'snapshotDiffViewer':
+            return {
+                pageData: {
+                    ...newDescriptor,
+                    index: newDescriptor.index ?? 0,
+                    panel: (await import('../dev/SnapshotDiffViewerPanel')).SnapshotDiffViewerPanel,
+                },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
+        case 'embedPreview':
+            return {
+                pageData: {
+                    ...newDescriptor,
+                    target: newDescriptor.target ?? '/article.html?longname=Chicago city, Illinois, USA',
+                    // Matches OG_PORT's default in cf-og-worker/preview.sh.
+                    ogPort: newDescriptor.ogPort ?? 8787,
+                    panel: (await import('../dev/EmbedPreviewPanel')).EmbedPreviewPanel,
                 },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
             }
     }
-}
-
-function mapSettingsFromURLParam(encodedSettings: string | undefined): MapSettings {
-    let settings: Partial<MapSettings> = {}
-    if (encodedSettings !== undefined) {
-        const jsonedSettings = gunzipSync(Buffer.from(encodedSettings, 'base64')).toString()
-        settings = JSON.parse(jsonedSettings) as Partial<MapSettings>
-    }
-    return defaultSettings(settings)
 }
 
 export function pageTitle(pageData: PageData): string {
@@ -538,8 +888,11 @@ export function pageTitle(pageData: PageData): string {
             return 'About Urban Stats'
         case 'dataCredit':
             return 'Urban Stats Credits'
+        case 'ussDocumentation':
+            return 'USS Documentation'
         case 'mapper':
-            return 'Urban Stats Mapper'
+            // Only the title this page loaded with; the mapper panel retitles its own edits.
+            return pageData.title
         case 'quiz':
             switch (pageData.quizDescriptor.kind) {
                 case 'juxtastat':
@@ -551,13 +904,24 @@ export function pageTitle(pageData: PageData): string {
                 case 'infinite':
                     return 'Juxtastat Infinite'
             }
+        case 'syau':
+            return `So you're an urbanist?`
         case 'article':
             return pageData.article.shortname
         case 'statistic':
-            return pageData.statname
+            // Only the title this page loaded with; the statistic panel retitles its own edits.
+            return pageData.title
         case 'comparison':
             return pageData.articles.map(x => x.shortname).join(' vs ')
+        case 'editor':
+            return 'Editor'
+        case 'oauthCallback':
+            return pageData.result.success ? 'Signed In' : 'Sign In Failed'
         case 'error':
             return 'Error'
+        case 'snapshotDiffViewer':
+            return 'Snapshot Diff Viewer'
+        case 'embedPreview':
+            return 'Embed Preview'
     }
 }

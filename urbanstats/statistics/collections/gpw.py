@@ -1,4 +1,10 @@
-from urbanstats.data.gpw import compute_gpw_data_for_shapefile
+from urbanstats.data.census_blocks import format_radius
+from urbanstats.data.gpw import (
+    GPW_RADII,
+    compute_gpw_data_for_shapefile,
+    compute_gpw_population_median_for_shapefile,
+    median_from_histogram,
+)
 from urbanstats.games.quiz_question_metadata import (
     POPULATION,
     POPULATION_DENSITY,
@@ -11,16 +17,43 @@ from urbanstats.statistics.statistic_collection import InternationalStatistics
 
 
 class GPWStatistics(InternationalStatistics):
-    version = 2
+    version = 6
 
     def name_for_each_statistic(self):
         return {
             "gpw_population": "Population [GHS-POP]",
             **{
-                f"gpw_pw_density_{k}": f"PW Density (r={k}km) [GHS-POP]"
-                for k in (1, 2, 4)
+                f"gpw_pw_density_{k}": f"PW Density (r={format_radius(k)}) [GHS-POP]"
+                for k in GPW_RADII
             },
             "gpw_aw_density": "AW Density [GHS-POP]",
+            "gpw_pw_median_density_1": "PW Median Density (r=1km) [GHS-POP]",
+        }
+
+    def unit_for_each_statistic(self):
+        return {
+            "gpw_population": "population",
+            "gpw_pw_density_1": "density",
+            "gpw_pw_density_1.609344": "density",
+            "gpw_pw_density_2": "density",
+            "gpw_pw_density_4": "density",
+            "gpw_pw_density_8": "density",
+            "gpw_pw_density_16": "density",
+            "gpw_pw_density_32": "density",
+            "gpw_pw_density_64": "density",
+            "gpw_aw_density": "density",
+            "gpw_pw_median_density_1": "density",
+        }
+
+    def varname_for_each_statistic(self):
+        return {
+            "gpw_population": "population",
+            **{
+                f"gpw_pw_density_{k}": f"density_pw_{format_radius(k)}"
+                for k in GPW_RADII
+            },
+            "gpw_aw_density": "density_aw",
+            "gpw_pw_median_density_1": "density_pw_median_1km",
         }
 
     def explanation_page_for_each_statistic(self):
@@ -28,14 +61,20 @@ class GPWStatistics(InternationalStatistics):
 
     def quiz_question_descriptors(self):
         return {
-            "gpw_population": QuizQuestionDescriptor("higher population", POPULATION),
+            "gpw_population": QuizQuestionDescriptor(
+                "higher population",
+                POPULATION,
+                exclude_geography_types=("Subnational Region",),
+            ),
             "gpw_pw_density_4": QuizQuestionDescriptor(
                 "higher population-weighted density (r=4km)" + DENSITY_EXPLANATION_PW,
                 POPULATION_DENSITY,
             ),
             **QuizQuestionSkip.several(
-                "gpw_pw_density_1", "gpw_pw_density_2", "gpw_aw_density"
+                *[f"gpw_pw_density_{k}" for k in GPW_RADII if k not in (4,)]
             ),
+            "gpw_aw_density": QuizQuestionSkip(),
+            "gpw_pw_median_density_1": QuizQuestionSkip(),
         }
 
     def dependencies(self):
@@ -46,11 +85,22 @@ class GPWStatistics(InternationalStatistics):
     ):
         statistics_table = {}
 
-        result, hists = compute_gpw_data_for_shapefile(shapefile)
+        result, hists = compute_gpw_data_for_shapefile(
+            shapefile.geometry,
+            resolution_by_radius={k: 1200 if k <= 4 else 120 for k in GPW_RADII},
+        )
         for k, rk in result.items():
             statistics_table[k] = rk
         for k, hk in hists.items():
             statistics_table[k] = hk
+        statistics_table["gpw_pw_median_density_1"] = [
+            median_from_histogram(h)
+            for h in statistics_table["gpw_pw_density_histogram_1"]
+        ]
+        (
+            statistics_table["population_median_lat_gpw"],
+            statistics_table["population_median_lon_gpw"],
+        ) = compute_gpw_population_median_for_shapefile(shapefile.geometry)
 
         statistics_table["gpw_aw_density"] = (
             statistics_table["gpw_population"] / existing_statistics["area"]
@@ -60,13 +110,8 @@ class GPWStatistics(InternationalStatistics):
 
     def extra_stats(self):
         return {
-            "gpw_pw_density_1": HistogramSpec(
-                0, 0.1, "gpw_pw_density_histogram_1", "gpw_population"
-            ),
-            "gpw_pw_density_2": HistogramSpec(
-                0, 0.1, "gpw_pw_density_histogram_2", "gpw_population"
-            ),
-            "gpw_pw_density_4": HistogramSpec(
-                0, 0.1, "gpw_pw_density_histogram_4", "gpw_population"
-            ),
+            f"gpw_pw_density_{k}": HistogramSpec(
+                0, 0.1, f"gpw_pw_density_histogram_{k}", "gpw_population"
+            )
+            for k in GPW_RADII
         }

@@ -1,0 +1,103 @@
+import fs from 'fs'
+
+import { Selector } from 'testcafe'
+
+import {
+    target, checkSidebarTextboxes, checkTextboxes, getLocation,
+    safeClearLocalStorage,
+    safeReload,
+    screencap,
+    urbanstatsFixture,
+    doSearch,
+    mapFeatureName,
+} from './test_utils'
+
+const testLocation = `${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`
+
+urbanstatsFixture('settings regression test', testLocation,
+    async (t) => {
+        const egSettings = fs.readFileSync('test/assets/saved-settings-1.json').toString()
+        await t.eval(() => {
+            localStorage.setItem('settings', egSettings)
+            // Delete settings param so old settings don't persist after navigation
+            // eslint-disable-next-line no-restricted-syntax -- Test file
+            setTimeout(() => { window.location.href = testLocation }, 0)
+        }, { dependencies: { egSettings, testLocation } })
+    })
+
+test('check-settings-loaded', async (t) => {
+    // screenshot path: images/first_test.png
+    await screencap(t)
+    // check there's an element containing class Huntington_Library
+    await t.expect(mapFeatureName(/Huntington Library/)).ok()
+    // check that there's no element Pasadena_city or 91101
+    await t.expect(mapFeatureName(/Pasadena city/)).notOk()
+    await t.expect(mapFeatureName(/91101/)).notOk()
+})
+
+test('check-settings-loaded-desktop', async (t) => {
+    // screenshot path: images/first_test.png
+    await t.resizeWindow(1400, 800)
+    await screencap(t)
+})
+
+test('check-settings-persistent', async (t) => {
+    await t.expect(Selector('span').withText(/mi/).exists).ok()
+    // navigate to Pasadena via search
+    await doSearch(t, 'Pasadena, CA, USA')
+    await t.expect(getLocation()).match(/\/article\.html\?longname=Pasadena\+city%2C\+California%2C\+USA/)
+    // check box "Imperial"
+    await checkSidebarTextboxes(t, ['Use Imperial Units'])
+    // assert mi not in page
+    await t.expect(Selector('span').withText(/mi/).exists).notOk()
+    // go back to San Marino
+    await safeReload(t)
+    await t.expect(Selector('span').withText(/mi/).exists).notOk()
+})
+
+test('check-related-button-checkboxes-page-specific', async (t) => {
+    // navigate to 91108
+    await doSearch(t, '91108')
+    await t.expect(getLocation()).match(/\/article\.html\?longname=91108%2C\+USA/)
+    // this should not be page specific
+    await t.expect(Selector('span').withText(/mi/).exists).ok()
+    // San Marino should be present
+    await t.expect(mapFeatureName(/San Marino city/)).ok()
+    // neighborhoods should not be present (Huntington Library)
+    await t.expect(mapFeatureName(/Huntington Library/)).notOk()
+})
+
+test('checkboxes-can-be-checked', async (t) => {
+    // check that Pasadena CCD is not present
+    await t.expect(mapFeatureName(/Pasadena CCD/)).notOk()
+    const pasadenaCCD = Selector('li')
+        .withText(/Pasadena CCD/)
+    // find a checkbox inside it
+        .find('input')
+    await t
+        .click(pasadenaCCD)
+    // check that Pasadena CCD is now present
+    await t.expect(mapFeatureName(/Pasadena CCD/)).ok()
+    // check that this is persistent by going to Berkeley and checking that Briones CCD is present
+    await doSearch(t, 'Berkeley, CA, USA')
+    await t.expect(getLocation()).match(/\/article\.html\?longname=Berkeley\+city%2C\+California%2C\+USA/)
+    await t.expect(mapFeatureName(/Briones CCD/)).ok()
+})
+
+urbanstatsFixture('plot mode settings link', `${target}/article.html?longname=Germany&universe=world`)
+
+test('plot-mode-carries-over-settings-link', async (t) => {
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Mean high temp"]'))
+    const modeSelect = Selector('[data-test-id=plot_mode]')
+    await t.click(modeSelect).click(modeSelect.find('option').withExactText('Distribution'))
+    // the distribution plot is per-day, the monthly one is a series over months
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/% of days/).exists).ok()
+
+    const link = await getLocation()
+    await safeClearLocalStorage(t)
+    await t.navigateTo(link)
+
+    await t.expect(modeSelect.value).eql('temperature_histogram', 'link should reopen in the distribution view')
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/% of days/).exists).ok('link should restore the distribution plot, not the monthly one')
+})

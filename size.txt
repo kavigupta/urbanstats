@@ -351,3 +351,247 @@ add in a sitemap and a full page index
 1328    order
 1457    data
 4100    total
+
+bunch of changes up to and including 3 arcseconds
+
+15	consolidated
+16	scripts
+20	sitemaps
+26	centroids
+32	index
+75	quiz_sampling_info
+1133	shape
+1360	order
+1471	data
+4155	total
+
+add more radii (#1053)
+
+16      consolidated
+16      scripts
+20      sitemaps
+26      centroids
+32      index
+75      quiz_sampling_info
+1133    shape
+1508    order
+1512    data
+4343    total
+
+add taylor metropolitan clusters
+
+16      consolidated
+16      scripts
+21      sitemaps
+29      centroids
+37      index
+86      quiz_sampling_info
+1307    shape
+1629    order
+1668    data
+4815    total
+
+mapper changes
+
+19      scripts
+23      sitemaps
+29      centroids
+37      index
+107     quiz_sampling_info
+125     consolidated
+1307    shape
+1713    data
+1713    order
+5079    total
+
+add weather data internationally + histograms
+
+19      scripts
+23      sitemaps
+29      centroids
+37      index
+107     quiz_sampling_info
+125     consolidated
+1307    shape
+1713    data
+1713    order
+5079    total
+
+clean up the ordinals (#1467)
+
+20	scripts
+23	sitemaps
+29	centroids
+37	index
+107	quiz_sampling_info
+125	consolidated
+641	order
+1307	shape
+1713	data
+4009	total
+
+add geoids, wikidata, and wikipedia links (#1478)
+
+20	scripts
+23	sitemaps
+29	centroids
+37	index
+107	quiz_sampling_info
+125	consolidated
+641	order
+1307	shape
+1716	data
+4012	total
+
+add median income, life expectancy, median commute time
+
+20	scripts
+23	sitemaps
+29	centroids
+37	index
+117	quiz_sampling_info
+125	consolidated
+647	order
+1307	shape
+1723	data
+4036	total
+
+added 2024 US general election data, as well as 2015-2025 Canadian general election data
+
+125	consolidated
+157	quiz_sampling_info
+694	order
+1307	shape
+1732	data
+4144	total
+
+add a bunch of canadian stats (#1736)
+
+125     consolidated
+167     quiz_sampling_info
+775     order
+1307    shape
+1780    data
+4284    total
+
+
+Consolidate data and shape into a file (#1750)
+
+125     consolidated
+167     quiz_sampling_info
+685     shape
+775     order
+1308    data
+3191    total
+
+compute relations via run-length encoding (#1816)
+
+125     consolidated
+167     quiz_sampling_info
+685     shape
+775     order
+1314    data
+3194    total
+
+fix nan handling in protobuf; pin protobuf (#1927)
+
+125     consolidated
+167     quiz_sampling_info
+685     shape
+775     order
+1314    data
+3194    total
+
+Congressional representatives just data (#1964)
+
+125     consolidated
+167     quiz_sampling_info
+685     shape
+775     order
+1388    data
+3241    total
+
+Several juxtafixes to juxtasampling (#2028)
+
+125     consolidated
+178     quiz_sampling_info
+685     shape
+788     order
+1388    data
+3293    total
+
+Temperature plots (#2056)
+
+125     consolidated
+178     quiz_sampling_info
+685     shape
+788     order
+1412    data
+3289    total
+
+2026 redistricting (#2506)
+
+125     consolidated
+178     quiz_sampling_info
+691     shape
+788     order
+1414    data
+3326    total
+
+Density medians and population centers (#2523)
+
+125     consolidated
+178     quiz_sampling_info
+691     shape
+850     order
+1488    data
+3462    total
+
+Write shortnames into the per-type article index (#2532)
+
+125     consolidated
+178     quiz_sampling_info
+691     shape
+850     order
+1488    data
+3472    total
+
+Merge US and Canadian census statistics into National Census statistics (#2547)
+
+56      index
+125     consolidated
+178     quiz_sampling_info
+691     shape
+762     order
+1487    data
+3392    total
+
+Merge household size and commute time into National Census statistics (#2596)
+
+56      index
+125     consolidated
+178     quiz_sampling_info
+691     shape
+757     order
+1487    data
+3387    total
+
+Add Australian states as universes (#2605)
+
+56      index
+125     consolidated
+178     quiz_sampling_info
+691     shape
+757     order
+1487    data
+3387    total
+
+Add Australian census geographies (#2618)
+
+59      index
+140     consolidated
+178     quiz_sampling_info
+788     order
+822     shape
+1515    data
+3599    total

@@ -1,0 +1,134 @@
+Region: India
+Population [GHS-POP]: 1396416128
+PW Density (r=1km) [GHS-POP]: 8788.578125
+AW Density [GHS-POP]: 441.1905517578125
+Area: 3165108.75
+Compactness: 0.07255562394857407
+PW Mean Hilliness (Grade): 0.04341334104537964
+PW Mean Elevation: 244.8111572265625
+Population Median (Latitude): 23.59244728088379
+Population Median (Longitude): 80.35087585449219
+PW Mean PM2.5 Pollution: 53.60478591918945
+Mean high temp: 87.53106689453125
+Mean low temp: 69.2306900024414
+Mean high heat index: 94.09436798095703
+Mean high dewpt: 67.72197723388672
+High temperature Above 90°F %: 0.39237648248672485
+High temperature Between 40 and 90°F %: 0.6057177782058716
+High temperature Below 40°F %: 0.0019057121826335788
+Humid days (dewpt > 70°F) %: 0.5055580139160156
+Non-humid, Non-dry days (50°F < dewpt < 70°F) %: 0.4358946681022644
+Dry days (dewpt < 50°F) %: 0.05854732170701027
+Mean sunny hours: 6.4846720695495605
+Rainfall: 1.2563087940216064
+Snowfall [rain-equivalent]: 0.004241618327796459
+High windspeed (>10mph) days %: 0.07979310303926468
+Mean high temperature in Dec/Jan/Feb: 78.41902923583984
+Mean high temperature in Mar/Apr/May: 94.91569519042969
+Mean high temperature in Jun/Jul/Aug: 90.1603775024414
+Mean high temperature in Sep/Oct/Nov: 86.46666717529297
+Mean low temperature in Dec/Jan/Feb: 56.44890213012695
+Mean low temperature in Mar/Apr/May: 72.69632720947266
+Mean low temperature in Jun/Jul/Aug: 78.1158447265625
+Mean low temperature in Sep/Oct/Nov: 69.42720031738281
+ISO Code: "IN"
+PW Density (r=1mi) [GHS-POP]: 7256.451171875
+PW Density (r=2km) [GHS-POP]: 6616.59814453125
+PW Density (r=4km) [GHS-POP]: 4726.96728515625
+PW Density (r=8km) [GHS-POP]: 3099.46728515625
+PW Density (r=16km) [GHS-POP]: 1939.437744140625
+PW Density (r=32km) [GHS-POP]: 1207.0343017578125
+PW Density (r=64km) [GHS-POP]: 835.2633056640625
+PW Median Density (r=1km) [GHS-POP]: 1984.39990234375
+Mean high temperature in summer: 88.44015502929688
+Mean high temperature in winter: 80.4499740600586
+Mean high temperature in fall: 84.4002685546875
+Mean high temperature in spring: 96.49565887451172
+Population [GHS-POP] (Rank): 2
+Population [GHS-POP] (Percentile): 63
+PW Density (r=1km) [GHS-POP] (Rank): 27
+PW Density (r=1km) [GHS-POP] (Percentile): 67
+AW Density [GHS-POP] (Rank): 18
+AW Density [GHS-POP] (Percentile): 78
+Area (Rank): 7
+Area (Percentile): 53
+Compactness (Rank): 164
+Compactness (Percentile): 43
+PW Mean Hilliness (Grade) (Rank): 170
+PW Mean Hilliness (Grade) (Percentile): 13
+PW Mean Elevation (Rank): 89
+PW Mean Elevation (Percentile): 28
+Population Median (Latitude) (Rank): 92
+Population Median (Latitude) (Percentile): 32
+Population Median (Longitude) (Rank): 35
+Population Median (Longitude) (Percentile): 49
+PW Mean PM2.5 Pollution (Rank): 9
+PW Mean PM2.5 Pollution (Percentile): 74
+Mean high temp (Rank): 23
+Mean high temp (Percentile): 74
+Mean low temp (Rank): 94
+Mean low temp (Percentile): 62
+Mean high heat index (Rank): 26
+Mean high heat index (Percentile): 70
+Mean high dewpt (Rank): 86
+Mean high dewpt (Percentile): 60
+High temperature Above 90°F % (Rank): 21
+High temperature Above 90°F % (Percentile): 72
+High temperature Between 40 and 90°F % (Rank): 193
+High temperature Between 40 and 90°F % (Percentile): 12
+High temperature Below 40°F % (Rank): 78
+High temperature Below 40°F % (Percentile): 37
+Humid days (dewpt > 70°F) % (Rank): 81
+Humid days (dewpt > 70°F) % (Percentile): 63
+Non-humid, Non-dry days (50°F < dewpt < 70°F) % (Rank): 85
+Non-humid, Non-dry days (50°F < dewpt < 70°F) % (Percentile): 56
+Dry days (dewpt < 50°F) % (Rank): 118
+Dry days (dewpt < 50°F) % (Percentile): 22
+Mean sunny hours (Rank): 58
+Mean sunny hours (Percentile): 67
+Rainfall (Rank): 76
+Rainfall (Percentile): 55
+Snowfall [rain-equivalent] (Rank): 79
+Snowfall [rain-equivalent] (Percentile): 36
+High windspeed (>10mph) days % (Rank): 145
+High windspeed (>10mph) days % (Percentile): 27
+Mean high temperature in Dec/Jan/Feb (Rank): 104
+Mean high temperature in Dec/Jan/Feb (Percentile): 53
+Mean high temperature in Mar/Apr/May (Rank): 8
+Mean high temperature in Mar/Apr/May (Percentile): 80
+Mean high temperature in Jun/Jul/Aug (Rank): 22
+Mean high temperature in Jun/Jul/Aug (Percentile): 72
+Mean high temperature in Sep/Oct/Nov (Rank): 29
+Mean high temperature in Sep/Oct/Nov (Percentile): 71
+Mean low temperature in Dec/Jan/Feb (Rank): 127
+Mean low temperature in Dec/Jan/Feb (Percentile): 50
+Mean low temperature in Mar/Apr/May (Rank): 81
+Mean low temperature in Mar/Apr/May (Percentile): 64
+Mean low temperature in Jun/Jul/Aug (Rank): 36
+Mean low temperature in Jun/Jul/Aug (Percentile): 75
+Mean low temperature in Sep/Oct/Nov (Rank): 93
+Mean low temperature in Sep/Oct/Nov (Percentile): 62
+PW Density (r=1mi) [GHS-POP] (Rank): 26
+PW Density (r=1mi) [GHS-POP] (Percentile): 67
+PW Density (r=2km) [GHS-POP] (Rank): 28
+PW Density (r=2km) [GHS-POP] (Percentile): 67
+PW Density (r=4km) [GHS-POP] (Rank): 24
+PW Density (r=4km) [GHS-POP] (Percentile): 68
+PW Density (r=8km) [GHS-POP] (Rank): 26
+PW Density (r=8km) [GHS-POP] (Percentile): 61
+PW Density (r=16km) [GHS-POP] (Rank): 22
+PW Density (r=16km) [GHS-POP] (Percentile): 62
+PW Density (r=32km) [GHS-POP] (Rank): 12
+PW Density (r=32km) [GHS-POP] (Percentile): 67
+PW Density (r=64km) [GHS-POP] (Rank): 5
+PW Density (r=64km) [GHS-POP] (Percentile): 76
+PW Median Density (r=1km) [GHS-POP] (Rank): 98
+PW Median Density (r=1km) [GHS-POP] (Percentile): 21
+Mean high temperature in summer (Rank): 28
+Mean high temperature in summer (Percentile): 69
+Mean high temperature in winter (Rank): 81
+Mean high temperature in winter (Percentile): 58
+Mean high temperature in fall (Rank): 48
+Mean high temperature in fall (Percentile): 63
+Mean high temperature in spring (Rank): 6
+Mean high temperature in spring (Percentile): 80

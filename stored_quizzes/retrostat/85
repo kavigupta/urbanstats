@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Hearing disability %",
+      "stat_path": "HEARING_cdc_2",
+      "question": "higher % of adults with a hearing disability",
+      "longname_a": "VA-08 (2023), USA",
+      "longname_b": "KY-06 (2023), USA",
+      "stat_a": 0.040380517919059424,
+      "stat_b": 0.07809425251504061
+    },
+    "b": {
+      "stat_column": "Population",
+      "stat_path": "population",
+      "question": "higher population",
+      "longname_a": "Guatemala",
+      "longname_b": "Singapore",
+      "stat_a": 17347549.940701332,
+      "stat_b": 5909782.988233546
+    },
+    "a_ease": 0.6544071020925808,
+    "b_ease": 0.25421010425020046
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High temperature Above 90\u00b0F %",
+      "stat_path": "days_above_90_4",
+      "question": "higher % of hot days (days with high temp over 90\u00b0F, population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "CA-02 (2023), USA",
+      "longname_b": "PA-10 (2023), USA",
+      "stat_a": 0.01933265518504018,
+      "stat_b": 0.04434879396470047
+    },
+    "b": {
+      "stat_column": "Pedestrian/Cyclist Fatalities Per Capita Per Year",
+      "stat_path": "traffic_fatalities_ped_last_decade_per_capita",
+      "question": "higher pedestrian/cyclist fatalities per capita between 2013 and 2022!TOOLTIP pedestrian and cyclist fatalities in the region, divided by the population of the region",
+      "longname_a": "Duluth MN-Superior WI Media Market, USA",
+      "longname_b": "Chico-Redding CA Media Market, USA",
+      "stat_a": 8.232543479590348e-06,
+      "stat_b": 3.623294275779446e-05
+    },
+    "a_ease": 0.2550120288692863,
+    "b_ease": 0.6562318840579711
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household income < C$50k %",
+      "stat_path": "household_income_under_50cad",
+      "question": "higher % of households that have household income under C$50k",
+      "longname_a": "Halifax County, Nova Scotia, Canada",
+      "longname_b": "Halton Regional municipality, Ontario, Canada",
+      "stat_a": 0.2575219032166068,
+      "stat_b": 0.12338780092303851
+    },
+    "b": {
+      "stat_column": "Mining, quarrying, and oil and gas extraction %",
+      "stat_path": "industry_mining,_quarrying,_and_oil_and_gas_extraction",
+      "question": "higher % of workers employed in the mining, quarrying, and oil/gas extraction industries!TOOLTIP mining, quarrying, and oil and gas extraction",
+      "longname_a": "Kitchener - Cambridge - Waterloo CMA, ON, Canada",
+      "longname_b": "Ponce MSA, PR, USA",
+      "stat_a": 0.0002894503847987466,
+      "stat_b": 0.0009880075293622285
+    },
+    "a_ease": 0.7273456295108259,
+    "b_ease": 0.3011397720455909
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km) Change (2000-2020)",
+      "stat_path": "ad_1_change_2000",
+      "question": "higher % increase in population-weighted density (r=1km) from 2000 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Greenville-New Bern-Washington NC Media Market, USA",
+      "longname_b": "Lubbock TX Media Market, USA",
+      "stat_a": -0.1457111151056656,
+      "stat_b": 0.0701408553950279
+    },
+    "b": {
+      "stat_column": "Commute Work From Home %",
+      "stat_path": "transportation_means_worked_at_home",
+      "question": "higher % of people who work from home",
+      "longname_a": "Memphis [Urban Area], TN-MS-AR, USA",
+      "longname_b": "Mission Viejo-Lake Forest-Laguna Niguel [Urban Area], CA, USA",
+      "stat_a": 0.058873952118009616,
+      "stat_b": 0.17914210262671282
+    },
+    "a_ease": 0.37971014492753624,
+    "b_ease": 0.7882919005613472
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=4km)",
+      "stat_path": "ad_4",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Surat Urban Center, India",
+      "longname_b": "Abidjan Urban Center, Ivory Coast",
+      "stat_a": 54465.58842344467,
+      "stat_b": 13748.518991024195
+    },
+    "b": {
+      "stat_column": "Vacancy %",
+      "stat_path": "vacancy",
+      "question": "higher % of units that are vacant!TOOLTIP Vacancy is the % of housing units that were not occupied on April 1, 2020 (census night). This includes vacation homes but does *not* include units that were not occupied due to the pandemic, the census attempted to account for this.",
+      "longname_a": "MO-02 (2023), USA",
+      "longname_b": "AZ-02 (2023), USA",
+      "stat_a": 0.05353293302369475,
+      "stat_b": 0.20955914880839074
+    },
+    "a_ease": 0.7971014492753623,
+    "b_ease": 0.3411513859275053
+  }
+]

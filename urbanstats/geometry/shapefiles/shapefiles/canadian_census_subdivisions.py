@@ -1,16 +1,18 @@
-from permacache import permacache
+from permacache import permacache, stable_hash
 
+from urbanstats.data.wikipedia.wikidata_sourcer import CANADA_WIKIDATA_SOURCER
 from urbanstats.geometry.shapefiles.load_canada_shapefile import load_canadian_shapefile
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
+from urbanstats.geometry.shapefiles.row_functions import column
+from urbanstats.geometry.shapefiles.shapefile import join_layers, make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.canadian_census_divisions import (
     CANADIAN_CENSUS_DIVISIONS,
-    subdivision_longname,
+    CensusDivisionName,
 )
 from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
     SUBNATIONAL_REGIONS,
 )
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import canada_domestic_provider
 
 cdtype = {
@@ -85,45 +87,56 @@ cdtype = {
 
 @permacache(
     "urbanstats/geometry/shapefiles/shapefiles/canadian_census_subdivisions/load_csd_shapefile",
+    key_function=dict(
+        countries=stable_hash,
+        subnationals=stable_hash,
+        division_names=stable_hash,
+        division_identified=stable_hash,
+    ),
 )
-def load_csd_shapefile():
+def load_csd_shapefile(countries, subnationals, division_names, division_identified):
     data = load_canadian_shapefile(
-        "named_region_shapefiles/canada/lcsd000b21a_e.zip",
-        COUNTRIES,
-        SUBNATIONAL_REGIONS,
+        "named_region_shapefiles/canada/lcsd000b21a_e.zip", countries, subnationals
     )
-    cd = CANADIAN_CENSUS_DIVISIONS.path()
-    cdid_to_name = dict(zip(cd.CDUID, cd.apply(subdivision_longname, axis=1)))
+    cd = join_layers(division_names, division_identified)
+    cdid_to_name = dict(zip(cd.scgc, cd.longname))
     data["division_longname"] = data.CSDUID.apply(lambda x: cdid_to_name[x[:4]])
     return data
 
 
-def census_subdivision_name(row):
-    name = row.CSDNAME
-    name = name.replace("  ", " ")
-    if not name.startswith("Division"):
-        name += " " + cdtype[row.CSDTYPE]
-    return name
-
-
-CANADIAN_CENSUS_SUBDIVISIONS = Shapefile(
-    hash_key="canadian_census_subdivisions_3",
+CANADIAN_CENSUS_SUBDIVISIONS = make_shapefile(
+    geometry_key="canadian_census_subdivisions_3",
     path=load_csd_shapefile,
-    shortname_extractor=census_subdivision_name,
-    longname_extractor=lambda row: census_subdivision_name(row)
+    path_inputs=(
+        COUNTRIES.geometry,
+        SUBNATIONAL_REGIONS.geometry,
+        CANADIAN_CENSUS_DIVISIONS.names,
+        CANADIAN_CENSUS_DIVISIONS.identified,
+    ),
+    shortname_extractor=CensusDivisionName("CSDNAME", "CSDTYPE", cdtype).replace(
+        "\x92", "'"
+    ),
+    cleanname_extractor=column("CSDNAME").replace("  ", " ").replace("\x92", "'"),
+    longname_extractor=CensusDivisionName("CSDNAME", "CSDTYPE", cdtype).replace(
+        "\x92", "'"
+    )
     + ", "
-    + row.division_longname,
+    + column("division_longname"),
+    additional_columns_computer={"scgc": column("CSDUID")},
     filter=lambda x: True,
     meta=dict(
         type="CA Census Subdivision",
         source="StatCan",
         type_category="Census",
     ),
+    does_overlap_self=False,
     universe_provider=canada_domestic_provider(),
-    subset_masks={"Canada": SelfSubset()},
+    source_countries=InCountry("Canada"),
     abbreviation="CSUB",
     data_credit=dict(
         linkText="Canadian Census",
         link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lcsd000a21a_e.zip",
     ),
+    include_in_syau=True,
+    wikidata_sourcer=CANADA_WIKIDATA_SOURCER,
 )

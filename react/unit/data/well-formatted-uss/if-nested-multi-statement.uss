@@ -1,0 +1,11 @@
+if (x) {
+    if (y) {
+        z = 4;
+        w = 5
+    } else {
+        condition (a)
+        z = 5
+    }
+} else {
+    z = 4
+}

@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Cancer (excluding skin cancer) %",
+      "stat_path": "CANCER_cdc_2",
+      "question": "higher % of adults with cancer (excluding skin cancer)",
+      "longname_a": "Akron [Urban Area], OH, USA",
+      "longname_b": "Kansas City [Urban Area], MO-KS, USA",
+      "stat_a": 0.07069850428152956,
+      "stat_b": 0.06352043132238804
+    },
+    "b": {
+      "stat_column": "Binge drinking among adults %",
+      "stat_path": "BINGE_cdc_2",
+      "question": "higher % of adults who binge drink",
+      "longname_a": "Honolulu HI Media Market, USA",
+      "longname_b": "Birmingham (Anniston & Tuscaloosa) AL Media Market, USA",
+      "stat_a": 0.17631062722612464,
+      "stat_b": 0.1485544518353689
+    },
+    "a_ease": 0.651440618411806,
+    "b_ease": 0.24497991967871485
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean sunny hours",
+      "stat_path": "hours_sunny_4",
+      "question": "!FULL Which has more hours of sun per day on average? (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Benin",
+      "longname_b": "Greece",
+      "stat_a": 4.013404684913423,
+      "stat_b": 7.525427045492442
+    },
+    "b": {
+      "stat_column": "High School %",
+      "stat_path": "education_high_school",
+      "question": "higher % of people who have at least a high school diploma",
+      "longname_a": "CA-17 (2023), USA",
+      "longname_b": "WA-04 (2023), USA",
+      "stat_a": 0.9197322905006847,
+      "stat_b": 0.8207795699068021
+    },
+    "a_ease": 0.37315530569219957,
+    "b_ease": 0.7744916820702403
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High blood pressure %",
+      "stat_path": "BPHIGH_cdc_2",
+      "question": "higher % of adults with high blood pressure",
+      "longname_a": "Indio-Palm Desert-Palm Springs [Urban Area], CA, USA",
+      "longname_b": "Charleston [Urban Area], SC, USA",
+      "stat_a": 0.3271549648756422,
+      "stat_b": 0.30337539639970373
+    },
+    "b": {
+      "stat_column": "PW Mean Elevation",
+      "stat_path": "gridded_elevation",
+      "question": "higher population-weighted mean elevation !TOOLTIP Population weighted elevation/hilliness statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Semarang Urban Center, Indonesia",
+      "longname_b": "Douala Urban Center, Cameroon",
+      "stat_a": 112.22282409667969,
+      "stat_b": 24.922027587890625
+    },
+    "a_ease": 0.22453703703703703,
+    "b_ease": 0.6247848537005164
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km)",
+      "stat_path": "ad_1",
+      "question": "higher population-weighted density (r=1km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Minneapolis-St. Paul MN Media Market, USA",
+      "longname_b": "Youngstown OH Media Market, USA",
+      "stat_a": 1172.4959395806559,
+      "stat_b": 596.0863418256371
+    },
+    "b": {
+      "stat_column": "Household income < C$50k %",
+      "stat_path": "household_income_under_50cad",
+      "question": "higher % of households that have household income under C$50k",
+      "longname_a": "Montr\u00e9al Population Center, QC, Canada",
+      "longname_b": "Edmonton Population Center, AB, Canada",
+      "stat_a": 0.30263948127721696,
+      "stat_b": 0.2019838498026326
+    },
+    "a_ease": 0.8151260504201681,
+    "b_ease": 0.41321152494729446
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Private Insurance %",
+      "stat_path": "insurance_coverage_private",
+      "question": "higher % of people who are on private insurance!TOOLTIP The denominator for this statistic is the the total number of adults, including those without health insurance coverage.",
+      "longname_a": "Sacramento County, California, USA",
+      "longname_b": "Brazoria County, Texas, USA",
+      "stat_a": 0.675810201500582,
+      "stat_b": 0.7551742271011127
+    },
+    "b": {
+      "stat_column": "Spanish at Home %",
+      "stat_path": "language_spanish",
+      "question": "higher % of people who speak spanish at home",
+      "longname_a": "Birmingham-Hoover MSA, AL, USA",
+      "longname_b": "Chicago-Naperville-Elgin MSA, IL-IN-WI, USA",
+      "stat_a": 0.03714571113157755,
+      "stat_b": 0.17231450310662882
+    },
+    "a_ease": 0.4123249299719888,
+    "b_ease": 0.8151571164510166
+  }
+]

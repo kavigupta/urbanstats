@@ -115,7 +115,7 @@ def compute_merged_table():
 
     full_table = full_table.sort_values(["start", "end", "state", "district"])
     full_table = full_table[full_table.state != "DC"]
-    assert (full_table.geometry != None).all()
+    assert (full_table.geometry is not None).all()
     full_table = full_table.reset_index(drop=True)
 
     print("tables sorted")

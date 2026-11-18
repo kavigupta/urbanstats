@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean sunny hours",
+      "stat_path": "hours_sunny_4",
+      "question": "!FULL Which has more hours of sun per day on average? (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Douala Urban Center, Cameroon",
+      "longname_b": "Cape Town Urban Center, South Africa",
+      "stat_a": 1.9658945149958003,
+      "stat_b": 7.3414170531357845
+    },
+    "b": {
+      "stat_column": "Binge drinking among adults %",
+      "stat_path": "BINGE_cdc_2",
+      "question": "higher % of adults who binge drink",
+      "longname_a": "Roanoke MSA, VA, USA",
+      "longname_b": "Amarillo MSA, TX, USA",
+      "stat_a": 0.16058267956998146,
+      "stat_b": 0.18575305307086526
+    },
+    "a_ease": 0.28044280442804426,
+    "b_ease": 0.6847475832438239
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High School %",
+      "stat_path": "education_high_school",
+      "question": "higher % of people who have at least a high school diploma",
+      "longname_a": "CA-22 (2023), USA",
+      "longname_b": "IA-02 (2023), USA",
+      "stat_a": 0.6616593839904508,
+      "stat_b": 0.9388511526488686
+    },
+    "b": {
+      "stat_column": "Self-care disability %",
+      "stat_path": "SELFCARE_cdc_2",
+      "question": "higher % of adults with a self-care disability",
+      "longname_a": "Montgomery MSA, AL, USA",
+      "longname_b": "Seattle-Tacoma-Bellevue MSA, WA, USA",
+      "stat_a": 0.049318588678684265,
+      "stat_b": 0.027845212207763564
+    },
+    "a_ease": 0.35286009648518263,
+    "b_ease": 0.7643004824259132
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Bachelor's degree [25-64] %",
+      "stat_path": "education_ugrad_canada",
+      "question": "higher % of people between 25 and 64 who have at least an undergrad degree",
+      "longname_a": "Vaughan City, York Regional municipality, Ontario, Canada",
+      "longname_b": "Saskatoon City, Division No. 11, Saskatchewan, Canada",
+      "stat_a": 0.45766416975137714,
+      "stat_b": 0.3708730873087309
+    },
+    "b": {
+      "stat_column": "Undergrad STEM %",
+      "stat_path": "education_field_stem",
+      "question": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
+      "longname_a": "Lexington Urban Center, USA",
+      "longname_b": "Fresno Urban Center, USA",
+      "stat_a": 0.20062834814517497,
+      "stat_b": 0.1080165457262367
+    },
+    "a_ease": 0.7909658817876021,
+    "b_ease": 0.3748657357679914
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built pre-1970",
+      "stat_path": "year_built_1969_or_earlier",
+      "question": "higher % of housing units built before 1970",
+      "longname_a": "Georgia, USA",
+      "longname_b": "Iowa, USA",
+      "stat_a": 0.20781836973135318,
+      "stat_b": 0.4983483760926741
+    },
+    "b": {
+      "stat_column": "Millennial %",
+      "stat_path": "generation_millenial",
+      "question": "higher % of people who are millennials!TOOLTIP born between 1982 and 1996",
+      "longname_a": "Oxnard-San Buenaventura (Ventura) [Urban Area], CA, USA",
+      "longname_b": "Barnstable Town [Urban Area], MA, USA",
+      "stat_a": 0.22050229874136804,
+      "stat_b": 0.1478467342898466
+    },
+    "a_ease": 0.39692455550216243,
+    "b_ease": 0.8005763688760807
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Citizen by Naturalization %",
+      "stat_path": "citizenship_citizen_by_naturalization",
+      "question": "higher % of residents who are citizens by naturalization",
+      "longname_a": "Norfolk-Portsmouth-Newport News VA Media Market, USA",
+      "longname_b": "QuincyIl-Hannibal MO-Keokuk IA Media Market, USA",
+      "stat_a": 0.037782225445599185,
+      "stat_b": 0.008834582078752842
+    },
+    "b": {
+      "stat_column": "Commute Bike %",
+      "stat_path": "transportation_means_bike",
+      "question": "higher % of people who commute by bike",
+      "longname_a": "Lancaster MSA, PA, USA",
+      "longname_b": "Gainesville MSA, FL, USA",
+      "stat_a": 0.008288646821709924,
+      "stat_b": 0.023908012196465833
+    },
+    "a_ease": 0.8487084870848709,
+    "b_ease": 0.3948339483394834
+  }
+]

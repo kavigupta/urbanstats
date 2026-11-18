@@ -2,6 +2,7 @@ import React, { CSSProperties, ReactNode, useContext } from 'react'
 import { BarLoader, MoonLoader } from 'react-spinners'
 
 import { useColors } from '../page_template/colors'
+import { zIndex } from '../utils/zIndex'
 
 import { Navigator } from './Navigator'
 
@@ -31,11 +32,9 @@ export function SubsequentLoad(): ReactNode {
         case 'quickLoad':
             return <QuickLoad />
         case 'longLoad':
-            return <LongLoad />
+            return <LongLoad testId="subsequentLongLoad" />
     }
 }
-
-const zIndex = 10000 // Must be greater than leaflet
 
 function QuickLoad(): ReactNode {
     const colors = useColors()
@@ -45,13 +44,13 @@ function QuickLoad(): ReactNode {
         left: '0px',
         right: '0px',
         width: undefined,
-        zIndex,
+        zIndex: zIndex.pageLoading,
     }
 
     return <BarLoader color={colors.textMain} cssOverride={style} data-test-id="quickLoad" />
 }
 
-export function LongLoad(): ReactNode {
+export function LongLoad({ containerStyleOverride, testId }: { containerStyleOverride?: CSSProperties, testId?: string }): ReactNode {
     const colors = useColors()
     const containerStyle: CSSProperties = {
         position: 'fixed',
@@ -59,8 +58,9 @@ export function LongLoad(): ReactNode {
         right: 0,
         top: 0,
         bottom: 0,
-        zIndex,
+        zIndex: zIndex.pageLoading,
         backgroundColor: `${colors.background}80`,
+        ...containerStyleOverride,
     }
     const width = '78px'
     const loaderStyle: CSSProperties = {
@@ -71,8 +71,21 @@ export function LongLoad(): ReactNode {
         left: `calc(50% - ${width} / 2)`,
     }
     return (
-        <div style={containerStyle} data-test-id="longLoad">
+        <div style={containerStyle} data-test-id={testId ?? 'longLoad'}>
             <MoonLoader color={colors.textMain} cssOverride={loaderStyle} />
         </div>
+    )
+}
+
+export function RelativeLoader({ loading }: { loading: boolean }): ReactNode {
+    return (
+        <LongLoad containerStyleOverride={{
+            position: 'absolute',
+            transition: 'opacity 0.25s',
+            opacity: loading ? 1 : 0,
+            pointerEvents: 'none',
+            zIndex: zIndex.mapLoading,
+        }}
+        />
     )
 }

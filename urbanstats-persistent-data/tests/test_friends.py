@@ -1,0 +1,431 @@
+from .utils import (
+    associate_email,
+    check_infinite_results,
+    check_summary_stats,
+    check_todays_score_for,
+    create_identity,
+    dissociate_email,
+    send_friend_request,
+    send_friend_request_with_email,
+    store_infinite_stats,
+    store_juxtastat_stats,
+    unfriend_user,
+    unfriend_user_with_email,
+)
+
+identity_a = create_identity("a", "aa")
+identity_b = create_identity("b", "bb")
+identity_c = create_identity("c", "cc")
+
+
+def test_friends(client):
+    send_friend_request(client, identity_a, "b")
+    send_friend_request(client, identity_b, "a")
+
+    result = check_todays_score_for(client, identity_a, ["b"], "1", "juxtastat")
+    assert result == {"results": [{"corrects": None, "friends": True}]}
+
+    # Store a score for juxtastat
+    store_juxtastat_stats(client, identity_a, 1, [True, False, False, True, True])
+
+    # Now b should be able to see a's score
+    result = check_todays_score_for(client, identity_b, ["a"], "1", "juxtastat")
+    assert result == {
+        "results": [{"corrects": [True, False, False, True, True], "friends": True}]
+    }
+
+
+def test_unfriend(client):
+    # Send friend request from a to b
+    send_friend_request(client, identity_a, "b")
+
+    # Send friend request from b to a
+    send_friend_request(client, identity_b, "a")
+
+    # Unfriend: a unfriends b
+    unfriend_user(client, identity_a, "b")
+
+    # Now, b should not be able to see a's score
+    result = check_todays_score_for(client, identity_b, ["a"], "1", "juxtastat")
+    assert result == {
+        "results": [
+            {
+                "friends": False,
+            }
+        ]
+    }
+
+    # But a can still see b since b has friended them
+    result = check_todays_score_for(client, identity_a, ["b"], "1", "juxtastat")
+    assert result == {"results": [{"corrects": None, "friends": True}]}
+
+
+def test_friends_infinite(client):
+    result = check_infinite_results(client, identity_b, ["a"], "abc", 1)
+    assert result == {
+        "results": [
+            {
+                "friends": False,
+            }
+        ]
+    }
+
+    send_friend_request(client, identity_a, "b")
+
+    result = check_infinite_results(client, identity_b, ["a"], "abc", 1)
+    assert result == {
+        "results": [
+            {
+                "forThisSeed": None,
+                "friends": True,
+                "maxScore": None,
+                "maxScoreSeed": None,
+                "maxScoreVersion": None,
+            }
+        ]
+    }
+
+    # Store a score for infinite
+    store_infinite_stats(client, identity_a, "abc", 1, [True, False, False, False])
+
+    # Now b should be able to see a's score
+    result = check_infinite_results(client, identity_b, ["a"], "abc", 1)
+    assert result == {
+        "results": [
+            {
+                "forThisSeed": 1,
+                "maxScore": 1,
+                "maxScoreSeed": "abc",
+                "maxScoreVersion": 1,
+                "friends": True,
+            }
+        ]
+    }
+
+
+def test_friends_transitive(client):
+    # associate a + b
+    associate_email(client, identity_a, "email@gmail.com")
+    associate_email(client, identity_b, "email@gmail.com")
+
+    # friend from c to a
+    send_friend_request(client, identity_c, "a")
+
+    # post score for b
+    store_juxtastat_stats(client, identity_b, 1, [True, False, False, True, True])
+
+    # friend from b to c
+    send_friend_request(client, identity_b, "c")
+
+    # get scores for a from c
+    result = check_todays_score_for(client, identity_c, ["a"], "1", "juxtastat")
+    assert result == {
+        "results": [{"corrects": [True, False, False, True, True], "friends": True}]
+    }
+
+
+def test_friends_transitive_infinite(client):
+    # associate a + b
+    associate_email(client, identity_a, "email@gmail.com")
+    associate_email(client, identity_b, "email@gmail.com")
+
+    # friend from c to a
+    send_friend_request(client, identity_c, "a")
+
+    # post score for b
+    store_infinite_stats(client, identity_b, "abc", 1, [True, False, False, False])
+
+    # friend from b to c
+    send_friend_request(client, identity_b, "c")
+
+    # get scores for a from c
+    result = check_infinite_results(client, identity_c, ["a"], "abc", 1)
+    assert result == {
+        "results": [
+            {
+                "forThisSeed": 1,
+                "friends": True,
+                "maxScore": 1,
+                "maxScoreSeed": "abc",
+                "maxScoreVersion": 1,
+            }
+        ]
+    }
+
+    # post score for a
+    store_infinite_stats(client, identity_a, "abc", 1, [True, True, False, False])
+
+    # get scores for a from c
+    result = check_infinite_results(client, identity_c, ["a"], "abc", 1)
+    assert result == {
+        "results": [
+            {
+                "forThisSeed": 2,
+                "friends": True,
+                "maxScore": 2,
+                "maxScoreSeed": "abc",
+                "maxScoreVersion": 1,
+            }
+        ]
+    }
+
+
+def test_friends_with_emails(client):
+    # Associate users with emails
+    associate_email(client, identity_a, "alice@example.com")
+    associate_email(client, identity_b, "bob@example.com")
+    associate_email(client, identity_c, "charlie@example.com")
+
+    # Send friend request from a to b using email
+    send_friend_request_with_email(client, identity_a, "bob@example.com")
+
+    # Ba can see a's score
+    result = check_todays_score_for(client, identity_b, ["a"], "1", "juxtastat")
+    assert result == {"results": [{"corrects": None, "friends": True}]}
+
+    # Send friend request from b to a using email
+    send_friend_request_with_email(client, identity_b, "alice@example.com")
+
+    # A can se b's score
+    result = check_todays_score_for(client, identity_a, ["b"], "1", "juxtastat")
+    assert result == {"results": [{"corrects": None, "friends": True}]}
+
+
+def test_unfriend_with_emails(client):
+    # Associate users with emails
+    associate_email(client, identity_a, "alice@example.com")
+    associate_email(client, identity_b, "bob@example.com")
+
+    # Send friend request from a to b using email
+    send_friend_request_with_email(client, identity_a, "bob@example.com")
+
+    # Send friend request from b to a using email
+    send_friend_request_with_email(client, identity_b, "alice@example.com")
+
+    # Unfriend: a unfriends b using email
+    unfriend_user_with_email(client, identity_a, "bob@example.com")
+
+    # Now, b should not be able to see a's score
+    result = check_todays_score_for(client, identity_b, ["a"], "1", "juxtastat")
+    assert result == {
+        "results": [
+            {
+                "friends": False,
+            }
+        ]
+    }
+
+    # But a can still see b since b has friended them
+    result = check_todays_score_for(client, identity_a, ["b"], "1", "juxtastat")
+    assert result == {"results": [{"corrects": None, "friends": True}]}
+
+
+def test_friends_infinite_with_emails(client):
+    # Associate users with emails
+    associate_email(client, identity_a, "alice@example.com")
+    associate_email(client, identity_b, "bob@example.com")
+
+    # Initially, b cannot see a's infinite results
+    result = check_infinite_results(client, identity_b, ["a"], "abc", 1)
+    assert result == {
+        "results": [
+            {
+                "friends": False,
+            }
+        ]
+    }
+
+    # Send friend request from a to b using email
+    send_friend_request_with_email(client, identity_a, "bob@example.com")
+
+    # Now b can see a's infinite results (but no score yet)
+    result = check_infinite_results(client, identity_b, ["a"], "abc", 1)
+    assert result == {
+        "results": [
+            {
+                "forThisSeed": None,
+                "friends": True,
+                "maxScore": None,
+                "maxScoreSeed": None,
+                "maxScoreVersion": None,
+            }
+        ]
+    }
+
+    # Store a score for infinite
+    store_infinite_stats(client, identity_a, "abc", 1, [True, False, False, False])
+
+    # Now b should be able to see a's score
+    result = check_infinite_results(client, identity_b, ["a"], "abc", 1)
+    assert result == {
+        "results": [
+            {
+                "forThisSeed": 1,
+                "maxScore": 1,
+                "maxScoreSeed": "abc",
+                "maxScoreVersion": 1,
+                "friends": True,
+            }
+        ]
+    }
+
+
+def test_friends_disassociate_from_email(client):
+    # Associate users with emails
+    associate_email(client, identity_a, "alice@example.com")
+    associate_email(client, identity_b, "bob@example.com")
+
+    # Send friend request from a to b using email
+    send_friend_request_with_email(client, identity_a, "bob@example.com")
+
+    # Send friend request from b to a using email
+    send_friend_request_with_email(client, identity_b, "alice@example.com")
+
+    # Verify they can see each other's scores
+    result = check_todays_score_for(client, identity_a, ["b"], "1", "juxtastat")
+    assert result == {"results": [{"corrects": None, "friends": True}]}
+
+    result = check_todays_score_for(client, identity_b, ["a"], "1", "juxtastat")
+    assert result == {"results": [{"corrects": None, "friends": True}]}
+
+    # Disassociate a from their email
+    dissociate_email(client, identity_a)
+
+    # Now b should not be able to see a's score since the friendship was based on email
+    result = check_todays_score_for(client, identity_b, ["a"], "1", "juxtastat")
+    assert result == {
+        "results": [
+            {
+                "friends": False,
+            }
+        ]
+    }
+
+    # But a can still see b since b is still associated with their email
+    result = check_todays_score_for(client, identity_a, ["b"], "1", "juxtastat")
+    assert result == {"results": [{"friends": False}]}
+
+
+def test_unfriend_after_email_association(client):
+    # Associate only user b with email initially
+    associate_email(client, identity_b, "bob@example.com")
+
+    # Send friend request from a to b (a is not associated with email yet)
+    send_friend_request(client, identity_a, "b")
+
+    # Send friend request from b to a using email
+    send_friend_request_with_email(client, identity_b, "a")
+
+    # Verify they can see each other's scores
+    result = check_todays_score_for(client, identity_a, ["b"], "1", "juxtastat")
+    assert result == {"results": [{"corrects": None, "friends": True}]}
+
+    result = check_todays_score_for(client, identity_b, ["a"], "1", "juxtastat")
+    assert result == {"results": [{"corrects": None, "friends": True}]}
+
+    # Now associate a with an email
+    associate_email(client, identity_a, "alice@example.com")
+
+    # Verify they can still see each other's scores
+    result = check_todays_score_for(client, identity_a, ["b"], "1", "juxtastat")
+    assert result == {"results": [{"corrects": None, "friends": True}]}
+
+    result = check_todays_score_for(client, identity_b, ["a"], "1", "juxtastat")
+    assert result == {"results": [{"corrects": None, "friends": True}]}
+
+    # Now a should be able to unfriend b successfully
+    unfriend_user(client, identity_a, "b")
+
+    # Verify b can no longer see a's score
+    result = check_todays_score_for(client, identity_b, ["a"], "1", "juxtastat")
+    assert result == {
+        "results": [
+            {
+                "friends": False,
+            }
+        ]
+    }
+
+    # But a can still see b since b has friended them
+    result = check_todays_score_for(client, identity_a, ["b"], "1", "juxtastat")
+    assert result == {"results": [{"corrects": None, "friends": True}]}
+
+
+def test_friends_infinite_across_associated_devices(client):
+    # a + b are the same person on two devices
+    associate_email(client, identity_a, "email@gmail.com")
+    associate_email(client, identity_b, "email@gmail.com")
+
+    # friend from c to a
+    response = client.post(
+        "/juxtastat/friend_request", headers=identity_c, json={"requestee": "a"}
+    )
+    assert response.status_code == 204
+
+    # friend from b to c
+    response = client.post(
+        "/juxtastat/friend_request", headers=identity_b, json={"requestee": "c"}
+    )
+    assert response.status_code == 204
+
+    # The device that got less far reports first
+    response = client.post(
+        "/juxtastat_infinite/store_user_stats",
+        headers=identity_a,
+        json={"seed": "abc", "version": 1, "corrects": [True, False]},
+    )
+    assert response.status_code == 204
+
+    response = client.post(
+        "/juxtastat_infinite/store_user_stats",
+        headers=identity_b,
+        json={"seed": "abc", "version": 1, "corrects": [True, True, True, False]},
+    )
+    assert response.status_code == 204
+
+    # c sees the better of the two runs, not whichever row the planner returns first
+    response = client.post(
+        "/juxtastat/infinite_results",
+        headers=identity_c,
+        json={"requesters": ["a"], "seed": "abc", "version": 1},
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "results": [
+            {
+                "forThisSeed": 3,
+                "friends": True,
+                "maxScore": 3,
+                "maxScoreSeed": "abc",
+                "maxScoreVersion": 1,
+            }
+        ]
+    }
+
+
+def test_friends_summary_stats_across_associated_devices(client):
+    # a + b are the same person on two devices
+    associate_email(client, identity_a, "email@gmail.com")
+    associate_email(client, identity_b, "email@gmail.com")
+
+    send_friend_request(client, identity_c, "a")
+    send_friend_request(client, identity_b, "c")
+
+    for day in (1, 2, 3):
+        store_juxtastat_stats(client, identity_a, day, [True, True, True, False, False])
+    # Day 2 replayed on the other device, badly
+    store_juxtastat_stats(client, identity_b, 2, [True, False, False, False, False])
+
+    # Day 2 counts once, at its lowest score, so it breaks the streak
+    result = check_summary_stats(client, identity_c, ["a"], "juxtastat")
+    assert result == {
+        "results": [
+            {
+                "friends": True,
+                "meanScore": 2.33,
+                "numPlays": 3,
+                "currentStreak": 1,
+                "maxStreak": 1,
+            }
+        ]
+    }

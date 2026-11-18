@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Uninsured %",
+      "stat_path": "insurance_coverage_none",
+      "question": "higher % of people who are uninsured",
+      "longname_a": "Salisbury MD Media Market, USA",
+      "longname_b": "Dallas-Ft.Worth TX Media Market, USA",
+      "stat_a": 0.09268093256672749,
+      "stat_b": 0.20900682761636055
+    },
+    "b": {
+      "stat_column": "Divorced %",
+      "stat_path": "marriage_divorced",
+      "question": "higher % of people who are divorced",
+      "longname_a": "Fraser Valley Regional district, British Columbia, Canada",
+      "longname_b": "Washtenaw County, Michigan, USA",
+      "stat_a": 0.11043728056176191,
+      "stat_b": 0.08122826648577196
+    },
+    "a_ease": 0.7462257368799425,
+    "b_ease": 0.3407585791691752
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Health care and social assistance %",
+      "stat_path": "industry_health_care_and_social_assistance",
+      "question": "higher % of workers employed in the health care and social assistance industry!TOOLTIP hospitals, nursing care facilities, offices of physicians, dentists, day care centers, etc.",
+      "longname_a": "San Francisco-Oakland-San Jose CA Media Market, USA",
+      "longname_b": "Indianapolis IN Media Market, USA",
+      "stat_a": 0.12388576567502957,
+      "stat_b": 0.1437996561510725
+    },
+    "b": {
+      "stat_column": "Disability %",
+      "stat_path": "DISABILITY_cdc_2",
+      "question": "higher % of adults with a disability",
+      "longname_a": "Virginia Beach-Norfolk [Urban Area], VA, USA",
+      "longname_b": "Chattanooga [Urban Area], TN-GA, USA",
+      "stat_a": 0.26105324916628725,
+      "stat_b": 0.3349697906498049
+    },
+    "a_ease": 0.34795111430625447,
+    "b_ease": 0.7518710420264825
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "No internet access %",
+      "stat_path": "internet_no_access",
+      "question": "higher % of people who have no internet access",
+      "longname_a": "CA-01 (2023), USA",
+      "longname_b": "UT-04 (2023), USA",
+      "stat_a": 0.10890632791160987,
+      "stat_b": 0.03657470458369099
+    },
+    "b": {
+      "stat_column": "2BR Rent > $1500 %",
+      "stat_path": "rent_2br_over_1500",
+      "question": "higher % of units with 2br rent over $1500",
+      "longname_a": "Baltimore-Columbia-Towson MSA, MD, USA",
+      "longname_b": "Springfield MSA, MA, USA",
+      "stat_a": 0.44151662775946304,
+      "stat_b": 0.1424048724597485
+    },
+    "a_ease": 0.3333333333333333,
+    "b_ease": 0.7703703703703704
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Bachelor's degree [25-64] %",
+      "stat_path": "education_ugrad_canada",
+      "question": "higher % of people between 25 and 64 who have at least an undergrad degree",
+      "longname_a": "Montr\u00e9al Ville, Montr\u00e9al Territory, Quebec, Canada",
+      "longname_b": "Surrey City, Greater Vancouver Regional district, British Columbia, Canada",
+      "stat_a": 0.4368344520667432,
+      "stat_b": 0.33190503763752194
+    },
+    "b": {
+      "stat_column": "Born in us outside state %",
+      "stat_path": "birthplace_us_not_state",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "MN-07 (2023), USA",
+      "longname_b": "CA-22 (2023), USA",
+      "stat_a": 0.23648917157689067,
+      "stat_b": 0.07995555988360468
+    },
+    "a_ease": 0.597006332757628,
+    "b_ease": 0.1941747572815534
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Diagnosed diabetes %",
+      "stat_path": "DIABETES_cdc_2",
+      "question": "higher % of adults with diagnosed diabetes",
+      "longname_a": "Portland-Auburn ME Media Market, USA",
+      "longname_b": "Peoria-Bloomington IL Media Market, USA",
+      "stat_a": 0.0910483066357769,
+      "stat_b": 0.09865429528141087
+    },
+    "b": {
+      "stat_column": "Undergrad %",
+      "stat_path": "education_ugrad",
+      "question": "higher % of people who have at least an undergrad degree",
+      "longname_a": "Baton Rouge LA Media Market, USA",
+      "longname_b": "Youngstown OH Media Market, USA",
+      "stat_a": 0.2677117593396949,
+      "stat_b": 0.20478022332397672
+    },
+    "a_ease": 0.8525485436893204,
+    "b_ease": 0.4402050113895216
+  }
+]

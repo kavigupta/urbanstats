@@ -1,0 +1,173 @@
+import React, { ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
+
+import { QuantityTogether, renderInequality } from '../../components/unit-display'
+import { Colors } from '../../page_template/color-themes'
+import { useColors } from '../../page_template/colors'
+import { useUnitSettings } from '../../page_template/settings'
+import { ScaleInstance } from '../../urban-stats-script/constants/scale'
+import { HumanReadableName } from '../../utils/human-readable-element'
+import { reifyReact } from '../../utils/human-readable-name'
+import { StoredUnit } from '../../utils/quantity'
+import { rampColorer } from '../map-rendering'
+import { Keypoints } from '../ramps'
+import { Basemap } from '../settings/utils'
+
+interface EmpiricalRamp {
+    ramp: Keypoints
+    scale: ScaleInstance
+    interpolations: number[]
+    label: HumanReadableName
+    unit: StoredUnit
+    hasValuesClampedToStart: boolean
+    hasValuesClampedToEnd: boolean
+}
+
+export type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: HumanReadableName }
+
+export function styleFromBasemap(basemap: Basemap, colors: Colors): { backgroundColor: string, color?: string } {
+    return basemap.type === 'none'
+        ? { backgroundColor: basemap.backgroundColor, color: basemap.textColor }
+        : { backgroundColor: colors.background }
+}
+
+export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Basemap }): ReactNode {
+    const colors = useColors()
+    const unitSettings = useUnitSettings()
+
+    return (
+        <div style={{
+            width: '100%',
+            ...styleFromBasemap(props.basemap, colors),
+            padding: '10px',
+        }}
+        >
+            {props.ramp?.type === 'label' && (
+                <div className="centered_text user_input">
+                    {reifyReact(props.ramp.value, unitSettings)}
+                </div>
+            )}
+            {props.ramp?.type === 'ramp' && (
+                <RampColorbar ramp={props.ramp.value} />
+            )}
+        </div>
+    )
+}
+
+function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
+    const unitSettings = useUnitSettings()
+    // do this as a table with 10 columns, each 10% wide and
+    // 2 rows. Top one is the colorbar, bottom one is the
+    // labels.
+    const valuesRef = useRef<HTMLDivElement>(null)
+
+    const [shouldRotate, setShouldRotate] = useState(false)
+
+    useLayoutEffect(() => {
+        const values = valuesRef.current
+        if (values === null) {
+            return
+        }
+        const updateShouldRotate = (): void => {
+            setShouldRotate(
+                Array.from(values.querySelectorAll('.containerOfXticks')).some((container) => {
+                    const contained: HTMLDivElement | null = container.querySelector('.containedOfXticks')
+                    return contained !== null && contained.offsetWidth > (container as HTMLDivElement).offsetWidth * 0.9
+                }),
+            )
+        }
+        updateShouldRotate()
+        const resizeObserver = new ResizeObserver(updateShouldRotate)
+        resizeObserver.observe(values)
+        return () => {
+            resizeObserver.unobserve(values)
+        }
+    }, [ramp])
+
+    const swatches = useMemo(() => ramp.interpolations.map(rampColorer(ramp.ramp, ramp.scale)), [ramp])
+
+    const createValue = (stat: number, index: number): ReactNode => {
+        return (
+            <div className="centered_text">
+                <MaybeInequality ramp={ramp} index={index} />
+                <QuantityTogether value={stat} stored={ramp.unit} />
+            </div>
+        )
+    }
+
+    const width = `${100 / ramp.interpolations.length}%`
+
+    const valuesDivs = (rotate: boolean): ReactNode[] => ramp.interpolations.map((x, i) => (
+        <div
+            key={i}
+            style={{
+                width,
+                // height: rotate ? '2em' : '1em',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}
+            className="containerOfXticks"
+        >
+            <div
+                style={{
+                    // transform: rotate ? 'rotate(-45deg)' : 'none',
+                    writingMode: rotate ? 'sideways-lr' : 'horizontal-tb',
+                    padding: rotate ? '0.5em' : '0',
+                    // transformOrigin: 'center',
+                    // whiteSpace: 'nowrap',
+                    // fontSize: rotate ? '0.8em' : '1em',
+                }}
+                className="containedOfXticks"
+            >
+                {createValue(x, i)}
+            </div>
+        </div>
+    ))
+
+    return (
+        <div style={{ position: 'relative' }}>
+            <div style={{ display: 'flex', width: '100%' }}>
+                {
+                    ramp.interpolations.map((_, i) => (
+                        <div
+                            key={i}
+                            style={{
+                                width, height: '1em',
+                                backgroundColor: swatches[i],
+                                marginLeft: '1px',
+                                marginRight: '1px',
+                            }}
+                        >
+                        </div>
+                    ))
+                }
+            </div>
+            <div ref={valuesRef} style={{ position: 'absolute', top: 0, left: 0, display: 'flex', width: '100%', visibility: 'hidden' }}>{valuesDivs(false)}</div>
+            <div style={{ display: 'flex', width: '100%' }}>{valuesDivs(shouldRotate)}</div>
+            <div className="centered_text user_input">
+                {reifyReact(ramp.label, unitSettings)}
+            </div>
+        </div>
+    )
+}
+
+// Show an inequality if the data goes over the scale
+function MaybeInequality({ ramp, index }: { ramp: EmpiricalRamp, index: number }): ReactNode {
+    const scaleAscending = ramp.scale.inverse(0) < ramp.scale.inverse(1)
+    const isFirst = index === 0
+    const isLast = index === ramp.interpolations.length - 1
+    let prefix: string | undefined
+    if (isFirst && ramp.hasValuesClampedToStart) {
+        prefix = renderInequality(ramp.scale.inverse(0), ramp.unit, scaleAscending ? 'leq' : 'geq')
+    }
+    else if (isLast && ramp.hasValuesClampedToEnd) {
+        prefix = renderInequality(ramp.scale.inverse(1), ramp.unit, scaleAscending ? 'geq' : 'leq')
+    }
+
+    return prefix !== undefined && (
+        <span>
+            {prefix}
+            {' '}
+        </span>
+    )
+}

@@ -6,7 +6,8 @@ import numpy as np
 import pandas as pd
 import requests
 import tqdm.auto as tqdm
-from permacache import permacache
+
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 
 accident_years = range(2010, 2022 + 1)
 
@@ -39,7 +40,9 @@ def is_pedestrian_plus(x):
     return x in pedestrian_plus
 
 
-@permacache("urbanstats/data/accidents/accidents_dataframe_for_year_3")
+@permacache_with_remapping_pickle(
+    "urbanstats/data/accidents/accidents_dataframe_for_year_3"
+)
 def accidents_dataframe_for_year(year):
     acc = pull_data(year, "accident")
     p = pedestrian_fatalities_by_case(year)
@@ -102,12 +105,12 @@ def pull_data(year, substr):
     return acc
 
 
-@permacache(
+@permacache_with_remapping_pickle(
     "urbanstats/data/accidents/accidents_by_region_4",
-    key_function=dict(shapefile=lambda x: x.hash_key, years=list),
+    key_function=dict(years=list),
 )
-def accidents_by_region(shapefile, years=accident_years):
-    sf = shapefile.load_file().reset_index(drop=True)
+def accidents_by_region(geometry, years=accident_years):
+    sf = geometry.load_rows().reset_index(drop=True)
     result = {}
     for year in tqdm.tqdm(years, desc="aggregating accidents"):
         joined = gpd.sjoin(sf[["geometry"]], accidents_dataframe_for_year(year))[

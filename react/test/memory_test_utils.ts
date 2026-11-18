@@ -1,5 +1,9 @@
+import type { Protocol } from 'devtools-protocol'
+
+import { cdpSessionWithSessionId } from './test_utils'
+
 // Since testcafe accumulates memory in the CI, each memory test must be run in its own test file
-export async function memoryUsage(t: TestController): Promise<number> {
+export async function memoryUsage(t: TestController, filterTargets: (target: Protocol.Target.TargetInfo) => boolean = () => true): Promise<number> {
     const cdpSession = await t.getCurrentCDPSession()
     await t.wait(5000) // Wait for page to load + stabilize
 
@@ -7,8 +11,7 @@ export async function memoryUsage(t: TestController): Promise<number> {
 
     for (const target of targetInfos) {
         const { sessionId } = await cdpSession.Target.attachToTarget({ ...target, flatten: true })
-        // @ts-expect-error -- sessionid
-        await cdpSession.HeapProfiler.collectGarbage(sessionId)
+        await cdpSessionWithSessionId(cdpSession, sessionId).HeapProfiler.collectGarbage()
     }
 
     // Wait for garbage collection
@@ -21,19 +24,22 @@ export async function memoryUsage(t: TestController): Promise<number> {
     const targetsWithMemory: (typeof targetInfos[number] & { bytes: number })[] = []
 
     for (const target of targetInfos) {
+        if (!filterTargets(target)) {
+            continue
+        }
+
         const { sessionId } = await cdpSession.Target.attachToTarget({ ...target, flatten: true })
 
-        // @ts-expect-error -- sessionid
-        const targetBytes = (await cdpSession.Runtime.getHeapUsage(sessionId)).usedSize
+        const targetBytes = (await cdpSessionWithSessionId(cdpSession, sessionId).Runtime.getHeapUsage()).usedSize
         targetsWithMemory.push({ ...target, bytes: targetBytes })
 
         bytesUsed += targetBytes
     }
 
-    console.warn(targetsWithMemory)
+    console.warn([...targetsWithMemory, bytesUsed])
     return bytesUsed
 }
 
-export const homePageSize = 13_000_000
-export const californiaArticleSize = 52_000_000
-export const searchSize = 36_000_000
+export const homePageSize = 10_000_000
+export const californiaArticleSize = 62_000_000
+export const searchSize = 24_000_000

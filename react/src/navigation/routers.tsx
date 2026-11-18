@@ -1,31 +1,30 @@
-import React, { CSSProperties, ReactNode, useContext, useLayoutEffect } from 'react'
+import React, { ReactNode, useContext, useLayoutEffect } from 'react'
 import { ZodError } from 'zod'
 
+import { ErrorBox } from '../ErrorBox'
 import { AboutPanel } from '../components/AboutPanel'
 import { IndexPanel } from '../components/IndexPanel'
-import { ArticlePanel } from '../components/article-panel'
-import { ComparisonPanel } from '../components/comparison-panel'
-import { MapperPanel } from '../components/mapper-panel'
-import { QuizPanel } from '../components/quiz-panel'
-import { StatisticPanel } from '../components/statistic-panel'
-import { DataCreditPanel } from '../data-credit'
-import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
+import { TestUtils } from '../utils/TestUtils'
 
 import { Navigator } from './Navigator'
-import { PageData, pageTitle, urlFromPageDescriptor } from './PageDescriptor'
+import { elementIdFromHash, PageData, pageTitle, urlFromPageDescriptor } from './PageDescriptor'
 import { InitialLoad, SubsequentLoad } from './loading'
 
 export function Router(): ReactNode {
     const navigator = useContext(Navigator.Context)
     const pageState = navigator.usePageState()
 
+    if (TestUtils.shared.isTesting && location.hash === '#crashForTesting') {
+        throw new Error('crash for testing')
+    }
+
     useLayoutEffect(() => {
         // Execute the navigator's effects
         navigator.effects.forEach((effect) => { effect() })
         navigator.effects = []
 
-        // eslint-disable-next-line no-restricted-syntax -- This is the one place in the app where we set the doc title
+        // eslint-disable-next-line no-restricted-syntax -- Where a page's own title is applied; the mapper and statistic panels retitle their edits.
         document.title = pageTitle(pageState.current.data)
     })
 
@@ -47,8 +46,8 @@ function HighlightHash(): ReactNode {
     return hash !== ''
         ? (
                 <style>
-                    {`${hash} {
-background-color: var(--highlight);
+                    {`#${CSS.escape(elementIdFromHash(hash))} {
+background-color: var(--highlight) !important;
 }`}
                 </style>
             )
@@ -58,20 +57,10 @@ background-color: var(--highlight);
 function ErrorScreen({ data }: { data: Extract<PageData, { kind: 'error' }> }): ReactNode {
     const errorContents = data.descriptor === undefined ? <NotFoundError {...data} /> : <PageLoadError {...data} />
 
-    const colors = useColors()
-    const errorBoxStyle: CSSProperties = {
-        backgroundColor: colors.slightlyDifferentBackgroundFocused,
-        borderRadius: '5px',
-        textAlign: 'center',
-        padding: '10px',
-    }
-
     return (
-        <PageTemplate>
-            <div style={errorBoxStyle}>
-                {errorContents}
-            </div>
-        </PageTemplate>
+        <ErrorBox>
+            {errorContents}
+        </ErrorBox>
     )
 }
 
@@ -150,15 +139,17 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
     switch (pageData.kind) {
         case 'article':
             return (
-                <ArticlePanel article={pageData.article} rows={pageData.rows} />
+                <pageData.articlePanel {...pageData} />
             )
         case 'comparison':
             return (
-                <ComparisonPanel articles={pageData.articles} universes={pageData.universes} rows={pageData.rows} />
+                <pageData.comparisonPanel
+                    {...pageData}
+                />
             )
         case 'statistic':
             return (
-                <StatisticPanel
+                <pageData.statisticPanel
                     {...pageData}
                 />
             )
@@ -167,24 +158,36 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
         case 'about':
             return <AboutPanel />
         case 'dataCredit':
-            return <DataCreditPanel />
+            return <pageData.dataCreditPanel />
+        case 'ussDocumentation':
+            return <pageData.ussDocumentationPanel doc={pageData.doc} hash={pageData.hash} />
         case 'quiz':
             return (
-                <QuizPanel
+                <pageData.quizPanel
                     quizDescriptor={pageData.quizDescriptor}
                     todayName={pageData.todayName}
                     todaysQuiz={pageData.quiz}
                 />
             )
+        case 'syau':
+            return <pageData.syauPanel typ={pageData.typ} universe={pageData.universe} counts={pageData.counts} syauData={pageData.syauData} />
         case 'mapper':
-            return <MapperPanel mapSettings={pageData.settings} view={pageData.view} />
+            return <pageData.mapperPanel mapSettings={pageData.settings} view={pageData.view} counts={pageData.counts} />
+        case 'editor':
+            return <pageData.editorPanel {...pageData} />
+        case 'oauthCallback':
+            return <pageData.oauthCallbackPanel {...pageData} />
         case 'error':
             return <ErrorScreen data={pageData} />
         case 'initialLoad':
             return (
-                <PageTemplate showFooter={false}>
+                <PageTemplate showFooter={false} fullWidth={pageData.descriptor.kind === 'mapper' || (pageData.descriptor.kind === 'statistic' && pageData.descriptor.edit === true)}>
                     <InitialLoad />
                 </PageTemplate>
             )
+        case 'snapshotDiffViewer':
+            return <pageData.panel {...pageData} />
+        case 'embedPreview':
+            return <pageData.panel {...pageData} />
     }
 }

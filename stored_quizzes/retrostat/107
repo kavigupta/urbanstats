@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=4km)",
+      "stat_path": "ad_4",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Lampung, Indonesia",
+      "longname_b": "Oyo, Nigeria",
+      "stat_a": 1507.6545076268962,
+      "stat_b": 5685.727270081582
+    },
+    "b": {
+      "stat_column": "Healthcare support occupations %",
+      "stat_path": "occupation_healthcare_support_occupations",
+      "question": "higher % of workers employed in healthcare support occupations!TOOLTIP nursing assistants, orderlies, home health aides, massage therapists, dental assistants, etc.",
+      "longname_a": "PA-02 (2023), USA",
+      "longname_b": "MD-01 (2023), USA",
+      "stat_a": 0.06963304144024085,
+      "stat_b": 0.02698083752796738
+    },
+    "a_ease": 0.27833954230973923,
+    "b_ease": 0.6852986217457887
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual Income > $100k %",
+      "stat_path": "individual_income_over_100k",
+      "question": "higher % of people who have individual income over $100k",
+      "longname_a": "Charlotte city, North Carolina, USA",
+      "longname_b": "Miami city, Florida, USA",
+      "stat_a": 0.14162166387958733,
+      "stat_b": 0.09723914061747878
+    },
+    "b": {
+      "stat_column": "No internet access %",
+      "stat_path": "internet_no_access",
+      "question": "higher % of people who have no internet access",
+      "longname_a": "Concord Urban Center, USA",
+      "longname_b": "St. Louis Urban Center, USA",
+      "stat_a": 0.0408715648945455,
+      "stat_b": 0.12163842300803536
+    },
+    "a_ease": 0.20915380521554017,
+    "b_ease": 0.6200873362445415
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Housing Units per Adult",
+      "stat_path": "housing_per_pop",
+      "question": "higher number of housing units per adult",
+      "longname_a": "Oklahoma City OK Media Market, USA",
+      "longname_b": "Minot-Bismarck-Dickinson ND Media Market, USA",
+      "stat_a": 0.5691179675268291,
+      "stat_b": 0.6181686685391682
+    },
+    "b": {
+      "stat_column": "Population",
+      "stat_path": "population",
+      "question": "higher population",
+      "longname_a": "Rwanda",
+      "longname_b": "The Gambia",
+      "stat_a": 13140807.509502996,
+      "stat_b": 2577790.9211290623
+    },
+    "a_ease": 0.3783570300157978,
+    "b_ease": 0.8073639274279616
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Chronic kidney disease %",
+      "stat_path": "KIDNEY_cdc_2",
+      "question": "higher % of adults with chronic kidney disease",
+      "longname_a": "Greenville-Anderson-Mauldin MSA, SC, USA",
+      "longname_b": "Madison MSA, WI, USA",
+      "stat_a": 0.030168480778873505,
+      "stat_b": 0.02377621334397228
+    },
+    "b": {
+      "stat_column": "Born in us outside state %",
+      "stat_path": "birthplace_us_not_state",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "ID-02 (2023), USA",
+      "longname_b": "NY-01 (2025), USA",
+      "stat_a": 0.4298147455587746,
+      "stat_b": 0.08933234927528377
+    },
+    "a_ease": 0.6255458515283843,
+    "b_ease": 0.1860643185298622
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual income > C$100k %",
+      "stat_path": "individual_income_above_100_cad",
+      "question": "higher % of people who have individual income over C$100k",
+      "longname_a": "Quebec Urban Center, Canada",
+      "longname_b": "Kitchener Urban Center, Canada",
+      "stat_a": 0.08185482461057103,
+      "stat_b": 0.10155738764019594
+    },
+    "b": {
+      "stat_column": "Population Change (2010-2020)",
+      "stat_path": "population_change_2010",
+      "question": "higher % increase in population from 2010 to 2020",
+      "longname_a": "South Carolina, USA",
+      "longname_b": "Vermont, USA",
+      "stat_a": 0.1066034009468238,
+      "stat_b": 0.02768317610188534
+    },
+    "a_ease": 0.36729857819905215,
+    "b_ease": 0.8225982532751092
+  }
+]

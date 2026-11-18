@@ -1,0 +1,21 @@
+name = "dev-totp"
+main = "src/index.ts"
+compatibility_date = "2026-08-01"
+
+# A custom domain so the tests can hardcode the URL, and deploying creates its DNS record. The Worker owns
+# every path, hence the check in index.ts. Must stay above the first [table], or no routes deploy.
+routes = [
+  { pattern = "dev-totp.urbanstats.org", custom_domain = true },
+]
+
+# SQLite-backed so it runs on the free plan, though nothing here uses SQL.
+[[durable_objects.bindings]]
+name = "TOTP_SLOTS"
+class_name = "TOTPSlots"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["TOTPSlots"]
+
+[observability]
+enabled = true

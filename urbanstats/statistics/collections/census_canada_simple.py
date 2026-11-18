@@ -18,9 +18,6 @@ class CensusCanadaSimple(CanadaStatistics):
     directly fractionalized and used with no further processing.
 
     You can override `post_process` to do something more sophisticated.
-
-    Unlike `CensusCanadaSameAsUS`, you need to provide quiz question names,
-    explanation pages, etc.
     """
 
     @abstractmethod
@@ -35,7 +32,7 @@ class CensusCanadaSimple(CanadaStatistics):
 
     def post_process(self, statistic_table, existing_statistics):
         del existing_statistics
-        fractionalize(statistic_table, *self.name_for_each_statistic().keys())
+        fractionalize(statistic_table, *self.internal_statistic_names_list())
         return statistic_table
 
 
@@ -79,6 +76,16 @@ class CensusCanadaIncomeIndividual(CensusCanadaSimple):
             "individual_income_under_50cad": "Individual income < C$50k %",
             "individual_income_50_to_100cad": "Individual income C$50k - C$100k %",
             "individual_income_above_100_cad": "Individual income > C$100k %",
+        }
+
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
+    def varname_for_each_statistic(self):
+        return {
+            "individual_income_under_50cad": "individual_income_under_50k_cad",
+            "individual_income_50_to_100cad": "individual_income_50k_to_100k_cad",
+            "individual_income_above_100_cad": "individual_income_over_100k_cad",
         }
 
     def explanation_page_for_each_statistic(self):
@@ -146,6 +153,16 @@ class CensusCanadaIncomeHousehold(CensusCanadaSimple):
             "household_income_above_100_cad": "Household income > C$100k %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
+    def varname_for_each_statistic(self):
+        return {
+            "household_income_under_50cad": "income_under_50k",
+            "household_income_50_to_100cad": "income_50k_to_100k",
+            "household_income_above_100_cad": "income_over_100k",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("canadian-census-disaggregated")
 
@@ -204,18 +221,19 @@ class CensusCanadaLICOAT(CensusCanadaSimple):
             "lico_at_canada": "LICO-AT %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
+    def varname_for_each_statistic(self):
+        return {
+            "lico_at_canada": "low_income",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("canadian-census-disaggregated")
 
     def quiz_question_descriptors(self):
-        return {
-            **QuizQuestionDescriptor.several(
-                POVERTY,
-                {
-                    "lico_at_canada": "higher % of people who are low income based on the Low-income cut-offs, after tax (LICO-AT)",
-                },
-            ),
-        }
+        return QuizQuestionSkip.several("lico_at_canada")
 
     def post_process(self, statistic_table, existing_statistics):
         del existing_statistics
@@ -224,6 +242,79 @@ class CensusCanadaLICOAT(CensusCanadaSimple):
             statistic_table.lico_at_canada / statistic_table.lico_at_universe
         )
         del statistic_table["lico_at_universe"]
+        return statistic_table
+
+
+class CensusCanadaLIMAT(CensusCanadaSimple):
+    version = 1
+
+    def dependencies(self):
+        return []
+
+    def census_tables(self) -> CensusTables:
+        # pylint: disable=line-too-long
+        return CensusTables(
+            [
+                "In low income based on the Low-income measure, after tax (LIM-AT)",
+                (
+                    "Total - LIM low-income status in 2020 for the population in private households - 100% data (33)",
+                    "universe: ",
+                ),
+            ],
+            {
+                None: [
+                    "  0 to 17 years",
+                    "    0 to 5 years",
+                    "  18 to 64 years",
+                    "  65 years and over",
+                    "universe:   0 to 17 years",
+                    "universe:     0 to 5 years",
+                    "universe:   18 to 64 years",
+                    "universe:   65 years and over",
+                ],
+                "lim_at_canada": [
+                    "In low income based on the Low-income measure, after tax (LIM-AT)",
+                ],
+                "lim_at_universe": [
+                    "universe: Total - LIM low-income status in 2020 for the population in private households - 100% data (33)",
+                ],
+            },
+            "population",
+        )
+
+    def name_for_each_statistic(self):
+        return {
+            "lim_at_canada": "LIM-AT %",
+        }
+
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
+    def varname_for_each_statistic(self):
+        return {
+            "lim_at_canada": "low_income_lim",
+        }
+
+    def explanation_page_for_each_statistic(self):
+        return self.same_for_each_name("canadian-census-disaggregated")
+
+    def quiz_question_descriptors(self):
+        return {
+            **QuizQuestionDescriptor.several(
+                POVERTY,
+                {
+                    "lim_at_canada": "higher % of people who are low income based on the Low-income measure, after tax (LIM-AT)",
+                },
+            ),
+        }
+
+    def post_process(self, statistic_table, existing_statistics):
+        del existing_statistics
+        statistic_table = statistic_table.copy()
+        statistic_table.lim_at_canada = (
+            statistic_table.lim_at_canada / statistic_table.lim_at_universe
+        )
+        del statistic_table["lim_at_universe"]
         return statistic_table
 
 
@@ -277,6 +368,16 @@ class CensusCanadaEducation(CensusCanadaSimple):
             "education_grad_canada": "Graduate degree [25-64] %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
+    def varname_for_each_statistic(self):
+        return {
+            "education_high_school_canada": "high_school_statcan",
+            "education_ugrad_canada": "undergrad_statcan",
+            "education_grad_canada": "graduate_statcan",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("canadian-census-disaggregated")
 
@@ -304,7 +405,7 @@ class CensusCanadaEducation(CensusCanadaSimple):
         del statistic_table["education_no_canada"]
         # mutating in place. should not use .items()
         # pylint: disable=consider-iterating-dictionary
-        for column in self.name_for_each_statistic().keys():
+        for column in self.internal_statistic_names_list():
             statistic_table[column] = statistic_table[column] / total
         statistic_table["education_ugrad_canada"] += statistic_table[
             "education_grad_canada"
@@ -314,30 +415,11 @@ class CensusCanadaEducation(CensusCanadaSimple):
         ]
         return statistic_table
 
-    # def post_process(self, statistic_table, existing_statistics):
-    #     del existing_statistics
-    #     statistic_table = statistic_table.copy()
-    #     total = (
-    #         statistic_table.education_no_canada
-    #         + statistic_table.education_high_school_canada
-    #         + statistic_table.education_ugrad_canada
-    #         + statistic_table.education_grad_canada
-    #     )
-    #     del statistic_table["education_no_canada"]
-    #     for column in self.name_for_each_statistic().keys():
-    #         statistic_table[column] = statistic_table[column] / total
-    #     statistic_table["education_ugrad_canada"] += statistic_table[
-    #         "education_grad_canada"
-    #     ]
-    #     statistic_table["education_high_school_canada"] += statistic_table[
-    #         "education_ugrad_canada"
-    #     ]
-    #     return statistic_table
-
 
 census_canada_simple = [
     CensusCanadaIncomeIndividual(),
     CensusCanadaIncomeHousehold(),
     CensusCanadaLICOAT(),
+    CensusCanadaLIMAT(),
     CensusCanadaEducation(),
 ]

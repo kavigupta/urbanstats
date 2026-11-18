@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Public Insurance %",
+      "stat_path": "insurance_coverage_govt",
+      "question": "higher % of people who are on public insurance",
+      "longname_a": "Dallas-Ft.Worth TX Media Market, USA",
+      "longname_b": "Memphis TN Media Market, USA",
+      "stat_a": 0.08223790790580159,
+      "stat_b": 0.19365065068796714
+    },
+    "b": {
+      "stat_column": "Asian %",
+      "stat_path": "asian",
+      "question": "higher % of people who are Asian",
+      "longname_a": "Killeen [Urban Area], TX, USA",
+      "longname_b": "Lakeland [Urban Area], FL, USA",
+      "stat_a": 0.03664927572291639,
+      "stat_b": 0.02209308601550834
+    },
+    "a_ease": 0.7380396732788798,
+    "b_ease": 0.32448377581120946
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Millennial %",
+      "stat_path": "generation_millenial",
+      "question": "higher % of people who are millennials!TOOLTIP born between 1982 and 1996",
+      "longname_a": "Saskatoon Population Center, SK, Canada",
+      "longname_b": "Santa Rosa [Urban Area], CA, USA",
+      "stat_a": 0.2351444279642326,
+      "stat_b": 0.20602464402310283
+    },
+    "b": {
+      "stat_column": "Disability %",
+      "stat_path": "DISABILITY_cdc_2",
+      "question": "higher % of adults with a disability",
+      "longname_a": "OH-02 (2023), USA",
+      "longname_b": "IL-11 (2023), USA",
+      "stat_a": 0.3286647667073219,
+      "stat_b": 0.2691907896327136
+    },
+    "a_ease": 0.29970501474926253,
+    "b_ease": 0.7396593673965937
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Mean Elevation",
+      "stat_path": "gridded_elevation",
+      "question": "higher population-weighted mean elevation !TOOLTIP Population weighted elevation/hilliness statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Hanoi Urban Center, Vietnam",
+      "longname_b": "Ottawa Urban Center, Canada",
+      "stat_a": 15.94308090209961,
+      "stat_b": 76.4263687133789
+    },
+    "b": {
+      "stat_column": "High school diploma [25-64] %",
+      "stat_path": "education_high_school_canada",
+      "question": "higher % of people between 25 and 64 who have at least a high school diploma",
+      "longname_a": "Gatineau Ville, Gatineau Territory, Quebec, Canada",
+      "longname_b": "Vancouver City, Greater Vancouver Regional district, British Columbia, Canada",
+      "stat_a": 0.8839104525688517,
+      "stat_b": 0.9470039446496776
+    },
+    "a_ease": 0.41337167505391803,
+    "b_ease": 0.8158947970268725
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Mean Elevation",
+      "stat_path": "gridded_elevation",
+      "question": "higher population-weighted mean elevation !TOOLTIP Population weighted elevation/hilliness statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Pyongyang Urban Center, North Korea",
+      "longname_b": "Nuevo Laredo Urban Center, Mexico-USA",
+      "stat_a": 23.995647430419922,
+      "stat_b": 136.72515869140625
+    },
+    "b": {
+      "stat_column": "Divorced %",
+      "stat_path": "marriage_divorced",
+      "question": "higher % of people who are divorced",
+      "longname_a": "Lubbock city, Texas, USA",
+      "longname_b": "St. Petersburg city, Florida, USA",
+      "stat_a": 0.10862137247126905,
+      "stat_b": 0.14941966585900904
+    },
+    "a_ease": 0.45316301703163014,
+    "b_ease": 0.8708955223880597
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High temperature Below 40\u00b0F %",
+      "stat_path": "days_below_40_4",
+      "question": "higher % of cold days (days with high temp under 40\u00b0F, population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Prince William County, Virginia, USA",
+      "longname_b": "Union County, New Jersey, USA",
+      "stat_a": 0.0795611306562195,
+      "stat_b": 0.13487005686697395
+    },
+    "b": {
+      "stat_column": "Individual income > C$100k %",
+      "stat_path": "individual_income_above_100_cad",
+      "question": "higher % of people who have individual income over C$100k",
+      "longname_a": "Middlesex County, Ontario, Canada",
+      "longname_b": "Division No. 11, Alberta, Canada",
+      "stat_a": 0.09502349341288226,
+      "stat_b": 0.13872630739680356
+    },
+    "a_ease": 0.8964773544212796,
+    "b_ease": 0.484186313973548
+  }
+]

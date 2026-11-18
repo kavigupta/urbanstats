@@ -1,0 +1,311 @@
+import { Selector } from 'testcafe'
+
+import {
+    searchField, target, getLocationWithoutSettings, screencap,
+    urbanstatsFixture,
+    getLocation,
+    openInNewTabModifiers,
+    pageDescriptorKind,
+    waitForSelectedSearchResult,
+    createComparison,
+    checkSidebarTextboxes,
+    waitForLoading,
+    withInterceptedRequests,
+    cdpSessionWithSessionId,
+    debugLog,
+} from './test_utils'
+
+urbanstatsFixture('shorter article test', `${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
+
+test('search-test', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'Pasadena')
+    await waitForSelectedSearchResult(t)
+    await screencap(t)
+    await t
+        .pressKey('enter')
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}/article.html?longname=Pasadena+city%2C+Texas%2C+USA`)
+})
+
+test('search-test-with-extra-char', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'Pasadena c')
+    await t.expect(Selector('div').withText(/Pasadena city, Texas/).exists).ok()
+    await screencap(t)
+})
+
+test('search-test-with-special-chars', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'Utt')
+    await t.expect(Selector('div').withText(/Uttar/).exists).ok()
+    await screencap(t)
+})
+
+test('search-test-different-first-char', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'hina')
+    await t.expect(Selector('div').withText(/China/).exists).ok()
+    await screencap(t)
+})
+
+test('search-test-arrows', async (t) => {
+    await t
+        .click(searchField)
+    await t
+        .typeText(searchField, 'Pasadena')
+    await waitForLoading()
+    await t
+        .pressKey('down')
+        .pressKey('down')
+    await screencap(t)
+    await t
+        .pressKey('enter')
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}/article.html?longname=Pasadena+CDP%2C+Maryland%2C+USA`)
+})
+
+// Regession test for a crash
+test('tab tab type', async (t) => {
+    let tries = 0
+    while (++tries < 10 && !(await Selector(searchField).focused)) {
+        await t.pressKey('tab')
+    }
+    await t.expect(Selector(searchField).focused).ok()
+    await t.pressKey('a')
+})
+
+test('search results hidden on blur and shown on refocus', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'Pasadena')
+    await waitForSelectedSearchResult(t)
+    await t.expect(Selector('[data-test-id=selected-search-result]').exists).ok()
+    // Click outside the search field to blur it
+    await t.click(Selector('body'), { offsetX: 10, offsetY: 10 })
+    await t.expect(Selector('[data-test-id=selected-search-result]').exists).notOk()
+    await t.wait(1000)
+    const workerRequests = (await debugLog()).filter(({ text }) => text.startsWith('Requested new search worker'))
+    await t.expect(workerRequests.filter(({ tab }) => tab === workerRequests.at(-1)!.tab).length).eql(1)
+    // Refocus the search field
+    await t.click(searchField)
+    await t.expect(Selector('[data-test-id=selected-search-result]').exists).ok()
+})
+
+test('control click search result to open in new tab', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'Pasadena')
+    await t.click(Selector('a').withText(/Pasadena/), { modifiers: openInNewTabModifiers })
+    await t.expect(getLocation()).match(/article\.html\?longname=San\+Marino\+city%2C\+California%2C\+USA/)
+})
+
+test('can visit Umm Siado', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'Umm Siado')
+    await t.click(Selector('a').withText(/Umm Siado/))
+    await t.expect(getLocation()).match(/article\.html\?longname=Umm\+Siado%3F%3F\+Urban\+Center%2C\+Sudan/)
+    await waitForLoading()
+    await t.expect(pageDescriptorKind()).eql('article')
+})
+
+test('on mobile, closes the sidebar when you search', async (t) => {
+    await t.resizeWindow(400, 800)
+    await t.navigateTo('/article.html?longname=San+Jose+Urban+Center%2C+USA') // Need to navigate to an article first, otherwise the page change closes the sidebar
+    await t.click('.hamburgermenu')
+    await t
+        .click(searchField)
+        .typeText(searchField, 'Santa Rosa, CA')
+    await t.click(Selector('div').withExactText('Santa Rosa city, California, USA'))
+    await t.expect(Selector('.sidebar_mobile').exists).notOk()
+})
+
+test('when adding another article for comparison, should prioritize regions of the same type', async (t) => {
+    await createComparison(t, 'san jose', 'San Jose city, California, USA')
+})
+
+test('compare to a search result from an article', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'Pasadena')
+    await waitForSelectedSearchResult(t)
+    await screencap(t)
+    await t.click(Selector('[data-test-id=search-result-compare]').nth(0))
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}/comparison.html?longnames=%5B%22San+Marino+city%2C+California%2C+USA%22%2C%22Pasadena+city%2C+Texas%2C+USA%22%5D`)
+})
+
+test('no compare button for the article being viewed', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'San Marino city, California')
+    await t.expect(await waitForSelectedSearchResult(t)).eql('San Marino city, California, USA')
+    await t.expect(Selector('[data-test-id=selected-search-result]').parent(0).find('[data-test-id=search-result-compare]').exists).notOk()
+    await t.expect(Selector('[data-test-id=search-result-compare]').exists).ok()
+})
+
+urbanstatsFixture('comparison', `${target}/comparison.html?longnames=%5B%22San+Marino+city%2C+California%2C+USA%22%2C%22Pasadena+city%2C+Texas%2C+USA%22%5D`)
+
+test('compare to a search result from a comparison', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'San Francisco city, California')
+    await waitForSelectedSearchResult(t)
+    await t.click(Selector('[data-test-id=search-result-compare]').nth(0))
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}/comparison.html?longnames=%5B%22San+Marino+city%2C+California%2C+USA%22%2C%22Pasadena+city%2C+Texas%2C+USA%22%2C%22San+Francisco+city%2C+California%2C+USA%22%5D`)
+})
+
+urbanstatsFixture('shorter article test again', `${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
+
+test('search for a MPC', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'Aleppo 10MPC')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+    await t.expect(getLocation()).match(/article\.html\?longname=Aleppo\+10MPC%2C\+Turkey-Syria/)
+    await waitForLoading()
+    await checkSidebarTextboxes(t, ['Include Person Circles'])
+    await t.click(searchField)
+        .typeText(searchField, 'Aleppo 10MPC')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+    await t.expect(getLocation()).notMatch(/article\.html\?longname=Aleppo\+10MPC%2C\+Turkey-Syria/)
+    await screencap(t)
+    await checkSidebarTextboxes(t, ['Include Person Circles'])
+    await screencap(t)
+})
+
+urbanstatsFixture('homepage', target)
+
+test('default universe world', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'pollution by metropolitan cluster')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+    await t.expect(getLocation()).eql(`${target}/statistic.html?statname=PW+Mean+PM2.5+Pollution&article_type=Metropolitan+Cluster&start=1&amount=20`)
+})
+
+test('default universe world - click on link', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'pollution by metropolitan cluster')
+    await waitForSelectedSearchResult(t)
+    await t.click(Selector('a').withText(/Pollution by Metropolitan Cluster/))
+    await t.expect(getLocation()).eql(`${target}/statistic.html?statname=PW+Mean+PM2.5+Pollution&article_type=Metropolitan+Cluster&start=1&amount=20`)
+})
+
+test('default universe usa', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'area by city')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+    await t.expect(getLocation()).eql(`${target}/statistic.html?statname=Area&article_type=City&start=1&amount=20&universe=USA`)
+})
+
+test('default universe canada', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'agriculture by riding')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+    await t.expect(getLocation()).eql(`${target}/statistic.html?statname=Natural+resources+and+agriculture+occupations+__PCT__&article_type=CA+Riding&start=1&amount=20&universe=Canada`)
+})
+
+test('default universe australia', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'population by lga')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+    await t.expect(getLocation()).eql(`${target}/statistic.html?statname=Population&article_type=AU+LGA&start=1&amount=20&universe=Australia`)
+})
+
+test('search result icon for an australian urban centre', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'Sydney UCL')
+    await waitForSelectedSearchResult(t)
+    await t.expect(Selector('img[src="/icons/search_icons/AU UCL.png"]').exists).ok()
+})
+
+test('rendering of options', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'white city')
+    await waitForSelectedSearchResult(t)
+    await screencap(t)
+})
+
+urbanstatsFixture('california universe page', `${target}/article.html?longname=San+Marino+city%2C+California%2C+USA&universe=California%2C+USA`)
+
+test('search within california universe', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'parkland by city')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+    await t.expect(getLocation()).eql(`${target}/statistic.html?statname=PW+Mean+__PCT__+of+parkland+within+1km&article_type=City&start=1&amount=20&universe=California%2C+USA`)
+})
+
+test('initial loading indicator', async (t) => {
+    await withInterceptedRequests(t, request => request.url.includes('pages_all') ? 'fail' : 'continue', async () => {
+        await t
+            .click(searchField)
+            .typeText(searchField, 'parkland by city')
+
+        await t.wait(1000)
+
+        await t.expect(Selector('[data-test-id="search-load-dropdown"]').exists).ok()
+        await screencap(t, { wait: false })
+    })
+})
+
+test('subsequent loading indicator', async (t) => {
+    const cdp = await t.getCurrentCDPSession()
+    await cdp.Target.setDiscoverTargets({ discover: true })
+
+    const workerSession = new Promise<typeof cdp>((resolve) => {
+        cdp.Target.on('targetCreated', async (e) => {
+            const { sessionId } = await cdp.Target.attachToTarget({ ...e.targetInfo, flatten: true })
+
+            resolve(cdpSessionWithSessionId(cdp, sessionId))
+        })
+    })
+
+    // Do initial load of the worker
+    await t
+        .click(searchField)
+        .typeText(searchField, 'parkland by city')
+
+    await waitForLoading()
+
+    // Block search completion messages
+    await (await workerSession).Runtime.evaluate({ expression: /{([\s\S]+)}/.exec(swapPostMessage.toString())![1] })
+
+    await t
+        .click(searchField)
+        .typeText(searchField, 'abcd', { replace: true })
+
+    await t.wait(1000)
+
+    await t.expect(Selector('[data-test-id="search-load-field"]').exists).ok()
+    await screencap(t, { wait: false })
+})
+
+function swapPostMessage(): void {
+    const originalPostMessage = postMessage
+    globalThis.postMessage = (message: { type: string, status: { status: string } }) => {
+        if (message.type === 'status' && message.status.status !== 'ready') {
+            originalPostMessage(message)
+        }
+    }
+}

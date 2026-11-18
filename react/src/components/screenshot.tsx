@@ -1,24 +1,42 @@
 import domtoimage from 'dom-to-image-more'
 import { saveAs } from 'file-saver'
-import React, { createContext, ReactNode, useContext } from 'react'
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 
 import { universePath } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
+import { useColors } from '../page_template/colors'
+import { loadImage } from '../utils/Image'
+import { TestUtils } from '../utils/TestUtils'
+import { makeDebugLogger } from '../utils/debug-logging'
+import { totalOffset } from '../utils/layout'
+import { zIndex } from '../utils/zIndex'
 
-export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
+import { tileAttribution } from './map-common-utils'
+
+const debugLog = makeDebugLogger('mapExport')
+
+// matches the corners of the screenshot icon
+const screenshotButtonRadius = '7px 7px 3px 7px'
+
+export function ScreenshotButton(props: { onClick: () => void, loading: boolean }): ReactNode {
+    const colors = useColors()
     const screencapButton = (
-        <div
+        <button
+            type="button"
+            className="borderless"
+            aria-label="Take screenshot"
             onClick={props.onClick}
             style={{
                 height: '100%',
                 cursor: 'pointer',
+                padding: 0,
+                borderRadius: screenshotButtonRadius,
             }}
         >
-            <img src="/screenshot.png" alt="Screenshot Button" style={{ height: '100%' }} />
-        </div>
+            <img src="/screenshot.png" alt="" style={{ height: '100%' }} />
+        </button>
     )
-    // if screenshot mode is on, put a loading circle over the image
-    if (useScreenshotMode()) {
+    if (props.loading) {
         const pad = 10 // pct
         const loadingCircle = (
             <div style={{
@@ -31,7 +49,7 @@ export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
                 border: '5px solid #fff',
                 borderTop: '5px solid #000',
                 animation: 'spin 2s linear infinite',
-                zIndex: 2,
+                zIndex: zIndex.screenshotSpin,
                 animationPlayState: 'running',
             }}
             >
@@ -44,8 +62,9 @@ export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
                 width: '100%',
                 top: 0,
                 left: 0,
-                backgroundColor: 'rgba(0,0,0,0.5)',
-                zIndex: 1,
+                backgroundColor: `${colors.textMain}80`,
+                zIndex: zIndex.screenshotDim,
+                borderRadius: screenshotButtonRadius,
             }}
             >
             </div>
@@ -65,104 +84,327 @@ export interface ScreencapElements {
     path: string
     overallWidth: number
     elementsToRender: HTMLElement[]
-    heightMultiplier?: number
+    topPadding?: number
 }
 
-export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors): Promise<void> {
-    const overallWidth = config.overallWidth
-    const heightMultiplier = config.heightMultiplier ?? 1
+function drawImageIfNotTesting(context: CanvasRenderingContext2D, index: number, image: CanvasImageSource, x: number, y: number, w: number, h: number, testing: boolean): void {
+    if (testing) {
+        context.fillStyle = `hsl(${(index % 10) * (360 / 10)} 50% 50%)`
+        context.fillRect(x, y, w, h)
+    }
+    else {
+        context.drawImage(
+            image,
+            x, y, w, h,
+        )
+    }
+}
 
-    async function screencapElement(ref: HTMLElement): Promise<[string, number]> {
-        const scaleFactor = overallWidth / ref.offsetWidth
-        const link = await domtoimage.toPng(ref, {
-            bgcolor: colors.background,
-            height: ref.offsetHeight * scaleFactor * heightMultiplier,
-            width: ref.offsetWidth * scaleFactor,
+function fixElementForScreenshot(element: HTMLElement): () => void {
+    // Hide the fullscreen button
+    const fullscreenButtons = Array.from(element.querySelectorAll('.maplibregl-ctrl:has(.maplibregl-ctrl-fullscreen)')).map(e => e as HTMLElement)
+    fullscreenButtons.forEach(button => button.style.visibility = 'hidden')
+    return () => {
+        fullscreenButtons.forEach(button => button.style.visibility = '')
+    }
+}
+
+export const mapBorderWidth = 1
+// Fractions of the footer banner image: where the logo lockup starts, and the size and baseline
+// of the map credit that sits to its left
+export const bannerLockupStart = 0.76
+export const bannerCreditSize = 0.2
+export const bannerCreditBottom = 0.16
+export const defaultMapBorderRadius = 5
+
+export async function screencapElement(ref: HTMLElement, overallWidth: number, {
+    mapBorderRadius = defaultMapBorderRadius,
+    // eslint-disable-next-line no-restricted-syntax -- Default value
+    testing = TestUtils.shared.isTesting,
+}: { mapBorderRadius?: number, testing?: boolean } = {}): Promise<HTMLCanvasElement> {
+    const unfixElement = fixElementForScreenshot(ref)
+
+    /*
+     * Safari is flaky at rendering canvases the way `domtoimage` renders them.
+     * We work around this by rendering the canvases first, then excluding them from the element render.
+     */
+    const scaleFactor = overallWidth / ref.offsetWidth
+
+    const resultCanvas = document.createElement('canvas')
+
+    resultCanvas.width = ref.offsetWidth * scaleFactor
+    resultCanvas.height = ref.offsetHeight * scaleFactor
+
+    const resultContext = resultCanvas.getContext('2d')!
+
+    const canvases = Array.from(ref.querySelectorAll('canvas'))
+
+    const totalRefOffset = totalOffset(ref)
+
+    // Borders around canvases are drawn here rather than by domtoimage, so that overlapping maps cover each other's borders
+    const borderedContainers: { element: HTMLElement, inlineBorderColor: string }[] = []
+
+    for (const [index, canvas] of canvases.entries()) {
+        let container = canvas.parentElement!
+        while (container !== ref && container.clientLeft === 0) {
+            container = container.parentElement!
+        }
+        const borderWidth = container === ref ? 0 : container.clientLeft
+
+        const canvasOffset = totalOffset(canvas)
+        // Can't just use bounding box, because it gets weird with transforms (e.g. zoom)
+        const x = (canvasOffset.left - totalRefOffset.left + borderWidth) * scaleFactor
+        const y = (canvasOffset.top - totalRefOffset.top + borderWidth) * scaleFactor
+        const w = canvas.offsetWidth * scaleFactor
+        const h = canvas.offsetHeight * scaleFactor
+
+        resultContext.save()
+        if (mapBorderRadius !== 0) {
+            resultContext.beginPath()
+            resultContext.roundRect(x, y, w, h, (mapBorderRadius - mapBorderWidth * 2) * scaleFactor)
+            resultContext.clip()
+        }
+
+        drawImageIfNotTesting(resultContext, index, canvas, x, y, w, h, testing)
+
+        resultContext.restore()
+
+        if (borderWidth > 0 && !borderedContainers.some(({ element }) => element === container)) {
+            const style = getComputedStyle(container)
+            // Offsets round position and width separately, so instead snap each edge to a CSS pixel, as the browser does for borders
+            const refRect = ref.getBoundingClientRect()
+            const containerRect = container.getBoundingClientRect()
+            const zoom = refRect.width / ref.offsetWidth
+            const edge = (rectEdge: number, refEdge: number): number => Math.round((rectEdge - refEdge) / zoom) * scaleFactor
+            const bx = edge(containerRect.left, refRect.left)
+            const by = edge(containerRect.top, refRect.top)
+            const bw = edge(containerRect.right, refRect.left) - bx
+            const bh = edge(containerRect.bottom, refRect.top) - by
+            const b = borderWidth * scaleFactor
+            const radius = parseFloat(style.borderTopLeftRadius) * scaleFactor
+            resultContext.beginPath()
+            resultContext.roundRect(bx, by, bw, bh, radius)
+            resultContext.roundRect(bx + b, by + b, bw - 2 * b, bh - 2 * b, Math.max(0, radius - b))
+            resultContext.fillStyle = style.borderTopColor
+            resultContext.fill('evenodd')
+
+            borderedContainers.push({ element: container, inlineBorderColor: container.style.borderColor })
+            container.style.borderColor = 'transparent'
+        }
+    }
+
+    try {
+        const refCanvas = await domtoimage.toCanvas(ref, {
+            bgcolor: 'transparent',
+            height: resultCanvas.height,
+            width: resultCanvas.width,
             style: {
                 transform: `scale(${scaleFactor})`,
                 transformOrigin: 'top left',
             },
+            filter: node => !(node instanceof HTMLCanvasElement),
         })
-        return [link, scaleFactor * ref.offsetHeight * heightMultiplier]
+
+        resultContext.drawImage(refCanvas, 0, 0)
+    }
+    finally {
+        borderedContainers.forEach(({ element, inlineBorderColor }) => element.style.borderColor = inlineBorderColor)
+        unfixElement()
     }
 
-    const pngLinks = []
-    const heights = []
-    for (const ref of config.elementsToRender) {
-        try {
-            const [pngLink, height] = await screencapElement(ref)
-            pngLinks.push(pngLink)
-            heights.push(height)
+    return resultCanvas
+}
+
+export type ReadyForScreenshotCallback = () => void
+
+type ScreenshotSubscriber = (callback: ReadyForScreenshotCallback | undefined) => void
+
+export interface ScreenshotContextType {
+    render: Set<ScreenshotSubscriber>
+    wait: Set<ScreenshotSubscriber>
+}
+
+/** Lets unregistering settle a pending wait, since screenshot mode can unmount a subscriber before it's ready. */
+const settleWaitForSubscriber = new WeakMap<ScreenshotSubscriber, () => void>()
+
+function unregisterSubscriber(subscribers: Set<ScreenshotSubscriber>, subscriber: ScreenshotSubscriber): void {
+    subscribers.delete(subscriber)
+    settleWaitForSubscriber.get(subscriber)?.()
+}
+
+/** Guards against a tree that mounts a fresh subscriber every round. */
+const maxNotifyRounds = 10
+
+/** Repeats until a round adds no subscribers, since screenshot mode mounts some itself (e.g. table footnotes). */
+async function notifySubscribers(subscribers: Set<ScreenshotSubscriber>, phase: string): Promise<void> {
+    const notified = new Set<ScreenshotSubscriber>()
+    for (let round = 1; ; round++) {
+        const pending = Array.from(subscribers).filter(subscriber => !notified.has(subscriber))
+        if (pending.length === 0) {
+            return
         }
-        catch (e) {
-            console.error(e)
+        if (round > maxNotifyRounds) {
+            console.warn(`screenshot: ${pending.length} ${phase} subscriber(s) still appearing after ${maxNotifyRounds} rounds, capturing without them`)
+            return
         }
+        debugLog('withScreenshotMode:', phase, 'round', round, 'notifying', pending.length, 'subscriber(s)')
+        let ready = 0
+        await Promise.all(pending.map((subscriber) => {
+            notified.add(subscriber)
+            return new Promise<void>((resolve) => {
+                let settled = false
+                const settle = (): void => {
+                    if (settled) {
+                        return
+                    }
+                    settled = true
+                    settleWaitForSubscriber.delete(subscriber)
+                    ready++
+                    debugLog('withScreenshotMode:', phase, 'subscriber', ready, '/', pending.length, 'ready')
+                    resolve()
+                }
+                settleWaitForSubscriber.set(subscriber, settle)
+                subscriber(() => settle)
+            })
+        }))
     }
+}
 
-    const canvas = document.createElement('canvas')
+export async function withScreenshotMode<T>(context: ScreenshotContextType, fn: () => Promise<T>): Promise<T> {
+    // Phase 1: trigger render callbacks (e.g. components that switch to screenshot UI),
+    // and wait for all to signal ready. This causes React to re-render and commit any
+    // DOM changes (like remounting map sources with tolerance=0) before phase 2 starts.
+    debugLog('withScreenshotMode: notifying', context.render.size, 'render subscriber(s)')
+    await notifySubscribers(context.render, 'render')
+    debugLog('withScreenshotMode: all render subscribers ready, notifying', context.wait.size, 'wait subscriber(s)')
 
-    const padAround = 100
-    const padBetween = 50
-
-    const banner = new Image()
-    await new Promise<void>((resolve) => {
-        banner.onload = () => { resolve() }
-        banner.src = colors.screenshotFooterUrl
-    })
-
-    const bannerScale = overallWidth / banner.width
-    const bannerHeight = banner.height * bannerScale
-
-    canvas.width = padAround * 2 + overallWidth
-    canvas.height = padAround + padBetween * (pngLinks.length - 1) + heights.reduce((a, b) => a + b, 0) + bannerHeight
-
-    const ctx = canvas.getContext('2d')!
-    const imgs = []
-
-    for (const pngLink of pngLinks) {
-        const img = new Image()
-        img.src = pngLink
-        imgs.push(img)
+    // Phase 2: trigger wait callbacks (e.g. waiting for map tiles/sources to finish rendering),
+    // which run after all render-phase DOM changes have been committed.
+    await notifySubscribers(context.wait, 'wait')
+    debugLog('withScreenshotMode: all subscribers ready, running capture')
+    try {
+        return await fn()
     }
-    ctx.fillStyle = colors.background
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    finally {
+        // Move everything out of screenshot mode
+        debugLog('withScreenshotMode: capture done, clearing screenshot mode')
+        context.render.forEach((setCallback) => { setCallback(undefined) })
+        context.wait.forEach((setCallback) => { setCallback(undefined) })
+    }
+}
 
-    for (const img of imgs) {
-        await new Promise<void>((resolve) => {
-            img.onload = () => { resolve() }
+export async function createScreenshot(config: () => ScreencapElements, universe: string | undefined, colors: Colors, screenshotContext: ScreenshotContextType, forceNonTesting: boolean = false): Promise<void> {
+    await withScreenshotMode(screenshotContext, async () => {
+        // Resolved inside screenshot mode, so callers can lay out elements differently for
+        // the screenshot (e.g. move a header into a footnote) and have that reflected here.
+        const resolved = config()
+        const overallWidth = resolved.overallWidth
+
+        const canvases = []
+        for (const ref of resolved.elementsToRender) {
+            try {
+                canvases.push(await screencapElement(ref, overallWidth, { testing: !forceNonTesting && TestUtils.shared.isTesting }))
+            }
+            catch (e) {
+                console.error(e)
+            }
+        }
+
+        const canvas = document.createElement('canvas')
+
+        const padAround = 100
+        const padBetween = 50
+
+        const banner = await loadImage(colors.screenshotFooterUrl)
+
+        const bannerScale = overallWidth / banner.width
+        const bannerHeight = banner.height * bannerScale
+
+        canvas.width = padAround * 2 + overallWidth
+        canvas.height = (resolved.topPadding ?? padAround) + padBetween * (canvases.length - 1) + canvases.reduce((a, b) => a + b.height, 0) + bannerHeight
+
+        const ctx = canvas.getContext('2d')!
+
+        ctx.fillStyle = colors.background
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+        let start = resolved.topPadding ?? padAround
+        for (const elementCanvas of canvases) {
+            ctx.drawImage(elementCanvas, padAround, start)
+            start += elementCanvas.height + padBetween
+        }
+
+        start -= padBetween
+
+        ctx.drawImage(banner, padAround, start, overallWidth, bannerHeight)
+
+        let creditLeft = padAround
+
+        if (universe !== undefined) {
+            const flag = new Image()
+            flag.src = universePath(universe)
+            await new Promise<void>((resolve) => {
+                flag.onload = () => { resolve() }
+            })
+            // flag and its label, as a block on the bottom left, centered in the banner
+            const flagHeight = bannerHeight / 2
+            const flagWidth = flag.width * flagHeight / flag.height
+            // proportions of the label on the embed card's flag
+            const labelSize = flagHeight * 24 / 76
+            const labelGap = flagHeight * 6 / 76
+            const left = padAround + flagHeight / 2
+            const top = start + (bannerHeight - (flagHeight + labelGap + labelSize)) / 2
+            drawImageIfNotTesting(ctx, canvases.length, flag, left, top, flagWidth, flagHeight, TestUtils.shared.isTesting)
+            ctx.fillStyle = colors.ordinalTextColor
+            ctx.font = `${labelSize}px 'Jost', 'Arial', sans-serif`
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'top'
+            ctx.fillText('UNIVERSE', left + flagWidth / 2, top + flagHeight + labelGap)
+            creditLeft = left + flagWidth
+        }
+
+        if (resolved.elementsToRender.some(element => element.querySelector('.maplibregl-map') !== null)) {
+            ctx.fillStyle = colors.ordinalTextColor
+            ctx.font = `${bannerHeight * bannerCreditSize}px 'Jost', 'Arial', sans-serif`
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'alphabetic'
+            ctx.fillText(tileAttribution, (creditLeft + padAround + overallWidth * bannerLockupStart) / 2, start + bannerHeight * (1 - bannerCreditBottom))
+        }
+
+        canvas.toBlob(function (blob) {
+            saveAs(blob!, resolved.path)
         })
-    }
-    let start = padAround
-    for (const img of imgs) {
-        ctx.drawImage(img, padAround, start)
-        start += img.height + padBetween
-    }
-
-    start -= padBetween
-
-    ctx.drawImage(banner, padAround, start, overallWidth, bannerHeight)
-
-    if (universe !== undefined) {
-        const flag = new Image()
-        flag.src = universePath(universe)
-        await new Promise<void>((resolve) => {
-            flag.onload = () => { resolve() }
-        })
-        // draw on bottom left, same height as banner
-        const flagHeight = bannerHeight / 2
-        const offset = flagHeight / 2
-        const flagWidth = flag.width * flagHeight / flag.height
-        ctx.drawImage(flag, padAround + offset, start + offset, flagWidth, flagHeight)
-    }
-
-    canvas.toBlob(function (blob) {
-        saveAs(blob!, config.path)
     })
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Context declaration
-export const ScreenshotContext = createContext(false)
+export const ScreenshotContext = createContext<ScreenshotContextType>({ render: new Set(), wait: new Set() })
 
+// When we're taking a screenshot, returns a callback that should be called when the component is ready.
+// 'render' callbacks fire first (for UI changes like switching to screenshot layout).
+// 'wait' callbacks fire after all 'render' callbacks resolve (for async work like waiting for map tiles).
+export function useScreenshotCallback(kind: 'render' | 'wait'): ReadyForScreenshotCallback | undefined {
+    const context = useContext(ScreenshotContext)
+    const [callback, setCallback] = useState<ReadyForScreenshotCallback | undefined>(undefined)
+
+    useEffect(() => {
+        const set = kind === 'render' ? context.render : context.wait
+        set.add(setCallback)
+        return () => {
+            unregisterSubscriber(set, setCallback)
+        }
+    }, [context, kind])
+
+    return callback
+}
+
+// Just running a `useEffect` should be good enough for most use cases
 export function useScreenshotMode(): boolean {
-    return useContext(ScreenshotContext)
+    const screenshotCallback = useScreenshotCallback('render')
+
+    useEffect(() => {
+        screenshotCallback?.()
+    }, [screenshotCallback])
+
+    return screenshotCallback !== undefined
 }

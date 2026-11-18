@@ -3,26 +3,26 @@ from abc import ABC, abstractmethod
 import numpy as np
 import pandas as pd
 
-from urbanstats.acs.load import aggregated_acs_data, aggregated_acs_data_us_pr
-from urbanstats.games.quiz_region_types import (
-    QUIZ_REGION_TYPES_ALL,
-    QUIZ_REGION_TYPES_CANADA,
-    QUIZ_REGION_TYPES_INTERNATIONAL,
-    QUIZ_REGION_TYPES_USA,
+from urbanstats.acs.load import (
+    ACSDataEntityForMultipleLevels,
+    aggregated_acs_data,
+    aggregated_acs_data_us_pr,
 )
-from urbanstats.geometry.shapefiles.shapefile import (
-    EmptyShapefileError,
-    subset_mask_key,
-)
-
-ORDER_CATEGORY_MAIN = 0
-ORDER_CATEGORY_OTHER_DENSITIES = 1
+from urbanstats.geometry.shapefiles.shapefile import EmptyShapefileError
 
 
 class StatisticCollection(ABC):
+    data_source_country = None
+
+    def countries_for_each_statistic(self):
+        """Statistic -> the countries whose statistics agencies its data comes from, if any."""
+        if self.data_source_country is None:
+            return self.same_for_each_name(())
+        return self.same_for_each_name((self.data_source_country,))
+
     def __init__(self):
         quiz_questions = set(self.quiz_question_descriptors())
-        all_columns = set(self.name_for_each_statistic())
+        all_columns = set(self.internal_statistic_names_list())
         extra_quiz_questions = quiz_questions - all_columns
         assert not extra_quiz_questions, f"Extra quiz questions: {extra_quiz_questions}"
         missing_quiz_questions = all_columns - quiz_questions
@@ -30,15 +30,30 @@ class StatisticCollection(ABC):
             not missing_quiz_questions
         ), f"Missing quiz questions: {missing_quiz_questions}"
 
+    def internal_statistic_names_list(self):
+        return list(self.name_for_each_statistic())
+
+    def legacy_statistic_names(self):
+        return {}
+
+    def deprecation_for_each_statistic(self):
+        """Returns a dictionary mapping statistic keys to deprecation messages (None if not deprecated)."""
+        return {name: None for name in self.internal_statistic_names_list()}
+
     @abstractmethod
     def name_for_each_statistic(self):
         pass
 
     @abstractmethod
-    def explanation_page_for_each_statistic(self):
-        pass
+    def unit_for_each_statistic(self):
+        """Returns a dictionary mapping statistic keys to the unit their numbers are in."""
 
-    def quiz_question_names(self):
+    @abstractmethod
+    def varname_for_each_statistic(self):
+        """Returns a dictionary mapping statistic keys to program-friendly variable names."""
+
+    @abstractmethod
+    def explanation_page_for_each_statistic(self):
         pass
 
     @abstractmethod
@@ -63,7 +78,7 @@ class StatisticCollection(ABC):
         """
 
     def same_for_each_name(self, value):
-        return {name: value for name in self.name_for_each_statistic()}
+        return {name: value for name in self.internal_statistic_names_list()}
 
     def extra_stats(self):
         return {}
@@ -73,14 +88,10 @@ class StatisticCollection(ABC):
 
 
 class GeographicStatistics(StatisticCollection):
-    def quiz_question_types(self):
-        return QUIZ_REGION_TYPES_ALL
+    pass
 
 
 class InternationalStatistics(StatisticCollection):
-    def quiz_question_types(self):
-        return QUIZ_REGION_TYPES_INTERNATIONAL
-
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
@@ -100,8 +111,7 @@ class InternationalStatistics(StatisticCollection):
 
 
 class USAStatistics(StatisticCollection):
-    def quiz_question_types(self):
-        return QUIZ_REGION_TYPES_USA
+    data_source_country = "USA"
 
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
@@ -110,7 +120,7 @@ class USAStatistics(StatisticCollection):
             shapefile,
             existing_statistics,
             shapefile_table,
-            subset="USA",
+            subset=self.data_source_country,
             compute_function=self.compute_statistics_dictionary_usa,
         )
         return result
@@ -122,9 +132,29 @@ class USAStatistics(StatisticCollection):
         pass
 
 
+class USAStatisticsCounties(USAStatistics):
+    def compute_statistics_dictionary(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        if "composed_of_counties" not in shapefile.special_data_sources:
+            return {}
+        return super().compute_statistics_dictionary(
+            shapefile=shapefile,
+            existing_statistics=existing_statistics,
+            shapefile_table=shapefile_table,
+        )
+
+
+def statcan_legacy_names(collection):
+    """The names the collection's statistics had with a " [StatCan]" label, mapped to their names now."""
+    return {
+        f"{name} [StatCan]": name
+        for name in collection.name_for_each_statistic().values()
+    }
+
+
 class CanadaStatistics(StatisticCollection):
-    def quiz_question_types(self):
-        return QUIZ_REGION_TYPES_CANADA
+    data_source_country = "Canada"
 
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
@@ -133,7 +163,7 @@ class CanadaStatistics(StatisticCollection):
             shapefile,
             existing_statistics,
             shapefile_table,
-            subset="Canada",
+            subset=self.data_source_country,
             compute_function=self.compute_statistics_dictionary_canada,
         )
         return result
@@ -148,7 +178,7 @@ class CanadaStatistics(StatisticCollection):
 def compute_subset_statistics(
     shapefile, existing_statistics, shapefile_table, *, subset, compute_function
 ):
-    if subset not in shapefile.subset_masks:
+    if subset not in shapefile.source_country_list:
         return False, {}
 
     shapefile_subset = shapefile.subset_shapefile(subset)
@@ -162,7 +192,8 @@ def compute_subset_statistics(
         shapefile_subset.load_file()
     except EmptyShapefileError:
         return False, {}
-    mask = shapefile_table[subset_mask_key(subset)]
+    by_region = shapefile.source_countries.by_region(shapefile)
+    mask = np.array([cs == (subset,) for cs in by_region.loc[shapefile_table.index]])
     [idxs] = np.where(mask)
     for_subset = compute_function(
         shapefile=shapefile_subset,
@@ -174,6 +205,10 @@ def compute_subset_statistics(
 
     full = {}
     for k in for_subset:
+        assert len(for_subset[k]) == len(idxs), (
+            f"{k} has {len(for_subset[k])} values for the {len(idxs)} regions of"
+            f" {shapefile_subset.geometry.key}"
+        )
         result = [np.nan] * len(shapefile_table)
         for idx, value in zip(idxs, for_subset[k]):
             result[idx] = value
@@ -201,12 +236,12 @@ class ACSStatisticsColection(USAStatistics):
     ):
         result = {}
         for entity in self.acs_entity_dict().values():
-            acs_data = aggregated_acs_data(self.year(), entity, shapefile)
+            acs_data = aggregated_acs_data(self.year(), entity, shapefile.geometry)
             for column in acs_data.columns:
                 result[column] = acs_data[column]
         result = pd.DataFrame(result)
         self.mutate_acs_results(result)
-        return {name: result[name] for name in self.name_for_each_statistic()}
+        return {name: result[name] for name in self.internal_statistic_names_list()}
 
     @abstractmethod
     def mutate_acs_results(self, statistics_table):
@@ -235,14 +270,80 @@ class ACSUSPRStatisticsColection(USAStatistics):
         for entities in self.acs_entity_dict().values():
             entity_us, entity_pr = entities
             acs_data = aggregated_acs_data_us_pr(
-                self.year(), entity_us, entity_pr, shapefile
+                self.year(), entity_us, entity_pr, shapefile.geometry
             )
             for column in acs_data.columns:
                 result[column] = acs_data[column]
         result = pd.DataFrame(result)
         self.mutate_acs_results(result)
-        return {name: result[name] for name in self.name_for_each_statistic()}
+        return {name: result[name] for name in self.internal_statistic_names_list()}
 
     @abstractmethod
     def mutate_acs_results(self, statistics_table):
         pass
+
+
+class GeoIDStatisticsCollection(USAStatistics):
+    def year(self):
+        return 2020
+
+    @abstractmethod
+    def compute_statistics_dictionary_for_census_level(
+        self, census_level, shapefile, existing_statistics, shapefile_table
+    ):
+        pass
+
+    def compute_statistics_dictionary_usa(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        census_levels = shapefile.census_levels
+        if not census_levels:
+            return {}
+        [census_level] = census_levels
+        return self.compute_statistics_dictionary_for_census_level(
+            census_level, shapefile, existing_statistics, shapefile_table
+        )
+
+
+class GeoIDStatisticsACS(GeoIDStatisticsCollection):
+    @abstractmethod
+    def acs_data_entity_multi(self) -> ACSDataEntityForMultipleLevels:
+        pass
+
+    @abstractmethod
+    def allow_missing_geoid(self, census_level, geoid, name, population):
+        return False
+
+    def dependencies(self):
+        return ["population"]
+
+    def compute_statistics_dictionary_for_census_level(
+        self, census_level, shapefile, existing_statistics, shapefile_table
+    ):
+        population = existing_statistics["population"]
+        assert len(population) == len(shapefile_table)
+        geoid_to_population = dict(zip(shapefile_table["geoid"], population))
+        geoid_to_name = dict(zip(shapefile_table["geoid"], shapefile_table["longname"]))
+        entity = self.acs_data_entity_multi()
+        table = entity.query(census_level)
+        assert set(table) == set(self.internal_statistic_names_list())
+        geoid_table = set(shapefile_table["geoid"])
+        geoid_acs = set(table.index)
+        if geoid_table != geoid_acs:
+            missing_in_acs = {
+                x
+                for x in geoid_table - geoid_acs
+                if not self.allow_missing_geoid(
+                    census_level, x, geoid_to_name[x], geoid_to_population[x]
+                )
+            }
+            if missing_in_acs:
+                print(
+                    f"Missing in ACS: {sorted([geoid_to_name[x] for x in missing_in_acs])}"
+                )
+            assert not missing_in_acs
+
+        array_result = np.full((len(shapefile_table), len(table.columns)), np.nan)
+        mask = shapefile_table["geoid"].isin(table.index)
+        array_result[mask] = table.loc[shapefile_table.loc[mask, "geoid"], :].to_numpy()
+        return {name: array_result[:, i] for i, name in enumerate(table.columns)}

@@ -3,7 +3,8 @@
         "strict": true,
         "lib": [
             "ES2022",
-            "DOM"
+            "DOM",
+            "DOM.Iterable"
         ],
         "jsx": "react",
         "esModuleInterop": true,
@@ -15,6 +16,9 @@
         "noFallthroughCasesInSwitch": true,
         "allowUnreachableCode": false,
         "skipLibCheck": true,
-        "moduleResolution": "bundler"
-    }
+        "moduleResolution": "bundler",
+        "allowJs": true,
+        "checkJs": false
+    },
+    "exclude": ["*.mjs", "*.js"]
 }

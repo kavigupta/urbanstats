@@ -4,37 +4,50 @@ written into a dictionary that map one to the other
 """
 
 from functools import lru_cache
+from typing import Dict
 
 from urbanstats.website_data.table import shapefile_without_ordinals
 
+from .symlinks_from_ccd_rename import symlinks_from_ccd_rename
+from .symlinks_from_circle_renaming import symlinks_from_circle_renaming
 from .symlinks_from_country_rename import symlinks_from_country_rename
+from .symlinks_from_disallowed_characters import symlinks_from_disallowed_characters
 from .symlinks_from_district_rename import symlinks_from_district_rename
 from .symlinks_from_historical_congressional_rename import (
     symlinks_from_historical_congressional_rename,
 )
+from .symlinks_from_metropolitan_cluster_pruning import (
+    symlinks_from_metropolitan_cluster_pruning,
+)
 from .symlinks_from_subnational_usa_fixes import symlinks_from_subnational_usa_fixes
+from .symlinks_from_urban_center_latin_names import (
+    symlinks_from_urban_center_latin_names,
+)
 
 
-def symlinks_most_recent_year():
+def symlinks_most_recent_year() -> Dict[str, str]:
     table = shapefile_without_ordinals()
     table = table[table.longname_sans_date != table.longname]
     sans_date_to_last_start_date = (
         table[["longname_sans_date", "start_date"]].groupby("longname_sans_date").max()
     )
-    sans_date_to_last_start_date = dict(
+    sans_date_to_last_start_date_dict = dict(
         zip(sans_date_to_last_start_date.index, sans_date_to_last_start_date.start_date)
     )
     table = table[
         table.start_date
-        == table.longname_sans_date.apply(sans_date_to_last_start_date.get)
+        == table.longname_sans_date.apply(sans_date_to_last_start_date_dict.get)
     ]
     sans_date_to_longname = dict(zip(table.longname_sans_date, table.longname))
-    assert table.shape[0] == len(sans_date_to_longname)
+    assert table.shape[0] == len(sans_date_to_longname), (
+        f"Expected 1 longname per longname_sans_date, but got {table.shape[0]}"
+        f" rows and {len(sans_date_to_longname)} unique longname_sans_date"
+    )
     return sans_date_to_longname
 
 
 @lru_cache(None)
-def compute_symlinks():
+def compute_symlinks() -> Dict[str, str]:
     real_names = set(shapefile_without_ordinals().longname)
     symlinks = {}
 
@@ -45,10 +58,15 @@ def compute_symlinks():
         }
     )
 
+    symlinks.update(symlinks_from_ccd_rename)
     symlinks.update(symlinks_from_country_rename)
     symlinks.update(symlinks_from_subnational_usa_fixes)
     symlinks.update(symlinks_from_historical_congressional_rename)
     symlinks.update(symlinks_from_district_rename)
+    symlinks.update(symlinks_from_metropolitan_cluster_pruning)
+    symlinks.update(symlinks_from_circle_renaming)
+    symlinks.update(symlinks_from_urban_center_latin_names)
+    symlinks.update(symlinks_from_disallowed_characters)
     symlinks.update(symlinks_most_recent_year())
 
     # pylint: disable=consider-using-dict-items

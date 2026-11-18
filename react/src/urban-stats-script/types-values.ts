@@ -1,0 +1,564 @@
+import type * as ArgEditButtons from '../mapper/settings/ArgEditButtons'
+import { Basemap } from '../mapper/settings/utils'
+import { assert } from '../utils/defensive'
+import { HumanReadableName } from '../utils/human-readable-element'
+import { UnitType } from '../utils/unit'
+
+import { UrbanStatsASTExpression } from './ast'
+import { Color, deconstructColor, hexToColor } from './constants/color-utils'
+import type { InsetNode, SplitDirection } from './constants/insets'
+import { CMap, CMapRGB, ClusterMap, MissingData, Outline, PMap } from './constants/map'
+import { RampT } from './constants/ramp'
+import { RichTextAttributes, RichTextDocument, RichTextSegment } from './constants/rich-text'
+import { Scale } from './constants/scale'
+import { Table, TableColumn } from './constants/table'
+import { TextBox } from './constants/text-box'
+import { Context } from './context'
+import { ConstantCategory } from './documentation-category'
+import { LocInfo, noLocation } from './location'
+import { unparse } from './parser'
+
+// Define the tagged union for opaque values
+export type USSOpaqueValue =
+    | { type: 'opaque', opaqueType: 'color', value: Color }
+    | { type: 'opaque', opaqueType: 'scale', value: Scale }
+    | { type: 'opaque', opaqueType: 'inset', value: InsetNode }
+    | { type: 'opaque', opaqueType: 'insets', value: InsetNode[] }
+    | { type: 'opaque', opaqueType: 'splitDirection', value: SplitDirection }
+    | { type: 'opaque', opaqueType: 'cMap', value: CMap }
+    | { type: 'opaque', opaqueType: 'cMapRGB', value: CMapRGB }
+    | { type: 'opaque', opaqueType: 'pMap', value: PMap }
+    | { type: 'opaque', opaqueType: 'clusterMap', value: ClusterMap }
+    | { type: 'opaque', opaqueType: 'table', value: Table }
+    | { type: 'opaque', opaqueType: 'column', value: TableColumn }
+    | { type: 'opaque', opaqueType: 'outline', value: Outline }
+    | { type: 'opaque', opaqueType: 'missingData', value: MissingData }
+    | { type: 'opaque', opaqueType: 'unit', value: { unit: string } }
+    | { type: 'opaque', opaqueType: 'ramp', value: RampT }
+    | { type: 'opaque', opaqueType: 'basemap', value: Basemap }
+    | { type: 'opaque', opaqueType: 'geoFeatureHandle', value: string }
+    | { type: 'opaque', opaqueType: 'geoCentroidHandle', value: string }
+    | { type: 'opaque', opaqueType: 'textBox', value: TextBox }
+    | { type: 'opaque', opaqueType: 'richTextDocument', value: RichTextDocument }
+    | { type: 'opaque', opaqueType: 'richTextSegment', value: RichTextSegment }
+    | { type: 'opaque', opaqueType: 'richTextList', value: RichTextAttributes['list'] }
+    | { type: 'opaque', opaqueType: 'richTextAlign', value: RichTextAttributes['align'] }
+
+interface USSNumberType {
+    type: 'number'
+}
+
+interface USSStringType {
+    type: 'string'
+}
+interface USSBooleanType {
+    type: 'boolean'
+}
+
+interface USSNullType {
+    type: 'null'
+}
+
+export interface USSOpaqueType {
+    type: 'opaque'
+    name: string
+    allowCustomExpression?: boolean
+}
+
+export interface USSVectorType {
+    type: 'vector'
+    elementType: USSType | { type: 'elementOfEmptyVector' }
+}
+
+export interface USSObjectType {
+    type: 'object'
+    properties: Map<string, USSType>
+}
+
+export type USSFunctionArgType = { type: 'concrete', value: USSType } | { type: 'anyPrimitive' } | { type: 'anyPrimitiveVector' }
+export type USSFunctionReturnType = { type: 'concrete', value: USSType } | { type: 'inferFromPrimitive' } | { type: 'inferFromPrimitiveVector' }
+
+export interface NamedFunctionArgumentWithDocumentation {
+    type: USSFunctionArgType
+    defaultValue?: UrbanStatsASTExpression
+    documentation?: NamedFunctionArgumentDocumentation
+}
+
+export interface USSFunctionType {
+    type: 'function'
+    posArgs: USSFunctionArgType[]
+    namedArgs: Record<string, NamedFunctionArgumentWithDocumentation>
+    returnType: USSFunctionReturnType
+}
+
+interface NamedFunctionArgumentDocumentation {
+    hide?: boolean
+    collapsable?: boolean
+    editButton?: keyof typeof ArgEditButtons
+    /** The expression the editor inserts when this argument's checkbox is ticked, instead of the type's normal default */
+    overrideTypeDefault?: UrbanStatsASTExpression
+}
+
+export type USSType = (
+    USSNumberType
+    | USSStringType
+    | USSBooleanType
+    | USSNullType
+    | USSOpaqueType
+    | USSObjectType
+    | USSVectorType
+    | USSFunctionType
+)
+
+export type USSPrimitiveRawValue = (
+    number |
+    string |
+    boolean |
+    null
+)
+
+export interface OriginalFunctionArgs {
+    posArgs: USSValue[]
+    namedArgs: Record<string, USSValue>
+    callLocation: LocInfo
+}
+
+export type USSRawValue = (
+    USSPrimitiveRawValue |
+    USSRawValue[] |
+    Map<string, USSRawValue> |
+    (
+        (
+            ctx: Context,
+            posArgs: USSRawValue[],
+            namedArgs: Record<string, USSRawValue>,
+            // only used occasionally, for functions that need to access the original arguments
+            // to e.g., access their documentation
+            originalArgs: OriginalFunctionArgs
+        ) => USSRawValue
+    ) |
+    USSOpaqueValue
+)
+
+export type DocumentationTable = 'mapper-data-variables' | 'predefined-colors' | 'unit-types' | 'predefined-ramps' | 'predefined-insets' | 'logarithm-functions' | 'trigonometric-functions'
+
+export type SelectorRendering = { kind: 'subtitleLongDescription' } | { kind: 'gradientBackground', ramp: RampT }
+
+export interface Documentation {
+    humanReadableName: HumanReadableName
+    priority?: number
+    /**
+     * True if this is the canonical default value for its type (e.g., the default ramp or scale).
+     */
+    isDefault?: boolean
+    /**
+     * Human-readable names for named arguments. Maps argument name to display name.
+     */
+    namedArgs?: Record<string, string>
+    /**
+     * Should be included when a constant should be deconstructed into an expression for user editing
+     */
+    equivalentExpressions?: UrbanStatsASTExpression[]
+    /**
+     * Included for all bulit-in constants.
+     */
+    category?: ConstantCategory
+    /**
+     * Whether the constant should be grouped with other constants in a table in the documentation.
+     * If present, this field groups the constant with other similar ones.
+     */
+    documentationTable?: DocumentationTable
+    /**
+     * Included for all bulit-in constants. Will be displayed in the documentation.
+     */
+    longDescription?: HumanReadableName
+    /**
+     * For a two-argument function, written between its arguments: "Name starts with 'A'".
+     */
+    infix?: HumanReadableName
+    /**
+     * Used when displaying this value in a selector
+     */
+    selectorRendering?: SelectorRendering
+    /**
+     * True if this is a custom constructor that should invoke edit icons elsewhere
+     */
+    customConstructor?: boolean
+    /**
+     * True if the constant is derived from a statistic column. These should all have type number[]
+     */
+    fromStatisticColumn?: boolean
+    /**
+     * If present, indicates that this variable/function is deprecated.
+     * The string should explain why it's deprecated and what alternatives to use.
+     */
+    deprecated?: string
+    /**
+     * If present, describes the physical units of the underlying statistic
+     * This is primarily intended for statistics that originate from data
+     * columns; other USS constants will omit this field.
+     */
+    unit?: UnitType
+    /** For a function, how a quantity it is given comes back out. */
+    unitPropagation?: UnitPropagation
+}
+
+export type UnitPropagation = (
+    // keeps the unit
+    {
+        kind: 'unchanged'
+        /** Whether it takes its argument as a difference: there is no size of a temperature. */
+        takesAScalar?: boolean
+    }
+    | { kind: 'either' } // joins the units of two
+    | { kind: 'power', exponent: number } // raises the unit
+    | { kind: 'number' } // coerces to a number
+    | { kind: 'rank' } // takes two of one unit, gives a number
+    | { kind: 'regression' } // gives a unit for each field of the result
+)
+
+export interface USSDocumentedType {
+    type: USSType
+    documentation?: Documentation
+
+}
+
+export type TypeEnvironment = Map<string, USSDocumentedType>
+
+export type USSValue = { value: USSRawValue } & USSDocumentedType
+
+export function undocValue(value: USSRawValue, type: USSType): USSValue {
+    return {
+        type,
+        value,
+        documentation: undefined,
+    }
+}
+
+export function createConstantExpression(value: number | string | boolean | null): UrbanStatsASTExpression {
+    // Create a simple constant expression for primitive values
+    if (typeof value === 'number') {
+        return {
+            type: 'constant',
+            value: { node: { type: 'number', value }, location: noLocation },
+        }
+    }
+    else if (typeof value === 'string') {
+        return {
+            type: 'constant',
+            value: { node: { type: 'string', value }, location: noLocation },
+        }
+    }
+    else if (typeof value === 'boolean') {
+        // For booleans, use identifier expressions that reference the predefined constants
+        return {
+            type: 'identifier',
+            name: { node: value.toString(), location: noLocation },
+        }
+    }
+    else {
+        // For null, use identifier expression that references the predefined null constant
+        return {
+            type: 'identifier',
+            name: { node: 'null', location: noLocation },
+        }
+    }
+}
+
+export function isPrimitiveType(type: USSType): boolean {
+    return type.type === 'number' || type.type === 'string' || type.type === 'boolean' || type.type === 'null'
+}
+
+/** The concrete types an editor can offer for an argument. The first is what it defaults to. */
+export function argTypeOptions(param: USSFunctionArgType): USSType[] {
+    const primitives: USSType[] = [{ type: 'number' }, { type: 'string' }, { type: 'boolean' }]
+    switch (param.type) {
+        case 'concrete':
+            return [param.value]
+        case 'anyPrimitive':
+            return primitives
+        case 'anyPrimitiveVector':
+            return primitives.map(elementType => ({ type: 'vector', elementType }))
+    }
+}
+
+export function unifyFunctionType(param: USSFunctionArgType, arg: USSType): boolean {
+    switch (param.type) {
+        case 'concrete':
+            if (param.value.type === 'vector' && arg.type === 'vector' && arg.elementType.type === 'elementOfEmptyVector') {
+                // Empty vector is valid for any vector params
+                return true
+            }
+            return renderType(param.value) === renderType(arg)
+        case 'anyPrimitive':
+            return isPrimitiveType(arg)
+        case 'anyPrimitiveVector':
+            return arg.type === 'vector' && (arg.elementType.type === 'elementOfEmptyVector' || isPrimitiveType(arg.elementType))
+    }
+}
+
+export function renderType(type: USSType): string {
+    if (type.type === 'number') {
+        return 'number'
+    }
+    if (type.type === 'string') {
+        return 'string'
+    }
+    if (type.type === 'boolean') {
+        return 'boolean'
+    }
+    if (type.type === 'vector') {
+        return `[${type.elementType.type === 'elementOfEmptyVector' ? '' : renderType(type.elementType)}]`
+    }
+    if (type.type === 'object') {
+        assert(type.properties instanceof Map, `Expected properties to be a Map, got ${typeof type.properties}`)
+        return `{${[...type.properties.entries()].sort().map(([k, v]) => `${k}: ${renderType(v)}`).join(', ')}}`
+    }
+    if (type.type === 'null') {
+        return 'null'
+    }
+    if (type.type === 'opaque') {
+        return type.name
+    }
+    return `(${type.posArgs.map(renderArgumentType).join(', ')}; ${Object.entries(type.namedArgs).map(([k, v]) => `${k}: ${renderKwargType(v)}`).join(', ')}) -> ${renderReturnType(type.returnType)}`
+}
+
+export function renderArgumentType(arg: USSFunctionArgType): string {
+    switch (arg.type) {
+        case 'concrete':
+            return renderType(arg.value)
+        case 'anyPrimitive':
+            return 'any'
+        case 'anyPrimitiveVector':
+            return '[any]'
+    }
+}
+
+function renderKwargType(arg: { type: USSFunctionArgType, defaultValue?: UrbanStatsASTExpression }): string {
+    const type = renderArgumentType(arg.type)
+    if (arg.defaultValue !== undefined) {
+        return `${type} = ${unparse(arg.defaultValue)}`
+    }
+    return type
+}
+
+function renderReturnType(ret: USSFunctionReturnType): string {
+    switch (ret.type) {
+        case 'concrete':
+            return renderType(ret.value)
+        case 'inferFromPrimitive':
+            return 'any'
+        case 'inferFromPrimitiveVector':
+            return '[any]'
+    }
+}
+
+export type ValueArg = (
+    { type: 'unnamed', value: USSValue } |
+    { type: 'named', name: string, value: USSValue }
+)
+
+export function getPrimitiveType(value: USSRawValue, depth: number = 0): USSType {
+    if (depth === 0) {
+        if (typeof value === 'number') {
+            return { type: 'number' }
+        }
+        if (typeof value === 'string') {
+            return { type: 'string' }
+        }
+        if (typeof value === 'boolean') {
+            return { type: 'boolean' }
+        }
+        if (value === null) {
+            return { type: 'null' }
+        }
+    }
+    assert(Array.isArray(value), `Expected a primitive value, but got ${typeof value}`)
+    return getPrimitiveType(value[0], depth - 1)
+}
+
+/**
+ * Like getPrimitiveType, but for results that are themselves vectors of primitives.
+ * Descends `depth` levels of broadcasting, then reads the element type off the leaf vector.
+ * Leaves that are empty carry no type information, so we look for the first non-empty one.
+ */
+export function getPrimitiveVectorType(value: USSRawValue, depth: number): USSVectorType {
+    assert(Array.isArray(value), `Expected a vector, but got ${typeof value}`)
+    if (depth === 0) {
+        if (value.length === 0) {
+            return { type: 'vector', elementType: { type: 'elementOfEmptyVector' } }
+        }
+        return { type: 'vector', elementType: getPrimitiveType(value[0]) }
+    }
+    for (const element of value) {
+        const elementType = getPrimitiveVectorType(element, depth - 1)
+        if (elementType.elementType.type !== 'elementOfEmptyVector') {
+            return elementType
+        }
+    }
+    return { type: 'vector', elementType: { type: 'elementOfEmptyVector' } }
+}
+
+export function unifyType(
+    a: USSType | { type: 'elementOfEmptyVector' },
+    b: USSType | { type: 'elementOfEmptyVector' },
+    error: () => Error,
+): USSType | { type: 'elementOfEmptyVector' } {
+    if (a.type === 'elementOfEmptyVector') {
+        return b
+    }
+    if (b.type === 'elementOfEmptyVector') {
+        return a
+    }
+    if (renderType(a) === renderType(b)) {
+        return a
+    }
+    if (a.type === 'vector' && b.type === 'vector') {
+        return {
+            type: 'vector',
+            elementType: unifyType(a.elementType, b.elementType, error),
+        }
+    }
+    if (a.type === 'object' && b.type === 'object') {
+        if (JSON.stringify([...a.properties.keys()].sort()) !== JSON.stringify([...b.properties.keys()].sort())) {
+            throw error()
+        }
+        const properties = new Map<string, USSType>()
+        for (const [key, type] of a.properties) {
+            properties.set(key, type)
+        }
+        for (const [key, type] of b.properties) {
+            const res = unifyType(properties.get(key)!, type, error)
+            assert(res.type !== 'elementOfEmptyVector', `Unreachable`)
+            properties.set(key, res)
+        }
+        return {
+            type: 'object',
+            properties,
+        }
+    }
+    throw error()
+}
+
+export function renderValue(input: USSValue): string {
+    function helper(value: USSValue, indent: string): string {
+        const type = value.type
+        switch (type.type) {
+            case 'boolean':
+            case 'null':
+            case 'number':
+                return `${value.value as boolean | null | number}`
+            case 'string':
+                return `"${value.value as string}"`
+            case 'opaque':
+                const opaqueValue = value.value as USSOpaqueValue
+                switch (opaqueValue.opaqueType) {
+                    case 'scale':
+                    case 'pMap':
+                    case 'cMap':
+                    case 'cMapRGB':
+                    case 'clusterMap':
+                    case 'table':
+                    case 'column':
+                    case 'basemap':
+                    case 'inset':
+                    case 'insets':
+                    case 'geoFeatureHandle':
+                    case 'geoCentroidHandle':
+                    case 'unit':
+                    case 'textBox':
+                    case 'richTextDocument':
+                    case 'richTextSegment':
+                    case 'richTextAlign':
+                    case 'splitDirection':
+                    case 'richTextList':
+                        return `[${opaqueValue.opaqueType} object]`
+                    case 'color':
+                        return deconstructColor(opaqueValue.value)
+                    case 'outline':
+                        const outline = opaqueValue.value
+                        return `constructOutline(color=${deconstructColor(outline.color)}, weight=${outline.weight})`
+                    case 'missingData':
+                        const missingDataColor = opaqueValue.value.color
+                        return `constructMissingData(${missingDataColor === undefined ? '' : `color=${deconstructColor(missingDataColor)}`})`
+                    case 'ramp':
+                        const ramp = opaqueValue.value
+                        const rampValue = ramp.map(
+                            ([position, color]) => {
+                                const contents: [string, USSRawValue][] = [
+                                        ['value', position] satisfies [string, USSRawValue],
+                                        ['color', { type: 'opaque', opaqueType: 'color', value: hexToColor(color) }] satisfies [string, USSRawValue],
+                                ] satisfies [string, USSRawValue][]
+                                return new Map(contents) satisfies Map<string, USSRawValue>
+                            },
+                        )
+                        const interior = undocValue(rampValue,
+                            {
+                                type: 'vector',
+                                elementType: {
+                                    type: 'object',
+                                    properties: new Map([
+                                        ['value', { type: 'number' }],
+                                        ['color', { type: 'opaque', name: 'color' }],
+                                    ]),
+                                },
+                            },
+                        )
+                        return `[ramp ${renderValue(interior)}]`
+                }
+            case 'vector':
+                const vector = value.value as USSRawValue[]
+                if (vector.length === 0) {
+                    return `[]`
+                }
+                // USSType assertion is OK since we handle zero-length vectors above
+                return `[
+${vector.map(element => `${indent}    ${helper(undocValue(element, type.elementType as USSType), `${indent}    `)}`).join(',\n')}
+${indent}]`
+            case 'object':
+                const map = value.value as Map<string, USSRawValue>
+                if (map.size === 0) {
+                    return `{}`
+                }
+                return `{
+${Array.from(map.entries()).map(([key, element]) => `${indent}    ${key}: ${helper(undocValue(element, type.properties.get(key)!), `${indent}    `)}`).join(',\n')}
+${indent}}`
+            case 'function':
+                return renderType(type)
+        }
+    }
+    return helper(input, '')
+}
+
+export function canUnifyTo(a: USSType, b: USSType): boolean {
+    // returns true iff a can be used in a context where b is expected
+    if (renderType(a) === renderType(b)) {
+        return true
+    }
+    // at this point, the types are different
+    switch (b.type) {
+        case 'number':
+        case 'string':
+        case 'boolean':
+        case 'null':
+        case 'opaque':
+            // these are all primitive types, so no way to substitute them
+            return false
+        case 'vector':
+            assert(b.elementType.type !== 'elementOfEmptyVector', `Unreachable`)
+            return canUnifyTo(a, b.elementType)
+        case 'object':
+            if (a.type !== 'object') {
+                return false
+            }
+            if (a.properties.size !== b.properties.size) {
+                return false
+            }
+            if (![...a.properties.keys()].every(key => b.properties.has(key))) {
+                return false
+            }
+            return [...a.properties.keys()].every(key => canUnifyTo(a.properties.get(key)!, b.properties.get(key)!))
+        case 'function':
+            return false
+    }
+}

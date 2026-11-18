@@ -1,11 +1,13 @@
 import { MathJax, MathJaxContext } from 'better-react-mathjax'
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useContext } from 'react'
 import { FootnoteRef, Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 
 import './style.css'
 import './common.css'
 import industry_occupation_table from './data/explanation_industry_occupation_table'
 import shapefile_data_credit from './data/shapefile_data_credit'
+import { Navigator } from './navigation/Navigator'
+import { elementIdFromHash, urlFromPageDescriptor } from './navigation/PageDescriptor'
 import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
 import { useHeaderTextClass } from './utils/responsive'
@@ -59,10 +61,15 @@ function NRef({ children, name, h: Header = 'h2' }: { children: React.ReactNode,
     )
 }
 
-export function Shapefiles(): ReactNode {
+function shapefileAnchor(name: string): string {
+    return `shapefile_${name}`
+}
+
+function Shapefiles(): ReactNode {
     // {name: string, dataCredit: {text: string | undefined, linkText: string, link: string}[]}[]
     // make a table of this data, with the link in the second column and the text in the third, if it exists. Put multiple rows on the right 2 columns if there are multiple data credits.
     const colors = useColors()
+    const anchoredId = elementIdFromHash(urlFromPageDescriptor(useContext(Navigator.Context).usePageState().current.descriptor).hash)
     return (
         <div style={{ marginLeft: '1em', marginTop: '1em', marginBottom: '1em', border: `1px solid ${colors.textMain}` }}>
             <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -71,7 +78,18 @@ export function Shapefiles(): ReactNode {
             </div>
             {shapefile_data_credit.map(({ names, dataCredits }, i) => (
                 <div key={i}>
-                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            position: 'relative',
+                            backgroundColor: names.some(name => anchoredId === shapefileAnchor(name)) ? colors.highlight : undefined,
+                        }}
+                    >
+                        {/* Zero-height so that seeking to any of these anchors lands on the top of the row */}
+                        {names.map(name => (
+                            <div key={name} id={shapefileAnchor(name)} style={{ position: 'absolute', top: 0 }} />
+                        ))}
                         <div style={{ width: '30%', border: `1px solid ${colors.textMain}`, padding: '1em', display: 'flex', flexDirection: 'row', verticalAlign: 'middle' }}>
                             <div style={{ width: '100%', margin: 'auto' }}>
                                 {names.map((name, j) => (
@@ -86,7 +104,7 @@ export function Shapefiles(): ReactNode {
                                         <a href={link}>{linkText}</a>
                                     </div>
                                     <div style={{ width: '75%', padding: '1em' }}>
-                                        {text}
+                                        <div dangerouslySetInnerHTML={{ __html: text ?? '' }} />
                                     </div>
                                 </div>
                             ))}
@@ -146,7 +164,11 @@ export function DataCreditPanel(): ReactNode {
                         <h1>Census Data</h1>
                         <div>
 
-                            All data listed in this section is collected from the 2020 US Census.
+                            All data listed in this section is collected from the 2020 US Census. Population, density,
+                            race, and housing units per person and per adult are also available in Canada, from the 2021
+                            Canadian Census (see Canadian Data below), and the two countries&apos; values are combined into
+                            one National Census statistic. Population and density are also available in Australia, from the
+                            2021 Australian Census (see Australian Data below), and are combined in the same way.
 
                             <NRef name="population">Population</NRef>
                             <div>
@@ -166,6 +188,18 @@ export function DataCreditPanel(): ReactNode {
                                     <a href="https://kavigupta.org/2021/09/26/Youre-calculating-population-density-incorrectly/">this page</a>
                                     .
                                 </p>
+                                <p>
+                                    The PW Median density is the density such that half of the region&apos;s population lives
+                                    in an area with a higher density and half at a lower one.
+                                </p>
+                            </div>
+                            <NRef name="population-median">Population Median</NRef>
+                            <div>
+                                <p>
+                                    The population median is the point with the smallest average great-circle distance to
+                                    the region&apos;s residents. It is computed from 2020 US Census blocks, 2021 Canada dissemination
+                                    blocks, or 2021 Australia mesh blocks where available, and GHS-POP grid cells when not.
+                                </p>
                             </div>
                             <NRef name="race">Race</NRef>
                             <div>
@@ -180,6 +214,24 @@ export function DataCreditPanel(): ReactNode {
                                 <p>
                                     We compute vacancy as the percentage of housing units that are vacant. We compute
                                     units per adult as the number of housing units divided by the number of adults.
+                                </p>
+                                <p>
+                                    Population weighted household size is the average household size by person. In essence,
+                                    if a region has 1 household witht 3 people and 1 with 1 person, the population weighted
+                                    mean household size is
+                                </p>
+                                <MathJax style={{ height: '60px', overflow: 'hidden' }}>
+                                    {`\\[\\frac{3 + 3 + 3 + 1}{1 + 1 + 1 + 1} = 2.5\\]`}
+                                </MathJax>
+                                <p>
+                                    which is different from the unweighted mean household size of 2.0. This
+                                    is more useful because it measures the average size of a household that
+                                    each person is in.
+                                </p>
+                                <p>
+                                    The Canadian data groups all households of 5 or more people together, so we count each of
+                                    them as having 5.75 people, in both countries. On US data, this gives values close to those
+                                    computed from the ACS&apos;s separate 5, 6, and 7+ person counts.
                                 </p>
                             </div>
 
@@ -359,6 +411,9 @@ export function DataCreditPanel(): ReactNode {
                         <h1>American Community Survey Data</h1>
                         <div>
                             All data listed in this section is collected from the 2021 American Community Survey 5-year estimates.
+                            Citizenship, language, generation, commute mode and time, industry, marriage, household size, and renter %
+                            are also available in Canada, from the 2021 Canadian Census (see Canadian Data below), and the two countries&apos; values
+                            are combined into one National Census statistic.
 
                             <NRef name="citizenship">Citizenship</NRef>
                             <div>
@@ -434,6 +489,10 @@ export function DataCreditPanel(): ReactNode {
                                     We compute both individual and household income, disaggregating from the tract level to the block level
                                     using adult population as a weight for indivividual income and occupied housing units as a weight for household income.
                                 </p>
+                                <p>
+                                    Median income is directly computed from the census rather than being disaggregated. To ensure we align with the latest counties,
+                                    we use ACS 2023 instead of ACS 2021 for this statistic.
+                                </p>
                             </div>
 
                             <NRef name="transportation">Transportation</NRef>
@@ -442,6 +501,17 @@ export function DataCreditPanel(): ReactNode {
                                     All transportation data is computed using disaggregation from the block group level
                                     to the block level, weighted by adult population. We consider taxi to be a form of
                                     car transportation, and consider motorcycle to be a form of bike transportation.
+                                </p>
+                                <p>
+                                    Commute mode previously included worked-at-home as its own category; we now exclude
+                                    work-from-home from the mode shares to align with in-person commuting modes only.
+                                </p>
+                                <p>
+                                    To compute median commute time, we use the bins the US and Canadian data share: under 15, 15-29,
+                                    30-44, 45-59, and 60+ minutes. We compute an approximate median by assuming that the logarithm of
+                                    commute time is uniformly distributed within each bin, with the first bin taken to start at 4
+                                    minutes and the 60+ bin to end at 120 minutes. On US data, this gives medians close to those
+                                    computed from the finer bins the ACS provides.
                                 </p>
                             </div>
 
@@ -464,6 +534,26 @@ export function DataCreditPanel(): ReactNode {
                                     {'. '}
                                     It is computed using disaggregation from the tract level to block level, using the 2010 census tracts
                                     (I am not sure why the CDC uses 2010 tracts for 2023 data, but that&apos;s what they do). This data is inherently estimate based.
+                                </p>
+                            </div>
+
+                            <NRef name="ihme">Life Expectancy and IHME Health Care Performance</NRef>
+                            <div>
+                                <p>
+                                    Health care system performance and life expectancy data comes from
+                                    {' '}
+                                    <FootnoteRef
+                                        id="ihme_healthcare"
+                                        description={(
+                                            <span>
+                                                Institute for Health Metrics and Evaluation (IHME). United States Health Care System Performance by County 2014-2019. Seattle, United States of America: Institute for Health Metrics and Evaluation (IHME), 2025.
+                                            </span>
+                                        )}
+                                    >
+                                        <a href="https://ghdx.healthdata.org/record/ihme-data/us-health-care-performance-county-2014-2019">IHME</a>
+                                    </FootnoteRef>
+                                    {'. '}
+                                    We use the adjusted system performance data, and use the latest year (2019).
                                 </p>
                             </div>
 
@@ -563,31 +653,73 @@ export function DataCreditPanel(): ReactNode {
                                     >
                                         ERA5
                                     </FootnoteRef>
+                                    {' '}
+                                    using
+                                    {' '}
+                                    <FootnoteRef
+                                        description={(
+                                            <span>
+                                                Gorelick, N., Hancher, M., Dixon, M., Ilyushchenko, S.,
+                                                Thau, D., &amp; Moore, R. (2017). Google Earth Engine:
+                                                Planetary-scale geospatial analysis for everyone.
+                                                <em>Remote Sensing of Environment.</em>
+                                            </span>
+                                        )}
+                                    >
+                                        Google Earth Engine
+                                    </FootnoteRef>
                                     {'. '}
-                                    We collect data over the time period 1991-2021 and
+                                    We collect data over the time period 1990-2020 and
                                     over the 0.25 degree grid.
                                 </p>
                                 <p>
                                     For each grid point, we compute each of our weather statistics.
+                                </p>
 
-                                    We compute mean high temperatures by aggregating the daily high temperature for each day
-                                    in the time period, and then taking the mean of these values. We perform a similar
-                                    computation for mean high dew point. Using these values, we compute the mean high heat index.
+                                <ul>
+                                    <li>
+                                        We compute mean high/low temperatures by aggregating the daily high/low temperature for each day
+                                        in the time period, and then taking the mean of these values. We perform a similar
+                                        computation for mean high dew point. Using these values, we compute the mean high heat index.
+                                    </li>
+                                    <li>
+                                        We compute mean rainfall and snowfall by aggregating the hourly rainfall and snowfall.
+                                        Codes 1 (rain) and 2 (freezing rain) are coded as rain, and codes 5 (snow), 6 (wet snow),
+                                        and 8 (ice pellets) are coded as snow. Code 7 (mixed) is coded as 50/50 rain/snow.
+                                    </li>
 
-                                    We compute mean rainfall and snowfall by aggregating the hourly rainfall and snowfall.
-                                    Codes 1 (rain) and 2 (freezing rain) are coded as rain, and codes 5 (snow), 6 (wet snow),
-                                    and 8 (ice pellets) are coded as snow. Code 7 (mixed) is coded as 50/50 rain/snow.
+                                    <li>
+                                        Wind speed is computed by taking the mean of the hourly wind speed values per day, then comparing
+                                        to 10mph per day.
+                                    </li>
+                                    <li>
+                                        We compute the mean hourly sunshine by taking the mean amount of (1 - cloud cover) per daylit hour.
+                                        Prior to version 30.0.0, we fractionalized hours based on the amount of time there was daylight,
+                                        however, this was computationally difficult using Earth Engine, so we instead used all hours with
+                                        any daylight, and subtracted half an hour from the final sunniness metric to compensate.
+                                    </li>
+                                </ul>
+                                <p>
+                                    Every statistic except dewpoint and wind-speed are computed using the full 30-year
+                                    timespan. Dewpoint and wind speed are computed using a random sample of 2000 days.
                                 </p>
                                 <p>
-                                    These estimates are then interpolated to the block level using the census block centroid
-                                    using bilinear interpolation. We then compute the population weighted average of these
+                                    Weather statistics were added to all countries in version 30.0.0;
+                                    this necessitated switching to Earth Engine and slightly different computation
+                                    techniques; as a result they may differ slightly from previous versions.
+                                </p>
+                                <p>
+                                    These estimates are then interpolated using bilinear interpolation to the block
+                                    level using the census block centroid for US/Canada and the grid square for international
+                                    data. We then compute the population weighted average of these
                                     statistics for each geography.
                                 </p>
                             </div>
                             <NRef name="2010">2010 Census</NRef>
                             <div>
                                 <p>
-                                    2010 Census data is treated the same way as 2020 Census data.
+                                    2010 Census data is treated the same way as 2020 Census data. In Canada, we use the 2011
+                                    Census in its place.
                                 </p>
                             </div>
                         </div>
@@ -615,14 +747,14 @@ export function DataCreditPanel(): ReactNode {
                             We compute hilliness by first computing the absolute grade (rise over run)
                             at each point to a point 100m to the north, east, south, and west. We then
                             take the average of these four values. To compute population weighted elevation
-                            and hilliness, we then aggregate these values to 30 arc-second blocks, and then
+                            and hilliness, we then aggregate these values to 30&quot; blocks, and then
                             use
                             {' '}
-                            <a href="#explanation_gpw">GPW</a>
+                            <a href="#explanation_gpw">GHSL</a>
                             {' '}
                             data to compute the population weighted average of these statistics for each geography
                             for large regions. For American and Canadian regions, we disaggregate to the block level (starting
-                            with 15 arc-second blocks) via bilinear interpolation and then use the population of each
+                            with 15&quot; blocks) via bilinear interpolation and then use the population of each
                             block as a weight.
                         </div>
 
@@ -651,12 +783,14 @@ export function DataCreditPanel(): ReactNode {
                                 Atmospheric Composition Analysis group.
                             </FootnoteRef>
                             {'. '}
-                            This data is provided at 0.01 degree resolution (36 arc-seconds). We disaggregate to 30 arc-second blocks,
+                            This data is provided at 0.01 degree resolution (36&quot;). We disaggregate to 30&quot; blocks,
                             and then use the same method as for elevation and hilliness to compute population weighted pollution
                             for each geography.
                         </div>
 
-                        <NRef name="election" h="h1">Voting and Elections Science Team Data</NRef>
+                        <NRef name="election" h="h1">Elections</NRef>
+
+                        <h2>2016 and 2020 Election Data</h2>
                         <div>
                             Election Data is from
                             {' '}
@@ -684,6 +818,121 @@ export function DataCreditPanel(): ReactNode {
                             indicates that the statistic is not available for the given geography, possibly because the
                             precinct boundaries in the dataset are slightly inaccurate, or there are no results for
                             the precincts overlapping the geography.
+                        </div>
+                        <h2>2008 and 2012 Election Data</h2>
+                        <div>
+                            2008 and 2012 Election Data is aggregated from counties from
+                            {' '}
+                            <FootnoteRef
+                                description={(
+                                    <span>
+                                        McGovern, Tony (2025):
+                                        {' '}
+                                        <i>US County Level Election Results 08-24,</i>
+                                        {' '}
+                                        <a href="https://github.com/tonmcg/US_County_Level_Election_Results_08-24">https://github.com/tonmcg/US_County_Level_Election_Results_08-24</a>
+                                    </span>
+                                )}
+                            >
+                                Tony McGovern.
+                            </FootnoteRef>
+                            We do not perform disaggregation as counties are massive, instead we only report county level data and
+                            data for geographies that are aggregations of counties (states, MSAs, etc). Some counties have changed over
+                            time, in cases where modern counties disagree with 2008/2012 counties, we do not report results. Alaska is
+                            aggregated into a single &quot;county&quot; for this purpose.
+                        </div>
+                        <NRef name="election_2024" h="h2">2024 Election Data</NRef>
+                        <div>
+                            2024 Election Data is from a fork of
+                            {' '}
+                            <FootnoteRef
+                                description={(
+                                    <span>
+                                        Metcalf, J. (2024):
+                                        {' '}
+                                        <i>2024 Election Precinct Data,</i>
+                                        {' '}
+                                        <a href="https://github.com/jmetcalf/2024-election-precinct-data">https://github.com/jmetcalf/2024-election-precinct-data</a>
+                                    </span>
+                                )}
+                            >
+                                J Metcalf&apos;s 2024 Election Precinct Data repository
+                            </FootnoteRef>
+                            {' '}
+                            that we have updated with several changes, including pulling in data from the
+                            {' '}
+                            <FootnoteRef
+                                description={(
+                                    <span>
+                                        New York Times (2024):
+                                        {' '}
+                                        <i>Presidential Precinct Map 2024,</i>
+                                        {' '}
+                                        <a href="https://github.com/nytimes/presidential-precinct-map-2024">https://github.com/nytimes/presidential-precinct-map-2024</a>
+                                    </span>
+                                )}
+                            >
+                                New York Times
+                            </FootnoteRef>
+                            {' '}
+                            for several states (California, Michigan, Pennsylvania, Massachusetts, New Jersey, Tennessee, and Utah).
+                            {' '}
+                            For details on how the data has been normalized and processed, see our
+                            {' '}
+                            <a href="https://github.com/kavigupta/2024Precincts">fork</a>
+                            {' '}
+                            of the Metcalf repository.
+                            .
+                        </div>
+                        <NRef name="canada_election" h="h2">Canadian General Election Data</NRef>
+                        <div>
+                            Canadian General Election data is from
+                            {' '}
+                            <FootnoteRef
+                                description={(
+                                    <span>
+                                        Elections Canada:
+                                        {' '}
+                                        <i>General Election Results,</i>
+                                        {' '}
+                                        <a href="https://www.elections.ca/content.aspx?section=res&dir=rep/off&document=index&lang=e">https://www.elections.ca/content.aspx?section=res&dir=rep/off&document=index&lang=e</a>
+                                    </span>
+                                )}
+                            >
+                                Elections Canada
+                            </FootnoteRef>
+                            {' '}
+                            and polling division boundaries from
+                            {' '}
+                            <FootnoteRef
+                                description={(
+                                    <span>
+                                        Geo.ca and Open Canada:
+                                        {' '}
+                                        <i>Polling Division Boundaries,</i>
+                                        {' '}
+                                        <a href="https://open.canada.ca/data/en/dataset/97a2a33c-54cc-4f2e-82c1-047ad8212f05">https://open.canada.ca/data/en/dataset/97a2a33c-54cc-4f2e-82c1-047ad8212f05</a>
+                                    </span>
+                                )}
+                            >
+                                Geo.ca and Open Canada
+                            </FootnoteRef>
+                            {' '}
+                            . For details on how we process the data, see our
+                            {' '}
+                            <a href="https://github.com/kavigupta/CanadaGeneralElections">repository</a>
+                            {'. '}
+                            We then compute the 2-Coalition Margin metric comparing (LIB + NDP + GRN) to (CON + PPC).
+                            Results might not match official results exactly
+                            due to the disaggregation process.
+                        </div>
+                        <NRef name="congressional_representatives" h="h2">Congressional Representatives</NRef>
+                        <div>
+                            Congressional representative metadata is scraped from Wikipedia, see
+                            {' '}
+                            <a href="https://github.com/kavigupta/all-congressional-representatives">our scraper repository</a>
+                            {' '}
+                            for more details on how this was put together.
                         </div>
                         <NRef name="park" h="h1">Parkland</NRef>
                         <div>
@@ -768,14 +1017,18 @@ export function DataCreditPanel(): ReactNode {
                                 </span>
                             )}
                             >
-                                GPW.
+                                GHSL.
                             </FootnoteRef>
                             {' '}
                             We use the 2020 population estimates, which are
                             not perfectly accurate in all cases, but should be the best match to the 2020 Census numbers
-                            we are using for the US data. To compute PW density, we treat each cell as effectively homogenous,
-                            but since the cells are all smaller than 1 square kilometer, this should not be a major issue for
-                            radii above 1km (which is the smallest radius we use for GHS-POP data).
+                            we are using for the US data. We use the 3&quot; resolution data on a WSG84 (equirectangular) projection.
+                            To compute PW density, we treat each cell as effectively homogenous,
+                            but since the cells are all smaller than 100m*100m, this should not be a major issue for
+                            radii above 1km (which is the smallest radius we use for GHS-POP data). Before 23.13.0, we used
+                            the 30&quot; data, which is not as accurate, and led to underestimates of population density
+                            in some areas; we continue to use this data for disaggregation purposes, but weather and pollution tend not
+                            to vary nearly as much as population, and data is not available at 3&quot; resolution for these datasets.
                         </div>
                         <h1>Canadian Data</h1>
                         <div>
@@ -800,6 +1053,8 @@ export function DataCreditPanel(): ReactNode {
                                 . We use the same metrics as for the US Census to compute population
                                 and population density statistics, except using dissemination blocks instead
                                 of census blocks. We use this for population and density statistics.
+                                We also use the 2011 Census for 2011 and decade change statistics, aligning the 2011
+                                dissemination block data with the 2021 geography.
                             </div>
                             <NRef name="canadian-census-disaggregated" h="h2">Census Dissemination Block Data</NRef>
                             <div>
@@ -813,11 +1068,48 @@ export function DataCreditPanel(): ReactNode {
                                     dissemination block.
                                 </p>
                                 <p>
-                                    For Generation, Marriage, Industry, and Commute time, we are able to use identical definitions to the US data.
+                                    For Generation, Marriage, and Industry, we are able to use identical definitions to the US data.
+                                    For Commute time and Household size, the Canadian data is binned more coarsely, so both
+                                    countries&apos; values are computed from the bins they share.
+                                    For Language, the merged Other at Home % includes French, since the US data has no separate
+                                    French category; French at Home % is also shown separately for Canada.
                                     For Income, LICO-AT, and ..., we use similar definitions to the US data, but with Canadian-specific
                                     thresholds (e.g., the income thresholds are in CAD, not USD, and we use LICO-AT rather than US Census&apos;s
                                     poverty thresholds).
                                 </p>
+                                <p>
+                                    For Race, we use the visible-minority tables and build US-aligned categories. We treat
+                                    non-visible minority as the base for White + Indigenous, use a separate Indigenous table
+                                    to compute Native %, subtracting this from non-viible minority to get a White %, and then add
+                                    Arab and West Asian back into White to match the US census grouping. The remaining
+                                    visible-minority groups are mapped to Black, Asian, Hispanic, and Other/Mixed.
+                                </p>
+                                <p>
+                                    For Education Field, we mirror the US definitions by grouping Canadian fields into STEM, humanities,
+                                    and business. STEM includes physical and life sciences and technologies, mathematics/computer and
+                                    information sciences, architecture/engineering and related trades, agriculture/natural resources
+                                    and conservation, and health and related fields. Humanities includes education, visual and
+                                    performing arts and communications technologies, humanities, social and behavioural sciences and law,
+                                    personal/protective/transportation services, and other fields. Business is business, management,
+                                    and public administration. We renormalize these numbers to add up to the total educated % between
+                                    25 and 64.
+                                </p>
+                                <p>
+                                    For Language, we do not want to exclude French, which is not present in the US statistics. We treat English and
+                                    English and non-official language(s) as English-only, and group all French-inclusive responses
+                                    (French, English and French, French and non-official language(s), English, French and non-official
+                                    language(s)) as French. Spanish is kept as its own category.
+                                </p>
+                            </div>
+                        </div>
+                        <h1>Australian Data</h1>
+                        <div>
+                            <NRef name="australian-census" h="h2">Census Data</NRef>
+                            <div>
+                                For population and density, we use mesh block counts from the 2021 Australian Census, available
+                                {' '}
+                                <a href="https://www.abs.gov.au/census/guide-census-data/mesh-block-counts/2021">from the ABS</a>
+                                , computing the same metrics as for the US Census with mesh blocks in place of census blocks.
                             </div>
                         </div>
                         <h1> Flags </h1>
@@ -826,6 +1118,36 @@ export function DataCreditPanel(): ReactNode {
                             any circumstances, at least according to the Wikipedia page for the flag.
                         </div>
                     </div>
+
+                    <h1>Article metadata</h1>
+                    <div>
+                        <NRef name="geoid">Article metadata</NRef>
+                        <p>
+                            We include some metadata about articles.
+                            <ul>
+                                <li>
+                                    <b>FIPS</b>
+                                    {' '}
+                                    is a unique identifier for each census geography. These are &quot;summary-level&quot;
+                                    (geography kind) specific, and nested, i.e., California is 06, and Los Angeles County is 06037.
+                                </li>
+                                <li>
+                                    <b>StatCan GeoCode</b>
+                                    {' '}
+                                    is a unique identifier for each Canadian census geography. These are &quot;summary-level&quot;
+                                    (geography kind) specific, and nested, i.e., Ontario is 35, and Toronto is 3520005.
+                                </li>
+                                <li>
+                                    <b>ISO codes</b>
+                                    {' '}
+                                    are standard codes for countries and their subdivisions. We include ISO 3166-1
+                                    alpha-2 country codes for all countries, and ISO 3166-2 subdivision codes for some
+                                    countries (including US states and Canadian provinces).
+                                </li>
+                            </ul>
+                        </p>
+                    </div>
+
                     <Footnotes />
                 </FootnotesProvider>
             </PageTemplate>

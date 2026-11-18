@@ -1,18 +1,17 @@
-.main_panel {
-    position: relative;
-    max-width: 80em;
-    margin-left: auto;
-    margin-right: auto;
+@font-face {
+    font-family: 'Jost';
+    src: url('./fonts/Jost-VariableFont_wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
 }
 
-.main_panel_mobile {
-    padding-left: 1em;
-    padding-right: 1em;
-}
-
-.left_panel {
-    width: 20%;
-    float: left;
+@font-face {
+    font-family: 'Jost';
+    src: url('./fonts/Jost-Italic-VariableFont_wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: italic;
+    font-display: swap;
 }
 
 .right_panel {
@@ -43,18 +42,12 @@
     align-items: center;
 }
 
-.body_panel {
-    position: relative;
-    width: 100%;
-    display: flex;
-}
-
 .gap {
     margin-block-end: 2em;
 }
 
 .hgap {
-    margin-inline-end: 1em;
+    margin-inline-end: 0.75em;
 }
 
 .gap_small {
@@ -65,21 +58,49 @@
     font-family: 'Jost', 'Arial', sans-serif;
 }
 
-button, select {
+button, select, a[role=button] {
     font-family: 'Jost', 'Arial', sans-serif;
     background-color: var(--slightly-different-background);
     border-radius: 5px;
     color: var(--text-main);
     border: 1px solid var(--ordinal-text-color);
+    cursor: pointer;
 }
 
-button:hover:not(:disabled) {
+[role=button] {
+    cursor: pointer;
+}
+
+/* Anchors don't get the browser's button metrics, so restate them */
+a[role=button] {
+    display: inline-block;
+    padding: 1px 6px;
+    font-size: 13.333px;
+    text-decoration: none;
+}
+
+button.borderless {
+    border: none;
+    background-color: transparent;
+    border-radius: 7px;
+}
+
+button:hover:not(:disabled), a[role=button]:hover {
     background-color: var(--slightly-different-background-focused);
+}
+
+button:disabled {
+    color: var(--ordinal-text-color);
+    border: 1px solid var(--border-non-shadow);
 }
 
 .centered_text {
     font-family: 'Jost', 'Arial', sans-serif;
     text-align: center;
+}
+
+.user_input {
+    white-space: pre-wrap; /* So that multiline strings display */
 }
 
 .h1 {
@@ -109,10 +130,33 @@ input[type=checkbox] {
     vertical-align: middle;
 }
 
-input[type=text] {
+input[type=text], textarea {
     background-color: var(--background);
     border-radius: 5px;
     color: var(--text-main);
     border: 1px solid var(--ordinal-text-color);
     font-family: 'Jost', 'Arial', sans-serif;
+}
+
+input[type=text]:disabled, textarea:disabled {
+    opacity: 0.5;
+}
+
+.syau-searchbox::placeholder {
+    color: var(--text-main)
+}
+
+/* Antialiased rounded corners render inconsistently between runs, making screenshots flaky */
+html[data-testing] button, html[data-testing] select, html[data-testing] a[role=button] {
+    border-radius: 0;
+}
+
+a.underline_on_hover {
+    text-decoration: none;
+    color: var(--text-main);
+}
+
+a.underline_on_hover:hover {
+    text-decoration: underline;
+    color: var(--blue-link);
 }

@@ -5,7 +5,7 @@ import { promisify } from 'util'
 import { execa, execaSync } from 'execa'
 import { ClientFunction, Selector } from 'testcafe'
 
-import { safeReload, screencap, target, urbanstatsFixture, waitForQuizLoading } from './test_utils'
+import { safeClearLocalStorage, safeReload, screencap, target, urbanstatsFixture, waitForQuizLoading } from './test_utils'
 
 export async function quizScreencap(t: TestController): Promise<void> {
     await t.eval(() => {
@@ -14,16 +14,13 @@ export async function quizScreencap(t: TestController): Promise<void> {
             elem.remove()
         }
     })
-    await t.wait(1000)
     await screencap(t)
 }
 
 export async function clickButtons(t: TestController, whichs: string[]): Promise<void> {
     for (const which of whichs) {
         await clickButton(t, which)
-        await t.wait(500)
     }
-    await t.wait(2000)
 }
 // click the kth button with id quiz-answer-button-$which
 
@@ -32,38 +29,53 @@ export async function clickButton(t: TestController, which: string): Promise<Tes
     return t.click(Selector('div').withAttribute('id', `quiz-answer-button-${which}`))
 }
 
-let server: Promise<unknown> | undefined
 async function runForTest(): Promise<void> {
-    if (server === undefined) {
-        server = execa('bash', ['../urbanstats-persistent-data/run_for_test.sh'], { stdio: 'inherit', cleanup: true })
+    if (!(await isServerAvailable())) {
+        console.warn('No quiz server found. Starting new quiz server...')
+        void execa('bash', ['../urbanstats-persistent-data/run_for_test.sh'], { stdio: 'inherit', cleanup: true })
         process.on('exit', () => {
             execaSync('pkill', ['-f', 'urbanstats-persistent-data'])
         })
         await waitForServerToBeAvailable()
+        console.warn('Quiz server started.')
+    }
+    else {
+        console.warn('Quiz server found. Using existing quiz server.')
     }
 }
 
+async function isServerAvailable(): Promise<boolean> {
+    try {
+        await fetch('http://localhost:54579')
+        return true
+    }
+    catch {
+        return false
+    }
+}
 async function waitForServerToBeAvailable(): Promise<void> {
-    while (true) {
-        try {
-            await fetch('http://localhost:54579')
-            break
-        }
-        catch {}
+    while (!(await isServerAvailable())) {
         await new Promise(resolve => setTimeout(resolve, 100))
     }
 }
 
-export function quizFixture(fixName: string, url: string, newLocalstorage: Record<string, string>, sqlStatements: string, platform: 'desktop' | 'mobile'): void {
+export function quizFixture(
+    fixName: string,
+    url: string,
+    newLocalstorage: Record<string, string>,
+    sqlStatements: string,
+    platform: 'desktop' | 'mobile',
+    beforeEach?: (t: TestController) => Promise<void>,
+    afterEach?: (t: TestController) => Promise<void>,
+): void {
     urbanstatsFixture(fixName, url, async (t) => {
-        await interceptRequests(t)
         const tempfile = `${tempfileName()}.sql`
         // Delete the database and recreate it with the given SQL statements
         writeFileSync(tempfile, sqlStatements)
         await promisify(exec)(`cd ../urbanstats-persistent-data; rm db.sqlite3; cat ${tempfile} | sqlite3 db.sqlite3; cd -`)
         await runForTest()
+        await safeClearLocalStorage(t)
         await t.eval(() => {
-            localStorage.clear()
             for (const k of Object.keys(newLocalstorage)) {
                 localStorage.setItem(k, newLocalstorage[k])
             }
@@ -81,62 +93,8 @@ export function quizFixture(fixName: string, url: string, newLocalstorage: Recor
                 await t.resizeWindow(1400, 800)
                 break
         }
-    })
-}
-
-const interceptingSessions = new Set<unknown>()
-
-async function interceptRequests(t: TestController): Promise<void> {
-    const cdpSesh = await t.getCurrentCDPSession()
-    if (interceptingSessions.has(cdpSesh)) {
-        return
-    }
-    else {
-        interceptingSessions.add(cdpSesh)
-    }
-    cdpSesh.Fetch.on('requestPaused', async (event) => {
-        try {
-            if (event.responseStatusCode !== undefined) {
-                // This is a response, just send it back
-                await cdpSesh.Fetch.continueResponse({ requestId: event.requestId })
-            }
-            else if (event.request.url.startsWith('https://s.urbanstats.org/s?')) {
-                // We're doing a GET from the link shortener, send the request to the local persistent, and override the location to go to localhost instead of urbanstats.org
-                // Chrome doesn't support overriding the response later, so we must fulfill the request by making a fetch
-                const response = await fetch(event.request.url.replaceAll('https://s.urbanstats.org', 'http://localhost:54579'), {
-                    ...event.request,
-                    redirect: 'manual',
-                })
-                const responseHeaders: { name: string, value: string }[] = []
-                response.headers.forEach((value, name) => {
-                    if (name === 'location') {
-                        responseHeaders.push({
-                            name,
-                            value: value.replaceAll('https://urbanstats.org', 'http://localhost:8000'),
-                        })
-                    }
-                    else {
-                        responseHeaders.push({ name, value })
-                    }
-                })
-                await cdpSesh.Fetch.fulfillRequest({ requestId: event.requestId, responseHeaders, responseCode: response.status })
-            }
-            else {
-                // We're using the persistent backend in some other way, send the request to localhost
-                await cdpSesh.Fetch.continueRequest({ requestId: event.requestId, url: event.request.url.replace(/https:\/\/.+\.urbanstats\.org/g, 'http://localhost:54579') })
-            }
-        }
-        catch (e) {
-            console.error(`Failure in CDP requestPaused handler: ${e}`)
-        }
-    })
-    await cdpSesh.Fetch.enable({
-        patterns: [{
-            urlPattern: 'https://s.urbanstats.org/*',
-        }, {
-            urlPattern: 'https://persistent.urbanstats.org/*',
-        }],
-    })
+        await beforeEach?.(t)
+    }, { afterEach })
 }
 
 export function tempfileName(): string {
@@ -205,7 +163,7 @@ async function collectCorrectJuxtaInfiniteAnswers(t: TestController, seeds: stri
     }
 }
 
-export function collectCorrectJuxtaInfiniteAnswersFixture(seeds: string[], version: number, cas: Map<string, string[]> | undefined = undefined): void {
+export function collectCorrectJuxtaInfiniteAnswersFixture(seeds: string[], version: number, cas?: Map<string, string[]>): void {
     quizFixture(
         'collect correct answers',
         `${target}/quiz.html`,
@@ -219,7 +177,7 @@ export function collectCorrectJuxtaInfiniteAnswersFixture(seeds: string[], versi
     })
 }
 
-export async function provideAnswers(t: TestController, start: number, isCorrect: boolean[] | string, seed: string, cas: Map<string, string[]> | undefined = undefined): Promise<void> {
+export async function provideAnswers(t: TestController, start: number, isCorrect: boolean[] | string, seed: string, cas?: Map<string, string[]>): Promise<void> {
     // check if isCorrect is a string, then interpret as 0s and 1s
     if (typeof isCorrect === 'string') {
         isCorrect = isCorrect.split('').map(c => c === '1')

@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Obesity %",
+      "stat_path": "OBESITY_cdc_2",
+      "question": "higher % of adults with obesity",
+      "longname_a": "Hawaii, USA",
+      "longname_b": "Mississippi, USA",
+      "stat_a": 0.24348179545337126,
+      "stat_b": 0.4062033585148135
+    },
+    "b": {
+      "stat_column": "Undergrad Business [25-64] % [StatCan]",
+      "stat_path": "education_field_business_canada",
+      "question": "higher % of people between 25 and 64 who have a business degree, as a percentage of the overall population",
+      "longname_a": "Vaughan City, York Regional municipality, Ontario, Canada",
+      "longname_b": "Surrey City, Greater Vancouver Regional district, British Columbia, Canada",
+      "stat_a": 0.12104333956065204,
+      "stat_b": 0.07935144617561267
+    },
+    "a_ease": 0.7953696788648245,
+    "b_ease": 0.3949579831932773
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Employed in Other services, except public administration %",
+      "stat_path": "industry_other_services,_except_public_administration",
+      "question": "higher % of workers employed in other service industries, except public administration!TOOLTIP repair and maintenance, personal care services, beauty salons, funeral homes, religious organizations, civic and social organizations, etc.",
+      "longname_a": "Lexington-Fayette MSA, KY, USA",
+      "longname_b": "Milwaukee-Waukesha-West Allis MSA, WI, USA",
+      "stat_a": 0.052304727946297536,
+      "stat_b": 0.04339667243600674
+    },
+    "b": {
+      "stat_column": "Muslim % [StatCan]",
+      "stat_path": "religion_muslim_canada",
+      "question": "higher % of people who are Muslim",
+      "longname_a": "Saskatoon Population Center, SK, Canada",
+      "longname_b": "Windsor Population Center, ON, Canada",
+      "stat_a": 0.04515444608282561,
+      "stat_b": 0.0921331372860524
+    },
+    "a_ease": 0.3803353658536585,
+    "b_ease": 0.8191593352883676
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2019-2021 Swing 2-Coalition Margin",
+      "stat_path": "2019-2021 Swing-coalition_margin",
+      "question": "!FULL Which swung less towards the right-of-center parties between the 2019 and 2021 elections?!TOOLTIP By 2-Coalition Margin, which is calculated as (Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation.",
+      "longname_a": "Edmonton Urban Center, Canada",
+      "longname_b": "Winnipeg Urban Center, Canada",
+      "stat_a": 0.18839068147358007,
+      "stat_b": 0.036757305033526866
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km)",
+      "stat_path": "ad_4",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Perak, Malaysia",
+      "longname_b": "Tamil N\u0101du, India",
+      "stat_a": 1517.6189325943494,
+      "stat_b": 4349.836323523545
+    },
+    "a_ease": 0.43884892086330934,
+    "b_ease": 0.8394324122479462
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Pedestrian/Cyclist Fatalities Per Capita Per Year",
+      "stat_path": "traffic_fatalities_ped_last_decade_per_capita",
+      "question": "higher pedestrian/cyclist fatalities per capita between 2013 and 2022!TOOLTIP pedestrian and cyclist fatalities in the region, divided by the population of the region",
+      "longname_a": "Gulfport-Biloxi-Pascagoula MSA, MS, USA",
+      "longname_b": "Pittsburgh MSA, PA, USA",
+      "stat_a": 3.845689811184172e-05,
+      "stat_b": 1.041790124420109e-05
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Hospital",
+      "stat_path": "mean_dist_Hospital_updated",
+      "question": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
+      "longname_a": "Baltimore city-County, Maryland, USA",
+      "longname_b": "Thurston County, Washington, USA",
+      "stat_a": 1.8101219119705074,
+      "stat_b": 8.493504304906464
+    },
+    "a_ease": 0.4527439024390244,
+    "b_ease": 0.8545163868904876
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Car %",
+      "stat_path": "transportation_means_car_no_wfh",
+      "question": "higher % of people who commute by car",
+      "longname_a": "Monterey County, California, USA",
+      "longname_b": "Hudson County, New Jersey, USA",
+      "stat_a": 0.8740665682592765,
+      "stat_b": 0.48854806490358976
+    },
+    "b": {
+      "stat_column": "Public Insurance %",
+      "stat_path": "insurance_coverage_govt",
+      "question": "higher % of people who are on public insurance!TOOLTIP The denominator for this statistic is the the total number of adults, including those without health insurance coverage.",
+      "longname_a": "Aurora city, Colorado, USA",
+      "longname_b": "Plano city, Texas, USA",
+      "stat_a": 0.17979110956163588,
+      "stat_b": 0.04109035533561267
+    },
+    "a_ease": 0.8960084033613446,
+    "b_ease": 0.49430523917995445
+  }
+]

@@ -1,11 +1,18 @@
 # pylint: disable=duplicate-code
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import GENERATION, QuizQuestionDescriptor
-from urbanstats.statistics.statistic_collection import ACSStatisticsColection
+from urbanstats.statistics.national_census import (
+    ACSCounts,
+    NationalCensusStatistics,
+    StatCanCounts,
+)
 from urbanstats.statistics.utils import fractionalize
 
 
-class GenerationStatistics(ACSStatisticsColection):
+class GenerationStatistics(NationalCensusStatistics):
+    version = 1
+
     def name_for_each_statistic(self):
         return {
             "generation_silent": "Silent %",
@@ -14,6 +21,19 @@ class GenerationStatistics(ACSStatisticsColection):
             "generation_millenial": "Millennial %",
             "generation_genz": "Gen Z %",
             "generation_genalpha": "Gen Alpha %",
+        }
+
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
+    def varname_for_each_statistic(self):
+        return {
+            "generation_silent": "silent",
+            "generation_boomer": "boomer",
+            "generation_genx": "gen_x",
+            "generation_millenial": "millennial",
+            "generation_genz": "gen_z",
+            "generation_genalpha": "gen_alpha",
         }
 
     def explanation_page_for_each_statistic(self):
@@ -32,22 +52,62 @@ class GenerationStatistics(ACSStatisticsColection):
             },
         )
 
-    def quiz_question_unused(self):
-        return []
+    def mutate_counts(self, counts):
+        fractionalize(counts, *self.internal_statistic_names_list())
 
-    def mutate_acs_results(self, statistics_table):
-        fractionalize(
-            statistics_table,
-            "generation_silent",
-            "generation_boomer",
-            "generation_genx",
-            "generation_millenial",
-            "generation_genz",
-            "generation_genalpha",
+    def country_inputs(self):
+        return {
+            "USA": ACSCounts(self.acs_entity()),
+            "Canada": StatCanCounts(self.census_tables_canada()),
+        }
+
+    def census_tables_canada(self):
+        return CensusTables(
+            ["Total - Age groups of the population - 100% data"],
+            {
+                None: [
+                    "Total - Age groups of the population - 100% data",
+                    "  0 to 14 years",
+                    "  15 to 64 years",
+                    "  65 years and over",
+                    "      85 to 89 years",
+                    "      90 to 94 years",
+                    "      95 to 99 years",
+                    "      100 years and over",
+                ],
+                "generation_genalpha": [
+                    "    0 to 4 years",
+                    "    5 to 9 years",
+                ],
+                "generation_genz": [
+                    "    10 to 14 years",
+                    "    15 to 19 years",
+                    "    20 to 24 years",
+                ],
+                "generation_millenial": [
+                    "    25 to 29 years",
+                    "    30 to 34 years",
+                    "    35 to 39 years",
+                ],
+                "generation_genx": [
+                    "    40 to 44 years",
+                    "    45 to 49 years",
+                    "    50 to 54 years",
+                ],
+                "generation_boomer": [
+                    "    55 to 59 years",
+                    "    60 to 64 years",
+                    "    65 to 69 years",
+                    "    70 to 74 years",
+                ],
+                "generation_silent": [
+                    "    75 to 79 years",
+                    "    80 to 84 years",
+                    "    85 years and over",
+                ],
+            },
+            "population",
         )
-
-    def acs_name(self):
-        return "generation"
 
     def acs_entity(self):
         return ACSDataEntity(

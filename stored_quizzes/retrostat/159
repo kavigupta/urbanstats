@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2016-2020 Swing",
+      "stat_path": "2016-2020 Swing-margin",
+      "question": "!FULL Which swung towards Democrats more from 2016 to 2020?",
+      "longname_a": "Corpus Christi [Urban Area], TX, USA",
+      "longname_b": "Port St. Lucie [Urban Area], FL, USA",
+      "stat_a": 0.0029846657998859882,
+      "stat_b": 0.01705322042107582
+    },
+    "b": {
+      "stat_column": "Citizen by Naturalization %",
+      "stat_path": "citizenship_citizen_by_naturalization",
+      "question": "higher % of residents who are citizens by naturalization",
+      "longname_a": "Little Rock-Pine Bluff AR Media Market, USA",
+      "longname_b": "Hartford & New Haven CT Media Market, USA",
+      "stat_a": 0.01317975576967001,
+      "stat_b": 0.06863326579332352
+    },
+    "a_ease": 0.3143776824034335,
+    "b_ease": 0.7353433835845896
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built in 2010s+",
+      "stat_path": "year_built_2010_or_later",
+      "question": "higher % of housing units built in 2010 or later",
+      "longname_a": "Los Angeles CA Media Market, USA",
+      "longname_b": "Birmingham (Anniston & Tuscaloosa) AL Media Market, USA",
+      "stat_a": 0.04777289927005768,
+      "stat_b": 0.07891914993524551
+    },
+    "b": {
+      "stat_column": "Born in us outside state %",
+      "stat_path": "birthplace_us_not_state",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "MI-03 (2023), USA",
+      "longname_b": "SC-01 (2023), USA",
+      "stat_a": 0.16298064589500427,
+      "stat_b": 0.5309147238731384
+    },
+    "a_ease": 0.36113296616837137,
+    "b_ease": 0.7633832976445396
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2015-2019 Swing 2-Coalition Margin",
+      "stat_path": "2015-2019 Swing-coalition_margin",
+      "question": "!FULL Which swung less towards the right-of-center parties between the 2015 and 2019 elections?!TOOLTIP By 2-Coalition Margin, which is calculated as (Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation.",
+      "longname_a": "Montr\u00e9al CMA, QC, Canada",
+      "longname_b": "Oshawa CMA, ON, Canada",
+      "stat_a": -0.08065429329872131,
+      "stat_b": 0.02927859127521515
+    },
+    "b": {
+      "stat_column": "Born outside country %",
+      "stat_path": "birthplace_non_us",
+      "question": "higher % of people who were born outside the country",
+      "longname_a": "Beaumont-Port Arthur TX Media Market, USA",
+      "longname_b": "Flint-Saginaw-Bay City MI Media Market, USA",
+      "stat_a": 0.07880876958370209,
+      "stat_b": 0.02215675078332424
+    },
+    "a_ease": 0.38274706867671693,
+    "b_ease": 0.8016806722689076
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Self-care disability %",
+      "stat_path": "SELFCARE_cdc_2",
+      "question": "higher % of adults with a self-care disability",
+      "longname_a": "Lincoln city, Nebraska, USA",
+      "longname_b": "Cleveland city, Ohio, USA",
+      "stat_a": 0.027740688994526863,
+      "stat_b": 0.07932578027248383
+    },
+    "b": {
+      "stat_column": "Sleeping less than 7 hours %",
+      "stat_path": "SLEEP_cdc_2",
+      "question": "higher % of adults who sleep less than 7 hours",
+      "longname_a": "Thurston County, Washington, USA",
+      "longname_b": "Orange County, California, USA",
+      "stat_a": 0.3349400460720062,
+      "stat_b": 0.31002864241600037
+    },
+    "a_ease": 0.5853658536585366,
+    "b_ease": 0.18197135636057288
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Sleeping less than 7 hours %",
+      "stat_path": "SLEEP_cdc_2",
+      "question": "higher % of adults who sleep less than 7 hours",
+      "longname_a": "Dallas-Ft.Worth TX Media Market, USA",
+      "longname_b": "Macon GA Media Market, USA",
+      "stat_a": 0.34367096424102783,
+      "stat_b": 0.3893846273422241
+    },
+    "b": {
+      "stat_column": "Traffic Fatalities Per Capita Per Year",
+      "stat_path": "traffic_fatalities_last_decade_per_capita",
+      "question": "higher traffic fatalities per capita between 2013 and 2022!TOOLTIP traffic fatalities in the region, divided by the population of the region",
+      "longname_a": "Henderson city, Nevada, USA",
+      "longname_b": "Jacksonville city, Florida, USA",
+      "stat_a": 3.714932609000243e-05,
+      "stat_b": 0.00015543305198661983
+    },
+    "a_ease": 0.2898550724637681,
+    "b_ease": 0.780960404380792
+  }
+]

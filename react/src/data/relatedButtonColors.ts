@@ -1,38 +1,46 @@
 export default [
     [
-        'International',
-        'red',
+        "International",
+        "red"
     ],
     [
-        'US Subdivision',
-        'blue',
+        "International City",
+        "red"
     ],
     [
-        'Census',
-        'cyan',
+        "US Subdivision",
+        "blue"
     ],
     [
-        'Political',
-        'purple',
+        "US City",
+        "blue"
     ],
     [
-        'Oddball',
-        'darkGrey',
+        "Census",
+        "cyan"
     ],
     [
-        'Kavi',
-        'darkOrange',
+        "Political",
+        "purple"
     ],
     [
-        'School',
-        'yellow',
+        "Oddball",
+        "darkGrey"
     ],
     [
-        'Small',
-        'pink',
+        "Kavi",
+        "brown"
     ],
     [
-        'Native',
-        'green',
+        "School",
+        "yellow"
     ],
+    [
+        "Small",
+        "pink"
+    ],
+    [
+        "Native",
+        "green"
+    ]
 ] as const

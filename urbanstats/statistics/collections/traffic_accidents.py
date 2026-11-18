@@ -24,6 +24,22 @@ class NHTSAAccidentStatistics(USAStatistics):
             "traffic_fatalities_ped_last_decade": "Total Pedestrian/Cyclist Fatalities In Last Decade",
         }
 
+    def unit_for_each_statistic(self):
+        return {
+            "traffic_fatalities_last_decade_per_capita": "fatalitiesPerCapita",
+            "traffic_fatalities_ped_last_decade_per_capita": "fatalitiesPerCapita",
+            "traffic_fatalities_last_decade": "fatalities",
+            "traffic_fatalities_ped_last_decade": "fatalities",
+        }
+
+    def varname_for_each_statistic(self):
+        return {
+            "traffic_fatalities_last_decade_per_capita": "traffic_fatalities_per_capita",
+            "traffic_fatalities_ped_last_decade_per_capita": "ped_cyclist_fatalities_per_capita",
+            "traffic_fatalities_last_decade": "traffic_fatalities",
+            "traffic_fatalities_ped_last_decade": "traffic_ped_cyclist_fatalities",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("nhtsa_accidents")
 
@@ -52,8 +68,8 @@ class NHTSAAccidentStatistics(USAStatistics):
     def compute_statistics_dictionary_usa(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
-        acc_raw_all = accidents_by_region(shapefile)
-        pop = population_by_year(shapefile, no_pr=True)
+        acc_raw_all = accidents_by_region(shapefile.geometry)
+        pop = population_by_year(shapefile.geometry, no_pr=True)
         acc_per_cap_all = {
             y: {
                 k: for_year_and_key / compute_population(pop, y)

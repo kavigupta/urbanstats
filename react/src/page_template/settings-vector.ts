@@ -4,7 +4,7 @@
 
 import * as base58 from 'base58-js'
 
-import { defaultSettingsList, RelationshipKey, Settings, SettingsDictionary, StatCategoryExpandedKey, StatCategorySavedIndeterminateKey, useSettings } from './settings'
+import { defaultSettingsList, RelationshipKey, Settings, SettingsDictionary, StatCategorySavedIndeterminateKey, StatSubcategorySavedIndeterminateKey, useSettings } from './settings'
 
 const underflow = Symbol()
 
@@ -111,6 +111,8 @@ const histogramTypeSettingCoder = new BitmapCoder(2, [
 ])
 
 const temperatureUnitCoder = new BitmapCoder(1, ['fahrenheit', 'celsius'])
+
+const plotModeSettingCoder = new BitmapCoder(1, ['monthly_time_series', 'temperature_histogram'])
 
 // Too many bits for expansion
 const mobileArticlePointersCoder = new BitmapCoder(2, ['pointer_in_class', 'pointer_overall'])
@@ -289,9 +291,9 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_marriage_never_married', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_marriage_married_not_divorced', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_marriage_divorced', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_2020 Presidential Election-margin', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_2016 Presidential Election-margin', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_2016-2020 Swing-margin', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'show_stat_group_2020 Presidential Election-margin', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'show_stat_group_2016 Presidential Election-margin', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'show_stat_group_2016-2020 Swing-margin', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_park_percent_1km_v2', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_within_Hospital_10', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_mean_dist_Hospital_updated', coder: booleanSettingCoder }),
@@ -338,7 +340,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_historical_cds', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'simple_ordinals', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'use_imperial', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_source_Population_US Census', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Population_National Census', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_source_Population_GHSL', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__ad_0.25', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__ad_0.25_2000', coder: booleanSettingCoder }),
@@ -364,12 +366,12 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_gridded_elevation', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_gridded_hilliness', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'mobile_article_pointers', coder: mobileArticlePointersCoder }),
-    new ActiveSetting({ key: 'show_stat_source_Population_Canadian Census', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__density_2021_pw_0.25_canada', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__density_2021_pw_0.5_canada', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__density_2021_pw_1_canada', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__density_2021_pw_2_canada', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'expanded__density_2021_pw_4_canada', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'show_stat_source_Population_Canadian Census', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2021_pw_0.25_canada', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2021_pw_0.5_canada', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2021_pw_1_canada', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2021_pw_2_canada', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2021_pw_4_canada', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_lico_at_canada', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_individual_income_under_50cad', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_individual_income_50_to_100cad', coder: booleanSettingCoder }),
@@ -381,18 +383,137 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_education_ugrad_canada', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_education_grad_canada', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_pm_25_2018_2022', coder: booleanSettingCoder }),
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
+    new ActiveSetting({ key: 'show_stat_group_ad_1.609344', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_ad_8', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_ad_16', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_ad_32', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_ad_64', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__ad_1.609344', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__ad_8', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__ad_16', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__ad_32', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__ad_64', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__ad_1.609344_2010', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__ad_8_2010', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__ad_16_2010', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__ad_32_2010', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__ad_64_2010', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__ad_1.609344_2000', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__ad_8_2000', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__ad_16_2000', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__ad_32_2000', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__ad_64_2000', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2021_pw_1.609344_canada', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2021_pw_8_canada', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2021_pw_16_canada', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2021_pw_32_canada', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2021_pw_64_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__gpw_pw_density_1.609344', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__gpw_pw_density_8', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__gpw_pw_density_16', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__gpw_pw_density_32', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__gpw_pw_density_64', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_us_presidential_election', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_mean_high_temp_djf', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_mean_high_temp_mam', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_mean_high_temp_jja', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_mean_high_temp_son', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_mean_low_temp', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_mean_low_temp_djf', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_mean_low_temp_mam', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_mean_low_temp_jja', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_mean_low_temp_son', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__mean_high_temp_4', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__mean_low_temp', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__rainfall_4', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__snowfall_4', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_median_household_income', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_life_expectancy_2019', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_performance_score_adj_2019', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_transportation_commute_time_median', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_person_circles', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_canada_general_election_lib', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_canada_general_election_con', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_canada_general_election_ndp', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_canada_general_election_bq', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_canada_general_election_grn', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_canada_general_election_ppc', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_canada_general_election_coalition_margin', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_education_field_business_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_education_field_stem_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_education_field_humanities_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_housing_per_person', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_lim_at_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_language_french_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_language_other_non_french_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_transportation_means_bike_no_wfh', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_transportation_means_transit_no_wfh', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_transportation_means_walk_no_wfh', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_transportation_means_car_no_wfh', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_religion_jewish_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_religion_buddhist_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_religion_hindu_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_religion_sikh_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_religion_muslim_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_religion_catholic_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_religion_protestant_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_religion_other_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_religion_no_religion_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_rent_burden_over_30_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_occupation_legislative_and_senior_management_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_occupation_business_finance_and_administration_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_occupation_natural_and_applied_sciences_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_occupation_health_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_occupation_education_law_social_community_government_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_occupation_art_culture_recreation_sport_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_occupation_sales_and_service_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_occupation_trades_transport_equipment_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_occupation_natural_resources_agriculture_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_occupation_manufacturing_utilities_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_household_size_pw', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2011_pw_0.25_canada', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2011_pw_0.5_canada', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2011_pw_1_canada', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2011_pw_2_canada', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2011_pw_4_canada', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2011_pw_1.609344_canada', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2011_pw_8_canada', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2011_pw_16_canada', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2011_pw_32_canada', coder: booleanSettingCoder }),
+    new DeprecatedSetting({ key: 'expanded__density_2011_pw_64_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_fips', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_statcan_geocode', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_iso_code', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_congressional_representatives', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'plot_mode', coder: plotModeSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Geography_Shapefile Geometry', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Elevation_ASTER GDEM', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Traffic Fatalities_NHTSA FARS', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Health_CDC PLACES', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Health Care Performance_IHME', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Pollution_Atmospheric Composition Analysis Group', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_US Elections_US Election Data', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Canadian Elections_Elections Canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Metadata_Article Metadata', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Distance from Features_Feature Datasets', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Food Access_USDA Food Access Research Atlas', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Weather_ERA5', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_md_1', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_population_median_lat', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_population_median_lon', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Population Median_Best Available Population Data', coder: booleanSettingCoder }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 
 type NotIncludedInSettingsVector = (
     RelationshipKey
     | StatCategorySavedIndeterminateKey
-    | StatCategoryExpandedKey
+    | StatSubcategorySavedIndeterminateKey
     | 'theme' | 'colorblind_mode' | 'clean_background'
-    | 'juxtastatCompactEmoji'
+    | 'juxtastatCompactEmoji' | 'syauRequireEnter' | 'mapperSettingsColumnProp'
+    | 'randomFilterByCurrentUniverse'
 )
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet
 export const activeVectorKeys = settingsVector.flatMap(setting => setting.deprecated ? [] : [setting.key])
 
 export type VectorSettingKey = typeof activeVectorKeys[number]

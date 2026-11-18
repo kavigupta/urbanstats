@@ -1,0 +1,23 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "test/scripts/save-durations.ts",
+    "test/**/*.test.ts",
+    "unit/**/*.test.ts",
+    "cf-og-worker/src/index.ts",
+    "totp-worker/src/index.ts"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}",
+    "test/**/*.{ts,tsx}",
+    "unit/**/*.{ts,tsx}",
+    "cf-og-worker/src/**/*.{ts,tsx}",
+    "totp-worker/src/**/*.{ts,tsx}"
+  ],
+  "ignore": [
+    "src/data/**",
+    "src/utils/protos.d.ts",
+    "src/utils/urbanstats-persistent-data.d.ts",
+    "src/utils/google-drive.d.ts"
+  ]
+}

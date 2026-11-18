@@ -1,62 +1,50 @@
 from collections import defaultdict
 
-import geopandas as gpd
 import numpy as np
-import tqdm
 from permacache import permacache, stable_hash
 
-from urbanstats.geometry.shapefile_geometry import overlays
+from urbanstats.geometry.relationship_equirectangular import compute_relationships
+from urbanstats.geometry.shapefiles.longnames import shapefile_longnames
+from urbanstats.geometry.shapefiles.shapefile import join_layers
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.website_data.table import shapefile_without_ordinals
 
+# relationships are computed over land, whose mask is built from the subnational regions
+LAND_SOURCE = shapefiles["subnational_regions"].geometry
+
 
 @permacache(
-    "population_density/relationship/create_relationships_8",
-    key_function=dict(x=lambda x: x.hash_key, y=lambda y: y.hash_key),
+    "population_density/relationship/create_relationships_15",
+    key_function=dict(
+        x_names=stable_hash,
+        x_dates=stable_hash,
+        y_names=stable_hash,
+        y_dates=stable_hash,
+    ),
 )
-def create_relationships(x, y):
+def create_relationships(
+    x_names, x_dates, y_names, y_dates, *, land_source, check_temporal=True
+):
     """
-    Get the relationships between the two shapefiles x and y
+    Get the relationships between the regions of shapefiles x and y.
+    Delegates to relationship_equirectangular.compute_relationships.
     """
-    table_a, table_b, over = compute_overlays_with_areas(x, y)
-
-    a_contains_b = set()
-    b_contains_a = set()
-    intersects = set()
-    borders = set()
-    for i in range(over.shape[0]):
-        row = over.iloc[i]
-        area_over = over.area[i]
-        contains = False
-        tolerance = 0.05
-        if area_over >= row.b_area * (1 - tolerance):
-            contains = True
-            a_contains_b.add((row.longname_1, row.longname_2))
-        if area_over >= row.a_area * (1 - tolerance):
-            contains = True
-            b_contains_a.add((row.longname_1, row.longname_2))
-        if contains:
-            pass
-        elif area_over >= min(row.a_area, row.b_area) * tolerance:
-            intersects.add((row.longname_1, row.longname_2))
-        else:
-            borders.add((row.longname_1, row.longname_2))
-
+    rels = compute_relationships(x_names.geometry, y_names.geometry, land_source)
+    names_x, names_y = shapefile_longnames(x_names), shapefile_longnames(y_names)
+    rels = {
+        kind: {(names_x[i], names_y[j]) for i, j in pairs}
+        for kind, pairs in rels.items()
+    }
+    a = join_layers(x_names, x_dates)
+    b = join_layers(y_names, y_dates)
+    a_contains_b = rels["a_contains_b"] | rels["same_geography"]
+    b_contains_a = rels["a_contained_by_b"] | rels["same_geography"]
+    intersects = rels["intersects"]
+    borders = rels["borders"]
     return [
-        sorted(filter_temporal_overlaps(table_a, table_b, items))
-        for items in [a_contains_b, b_contains_a, intersects, borders]
+        sorted(filter_temporal_overlaps(a, b, s) if check_temporal else s)
+        for s in [a_contains_b, b_contains_a, intersects, borders]
     ]
-
-
-def compute_overlays_with_areas(x, y):
-    a = x.load_file()
-    b = y.load_file()
-    over = overlays(a, b, x.chunk_size, y.chunk_size)
-    a_area = dict(zip(a.longname, a.geometry.to_crs("EPSG:2163").area))
-    b_area = dict(zip(b.longname, b.geometry.to_crs("EPSG:2163").area))
-    over["a_area"] = over.longname_1.map(lambda x: a_area[x])
-    over["b_area"] = over.longname_2.map(lambda x: b_area[x])
-    return a, b, over
 
 
 def temporal_ranges_overlap(start_a, end_a, start_b, end_b):
@@ -84,59 +72,6 @@ def filter_temporal_overlaps(a, b, items):
         if temporal_ranges_overlap(start_a, end_a, start_b, end_b):
             results.add((x, y))
     return results
-
-
-@permacache(
-    "population_density/relationship/create_overlays_only_borders_2",
-    key_function=dict(a=lambda x: x.hash_key, b=lambda y: y.hash_key),
-)
-def create_overlays_only_borders(a, b):
-    """
-    Get the relationships between the two shapefiles x and y
-
-    Since we only care about borders, we can just use sjoin
-    """
-
-    a = a.load_file()
-    b = b.load_file()
-    related = gpd.sjoin(a, b)
-    borders = set()
-    for i in tqdm.trange(len(related)):
-        row = related.iloc[i]
-        left = row.longname_left
-        right = row.longname_right
-        if left != right:
-            borders.add((left, right))
-    return set(), set(), set(), filter_temporal_overlaps(a, b, borders)
-
-
-@permacache(
-    "population_density/relationship/create_relationships_countries_subnationals_2",
-    key_function=dict(a=lambda x: x.hash_key, b=lambda y: y.hash_key),
-)
-def create_relationships_countries_subnationals(a, b):
-    """
-    Get the relationships between the two shapefiles x and y
-
-    Since we only care about borders, we can just use sjoin
-    """
-
-    assert a.meta["type"] == "Country"
-    assert b.meta["type"] == "Subnational Region"
-
-    a = a.load_file()
-    b = b.load_file()
-
-    long_a = list(a.longname)
-    long_b = list(b.longname)
-
-    a_contains_b = set()
-    for i in tqdm.trange(len(a)):
-        for j in range(len(b)):
-            la, lb = long_a[i], long_b[j]
-            if lb.endswith(", " + la):
-                a_contains_b.add((la, lb))
-    return filter_temporal_overlaps(a, b, a_contains_b), set(), set(), set()
 
 
 tiers = [
@@ -199,6 +134,7 @@ tiers = [
         "Hospital Service Area",
         "Urban Center",
         "Urban Center",
+        "Metropolitan Cluster",
         "20M Person Circle",
         "10M Person Circle",
         "5M Person Circle",
@@ -206,19 +142,34 @@ tiers = [
         "CA Census Division",
         "CA Riding",
         "CA Population Center",
+        "AU LGA",
+        "AU Significant Urban Area",
+        "AU Federal Electorate",
+        "AU State Lower House District",
+        "AU State Upper House Region",
     ],
-    ["CCD", "City", "School District", "CA Census Subdivision"],
-    ["Neighborhood", "ZIP"],
+    [
+        "CCD",
+        "City",
+        "School District",
+        "CA Census Subdivision",
+        "AU SA2",
+        "AU UCL",
+        "AU Suburb",
+    ],
+    ["Neighborhood", "ZIP", "AU Postcode"],
 ]
 
 type_to_type_category = {
-    shapefile.meta["type"]: shapefile.meta["type_category"]
+    shapefile.metadata.meta["type"]: shapefile.metadata.meta["type_category"]
     for shapefile in shapefiles.values()
 }
 
 type_category_order = {
     "US Subdivision": 0,
     "International": 0,
+    "International City": 0,
+    "US City": 10,
     "Census": 20,
     "Small": 30,
     "Political": 40,
@@ -228,7 +179,7 @@ type_category_order = {
     "Kavi": 80,
 }
 
-key_to_type = {x: sf.meta["type"] for x, sf in shapefiles.items()}
+key_to_type = {x: sf.metadata.meta["type"] for x, sf in shapefiles.items()}
 
 map_relationships = [
     ("subnational_regions", "counties"),
@@ -250,7 +201,9 @@ map_relationships_by_type = [[key_to_type[x] for x in y] for y in map_relationsh
 
 tier_index_by_type = {x: -i for i, tier in enumerate(tiers) for x in tier}
 
-missing = {x.meta["type"] for x in shapefiles.values()} - set(tier_index_by_type)
+missing = {x.metadata.meta["type"] for x in shapefiles.values()} - set(
+    tier_index_by_type
+)
 
 assert not missing, missing
 
@@ -292,22 +245,27 @@ def can_border(x, y):
 def full_relationships(long_to_type):
     return {
         rt: {k: by_rt_k for k, by_rt_k in by_rt.items() if by_rt_k}
-        for rt, by_rt in relationships_for_list(long_to_type, shapefiles).items()
+        for rt, by_rt in relationships_for_list(
+            long_to_type,
+            {k: sf.names for k, sf in shapefiles.items()},
+            {k: sf.dates for k, sf in shapefiles.items()},
+            {k: sf.metadata.meta["type"] for k, sf in shapefiles.items()},
+        ).items()
     }
 
 
 @permacache(
-    "relationship/relationships_for_list_2",
+    "relationship/relationships_for_list_3",
     key_function=dict(
         long_to_type=stable_hash,
-        shapefiles_to_use=lambda shapefiles_to_use: stable_hash(
-            {k: v.hash_key for k, v in shapefiles_to_use.items()}
-        ),
+        names_by_key=stable_hash,
+        dates_by_key=stable_hash,
+        type_by_key=stable_hash,
     ),
 )
-def relationships_for_list(long_to_type, shapefiles_to_use):
+def relationships_for_list(long_to_type, names_by_key, dates_by_key, type_by_key):
     contains, contained_by, intersects, borders = compute_all_relationships(
-        long_to_type, shapefiles_to_use
+        long_to_type, names_by_key, dates_by_key, type_by_key
     )
 
     same_geography = defaultdict(set)
@@ -349,7 +307,8 @@ def relationships_for_list(long_to_type, shapefiles_to_use):
     }
 
 
-def compute_all_relationships(long_to_type, shapefiles_to_use):
+def compute_all_relationships(long_to_type, names_by_key, dates_by_key, type_by_key):
+    # pylint: disable=too-many-locals
     contains, contained_by, intersects, borders = (
         defaultdict(set),
         defaultdict(set),
@@ -363,59 +322,72 @@ def compute_all_relationships(long_to_type, shapefiles_to_use):
                 continue
             d[x].add(y)
 
-    for k1 in shapefiles_to_use:
-        for k2 in shapefiles_to_use:
-            print(k1, k2)
-            if k1 < k2:
-                continue
+    pairs = [(k1, k2) for k1 in names_by_key for k2 in names_by_key if k1 >= k2]
 
-            (
-                a_contains_b,
-                b_contains_a,
-                a_intersects_b,
-                a_borders_b,
-            ) = create_relationships_dispatch(shapefiles_to_use, k1, k2)
+    for i, (k1, k2) in enumerate(pairs):
+        print(f"{i}/{len(pairs)}: {k1} and {k2}")
+        (
+            a_contains_b,
+            b_contains_a,
+            a_intersects_b,
+            a_borders_b,
+        ) = create_relationships_dispatch(names_by_key, dates_by_key, k1, k2)
 
-            add(contains, a_contains_b)
-            add(contains, [(big, small) for small, big in b_contains_a])
-            add(contained_by, b_contains_a)
-            add(contained_by, [(big, small) for small, big in a_contains_b])
-            add(intersects, a_intersects_b)
-            add(intersects, [(big, small) for small, big in a_intersects_b])
-            if can_border(
-                shapefiles_to_use[k1].meta["type"],
-                shapefiles_to_use[k2].meta["type"],
-            ):
-                add(borders, a_borders_b)
-                add(borders, [(big, small) for small, big in a_borders_b])
+        add(contains, a_contains_b)
+        add(contains, [(big, small) for small, big in b_contains_a])
+        add(contained_by, b_contains_a)
+        add(contained_by, [(big, small) for small, big in a_contains_b])
+        add(intersects, a_intersects_b)
+        add(intersects, [(big, small) for small, big in a_intersects_b])
+        if can_border(type_by_key[k1], type_by_key[k2]):
+            add(borders, a_borders_b)
+            add(borders, [(big, small) for small, big in a_borders_b])
     return contains, contained_by, intersects, borders
 
 
-def create_relationships_dispatch(shapefiles_to_use, k1, k2):
-    if not temporal_ranges_overlap(
-        shapefiles_to_use[k1].start_date_overall,
-        shapefiles_to_use[k1].end_date_overall,
-        shapefiles_to_use[k2].start_date_overall,
-        shapefiles_to_use[k2].end_date_overall,
+def flip(edges):
+    return [(y, x) for (x, y) in edges]
+
+
+def create_relationships_dispatch(
+    names_by_key, dates_by_key, k1, k2, check_temporal=True
+):
+    if k1 < k2:
+        a_contains_b, b_contains_a, a_intersects_b, a_borders_b = create_relationships(
+            names_by_key[k2],
+            dates_by_key[k2],
+            names_by_key[k1],
+            dates_by_key[k1],
+            land_source=LAND_SOURCE,
+            check_temporal=check_temporal,
+        )
+        return (
+            flip(b_contains_a),
+            flip(a_contains_b),
+            flip(a_intersects_b),
+            flip(a_borders_b),
+        )
+    t1, t2 = dates_by_key[k1].temporal, dates_by_key[k2].temporal
+    if check_temporal and not temporal_ranges_overlap(
+        t1.start_date_overall,
+        t1.end_date_overall,
+        t2.start_date_overall,
+        t2.end_date_overall,
     ):
         return set(), set(), set(), set()
-    fn = {
-        ("countries", "countries"): create_overlays_only_borders,
-        (
-            "countries",
-            "subnational_regions",
-        ): create_relationships_countries_subnationals,
-        (
-            "subnational_regions",
-            "countries",
-        ): lambda x, y: create_relationships_countries_subnationals(y, x),
-    }.get((k1, k2), create_relationships)
     (
         a_contains_b,
         b_contains_a,
         a_intersects_b,
         a_borders_b,
-    ) = fn(shapefiles_to_use[k1], shapefiles_to_use[k2])
+    ) = create_relationships(
+        names_by_key[k1],
+        dates_by_key[k1],
+        names_by_key[k2],
+        dates_by_key[k2],
+        land_source=LAND_SOURCE,
+        check_temporal=check_temporal,
+    )
 
     return a_contains_b, b_contains_a, a_intersects_b, a_borders_b
 

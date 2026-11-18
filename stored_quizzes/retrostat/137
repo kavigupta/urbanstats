@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual income < C$50k %",
+      "stat_path": "individual_income_under_50cad",
+      "question": "higher % of people who have individual income under C$50k",
+      "longname_a": "Saskatoon Population Center, SK, Canada",
+      "longname_b": "London Population Center, ON, Canada",
+      "stat_a": 0.5770339688219934,
+      "stat_b": 0.6242601999850432
+    },
+    "b": {
+      "stat_column": "Individual income > C$100k %",
+      "stat_path": "individual_income_above_100_cad",
+      "question": "higher % of people who have individual income over C$100k",
+      "longname_a": "Victoria CMA, BC, Canada",
+      "longname_b": "St. Catharines - Niagara CMA, ON, Canada",
+      "stat_a": 0.11502588051128024,
+      "stat_b": 0.07816742404755798
+    },
+    "a_ease": 0.30074074074074075,
+    "b_ease": 0.7102229054573405
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High School %",
+      "stat_path": "education_high_school",
+      "question": "higher % of people who have at least a high school diploma",
+      "longname_a": "Peoria MSA, IL, USA",
+      "longname_b": "Dallas-Fort Worth-Arlington MSA, TX, USA",
+      "stat_a": 0.9304274112366698,
+      "stat_b": 0.8709091377571705
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km) Change (2010-2020)",
+      "stat_path": "ad_1_change_2010",
+      "question": "higher % increase in population-weighted density (r=1km) from 2010 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Mississauga City, Peel Regional municipality, Ontario, Canada",
+      "longname_b": "Wichita city, Kansas, USA",
+      "stat_a": 0.04368049709159207,
+      "stat_b": -0.023989701941555384
+    },
+    "a_ease": 0.2582628747117602,
+    "b_ease": 0.6718518518518518
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Diagnosed diabetes %",
+      "stat_path": "DIABETES_cdc_2",
+      "question": "higher % of adults with diagnosed diabetes",
+      "longname_a": "WI-05 (2023), USA",
+      "longname_b": "TX-34 (2023), USA",
+      "stat_a": 0.07758022317123582,
+      "stat_b": 0.17036707393274508
+    },
+    "b": {
+      "stat_column": "Commute Walk %",
+      "stat_path": "transportation_means_walk_no_wfh",
+      "question": "higher % of people who commute by walking",
+      "longname_a": "Atlanta-Sandy Springs-Roswell MSA, GA, USA",
+      "longname_b": "Spokane-Spokane Valley MSA, WA, USA",
+      "stat_a": 0.013508991390210995,
+      "stat_b": 0.029873590649587035
+    },
+    "a_ease": 0.7359591539022611,
+    "b_ease": 0.3196172248803828
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Mean Elevation",
+      "stat_path": "gridded_elevation",
+      "question": "higher population-weighted mean elevation !TOOLTIP Population weighted elevation/hilliness statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Lahore Urban Center, Pakistan",
+      "longname_b": "Santiago Urban Center, Chile",
+      "stat_a": 211.04354858398438,
+      "stat_b": 574.2914428710938
+    },
+    "b": {
+      "stat_column": "Mean sunny hours",
+      "stat_path": "hours_sunny_4",
+      "question": "!FULL Which has more hours of sun per day on average? (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Mandalay, Myanmar",
+      "longname_b": "Johor, Malaysia",
+      "stat_a": 5.528482516370145,
+      "stat_b": 1.9513231671881144
+    },
+    "a_ease": 0.7151750972762646,
+    "b_ease": 0.2880382775119617
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual Income < $50k %",
+      "stat_path": "individual_income_under_50k",
+      "question": "higher % of people who have individual income under $50k",
+      "longname_a": "MO-02 (2023), USA",
+      "longname_b": "CA-46 (2023), USA",
+      "stat_a": 0.5585442005949408,
+      "stat_b": 0.7231246236449984
+    },
+    "b": {
+      "stat_column": "PW Mean % of parkland within 1km",
+      "stat_path": "park_percent_1km_v2",
+      "question": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
+      "longname_a": "MA-08 (2023), USA",
+      "longname_b": "NJ-02 (2023), USA",
+      "stat_a": 0.03365811745554943,
+      "stat_b": 0.0064685254611925955
+    },
+    "a_ease": 0.1774193548387097,
+    "b_ease": 0.5840241145440844
+  }
+]

@@ -1,0 +1,172 @@
+Region: Sydney SUA, Australia
+Population: 4828767
+Population [GHS-POP]: 4879327
+PW Density (r=1km): 3685.93115234375
+PW Density (r=1km) [GHS-POP]: 4007.58349609375
+AW Density: 1150.5732421875
+AW Density [GHS-POP]: 1162.620361328125
+Area: 4196.8359375
+Compactness: 0.028141042217612267
+PW Mean Hilliness (Grade): 0.046692803502082825
+PW Mean Elevation: 54.55615234375
+Population Median (Latitude): -33.85746383666992
+Population Median (Longitude): 151.0494842529297
+PW Mean PM2.5 Pollution: 14.92226791381836
+Mean high temp: 71.00809478759766
+Mean low temp: 55.56132125854492
+Mean high heat index: 71.16302490234375
+Mean high dewpt: 56.373355865478516
+High temperature Above 90°F %: 0.03318711370229721
+High temperature Between 40 and 90°F %: 0.9668117761611938
+High temperature Below 40°F %: 0.0000010905309864028823
+Humid days (dewpt > 70°F) %: 0.0382109098136425
+Non-humid, Non-dry days (50°F < dewpt < 70°F) %: 0.7108649015426636
+Dry days (dewpt < 50°F) %: 0.25092417001724243
+Mean sunny hours: 5.98834753036499
+Rainfall: 0.8032058477401733
+Snowfall [rain-equivalent]: 0.0000051838333092746325
+High windspeed (>10mph) days %: 0.16996365785598755
+Mean high temperature in Dec/Jan/Feb: 78.91771697998047
+Mean high temperature in Mar/Apr/May: 71.54682922363281
+Mean high temperature in Jun/Jul/Aug: 62.34983444213867
+Mean high temperature in Sep/Oct/Nov: 71.368896484375
+Mean low temperature in Dec/Jan/Feb: 64.58509063720703
+Mean low temperature in Mar/Apr/May: 56.73980712890625
+Mean low temperature in Jun/Jul/Aug: 46.36040496826172
+Mean low temperature in Sep/Oct/Nov: 54.75259017944336
+PW Density (r=250m): 5254.03125
+PW Density (r=500m): 4353.93603515625
+PW Density (r=1mi): 3315.122802734375
+PW Density (r=1mi) [GHS-POP]: 3614.608154296875
+PW Density (r=2km): 3163.882080078125
+PW Density (r=2km) [GHS-POP]: 3443.5361328125
+PW Density (r=4km): 2713.196533203125
+PW Density (r=4km) [GHS-POP]: 2905.7685546875
+PW Density (r=8km): 2328.6064453125
+PW Density (r=8km) [GHS-POP]: 2480.6787109375
+PW Density (r=16km): 1845.162841796875
+PW Density (r=16km) [GHS-POP]: 1941.635986328125
+PW Density (r=32km): 1115.9676513671875
+PW Density (r=32km) [GHS-POP]: 1157.204345703125
+PW Density (r=64km): 394.7587585449219
+PW Density (r=64km) [GHS-POP]: 400.59100341796875
+PW Median Density (r=1km): 3192.158447265625
+PW Median Density (r=1km) [GHS-POP]: 3406.45654296875
+Mean high temperature in summer: 63.43207550048828
+Mean high temperature in winter: 78.80011749267578
+Mean high temperature in fall: 73.72486877441406
+Mean high temperature in spring: 68.52772521972656
+Population (Rank): 1
+Population (Percentile): 78
+Population [GHS-POP] (Rank): 2
+Population [GHS-POP] (Percentile): 56
+PW Density (r=1km) (Rank): 1
+PW Density (r=1km) (Percentile): 78
+PW Density (r=1km) [GHS-POP] (Rank): 1
+PW Density (r=1km) [GHS-POP] (Percentile): 78
+AW Density (Rank): 1
+AW Density (Percentile): 78
+AW Density [GHS-POP] (Rank): 1
+AW Density [GHS-POP] (Percentile): 78
+Area (Rank): 3
+Area (Percentile): 45
+Compactness (Rank): 101
+Compactness (Percentile): 0
+PW Mean Hilliness (Grade) (Rank): 44
+PW Mean Hilliness (Grade) (Percentile): 60
+PW Mean Elevation (Rank): 44
+PW Mean Elevation (Percentile): 40
+Population Median (Latitude) (Rank): 59
+Population Median (Latitude) (Percentile): 39
+Population Median (Longitude) (Rank): 29
+Population Median (Longitude) (Percentile): 54
+PW Mean PM2.5 Pollution (Rank): 2
+PW Mean PM2.5 Pollution (Percentile): 78
+Mean high temp (Rank): 50
+Mean high temp (Percentile): 44
+Mean low temp (Rank): 49
+Mean low temp (Percentile): 35
+Mean high heat index (Rank): 50
+Mean high heat index (Percentile): 44
+Mean high dewpt (Rank): 38
+Mean high dewpt (Percentile): 42
+High temperature Above 90°F % (Rank): 49
+High temperature Above 90°F % (Percentile): 49
+High temperature Between 40 and 90°F % (Rank): 54
+High temperature Between 40 and 90°F % (Percentile): 28
+High temperature Below 40°F % (Rank): 16
+High temperature Below 40°F % (Percentile): 72
+Humid days (dewpt > 70°F) % (Rank): 38
+Humid days (dewpt > 70°F) % (Percentile): 52
+Non-humid, Non-dry days (50°F < dewpt < 70°F) % (Rank): 34
+Non-humid, Non-dry days (50°F < dewpt < 70°F) % (Percentile): 44
+Dry days (dewpt < 50°F) % (Rank): 59
+Dry days (dewpt < 50°F) % (Percentile): 36
+Mean sunny hours (Rank): 62
+Mean sunny hours (Percentile): 33
+Rainfall (Rank): 46
+Rainfall (Percentile): 49
+Snowfall [rain-equivalent] (Rank): 30
+Snowfall [rain-equivalent] (Percentile): 47
+High windspeed (>10mph) days % (Rank): 70
+High windspeed (>10mph) days % (Percentile): 24
+Mean high temperature in Dec/Jan/Feb (Rank): 54
+Mean high temperature in Dec/Jan/Feb (Percentile): 43
+Mean high temperature in Mar/Apr/May (Rank): 51
+Mean high temperature in Mar/Apr/May (Percentile): 44
+Mean high temperature in Jun/Jul/Aug (Rank): 46
+Mean high temperature in Jun/Jul/Aug (Percentile): 41
+Mean high temperature in Sep/Oct/Nov (Rank): 46
+Mean high temperature in Sep/Oct/Nov (Percentile): 54
+Mean low temperature in Dec/Jan/Feb (Rank): 45
+Mean low temperature in Dec/Jan/Feb (Percentile): 41
+Mean low temperature in Mar/Apr/May (Rank): 49
+Mean low temperature in Mar/Apr/May (Percentile): 35
+Mean low temperature in Jun/Jul/Aug (Rank): 52
+Mean low temperature in Jun/Jul/Aug (Percentile): 10
+Mean low temperature in Sep/Oct/Nov (Rank): 47
+Mean low temperature in Sep/Oct/Nov (Percentile): 41
+PW Density (r=250m) (Rank): 1
+PW Density (r=250m) (Percentile): 78
+PW Density (r=500m) (Rank): 1
+PW Density (r=500m) (Percentile): 78
+PW Density (r=1mi) (Rank): 1
+PW Density (r=1mi) (Percentile): 78
+PW Density (r=1mi) [GHS-POP] (Rank): 1
+PW Density (r=1mi) [GHS-POP] (Percentile): 78
+PW Density (r=2km) (Rank): 1
+PW Density (r=2km) (Percentile): 78
+PW Density (r=2km) [GHS-POP] (Rank): 1
+PW Density (r=2km) [GHS-POP] (Percentile): 78
+PW Density (r=4km) (Rank): 1
+PW Density (r=4km) (Percentile): 78
+PW Density (r=4km) [GHS-POP] (Rank): 1
+PW Density (r=4km) [GHS-POP] (Percentile): 78
+PW Density (r=8km) (Rank): 1
+PW Density (r=8km) (Percentile): 78
+PW Density (r=8km) [GHS-POP] (Rank): 1
+PW Density (r=8km) [GHS-POP] (Percentile): 78
+PW Density (r=16km) (Rank): 1
+PW Density (r=16km) (Percentile): 78
+PW Density (r=16km) [GHS-POP] (Rank): 1
+PW Density (r=16km) [GHS-POP] (Percentile): 78
+PW Density (r=32km) (Rank): 1
+PW Density (r=32km) (Percentile): 78
+PW Density (r=32km) [GHS-POP] (Rank): 1
+PW Density (r=32km) [GHS-POP] (Percentile): 78
+PW Density (r=64km) (Rank): 1
+PW Density (r=64km) (Percentile): 78
+PW Density (r=64km) [GHS-POP] (Rank): 1
+PW Density (r=64km) [GHS-POP] (Percentile): 78
+PW Median Density (r=1km) (Rank): 1
+PW Median Density (r=1km) (Percentile): 78
+PW Median Density (r=1km) [GHS-POP] (Rank): 1
+PW Median Density (r=1km) [GHS-POP] (Percentile): 78
+Mean high temperature in summer (Rank): 46
+Mean high temperature in summer (Percentile): 52
+Mean high temperature in winter (Rank): 55
+Mean high temperature in winter (Percentile): 43
+Mean high temperature in fall (Rank): 50
+Mean high temperature in fall (Percentile): 53
+Mean high temperature in spring (Rank): 50
+Mean high temperature in spring (Percentile): 44

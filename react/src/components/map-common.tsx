@@ -1,0 +1,465 @@
+import maplibregl from 'maplibre-gl'
+import 'maplibre-gl/dist/maplibre-gl.css'
+import React, { ReactNode, useContext, useEffect, useId, useMemo } from 'react'
+import { Map, MapProps, MapRef, Source, useControl, useMap } from 'react-map-gl/maplibre'
+
+import { boundingBox, extendBoxes } from '../map-partition'
+import { Basemap } from '../mapper/settings/utils'
+import { Navigator } from '../navigation/Navigator'
+import { useColors } from '../page_template/colors'
+import { Universe, useUniverse } from '../universe'
+import { TestUtils } from '../utils/TestUtils'
+import { makeDebugLogger } from '../utils/debug-logging'
+import { assert } from '../utils/defensive'
+import { geometry } from '../utils/geometry'
+import { promiseStream, waiting } from '../utils/promiseStream'
+import { Feature } from '../utils/protos'
+import { loadFeatureFromPossibleSymlink } from '../utils/symlinks'
+import { NormalizeProto } from '../utils/types'
+import { useOrderedResolve } from '../utils/useOrderedResolve'
+
+import { ScreenshotAwareLayer } from './ScreenshotAwareLayer'
+import { keptByNoBasemap, tileAttributionParts, urbanStatsLayerPrefix } from './map-common-utils'
+import { defaultMapBorderRadius, mapBorderWidth, useScreenshotCallback, useScreenshotMode } from './screenshot'
+
+const debugLog = makeDebugLogger('mapExport')
+
+import './map.css'
+
+export const defaultMapPadding = 20
+export const insetBorderWidth = 2
+
+void maplibregl.setRTLTextPlugin('https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js', true)
+
+export type CommonMapProps = MapProps & { testId?: string }
+
+function CommonMaplibreMapImpl(props: CommonMapProps, ref: React.Ref<MapRef>): ReactNode {
+    const colors = useColors()
+    const isScreenshotMode = useScreenshotMode()
+
+    const fallbackTestId = useId()
+    const testId = props.testId ?? fallbackTestId
+
+    return (
+        <Map
+            ref={ref}
+            mapStyle="https://tiles.openfreemap.org/styles/bright"
+            maxPitch={0}
+            dragRotate={false}
+            pitchWithRotate={false}
+            touchPitch={false}
+            canvasContextAttributes={{
+                preserveDrawingBuffer: true, // Allows screenshots
+            }}
+            attributionControl={false}
+            {...props}
+            style={{
+                width: '100%',
+                height: 400,
+                borderRadius: defaultMapBorderRadius,
+                border: `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+                // Background color is used for e2e tests
+                backgroundColor: isScreenshotMode ? 'transparent' : colors.slightlyDifferentBackground,
+                ...props.style,
+            }}
+        >
+            {props.children}
+            <ExposeMapForTesting id={testId} />
+            <SynchronizeMapWithScreenshots />
+            <DisableRotation />
+        </Map>
+    )
+}
+
+export function MapAttribution({ children }: { children?: ReactNode }): ReactNode {
+    const colors = useColors()
+    // Exported PNGs carry the credit on their footer banner instead
+    const inScreenshot = useScreenshotMode()
+    if (inScreenshot) {
+        return null
+    }
+    return (
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1em', fontSize: '0.75em', color: colors.ordinalTextColor, marginTop: '0.25em' }}>
+            <div>{children}</div>
+            <div className="map-credit" style={{ textAlign: 'right' }}>
+                {tileAttributionParts.map((part, i) => (
+                    <React.Fragment key={part.href}>
+                        {i > 0 ? ' · ' : ''}
+                        <a href={part.href} target="_blank" rel="noopener noreferrer">{part.text}</a>
+                    </React.Fragment>
+                ))}
+            </div>
+        </div>
+    )
+}
+
+function ExposeMapForTesting({ id }: { id: string }): ReactNode {
+    const map = useMap().current!.getMap()
+    useEffect(() => {
+        TestUtils.shared.maps.set(id, map)
+        return () => {
+            TestUtils.shared.maps.delete(id)
+        }
+    }, [map, id])
+    return null
+}
+
+function DisableRotation(): ReactNode {
+    const map = useMap().current!.getMap()
+    useEffect(() => {
+        map.touchZoomRotate.disableRotation()
+        map.keyboard.disableRotation()
+    }, [map])
+    return null
+}
+
+function SynchronizeMapWithScreenshots(): ReactNode {
+    const { current: map } = useMap()
+
+    assert(map !== undefined, 'Map context is required')
+
+    const screenshotCallback = useScreenshotCallback('wait')
+
+    useEffect(() => {
+        if (screenshotCallback !== undefined) {
+            debugLog('SynchronizeMapWithScreenshots: screenshot mode entered, map.loaded()=', map.loaded())
+            void (async () => {
+                // Give the map a frame first: right after a commit,
+                // `loaded()` can still be true from before the map noticed the new work.
+                let frames = 0
+                do {
+                    await new Promise(resolve => requestAnimationFrame(resolve))
+                    frames++
+                    if (map._removed) {
+                        debugLog('SynchronizeMapWithScreenshots: map was removed, aborting')
+                        return
+                    }
+                } while (!map.loaded())
+                debugLog('SynchronizeMapWithScreenshots: map is loaded after', frames, 'frame(s), signaling ready')
+            })().then(() => {
+                screenshotCallback()
+            })
+        }
+    }, [screenshotCallback, map])
+
+    return null
+}
+
+// eslint-disable-next-line no-restricted-syntax -- Is a function component
+export const CommonMaplibreMap = React.forwardRef(CommonMaplibreMapImpl)
+
+// We don't use refs on these to avoid races, as the mapRef may be assigned after the feature has loaded
+export function useZoomFirstFeature(mapRef: MapRef | null, features: (GeoJSON.Feature | typeof waiting)[]): void {
+    const firstFeature = features.length > 0 ? features[0] : undefined
+
+    useEffect(() => {
+        if (firstFeature === undefined || firstFeature === waiting) {
+            return
+        }
+        mapRef?.fitBounds(boundingBox(firstFeature.geometry), { animate: false, padding: defaultMapPadding })
+    }, [mapRef, firstFeature]) // Don't depend on all features or we keep zooming as they load
+}
+
+export function useZoomAllFeatures(mapRef: MapRef | null, features: (GeoJSON.Feature | typeof waiting)[], readyFeatures: GeoJSON.Feature[]): void {
+    useEffect(() => {
+        if (readyFeatures.length < features.length) {
+            return
+        }
+        // Only zoom once all features are ready
+        mapRef?.fitBounds(extendBoxes(readyFeatures.map(f => boundingBox(f.geometry))), { animate: false, padding: defaultMapPadding })
+    }, [mapRef, features, readyFeatures])
+}
+
+export interface Polygon {
+    name: string
+    clickable?: boolean
+
+    // Style
+    fillColor: string
+    fillOpacity: number
+    color: string
+    weight?: number
+
+    [meta: string]: unknown
+}
+
+function polygonsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
+    return `${urbanStatsLayerPrefix}-polygons-${kind}-${id}`
+}
+
+export function PolygonFeatureCollection({ features, clickable }: { features: GeoJSON.Feature[], clickable: boolean }): ReactNode {
+    const { current: map } = useMap()
+    const beforeId = useContentBeforeId(map)
+
+    const collection: GeoJSON.FeatureCollection = useMemo(() => ({
+        type: 'FeatureCollection',
+        features,
+    }), [features])
+
+    const id = useId()
+
+    const isScreenshotMode = useScreenshotMode()
+
+    /*
+     * A geojson source's `tolerance` is fixed at creation, so toggling screenshot mode rebuilds the
+     * source under a new id.
+     *
+     * As layers are strictly dependent on a source (they are only added to the map when their source is present),
+     * expected layers should be tied to a specific source to minimize complexity in the React <-> Maplibre binding.
+     * (e.g. the case where a layer is temporarily removed from the map because its source has changed.)
+     */
+    const instanceId = `${id}-${isScreenshotMode ? 'screenshot' : 'interactive'}`
+
+    useClickable({ id: polygonsId(instanceId, 'fill'), features, clickable })
+
+    return (
+        <>
+            <Source
+                // Must remount to apply tolerance changes
+                key={polygonsId(instanceId, 'source')}
+                id={polygonsId(instanceId, 'source')}
+                type="geojson"
+                data={collection}
+                // Only use tolerance=0 in screenshot mode, as it takes a lot of memory
+                {...(isScreenshotMode ? { tolerance: 0 } : { })}
+            />
+            <ScreenshotAwareLayer
+                id={polygonsId(instanceId, 'fill')}
+                type="fill"
+                source={polygonsId(instanceId, 'source')}
+                paint={{
+                    'fill-color': ['get', 'fillColor'],
+                    'fill-opacity': ['get', 'fillOpacity'],
+                }}
+                beforeId={beforeId}
+            />
+            <ScreenshotAwareLayer
+                id={polygonsId(instanceId, 'outline')}
+                type="line"
+                source={polygonsId(instanceId, 'source')}
+                paint={{
+                    'line-color': ['get', 'color'],
+                    'line-width': ['get', 'weight'],
+                }}
+                beforeId={beforeId}
+            />
+        </>
+    )
+}
+
+async function polygonGeojson(polygon: Polygon): Promise<GeoJSON.Feature> {
+    const feature = await loadFeatureFromPossibleSymlink(polygon.name) as NormalizeProto<Feature>
+    return {
+        type: 'Feature' as const,
+        properties: polygon,
+        geometry: geometry(feature),
+    }
+}
+
+export function polygonFeatureCollection(polygons: Polygon[]): { use: () => (GeoJSON.Feature | typeof waiting)[] } {
+    const result = promiseStream(polygons.map(polygonGeojson), 'polygonFeatureCollection')
+    return result
+}
+
+async function waitForMapLoadedOrRemoved(map: MapRef): Promise<void> {
+    if (!map.loaded()) {
+        await Promise.any([
+            map.once('load'),
+            map.once('remove'), // Map might be removed while it's loading
+        ])
+    }
+}
+
+async function firstLabelId(map: MapRef): Promise<string | undefined> {
+    await waitForMapLoadedOrRemoved(map)
+    for (const layerId of map.getLayersOrder()) {
+        const layer = map.getLayer(layerId)!
+        if (layer.type === 'symbol' && layer.id.startsWith('label')) {
+            return layer.id
+        }
+    }
+    return undefined
+}
+
+function useContentBeforeId(map: MapRef | undefined): string | undefined {
+    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]), 'useContentBeforeId').result
+    const hasBasemapSubnationalsLayer = map?.getLayer(basemapSubnationalsId) !== undefined
+    if (hasBasemapSubnationalsLayer && labelId !== undefined) {
+        // If the basemap is in front of the label, then it hasn't moved yet, and we should actually place the content before the label
+        const layersOrder = map.getLayersOrder()
+        if (layersOrder.indexOf(basemapSubnationalsId) > layersOrder.indexOf(labelId)) {
+            return labelId
+        }
+    }
+    return hasBasemapSubnationalsLayer ? basemapSubnationalsId : labelId
+}
+
+class CustomAttributionControl extends maplibregl.AttributionControl {
+    constructor(startShowingAttribution: boolean) {
+        super()
+
+        // Copied from implementation https://github.com/maplibre/maplibre-gl-js/blob/34b95c06259014661cf72a418fd81917313088bf/src/ui/control/attribution_control.ts#L190
+        // But reduced since always compact
+        this._updateCompact = () => {
+            if (!this._container.classList.contains('maplibregl-compact') && !this._container.classList.contains('maplibregl-attrib-empty')) {
+                this._container.classList.add('maplibregl-compact')
+                if (startShowingAttribution) {
+                    this._container.setAttribute('open', '')
+                    this._container.classList.add('maplibregl-compact-show')
+                }
+            }
+        }
+    }
+}
+
+export function CustomAttributionControlComponent({ startShowingAttribution }: { startShowingAttribution: boolean }): ReactNode {
+    useControl(() => new CustomAttributionControl(startShowingAttribution))
+    return null
+}
+
+function pointsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
+    return `${urbanStatsLayerPrefix}-points-${kind}-${id}`
+}
+
+export function PointFeatureCollection({ features, clickable }: { features: GeoJSON.Feature[], clickable: boolean }): ReactNode {
+    const { current: map } = useMap()
+    const beforeId = useContentBeforeId(map)
+    const id = useId()
+
+    const collection: GeoJSON.FeatureCollection = useMemo(() => ({
+        type: 'FeatureCollection',
+        features,
+    }), [features])
+
+    useClickable({ id: pointsId(id, 'fill'), features, clickable })
+
+    return (
+        <>
+            <Source id={pointsId(id, 'source')} type="geojson" data={collection} />
+            <ScreenshotAwareLayer
+                id={pointsId(id, 'fill')}
+                type="circle"
+                source={pointsId(id, 'source')}
+                paint={{
+                    'circle-color': ['get', 'fillColor'],
+                    'circle-opacity': ['get', 'fillOpacity'],
+                    'circle-radius': ['get', 'radius'],
+                }}
+                beforeId={beforeId}
+            />
+        </>
+    )
+}
+
+function useClickable({ id, clickable, features }: { id: string, clickable: boolean, features: GeoJSON.Feature[] }): void {
+    const navigator = useContext(Navigator.Context)
+    const universe = useUniverse()
+
+    const { current: map } = useMap()
+
+    useEffect(() => {
+        if (clickable) {
+            assert(map !== undefined, 'map is undefined')
+
+            const clickFeature = (name: string): void => {
+                const feature = features.find(f => f.properties!.name === name)
+                void navigator.navigate({
+                    kind: 'article',
+                    universe: (feature?.properties!.universe as Universe | undefined) ?? universe,
+                    longname: name,
+                }, { history: 'push', scroll: { kind: 'element', element: map.getContainer() } })
+            }
+
+            const overCallback = (): void => {
+                map.getCanvas().style.cursor = 'pointer'
+            }
+            const leaveCallback = (): void => {
+                map.getCanvas().style.cursor = ''
+            }
+            const clickCallback = (e: maplibregl.MapMouseEvent & {
+                features?: maplibregl.MapGeoJSONFeature[]
+            }): void => {
+                const feature = e.features?.find(f => f.properties.clickable !== false)
+                if (feature !== undefined) {
+                    clickFeature(feature.properties.name as string)
+                }
+            }
+            map.on('mouseover', id, overCallback)
+            map.on('mouseleave', id, leaveCallback)
+            map.on('click', id, clickCallback)
+
+            TestUtils.shared.clickableMaps.set(id, { clickFeature, features: features.map(f => f.properties!.name as string) })
+
+            return () => {
+                map.off('mouseover', id, overCallback)
+                map.off('mouseleave', id, leaveCallback)
+                map.off('click', id, clickCallback)
+
+                TestUtils.shared.clickableMaps.delete(id)
+            }
+        }
+
+        return () => undefined
+    }, [id, map, clickable, navigator, features, universe])
+}
+
+// eslint-disable-next-line no-restricted-syntax -- This is the default maplibre background color
+const defaultBackgroundColor = '#f8f4f0'
+
+const basemapSubnationalsId = 'boundary_subn_overlayed'
+
+export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
+    const map = useMap().current!
+
+    const mapLoaded = useOrderedResolve(useMemo(async () => {
+        await waitForMapLoadedOrRemoved(map)
+        return true
+    }, [map]), 'BaseMap.mapLoaded').result ?? false
+
+    useEffect(() => {
+        if (mapLoaded) {
+            for (const layerId of map.getLayersOrder()) {
+                const layer = map.getLayer(layerId)!
+                map.getMap().setLayoutProperty(layerId, 'visibility', isVisible(basemap, layer) ? 'visible' : 'none')
+            }
+            map.getMap().setPaintProperty('background', 'background-color', basemap.type === 'none' ? basemap.backgroundColor : defaultBackgroundColor)
+            map.getMap().setPaintProperty('background', 'background-color-transition', { duration: 0, delay: 0 })
+        }
+    }, [map, basemap, mapLoaded])
+
+    const labelId = useOrderedResolve(useMemo(() => firstLabelId(map), [map]), 'Basemap.firstLabel').result
+
+    if (basemap.type === 'osm' && basemap.subnationalOutlines !== undefined) {
+        return (
+            <ScreenshotAwareLayer
+                id={basemapSubnationalsId}
+                type="line"
+                source="openmaptiles"
+                source-layer="boundary"
+                filter={[
+                    'all',
+                    ['<=', ['get', 'admin_level'], 4],
+                    ['!=', ['get', 'maritime'], 1],
+                    ['!=', ['get', 'disputed'], 1],
+                    ['!', ['has', 'claimed_by']],
+                ]}
+                paint={{
+                    'line-color': basemap.subnationalOutlines.color,
+                    'line-width': basemap.subnationalOutlines.weight,
+                }}
+                beforeId={labelId}
+            />
+        )
+    }
+
+    return null
+}
+
+function isVisible(basemap: Basemap, layer: { id: string, type: string, source: string }): boolean {
+    switch (basemap.type) {
+        case 'none':
+            return keptByNoBasemap(layer)
+        case 'osm':
+            return !(basemap.noLabels && layer.type === 'symbol')
+    }
+}

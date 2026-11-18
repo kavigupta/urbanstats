@@ -1,21 +1,45 @@
+import { createRequire } from 'module'
 import path from 'path'
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import NodePolyfillPlugin from 'node-polyfill-webpack-plugin'
+import { rspack } from "@rspack/core"
+import { port } from "./port.js"
+import { setupGitSnapshotMiddlewares } from "./git-snapshots.js"
 
 const isProduction = process.env.NODE_ENV === 'production'
 
+// dev-server-advice listens on the dev server's websocket, which only exists under `serve`.
+const isServing = process.argv.includes('serve')
+
+// Helpful for debugging loops in watch mode
+class LogChangedFile {
+  apply(compiler) {
+    compiler.hooks.invalid.tap('MyWatchPlugin', (fileName, changeTime) => {
+      console.log(`Changed file: ${fileName}, change time: ${new Date(changeTime).toLocaleString()}`);
+    });
+  }
+}
+
 export default env => ({
     entry: {
-        index: ['./src/index.tsx'],
+        index: [...(isServing ? ['./src/dev-server-advice.ts'] : []), './src/index.tsx'],
         loading: ['./src/loading.ts'],
     },
     output: {
         filename: '[name].js',
+        // Hashed so a stale index.js can never load a chunk built against different module ids.
+        // The search index cache key also relies on this: see createIndex in src/search.ts
+        chunkFilename: '[name].[contenthash].js',
         path: path.resolve(import.meta.dirname, '..', 'dist'),
         clean: true,
     },
     resolve: {
+        alias: {
+            react$: path.resolve(import.meta.dirname, 'src/react-duplicate-keys.cjs'),
+            // Resolved as Node would, so it follows NODE_PATH to the e2e container's /node_modules
+            'react-without-key-check$': createRequire(import.meta.url).resolve('react'),
+        },
         // Add '.ts' and '.tsx' as resolvable extensions.
         extensions: ['', '.webpack.js', '.web.js', '.ts', '.tsx', '.js'],
         extensionAlias: {
@@ -26,16 +50,20 @@ export default env => ({
     module: {
         rules: [
             { test: /\.tsx?$/, loader: 'builtin:swc-loader' },
-            { 
-                test: /\.m?js$/, loader: 'builtin:swc-loader', 
-                resolve: { fullySpecified: false }, 
+            {
+                test: /\.m?js$/, loader: 'builtin:swc-loader',
+                resolve: { fullySpecified: false },
                 exclude: [
                     path.resolve(import.meta.dirname, 'node_modules/maplibre-gl')
-                ] 
+                ]
             },
             {
                 test: /\.css$/i,
                 use: ['style-loader', 'css-loader'],
+            },
+            {
+                test: /\.(ttf|woff|woff2|eot|otf)$/i,
+                type: 'asset/resource',
             },
 
         ],
@@ -44,20 +72,66 @@ export default env => ({
     plugins: [
         new NodePolyfillPlugin(),
         new ForkTsCheckerWebpackPlugin(),
+        new LogChangedFile()
     ],
     devServer: {
-        static: {
-            directory: env.directory,
-        },
+        static: [
+            { directory: env.directory },
+            // What the snapshot diff viewer reads when it's pointed at a local test run rather than a CI artifact.
+            // snapshotsRoot stands in for the repository, so a test can serve a run of its own.
+            ...Object.entries({
+                reference: 'reference_test_snapshots',
+                changed: 'react/changed_snapshots',
+                delta: 'react/delta',
+            }).map(([name, directory]) => ({
+                directory: path.resolve(env.snapshotsRoot ?? path.resolve(import.meta.dirname, '..'), directory),
+                publicPath: `/local-snapshots/${name}`,
+                // A test run writing these shouldn't reload whatever page is open.
+                watch: false,
+            })),
+        ],
+        setupMiddlewares: setupGitSnapshotMiddlewares,
         compress: true,
-        port: 8000,
+        port: port(),
         devMiddleware: {
             writeToDisk: true,
         },
+        allowedHosts: [
+            '.local'
+        ],
+    },
+    watchOptions: {
+        ignored: env.directory
     },
     performance: {
-        hints: isProduction ? 'error': false,
-        maxAssetSize: Number.MAX_SAFE_INTEGER,
-        maxEntrypointSize: 3.2 * Math.pow(2, 20)
-    }
+        hints: isProduction ? 'error' : false,
+        maxAssetSize: 1_200_000,
+        maxEntrypointSize: 1_200_000,
+        assetFilter: asset => !asset.startsWith('quiz_infinite.') && !asset.endsWith('.map')
+    },
+    optimization: {
+        splitChunks: {
+            cacheGroups: {
+                maplibre: {
+                    test: /maplibre/,
+                    name: 'maplibre',
+                },
+                quiz_infinite: {
+                    test: /data\/quiz_infinite\.ts$/,
+                    name: 'quiz_infinite'
+                }
+            },
+        },
+        minimizer: [
+            new rspack.SwcJsMinimizerRspackPlugin({
+                exclude: /maplibre/, // MapLibre starts having race conditions if minimized
+                minimizerOptions: {
+                    compress: {
+                        inline: false // Changes memory semantics in closures, see https://github.com/swc-project/swc/issues/12344
+                    }
+                }
+            }),
+            new rspack.LightningCssMinimizerRspackPlugin(),
+        ],
+    },
 })

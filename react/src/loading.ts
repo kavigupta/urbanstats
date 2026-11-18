@@ -1,4 +1,6 @@
 import { colorThemes } from './page_template/color-themes'
+// eslint-disable-next-line import/no-unassigned-import -- Only care about side effects
+import './utils/TestUtils'
 
 const savedSettings = localStorage.getItem('settings')
 // eslint-disable-next-line no-restricted-syntax -- Represents persisted data

@@ -1,119 +1,145 @@
-import '@fontsource/jost/100.css'
-import '@fontsource/jost/200.css'
-import '@fontsource/jost/300.css'
-import '@fontsource/jost/400.css'
-import '@fontsource/jost/500.css'
-import '@fontsource/jost/600.css'
-import '@fontsource/jost/700.css'
-import '@fontsource/jost/800.css'
-import '@fontsource/jost/900.css'
+import { saveAs } from 'file-saver'
+import React, { ReactNode, useEffect, useRef, useState } from 'react'
 
-import React, { ReactNode, useEffect, useState } from 'react'
-
+import { exportToCSV, CSVExportData } from '../components/csv-export'
 import { Header } from '../components/header'
-import { ScreencapElements, ScreenshotContext, createScreenshot } from '../components/screenshot'
+import { ScreenshotContext, ScreenshotContextType } from '../components/screenshot'
 import { Sidebar } from '../components/sidebar'
 import '../common.css'
 import '../components/article.css'
+import { TestUtils } from '../utils/TestUtils'
+import { debugBufferEnabled, debugBufferText } from '../utils/debug-logging'
 import { useMobileLayout } from '../utils/responsive'
+import { zIndex } from '../utils/zIndex'
 
-import { useColors, useJuxtastatColors } from './colors'
+import { Colors } from './color-themes'
+import { useColors, useStyleElement } from './colors'
+import { desktopLayout, fullWidthContext, useFullWidth } from './utils'
 
 export function PageTemplate({
-    screencapElements = undefined,
-    hasUniverseSelector = false,
-    universes = [],
+    screencap,
+    csvExportCallback,
     children,
     showFooter = true,
+    topPanel = true,
+    screenshotContext: inheritedScreenshotContext,
+    hideSidebar = false,
+    fullWidth = false,
 }: {
-    screencapElements?: () => ScreencapElements
-    hasUniverseSelector?: boolean
-    universes?: readonly string[]
+    screencap?: (currentUniverse: string | undefined, colors: Colors, screenshotContext: ScreenshotContextType) => Promise<void>
+    /** For pages whose layout depends on screenshot mode, which need the context above them. */
+    screenshotContext?: ScreenshotContextType
+    csvExportCallback?: CSVExportData
     children?: React.ReactNode
     showFooter?: boolean
+    topPanel?: boolean
+    hideSidebar?: boolean
+    /** If a page is known to be full width from its descriptor, also set this for its initial load in routers.tsx. */
+    fullWidth?: boolean
 }): ReactNode {
     const [hamburgerOpen, setHamburgerOpen] = useState(false)
-    const [screenshotMode, setScreenshotMode] = useState(false)
+    const [screenshotInProgress, setScreenshotInProgress] = useState(false)
+    const ownScreenshotContext = useRef<ScreenshotContextType>({ render: new Set(), wait: new Set() })
+    const screenshotContext = inheritedScreenshotContext ?? ownScreenshotContext.current
     const colors = useColors()
-    const juxtaColors = useJuxtastatColors()
     const mobileLayout = useMobileLayout()
 
+    const styleElement = useStyleElement()
     useEffect(() => {
+        styleElement(document.documentElement)
+        if (TestUtils.shared.isTesting) {
+            document.documentElement.setAttribute('spellcheck', 'false')
+            document.documentElement.setAttribute('data-testing', 'true')
+        }
         document.body.style.backgroundColor = colors.background
         document.body.style.color = colors.textMain
-        document.documentElement.style.setProperty('--quiz-plain-bg', colors.unselectedButton)
-        document.documentElement.style.setProperty('--quiz-selected-bg', colors.selectedButton)
-        document.documentElement.style.setProperty('--quiz-correct', juxtaColors.correct)
-        document.documentElement.style.setProperty('--quiz-incorrect', juxtaColors.incorrect)
-        document.documentElement.style.setProperty('--slightly-different-background', colors.slightlyDifferentBackground)
-        document.documentElement.style.setProperty('--slightly-different-background-focused', colors.slightlyDifferentBackgroundFocused)
-        document.documentElement.style.setProperty('--blue-link', colors.blueLink)
-        document.documentElement.style.setProperty('--text-main-opposite', colors.textMainOpposite)
-        document.documentElement.style.setProperty('--text-main', colors.textMain)
-        document.documentElement.style.setProperty('--ordinal-text-color', colors.ordinalTextColor)
-        document.documentElement.style.setProperty('--background', colors.background)
-        document.documentElement.style.setProperty('--highlight', colors.highlight)
-    }, [colors, juxtaColors])
+    }, [styleElement, colors.background, colors.textMain])
 
     useEffect(() => {
-        if (!mobileLayout && hamburgerOpen) {
+        if (!(mobileLayout || fullWidth) && hamburgerOpen) {
             setHamburgerOpen(false)
         }
-    }, [hamburgerOpen, mobileLayout])
+    }, [hamburgerOpen, mobileLayout, fullWidth])
 
-    const hasScreenshotButton = screencapElements !== undefined
+    const hasScreenshotButton = screencap !== undefined
+    const hasCSVButton = csvExportCallback !== undefined
 
-    const screencap = async (currentUniverse: string | undefined): Promise<void> => {
-        if (screencapElements === undefined) {
+    const exportCSV = (): void => {
+        const csvExportData = csvExportCallback?.()
+        if (csvExportData === undefined) {
             return
         }
         try {
-            await createScreenshot(screencapElements(), currentUniverse, colors)
+            exportToCSV(csvExportData.csvData, csvExportData.csvFilename)
         }
         catch (e) {
             console.error(e)
         }
     }
 
-    const initiateScreenshot = (currentUniverse: string | undefined): void => {
-        setScreenshotMode(true)
-        setTimeout(async () => {
-            await screencap(currentUniverse)
-            setScreenshotMode(false)
-        })
+    const doScreencap = async (currentUniverse: string | undefined): Promise<void> => {
+        if (screencap === undefined) {
+            return
+        }
+        setScreenshotInProgress(true)
+        try {
+            await screencap(currentUniverse, colors, screenshotContext)
+        }
+        catch (e) {
+            console.error(e)
+        }
+        finally {
+            setScreenshotInProgress(false)
+        }
     }
 
     // https://stackoverflow.com/a/55451665
     const runningInTestCafe = (window as unknown as { '%hammerhead%': unknown })['%hammerhead%'] !== undefined
 
     return (
-        <ScreenshotContext.Provider value={screenshotMode}>
-            <meta name="viewport" content="width=device-width, initial-scale=0.75" />
-            <div
-                className={mobileLayout ? 'main_panel_mobile' : 'main_panel'}
-                style={{
-                    backgroundColor: colors.background,
-                    // simulate mobile zoom in testcafe so screenshots are more accurate to what they would actually be on mobile
-                    // since desktop browsers don't respect meta[name=viewport]
-                    zoom: mobileLayout && runningInTestCafe ? 0.75 : undefined,
-                }}
-            >
-                <Header
-                    hamburgerOpen={hamburgerOpen}
-                    setHamburgerOpen={setHamburgerOpen}
-                    hasScreenshot={hasScreenshotButton}
-                    hasUniverseSelector={hasUniverseSelector}
-                    allUniverses={universes}
-                    initiateScreenshot={(currentUniverse) => { initiateScreenshot(currentUniverse) }}
-                />
-                <div style={{ marginBlockEnd: '16px' }}></div>
-                <BodyPanel
-                    hamburgerOpen={hamburgerOpen}
-                    mainContent={children}
-                    showFooter={showFooter}
-                    setHamburgerOpen={setHamburgerOpen}
-                />
-            </div>
+        <ScreenshotContext.Provider value={screenshotContext}>
+            <fullWidthContext.Provider value={fullWidth}>
+                <meta name="viewport" content="width=device-width, initial-scale=0.75" />
+                <div
+                    className={mobileLayout ? 'main_panel_mobile' : 'main_panel'}
+                    style={{
+                        ...(mobileLayout
+                            ? { paddingLeft: '1em', paddingRight: '1em' }
+                            : {
+                                    position: 'relative',
+                                    maxWidth: fullWidth ? undefined : `${desktopLayout.maxWidthEm}em`,
+                                    marginLeft: 'auto',
+                                    marginRight: 'auto',
+                                }),
+                        backgroundColor: colors.background,
+                        // simulate mobile zoom in testcafe so screenshots are more accurate to what they would actually be on mobile
+                        // since desktop browsers don't respect meta[name=viewport]
+                        zoom: mobileLayout && runningInTestCafe ? 0.75 : undefined,
+                    }}
+                >
+                    {topPanel && (
+                        <>
+                            <Header
+                                hamburgerOpen={hamburgerOpen}
+                                setHamburgerOpen={setHamburgerOpen}
+                                hasScreenshot={hasScreenshotButton}
+                                screenshotInProgress={screenshotInProgress}
+                                hasCSV={hasCSVButton}
+                                initiateScreenshot={(currentUniverse) => { void doScreencap(currentUniverse) }}
+                                exportCSV={exportCSV}
+                            />
+                            <div style={{ marginBlockEnd: '16px' }}></div>
+                        </>
+                    )}
+                    <BodyPanel
+                        hamburgerOpen={hamburgerOpen}
+                        mainContent={children}
+                        showFooter={showFooter}
+                        setHamburgerOpen={setHamburgerOpen}
+                        hideSidebar={hideSidebar}
+                    />
+                </div>
+            </fullWidthContext.Provider>
         </ScreenshotContext.Provider>
     )
 }
@@ -133,16 +159,41 @@ function TemplateFooter(): ReactNode {
             <Support />
             {' '}
             <Store />
+            {debugBufferEnabled && (
+                <>
+                    {' '}
+                    <a
+                        href="#"
+                        onClick={(e) => {
+                            e.preventDefault()
+                            debugBufferText().then((text) => { saveAs(new Blob([text], { type: 'text/plain' }), 'urbanstats-debug-log.txt') }).catch((error: unknown) => {
+                                console.error(error)
+                                alert(`Could not download debug log: ${error instanceof Error ? error.message : String(error)}`)
+                            })
+                        }}
+                    >
+                        Download debug log
+                    </a>
+                </>
+            )}
         </div>
     )
 }
 
-function Version(): ReactNode {
-    return <span id="current-version">23.11.2</span>
+export function Version(): ReactNode {
+    return (
+        <span id="current-version">
+            {TestUtils.shared.isTesting ? '<VERSION>' : '32.7.2'}
+        </span>
+    )
 }
 
 function LastUpdated(): ReactNode {
-    return <span id="last-updated">2025-03-30</span>
+    return (
+        <span id="last-updated">
+            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2026-11-18'}
+        </span>
+    )
 }
 
 function MainCredits(): ReactNode {
@@ -155,34 +206,102 @@ function OtherCredits(): ReactNode {
             {'Significant help with weather data from '}
             <a href="https://twitter.com/OklahomaPerson">OklahomaPerson</a>
             .
+            {' Thanks to '}
+            <a href="https://bsky.app/profile/elpis.bsky.social">Taylor</a>
+            {' for the Metropolitan Clusters.'}
         </span>
     )
 }
 
-function BodyPanel({ hamburgerOpen, mainContent, showFooter, setHamburgerOpen }: { hamburgerOpen: boolean, mainContent: React.ReactNode, showFooter: boolean, setHamburgerOpen: (open: boolean) => void }): ReactNode {
+function BodyPanel({ hamburgerOpen, mainContent, showFooter, setHamburgerOpen, hideSidebar }: {
+    hamburgerOpen: boolean
+    mainContent: React.ReactNode
+    showFooter: boolean
+    setHamburgerOpen: (open: boolean) => void
+    hideSidebar: boolean
+}): ReactNode {
     const mobileLayout = useMobileLayout()
+    const fullWidth = useFullWidth()
 
-    if (hamburgerOpen) {
+    if (!hideSidebar && hamburgerOpen && (!fullWidth || mobileLayout)) {
         return <LeftPanel setHamburgerOpen={setHamburgerOpen} />
     }
     return (
-        <div className="body_panel">
-            {mobileLayout ? undefined : <LeftPanel setHamburgerOpen={setHamburgerOpen} />}
-            <div className={mobileLayout ? 'content_panel_mobile' : 'right_panel'}>
+        <div style={{
+            position: 'relative',
+            width: '100%',
+            display: 'flex',
+        }}
+        >
+            {(!hideSidebar && !mobileLayout && (!fullWidth || hamburgerOpen)) ? <LeftPanel setHamburgerOpen={setHamburgerOpen} /> : undefined }
+            <div
+                className={mobileLayout ? 'content_panel_mobile' : 'right_panel'}
+                style={mobileLayout
+                    ? { width: '100%' }
+                    : (fullWidth || hideSidebar
+                            ? { width: '100%', paddingLeft: `${desktopLayout.fullWidthPaddingEm}em`, paddingRight: `${desktopLayout.fullWidthPaddingEm}em` }
+                            : { width: `${100 - desktopLayout.sidebarPercent}%`, paddingLeft: `${desktopLayout.sidebarContentPaddingEm}em` })}
+            >
                 {mainContent}
-                <div className="gap"></div>
-                { showFooter ? <TemplateFooter /> : null }
+
+                { showFooter
+                    ? (
+                            <>
+                                <div className="gap" />
+                                <TemplateFooter />
+                            </>
+                        )
+                    : null }
             </div>
         </div>
     )
 }
 
 function LeftPanel({ setHamburgerOpen }: { setHamburgerOpen: (open: boolean) => void }): ReactNode {
-    return (
-        <div className={useMobileLayout() ? 'left_panel_mobile' : 'left_panel'}>
+    const mobileLayout = useMobileLayout()
+    const colors = useColors()
+    const fullWidth = useFullWidth()
+    const sidebar = (
+        <div
+            className="left_panel"
+            style={mobileLayout
+                ? {}
+                : {
+                        width: `${desktopLayout.sidebarPercent}%`,
+                        float: 'left',
+                        borderRadius: fullWidth ? '5px' : undefined,
+                        border: fullWidth ? `1px solid ${colors.borderShadow}` : undefined,
+                        overflow: 'hidden', // needed so the corners aren't cut off
+                    }}
+        >
             <Sidebar onNavigate={() => { setHamburgerOpen(false) }} />
         </div>
     )
+
+    const hideRef = useRef<HTMLDivElement>(null)
+    if (!mobileLayout && fullWidth) {
+        return (
+            <div
+                ref={hideRef}
+                style={{
+                    position: 'absolute',
+                    zIndex: zIndex.sidebarOverlay,
+                    left: 0,
+                    right: 0,
+                    height: '100%',
+                    backgroundColor: `${colors.background}99`,
+                }}
+                onClick={(e) => {
+                    if (e.target === hideRef.current) {
+                        setHamburgerOpen(false)
+                    }
+                }}
+            >
+                {sidebar}
+            </div>
+        )
+    }
+    return sidebar
 }
 
 function Support(): ReactNode {

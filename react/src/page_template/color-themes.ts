@@ -3,7 +3,7 @@ import hueColors from '../data/hueColors'
 export interface HueColors {
     blue: string
     orange: string
-    darkOrange: string
+    brown: string
     purple: string
     red: string
     grey: string
@@ -31,10 +31,16 @@ export interface Colors {
     selectedButton: string
     selectedButtonText: string
     blueLink: string
+    mapInsetBorderColor: string
+    buttonTextWhite: string
+    brandingColor: string
     bannerURL: string
     mixPct: number
     hueColors: HueColors
     screenshotFooterUrl: string
+    pencilIcon: string
+    wikidataURL: string
+    mapperBannerURL: string
 }
 
 export interface JuxtastatColors {
@@ -50,6 +56,7 @@ const defaultHueColors: HueColors = hueColors
 
 export type Theme = 'Light Mode' | 'Dark Mode'
 
+/* eslint-disable no-restricted-syntax -- Allowing hex colors for themes */
 export const colorThemes: Record<Theme, Colors> = {
     'Light Mode': {
         background: '#fff8f0',
@@ -68,10 +75,16 @@ export const colorThemes: Record<Theme, Colors> = {
         selectedButton: '#4e525a',
         selectedButtonText: '#ffffff',
         blueLink: '#22f',
+        mapInsetBorderColor: '#000000',
+        buttonTextWhite: '#ffffff',
+        brandingColor: '#8686bf',
         bannerURL: '/banner.png',
         mixPct: 70,
         hueColors: defaultHueColors,
         screenshotFooterUrl: 'screenshot_footer.svg',
+        pencilIcon: '/pencil-light.png',
+        wikidataURL: '/wikidata-light.svg',
+        mapperBannerURL: '/mapper-banner.png',
     },
     'Dark Mode': {
         background: '#00060f',
@@ -90,9 +103,16 @@ export const colorThemes: Record<Theme, Colors> = {
         selectedButton: '#a2a6ae',
         selectedButtonText: '#000000',
         blueLink: '#aaaaff',
+        mapInsetBorderColor: '#000000',
+        buttonTextWhite: '#ffffff',
+        brandingColor: '#8686bf',
         bannerURL: '/banner-dark.png',
         mixPct: 50,
         hueColors: defaultHueColors,
         screenshotFooterUrl: 'screenshot_footer_dark.svg',
+        pencilIcon: '/pencil-dark.png',
+        wikidataURL: '/wikidata-dark.svg',
+        mapperBannerURL: '/mapper-banner-dark.png',
     },
 }
+/* eslint-enable no-restricted-syntax -- Allowing hex colors for themes */

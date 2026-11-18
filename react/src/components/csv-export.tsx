@@ -1,0 +1,229 @@
+import assert from 'assert'
+
+import { stringify } from 'csv-stringify/sync'
+import { saveAs } from 'file-saver'
+import React, { ReactNode, useCallback, useContext } from 'react'
+
+import { Settings } from '../page_template/settings'
+import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
+import { TableCellValue, TableColumnValues } from '../urban-stats-script/constants/table'
+import { USSOpaqueValue, USSValue } from '../urban-stats-script/types-values'
+import { HumanReadableName } from '../utils/human-readable-element'
+import { reifyString } from '../utils/human-readable-name'
+import { sanitize } from '../utils/paths'
+import { Article } from '../utils/protos'
+import { UnitSettings } from '../utils/quantity'
+
+import { ArticleRow } from './load-article'
+
+export type CSVExportData = () => { csvData: string[][], csvFilename: string }
+
+/** `includeOrdinals` is given the exported rows, which are not necessarily the displayed ones. */
+export function useCSVExport(
+    articles: Article[],
+    rows: (settings: StatGroupSettings) => ArticleRow[][],
+    includeOrdinals: (exportedRows: ArticleRow[][]) => boolean,
+    filenameBase: string,
+): CSVExportData {
+    const settings = useContext(Settings.Context)
+    return useCallback(() => {
+        const exportedRows = rows(settings.getMultiple(groupYearKeys()))
+        return {
+            csvData: generateCSVDataForArticles(articles, exportedRows, includeOrdinals(exportedRows)),
+            csvFilename: `${sanitize(filenameBase)}.csv`,
+        }
+    }, [articles, rows, settings, includeOrdinals, filenameBase])
+}
+
+export function exportToCSV(data: string[][], filename: string): void {
+    // Use csv-stringify library for proper CSV generation
+    const csvContent = stringify(data, {
+        header: false, // We're already providing headers in the data
+        delimiter: ',',
+        quoted: true, // Quote all fields for consistency
+        quoted_empty: true,
+        quoted_string: true,
+    })
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    saveAs(blob, filename)
+}
+
+export function CSVButton(props: { onClick: () => void }): ReactNode {
+    return (
+        <button
+            type="button"
+            className="borderless"
+            aria-label="Export as CSV"
+            onClick={props.onClick}
+            style={{
+                height: '100%',
+                cursor: 'pointer',
+                padding: 0,
+            }}
+        >
+            <img src="/csv.png" alt="" style={{ height: '100%' }} />
+        </button>
+    )
+}
+
+function generateCSVDataForArticles(
+    articles: Article[],
+    dataByArticleStat: ArticleRow[][],
+    includeOrdinals: boolean,
+): string[][] {
+    const names = articles.map(a => a.longname)
+    const statNames = dataByArticleStat[0].map(row => row.renderedStatname)
+    const headerRow = ['Region', ...statNames]
+
+    if (includeOrdinals) {
+        // using the 0th article because we assume all have the same stats in the same order.
+        headerRow.push(...statNames.flatMap((statName, idx) => dataByArticleStat[0][idx].kind === 'statistic' ? [`${statName} (Rank)`, `${statName} (Percentile)`] : []))
+    }
+
+    const dataRows: string[][] = []
+
+    for (let articleIndex = 0; articleIndex < articles.length; articleIndex++) {
+        const row = [names[articleIndex]]
+
+        for (let statIndex = 0; statIndex < dataByArticleStat[0].length; statIndex++) {
+            const rowData = dataByArticleStat[articleIndex][statIndex]
+            row.push(JSON.stringify(rowData.statval))
+        }
+
+        if (includeOrdinals) {
+            for (let statIndex = 0; statIndex < dataByArticleStat[0].length; statIndex++) {
+                const rowData = dataByArticleStat[articleIndex][statIndex]
+                if (rowData.kind === 'statistic') {
+                    row.push(rowData.ordinal.toString())
+                    row.push(rowData.percentileByPopulation.toString())
+                }
+            }
+        }
+
+        dataRows.push(row)
+    }
+
+    return [headerRow, ...dataRows]
+}
+
+function processContextIntoMapping(context: Map<string, USSValue>): [string[], Map<string, number[]>] | [undefined, undefined] {
+    const geo = context.get('geoName')
+    if (geo === undefined) {
+        return [undefined, undefined]
+    }
+    assert(geo.value instanceof Array, 'geo variable is not an array')
+    const geoArray = geo.value as string[]
+    const relevantVariables = [...context.entries()].filter(([, v]) => v.documentation?.fromStatisticColumn).map(([k]) => k)
+    relevantVariables.sort()
+    const variableValues = []
+    for (const varName of relevantVariables) {
+        const varValue = context.get(varName)
+        assert(varValue?.value instanceof Array, `context variable ${varName} is not an array`)
+        const varArray = varValue.value as number[]
+        variableValues.push(varArray)
+    }
+
+    const valuesEach = new Map<string, number[]>()
+    for (let i = 0; i < geoArray.length; i++) {
+        const name = geoArray[i]
+        const valuesForThis: number[] = variableValues.map(v => v[i])
+        valuesEach.set(name, valuesForThis)
+    }
+
+    return [relevantVariables, valuesEach]
+}
+
+export function generateMapperCSVData(
+    result: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' | 'clusterMap' },
+    context: Map<string, USSValue>,
+): string[][] {
+    const headerRow: string[] = []
+
+    headerRow.push('Geography')
+    if (result.opaqueType === 'cMap' || result.opaqueType === 'pMap' || result.opaqueType === 'clusterMap') {
+        headerRow.push('Value')
+    }
+    else {
+        // eslint-disable-next-line no-restricted-syntax -- column headers not colors
+        headerRow.push('Red', 'Green', 'Blue')
+    }
+
+    const geo = result.value.geo
+
+    const [contextVarNames, valuesEach] = processContextIntoMapping(context)
+    if (contextVarNames !== undefined) {
+        headerRow.push(...contextVarNames)
+    }
+
+    const dataRows: string[][] = geo.map((name, i) => {
+        const row: string[] = []
+
+        row.push(name)
+        if (result.opaqueType === 'cMap' || result.opaqueType === 'pMap' || result.opaqueType === 'clusterMap') {
+            const value = result.value.data[i]
+            row.push(formatNumberForCSV(value))
+        }
+        else {
+            const r = result.value.dataR[i]
+            const g = result.value.dataG[i]
+            const b = result.value.dataB[i]
+            row.push(formatNumberForCSV(r), formatNumberForCSV(g), formatNumberForCSV(b))
+        }
+        if (contextVarNames !== undefined) {
+            const contextValues = valuesEach.get(name)
+            assert(contextValues !== undefined, `Context values for geography ${name} not found`)
+            row.push(...contextValues.map(v => v.toString()))
+        }
+
+        return row
+    })
+
+    return [headerRow, ...dataRows]
+}
+
+export function generateStatisticsPanelCSVData(
+    articleNames: string[],
+    data: { name: HumanReadableName, value: TableColumnValues, ordinal?: number[], populationPercentile?: number[] }[],
+    hideOrdinalsPercentiles: boolean,
+    settings: UnitSettings,
+): string[][] {
+    // Build header row: Name, then for each column: column name, optionally "column name Ord", "column name percentile"
+    const headerRow: string[] = ['Name']
+
+    for (const col of data) {
+        headerRow.push(reifyString(col.name, { ...settings, unicode: false }))
+        if (!hideOrdinalsPercentiles && col.ordinal !== undefined && col.populationPercentile !== undefined) {
+            headerRow.push(`${reifyString(col.name, { ...settings, unicode: false })} Ord`, `${reifyString(col.name, { ...settings, unicode: false })} percentile`)
+        }
+    }
+
+    const dataRows: string[][] = []
+
+    for (let i = 0; i < articleNames.length; i++) {
+        const name = articleNames[i]
+        const row: string[] = [name]
+
+        for (const col of data) {
+            row.push(formatCellForCSV(col.value[i]))
+
+            if (!hideOrdinalsPercentiles && col.ordinal !== undefined && col.populationPercentile !== undefined) {
+                row.push(
+                    col.ordinal[i].toString(),
+                    col.populationPercentile[i].toFixed(1),
+                )
+            }
+        }
+
+        dataRows.push(row)
+    }
+    return [headerRow, ...dataRows]
+}
+
+function formatNumberForCSV(value: number): string {
+    return value.toLocaleString(undefined, { maximumFractionDigits: 10 })
+}
+
+function formatCellForCSV(value: TableCellValue): string {
+    return typeof value === 'number' ? formatNumberForCSV(value) : String(value)
+}

@@ -1,0 +1,252 @@
+import math
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
+import tqdm.auto as tqdm
+from permacache import permacache, stable_hash
+
+from urbanstats.data.gpw import load_full_ghs_zarr, lon_from_col_idx
+from urbanstats.features.within_distance import haversine
+from urbanstats.geometry.rasterize import (
+    exract_raster_points,
+    from_row_idx,
+    rasterize_using_lines,
+)
+from urbanstats.geometry.rle import (
+    RESOLUTION_3ARCSEC,
+    intersect_rle_runs,
+    pad_rle,
+    rle_arrays_from_dict,
+    rle_bounds,
+    rle_dict_from_arrays,
+    rle_spatial_join,
+)
+from urbanstats.special_cases.coastlines import coastlines_rle
+
+# Approx m per degree at equator; cell side at 3 arcsec = 1/1200 deg
+_M_PER_DEG_AT_EQUATOR = 111320
+_CELL_SIDE_M = _M_PER_DEG_AT_EQUATOR / RESOLUTION_3ARCSEC
+_KM_PER_DEG_LAT = _M_PER_DEG_AT_EQUATOR / 1000.0
+BUFFER_PCT = 0.01
+
+OVERLAP_EPSILON = 1e-5
+OVERLAP_FOR_CONTAINS = 0.95
+OVERLAP_FOR_INTERSECTS = 0.05
+
+
+def _lat_deg_from_rle_row(row: int) -> float:
+    """Latitude (degrees) at center of this RLE row (3 arcsec grid)."""
+    return from_row_idx(row + 0.5, RESOLUTION_3ARCSEC)
+
+
+def _cell_area_m2(row: int) -> float:
+    """Area in m² of one cell in this row (equirectangular)."""
+    lat_deg = _lat_deg_from_rle_row(row)
+    lat_rad = math.radians(lat_deg)
+    return _CELL_SIDE_M * _CELL_SIDE_M * math.cos(lat_rad)
+
+
+@dataclass
+class LandRleSummary:
+    land_rle: Dict[int, List[Tuple[int, int]]]
+    buffered_land_rle: Dict[int, List[Tuple[int, int]]]
+    area: float
+    population: float
+    buffered_bounds: Tuple[int, int, int, int]
+
+
+@permacache(
+    "population_density/relationship_equirectangular/land_rle_summaries_for_shapefile_4"
+)
+def land_rle_summaries_for_shapefile(
+    geometry: Any, land_source: Any
+) -> List[LandRleSummary]:
+    """Each region's LandRleSummary, in row order. land_source is as for coastlines_rle."""
+    result = []
+    for geom in tqdm.tqdm(
+        geometry.load_rows().geometry,
+        desc=f"RLE summaries for {geometry.key}",
+        delay=10,
+    ):
+        rows, lon_starts, lon_ends = rasterize_using_lines(
+            geom, resolution=RESOLUTION_3ARCSEC
+        )
+        result.append(
+            land_rle_summary(
+                rle_dict_from_arrays(rows, lon_starts, lon_ends), land_source
+            )
+        )
+    return result
+
+
+@permacache("population_density/relationship_equirectangular/compute_relationships_8")
+def compute_relationships(
+    geometry_a: Any, geometry_b: Any, land_source: Any
+) -> Dict[str, List[Tuple[int, int]]]:
+    """Each kind of relationship's pairs of row positions, in geometry_a then geometry_b."""
+    print("Computing relationships between", geometry_a.key, "and", geometry_b.key)
+    summaries_a = land_rle_summaries_for_shapefile(geometry_a, land_source)
+    summaries_b = land_rle_summaries_for_shapefile(geometry_b, land_source)
+    rles_a = [summary.buffered_land_rle for summary in summaries_a]
+    rles_b = [summary.buffered_land_rle for summary in summaries_b]
+    pairs = rle_spatial_join(rles_a, rles_b)
+    relationships: Dict[str, List[Tuple[int, int]]] = {
+        "same_geography": [],
+        "a_contains_b": [],
+        "a_contained_by_b": [],
+        "intersects": [],
+        "borders": [],
+    }
+    for i, j in tqdm.tqdm(pairs, desc="Classifying relationships", delay=10):
+        rel = classify_relationship(summaries_a[i], summaries_b[j])
+        relationships[rel].append((int(i), int(j)))
+    return relationships
+
+
+def classify_relationship(summary_a: LandRleSummary, summary_b: LandRleSummary) -> str:
+    # pylint: disable=too-many-locals
+    intersection = intersect_rle_runs(summary_a.land_rle, summary_b.land_rle)
+    if not intersection:
+        return "borders"
+    eps = 1e-9
+    inter_area = area_of_rle(intersection)
+
+    # In general, we do not want to compute population unless we have to,
+    # it involves reading from a zarr and is therefore very expensive.
+
+    _inter_pop: Optional[float] = None
+
+    def get_inter_pop() -> float:
+        nonlocal _inter_pop
+        if _inter_pop is None:
+            _inter_pop = compute_population_for_rle(intersection, RESOLUTION_3ARCSEC)
+        return _inter_pop
+
+    union_area = summary_a.area + summary_b.area - inter_area
+    get_union_pop = (
+        lambda: summary_a.population + summary_b.population - get_inter_pop()
+    )
+    iou_area = inter_area / (union_area + eps)
+    iomin_area = inter_area / (min(summary_a.area, summary_b.area) + eps)
+    get_iou_pop = lambda: get_inter_pop() / (get_union_pop() + eps)
+    get_iomin_pop = lambda: get_inter_pop() / (
+        min(summary_a.population, summary_b.population) + eps
+    )
+    # the >= 0.9999 is just to catch cases where the area is so obviously the same
+    # that we don't even need to check the population
+    if iou_area >= 1 - OVERLAP_EPSILON or (
+        iou_area >= OVERLAP_FOR_CONTAINS and get_iou_pop() >= OVERLAP_FOR_CONTAINS
+    ):
+        return "same_geography"
+    area_frac_b = inter_area / (summary_b.area + eps)
+    if area_frac_b >= 1 - OVERLAP_EPSILON or (
+        area_frac_b >= OVERLAP_FOR_CONTAINS
+        and get_inter_pop() / (summary_b.population + eps) >= OVERLAP_FOR_CONTAINS
+    ):
+        return "a_contains_b"
+    area_frac_a = inter_area / (summary_a.area + eps)
+    if area_frac_a >= 1 - OVERLAP_EPSILON or (
+        area_frac_a >= OVERLAP_FOR_CONTAINS
+        and get_inter_pop() / (summary_a.population + eps) >= OVERLAP_FOR_CONTAINS
+    ):
+        return "a_contained_by_b"
+    # if there's basically no area of intersection, call it borders not intersects
+    if iomin_area > OVERLAP_EPSILON and (
+        iomin_area > OVERLAP_FOR_INTERSECTS or get_iomin_pop() > OVERLAP_FOR_INTERSECTS
+    ):
+        return "intersects"
+    return "borders"
+
+
+def compute_population_for_rle(
+    rle: Dict[int, List[Tuple[int, int]]], resolution: int
+) -> float:
+    zarr = load_full_ghs_zarr(resolution)
+    rows, lon_starts, lon_ends = rle_arrays_from_dict(rle)
+    row_sel, col_sel = exract_raster_points(
+        rows, lon_starts, lon_ends, require_positive_in=zarr
+    )
+    return float(np.nansum(zarr[row_sel, col_sel]))
+
+
+_LAND_RLES = {}
+
+
+def land_rle(land_source):
+    """The land mask at 3 arcsecond resolution, without the extreme latitudes."""
+    key = stable_hash(land_source)
+    if key not in _LAND_RLES:
+        # the equirectangular approximation and population raster aren't meant for these
+        _LAND_RLES[key] = {
+            row: intervals
+            for row, intervals in coastlines_rle(land_source).items()
+            if -85 <= _lat_deg_from_rle_row(row) <= 85
+        }
+    return _LAND_RLES[key]
+
+
+def area_of_rle(rle: Dict[int, List[Tuple[int, int]]]) -> float:
+    """Area in m² of cells covered by the RLE (equirectangular)."""
+    total = 0.0
+    for row, intervals in rle.items():
+        for s, e in intervals:
+            total += (e - s + 1) * _cell_area_m2(row)
+    return total
+
+
+@permacache(
+    "population_density/relationship_equirectangular/compute_containment_2",
+    key_function=dict(rle=stable_hash),
+)
+def land_rle_summary(
+    rle: Dict[int, List[Tuple[int, int]]], land_source: Any
+) -> LandRleSummary:
+    """
+    Compute summary information for an RLE relative to land:
+
+    - land-clipped dict RLE
+    - buffered land-clipped dict RLE (using an ellipse radius derived from
+        the great-circle diagonal of the unbuffered land-clipped bounding box)
+    - population and area of the land-clipped RLE
+    - bounding box of the buffered land-clipped RLE
+    """
+    # pylint: disable=too-many-locals
+    assert isinstance(rle, dict), "Expected dict-format RLE"
+    clipped = intersect_rle_runs(rle, land_rle(land_source))
+    area = area_of_rle(clipped)
+    population = compute_population_for_rle(clipped, RESOLUTION_3ARCSEC)
+    min_row, max_row, min_col, max_col = rle_bounds(clipped)
+    # Corner coordinates in degrees (approximate cell centers)
+    lat_north = _lat_deg_from_rle_row(min_row)
+    lat_south = _lat_deg_from_rle_row(max_row)
+    lon_west = lon_from_col_idx(min_col, RESOLUTION_3ARCSEC)
+    lon_east = lon_from_col_idx(max_col + 1, RESOLUTION_3ARCSEC)
+    # Use NW and SE corners for the diagonal
+    buffer_km = haversine(lat_north, lon_west, lat_south, lon_east) * BUFFER_PCT
+    # print("buffering with radius (km)", buffer_km)
+
+    # Convert this physical radius back into cell radii in rows/cols.
+    # Row spacing (lat) is uniform in degrees, but km per degree of lon
+    # depends on latitude, so let the radius depend on y.
+    km_per_row = _KM_PER_DEG_LAT / RESOLUTION_3ARCSEC
+    ry = buffer_km / km_per_row
+    # print("buffering with radius (rows)", ry)
+
+    # we add 1 to the radius because we want to ensure
+    # that, even for very small geometries. Otherwise we
+    # will miss a bunch of "borders"
+    def radius_fn(y: int) -> float:
+        lat_here = _lat_deg_from_rle_row(y)
+        cos_lat = math.cos(math.radians(lat_here))
+        return ry / cos_lat + 1
+
+    buffered_land_rle = pad_rle(clipped, radius_fn, ry + 1)
+    buffered_bounds = rle_bounds(buffered_land_rle)
+    return LandRleSummary(
+        land_rle=clipped,
+        buffered_land_rle=buffered_land_rle,
+        area=area,
+        population=population,
+        buffered_bounds=buffered_bounds,
+    )

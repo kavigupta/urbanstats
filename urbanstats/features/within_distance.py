@@ -9,10 +9,6 @@ from urbanstats.data.census_blocks import load_raw_census
 from urbanstats.geometry.ellipse import Ellipse
 
 
-def xy_to_radius(r, x, y):
-    return point_to_radius(r, shapely.geometry.Point(x, y))
-
-
 def point_to_radius(r, p):
     """
     Convert the given point to a circle (in real space) with the given radius.
@@ -20,18 +16,6 @@ def point_to_radius(r, p):
     ell = Ellipse(r, p.y, p.x)
     shape = shapely.affinity.scale(p.buffer(1), ell.lon_radius, ell.lat_radius)
     return shape
-
-
-def shapefile_points_to_radius(r, shapefile):
-    """
-    Convert the given shapefile of points to a shapefile of circles (in real space) with the given radius.
-    does so non destructively.
-    """
-    return gpd.GeoDataFrame(
-        shapefile,
-        geometry=shapefile.geometry.apply(lambda p: point_to_radius(r, p)),
-        crs=shapefile.crs,
-    )
 
 
 def census_block_coordinates():
@@ -46,7 +30,6 @@ def census_block_coordinates():
 
 @permacache(
     "urbanstats/features/minimum_distance_by_block_3",
-    key_function=dict(feature=lambda x: x.hash_key),
 )
 def minimum_distance_by_block(feature):
     # pylint: disable=too-many-locals
@@ -113,18 +96,3 @@ def haversine(lat1, lon1, lat2, lon2):
     c = 2 * np.arcsin(np.sqrt(a))
     km = rad_earth * c
     return km
-
-
-def haversine_geometries(geo1, geo2):
-    return haversine(geo1.y, geo1.x, geo2.y, geo2.x)
-
-
-def nearest_haversine(census_blocks, feature_pts, max_distance):
-    joined = census_blocks.sjoin(
-        shapefile_points_to_radius(max_distance, feature_pts.copy()), how="inner"
-    )
-    joined["distance"] = haversine_geometries(
-        joined.geometry, feature_pts.loc[joined.index_right].geometry
-    )
-    min_distance = joined["distance"].groupby(joined.index).min()
-    return min_distance

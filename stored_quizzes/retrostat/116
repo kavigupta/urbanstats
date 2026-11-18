@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household Income > $100k %",
+      "stat_path": "household_income_over_100k",
+      "question": "higher % of households who have household income over $100k",
+      "longname_a": "Buffalo city, New York, USA",
+      "longname_b": "Anchorage municipality, Alaska, USA",
+      "stat_a": 0.16989777337364811,
+      "stat_b": 0.43764414992381734
+    },
+    "b": {
+      "stat_column": "PW Mean PM2.5 Pollution",
+      "stat_path": "pm_25_2018_2022",
+      "question": "higher population-weighted PM2.5 pollution !TOOLTIP Population weighted pollution statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Qatar",
+      "longname_b": "Kenya",
+      "stat_a": 84.08679962158203,
+      "stat_b": 23.23240852355957
+    },
+    "a_ease": 0.26711941143180534,
+    "b_ease": 0.6718464351005484
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High school diploma [25-64] %",
+      "stat_path": "education_high_school_canada",
+      "question": "higher % of people between 25 and 64 who have at least a high school diploma",
+      "longname_a": "Montr\u00e9al Population Center, QC, Canada",
+      "longname_b": "Halifax Population Center, NS, Canada",
+      "stat_a": 0.90387735457475,
+      "stat_b": 0.9355860740119158
+    },
+    "b": {
+      "stat_column": "Renter %",
+      "stat_path": "rent_or_own_rent",
+      "question": "higher % of people who are renters",
+      "longname_a": "Lexington Urban Center, USA",
+      "longname_b": "Ogden Urban Center, USA",
+      "stat_a": 0.4828051199775943,
+      "stat_b": 0.2884946519471123
+    },
+    "a_ease": 0.22920203735144312,
+    "b_ease": 0.642331635540464
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Asian %",
+      "stat_path": "asian",
+      "question": "higher % of people who are Asian",
+      "longname_a": "MN-02 (2023), USA",
+      "longname_b": "TN-02 (2023), USA",
+      "stat_a": 0.055724563725270286,
+      "stat_b": 0.018069441351477006
+    },
+    "b": {
+      "stat_column": "Hearing disability %",
+      "stat_path": "HEARING_cdc_2",
+      "question": "higher % of adults with a hearing disability",
+      "longname_a": "NC-06 (2025), USA",
+      "longname_b": "TX-25 (2023), USA",
+      "stat_a": 0.0759986873445603,
+      "stat_b": 0.0663224618951385
+    },
+    "a_ease": 0.781929990539262,
+    "b_ease": 0.36116024053767243
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Hospital",
+      "stat_path": "mean_dist_Hospital_updated",
+      "question": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
+      "longname_a": "Philadelphia County, Pennsylvania, USA",
+      "longname_b": "Albany County, New York, USA",
+      "stat_a": 1.5516466463193996,
+      "stat_b": 4.859887550186213
+    },
+    "b": {
+      "stat_column": "Housing Units per Adult",
+      "stat_path": "housing_per_pop",
+      "question": "higher number of housing units per adult",
+      "longname_a": "Greenville-Spartanburg SC-Asheville NC-Anderson SC Media Market, USA",
+      "longname_b": "Duluth MN-Superior WI Media Market, USA",
+      "stat_a": 0.5894392036194084,
+      "stat_b": 0.6987417419520507
+    },
+    "a_ease": 0.8122043519394513,
+    "b_ease": 0.3974663499604117
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household income < C$50k %",
+      "stat_path": "household_income_under_50cad",
+      "question": "higher % of households that have household income under C$50k",
+      "longname_a": "Saskatoon Population Center, SK, Canada",
+      "longname_b": "Ottawa - Gatineau Population Center, QC-ON, Canada",
+      "stat_a": 0.23931086113290342,
+      "stat_b": 0.20960927614745686
+    },
+    "b": {
+      "stat_column": "Traffic Fatalities Per Capita Per Year",
+      "stat_path": "traffic_fatalities_last_decade_per_capita",
+      "question": "higher traffic fatalities per capita between 2013 and 2022!TOOLTIP traffic fatalities in the region, divided by the population of the region",
+      "longname_a": "Rochester NY Media Market, USA",
+      "longname_b": "Springfield MO Media Market, USA",
+      "stat_a": 6.778976915703102e-05,
+      "stat_b": 0.00019290924739998784
+    },
+    "a_ease": 0.8140964995269631,
+    "b_ease": 0.5068131868131868
+  }
+]

@@ -1,22 +1,45 @@
+import { closestCenter, DndContext, DragEndEvent, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { horizontalListSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
-import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 
-import { ArticleOrderingListInternal, loadOrdering } from '../load_json'
+import { ArticleOrderingListInternal, loadOrdering, loadStatisticsPage } from '../load_json'
 import './table.css'
-import { Navigator } from '../navigation/Navigator'
-import { statisticDescriptor } from '../navigation/links'
+import { NavLink, Navigator } from '../navigation/Navigator'
+import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { Colors } from '../page_template/color-themes'
-import { useColors } from '../page_template/colors'
-import { MobileArticlePointers, rowExpandedKey, Settings, useSetting } from '../page_template/settings'
-import { useUniverse } from '../universe'
-import { isHistoricalCD } from '../utils/is_historical'
-import { isMobileLayout, useMobileLayout } from '../utils/responsive'
-import { displayType, separateNumber } from '../utils/text'
+import { colorFromCycle, useColors } from '../page_template/colors'
+import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings, useUnitSettings } from '../page_template/settings'
+import { Universe, useDefinedUniverse, useUniverse } from '../universe'
+import { withButtonRole } from '../utils/a11y'
+import { assert } from '../utils/defensive'
+import { HumanReadableName } from '../utils/human-readable-element'
+import { reifyReact, reifyString } from '../utils/human-readable-name'
+import { sanitize } from '../utils/paths'
+import { useComparisonHeadStyle, useMobileLayout } from '../utils/responsive'
+import { isAllowedToBeShown } from '../utils/restricted-types'
+import { displayType } from '../utils/text'
+import { useTranspose } from '../utils/transpose'
+import { zIndex } from '../utils/zIndex'
 
-import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
+import { Icon } from './Icon'
+import { computeDisclaimerText, type Disclaimer } from './disclaimer-text'
+import { percentileSuffix, percentileText, Statistic } from './display-stats'
+import { EditModeButton, EditModeTopLeftHeader, useEnterEditModeButton } from './edit-mode-header'
+import { EditableNumber } from './editable-field'
+import { footnoteSymbol } from './footnote-symbol'
+import { ArticleRow, FirstLastStatus, missingRowType, StatisticCellRenderingInfo } from './load-article'
+import { percentileBucketIndex } from './percentile-navigation'
+import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
+import { SearchBox } from './search'
+import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCellProps, TopLeftCellSpec, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
-export type ColumnIdentifier = 'statname' | 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
+export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
+
+export const valueOnlyColumns: ColumnIdentifier[] = ['statval', 'statval_unit']
+
+const leftBarMargin = 0.02
 
 const tableRowStyle: React.CSSProperties = {
     display: 'flex',
@@ -42,29 +65,37 @@ export function TableHeaderContainer({ children }: { children: ReactNode }): Rea
     )
 }
 
+export interface CommonLayoutInformation {
+    percentileColumnWidthEm: number
+    ordinalColumnWidthEm: number
+    ordinalColumnPadding: number
+}
+
+interface ColumnLayoutCell {
+    columnIdentifier: ColumnIdentifier
+    widthPercentage: number
+    content: () => ReactNode
+    style: CSSProperties
+}
+
 interface ColumnLayoutProps {
-    cells: {
-        columnIdentifier: ColumnIdentifier
-        widthPercentage: number
-        content: ReactNode
-        style: CSSProperties
-    }[]
+    cells: ColumnLayoutCell[]
     onlyColumns?: string[]
     blankColumns?: string[]
     totalWidth: number
 }
 
 // Lays out column content
-function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
+function ColumnLayout(props: ColumnLayoutProps): React.JSX.Element[] {
     const cellPercentages: number[] = []
-    const cellContents = []
+    const cellContents: { content: () => ReactNode, style: CSSProperties }[] = []
     for (const { widthPercentage, columnIdentifier, content, style } of props.cells) {
         if (props.onlyColumns && !props.onlyColumns.includes(columnIdentifier)) {
             continue
         }
         cellPercentages.push(widthPercentage)
         if (props.blankColumns?.includes(columnIdentifier)) {
-            cellContents.push({ content: <span></span>, style })
+            cellContents.push({ content: () => <span></span>, style })
         }
         else {
             cellContents.push({ content, style })
@@ -81,8 +112,8 @@ function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
         ({ content, style }, i) => {
             const sty: React.CSSProperties = { width: `${cellPercentages[i]}%`, padding: '1px', ...style }
             return (
-                <div key={i} style={sty}>
-                    {content}
+                <div key={i} style={sty} className="columnLayoutCellContainer">
+                    {content()}
                 </div>
             )
         },
@@ -90,71 +121,294 @@ function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     return contents
 }
 
-export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidth: number, onlyColumns?: ColumnIdentifier[] }): ReactNode {
+export interface SuperHeaderHorizontalProps {
+    headerSpecs: (CellSpec & { highlightIndex?: number })[]
+    widthsEach: number[]
+    showBottomBar: boolean
+    leftSpacerWidth: number
+    groupNames?: (string | undefined)[]
+    handleReorder?: (from: number, to: number) => void
+    editMode?: EditModeButton
+}
+
+export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactNode {
     const colors = useColors()
-    const ordinalStyle: React.CSSProperties = {
+    const editButton = useEnterEditModeButton(props.editMode)
+    const barHeight = '5px'
+    const bars = (backgroundColor: (i: number) => string | undefined): ReactNode => {
+        return (
+            <div style={{ display: 'flex' }}>
+                <div style={{ width: `${props.leftSpacerWidth}%`, height: barHeight }} />
+                {Array.from({ length: props.headerSpecs.length }).map(
+                    (_, i) => (
+                        <div
+                            key={`bar_${i}`}
+                            style={{
+                                width: `${props.widthsEach[i]}%`,
+                                height: barHeight,
+                                backgroundColor: backgroundColor(i),
+                            }}
+                        />
+                    ),
+                )}
+            </div>
+        )
+    }
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 1 } }),
+        useSensor(TouchSensor, { activationConstraint: { delay: 50, tolerance: 0 } }),
+    )
+
+    const handleDragEnd = (event: DragEndEvent): void => {
+        const { active, over } = event
+        if (over && active.id !== over.id) {
+            props.handleReorder?.(parseInt(active.id as string), parseInt(over.id as string))
+        }
+    }
+
+    const getBarColor = (idx: number): string | undefined => {
+        const spec = props.headerSpecs[idx]
+        return spec.highlightIndex !== undefined ? colorFromCycle(colors.hueColors, spec.highlightIndex) : undefined
+    }
+
+    const cellsRow = (
+        <div style={{ display: 'flex' }}>
+            {/* The top-left cell below is too narrow on a comparison to hold both a button and the column's name. */}
+            <div style={{ width: `${props.leftSpacerWidth}%`, display: 'flex', alignItems: 'flex-end', padding: '1px' }}>
+                {editButton}
+            </div>
+            {props.handleReorder
+                ? (
+                        <SortableContext items={props.headerSpecs.map((_, idx) => idx.toString())} strategy={horizontalListSortingStrategy}>
+                            {props.headerSpecs.map((cellSpec, idx) => {
+                                const nonDraggableSpec: CellSpec = cellSpec.type === 'comparison-longname' ? { ...cellSpec, draggable: false } : cellSpec
+                                return (
+                                    <SortableHeaderCell key={idx} id={idx.toString()} width={props.widthsEach[idx]}>
+                                        <Cell {...nonDraggableSpec} width={100} />
+                                    </SortableHeaderCell>
+                                )
+                            })}
+                        </SortableContext>
+                    )
+                : props.headerSpecs.map((cellSpec, idx) => <Cell key={idx} {...cellSpec} width={props.widthsEach[idx]} />)}
+        </div>
+    )
+
+    return (
+        <>
+            {props.groupNames && <SuperHeaderGroupNames leftSpacerWidth={props.leftSpacerWidth} groupNames={props.groupNames} widthsEach={props.widthsEach} />}
+            {bars(getBarColor)}
+            {props.handleReorder
+                ? (
+                        <DndContext sensors={sensors} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
+                            {cellsRow}
+                        </DndContext>
+                    )
+                : cellsRow}
+            {props.showBottomBar && bars(getBarColor)}
+        </>
+    )
+}
+
+function SortableHeaderCell({ id, width, children }: { id: string, width: number, children: ReactNode }): ReactNode {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+    return (
+        <div
+            ref={setNodeRef}
+            data-test-id="sortable-column-header"
+            style={{
+                width: `${width}%`,
+                display: 'flex',
+                transform: CSS.Transform.toString(transform),
+                transition: isDragging ? transition : 'none',
+                opacity: isDragging ? 0.5 : 1,
+                touchAction: 'none',
+                cursor: 'grab',
+            }}
+            {...attributes}
+            {...listeners}
+        >
+            {children}
+        </div>
+    )
+}
+
+function SuperHeaderGroupNames(props: { leftSpacerWidth: number, groupNames: (string | undefined)[], widthsEach: number[] }): ReactNode {
+    if (props.groupNames.every(groupName => groupName === undefined)) {
+        return null
+    }
+    const sizes = []
+    const names: (string | undefined)[] = []
+    for (const [idx, groupName] of props.groupNames.entries()) {
+        if (idx === 0 || groupName !== props.groupNames[idx - 1]) {
+            sizes.push(props.widthsEach[idx])
+            names.push(groupName)
+        }
+        else {
+            sizes[sizes.length - 1] += props.widthsEach[idx]
+        }
+    }
+
+    return (
+        <div style={{ display: 'flex' }} className="serif value">
+            <div style={{ width: `${props.leftSpacerWidth}%` }} />
+            {sizes.map((size, idx) => <div key={idx} style={{ width: `${size}%`, textAlign: 'center' }}>{names[idx]}</div>)}
+        </div>
+    )
+}
+
+export function ComparisonTopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
+    return (
+        <>
+            <ComparisonColorBar key="color" highlightIndex={undefined} />
+            <TopLeftHeader {...props} width={props.width - leftBarMargin * 100} />
+        </>
+    )
+}
+
+export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
+    const isMobile = useMobileLayout()
+    const editButton = useEnterEditModeButton(props.editMode)
+
+    if (props.editMode?.open) {
+        return <EditModeTopLeftHeader header={props.editMode} width={props.width} />
+    }
+
+    // On a narrow screen this cell can't fit both, and the button is the more useful of the two.
+    const showName = !isMobile || editButton === undefined
+
+    return (
+        <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '4px', padding: '1px', width: `${props.width}%` }}>
+            {editButton}
+            {showName && (
+                <span className="serif value" style={{ flexGrow: 1 }}>
+                    {props.statNameOverride ?? 'Statistic'}
+                </span>
+            )}
+        </div>
+    )
+}
+
+export function MainHeaderRow(props: {
+    topLeftSpec: TopLeftCellSpec
+    topLeftWidth: number
+    columnWidth: number
+    onlyColumnsEach: ColumnIdentifier[][]
+    statNameOverride?: string
+    extraSpaceRight: number[]
+    simpleOrdinals: boolean
+    columnWidthsInfo: (CommonLayoutInformation | undefined)[]
+    blankColumns?: number[]
+}): ReactNode {
+    return (
+        <>
+            <Cell {...props.topLeftSpec} width={props.topLeftWidth} />
+            {props.extraSpaceRight.map((_, columnIndex) => (
+                props.blankColumns?.includes(columnIndex) ?? false
+                    ? (
+                            <div
+                                key={`headerCells_${columnIndex}`}
+                                style={{ width: `${props.columnWidth + (props.extraSpaceRight[columnIndex] ?? 0)}%` }}
+                            />
+                        )
+                    : (
+                            <StatisticHeaderCells
+                                key={`headerCells_${columnIndex}`}
+                                onlyColumns={props.onlyColumnsEach[columnIndex]}
+                                simpleOrdinals={props.simpleOrdinals}
+                                totalWidth={props.columnWidth}
+                                extraSpaceRight={props.extraSpaceRight[columnIndex] ?? 0}
+                                columnWidthsInfo={props.columnWidthsInfo[columnIndex]}
+                            />
+                        )
+            ))}
+        </>
+    )
+}
+
+function makeOrdinalStyle(colors: Colors, isHeader: boolean, columnWidthsInfo?: CommonLayoutInformation): [React.CSSProperties, React.CSSProperties] {
+    const common = {
         fontSize: '14px',
         fontWeight: 400,
         color: colors.ordinalTextColor,
-        margin: 0,
-        textAlign: 'right',
+        margin: 'auto',
     }
+    if (columnWidthsInfo === undefined) {
+        return [common, common]
+    }
+    const paddingLeft = isHeader ? columnWidthsInfo.ordinalColumnPadding : 0
+    return [
+        {
+            ...common,
+            maxWidth: `${columnWidthsInfo.ordinalColumnWidthEm - paddingLeft}em`,
+            paddingLeft: `${paddingLeft}em`,
+        },
+        { ...common,
+            maxWidth: `${columnWidthsInfo.percentileColumnWidthEm}em`,
+        },
+    ]
+}
+
+function StatisticHeaderCells(props: {
+    simpleOrdinals: boolean
+    totalWidth: number
+    onlyColumns?: ColumnIdentifier[]
+    statNameOverride?: string
+    extraSpaceRight?: number
+    columnWidthsInfo?: CommonLayoutInformation
+}): ReactNode {
+    const colors = useColors()
+    const [ordinalStyle, percentileStyle] = makeOrdinalStyle(colors, true, props.columnWidthsInfo)
 
     const cells = [
         {
-            columnIdentifier: 'statname',
-            widthPercentage: 31,
-            content: (
-                <span className="serif value" key="statistic">
-                    Statistic
-                </span>
-            ),
-            style: { textAlign: 'center' },
-        },
-        {
             columnIdentifier: 'statval',
             widthPercentage: 15 + 10,
-            content: (
+            content: () => (
                 <span className="serif value">
                     Value
                 </span>
             ),
-            style: { textAlign: 'center' },
+            style: { textAlign: 'center', display: 'flex', justifyContent: 'center' },
         },
         {
             widthPercentage: props.simpleOrdinals ? 7 : 17,
             columnIdentifier: 'statistic_percentile',
-            content: (
-                <span className="serif" key="ordinal" style={ordinalStyle}>
+            content: () => (
+                <div className="serif" key="ordinal" style={percentileStyle}>
                     {
-                        (props.simpleOrdinals ? rightAlign('%ile') : 'Percentile')
+                        (props.simpleOrdinals ? '%ile' : 'Percentile')
 
                     }
-                </span>
+                </div>
             ),
-            style: { textAlign: 'center' },
+            style: { textAlign: 'center', display: 'flex', justifyContent: props.simpleOrdinals ? 'flex-end' : 'center', marginRight: props.simpleOrdinals ? '5px' : undefined },
         },
         {
             widthPercentage: props.simpleOrdinals ? 8 : 25,
             columnIdentifier: 'statistic_ordinal',
-            content: (
-                <span className="serif" key="statistic_ordinal" style={ordinalStyle}>
+            content: () => (
+                <div className="serif" key="statistic_ordinal" style={ordinalStyle}>
                     {
-                        (props.simpleOrdinals ? rightAlign('Ord') : 'Ordinal')
+                        (props.simpleOrdinals ? 'Ord' : 'Ordinal')
                     }
-                </span>
+                </div>
             ),
-            style: { textAlign: 'center' },
+            style: { textAlign: 'center', display: 'flex', justifyContent: props.simpleOrdinals ? 'flex-end' : 'center', marginRight: props.simpleOrdinals ? '5px' : undefined },
         },
         ...PointerHeaderCells({ ordinalStyle }),
     ] satisfies ColumnLayoutProps['cells']
 
     return (
-        <ColumnLayout
-            cells={cells}
-            totalWidth={props.totalWidth}
-            onlyColumns={props.onlyColumns}
-        />
+        <>
+            <ColumnLayout
+                cells={cells}
+                totalWidth={props.totalWidth}
+                onlyColumns={props.onlyColumns}
+            />
+            <div style={{ width: `${props.extraSpaceRight ?? 0}%` }} />
+        </>
     )
 }
 
@@ -162,15 +416,15 @@ function PointerHeaderCells(props: { ordinalStyle: CSSProperties }): ColumnLayou
     const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_in_class',
-        content: <span className="serif" style={props.ordinalStyle}>Within Type</span>,
-        style: { textAlign: 'center' },
+        content: () => <span className="serif" style={props.ordinalStyle}>Within Type</span>,
+        style: { textAlign: 'center', display: 'flex', justifyContent: 'center' },
 
     }
     const pointerOverallCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_overall',
-        content: <span className="serif" style={props.ordinalStyle}>Overall</span>,
-        style: { textAlign: 'center' },
+        content: () => <span className="serif" style={props.ordinalStyle}>Overall</span>,
+        style: { textAlign: 'center', display: 'flex', justifyContent: 'center' },
     }
 
     // Must be outside branch because uses hooks
@@ -218,7 +472,7 @@ function PointerHeaderSelectorCell(): ColumnLayoutProps['cells'][number] {
     return {
         widthPercentage: 8,
         columnIdentifier: preferredPointerCell,
-        content: (
+        content: () => (
             <>
                 <select
                     style={selectStyle}
@@ -242,160 +496,182 @@ function PointerHeaderSelectorCell(): ColumnLayoutProps['cells'][number] {
 }
 
 export function StatisticRowCells(props: {
-    totalWidth: number
+    width: number
     longname: string
     statisticStyle?: CSSProperties
-    row: ArticleRow
+    row: StatisticCellRenderingInfo
     onlyColumns?: string[]
     blankColumns?: string[]
     onNavigate?: (newArticle: string) => void
     simpleOrdinals: boolean
+    extraSpaceRight?: number
+    columnWidthsInfo?: CommonLayoutInformation
 }): ReactNode {
-    const currentUniverse = useUniverse()
     const colors = useColors()
-    const ordinalStyle: React.CSSProperties = {
-        fontSize: '14px',
-        fontWeight: 400,
-        color: colors.ordinalTextColor,
-        margin: 0,
-    }
+    const [ordinalStyle, percentileStyle] = makeOrdinalStyle(colors, false, props.columnWidthsInfo)
+    const pointerRowCells = PointerRowCells({ ordinalStyle, row: props.row, longname: props.longname })
 
-    const cells = [
-        {
-            widthPercentage: 31,
-            columnIdentifier: 'statname',
-            content: (
-                <span className="serif value">
-                    <StatisticName
-                        row={props.row}
-                        longname={props.longname}
-                        currentUniverse={currentUniverse}
-                    />
-                </span>
-            ),
-            style: { textAlign: 'left' },
-        },
-        {
-            widthPercentage: 15,
+    const cells: ColumnLayoutProps['cells'] = []
+
+    if (props.row.kind !== 'statistic') {
+        const textRow = props.row
+        cells.push({
+            widthPercentage: 25,
             columnIdentifier: 'statval',
-            content: (
-                <span className="serif value testing-statistic-value">
-                    <Statistic
-                        statname={props.row.statname}
-                        value={props.row.statval}
-                        isUnit={false}
-                        style={props.statisticStyle ?? {}}
-                    />
-                </span>
-            ),
-            style: { textAlign: 'right' },
-        },
-        {
-            widthPercentage: 10,
-            columnIdentifier: 'statval_unit',
-            content: (
-                <div className="value_unit">
-                    <span className="serif value">
+            content: () => {
+                const statval = textRow.statval
+                if (typeof statval === 'string') {
+                    return <span className="serif value testing-statistic-value">{statval}</span>
+                }
+                return <span className="serif value testing-statistic-value">See term table below</span>
+            },
+            style: { textAlign: 'center' },
+        })
+    }
+    else {
+        const statisticRow = props.row
+        cells.push(
+            {
+                widthPercentage: 15,
+                columnIdentifier: 'statval',
+                content: () => (
+                    <span className="serif value testing-statistic-value">
                         <Statistic
-                            statname={props.row.statname}
-                            value={props.row.statval}
-                            isUnit={true}
+                            value={statisticRow.statval}
+                            isUnit={false}
+                            style={props.statisticStyle ?? {}}
+                            unit={statisticRow.unit}
                         />
                     </span>
-                </div>
-            ),
-            style: { textAlign: 'right' },
-        },
-        {
-            widthPercentage: props.simpleOrdinals ? 7 : 17,
-            columnIdentifier: 'statistic_percentile',
-            content: (
-                <span className="serif" style={ordinalStyle}>
-                    <Percentile
-                        ordinal={props.row.ordinal}
-                        total={props.row.totalCountInClass}
-                        percentileByPopulation={props.row.percentileByPopulation}
-                        simpleOrdinals={props.simpleOrdinals}
-                    />
-                </span>
-            ),
-            style: { textAlign: 'right' },
-        },
-        {
-            widthPercentage: props.simpleOrdinals ? 8 : 25,
-            columnIdentifier: 'statistic_ordinal',
-            content: (
-                <span className="serif" style={ordinalStyle}>
-                    <Ordinal
-                        ordinal={props.row.ordinal}
-                        total={props.row.totalCountInClass}
-                        type={props.row.articleType}
-                        statpath={props.row.statpath}
-                        simpleOrdinals={props.simpleOrdinals}
-                        onNavigate={props.onNavigate}
-                    />
-                </span>
-            ),
-            style: { textAlign: 'right' },
-        },
-        ...PointerRowCells({ ordinalStyle, row: props.row, longname: props.longname }),
-    ] satisfies ColumnLayoutProps['cells']
+                ),
+                style: { textAlign: 'right' },
+            },
+            {
+                widthPercentage: 10,
+                columnIdentifier: 'statval_unit',
+                content: () => (
+                    <div className="value_unit">
+                        <span className="serif value">
+                            <Statistic
+                                value={statisticRow.statval}
+                                isUnit={true}
+                                unit={statisticRow.unit}
+                            />
+                        </span>
+                    </div>
+                ),
+                style: { textAlign: 'right' },
+            },
+        )
+    }
+
+    if (props.row.kind === 'statistic') {
+        const statisticRow = props.row
+        cells.push(
+            {
+                widthPercentage: props.simpleOrdinals ? 7 : 17,
+                columnIdentifier: 'statistic_percentile',
+                content: () => (
+                    <div className="serif" style={percentileStyle}>
+                        <Percentile
+                            ordinal={statisticRow.ordinal}
+                            total={statisticRow.totalCountInClass}
+                            percentileByPopulation={statisticRow.percentileByPopulation}
+                            type={statisticRow.articleType}
+                            statpath={statisticRow.statpath}
+                            simpleOrdinals={props.simpleOrdinals}
+                            onNavigate={props.onNavigate}
+                        />
+                    </div>
+                ),
+                style: { textAlign: 'right' },
+            },
+            {
+                widthPercentage: props.simpleOrdinals ? 8 : 25,
+                columnIdentifier: 'statistic_ordinal',
+                content: () => (
+                    <div className="serif" style={ordinalStyle}>
+                        <Ordinal
+                            ordinal={statisticRow.ordinal}
+                            total={statisticRow.totalCountInClass}
+                            type={statisticRow.articleType}
+                            statpath={statisticRow.statpath}
+                            simpleOrdinals={props.simpleOrdinals}
+                            onNavigate={props.onNavigate}
+                        />
+                    </div>
+                ),
+                style: { textAlign: 'right' },
+            },
+            ...pointerRowCells,
+        )
+    }
 
     return (
-        <ColumnLayout
-            cells={cells}
-            totalWidth={props.totalWidth}
-            onlyColumns={props.onlyColumns}
-            blankColumns={props.blankColumns}
-        />
+        <>
+            <ColumnLayout
+                cells={cells}
+                totalWidth={props.width}
+                onlyColumns={props.onlyColumns}
+                blankColumns={props.blankColumns}
+            />
+            <div style={{ width: `${props.extraSpaceRight}%` }} />
+        </>
     )
 }
 
-// Reactive and non-reactive versions of the same function
-function useSinglePointerCell(): boolean {
-    const isMobile = useMobileLayout()
-    const [simpleOrdinals] = useSetting('simple_ordinals')
-    return isMobile && !simpleOrdinals
-}
-
-export function isSinglePointerCell(settings: Settings): boolean {
-    return isMobileLayout() && !settings.get('simple_ordinals')
-}
-
-function PointerRowCells(props: { ordinalStyle: CSSProperties, row: ArticleRow, longname: string }): ColumnLayoutProps['cells'] {
+function PointerRowCells(props: { ordinalStyle: CSSProperties, row: StatisticCellRenderingInfo, longname: string }): ColumnLayoutProps['cells'] {
     const screenshotMode = useScreenshotMode()
 
     const singlePointerCell = useSinglePointerCell()
     const [preferredPointerCell] = useSetting('mobile_article_pointers')
 
+    const statpath = props.row.statpath
+
+    if (props.row.kind !== 'statistic') {
+        return []
+    }
+    if (statpath === undefined) {
+        return []
+    }
+    // Capture narrowed values so TypeScript understands them inside the `content` closures.
+    const ordinal = props.row.ordinal
+    const totalCountInClass = props.row.totalCountInClass
+    const totalCountOverall = props.row.totalCountOverall
+    const overallFirstLast = props.row.overallFirstLast
+    const articleType = props.row.articleType
+
     const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_in_class',
-        content: (
-            <span key="pointer_in_class" className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
-                <PointerButtonsIndex
-                    ordinal={props.row.ordinal}
-                    statpath={props.row.statpath}
-                    type={props.row.articleType}
-                    total={props.row.totalCountInClass}
-                    longname={props.longname}
-                />
-            </span>
-        ),
+        content: () => {
+            assert(articleType !== undefined, 'stepping through a ranking needs one geography kind')
+            return (
+                <span key="pointer_in_class" className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
+                    <PointerButtonsIndex
+                        ordinal={ordinal}
+                        statpath={statpath}
+                        type={articleType}
+                        total={totalCountInClass}
+                        longname={props.longname}
+                    />
+                </span>
+            )
+        },
         style: { textAlign: 'right' },
     }
 
     const pointerOverallCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_overall',
-        content: (
+        content: () => (
             <span className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
                 <PointerButtonsIndex
-                    statpath={props.row.statpath}
+                    statpath={statpath}
                     type="overall"
-                    total={props.row.totalCountOverall}
+                    total={totalCountOverall}
                     longname={props.longname}
-                    overallFirstLast={props.row.overallFirstLast}
+                    overallFirstLast={overallFirstLast}
                 />
             </span>
         ),
@@ -427,50 +703,349 @@ function articleStatnameButtonStyle(colors: Colors): React.CSSProperties {
     }
 }
 
-function StatisticName(props: {
-    row: ArticleRow
-    longname: string
-    currentUniverse: string
-}): ReactNode {
-    const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
+function ManipulationButton({ text, image, ...props }: { text: string, image: string } & ({ onClick: () => void } | { link: NavLink })): ReactNode {
+    const isMobile = useMobileLayout()
+    const isTranspose = useTranspose()
     const colors = useColors()
-    const navContext = useContext(Navigator.Context)
-    const link = (
-        <a
-            style={{ textDecoration: 'none', color: colors.textMain }}
-            {
-                ...navContext.link(statisticDescriptor({
-                    universe: props.currentUniverse,
-                    statname: props.row.statname,
-                    articleType: props.row.articleType,
-                    start: props.row.ordinal,
-                    amount: 20,
-                    order: 'descending',
-                    highlight: props.longname,
-                }), { scroll: { kind: 'position', top: 0 } })
-            }
-            data-test-id="statistic-link"
-        >
-            {props.row.renderedStatname}
-        </a>
-    )
-    const screenshotMode = useScreenshotMode()
-    const elements = [link]
-    if (props.row.extraStat !== undefined && !screenshotMode) {
-        elements.push(
-            <div
-                className="expand-toggle"
-                onClick={() => { setExpanded(!expanded) }}
-                style={articleStatnameButtonStyle(colors)}
+
+    const style: CSSProperties = {
+        paddingLeft: '0.5em', paddingRight: '0.5em',
+        verticalAlign: 'middle',
+    }
+    const testId = `manipulation-button-${text.toLowerCase()}`
+    const contents = !(isMobile && isTranspose) ? text : <Icon src={image} size="20px" color={colors.textMain} />
+
+    if ('link' in props) {
+        return (
+            <a
+                {...props.link}
+                {...withButtonRole(text, props.link.onClick)}
+                style={style}
+                data-test-id={testId}
             >
-                {expanded ? '-' : '+'}
-            </div>,
+                {contents}
+            </a>
         )
     }
-    if (props.row.disclaimer !== undefined) {
-        elements.push(<StatisticNameDisclaimer disclaimer={props.row.disclaimer} />)
+
+    return (
+        <button
+            style={style}
+            aria-label={text}
+            data-test-id={testId}
+            onClick={props.onClick}
+        >
+            {contents}
+        </button>
+    )
+}
+
+function HeadingDisplay({ longname, deleteLink, onReplace, manipulationJustify, sharedTypeOfAllArticles }: {
+    longname: string
+    deleteLink: NavLink | undefined
+    onReplace: (q: string) => NavLink
+    manipulationJustify: CSSProperties['justifyContent']
+    sharedTypeOfAllArticles: string | null | undefined
+}): ReactNode {
+    const [isEditing, setIsEditing] = React.useState(false)
+    const currentUniverse = useUniverse()
+    const comparisonHeadStyle = useComparisonHeadStyle()
+
+    const manipulationButtons = (
+        <div style={{ display: 'flex', justifyContent: manipulationJustify, height: '100%' }}>
+            <ManipulationButton onClick={() => { setIsEditing(!isEditing) }} text="Replace" image="/replace.png" />
+            {deleteLink === undefined
+                ? null
+                : (
+                        <>
+                            <div style={{ width: '5px' }} />
+                            <ManipulationButton link={deleteLink} text="Delete" image="/close.png" />
+                        </>
+                    )}
+            <div style={{ width: '5px' }} />
+        </div>
+    )
+
+    const screenshotMode = useScreenshotMode()
+
+    const navContext = useContext(Navigator.Context)
+
+    return (
+        <div>
+            {screenshotMode
+                ? undefined
+                : (
+                        <>
+                            <div style={{ height: '5px' }} />
+
+                            {manipulationButtons}
+                            <div style={{ height: '2px' }} />
+
+                        </>
+                    )}
+            <a
+                className="serif"
+                {
+                    ...navContext.link({
+                        kind: 'article',
+                        longname,
+                        universe: currentUniverse,
+                    }, { scroll: { kind: 'position', top: 0 } })
+                }
+                style={{ textDecoration: 'none' }}
+            >
+                <div style={useComparisonHeadStyle()}>{longname}</div>
+            </a>
+            {isEditing
+                ? (
+                        <SearchBox
+                            autoFocus={true}
+                            style={{ ...comparisonHeadStyle, width: '100%' }}
+                            placeholder="Replacement"
+                            onChange={() => {
+                                setIsEditing(false)
+                            }}
+                            articleLink={onReplace}
+                            prioritizeArticleType={sharedTypeOfAllArticles ?? undefined}
+                        />
+                    )
+                : null}
+        </div>
+    )
+}
+
+export function StatisticPanelLongnameCell(props: StatisticPanelLongnameCellProps & { width: number }): ReactNode {
+    const navContext = useContext(Navigator.Context)
+    const colors = useColors()
+
+    return (
+        <div style={{ width: `${props.width}%`, padding: '1px' }}>
+            <a
+                data-test-id="statistic-panel-longname-link"
+                style={{ textDecoration: 'none', color: colors.textMain }}
+                {...navContext.link({
+                    kind: 'article',
+                    longname: props.longname,
+                    universe: props.currentUniverse,
+                }, { scroll: { kind: 'position', top: 0 } })}
+                className="serif value"
+            >
+                {props.longname}
+            </a>
+        </div>
+    )
+}
+
+export function ComparisonLongnameCell(props: ComparisonLongnameCellProps & { width: number }): ReactNode {
+    const currentUniverse = useUniverse()
+    const navContext = useContext(Navigator.Context)
+
+    const haveColorbar = props.transpose && props.highlightIndex !== undefined
+    const width = props.width - (haveColorbar ? 2 * 100 * leftBarMargin : 0)
+
+    const bar = (): ReactNode => props.transpose && props.highlightIndex !== undefined && (
+        <ComparisonColorBar highlightIndex={props.highlightIndex} />
+    )
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: props.articleId ?? 'dummy' })
+
+    let extraStyle: CSSProperties = {}
+    let extraProps: React.HTMLAttributes<HTMLDivElement> & { ref?: (node: HTMLElement | null) => void } = { }
+    if (props.draggable && props.articleId) {
+        extraStyle = {
+            transform: CSS.Transform.toString(transform),
+            transition: isDragging ? transition : 'none',
+            opacity: isDragging ? 0.5 : 1,
+            touchAction: 'none',
+        }
+        extraProps = { ref: setNodeRef, ...attributes, ...listeners }
     }
+
+    return (
+        <>
+            {bar()}
+            <div
+                key={`heading_${props.articleIndex}`}
+                style={{ width: `${width}%`, ...extraStyle }}
+                {...extraProps}
+            >
+                <HeadingDisplay
+                    longname={props.articles[props.articleIndex].longname}
+                    deleteLink={props.articles.length > 1
+                        ? navContext.link({
+                            kind: 'comparison',
+                            universe: currentUniverse,
+                            longnames: props.names.filter((_, index) => index !== props.articleIndex),
+                        }, { scroll: { kind: 'none' } })
+                        : undefined}
+                    onReplace={x =>
+                        navContext.link({
+                            kind: 'comparison',
+                            universe: currentUniverse,
+                            longnames: props.names.map((value, index) => index === props.articleIndex ? x : value),
+                        }, { scroll: { kind: 'none' } })}
+                    manipulationJustify={props.transpose ? 'center' : 'flex-end'}
+                    sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
+                />
+            </div>
+            {bar()}
+        </>
+    )
+}
+
+export function StatisticNameCell(props: StatisticNameCellProps & { width: number }): ReactNode {
+    const haveColorbar = !props.transpose && props.highlightIndex !== undefined
+    const width = props.width - (haveColorbar ? 100 * leftBarMargin : 0)
+
+    return (
+        <>
+            {haveColorbar && (
+                <ComparisonColorBar highlightIndex={props.highlightIndex} />
+            )}
+            <div
+                key={`statName_${reifyString(props.renderedStatname, { unicode: false })}`}
+                style={{ width: `${width}%`, padding: '1px', paddingLeft: props.isIndented ? '1em' : '1px', textAlign: props.center ? 'center' : undefined }}
+            >
+                <span className="serif value" style={{ display: 'flex', alignItems: 'center', justifyContent: props.center ? 'center' : 'flex-start', gap: '0.25em' }}>
+                    <StatisticName
+                        row={props.row}
+                        longname={props.longname}
+                        currentUniverse={props.currentUniverse}
+                        center={props.center}
+                        displayName={displayName(props)}
+                        footnoteSymbol={props.footnoteSymbol}
+                    />
+                    {props.sortInfo && (
+                        <SortButton {...props} sortInfo={props.sortInfo} />
+                    )}
+                    {props.handleDelete && <DeleteButton handleDelete={props.handleDelete} />}
+                </span>
+            </div>
+        </>
+    )
+}
+
+function displayName(props: StatisticNameCellProps): HumanReadableName {
+    return props.displayName ?? props.renderedStatname
+}
+
+function SortButton(props: StatisticNameCellProps & { sortInfo: NonNullable<StatisticNameCellProps['sortInfo']> }): ReactNode {
+    const unitSettings = useUnitSettings()
+    const sortButtonLabel = `Sort by ${reifyString(displayName(props), { ...unitSettings, unicode: true })}${
+        props.sortInfo.sortDirection === 'up'
+            ? ', currently ascending'
+            : props.sortInfo.sortDirection === 'down' ? ', currently descending' : ''
+    }`
+
+    return (
+        <span
+            {...withButtonRole(sortButtonLabel, props.sortInfo.onSort)}
+            style={{
+                cursor: 'pointer',
+                height: '16px',
+                marginLeft: props.transpose ? '0' : 'auto',
+            }}
+        >
+            <ArrowUpOrDown direction={props.sortInfo.sortDirection} />
+        </span>
+    )
+}
+
+/** Callers are responsible for spacing the adornments. */
+export function useStatisticNameAdornments(row: ArticleRow | undefined, footnote?: string): ReactNode[] {
+    const screenshotMode = useScreenshotMode()
+    const adornments: ReactNode[] = []
+    if (row !== undefined && row.extraStats.length !== 0 && !screenshotMode) {
+        adornments.push(<ExpansionButton key="expansion" row={row} />)
+    }
+    if (row?.disclaimer !== undefined) {
+        adornments.push(<StatisticNameDisclaimer key="disclaimer" disclaimer={row.disclaimer} footnoteSymbol={footnote} />)
+    }
+    return adornments
+}
+
+function ExpansionButton(props: { row: ArticleRow }): ReactNode {
+    const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
+    const colors = useColors()
+    return (
+        <div
+            {...withButtonRole(`${expanded ? 'Collapse' : 'Expand'} ${props.row.statname}`, () => { setExpanded(!expanded) })}
+            className="expand-toggle"
+            aria-expanded={expanded}
+            style={articleStatnameButtonStyle(colors)}
+        >
+            {expanded ? '-' : '+'}
+        </div>
+    )
+}
+
+function StatisticName(props: {
+    row?: ArticleRow
+    longname: string
+    currentUniverse: Universe | undefined
+    center?: boolean
+    displayName: HumanReadableName
+    footnoteSymbol?: string
+}): ReactNode {
+    const colors = useColors()
+    const navContext = useContext(Navigator.Context)
+    const unitSettings = useUnitSettings()
+
+    const link = props.row?.kind === 'metadata'
+        ? (
+                <a
+                    className="underline_on_hover"
+                    href={urlFromPageDescriptor(
+                        { kind: 'dataCredit', hash: `#explanation_${sanitize(props.row.dataCreditExplanationPage)}` },
+                    ).toString()}
+                    target="_blank"
+                    data-test-id="statistic-link"
+                    rel="noreferrer"
+                >
+                    {reifyReact(props.displayName, unitSettings)}
+                </a>
+            )
+        : props.row?.kind === 'statistic' && props.row.articleType !== missingRowType
+            ? (
+                    <a
+                        className="underline_on_hover"
+                        {...navContext.link({
+                            kind: 'statistic',
+                            geographies: [{ universe: props.currentUniverse ?? 'world', geographyKind: props.row.articleType }],
+                            statname: props.row.statname,
+                            start: props.row.ordinal,
+                            amount: 20,
+                            order: 'descending',
+                            highlight: props.longname,
+                            sort_column: 0,
+                        }, { scroll: { kind: 'position', top: 0 } })}
+                        data-test-id="statistic-link"
+                    >
+                        {reifyReact(props.displayName, unitSettings)}
+                    </a>
+                )
+            : (
+                    <span style={{ color: colors.textMain }} data-test-id="statistic-link">
+                        {reifyReact(props.displayName, unitSettings)}
+                    </span>
+                )
+    const elements = [link, ...useStatisticNameAdornments(props.row, props.footnoteSymbol)]
     if (elements.length > 1) {
+        const footnoteOnly = elements.length === 2 && props.footnoteSymbol !== undefined
+        if (footnoteOnly) {
+            return (
+                <span style={{ display: 'inline' }}>
+                    {link}
+                    {elements[1]}
+                </span>
+            )
+        }
         const paddedElements = [elements[0]]
         for (let i = 1; i < elements.length; i++) {
             paddedElements.push(<div key={i} style={{ marginLeft: '0.3em' }} />)
@@ -481,6 +1056,7 @@ function StatisticName(props: {
                 display: 'flex',
                 alignItems: 'center',
                 flexDirection: 'row',
+                justifyContent: props.center ? 'center' : undefined,
             }}
             >
                 {...paddedElements}
@@ -490,29 +1066,88 @@ function StatisticName(props: {
     return link
 }
 
-function computeDisclaimerText(disclaimer: Disclaimer): string {
-    switch (disclaimer) {
-        case 'heterogenous-sources':
-            return 'This statistic is based on data from multiple sources, which may not be consistent with each other.'
-    }
+function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undefined }): ReactNode {
+    const colors = useColors()
+
+    return (
+        <div
+            key="color"
+            style={{
+                width: `${100 * leftBarMargin}%`,
+                alignSelf: 'stretch',
+                position: 'relative',
+            }}
+        >
+            <div style={{
+                backgroundColor: highlightIndex === undefined ? colors.background : colorFromCycle(colors.hueColors, highlightIndex),
+                height: '100%',
+                width: '50%',
+                left: '25%',
+                position: 'absolute',
+            }}
+            />
+        </div>
+    )
 }
 
-function StatisticNameDisclaimer(props: { disclaimer: Disclaimer }): ReactNode {
-    // little disclaimer icon that pops up a tooltip when clicked
-    const [show, setShow] = useState(false)
+export function computeDisclaimerFootnotes(specs: CellSpec[]): { getSymbol: (d: Disclaimer) => string, footnotes: { symbol: string, text: string }[] } {
+    const uniqueMessages: string[] = []
+    for (const spec of specs) {
+        const disclaimer = spec.type === 'statistic-name' ? spec.row?.disclaimer : undefined
+        if (disclaimer !== undefined) {
+            const msg = computeDisclaimerText(disclaimer)
+            if (!uniqueMessages.includes(msg)) {
+                uniqueMessages.push(msg)
+            }
+        }
+    }
+    const footnotes = uniqueMessages.map((text, i) => ({ symbol: footnoteSymbol(i), text }))
+    const getSymbol = (d: Disclaimer): string => footnoteSymbol(uniqueMessages.indexOf(computeDisclaimerText(d)))
+    return { getSymbol, footnotes }
+}
+
+function StatisticNameDisclaimer(props: { disclaimer: Disclaimer, footnoteSymbol?: string }): ReactNode {
     const colors = useColors()
+    const [show, setShow] = useState(false)
+    const container = useRef<HTMLSpanElement>(null)
+
+    useEffect(() => {
+        if (!show) {
+            return
+        }
+        const closeIfOutside = (event: MouseEvent): void => {
+            if (!container.current?.contains(event.target as Node)) {
+                setShow(false)
+            }
+        }
+        document.addEventListener('click', closeIfOutside)
+        return () => { document.removeEventListener('click', closeIfOutside) }
+    }, [show])
+
+    if (props.footnoteSymbol !== undefined) {
+        return (
+            <sup style={{ fontSize: '0.85em' }}>
+                {props.footnoteSymbol}
+            </sup>
+        )
+    }
+    // little disclaimer icon that pops up a tooltip when clicked
     const tooltipStyle: React.CSSProperties = {
         position: 'absolute',
+        top: 'calc(100% + 0.25em)',
+        left: 0,
+        width: 'max-content',
+        maxWidth: 'min(25em, 60vw)',
         backgroundColor: colors.slightlyDifferentBackgroundFocused,
         color: colors.textMain,
         padding: '0.5em',
         borderRadius: '0.5em',
         border: `1px solid ${colors.textMain}`,
-        zIndex: 100000,
+        zIndex: zIndex.statisticNameDisclaimer,
         display: show ? 'block' : 'none',
     }
     return (
-        <span>
+        <span ref={container} style={{ display: 'inline-flex', alignItems: 'center', position: 'relative' }}>
             <span
                 className="disclaimer-toggle"
                 style={{ ...articleStatnameButtonStyle(colors), display: 'inline-block' }}
@@ -530,15 +1165,17 @@ function StatisticNameDisclaimer(props: { disclaimer: Disclaimer }): ReactNode {
     )
 }
 
-export function TableRowContainer({ children, index }: { children: React.ReactNode, index: number }): React.ReactNode {
+export function TableRowContainer({ children, index, minHeight, isHighlighted = false }: { children: React.ReactNode, index: number, minHeight?: string, isHighlighted?: boolean }): React.ReactNode {
     const colors = useColors()
     const style: React.CSSProperties = {
         ...tableRowStyle,
-        backgroundColor: index % 2 === 1 ? colors.slightlyDifferentBackground : undefined,
+        backgroundColor: isHighlighted ? colors.highlight : (index % 2 === 1 ? colors.slightlyDifferentBackground : undefined),
         alignItems: 'last baseline',
+        minHeight,
     }
     return (
         <div
+            className="for-testing-table-row"
             style={style}
         >
             {children}
@@ -546,266 +1183,184 @@ export function TableRowContainer({ children, index }: { children: React.ReactNo
     )
 }
 
-export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, isUnit: boolean }): ReactNode {
-    const [useImperial] = useSetting('use_imperial')
-    const [temperatureUnit] = useSetting('temperature_unit')
-    const content = (() => {
-        {
-            const name = props.statname
-            let value = props.value
-            const isUnit = props.isUnit
-            if (name.includes('%') || name.includes('Change') || name.includes('(Grade)')) {
-                if (isUnit) {
-                    return <span>%</span>
-                }
-                return <span>{(value * 100).toFixed(2)}</span>
-            }
-            else if (name.includes('Total') && name.includes('Fatalities')) {
-                if (isUnit) {
-                    return <span>&nbsp;</span>
-                }
-                return <span>{separateNumber(value.toFixed(0))}</span>
-            }
-            else if (name.includes('Fatalities Per Capita')) {
-                if (isUnit) {
-                    return <span>/100k</span>
-                }
-                return <span>{(100_000 * value).toFixed(2)}</span>
-            }
-            else if (name.includes('Density')) {
-                let unitName = 'km'
-                if (useImperial) {
-                    unitName = 'mi'
-                    value *= 1.60934 * 1.60934
-                }
-                let places = 2
-                if (value > 10) {
-                    places = 0
-                }
-                else if (value > 1) {
-                    places = 1
-                }
-                if (isUnit) {
-                    return (
-                        <span>
-                            /&nbsp;
-                            {unitName}
-                            <sup>2</sup>
-                        </span>
-                    )
-                }
-                return <span>{separateNumber(value.toFixed(places))}</span>
-            }
-            else if (name.includes('Elevation')) {
-                let unitName = 'm'
-                if (useImperial) {
-                    unitName = 'ft'
-                    value *= 3.28084
-                }
-                if (isUnit) {
-                    return <span>{unitName}</span>
-                }
-                return <span>{separateNumber(value.toFixed(0))}</span>
-            }
-            else if (name.startsWith('Population')) {
-                if (value > 1e9) {
-                    if (isUnit) {
-                        return <span>B</span>
-                    }
-                    return <span>{(value / 1e9).toPrecision(3)}</span>
-                }
-                if (value > 1e6) {
-                    if (isUnit) {
-                        return <span>m</span>
-                    }
-                    return <span>{(value / 1e6).toPrecision(3)}</span>
-                }
-                else if (value > 1e4) {
-                    if (isUnit) {
-                        return <span>k</span>
-                    }
-                    return <span>{(value / 1e3).toPrecision(3)}</span>
-                }
-                else {
-                    if (isUnit) {
-                        return <span>&nbsp;</span>
-                    }
-                    return <span>{separateNumber(value.toFixed(0))}</span>
-                }
-            }
-            else if (name === 'Area') {
-                let unit: string | React.ReactElement = 'null'
-                if (useImperial) {
-                    value /= 1.60934 * 1.60934
-                    if (value < 1) {
-                        unit = <span>acres</span>
-                        value *= 640
-                    }
-                    else {
-                        unit = (
-                            <span>
-                                mi
-                                <sup>2</sup>
-                            </span>
-                        )
-                    }
-                }
-                else {
-                    if (value < 0.01) {
-                        value *= 1000 * 1000
-                        unit = (
-                            <span>
-                                m
-                                <sup>2</sup>
-                            </span>
-                        )
-                    }
-                    else {
-                        unit = (
-                            <span>
-                                km
-                                <sup>2</sup>
-                            </span>
-                        )
-                    }
-                }
-                if (isUnit) {
-                    return unit
-                }
-                else {
-                    if (value > 100) {
-                        return <span>{separateNumber(value.toFixed(0))}</span>
-                    }
-                    else if (value > 10) {
-                        return <span>{value.toFixed(1)}</span>
-                    }
-                    else if (value > 1) {
-                        return <span>{value.toFixed(2)}</span>
-                    }
-                    else {
-                        return <span>{value.toFixed(3)}</span>
-                    }
-                }
-            }
-            else if (name.includes('Mean distance')) {
-                let unit = <span>km</span>
-                if (useImperial) {
-                    unit = <span>mi</span>
-                    value /= 1.60934
-                }
-                if (isUnit) {
-                    return unit
-                }
-                else {
-                    return <span>{value.toFixed(2)}</span>
-                }
-            }
-            else if (name.includes('Election') || name.includes('Swing')) {
-                if (isUnit) {
-                    return <span>%</span>
-                }
-                return <ElectionResult value={value} />
-            }
-            else if (name.includes('high temp') || name.includes('high heat index') || name.includes('dewpt')) {
-                let unit = <span>&deg;F</span>
-                if (temperatureUnit === 'celsius') {
-                    unit = <span>&deg;C</span>
-                    value = (value - 32) * (5 / 9)
-                }
-                if (isUnit) {
-                    return unit
-                }
-                return <span>{value.toFixed(1)}</span>
-            }
-            else if (name === 'Mean sunny hours') {
-                if (isUnit) {
-                    return <span>&nbsp;</span>
-                }
-                const hours = Math.floor(value)
-                const minutes = Math.floor((value - hours) * 60)
-                // e.g., 3:05
-                return (
-                    <span>
-                        {hours}
-                        :
-                        {minutes.toString().padStart(2, '0')}
-                    </span>
-                )
-            }
-            else if (name === 'Rainfall' || name === 'Snowfall [rain-equivalent]') {
-                value *= 100
-                let unit = 'cm'
-                if (useImperial) {
-                    unit = 'in'
-                    value /= 2.54
-                }
-                if (isUnit) {
-                    return (
-                        <span>
-                            {unit}
-                            /yr
-                        </span>
-                    )
-                }
-                return <span>{value.toFixed(1)}</span>
-            }
-            else if (name.includes('Pollution')) {
-                if (isUnit) {
-                    return (
-                        <span>
-                            &mu;g/m
-                            <sup>3</sup>
-                        </span>
-                    )
-                }
-                return <span>{value.toFixed(2)}</span>
-            }
-            if (isUnit) {
-                return <span>&nbsp;</span>
-            }
-            return <span>{value.toFixed(3)}</span>
-        }
-    })()
+let measureCanvas: HTMLCanvasElement | null = null
 
-    return <span style={props.style}>{content}</span>
+function getMeasureCanvas(): HTMLCanvasElement {
+    measureCanvas ??= document.createElement('canvas')
+    return measureCanvas
 }
 
-function ElectionResult(props: { value: number }): ReactNode {
-    const colors = useColors()
-    // check if value is NaN
-    if (props.value !== props.value) {
-        return <span>N/A</span>
+/**
+ * Assumes 1em = 16px (default browser font size)
+ */
+function measureTextWidthEm(text: string, fontSizeEm: number = 1): number {
+    const canvas = getMeasureCanvas()
+    const context = canvas.getContext('2d')
+    if (!context) {
+        // Fallback if canvas is not available
+        return text.length * 0.453
     }
-    const value = Math.abs(props.value) * 100
-    const places = value > 10 ? 1 : value > 1 ? 2 : value > 0.1 ? 3 : 4
-    const text = value.toFixed(places)
-    const party = props.value > 0 ? 'D' : 'R'
-    const partyColor = props.value > 0 ? colors.hueColors.blue : colors.hueColors.red
-    const spanStyle: CSSProperties = {
-        color: partyColor,
-        // So that on 4 digits, we overflow left
-        display: 'flex',
-        justifyContent: 'flex-end',
+
+    const fontSizePx = fontSizeEm * 16
+    context.font = `${fontSizePx}px 'Jost', 'Arial', sans-serif`
+
+    const metrics = context.measureText(text)
+    const widthPx = metrics.width
+    return widthPx / 16
+}
+
+function ordinalWidthInEm(ordinal: number, total: number, type: string | undefined, universe: string | undefined, simpleOrdinals: boolean): [number, number] {
+    if (ordinal > total) {
+        return [0, 0]
     }
+    const ordinalText = ordinal.toString()
+    let ordinalWidth = measureTextWidthEm(ordinalText)
+    let padding = 0
+    if (ordinalWidth < 2) {
+        padding = 2 - ordinalWidth
+        ordinalWidth = 2
+    }
+    if (simpleOrdinals) {
+        return [ordinalWidth + padding, padding]
+    }
+    else {
+        assert(universe !== undefined, 'writing an ordinal out in full needs a universe to name its geographies in')
+        assert(type !== undefined, 'writing an ordinal out in full needs one geography kind to name')
+        const suffixText = ` of ${total} ${displayType(universe, type)}`
+        const suffixWidth = measureTextWidthEm(suffixText)
+        return [ordinalWidth + suffixWidth + padding, padding]
+    }
+}
+
+function computeSizesForRow(row: StatisticCellRenderingInfo, universe: string | undefined, simpleOrdinals: boolean): CommonLayoutInformation {
+    // Compute the size of the ordinal and percentile text
+    if (row.kind !== 'statistic') {
+        return {
+            percentileColumnWidthEm: 0,
+            ordinalColumnWidthEm: 0,
+            ordinalColumnPadding: 0,
+        }
+    }
+
+    const [ordinalColumnWidthEm, ordinalColumnPadding] = ordinalWidthInEm(row.totalCountInClass, row.totalCountInClass, row.articleType, universe, simpleOrdinals)
+    const percentileColumnWidthEm = measureTextWidthEm(percentileText(row.percentileByPopulation, simpleOrdinals))
+    const smallPad = 0.22
+    // The editable percentile renders the number in a box; its border + padding make it a touch
+    // wider than the plain text, so reserve a little extra width to avoid a spurious wrap.
+    const editableBoxPad = 0.5
+    return {
+        ordinalColumnWidthEm: ordinalColumnWidthEm + smallPad,
+        ordinalColumnPadding,
+        percentileColumnWidthEm: percentileColumnWidthEm + editableBoxPad,
+    }
+}
+
+export function maxLayoutInformation(rows: StatisticCellRenderingInfo[], universe: string | undefined, simpleOrdinals: boolean): CommonLayoutInformation {
+    return rows.reduce<CommonLayoutInformation>((acc, row) => {
+        const curr = computeSizesForRow(row, universe, simpleOrdinals)
+        return {
+            ordinalColumnWidthEm: Math.max(acc.ordinalColumnWidthEm, curr.ordinalColumnWidthEm),
+            percentileColumnWidthEm: Math.max(acc.percentileColumnWidthEm, curr.percentileColumnWidthEm),
+            ordinalColumnPadding: Math.max(acc.ordinalColumnPadding, curr.ordinalColumnPadding),
+        }
+    }, { ordinalColumnWidthEm: 0, percentileColumnWidthEm: 0, ordinalColumnPadding: 0 })
+}
+
+function Percentile(props: {
+    ordinal: number
+    total: number
+    percentileByPopulation: number
+    type: string | undefined
+    statpath?: string
+    simpleOrdinals: boolean
+    onNavigate?: (newArticle: string) => void
+}): ReactNode {
+    const currentUniverse = useUniverse()
+    const inScreenshot = useScreenshotMode()
+    // Bump to reset if we navigate back to the same page
+    const [editableFieldKey, setEditableFieldKey] = useState(0)
+    const onNewPercentile = async (target: number): Promise<void> => {
+        if (props.onNavigate === undefined) {
+            return
+        }
+        assert(props.statpath !== undefined, 'statpath must be defined if onNavigate is provided')
+        assert(currentUniverse !== undefined, 'a navigable percentile is only shown on a page with a universe')
+        assert(props.type !== undefined, 'a navigable percentile ranks one geography kind')
+        const [data, articleNames] = await loadStatisticsPage(currentUniverse, props.statpath, props.type)
+        const bestIndex = percentileBucketIndex(data.populationPercentile, target)
+        const currentIndex = props.ordinal - 1
+        if (bestIndex !== currentIndex) {
+            props.onNavigate(articleNames[bestIndex])
+        }
+        else {
+            setEditableFieldKey(key => key + 1)
+        }
+    }
+    const ordinal = props.ordinal
+    const total = props.total
+    if (ordinal > total) {
+        return <span></span>
+    }
+    const percentile = props.percentileByPopulation
+    const editable = props.onNavigate !== undefined
+    let number: ReactNode = editable
+        ? (
+                <EditableNumber
+                    key={editableFieldKey}
+                    number={percentile}
+                    onNewNumber={onNewPercentile}
+                    alwaysSubmitOnEnter
+                />
+            )
+        : percentile
+    // Add a small dead space left to compensate for the extra space in the editable box.
+    // Wrap unconditionally (with a zero margin in screenshot mode, where EditableNumber
+    // renders as plain text) so the tree structure doesn't change when screenshot mode
+    // toggles: restructuring here would unmount/remount EditableNumber mid-capture and
+    // strand its screenshot-ready callback, hanging the screenshot export forever.
+    if (editable) {
+        const deadLeftEm = inScreenshot ? 0 : Math.max(0, 2 - measureTextWidthEm(percentile.toString()))
+        number = <span style={{ marginLeft: `${-deadLeftEm}em` }}>{number}</span>
+    }
+    // Number should be grouped with st/nd/rd/th, but we can line-break between that and %/percentile
     return (
-        <span style={spanStyle}>
-            {party}
-            +
-            {text}
-        </span>
+        <div className="serif" data-test-id="statistic-percentile" style={{ textAlign: 'right', marginRight: props.simpleOrdinals ? '5px' : undefined }}>
+            {props.simpleOrdinals
+                ? (
+                        <span style={{ whiteSpace: 'nowrap' }}>
+                            {number}
+                            %
+                        </span>
+                    )
+                : (
+                        <>
+                            <span style={{ whiteSpace: 'nowrap' }}>
+                                {number}
+                                {percentileSuffix(percentile)}
+                            </span>
+                            {' percentile'}
+                        </>
+                    )}
+        </div>
     )
 }
 
 function Ordinal(props: {
     ordinal: number
     total: number
-    type: string
-    statpath: string
+    type: string | undefined
+    statpath?: string
     simpleOrdinals: boolean
     onNavigate?: (newArticle: string) => void
 }): ReactNode {
     const currentUniverse = useUniverse()
     const onNewNumber = async (number: number): Promise<void> => {
+        if (props.onNavigate === undefined) {
+            return
+        }
+        assert(props.statpath !== undefined, 'statpath must be defined if onNavigate is provided')
+        assert(currentUniverse !== undefined, 'a navigable ordinal is only shown on a page with a universe')
+        assert(props.type !== undefined, 'a navigable ordinal ranks one geography kind')
         let num = number
         if (num < 0) {
             // -1 -> props.total, -2 -> props.total - 1, etc.
@@ -818,7 +1373,7 @@ function Ordinal(props: {
             num = 1
         }
         const data = await loadOrdering(currentUniverse, props.statpath, props.type)
-        props.onNavigate?.(data.longnames[num - 1])
+        props.onNavigate(data.longnames[num - 1])
     }
     const ordinal = props.ordinal
     const total = props.total
@@ -826,136 +1381,48 @@ function Ordinal(props: {
     if (ordinal > total) {
         return <span></span>
     }
-    const en = (
-        <EditableNumber
-            number={ordinal}
-            onNewNumber={onNewNumber}
-        />
-    )
-    if (props.simpleOrdinals) {
-        return rightAlign(en)
+    let outOf: ReactNode
+    if (!props.simpleOrdinals) {
+        assert(currentUniverse !== undefined, 'an ordinal written out in full names its geographies in a universe')
+        assert(type !== undefined, 'an ordinal written out in full names one geography kind')
+        outOf = (
+            <>
+                {' of '}
+                {total}
+                {' '}
+                {displayType(currentUniverse, type)}
+            </>
+        )
     }
+    const en = props.onNavigate
+        ? (
+                <EditableNumber
+                    number={ordinal}
+                    onNewNumber={onNewNumber}
+                    testId="editable-ordinal"
+                />
+            )
+        : (
+                <span>{ordinal}</span>
+            )
     return (
-        <div className="serif" style={{ textAlign: 'right' }}>
+        <div
+            className="serif"
+            data-test-id="statistic-ordinal"
+            style={{ textAlign: 'right', marginRight: props.simpleOrdinals ? '5px' : 0 }}
+        >
             {en}
-            {' of '}
-            {total}
-            {' '}
-            {displayType(currentUniverse, type)}
+            {outOf}
+
         </div>
     )
 }
 
-function EditableNumber(props: { number: number, onNewNumber: (number: number) => void }): ReactNode {
-    const onNewContent = (content: string): void => {
-        const number = parseInt(content)
-        if (!Number.isNaN(number) && number !== props.number) {
-            props.onNewNumber(number)
-        }
-    }
-    return (
-        <EditableString
-            content={props.number.toString()}
-            onNewContent={onNewContent}
-            style={{ minWidth: '2em', display: 'inline-block' }}
-            inputMode="decimal"
-        />
-    )
-};
-
-export function EditableString(props: { content: string, onNewContent: (content: string) => void, style: CSSProperties, inputMode: 'text' | 'decimal' }): ReactNode {
-    /*
-     * This code is weird because the `ContentEditable` needs to use refs.
-     * See https://www.npmjs.com/package/react-contenteditable
-     */
-
-    const contentEditable: React.Ref<HTMLElement> = useRef(null)
-    const html = useRef(props.content.toString())
-    const [, setCounter] = useState(0)
-
-    // Otherwise, this component can display the wrong number when props change
-    useEffect(() => {
-        html.current = props.content.toString()
-        setCounter(count => count + 1)
-    }, [props.content])
-
-    const handleChange = (evt: ContentEditableEvent): void => {
-        html.current = evt.target.value
-    }
-
-    const handleSubmit = (): void => {
-        const content = contentEditable.current!.innerText
-        if (content !== props.content) {
-            props.onNewContent(content)
-        }
-    }
-
-    const selectAll = (): void => {
-        setTimeout(() => {
-            const range = document.createRange()
-            range.selectNodeContents(contentEditable.current!)
-            const selection = window.getSelection()
-            selection?.removeAllRanges()
-            selection?.addRange(range)
-        }, 0)
-    }
-
-    return (
-        <ContentEditable
-            className="editable_content"
-            style={props.style}
-            innerRef={contentEditable}
-            html={html.current}
-            disabled={false}
-            onChange={handleChange}
-            onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === 'Enter') {
-                    handleSubmit()
-                    e.preventDefault()
-                }
-            }}
-            onBlur={handleSubmit}
-            tagName="span" // Use a custom HTML tag (uses a div by default)
-            inputMode={props.inputMode}
-            onFocus={selectAll}
-        />
-    )
-};
-
-export function Percentile(props: {
-    ordinal: number
-    total: number
-    percentileByPopulation: number
-    simpleOrdinals: boolean
-}): ReactNode {
-    const ordinal = props.ordinal
-    const total = props.total
-    if (ordinal > total) {
-        return <span></span>
-    }
-    // percentile as an integer
-    // used to be keyed by a setting, but now we always use percentile_by_population
-    const percentile = props.percentileByPopulation
-    if (props.simpleOrdinals) {
-        return rightAlign(`${percentile.toString()}%`)
-    }
-    // something like Xth percentile
-    let text = `${percentile}th percentile`
-    if (percentile % 10 === 1 && percentile % 100 !== 11) {
-        text = `${percentile}st percentile`
-    }
-    else if (percentile % 10 === 2 && percentile % 100 !== 12) {
-        text = `${percentile}nd percentile`
-    }
-    else if (percentile % 10 === 3 && percentile % 100 !== 13) {
-        text = `${percentile}rd percentile`
-    }
-    return <div className="serif" style={{ textAlign: 'right' }}>{text}</div>
-}
+;
 
 // Lacks some customization since its column is not show in the comparison view
 function PointerButtonsIndex(props: { ordinal?: number, statpath: string, type: string, total: number, longname: string, overallFirstLast?: FirstLastStatus }): ReactNode {
-    const currentUniverse = useUniverse()
+    const currentUniverse = useDefinedUniverse()
     const getData = async (): Promise<ArticleOrderingListInternal> => await loadOrdering(currentUniverse, props.statpath, props.type)
     return (
         <span style={{ margin: 'auto', whiteSpace: 'nowrap' }}>
@@ -970,7 +1437,7 @@ function PointerButtonsIndex(props: { ordinal?: number, statpath: string, type: 
             <PointerButtonIndex
                 getData={getData}
                 originalPos={props.ordinal}
-                direction={+1}
+                direction={1}
                 total={props.total}
                 longname={props.longname}
                 disable={props.overallFirstLast?.isLast}
@@ -990,22 +1457,17 @@ function PointerButtonIndex(props: {
     const universe = useUniverse()
     const colors = useColors()
     const navigation = useContext(Navigator.Context)
-    const [showHistoricalCDs] = useSetting('show_historical_cds')
+    const showSettings = useSettings(['show_historical_cds', 'show_person_circles'])
     const onClick = async (): Promise<void> => {
-        /* eslint-disable no-console -- Debugging test failure */
-        console.log(`Click on pointer button! props=${JSON.stringify(props)}`)
         const data = await props.getData()
         let pos = data.longnames.indexOf(props.longname) + props.direction
-        console.log(`Starting position=${pos}`)
         while (pos >= 0 && pos < props.total) {
             const name = data.longnames[pos]
             const type = data.typeIndices[pos]
-            console.log(`name=${name}`)
-            if (!showHistoricalCDs && isHistoricalCD(type)) {
+            if (!isAllowedToBeShown(type, showSettings)) {
                 pos += props.direction
                 continue
             }
-            console.log(`navigate to ${name}`)
             void navigation.navigate({
                 kind: 'article',
                 longname: name,
@@ -1013,7 +1475,6 @@ function PointerButtonIndex(props: {
             }, { history: 'push', scroll: { kind: 'element', element: buttonRef.current! } })
             return
         }
-        /* eslint-enable no-console */
     }
 
     const buttonStyle: React.CSSProperties = {
@@ -1057,26 +1518,53 @@ function PointerButtonIndex(props: {
     )
 }
 
-function rightAlign(value: React.ReactNode): ReactNode {
-    return (
-        <span
-            style={{ float: 'right', marginRight: '5px' }}
-        >
-            {value}
-        </span>
-    )
-}
+function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both' }): ReactNode {
+    const isScreenshot = useScreenshotMode()
 
-export function PointerArrow({ direction, disabled }: { direction: -1 | 1, disabled: boolean }): ReactNode {
-    const spanStyle: React.CSSProperties = {
-        transform: `scale(${direction * -1}, 1)`, // Because the right unicode arrow is weird
-        display: 'inline-block',
-        visibility: disabled ? 'hidden' : 'visible',
+    if (isScreenshot && props.direction === 'both') {
+        return null
     }
 
+    let image: string
+    switch (props.direction) {
+        case 'up':
+            image = '/sort-up.png'
+            break
+        case 'down':
+            image = '/sort-down.png'
+            break
+        case 'both':
+            image = '/sort-both.png'
+            break
+    }
+    return <img src={image} className="testing-order-swap" alt={props.direction} style={{ width: '16px', height: '16px', display: 'block' }} />
+}
+
+function DeleteButton({ handleDelete }: { handleDelete: () => void }): ReactNode {
+    const isScreenshot = useScreenshotMode()
+    if (isScreenshot) {
+        return null
+    }
+    const size = 16
     return (
-        <span style={spanStyle}>
-            {'◁\ufe0e'}
-        </span>
+        <button
+            aria-label="Delete column"
+            data-test-id="delete-column"
+            onPointerDown={(e) => { e.stopPropagation() }}
+            onClick={() => { handleDelete() }}
+            style={{
+                border: 'none',
+                cursor: 'pointer',
+                padding: '2px 4px',
+                backgroundImage: 'url("/close-red-small.png")',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: size,
+                width: size,
+                height: size,
+                backgroundColor: 'transparent',
+            }}
+        >
+        </button>
     )
 }

@@ -7,6 +7,7 @@ from urbanstats.universe.universe_provider.constant_provider import (
     ConstantUniverseProvider,
 )
 from urbanstats.universe.universe_provider.contained_within import (
+    AUSTRALIAN_STATE_PROVIDER,
     PROVINCE_PROVIDER,
     STATE_PROVIDER,
     ContainedWithinUniverseProvider,
@@ -19,9 +20,6 @@ from urbanstats.universe.universe_provider.universe_provider import UniverseProv
 class USContinentProvider(UniverseProvider):
     state_provider: UniverseProvider
 
-    def hash_key_details(self):
-        return self.state_provider.hash_key()
-
     def relevant_shapefiles(self):
         return sorted(
             set(
@@ -30,16 +28,16 @@ class USContinentProvider(UniverseProvider):
             )
         )
 
-    def universes_for_shapefile(self, shapefiles, shapefile, shapefile_table):
+    def universes_for_shapefile(self, names_by_key, names, table):
         ours_to_state = self.state_provider.universes_for_shapefile(
-            shapefiles, shapefile, shapefile_table
+            names_by_key, names, table
         )
         state_to_continent = ContainedWithinUniverseProvider(
-            ["continents"]
+            ["continents"], allow_self_universe=True  # irrelevant
         ).universes_for_shapefile(
-            shapefiles,
-            shapefiles["subnational_regions"],
-            shapefiles["subnational_regions"].load_file(),
+            names_by_key,
+            names_by_key["subnational_regions"],
+            names_by_key["subnational_regions"].load(),
         )
 
         ours_to_continent = {
@@ -82,7 +80,22 @@ def canada_domestic_provider(overrides=None):
     )
 
 
+def australia_domestic_provider():
+    return CombinedUniverseProvider(
+        [
+            ConstantUniverseProvider(["world", "Oceania", "Australia"]),
+            AUSTRALIAN_STATE_PROVIDER,
+        ]
+    )
+
+
 INTERNATIONAL_PROVIDERS = [
     ConstantUniverseProvider(["world"]),
-    ContainedWithinUniverseProvider(["continents", "countries"]),
+    ContainedWithinUniverseProvider(
+        ["continents", "countries"],
+        remove_universes=["Antarctica"],
+        allow_self_universe=False,  # handled separately for countries / continents.
+    ),
 ]
+
+SUBNATIONAL_PROVIDERS = [STATE_PROVIDER, PROVINCE_PROVIDER, AUSTRALIAN_STATE_PROVIDER]

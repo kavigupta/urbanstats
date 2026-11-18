@@ -2,3 +2,16 @@
     text-align: left;
     padding-right: 1em;
 }
+
+/*
+  When cell layout overflows, we don't want the cell container to block other interactive elements.
+  However, its children can still be interactive.
+  See https://github.com/kavigupta/urbanstats/issues/2189
+*/
+.columnLayoutCellContainer {
+    pointer-events: none;
+}
+
+.columnLayoutCellContainer > * {
+    pointer-events: auto;
+}

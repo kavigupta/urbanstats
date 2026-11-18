@@ -4,6 +4,7 @@ import numpy as np
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
+from urbanstats.compatibility.compatibility import without_loaded_values
 from urbanstats.geometry.categorize_coordinates import categorize
 
 
@@ -62,6 +63,7 @@ class Ellipse:
         )
 
 
+@without_loaded_values
 @permacache(
     "population_density/geometry/locate_blocks_2",
     key_function=dict(
@@ -73,16 +75,20 @@ class Ellipse:
 def locate_blocks(*, coordinates, population, radius=1):
     categories = categorize(coordinates)
     result = defaultdict(list)
-    for i in tqdm.trange(coordinates.shape[0]):
+    for i in tqdm.trange(coordinates.shape[0], desc=f"Categorizing {radius}km"):
         result[tuple(categories[i])].append(i)
     result = {
         cat: dict(indices=np.array(res), coordinates=coordinates[np.array(res)])
-        for cat, res in tqdm.tqdm(result.items())
+        for cat, res in tqdm.tqdm(
+            result.items(), desc=f"Reorganizing categories {radius}km"
+        )
     }
     return np.array(
         [
             population[Ellipse(radius, *coord).find_neighbors(result)].sum(0)
-            for coord in tqdm.tqdm(coordinates)
+            for coord in tqdm.tqdm(
+                coordinates, desc=f"Computing population of neighbors {radius}km"
+            )
         ]
     )
 

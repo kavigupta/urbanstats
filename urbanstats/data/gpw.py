@@ -1,317 +1,242 @@
-import zipfile
-from collections import defaultdict
+import os
 from functools import lru_cache
 
+import dask.array
 import numpy as np
 import shapely
 import tqdm.auto as tqdm
+import zarr
 from geotiff import GeoTiff
 from permacache import drop_if_equal, permacache, stable_hash
+from scipy.interpolate import RegularGridInterpolator
 
-from urbanstats.features.within_distance import xy_to_radius
-from urbanstats.utils import compute_bins
-
-GPW_PATH = (
-    "gpw_v4_population_count_rev11_2020_30_sec_",
-    "named_region_shapefiles/gpw/gpw-v4-population-count-rev11_2020_30_sec_asc.zip",
+from urbanstats.data.census_blocks import RADII
+from urbanstats.geometry.ellipse import Ellipse
+from urbanstats.geometry.rasterize import (
+    exract_raster_points,
+    from_row_idx,
+    rasterize_using_lines,
 )
+from urbanstats.geometry.weighted_statistics import geometric_median_of_chunks
+from urbanstats.utils import cached_zarr_array, compute_bins
 
-GPW_LAND_PATH = (
-    "gpw_v4_land_water_area_rev11_landareakm_30_sec_",
-    "named_region_shapefiles/gpw/gpw-v4-land-water-area-rev11_landareakm_30_sec_asc.zip",
-)
-
-
-@lru_cache(maxsize=None)
-def load_file(prefix, path, tag):
-    x = read_asc_file(prefix, path, tag)
-
-    assert x.pop(-1) == ""
-
-    ncols = int(x[0].split(" ")[-1])
-    nrows = int(x[1].split(" ")[-1])
-    xllcorner = float(x[2].split(" ")[-1])
-    yllcorner = float(x[3].split(" ")[-1])
-    cellsize = float(x[4].split(" ")[-1])
-    NODATA_value = float(x[5].split(" ")[-1])
-
-    data_rows = x[6:]
-    assert all(row[-1] == " " for row in data_rows)
-    data_rows = [row[:-1] for row in data_rows]
-    assert len(data_rows) == nrows, (len(data_rows), nrows)
-    assert len(data_rows[0].split(" ")) == ncols, (len(data_rows[0].split(" ")), ncols)
-
-    data = np.zeros((nrows, ncols), dtype=np.float32)
-    for i, row in enumerate(tqdm.tqdm(data_rows)):
-        data[i] = np.array(row.split(" ")).astype(np.float32)
-
-    data[data == NODATA_value] = np.nan
-
-    return dict(
-        ncols=ncols,
-        nrows=nrows,
-        xllcorner=xllcorner,
-        yllcorner=yllcorner,
-        cellsize=cellsize,
-        data=data,
-    )
-
-
-def read_asc_file(prefix, path, tag):
-    with zipfile.ZipFile(path) as zipf:
-        with zipf.open(f"{prefix}{tag}.asc") as f:
-            x = f.read().decode("utf-8")
-        x = x.split("\r\n")
-    return x
-
-
-def load(prefix, path):
-    tag = 1
-    result = []
-    for row in 0, -90:
-        result.append([])
-        for col in -180, -90, 0, 90:
-            f = load_file(prefix, path, tag)
-            print(f["xllcorner"], col)
-            print(f["yllcorner"], row)
-            assert abs(f["xllcorner"] - col) < 0.1
-            assert abs(f["yllcorner"] - row) < 0.1
-
-            result[-1].append(f["data"])
-            tag += 1
-
-    return result
-
-
-def load_concatenated(prefix, path):
-    result = load(prefix, path)
-    result = np.concatenate(result, axis=1)
-    result = np.concatenate(result, axis=1)
-    assert result.shape == (21600, 43200)
-    return result
+GPW_RADII = [k for k in RADII if k >= 1]
 
 
 @permacache("urbanstats/data/gpw/load_full_ghs_2")
-def load_full_ghs():
+def load_full_ghs_30_arcsec():
     path = "named_region_shapefiles/gpw/GHS_POP_E2020_GLOBE_R2023A_4326_30ss_V1_0.tif"
-    return load_ghs_from_path(path)
+    return load_ghs_from_path(path, resolution=60 * 60 // 30)
 
 
-@permacache("urbanstats/data/gpw/load_full_ghs_2015")
-def load_full_ghs_2015():
-    path = "named_region_shapefiles/gpw/GHS_POP_E2015_GLOBE_R2023A_4326_30ss_V1_0.tif"
-    return load_ghs_from_path(path)
+def load_full_ghs_3arcsec_zarr():
+    result = GeoTiff(
+        "named_region_shapefiles/gpw/GHS_POP_E2020_GLOBE_R2023A_4326_3ss_V1_0/GHS_POP_E2020_GLOBE_R2023A_4326_3ss_V1_0.tif"
+    )
+    return result.read()
 
 
-def load_ghs_from_path(path):
+def load_full_ghs_30arcsec_zarr():
+    return cached_zarr_array(
+        "named_region_shapefiles/gpw/zarr/ghs_population", load_full_ghs_30_arcsec
+    )
+
+
+@lru_cache(maxsize=2)
+def load_full_ghs_zarr(resolution):
+    if resolution == 1200:
+        return load_full_ghs_3arcsec_zarr()
+    if resolution == 120:
+        return load_full_ghs_30arcsec_zarr()
+    raise ValueError(f"Resolution must be 1200 or 120, not {resolution}")
+
+
+def load_ghs_from_path(path, resolution):
     gt = GeoTiff(path)
     ghs = np.array(gt.read())
-    popu = np.zeros((180 * 120, 360 * 120), dtype=np.float32)
+    popu = np.zeros((180 * resolution, 360 * resolution), dtype=np.float32)
     min_lon, max_lat = gt.get_coords(0, 0)
-    j_off = round((min_lon - (-180)) * 120)
-    i_off = round((90 - max_lat) * 120)
+    j_off = round((min_lon - (-180)) * resolution)
+    i_off = round((90 - max_lat) * resolution)
     assert j_off == -1
     popu[i_off : i_off + ghs.shape[0]] = ghs[:, 1:-1]
     return popu
 
 
-@permacache("urbanstats/data/gpw/load_full")
-def load_full():
-    return load_concatenated(*GPW_PATH)
+def lat_from_row_idx(row_idx, resolution):
+    return 90 - row_idx * 1 / resolution
 
 
-@permacache("urbanstats/data/gpw/load_full_landarea")
-def load_full_landarea():
-    return load_concatenated(*GPW_LAND_PATH)
+def lon_from_col_idx(col_idx, resolution):
+    return -180 + col_idx * 1 / resolution
 
 
-def lat_from_row_idx(row_idx):
-    return 90 - row_idx * 1 / 120
-
-
-def lon_from_col_idx(col_idx):
-    return -180 + col_idx * 1 / 120
-
-
-def col_idx_from_lon(lon):
-    return (lon + 180) * 120
-
-
-def row_idx_from_lat(lat):
-    return (90 - lat) * 120
-
-
-def grid_area_km(lat):
-    return 1 / 120 * 1 / 120 * 111**2 * np.cos(lat * np.pi / 180)
-
-
-def cell_overlaps(shape):
-    """
-    Take a shape (in lat/lon coordinates) and return a dictionary from (row, col) to the fraction of the cell that overlaps the shape.
-    """
-
-    lon_min, lat_min, lon_max, lat_max = shape.bounds
-    row_min = row_idx_from_lat(lat_max)
-    row_max = row_idx_from_lat(lat_min)
-
-    col_min = col_idx_from_lon(lon_min)
-    col_max = col_idx_from_lon(lon_max)
-
-    result = {}
-
-    for row_idx in range(int(row_min), int(row_max) + 1):
-        for col_idx in range(int(col_min), int(col_max) + 1):
-            cell = box_for_cell(row_idx, col_idx)
-            intersection = cell.intersection(shape)
-            if intersection.is_empty or cell.area == 0:
-                continue
-            result[(row_idx, col_idx)] = intersection.area / cell.area
-
-    return result
-
-
-def box_for_cell(row_idx, col_idx):
-    cell_lat_min = lat_from_row_idx(row_idx)
-    cell_lat_max = lat_from_row_idx(row_idx + 1)
-    cell_lon_min = lon_from_col_idx(col_idx)
-    cell_lon_max = lon_from_col_idx(col_idx + 1)
-
-    cell = shapely.geometry.box(cell_lon_min, cell_lat_min, cell_lon_max, cell_lat_max)
-
-    return cell
-
-
-def compute_full_cell_overlaps_with_circle(radius, row_idx, num_grid=10):
-    result = defaultdict(float)
-    for offx in np.linspace(0, 1, num_grid + 1)[:-1]:
-        for offy in np.linspace(0, 1, num_grid + 1)[:-1]:
-            lat = lat_from_row_idx(row_idx + offy)
-            lon = lon_from_col_idx(offx)
-            circle = xy_to_radius(radius, lon, lat)
-            for (r, c), frac in cell_overlaps(circle).items():
-                result[(r, c)] += frac / (num_grid**2)
-    return result
-
-
-@permacache("urbanstats/data/gpw/compute_circle_density_per_cell_2")
-def compute_circle_density_per_cell(
-    radius, longitude_start=0, longitude_end=None, latitude_start=0, latitude_end=None
+def compute_cell_overlaps_with_circle_grid_array(
+    radius, row_idx, *, grid_size, resolution
 ):
-    glo = load_full_ghs()
-    glo = glo[:, longitude_start:longitude_end]
-    glo_zero = np.nan_to_num(glo, 0)
-    out = np.zeros_like(glo_zero)
-    [row_idxs] = np.where((glo_zero[latitude_start:latitude_end] != 0).any(axis=1))
-    row_idxs += latitude_start
-    for row_idx in tqdm.tqdm(row_idxs):
-        overlaps = compute_full_cell_overlaps_with_circle(radius, row_idx)
-        for (source_row, off), weight in overlaps.items():
-            out[row_idx] += np.roll(glo_zero[source_row], -off) * weight
-    out = out / (np.pi * radius**2)
+    # pylint: disable=too-many-locals
+    ell = Ellipse(
+        radius,
+        lat_from_row_idx(row_idx + 0.5, resolution),
+        lon_from_col_idx(0.5, resolution),
+    )
+    yr, xr = ell.lat_radius, ell.lon_radius
+    xr_idxs, yr_idxs = [int(np.ceil(radius * resolution + 2)) for radius in (xr, yr)]
+    xs, ys = [np.arange(-radius, radius + 1) for radius in (xr_idxs, yr_idxs)]
+    # placing a grid off-index, e.g., if grid size is 3, we do 1/6, 3/6, 5/6.
+    within_cell_grid = np.linspace(1 / grid_size / 2, 1 - 1 / grid_size / 2, grid_size)
+    xs_specific, ys_specific = [
+        (np.repeat(seq[:, None], grid_size, axis=1) + within_cell_grid)
+        for seq in (xs, ys)
+    ]
+    xs_specific, ys_specific = [
+        (seq - 0.5) / resolution for seq in (xs_specific, ys_specific)
+    ]
+    dist_from_center = (xs_specific[..., None, None] / xr) ** 2 + (
+        ys_specific[None, None] / yr
+    ) ** 2
+    attributable_to_each = (dist_from_center <= 1).mean((1, 3))
+    return xs, ys, attributable_to_each
+
+
+def compute_cell_overlaps_with_circle(radius, row_idx, grid_size=100, *, resolution):
+    xs, ys, b_arr = compute_cell_overlaps_with_circle_grid_array(
+        radius, row_idx, grid_size=grid_size, resolution=resolution
+    )
+    x_idxs, y_idxs = np.where(b_arr)
+    return {
+        (y + row_idx, x): amount
+        for (x, y, amount) in zip(xs[x_idxs], ys[y_idxs], b_arr[x_idxs, y_idxs])
+    }
+
+
+def compute_circle_density_per_cell_zarr(radius, resolution):
+    """
+    Computes the population density in a circle of the given radius around
+    each cell, and returns it as a zarr array. The density is computed
+    as the sum of the population in the circle divided by the area of the circle.
+
+    NOTE: this only is stored at locations where the original population is nonzero,
+    to save space, since we will only query those locations. The density at other
+    locations will be set to 0. Do NOT interpret a value of 0 as meaning that the
+    density is actually 0, it just means that we didn't compute it because the population was 0.
+    """
+    path = (
+        f"named_region_shapefiles/gpw/zarr/ghs_gpw_radius_{radius}km_res_{resolution}"
+    )
+    if os.path.exists(path):
+        return zarr.open(path, mode="r")["data"]
+    print("Computing density for radius", radius)
+    glo = load_full_ghs_zarr(resolution)
+    glo_dask = dask.array.from_zarr(glo)
+    [row_idxs] = np.where(np.array(glo_dask.any(axis=1)))
+    with zarr.open(path, mode="w") as z:
+        z.create_dataset("data", shape=glo.shape)
+        sum_in_radius(
+            radius,
+            glo_dask,
+            row_idxs,
+            z["data"],
+            multiplier=1 / (np.pi * radius**2),
+            resolution=resolution,
+        )
+    return compute_circle_density_per_cell_zarr(radius, resolution)
+
+
+class ChunkedAssigner:
+    def __init__(self, out, chunk_size):
+        self.out = out
+        self.chunk_size = chunk_size
+        self.current_start = 0
+        self.cache = np.zeros((chunk_size, *out.shape[1:]), dtype=out.dtype)
+
+    def assign(self, row_idx, value):
+        if row_idx >= self.current_start + self.chunk_size:
+            self.flush()
+            self.current_start = row_idx
+        self.cache[row_idx - self.current_start] = value
+
+    def flush(self):
+        self.out[self.current_start : self.current_start + self.chunk_size] = self.cache
+        self.current_start = "invalid"
+        self.cache = np.zeros_like(self.cache, dtype=self.out.dtype)
+
+
+def sum_in_radius(
+    radius,
+    global_map,
+    row_idxs,
+    out,
+    multiplier=1,
+    *,
+    resolution,
+    loading_chunk=1000,
+    saving_chunk=1000,
+):
+    # pylint: disable=too-many-locals
+    assigner = ChunkedAssigner(out, saving_chunk)
+    loading_start = -float("inf")
+    local_array = None
+    local_array_cumsum = None
+
+    def fetch_chunk_for(start, end):
+        nonlocal loading_start, local_array, local_array_cumsum
+        assert start >= loading_start
+        if end >= loading_start + loading_chunk:
+            loading_start = start
+            assert end < loading_start + loading_chunk
+            local_array = np.array(
+                global_map[loading_start : loading_start + loading_chunk]
+            )
+            local_array_cumsum = np.cumsum(local_array, axis=1)
+
+    fetch_chunk_for(0, 0)
+    for row_idx in tqdm.tqdm(row_idxs, desc=f"Computing gpw density for {radius} km"):
+        overlaps = compute_cell_overlaps_with_circle(
+            radius, row_idx, grid_size=40, resolution=resolution
+        )
+        rows = [row for row, _ in overlaps.keys()]
+        fetch_chunk_for(min(rows), max(rows))
+        result_for_row = compute_convolution(
+            loading_start, local_array, local_array_cumsum, overlaps
+        )
+        # sparsify it back, we will only ever query
+        # cells where the original array is nonzero,
+        # so we can save a lot of space by doing this before saving.
+
+        result_for_row[local_array[row_idx - loading_start] == 0] = 0
+
+        assigner.assign(row_idx, result_for_row * multiplier)
+    assigner.flush()
     return out
 
 
-def filter_lat_lon_direct(polygon, row_idxs, col_idxs):
-    # convert back to lat/lon
-    lats = lat_from_row_idx(row_idxs + 0.5)
-    lons = lon_from_col_idx(col_idxs + 0.5)
-
-    # convert to shapely points
-    points = shapely.geometry.MultiPoint(np.stack([lons, lats], axis=1))
-
-    # check containment
-    intersect = polygon.intersection(points)
-
-    # check if empty point
-    if intersect.is_empty:
-        return np.array([], dtype=np.int32), np.array([], dtype=np.int32)
-
-    pts = (
-        list(intersect.geoms)
-        if isinstance(intersect, shapely.geometry.MultiPoint)
-        else [intersect]
-    )
-
-    lon_selected = np.array([p.x for p in pts])
-    lat_selected = np.array([p.y for p in pts])
-
-    # convert back to row/col indices
-    row_selected = row_idx_from_lat(lat_selected) - 0.5
-    col_selected = col_idx_from_lon(lon_selected) - 0.5
-
-    row_selected = row_selected.astype(np.int32)
-    col_selected = col_selected.astype(np.int32)
-
-    return row_selected, col_selected
-
-
-def filter_lat_lon(polygon, row_idxs, col_idxs, chunk_size=10**5):
-    """
-    Filter a list of row/col indices to only those that are contained in the polygon.
-    """
-
-    if len(row_idxs) < chunk_size:
-        # just to avoid the progress bar
-        return filter_lat_lon_direct(polygon, row_idxs, col_idxs)
-
-    row_selected = []
-    col_selected = []
-
-    for i in tqdm.tqdm(range(0, len(row_idxs), chunk_size)):
-        sl = slice(i, i + chunk_size)
-        row_selected_chunk, col_selected_chunk = filter_lat_lon_direct(
-            polygon, row_idxs[sl], col_idxs[sl]
-        )
-        row_selected.append(row_selected_chunk)
-        col_selected.append(col_selected_chunk)
-
-    row_selected = np.concatenate(row_selected)
-    col_selected = np.concatenate(col_selected)
-
-    return row_selected, col_selected
-
-
-def lattice_cells_contained(glo, polygon):
-    """
-    Return a list of (row, col) tuples of lattice cells that are contained in the polygon.
-    """
-
-    row_min, row_max, col_min, col_max = get_cell_bounds(polygon)
-
-    # produce full arrays of row and col indices
-    row_idxs = np.arange(max(0, int(row_min)), min(int(row_max) + 1, glo.shape[0]))
-    col_idxs = np.arange(max(0, int(col_min)), min(int(col_max) + 1, glo.shape[1]))
-    # product
-    # no idea why this is necessary
-    # pylint: disable=unpacking-non-sequence
-    row_idxs, col_idxs = np.meshgrid(row_idxs, col_idxs)
-    # filter
-    glo_vals = glo[row_idxs, col_idxs]
-    mask = ~np.isnan(glo_vals) & (glo_vals > 0)
-    row_idxs = row_idxs[mask]
-    col_idxs = col_idxs[mask]
-    # flatten
-    row_idxs = row_idxs.flatten()
-    col_idxs = col_idxs.flatten()
-
-    row_selected, col_selected = filter_lat_lon(polygon, row_idxs, col_idxs)
-
-    return row_selected, col_selected
-
-
-def get_cell_bounds(polygon):
-    lon_min, lat_min, lon_max, lat_max = polygon.bounds
-    # pad by 1/120 to make sure we get all cells that are even slightly contained
-    lon_min -= 1 / 120
-    lat_min -= 1 / 120
-    lon_max += 1 / 120
-    lat_max += 1 / 120
-    row_min = row_idx_from_lat(lat_max)
-    row_max = row_idx_from_lat(lat_min)
-
-    col_min = col_idx_from_lon(lon_min)
-    col_max = col_idx_from_lon(lon_max)
-    return row_min, row_max, col_min, col_max
+def compute_convolution(
+    array_row_idx_base, local_array, local_array_cumsum, filter_to_convolve
+):
+    source_rows = {source_row for source_row, _ in filter_to_convolve.keys()}
+    result_for_row = 0
+    for source_row in source_rows:
+        local_row = local_array[source_row - array_row_idx_base]
+        local_row_cumsum = local_array_cumsum[source_row - array_row_idx_base]
+        columns = [off for sr, off in filter_to_convolve.keys() if sr == source_row]
+        consecutives = []
+        for off in range(-max(columns), max(columns) + 1):
+            if filter_to_convolve[source_row, off] > 1 - 1e-5:
+                consecutives.append(off)
+                continue
+            result_for_row += (
+                np.roll(local_row, -off) * filter_to_convolve[(source_row, off)]
+            )
+        if not consecutives:
+            continue
+        lo, hi = min(consecutives), max(consecutives)
+        assert len(consecutives) == hi - lo + 1
+        delta = (
+            np.roll(local_row_cumsum, -hi) - np.roll(local_row_cumsum, -lo + 1)
+        ) % local_row_cumsum[-1]
+        result_for_row += delta
+    return result_for_row
 
 
 def produce_histogram(density_data, population_data):
@@ -325,15 +250,37 @@ def produce_histogram(density_data, population_data):
     return compute_bins(density_data, population_data, bin_size=0.1)
 
 
+def median_from_histogram(histogram, bin_size=0.1):
+    """
+    Population-weighted median density, interpolating log10 density within the bin where the
+    cumulative population passes half. Bin i spans log10 densities (i - 0.5) * bin_size to (i + 0.5) * bin_size,
+    except bin 0, which holds every lower density too, so a median there is unknown and NaN.
+    """
+    histogram = np.asarray(histogram, dtype=np.float64)
+    if histogram.ndim == 0 or histogram.sum() == 0:
+        return np.nan
+    half = histogram.sum() / 2
+    cumulative = np.cumsum(histogram)
+    idx = np.searchsorted(cumulative, half)
+    if idx == 0:
+        return np.nan
+    within = (half - (cumulative[idx] - histogram[idx])) / histogram[idx]
+    return 10 ** ((idx - 0.5 + within) * bin_size)
+
+
 def compute_gpw_weighted_for_shape(
-    shape, glo_pop, gridded_statistics, *, do_histograms
+    shape, glo_pop, gridded_statistics, *, do_histograms, resolution
 ):
-    row_selected, col_selected = lattice_cells_contained(glo_pop, shape)
+    row_selected, col_selected = select_points_in_shape(
+        shape, glo_pop, resolution=resolution
+    )
     pop = glo_pop[row_selected, col_selected]
     result = {}
     hists = {}
     for name, (data, pop_weight) in gridded_statistics.items():
-        data_selected = data[row_selected, col_selected]
+        data_selected = _compute_gridded_statistics_for_coordinates(
+            row_selected, col_selected, glo_pop.shape[0], glo_pop.shape[1], data
+        )
         if pop_weight:
             result[name] = np.nansum(pop * data_selected) / np.nansum(pop)
         else:
@@ -344,80 +291,139 @@ def compute_gpw_weighted_for_shape(
     return result, hists
 
 
-@permacache(
-    "urbanstats/data/gpw/compute_gpw_for_shape_4",
-    key_function=dict(
-        shape=lambda x: stable_hash(shapely.to_geojson(x)),
-        collect_density=drop_if_equal(True),
-    ),
-)
-def compute_gpw_for_shape(shape, collect_density=True):
-    glo = load_full_ghs()
-    if collect_density:
-        dens_1 = compute_circle_density_per_cell(1)
-        dens_2 = compute_circle_density_per_cell(2)
-        dens_4 = compute_circle_density_per_cell(4)
-    row_selected, col_selected = lattice_cells_contained(glo, shape)
-    pop = glo[row_selected, col_selected]
+def _compute_gridded_statistics_for_coordinates(
+    row_selected, col_selected, height, width, data
+):
+    if data.shape == (height, width):
+        return data[row_selected, col_selected]
+    scale = data.shape[0] / height
+    assert np.isclose(
+        data.shape[1] / width, scale
+    ), f"data shape {data.shape} not compatible with {height}x{width}"
 
-    pop_sum = np.nansum(pop)
+    # add 0.5 before scaling to center the points in the cells
+    return _compute_bilinear_subinterpolation(
+        data, (row_selected + 0.5) * scale, (col_selected + 0.5) * scale
+    )
+
+
+def _compute_bilinear_subinterpolation(data, fractional_rows, fractional_cols):
+    """
+    Does a bilinear interpolation of the data at the given fractional rows and columns. Treat the first data point as being at (0.5, 0.5).
+    """
+    # add 0.5 to center these. e.g., row 0 is centered at 0.5
+    row_coords = np.arange(data.shape[0]) + 0.5
+    col_coords = np.arange(data.shape[1]) + 0.5
+    interp = RegularGridInterpolator(
+        (row_coords, col_coords), data, bounds_error=True, fill_value=None
+    )
+    fractional_rows = np.clip(fractional_rows, 0.5, data.shape[0] - 0.5)
+    fractional_cols = np.clip(fractional_cols, 0.5, data.shape[1] - 0.5)
+    points = np.array([fractional_rows, fractional_cols]).T
+    return interp(points)
+
+
+@permacache(
+    "urbanstats/data/gpw/compute_gpw_for_shape_raster_7",
+    key_function=dict(shape=lambda x: stable_hash(shapely.to_geojson(x))),
+)
+def compute_gpw_for_shape_raster(shape, collect_density=True, *, resolution_by_radius):
+    glo_by_resolution = {
+        resolution: load_full_ghs_zarr(resolution)
+        for resolution in set(resolution_by_radius.values())
+    }
     if collect_density:
-        dens_1_selected = dens_1[row_selected, col_selected]
-        dens_2_selected = dens_2[row_selected, col_selected]
-        dens_4_selected = dens_4[row_selected, col_selected]
-        hists = dict(
-            gpw_pw_density_histogram_1=produce_histogram(dens_1_selected, pop),
-            gpw_pw_density_histogram_2=produce_histogram(dens_2_selected, pop),
-            gpw_pw_density_histogram_4=produce_histogram(dens_4_selected, pop),
-        )
-        density = dict(
-            gpw_pw_density_1=np.nansum(pop * dens_1_selected) / pop_sum,
-            gpw_pw_density_2=np.nansum(pop * dens_2_selected) / pop_sum,
-            gpw_pw_density_4=np.nansum(pop * dens_4_selected) / pop_sum,
-        )
+        # NOTE: these values should only be queried at locations where
+        # the population is nonzero, it is not meaningful at other
+        # locations.
+        dens_by_radius = {
+            k: compute_circle_density_per_cell_zarr(k, resolution)
+            for k, resolution in resolution_by_radius.items()
+        }
+    row_col_selected_by_resolution = {
+        resolution: select_points_in_shape(shape, glo, resolution=resolution)
+        for resolution, glo in glo_by_resolution.items()
+    }
+    pop_by_resolution = {
+        resolution: glo[row_col_selected_by_resolution[resolution]]
+        for resolution, glo in glo_by_resolution.items()
+    }
+
+    # pop_sum = np.nansum(pop)
+    pop_sum_by_resolution = {
+        resolution: np.nansum(pop) for resolution, pop in pop_by_resolution.items()
+    }
+    if collect_density:
+        dens_selected = {
+            k: np.nan_to_num(
+                dens_by_radius[k][
+                    row_col_selected_by_resolution[resolution_by_radius[k]]
+                ],
+                nan=0,
+            )
+            for k in GPW_RADII
+        }
+        hists = {
+            f"gpw_pw_density_histogram_{k}": produce_histogram(
+                dens, pop_by_resolution[resolution_by_radius[k]]
+            )
+            for k, dens in dens_selected.items()
+        }
+        density = {
+            f"gpw_pw_density_{k}": np.nansum(
+                pop_by_resolution[resolution_by_radius[k]] * dens
+            )
+            / pop_sum_by_resolution[resolution_by_radius[k]]
+            for k, dens in dens_selected.items()
+        }
     else:
         hists = {}
         density = {}
 
-    return dict(gpw_population=pop_sum, **density), hists
+    return (
+        dict(gpw_population=pop_sum_by_resolution[max(glo_by_resolution)], **density),
+        hists,
+    )
+
+
+def select_points_in_shape(shape, glo, *, resolution):
+    lats, lon_starts, lon_ends = rasterize_using_lines(shape, resolution=resolution)
+    row_selected, col_selected = exract_raster_points(lats, lon_starts, lon_ends, glo)
+    return row_selected, col_selected
 
 
 @permacache(
-    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_5",
+    "urbanstats/data/gpw/compute_gpw_data_for_shapefile_7",
     key_function=dict(
-        shapefile=lambda x: x.hash_key,
         collect_density=drop_if_equal(True),
         log=drop_if_equal(True),
     ),
 )
-def compute_gpw_data_for_shapefile(shapefile, collect_density=True, log=True):
+def compute_gpw_data_for_shapefile(
+    geometry, collect_density=True, log=True, *, resolution_by_radius
+):
     """
-    Compute the GHS-POP data for a shapefile.
+    Compute the GHS-POP data for a geometry.
     """
 
-    shapes = shapefile.load_file()
+    shapes = geometry.load_rows()
 
-    result = {
-        "gpw_population": [],
-        "gpw_pw_density_1": [],
-        "gpw_pw_density_2": [],
-        "gpw_pw_density_4": [],
-    }
+    result = {"gpw_population": [], **{f"gpw_pw_density_{k}": [] for k in GPW_RADII}}
 
-    result_hists = {
-        "gpw_pw_density_histogram_1": [],
-        "gpw_pw_density_histogram_2": [],
-        "gpw_pw_density_histogram_4": [],
-    }
+    result_hists = {f"gpw_pw_density_histogram_{k}": [] for k in GPW_RADII}
 
-    for longname, shape in tqdm.tqdm(
-        zip(shapes.longname, shapes.geometry),
-        desc=f"gpw for {shapefile.hash_key}",
+    for row, shape in tqdm.tqdm(
+        zip(shapes.index, shapes.geometry),
+        desc=f"gpw for {geometry.key}",
         total=len(shapes),
     ):
         if log:
-            print(longname)
-        res, hists = compute_gpw_for_shape(shape, collect_density=collect_density)
+            print(row)
+        res, hists = compute_gpw_for_shape_raster(
+            shape,
+            collect_density=collect_density,
+            resolution_by_radius=resolution_by_radius,
+        )
         if log:
             print(res)
         for k, v in res.items():
@@ -426,3 +432,45 @@ def compute_gpw_data_for_shapefile(shapefile, collect_density=True, log=True):
             result_hists[k].append(v)
 
     return result, result_hists
+
+
+@permacache(
+    "urbanstats/data/gpw/compute_gpw_population_median_for_shapefile_2",
+)
+def compute_gpw_population_median_for_shapefile(
+    geometry, *, max_coarse_cells_for_fine=10_000, chunk_size=5_000_000
+):
+    """
+    Uses the 3" grid only for shapes with at most max_coarse_cells_for_fine populated 30" cells,
+    beyond which the 3" grid is slow and its extra precision is small relative to the shape.
+    """
+    shapes = geometry.load_rows()
+    lats, lons = [], []
+    for shape in tqdm.tqdm(
+        shapes.geometry, desc=f"gpw population median for {geometry.key}"
+    ):
+        resolution = 120
+        rows, cols = select_points_in_shape(
+            shape, load_full_ghs_zarr(resolution), resolution=resolution
+        )
+        if len(rows) <= max_coarse_cells_for_fine:
+            resolution = 1200
+            rows, cols = select_points_in_shape(
+                shape, load_full_ghs_zarr(resolution), resolution=resolution
+            )
+        pop = load_full_ghs_zarr(resolution)[rows, cols]
+
+        def chunks(rows=rows, cols=cols, pop=pop, resolution=resolution):
+            for start in range(0, len(rows), chunk_size):
+                end = start + chunk_size
+                yield (
+                    np.zeros(len(rows[start:end]), dtype=np.int64),
+                    from_row_idx(rows[start:end] + 0.5, resolution),
+                    lon_from_col_idx(cols[start:end] + 0.5, resolution),
+                    np.nan_to_num(pop[start:end].astype(np.float64), nan=0),
+                )
+
+        [lat], [lon] = geometric_median_of_chunks(chunks, 1)
+        lats.append(lat)
+        lons.append(lon)
+    return lats, lons

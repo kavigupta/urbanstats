@@ -8,11 +8,24 @@ from urbanstats.statistics.utils import fractionalize
 
 
 class NationalOriginBirthplaceStatistics(ACSUSPRStatisticsColection):
+    def legacy_statistic_names(self):
+        return {"Born outside US %": "Born outside country %"}
+
     def name_for_each_statistic(self):
         return {
-            "birthplace_non_us": "Born outside US %",
+            "birthplace_non_us": "Born outside country %",
             "birthplace_us_not_state": "Born in us outside state %",
             "birthplace_us_state": "Born in state of residence %",
+        }
+
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
+    def varname_for_each_statistic(self):
+        return {
+            "birthplace_non_us": "foreign_born",
+            "birthplace_us_not_state": "born_outside_state",
+            "birthplace_us_state": "born_in_state",
         }
 
     def explanation_page_for_each_statistic(self):
@@ -22,7 +35,7 @@ class NationalOriginBirthplaceStatistics(ACSUSPRStatisticsColection):
         return QuizQuestionDescriptor.several(
             NATIONAL_ORIGIN,
             {
-                "birthplace_non_us": "higher % of people who were born outside the US",
+                "birthplace_non_us": "higher % of people who were born outside the country",
                 "birthplace_us_not_state": "higher % of people who were born in the US and outside their state of residence",
                 "birthplace_us_state": "higher % of people who were born in their state of residence",
             },

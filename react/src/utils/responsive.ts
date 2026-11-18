@@ -3,20 +3,26 @@ import { useSyncExternalStore } from 'react'
 import { useColors } from '../page_template/colors'
 
 export function isMobileLayout(): boolean {
-    return window.innerWidth <= 1100
+    return document.documentElement.clientWidth <= 1100
 }
 
 export function useMobileLayout(): boolean {
-    return useSyncExternalStore((listener) => {
-        const myListener = (): void => {
-            if (window.innerWidth !== 1) {
-                // When taking screenshots, testcafe sets the inner width to 1, so we want to throw away those updates
-                listener()
-            }
+    return useSyncExternalStore(onWidthChange, isMobileLayout)
+}
+
+export function useWindowWidth(): number {
+    return useSyncExternalStore(onWidthChange, () => document.documentElement.clientWidth)
+}
+
+function onWidthChange(listener: () => void): () => void {
+    const myListener = (): void => {
+        if (window.innerWidth !== 1) {
+            // When taking screenshots, testcafe sets the inner width to 1, so we want to throw away those updates
+            listener()
         }
-        window.addEventListener('resize', myListener)
-        return () => { window.removeEventListener('resize', myListener) }
-    }, isMobileLayout)
+    }
+    window.addEventListener('resize', myListener)
+    return () => { window.removeEventListener('resize', myListener) }
 }
 
 export function useHeaderTextClass(): string {

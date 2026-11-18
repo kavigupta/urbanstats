@@ -2,7 +2,11 @@ from functools import lru_cache
 
 import us
 
-from urbanstats.universe.universe_constants import CONTINENTS, COUNTRIES
+from urbanstats.universe.universe_constants import (
+    CONTINENT_TO_SUB_UNIVERSES,
+    CONTINENTS,
+    COUNTRIES,
+)
 
 # universes that are assigned by default to articles. An article's default universe is the most specific universe that
 # lies in the default_universes list.
@@ -15,6 +19,18 @@ def get_universe_name_for_state(state):
     if name == "Virgin Islands":
         name = "US Virgin Islands"
     return name + ", USA"
+
+
+australian_state_abbr_to_state = {
+    "ACT": "Australian Capital Territory, Australia",
+    "NSW": "New South Wales, Australia",
+    "NT": "Northern Territory, Australia",
+    "QLD": "Queensland, Australia",
+    "SA": "South Australia, Australia",
+    "TAS": "Tasmania, Australia",
+    "VIC": "Victoria, Australia",
+    "WA": "Western Australia, Australia",
+}
 
 
 @lru_cache(None)
@@ -41,6 +57,7 @@ def universe_by_universe_type():
             "Saskatchewan, Canada",
             "Yukon, Canada",
         ],
+        "australian_state": list(australian_state_abbr_to_state.values()),
     }
 
 
@@ -51,3 +68,47 @@ def all_universes():
         for universe_by_type in universe_by_universe_type().values()
         for universe in universe_by_type
     ]
+
+
+def check_continent_sub_universes(contained_by, present_longnames):
+    """
+    Check CONTINENT_TO_SUB_UNIVERSES against the strict containment relationships it was
+    derived from. Universes that do not appear as articles are skipped.
+
+    :param contained_by: maps each longname to the set of longnames strictly containing it
+    :param present_longnames: the longnames that appear as articles
+    """
+    universe_to_containing_continent = {}
+    for continent, universes in CONTINENT_TO_SUB_UNIVERSES.items():
+        for universe in universes:
+            if universe in universe_to_containing_continent:
+                raise ValueError(
+                    f"Universe {universe} is listed as a sub-universe of both {universe_to_containing_continent[universe]} and {continent}"
+                )
+            universe_to_containing_continent[universe] = continent
+    unknown = {
+        universe
+        for universes in CONTINENT_TO_SUB_UNIVERSES.values()
+        for universe in universes
+    } - set(all_universes())
+    assert (
+        not unknown
+    ), f"Unknown universes in CONTINENT_TO_SUB_UNIVERSES: {sorted(unknown)}"
+
+    errors = []
+    for universe in all_universes():
+        if universe in CONTINENTS or universe not in present_longnames:
+            continue
+        continents = contained_by.get(universe, set()) & set(CONTINENTS) - {universe}
+        expected = (
+            {universe_to_containing_continent[universe]}
+            if universe in universe_to_containing_continent
+            else set()
+        )
+        if continents != expected:
+            errors.append(
+                f"{universe} is contained by {continents}, but CONTINENT_TO_SUB_UNIVERSES says it should be contained by {expected}"
+            )
+    assert not errors, "CONTINENT_TO_SUB_UNIVERSES is out of date:\n" + "\n".join(
+        errors
+    )

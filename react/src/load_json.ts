@@ -1,22 +1,32 @@
-import { gunzipSync } from 'zlib'
+import { decompress as zstdDecompress } from 'fzstd'
 
 import data_links from './data/data_links'
 import order_links from './data/order_links'
 import statistic_path_list from './data/statistic_path_list'
-import { indexLink, orderingDataLink, orderingLink } from './navigation/links'
-import { debugPerformance } from './search'
+import universes_ordered from './data/universes_ordered'
+import { dataLink, indexLink, orderingDataLink, orderingLink, shapeLink } from './navigation/links'
+import { Universe } from './universe'
+import { makeDebugLogger } from './utils/debug-logging'
+import { assert } from './utils/defensive'
+import { gunzip } from './utils/gzip'
 import {
-    Article, ConsolidatedShapes, ConsolidatedStatistics, CountsByArticleUniverseAndType, DataLists,
-    Feature, IDataList, IOrderList, OrderList,
+    Article, ConsolidatedArticles, ConsolidatedShapes, CountsByArticleUniverseAndType, DataLists,
+    Feature, IOrderList, OrderList,
     OrderLists,
     QuizFullData,
     QuizQuestionTronche,
     SearchIndex,
+    CongressionalRepresentativeTable,
     ArticleOrderingList,
+    ShardIndex,
     Symlinks,
     PointSeries,
+    ArticleUniverseList,
+    DefaultUniverseTable,
 } from './utils/protos'
 import { NormalizeProto } from './utils/types'
+
+const debugPerformance = makeDebugLogger('searchPerformance')
 
 // from https://stackoverflow.com/a/4117299/1549476
 
@@ -29,23 +39,10 @@ export async function loadJSON(filePath: string): Promise<unknown> {
     return response.json()
 }
 
-// Load a protobuf file from the server
-export async function loadProtobuf(filePath: string, name: 'Article', errorOnMissing: boolean): Promise<Article | undefined>
-export async function loadProtobuf(filePath: string, name: 'Feature', errorOnMissing: boolean): Promise<Feature>
-export async function loadProtobuf(filePath: string, name: 'ArticleOrderingList'): Promise<ArticleOrderingList>
-export async function loadProtobuf(filePath: string, name: 'OrderLists'): Promise<OrderLists>
-export async function loadProtobuf(filePath: string, name: 'DataLists'): Promise<DataLists>
-export async function loadProtobuf(filePath: string, name: 'ConsolidatedShapes'): Promise<ConsolidatedShapes>
-export async function loadProtobuf(filePath: string, name: 'ConsolidatedStatistics'): Promise<ConsolidatedStatistics>
-export async function loadProtobuf(filePath: string, name: 'SearchIndex'): Promise<SearchIndex>
-export async function loadProtobuf(filePath: string, name: 'QuizQuestionTronche'): Promise<QuizQuestionTronche>
-export async function loadProtobuf(filePath: string, name: 'QuizFullData'): Promise<QuizFullData>
-export async function loadProtobuf(filePath: string, name: 'CountsByArticleUniverseAndType'): Promise<CountsByArticleUniverseAndType>
-export async function loadProtobuf(filePath: string, name: 'Symlinks'): Promise<Symlinks>
-export async function loadProtobuf(filePath: string, name: 'PointSeries'): Promise<PointSeries>
-export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedStatistics | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | undefined> {
-    let perfCheckpoint = performance.now()
-
+/** The still-encoded protobuf bytes of a data file. */
+export async function loadGzipped(filePath: string): Promise<Uint8Array>
+export async function loadGzipped(filePath: string, errorOnMissing: boolean): Promise<Uint8Array | undefined>
+export async function loadGzipped(filePath: string, errorOnMissing: boolean = true): Promise<Uint8Array | undefined> {
     const response = await fetch(filePath)
     if (response.status < 200 || response.status > 299) {
         if (!errorOnMissing) {
@@ -53,19 +50,46 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
         }
         throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
     }
+    assert(response.body !== null, `Expected a body for ${filePath}`)
+    return await gunzip(response.body)
+}
 
-    const compressedBuffer = await response.arrayBuffer()
+async function loadZstd(filePath: string): Promise<Uint8Array> {
+    const response = await fetch(filePath)
+    assert(response.ok, `Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
+    return zstdDecompress(new Uint8Array(await response.arrayBuffer()))
+}
 
-    if (name === 'SearchIndex') {
-        debugPerformance(`Took ${performance.now() - perfCheckpoint}ms networking to load search index`)
+// Load a protobuf file from the server
+export async function loadProtobuf(filePath: string, name: 'Article', errorOnMissing: boolean): Promise<Article | undefined>
+export async function loadProtobuf(filePath: string, name: 'Feature', errorOnMissing: boolean): Promise<Feature>
+export async function loadProtobuf(filePath: string, name: 'ArticleOrderingList'): Promise<ArticleOrderingList>
+export async function loadProtobuf(filePath: string, name: 'OrderLists'): Promise<OrderLists>
+export async function loadProtobuf(filePath: string, name: 'DataLists'): Promise<DataLists>
+export async function loadProtobuf(filePath: string, name: 'CongressionalRepresentativeTable'): Promise<CongressionalRepresentativeTable>
+export async function loadProtobuf(filePath: string, name: 'ConsolidatedShapes'): Promise<ConsolidatedShapes>
+export async function loadProtobuf(filePath: string, name: 'ConsolidatedShapes', errorOnMissing: boolean): Promise<ConsolidatedShapes | undefined>
+export async function loadProtobuf(filePath: string, name: 'ConsolidatedArticles'): Promise<ConsolidatedArticles>
+export async function loadProtobuf(filePath: string, name: 'ConsolidatedArticles', errorOnMissing: boolean): Promise<ConsolidatedArticles | undefined>
+export async function loadProtobuf(filePath: string, name: 'SearchIndex'): Promise<SearchIndex>
+export async function loadProtobuf(filePath: string, name: 'QuizQuestionTronche'): Promise<QuizQuestionTronche>
+export async function loadProtobuf(filePath: string, name: 'QuizFullData'): Promise<QuizFullData>
+export async function loadProtobuf(filePath: string, name: 'CountsByArticleUniverseAndType'): Promise<CountsByArticleUniverseAndType>
+export async function loadProtobuf(filePath: string, name: 'Symlinks'): Promise<Symlinks>
+export async function loadProtobuf(filePath: string, name: 'PointSeries'): Promise<PointSeries>
+export async function loadProtobuf(filePath: string, name: 'ArticleUniverseList'): Promise<ArticleUniverseList>
+export async function loadProtobuf(filePath: string, name: 'DefaultUniverseTable'): Promise<DefaultUniverseTable>
+export async function loadProtobuf(filePath: string, name: 'ShardIndex'): Promise<ShardIndex>
+export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | CongressionalRepresentativeTable | ConsolidatedShapes | ConsolidatedArticles | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | ArticleUniverseList | DefaultUniverseTable | ShardIndex | undefined> {
+    let perfCheckpoint = performance.now()
+
+    const arr = filePath.endsWith('.zst') ? await loadZstd(filePath) : await loadGzipped(filePath, errorOnMissing)
+    if (arr === undefined) {
+        return undefined
     }
-    perfCheckpoint = performance.now()
-
-    const buffer = gunzipSync(Buffer.from(compressedBuffer))
-    const arr = new Uint8Array(buffer)
 
     if (name === 'SearchIndex') {
-        debugPerformance(`Took ${performance.now() - perfCheckpoint}ms to decompress search index`)
+        debugPerformance(`Took ${performance.now() - perfCheckpoint}ms to fetch and decompress search index`)
     }
     perfCheckpoint = performance.now()
 
@@ -84,14 +108,27 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
     else if (name === 'DataLists') {
         return DataLists.decode(arr)
     }
+    else if (name === 'CongressionalRepresentativeTable') {
+        return CongressionalRepresentativeTable.decode(arr)
+    }
     else if (name === 'ConsolidatedShapes') {
         return ConsolidatedShapes.decode(arr)
     }
-    else if (name === 'ConsolidatedStatistics') {
-        return ConsolidatedStatistics.decode(arr)
+    else if (name === 'ConsolidatedArticles') {
+        return ConsolidatedArticles.decode(arr)
     }
     else if (name === 'SearchIndex') {
         const result = SearchIndex.decode(arr)
+        const size = result.elements.length
+        const elements = new Array<typeof result.elements[number]>(size)
+        const metadata = new Array<typeof result.metadata[number]>(size)
+        for (let i = 0; i < size; i++) {
+            const rank = result.populationRanks[i] | (result.populationRanks[size + i] << 8) | (result.populationRanks[2 * size + i] << 16)
+            elements[rank] = result.elements[i]
+            metadata[rank] = result.metadata[i]
+        }
+        result.elements = elements
+        result.metadata = metadata
         debugPerformance(`Took ${performance.now() - perfCheckpoint}ms to decode search index`)
         return result
     }
@@ -110,9 +147,55 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
     else if (name === 'PointSeries') {
         return PointSeries.decode(arr)
     }
+    else if (name === 'ArticleUniverseList') {
+        return ArticleUniverseList.decode(arr)
+    }
+    else if (name === 'DefaultUniverseTable') {
+        return DefaultUniverseTable.decode(arr)
+    }
+    else if (name === 'ShardIndex') {
+        return ShardIndex.decode(arr)
+    }
     else {
         throw new Error('protobuf type not recognized (see load_json.ts)')
     }
+}
+
+// Consolidated shard: one gzipped proto (ConsolidatedArticles or ConsolidatedShapes). Not cached.
+async function getConsolidatedArticlesShard(shardUrl: string): Promise<ConsolidatedArticles | undefined> {
+    return loadProtobuf(shardUrl, 'ConsolidatedArticles', false)
+}
+
+async function getConsolidatedShapesShard(shardUrl: string): Promise<ConsolidatedShapes | undefined> {
+    return loadProtobuf(shardUrl, 'ConsolidatedShapes', false)
+}
+
+/** Load one article from a consolidated shard (fetch whole .gz via loadProtobuf, find by longname). Resolves symlinks to target. */
+export async function loadArticleFromConsolidatedShard(shardUrl: string, longname: string): Promise<Article | undefined> {
+    const shard = await getConsolidatedArticlesShard(shardUrl)
+    if (!shard) return undefined
+    const idx = shard.longnames.indexOf(longname)
+    if (idx >= 0) return shard.articles[idx] as Article
+    const symIdx = shard.symlinkLinkNames.indexOf(longname)
+    if (symIdx >= 0) {
+        const target = shard.symlinkTargetNames[symIdx]
+        return loadArticleFromConsolidatedShard(await dataLink(target), target)
+    }
+    return undefined
+}
+
+/** Load one shape from a consolidated shard (fetch whole .gz via loadProtobuf, find by longname). Resolves symlinks to target. */
+export async function loadFeatureFromConsolidatedShard(shardUrl: string, longname: string): Promise<Feature | undefined> {
+    const shard = await getConsolidatedShapesShard(shardUrl)
+    if (!shard) return undefined
+    const idx = shard.longnames.indexOf(longname)
+    if (idx >= 0) return shard.shapes[idx] as Feature
+    const symIdx = shard.symlinkLinkNames.indexOf(longname)
+    if (symIdx >= 0) {
+        const target = shard.symlinkTargetNames[symIdx]
+        return loadFeatureFromConsolidatedShard(await shapeLink(target), target)
+    }
+    return undefined
 }
 
 function pullKey(arr: number[], key: string): number {
@@ -130,22 +213,48 @@ function pullKey(arr: number[], key: string): number {
     throw new Error('index not found')
 }
 
-export async function loadOrderingProtobuf(universe: string, statpath: string, type: string, isData: true): Promise<IDataList>
-export async function loadOrderingProtobuf(universe: string, statpath: string, type: string, isData: boolean): Promise<IOrderList>
-export async function loadOrderingProtobuf(universe: string, statpath: string, type: string, isData: boolean): Promise<IDataList | IOrderList> {
-    const links = isData ? data_links : order_links
-    const key = `${universe}__${type}`
-    const idx = key in links ? pullKey(links[key], statpath) : 0
-    const orderLink = isData ? orderingDataLink(universe, type, idx) : orderingLink(universe, type, idx)
-    if (isData) {
-        const dataLists = await loadProtobuf(orderLink, 'DataLists')
-        const index = dataLists.statnames.indexOf(statpath)
-        return dataLists.dataLists[index]
+export async function loadUniverses(type: string): Promise<ArticleUniverseList> {
+    return loadProtobuf(`/universes/${type}.gz`, 'ArticleUniverseList')
+}
+
+async function loadOrderingProtobuf(universe: Universe, statpath: string, type: string): Promise<IOrderList> {
+    const universeIdx = universes_ordered.indexOf(universe)
+    const links = order_links
+    const idx = type in links ? pullKey(links[type], statpath) : 0
+    const orderLink = orderingLink(type, idx)
+    const orderLists = await loadProtobuf(orderLink, 'OrderLists')
+    const index = orderLists.statnames.indexOf(statpath)
+    const res = orderLists.orderLists[index]
+    const universes = await loadUniverses(type)
+    const orderIndices = res.orderIdxs?.filter(i => universes.universes[i].universeIdxs?.includes(universeIdx))
+    return { orderIdxs: orderIndices }
+}
+
+/** Undefined when this type of article never had the statistic computed for it. */
+export async function loadOrderingDataProtobuf(universe: Universe, statpath: string, type: string): Promise<{
+    value: number[]
+    populationPercentile: number[]
+} | undefined> {
+    const links = data_links
+    const idx = type in links ? pullKey(links[type], statpath) : 0
+    const orderLink = orderingDataLink(type, idx)
+    const dataLists = await loadProtobuf(orderLink, 'DataLists')
+    const index = dataLists.statnames.indexOf(statpath)
+    if (index === -1) {
+        return undefined
     }
-    else {
-        const orderLists = await loadProtobuf(orderLink, 'OrderLists')
-        const index = orderLists.statnames.indexOf(statpath)
-        return orderLists.orderLists[index]
+    const res = dataLists.dataLists[index]
+    const universeIdx = universes_ordered.indexOf(universe)
+    const universes = await loadUniverses(type)
+    return {
+        value: res.value!.filter((_, i) => universes.universes[i].universeIdxs?.includes(universeIdx)),
+        populationPercentile: res.populationPercentileByUniverse!.flatMap((_, i) => {
+            const universeIndex = universes.universes[i].universeIdxs!.indexOf(universeIdx)
+            if (universeIndex === -1) {
+                return []
+            }
+            return [res.populationPercentileByUniverse![i].populationPercentile![universeIndex]]
+        }),
     }
 }
 
@@ -154,20 +263,47 @@ export interface ArticleOrderingListInternal {
     typeIndices: number[]
 }
 
-export async function loadOrdering(universe: string, statpath: string, type: string): Promise<ArticleOrderingListInternal> {
-    const idxLink = indexLink(universe, type)
+export async function loadOrdering(universe: Universe, statpath: string, type: string): Promise<ArticleOrderingListInternal> {
+    const idxLink = indexLink('world', type)
     const dataPromise = loadProtobuf(idxLink, 'ArticleOrderingList')
-    const orderingPromise = loadOrderingProtobuf(universe, statpath, type, false)
+    const orderingPromise = loadOrderingProtobuf(universe, statpath, type)
     const [data, ordering] = await Promise.all([dataPromise, orderingPromise])
     const namesInOrder = (ordering as OrderList).orderIdxs.map((i: number) => data.longnames[i])
     const typesInOrder = (ordering as OrderList).orderIdxs.map((i: number) => data.types[i])
     return { longnames: namesInOrder, typeIndices: typesInOrder }
 }
 
+/**
+ * Returns an array `r` where r contains numbers 0..length-1, but such that
+ * iff indices[i] < indices[j], then r[i] < r[j]
+ *
+ * I.e., it returns the argsort of the argsort of indices.
+ */
+function reindex(indices: number[]): number[] {
+    const pairs = indices.map((value, index) => ({ value, index }))
+    pairs.sort((a, b) => a.value - b.value)
+    const result = new Array<number>(indices.length)
+    for (let i = 0; i < pairs.length; i++) {
+        result[pairs[i].index] = i
+    }
+    return result
+}
+
 export async function loadStatisticsPage(
-    statUniverse: string, statpath: string, articleType: string,
-): Promise<[NormalizeProto<IDataList>, string[]]> {
-    const data = loadOrderingProtobuf(statUniverse, statpath, articleType, true).then(result => result as NormalizeProto<IDataList>)
-    const articleNames = loadOrdering(statUniverse, statpath, articleType).then(result => result.longnames)
-    return [await data, await articleNames]
+    statUniverse: Universe, statpath: string, articleType: string,
+): Promise<[NormalizeProto<{ value: number[], populationPercentile: number[] }>, string[]]> {
+    const orderingOriginal = await loadOrderingProtobuf(statUniverse, statpath, articleType)
+    const ordering = await loadOrdering(statUniverse, statpath, articleType)
+    const orderingData = await loadOrderingDataProtobuf(statUniverse, statpath, articleType)
+    assert(orderingData !== undefined, `No data for ${statpath} in ${articleType}`)
+    assert(Array.isArray(orderingOriginal.orderIdxs), 'Ordering original must be an array')
+    const reorder = reindex(orderingOriginal.orderIdxs)
+    const articleNames = ordering.longnames
+    return [
+        {
+            value: reorder.map(i => orderingData.value[i]),
+            populationPercentile: reorder.map(i => orderingData.populationPercentile[i]),
+        },
+        articleNames,
+    ]
 }

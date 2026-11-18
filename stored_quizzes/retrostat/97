@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km) Change (2010-2020)",
+      "stat_path": "ad_1_change_2010",
+      "question": "higher % increase in population-weighted density (r=1km) from 2010 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Missouri, USA",
+      "longname_b": "Mississippi, USA",
+      "stat_a": 0.013518614562080098,
+      "stat_b": -0.02866999130755349
+    },
+    "b": {
+      "stat_column": "Within 1mi of a grocery store %",
+      "stat_path": "lapop1share_usda_fra_1",
+      "question": "!FULL Which has more access to grocery stores (higher % of people within 1mi of a grocery store)?!TOOLTIP The USDA defines a grocery store as a 'supermarket, supercenter, or large grocery store.'",
+      "longname_a": "Riverside County, California, USA",
+      "longname_b": "Southeastern Connecticut Planning Region, Connecticut, USA",
+      "stat_a": 0.682948489461265,
+      "stat_b": 0.42108833818179514
+    },
+    "a_ease": 0.6782027929568913,
+    "b_ease": 0.23695976154992549
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Law enforcement workers including supervisors %",
+      "stat_path": "occupation_law_enforcement_workers_including_supervisors",
+      "question": "higher % of workers employed as law enforcement workers including supervisors!TOOLTIP police officers, detectives, etc.",
+      "longname_a": "Multnomah County, Oregon, USA",
+      "longname_b": "Fresno County, California, USA",
+      "stat_a": 0.002448644906096692,
+      "stat_b": 0.012230885632558574
+    },
+    "b": {
+      "stat_column": "White %",
+      "stat_path": "white",
+      "question": "higher % of people who are White",
+      "longname_a": "Fresno city, California, USA",
+      "longname_b": "Atlanta city, Georgia, USA",
+      "stat_a": 0.23950527156048884,
+      "stat_b": 0.385339974014725
+    },
+    "a_ease": 0.6812386156648452,
+    "b_ease": 0.22315536892621476
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population",
+      "stat_path": "population",
+      "question": "higher population",
+      "longname_a": "Arb\u012bl, Iraq",
+      "longname_b": "Lampung, Indonesia",
+      "stat_a": 2622261.2098573986,
+      "stat_b": 8454705.338582039
+    },
+    "b": {
+      "stat_column": "Stroke %",
+      "stat_path": "STROKE_cdc_2",
+      "question": "higher % of adults who have had a stroke",
+      "longname_a": "Tucson city, Arizona, USA",
+      "longname_b": "Henderson city, Nevada, USA",
+      "stat_a": 0.030862744682172275,
+      "stat_b": 0.027368899713754762
+    },
+    "a_ease": 0.9089253187613844,
+    "b_ease": 0.5062402496099844
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2020 Presidential Election",
+      "stat_path": "2020 Presidential Election-margin",
+      "question": "!FULL Which voted more for Biden in the 2020 presidential election?",
+      "longname_a": "Nebraska, USA",
+      "longname_b": "New Mexico, USA",
+      "stat_a": -0.19151066709257122,
+      "stat_b": 0.10792616603442934
+    },
+    "b": {
+      "stat_column": "Uninsured %",
+      "stat_path": "insurance_coverage_none",
+      "question": "higher % of people who are uninsured",
+      "longname_a": "NE-01 (2023), USA",
+      "longname_b": "TX-32 (2023), USA",
+      "stat_a": 0.09498260845121569,
+      "stat_b": 0.27484046512586124
+    },
+    "a_ease": 0.8966376089663761,
+    "b_ease": 0.46795827123695977
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Time < 15 min %",
+      "stat_path": "transportation_commute_time_under_15",
+      "question": "higher % of people who have commute time under 15 min",
+      "longname_a": "Columbus MSA, OH, USA",
+      "longname_b": "College Station-Bryan MSA, TX, USA",
+      "stat_a": 0.24500779392997885,
+      "stat_b": 0.38319045778730465
+    },
+    "b": {
+      "stat_column": "Uninsured %",
+      "stat_path": "insurance_coverage_none",
+      "question": "higher % of people who are uninsured",
+      "longname_a": "Brazoria County, Texas, USA",
+      "longname_b": "New Castle County, Delaware, USA",
+      "stat_a": 0.1707542771391226,
+      "stat_b": 0.06618574015583616
+    },
+    "a_ease": 0.5155974102413184,
+    "b_ease": 0.9188767550702028
+  }
+]

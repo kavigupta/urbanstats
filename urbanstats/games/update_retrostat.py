@@ -1,0 +1,51 @@
+import argparse
+import itertools
+import os
+
+from urbanstats.games.fixed import retrostat as fixed_up_to
+from urbanstats.games.quiz import compute_fractional_days
+from urbanstats.games.retrostat import (
+    day_for_week,
+    generate_retrostat,
+    output_retrostat,
+    questions_week_for_retrostat,
+)
+from urbanstats.games.update_fixed import copy_up_to
+
+
+def compute_last_retrostat_week_generable() -> int:
+    days_finished = int(compute_fractional_days("US/Samoa"))
+    for retro_week in itertools.count(1):
+        questions = day_for_week(questions_week_for_retrostat(retro_week))
+        if max(questions) >= days_finished:
+            return retro_week - 1
+    raise RuntimeError("Unreachable")
+
+
+def create_retrostats(folder: str, retrostat_up_to: int, origin: str) -> None:
+    for retrostat_week in range(fixed_up_to + 1, retrostat_up_to + 1):
+        print(retrostat_week)
+        out = generate_retrostat(retrostat_week, origin)
+        output_retrostat(folder, retrostat_week, out)
+
+
+def main(path: str, origin: str) -> None:
+    week = compute_last_retrostat_week_generable()
+    day = int(compute_fractional_days("Pacific/Kiritimati"))
+    copy_up_to("juxtastat", day)
+    create_retrostats(os.path.join(path, "retrostat"), week, origin)
+    copy_up_to("retrostat", week, folder=path)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Update retrostat data.")
+    parser.add_argument(
+        "path", help="Site folder path (e.g. site or react/test/density-db)"
+    )
+    parser.add_argument(
+        "--origin",
+        default="https://persistent.urbanstats.org",
+        help="Origin URL for the persistent data server",
+    )
+    args = parser.parse_args()
+    main(args.path, args.origin)

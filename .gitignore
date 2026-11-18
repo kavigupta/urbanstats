@@ -8,7 +8,10 @@ dist
 *Copy1.ipynb*
 .DS_Store
 react/test/density-db
+react/dev-server.log
 venv/
 .envrc
 densitydb-site-repo/
 cache
+.coverage
+coverage.xml

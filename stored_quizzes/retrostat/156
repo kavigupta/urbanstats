@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2012 Presidential Election",
+      "stat_path": "2012 Presidential Election-margin",
+      "question": "!FULL Which voted more for Obama in the 2012 presidential election?",
+      "longname_a": "York County, South Carolina, USA",
+      "longname_b": "Duval County, Florida, USA",
+      "stat_a": -0.2050931304693222,
+      "stat_b": -0.036181509494781494
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km)",
+      "stat_path": "ad_1",
+      "question": "higher population-weighted density (r=1km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Rockford MSA, IL, USA",
+      "longname_b": "Kennewick-Richland MSA, WA, USA",
+      "stat_a": 956.5282592773438,
+      "stat_b": 1203.3563232421875
+    },
+    "a_ease": 0.6769109535066982,
+    "b_ease": 0.2580321285140562
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2019GE 2-Coalition Margin",
+      "stat_path": "2019GE-coalition_margin",
+      "question": "!FULL Which voted more for the left-of-center parties in the 2019 Canadian general election?!TOOLTIP By 2-Coalition Margin, which is calculated as (Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation.",
+      "longname_a": "Calgary City, Division No. 6, Alberta, Canada",
+      "longname_b": "London City, Middlesex County, Ontario, Canada",
+      "stat_a": -0.36198875308036804,
+      "stat_b": 0.4291824400424957
+    },
+    "b": {
+      "stat_column": "Employed in Management of companies and enterprises %",
+      "stat_path": "industry_management_of_companies_and_enterprises",
+      "question": "higher % of workers employed in the management industry!TOOLTIP management of companies and enterprises",
+      "longname_a": "Oxnard-San Buenaventura (Ventura) [Urban Area], CA, USA",
+      "longname_b": "Concord [Urban Area], NC, USA",
+      "stat_a": 0.0007009966066107154,
+      "stat_b": 0.0025149721186608076
+    },
+    "a_ease": 0.7761044176706827,
+    "b_ease": 0.3614457831325301
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population",
+      "stat_path": "population",
+      "question": "higher population",
+      "longname_a": "Hong Kong Urban Center, China",
+      "longname_b": "S\u00e3o Paulo Urban Center, Brazil",
+      "stat_a": 5891275.5,
+      "stat_b": 19126586.0
+    },
+    "b": {
+      "stat_column": "Independent living disability %",
+      "stat_path": "INDEPLIVE_cdc_2",
+      "question": "higher % of adults with an independent living disability",
+      "longname_a": "Jacksonville [Urban Area], FL, USA",
+      "longname_b": "Honolulu [Urban Area], HI, USA",
+      "stat_a": 0.08501597493886948,
+      "stat_b": 0.053022004663944244
+    },
+    "a_ease": 0.4226961157654227,
+    "b_ease": 0.8242710795902285
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Citizen by Naturalization %",
+      "stat_path": "citizenship_citizen_by_naturalization",
+      "question": "higher % of residents who are citizens by naturalization",
+      "longname_a": "Alaska, USA",
+      "longname_b": "New Jersey, USA",
+      "stat_a": 0.04728775843977928,
+      "stat_b": 0.1313474327325821
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km)",
+      "stat_path": "ad_4",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Sulawesi Tenggara, Indonesia",
+      "longname_b": "Wakiso, Uganda",
+      "stat_a": 906.139892578125,
+      "stat_b": 4664.62939453125
+    },
+    "a_ease": 0.8469635627530364,
+    "b_ease": 0.39457831325301207
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Households With 1+ Vehicles %",
+      "stat_path": "vehicle_ownership_at_least_1",
+      "question": "higher % of households with at least 1 vehicle",
+      "longname_a": "Jersey City city, New Jersey, USA",
+      "longname_b": "Toledo city, Ohio, USA",
+      "stat_a": 0.6148771047592163,
+      "stat_b": 0.874962568283081
+    },
+    "b": {
+      "stat_column": "PW Household Size",
+      "stat_path": "household_size_pw",
+      "question": "higher average population weighted household size!TOOLTIP The average household size a person is in; i.e., the average over all people of the number of people in their household. This is population-weighted, meaning that if there is one household of 3 and three households of 1, the average household size is 2, not 1.5.",
+      "longname_a": "AL-01 (2025), USA",
+      "longname_b": "CA-31 (2023), USA",
+      "stat_a": 3.134007692337036,
+      "stat_b": 4.143893718719482
+    },
+    "a_ease": 0.8948971820258949,
+    "b_ease": 0.47754137115839246
+  }
+]

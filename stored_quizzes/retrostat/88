@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Private Insurance %",
+      "stat_path": "insurance_coverage_private",
+      "question": "higher % of people who are on private insurance",
+      "longname_a": "CA-52 (2023), USA",
+      "longname_b": "RI-01 (2023), USA",
+      "stat_a": 0.6046223170519308,
+      "stat_b": 0.6917344946070425
+    },
+    "b": {
+      "stat_column": "Commute Bike %",
+      "stat_path": "transportation_means_bike",
+      "question": "higher % of people who commute by bike",
+      "longname_a": "TX-16 (2023), USA",
+      "longname_b": "AZ-07 (2023), USA",
+      "stat_a": 0.002646233877289426,
+      "stat_b": 0.01552936782186877
+    },
+    "a_ease": 0.7116104868913857,
+    "b_ease": 0.2731023102310231
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad %",
+      "stat_path": "education_ugrad",
+      "question": "higher % of people who have at least an undergrad degree",
+      "longname_a": "Duval County, Florida, USA",
+      "longname_b": "Fulton County, Georgia, USA",
+      "stat_a": 0.3022220345352581,
+      "stat_b": 0.5474666319196556
+    },
+    "b": {
+      "stat_column": "Rent/Income > 40%",
+      "stat_path": "rent_burden_over_40",
+      "question": "higher % of people whose rent is greater than 40% of their income",
+      "longname_a": "Charleston [Urban Area], SC, USA",
+      "longname_b": "Dallas-Fort Worth-Arlington [Urban Area], TX, USA",
+      "stat_a": 0.3576763156739673,
+      "stat_b": 0.31045395650590624
+    },
+    "a_ease": 0.7625754527162978,
+    "b_ease": 0.3230035756853397
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km)",
+      "stat_path": "ad_1",
+      "question": "higher population-weighted density (r=1km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Kansas, USA",
+      "longname_b": "Manitoba, Canada",
+      "stat_a": 878.8019412015335,
+      "stat_b": 1840.3455740230968
+    },
+    "b": {
+      "stat_column": "Undergrad Humanities %",
+      "stat_path": "education_field_humanities",
+      "question": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
+      "longname_a": "New Orleans LA Media Market, USA",
+      "longname_b": "Madison WI Media Market, USA",
+      "stat_a": 0.10223724085445259,
+      "stat_b": 0.13227159344684336
+    },
+    "a_ease": 0.2421818181818182,
+    "b_ease": 0.712234706616729
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Office and administrative support occupations %",
+      "stat_path": "occupation_office_and_administrative_support_occupations",
+      "question": "higher % of workers employed as office and administrative support workers!TOOLTIP secretaries, receptionists, data entry clerks, office clerks, mail carriers, shipping clerks, etc.",
+      "longname_a": "San Francisco-Oakland-Hayward MSA, CA, USA",
+      "longname_b": "Eugene MSA, OR, USA",
+      "stat_a": 0.09207326270190272,
+      "stat_b": 0.11260641451600235
+    },
+    "b": {
+      "stat_column": "2BR Rent < $750 %",
+      "stat_path": "rent_2br_under_750",
+      "question": "higher % of units with 2br rent under $750",
+      "longname_a": "Madison WI Media Market, USA",
+      "longname_b": "Knoxville TN Media Market, USA",
+      "stat_a": 0.13161728994657446,
+      "stat_b": 0.394385412988348
+    },
+    "a_ease": 0.20083184789067143,
+    "b_ease": 0.6203814064362336
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Computer and mathematical occupations %",
+      "stat_path": "occupation_computer_and_mathematical_occupations",
+      "question": "higher % of workers employed in computer and mathematical occupations!TOOLTIP software developers, software QA engineers, system administrators, actuaries, operations researchers",
+      "longname_a": "Fresno County, California, USA",
+      "longname_b": "Virginia Beach city-County, Virginia, USA",
+      "stat_a": 0.015218839990473198,
+      "stat_b": 0.044527304580738995
+    },
+    "b": {
+      "stat_column": "% units built pre-1970",
+      "stat_path": "year_built_1969_or_earlier",
+      "question": "higher % of housing units built before 1970",
+      "longname_a": "Nashville Urban Center, USA",
+      "longname_b": "Syracuse Urban Center, USA",
+      "stat_a": 0.38180599720302527,
+      "stat_b": 0.7425334901204325
+    },
+    "a_ease": 0.41760299625468167,
+    "b_ease": 0.8308580858085809
+  }
+]
