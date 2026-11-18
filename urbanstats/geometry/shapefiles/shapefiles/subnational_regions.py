@@ -67,11 +67,17 @@ class SubnationalIso(RowFunction):
         return row.ISO_CC + "-" + row.ISO_SUB if row.ISO_SUB is not None else None
 
 
+def fix_name(extractor):
+    return extractor.replace("Pointe\u2010Noire", "Pointe-Noire").replace(
+        "Dar\u0670\u0101", "Dar\u2018\u0101"
+    )
+
+
 SUBNATIONAL_REGIONS = make_shapefile(
     geometry_key="subnational_regions_15",
     path=subnational_regions,
-    shortname_extractor=column("NAME"),
-    longname_extractor=column("fullname"),
+    shortname_extractor=fix_name(column("NAME")),
+    longname_extractor=fix_name(column("fullname")),
     filter=lambda x: x.COUNTRY is not None,
     additional_columns_computer={
         "geoid": SubnationalGeoid(),

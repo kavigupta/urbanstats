@@ -113,9 +113,13 @@ CANADIAN_CENSUS_SUBDIVISIONS = make_shapefile(
         CANADIAN_CENSUS_DIVISIONS.names,
         CANADIAN_CENSUS_DIVISIONS.identified,
     ),
-    shortname_extractor=CensusDivisionName("CSDNAME", "CSDTYPE", cdtype),
-    cleanname_extractor=(column("CSDNAME")).replace("  ", " "),
-    longname_extractor=CensusDivisionName("CSDNAME", "CSDTYPE", cdtype)
+    shortname_extractor=CensusDivisionName("CSDNAME", "CSDTYPE", cdtype).replace(
+        "\x92", "'"
+    ),
+    cleanname_extractor=column("CSDNAME").replace("  ", " ").replace("\x92", "'"),
+    longname_extractor=CensusDivisionName("CSDNAME", "CSDTYPE", cdtype).replace(
+        "\x92", "'"
+    )
     + ", "
     + column("division_longname"),
     additional_columns_computer={"scgc": column("CSDUID")},

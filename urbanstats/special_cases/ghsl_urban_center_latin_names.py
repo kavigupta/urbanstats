@@ -210,4 +210,8 @@ LATIN_NAMES = {
     "龙港市": "Longgang",
     "龙田镇": "Longtian",
     "Charter\u00a0Township of Ypsilanti": "Ypsilanti",
+    "Marsa Matruh\u200e": "Marsa Matruh",
+    "Al-Zaqaziq\u200e": "Al-Zaqaziq",
+    "Abu Kabir\u200e": "Abu Kabir",
+    "\u200eJiaolin": "Jiaolin",
 }
