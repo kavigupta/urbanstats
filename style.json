@@ -6200,24 +6200,41 @@
       "filter": [
         "all",
         [
-          "match",
+          "all",
           [
-            "geometry-type"
+            "match",
+            [
+              "geometry-type"
+            ],
+            [
+              "MultiPoint",
+              "Point"
+            ],
+            true,
+            false
           ],
           [
-            "MultiPoint",
-            "Point"
-          ],
-          true,
-          false
+            ">=",
+            [
+              "get",
+              "rank"
+            ],
+            20
+          ]
         ],
         [
-          ">=",
+          "match",
           [
             "get",
-            "rank"
+            "class"
           ],
-          20
+          [
+            "railway",
+            "bus",
+            "ferry_terminal"
+          ],
+          false,
+          true
         ]
       ],
       "layout": {
@@ -6297,32 +6314,49 @@
       "filter": [
         "all",
         [
+          "all",
+          [
+            "match",
+            [
+              "geometry-type"
+            ],
+            [
+              "MultiPoint",
+              "Point"
+            ],
+            true,
+            false
+          ],
+          [
+            ">=",
+            [
+              "get",
+              "rank"
+            ],
+            7
+          ],
+          [
+            "<",
+            [
+              "get",
+              "rank"
+            ],
+            20
+          ]
+        ],
+        [
           "match",
           [
-            "geometry-type"
-          ],
-          [
-            "MultiPoint",
-            "Point"
-          ],
-          true,
-          false
-        ],
-        [
-          ">=",
-          [
             "get",
-            "rank"
+            "class"
           ],
-          7
-        ],
-        [
-          "<",
           [
-            "get",
-            "rank"
+            "railway",
+            "bus",
+            "ferry_terminal"
           ],
-          20
+          false,
+          true
         ]
       ],
       "layout": {
@@ -6402,32 +6436,49 @@
       "filter": [
         "all",
         [
+          "all",
+          [
+            "match",
+            [
+              "geometry-type"
+            ],
+            [
+              "MultiPoint",
+              "Point"
+            ],
+            true,
+            false
+          ],
+          [
+            ">=",
+            [
+              "get",
+              "rank"
+            ],
+            1
+          ],
+          [
+            "<",
+            [
+              "get",
+              "rank"
+            ],
+            7
+          ]
+        ],
+        [
           "match",
           [
-            "geometry-type"
-          ],
-          [
-            "MultiPoint",
-            "Point"
-          ],
-          true,
-          false
-        ],
-        [
-          ">=",
-          [
             "get",
-            "rank"
+            "class"
           ],
-          1
-        ],
-        [
-          "<",
           [
-            "get",
-            "rank"
+            "railway",
+            "bus",
+            "ferry_terminal"
           ],
-          7
+          false,
+          true
         ]
       ],
       "layout": {
@@ -6512,8 +6563,8 @@
         "bus"
       ],
       "layout": {
-        "icon-image": "bus_11",
-        "icon-size": 0.7,
+        "icon-image": "urbanstats:bus",
+        "icon-size": 0.85,
         "text-anchor": "left",
         "text-field": [
           "case",
@@ -6550,7 +6601,7 @@
         ],
         "text-max-width": 9,
         "text-offset": [
-          0.8,
+          1.1,
           0
         ],
         "text-size": 11
@@ -7464,20 +7515,35 @@
         ],
         [
           "airport",
-          "railway"
+          "railway",
+          "ferry_terminal"
         ],
         true,
         false
       ],
       "layout": {
         "icon-image": [
-          "to-string",
+          "match",
           [
             "get",
             "class"
-          ]
+          ],
+          "railway",
+          "urbanstats:train",
+          "ferry_terminal",
+          "urbanstats:ferry",
+          "airport"
         ],
-        "icon-size": 0.9,
+        "icon-size": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          "airport",
+          0.9,
+          0.85
+        ],
         "text-anchor": "left",
         "text-field": [
           "case",

@@ -1,5 +1,7 @@
 import json
 import os
+import subprocess
+import tempfile
 
 import numpy as np
 from PIL import Image
@@ -451,17 +453,44 @@ bus["id"] = "poi_bus"
 bus["filter"] = ["==", ["get", "class"], "bus"]
 bus["minzoom"] = 16
 bus["layout"].update(
-    {"icon-image": "bus_11", "icon-size": 0.7, "text-size": 11, "text-offset": [0.8, 0]}
-)
-transit["filter"] = ["match", ["get", "class"], ["airport", "railway"], True, False]
-# the large train icon for every station, subway included
-transit["layout"].update(
     {
-        "icon-image": ["to-string", ["get", "class"]],
-        "icon-size": 0.9,
+        "icon-image": "urbanstats:bus",
+        "icon-size": 0.85,
+        "text-size": 11,
         "text-offset": [1.1, 0],
     }
 )
+transit["filter"] = [
+    "match",
+    ["get", "class"],
+    ["airport", "railway", "ferry_terminal"],
+    True,
+    False,
+]
+# the train icon for every station, subway included
+transit["layout"].update(
+    {
+        "icon-image": [
+            "match",
+            ["get", "class"],
+            "railway",
+            "urbanstats:train",
+            "ferry_terminal",
+            "urbanstats:ferry",
+            "airport",
+        ],
+        "icon-size": ["match", ["get", "class"], "airport", 0.9, 0.85],
+        "text-offset": [1.1, 0],
+    }
+)
+TRANSIT_CLASSES = ["railway", "bus", "ferry_terminal"]
+for layer in result["layers"]:
+    if layer["id"] in ("poi_r1", "poi_r7", "poi_r20"):
+        layer["filter"] = [
+            "all",
+            layer["filter"],
+            ["match", ["get", "class"], TRANSIT_CLASSES, False, True],
+        ]
 result["layers"].insert(result["layers"].index(transit), bus)
 # after road labels and neighborhood names, which hid e.g. Kendall/MIT under the MIT label, but before towns and
 # cities; the icon still shows when the name doesn't fit
@@ -518,7 +547,7 @@ def write_sprite(path, images):
     for pixel_ratio, suffix in ((1, ""), (2, "@2x")):
         tiles = {name: make(pixel_ratio) for name, make in images.items()}
         sheet = Image.new(
-            "RGB",
+            "RGBA",
             (
                 sum(t.width for t in tiles.values()),
                 max(t.height for t in tiles.values()),
@@ -540,6 +569,31 @@ def write_sprite(path, images):
             json.dump(index, f)
 
 
+ICON_PIXELS = 20
+
+
+def svg_icon(path, pixel_ratio):
+    """The SVG at `path` as an ICON_PIXELS square at 1x."""
+    with tempfile.TemporaryDirectory() as directory:
+        png = os.path.join(directory, "icon.png")
+        size = str(ICON_PIXELS * pixel_ratio)
+        subprocess.run(
+            [
+                "inkscape",
+                path,
+                "--export-type=png",
+                f"--export-filename={png}",
+                "-w",
+                size,
+                "-h",
+                size,
+            ],
+            check=True,
+            capture_output=True,
+        )
+        return Image.open(png).convert("RGBA")
+
+
 def hex_rgb(color):
     return tuple(int(color[i : i + 2], 16) for i in (1, 3, 5))
 
@@ -548,9 +602,17 @@ DRY_GRASS = ["scrub", "heath"]
 grass = next(layer for layer in result["layers"] if layer["id"] == "landcover-grass")
 scrub = json.loads(json.dumps(grass))
 scrub["id"] = "landcover-scrub"
-scrub["filter"] = ["all", grass["filter"], ["match", ["get", "subclass"], DRY_GRASS, True, False]]
+scrub["filter"] = [
+    "all",
+    grass["filter"],
+    ["match", ["get", "subclass"], DRY_GRASS, True, False],
+]
 scrub["paint"]["fill-pattern"] = "urbanstats:scrub"
-grass["filter"] = ["all", grass["filter"], ["match", ["get", "subclass"], DRY_GRASS, False, True]]
+grass["filter"] = [
+    "all",
+    grass["filter"],
+    ["match", ["get", "subclass"], DRY_GRASS, False, True],
+]
 result["layers"].insert(result["layers"].index(grass) + 1, scrub)
 
 # the park layer is every kind of protected area, from parks to reservations (classed nature_reserve, like
@@ -599,7 +661,15 @@ write_sprite(
         )
         for name, coverage in (("grass", 0.35), ("park", 0.55), ("wood", 0.75))
     }
-    | {"scrub": lambda ratio: mottled(hex_rgb(SCRUB_LIGHT), hex_rgb(SCRUB_DARK), 0.45, ratio)},
+    | {
+        "scrub": lambda ratio: mottled(
+            hex_rgb(SCRUB_LIGHT), hex_rgb(SCRUB_DARK), 0.45, ratio
+        )
+    }
+    | {
+        name: lambda ratio, name=name: svg_icon(f"map_icons/{name}.svg", ratio)
+        for name in ("train", "bus", "ferry")
+    },
 )
 result["sprite"] = [
     {"id": "default", "url": result["sprite"]},

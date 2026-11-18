@@ -67,8 +67,13 @@
             }
 
             // MapLibre requires sprite URLs to be absolute, and checks before transformRequest
-            const style = await (await fetch('/style.json')).json()
-            style.sprite = style.sprite.map(sprite => ({ ...sprite, url: new URL(sprite.url, location.href).href }))
+            const style = await (await fetch('/style.json', { cache: 'no-store' })).json()
+            // the query defeats the browser cache, which a hard refresh doesn't clear for MapLibre's own requests
+            const version = `?v=${Date.now()}`
+            style.sprite = style.sprite.map(sprite => ({
+                ...sprite,
+                url: new URL(sprite.url, location.href).href + (sprite.id === 'urbanstats' ? version : ''),
+            }))
 
             const map = new maplibregl.Map({
                 style,
