@@ -1,6 +1,10 @@
 // Builds MapLibre glyphs for Jost, for the ranges Jost covers, with Noto filling in characters Jost lacks.
 // Other ranges are left to OpenFreeMap's Noto glyphs, see transformRequest in temp.html.
+// Needs fontnik (npm) and fontTools (python), which cuts fixed weights out of the variable font.
+const { execFileSync } = require('child_process')
 const fs = require('fs')
+const os = require('os')
+const path = require('path')
 const { promisify } = require('util')
 const fontnik = require('fontnik')
 
@@ -8,16 +12,25 @@ const load = promisify(fontnik.load)
 const range = promisify(fontnik.range)
 const composite = promisify(fontnik.composite)
 
+const fontDir = '../population_density/react/src/fonts'
+// name: [variable font, weight, Noto fallback]
 const fonts = {
-    'Jost Regular': ['../population_density/react/src/fonts/Jost-VariableFont_wght.ttf', 'Noto Sans Regular'],
-    'Jost Bold': ['../population_density/react/cf-og-worker/assets/Jost-600.ttf', 'Noto Sans Bold'],
-    'Jost Italic': ['../population_density/react/src/fonts/Jost-Italic-VariableFont_wght.ttf', 'Noto Sans Italic'],
+    'Jost Regular': ['Jost-VariableFont_wght.ttf', 400, 'Noto Sans Regular'],
+    'Jost Medium': ['Jost-VariableFont_wght.ttf', 500, 'Noto Sans Regular'],
+    'Jost Bold': ['Jost-VariableFont_wght.ttf', 700, 'Noto Sans Bold'],
+    'Jost Italic': ['Jost-Italic-VariableFont_wght.ttf', 400, 'Noto Sans Italic'],
+}
+
+function instance(file, weight) {
+    const out = path.join(os.tmpdir(), `${path.basename(file, '.ttf')}-${weight}.ttf`)
+    execFileSync('python', ['-m', 'fontTools.varLib.instancer', path.join(fontDir, file), `wght=${weight}`, '-o', out])
+    return fs.readFileSync(out)
 }
 
 async function main() {
     const starts = new Set()
-    for (const [name, [path, noto]] of Object.entries(fonts)) {
-        const font = fs.readFileSync(path)
+    for (const [name, [file, weight, noto]] of Object.entries(fonts)) {
+        const font = instance(file, weight)
         const [face] = await load(font)
         const fontStarts = [...new Set(face.points.map(p => p - (p % 256)))].sort((a, b) => a - b)
         fs.mkdirSync(`fonts/${name}`, { recursive: true })

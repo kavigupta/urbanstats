@@ -60,7 +60,8 @@
             const transformRequest = (url, resourceType) => {
                 const match = resourceType === 'Glyphs' && /\/fonts\/Jost%20(\w+)\/(\d+)-(\d+)\.pbf$/.exec(url)
                 if (match && !jostRanges.has(Number(match[2]))) {
-                    return { url: `https://tiles.openfreemap.org/fonts/Noto%20Sans%20${match[1]}/${match[2]}-${match[3]}.pbf` }
+                    const noto = { Regular: 'Regular', Medium: 'Regular', Bold: 'Bold', Italic: 'Italic' }[match[1]]
+                    return { url: `https://tiles.openfreemap.org/fonts/Noto%20Sans%20${noto}/${match[2]}-${match[3]}.pbf` }
                 }
                 return { url: new URL(url, location.href).href }
             }

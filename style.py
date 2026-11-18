@@ -21,7 +21,7 @@ PARK = mix(hue_colors["green"], PAPER, 0.4)
 WOOD = mix(hue_colors["green"], PAPER, 0.25)
 RED = hue_colors["red"]
 ORANGE = hue_colors["orange"]
-STREET = mix(hue_colors["grey"], PAPER, 0.55)
+STREET = mix(hue_colors["grey"], PAPER, 0.35)
 STREET_WIDTH = [12, 0.3, 14, 0.6, 16, 1.2, 20, 3]
 MEDIUM_ROAD = hue_colors["darkGrey"]
 MEDIUM_ROAD_WIDTH = [8, 0.3, 12, 0.6, 16, 1.4, 20, 3.5]
@@ -38,9 +38,18 @@ RAIL = hue_colors["grey"]
 AIRPORT = mix(hue_colors["purple"], PAPER, 0.7)
 INDUSTRIAL = mix(hue_colors["pink"], PAPER, 0.8)
 RUNWAY = mix(hue_colors["purple"], PAPER, 0.5)
-# light mode slightlyDifferentBackground
-BUILDING = "#f7f1e8"
 PATH = mix(hue_colors["grey"], PAPER, 0.3)
+
+# heavier type for more important places, as on print maps
+LABEL_FONTS = {
+    "label_country_1": "Jost Bold",
+    "label_country_2": "Jost Bold",
+    "label_country_3": "Jost Bold",
+    "label_city": "Jost Bold",
+    "label_city_capital": "Jost Bold",
+    "label_town": "Jost Medium",
+}
+
 
 def width(stops):
     return ["interpolate", ["exponential", 1.2], ["zoom"], *stops]
@@ -70,8 +79,19 @@ paints = {
     "road_area_pier": {"fill-color": PAPER},
     "road_pier": {"line-color": PAPER},
     "highway-area": {"fill-color": PAPER, "fill-outline-color": STREET},
-    "building": {"fill-color": BUILDING},
-    "building-top": {"fill-color": BUILDING, "fill-outline-color": mix(hue_colors["grey"], PAPER, 0.7)},
+    # paper colored, so blocks match the streets at every zoom; only the outlines fade in
+    "building": {
+        "fill-color": PAPER,
+        "fill-outline-color": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            14,
+            PAPER,
+            16,
+            mix(hue_colors["grey"], PAPER, 0.6),
+        ],
+    },
     "ferry": {"line-color": WATER_LABEL},
     "boundary_3": {"line-color": BORDER},
     "boundary_2": {"line-color": BORDER},
@@ -129,8 +149,13 @@ for layer in result["layers"]:
     if layer["type"] == "symbol" and "text-halo-color" in layer.get("paint", {}):
         paints.setdefault(ident, {"text-halo-color": PAPER})
 
-# footpaths, which include the sidewalks mapped along both sides of most streets
-result["layers"] = [layer for layer in result["layers"] if not layer["id"].endswith(("-path", "-path-casing"))]
+# footpaths, which include the sidewalks mapped along both sides of most streets, and the
+# raised building tops, which shade blocks differently as you zoom
+result["layers"] = [
+    layer
+    for layer in result["layers"]
+    if not layer["id"].endswith(("-path", "-path-casing")) and layer["id"] != "building-top"
+]
 
 for layer in result["layers"]:
     layer.setdefault("paint", {}).update(paints.get(layer["id"], {}))
@@ -138,7 +163,9 @@ for layer in result["layers"]:
     if layer["id"].startswith("railway-service"):
         layer["minzoom"] = 15
     if "text-font" in layer.get("layout", {}):
-        layer["layout"]["text-font"] = [f.replace("Noto Sans", "Jost") for f in layer["layout"]["text-font"]]
+        layer["layout"]["text-font"] = [
+            LABEL_FONTS.get(layer["id"], f.replace("Noto Sans", "Jost")) for f in layer["layout"]["text-font"]
+        ]
 
 # relative, so temp.html can resolve it against wherever it is served; see build_glyphs.js
 result["glyphs"] = "/fonts/{fontstack}/{range}.pbf"

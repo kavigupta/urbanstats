@@ -811,31 +811,8 @@
       "source-layer": "building",
       "paint": {
         "fill-antialias": true,
-        "fill-color": "#f7f1e8"
-      }
-    },
-    {
-      "id": "building-top",
-      "type": "fill",
-      "source": "openmaptiles",
-      "source-layer": "building",
-      "paint": {
-        "fill-color": "#f7f1e8",
-        "fill-opacity": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          13,
-          0,
-          16,
-          1
-        ],
-        "fill-outline-color": "#ddd8d3",
-        "fill-translate": [
+        "fill-color": "#fff8f0",
+        "fill-outline-color": [
           "interpolate",
           [
             "linear"
@@ -844,21 +821,9 @@
             "zoom"
           ],
           14,
-          [
-            "literal",
-            [
-              0,
-              0
-            ]
-          ],
+          "#fff8f0",
           16,
-          [
-            "literal",
-            [
-              -2,
-              -2
-            ]
-          ]
+          "#d2cec9"
         ]
       }
     },
@@ -1376,7 +1341,7 @@
         "line-join": "round"
       },
       "paint": {
-        "line-color": "#ccc8c4",
+        "line-color": "#b6b3b0",
         "line-width": [
           "interpolate",
           [
@@ -1502,7 +1467,7 @@
         "line-join": "round"
       },
       "paint": {
-        "line-color": "#ccc8c4",
+        "line-color": "#b6b3b0",
         "line-opacity": [
           "interpolate",
           [
@@ -2186,7 +2151,7 @@
         "fill-antialias": false,
         "fill-color": "#fff8f0",
         "fill-opacity": 0.9,
-        "fill-outline-color": "#ccc8c4"
+        "fill-outline-color": "#b6b3b0"
       }
     },
     {
@@ -2852,7 +2817,7 @@
         "line-join": "round"
       },
       "paint": {
-        "line-color": "#ccc8c4",
+        "line-color": "#b6b3b0",
         "line-opacity": [
           "interpolate",
           [
@@ -4097,7 +4062,7 @@
         "line-join": "round"
       },
       "paint": {
-        "line-color": "#ccc8c4",
+        "line-color": "#b6b3b0",
         "line-opacity": [
           "interpolate",
           [
@@ -6084,7 +6049,7 @@
           ]
         ],
         "text-font": [
-          "Jost Regular"
+          "Jost Medium"
         ],
         "text-max-width": 8,
         "text-size": [
@@ -6252,7 +6217,7 @@
           ]
         ],
         "text-font": [
-          "Jost Regular"
+          "Jost Bold"
         ],
         "text-max-width": 8,
         "text-offset": [
