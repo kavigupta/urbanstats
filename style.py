@@ -21,10 +21,13 @@ PARK = mix(hue_colors["green"], PAPER, 0.4)
 WOOD = mix(hue_colors["green"], PAPER, 0.25)
 RED = hue_colors["red"]
 ORANGE = hue_colors["orange"]
-STREET = mix(hue_colors["grey"], PAPER, 0.35)
-STREET_WIDTH = [12, 0.3, 14, 0.6, 16, 1.2, 20, 3]
+STREET = mix(hue_colors["grey"], PAPER, 0.45)
+# at least a pixel wide, since thinner lines are drawn as faint pixels that look jagged
+STREET_WIDTH = [12, 1.3, 15, 1.6, 17, 2.6, 20, 5]
 MEDIUM_ROAD = hue_colors["darkGrey"]
-MEDIUM_ROAD_WIDTH = [8, 0.3, 12, 0.6, 16, 1.4, 20, 3.5]
+MEDIUM_ROAD_WIDTH = [8, 1, 14, 1.2, 16, 1.4, 20, 3.5]
+# softens the hard pixel edges of thin lines, a bit like ink spreading into paper
+INK_BLUR = 0.4
 MAJOR_ROAD_WIDTH = [6, 0.5, 10, 1, 14, 2, 20, 5]
 # (kind, is casing): the casing is the red outline, the inner line the orange fill
 MOTORWAY_WIDTHS = {
@@ -33,7 +36,8 @@ MOTORWAY_WIDTHS = {
     ("motorway-link", True): [12, 0.6, 14, 1.5, 20, 5],
     ("motorway-link", False): [13, 0, 14, 0.6, 20, 3],
 }
-BORDER = hue_colors["yellow"]
+BORDER = hue_colors["darkGrey"]
+BORDER_HIGHLIGHT = hue_colors["orange"]
 RAIL = hue_colors["grey"]
 AIRPORT = mix(hue_colors["purple"], PAPER, 0.7)
 INDUSTRIAL = mix(hue_colors["pink"], PAPER, 0.8)
@@ -53,6 +57,19 @@ LABEL_FONTS = {
 
 WATER_LABEL_PAINT = {"text-color": WATER_LABEL, "text-halo-width": 0}
 LARGE_WATER = ["ocean", "sea", "bay", "strait"]
+
+
+def fade_in(color, stops):
+    """
+    `color` mixed toward the paper by the given fraction at each zoom. Fading by opacity instead leaves darker
+    dots where a road's segments overlap.
+    """
+    return [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        *[mix(color, PAPER, x) if i % 2 else x for i, x in enumerate(stops)],
+    ]
 
 
 def width(stops):
@@ -96,10 +113,6 @@ paints = {
             mix(hue_colors["grey"], PAPER, 0.6),
         ],
     },
-    "ferry": {"line-color": WATER_LABEL},
-    "boundary_3": {"line-color": BORDER},
-    "boundary_2": {"line-color": BORDER},
-    "boundary_disputed": {"line-color": BORDER},
     "waterway_line_label": WATER_LABEL_PAINT,
     "water_name_point_label": WATER_LABEL_PAINT,
     "water_name_line_label": WATER_LABEL_PAINT,
@@ -130,26 +143,34 @@ for layer in result["layers"]:
                 paints.setdefault(ident, {"line-opacity": 0})
                 continue
             if kind in ("secondary-tertiary", "link"):
-                paints.setdefault(ident, {"line-color": MEDIUM_ROAD, "line-width": width(MEDIUM_ROAD_WIDTH)})
+                paints.setdefault(
+                    ident,
+                    {
+                        "line-color": fade_in(MEDIUM_ROAD, [8, 0.7, 11, 0.4, 14, 0]),
+                        "line-width": width(MEDIUM_ROAD_WIDTH),
+                        "line-blur": INK_BLUR,
+                    },
+                )
             else:
                 paints.setdefault(
                     ident,
                     {
-                        "line-color": STREET,
+                        "line-color": fade_in(STREET, [12, 1, 14, 0]),
+                        "line-blur": INK_BLUR,
                         "line-width": width(STREET_WIDTH),
-                        "line-opacity": ["interpolate", ["linear"], ["zoom"], 12, 0, 14, 1],
                     },
                 )
             continue
         elif kind in ("path", "path-casing"):
             color = PATH
         elif kind.startswith("railway"):
-            color = RAIL
+            paints.setdefault(ident, {"line-color": RAIL, "line-blur": INK_BLUR})
+            continue
         else:
             continue
         paints.setdefault(ident, {"line-color": color})
     if ident.startswith("railway"):
-        paints[ident] = {"line-color": RAIL}
+        paints[ident] = {"line-color": RAIL, "line-blur": INK_BLUR}
     if layer["type"] == "symbol" and "text-halo-color" in layer.get("paint", {}):
         paints.setdefault(ident, {"text-halo-color": PAPER})
 
@@ -158,7 +179,7 @@ for layer in result["layers"]:
 result["layers"] = [
     layer
     for layer in result["layers"]
-    if not layer["id"].endswith(("-path", "-path-casing")) and layer["id"] != "building-top"
+    if not layer["id"].endswith(("-path", "-path-casing")) and layer["id"] not in ("building-top", "ferry")
 ]
 
 for layer in result["layers"]:
@@ -222,6 +243,52 @@ split[-1]["filter"] = ["all", other["filter"], ["match", ["get", "class"], split
 index = result["layers"].index(other)
 # later layers win label collisions, so boroughs go last
 result["layers"][index : index + 1] = split[::-1]
+
+
+
+def by_admin_level(country, state, county):
+    return ["match", ["get", "admin_level"], 2, country, [3, 4], state, county]
+
+
+def border_width(scale):
+    return [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        3,
+        by_admin_level(0.8 * scale, 0.5 * scale, 0.3 * scale),
+        8,
+        by_admin_level(1.6 * scale, 1.1 * scale, 0.6 * scale),
+        14,
+        by_admin_level(2.5 * scale, 1.8 * scale, 1.1 * scale),
+    ]
+
+
+boundaries = [layer for layer in result["layers"] if layer["id"].startswith("boundary")]
+for layer in boundaries:
+    layer["filter"] = [c for c in layer["filter"] if c != ["!=", ["get", "maritime"], 1]]
+    if layer["id"] == "boundary_2":
+        # maritime country borders with only one country next to them face international waters
+        layer["filter"].append(
+            ["any", ["!=", ["get", "maritime"], 1], ["all", ["has", "adm0_l"], ["has", "adm0_r"]]]
+        )
+    layer["paint"] = {"line-color": BORDER, "line-width": border_width(1), "line-dasharray": [6, 2, 1, 2]}
+
+# a wide band along borders, like the colored edging on old atlases; it sits under the
+# water fill so it only shows on land
+highlights = []
+for layer in boundaries:
+    highlight = json.loads(json.dumps(layer))
+    highlight["id"] = layer["id"] + "-highlight"
+    highlight["layout"] = {"line-join": "round", "line-cap": "round"}
+    highlight["paint"] = {
+        "line-color": BORDER_HIGHLIGHT,
+        "line-width": border_width(5),
+        "line-opacity": by_admin_level(0.35, 0.35, 0.2),
+    }
+    highlights.append(highlight)
+water = next(i for i, layer in enumerate(result["layers"]) if layer["id"] == "water")
+result["layers"][water:water] = highlights
 
 # relative, so temp.html can resolve it against wherever it is served; see build_glyphs.js
 result["glyphs"] = "/fonts/{fontstack}/{range}.pbf"
