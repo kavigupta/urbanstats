@@ -58,7 +58,7 @@
             // only the ranges Jost covers are served locally; the rest come from OpenFreeMap's Noto
             const jostRanges = new Set(await (await fetch('/fonts/ranges.json')).json())
             const transformRequest = (url, resourceType) => {
-                const match = resourceType === 'Glyphs' && /\/fonts\/Jost%20(\w+)\/(\d+)-(\d+)\.pbf$/.exec(url)
+                const match = resourceType === 'Glyphs' && /\/fonts\/Jost(?: |%20)(\w+)\/(\d+)-(\d+)\.pbf$/.exec(url)
                 if (match && !jostRanges.has(Number(match[2]))) {
                     const noto = { Regular: 'Regular', Medium: 'Regular', Bold: 'Bold', Italic: 'Italic' }[match[1]]
                     return { url: `https://tiles.openfreemap.org/fonts/Noto%20Sans%20${noto}/${match[2]}-${match[3]}.pbf` }

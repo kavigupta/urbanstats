@@ -1751,7 +1751,7 @@
         "line-join": "round"
       },
       "paint": {
-        "line-color": "#045258",
+        "line-color": "#023a3d",
         "line-dasharray": [
           2,
           2
@@ -4823,9 +4823,9 @@
         "text-size": 14
       },
       "paint": {
-        "text-color": "#045258",
-        "text-halo-color": "#77cacc",
-        "text-halo-width": 1.5
+        "text-color": "#023a3d",
+        "text-halo-color": "rgba(255,255,255,0.7)",
+        "text-halo-width": 0
       }
     },
     {
@@ -4890,15 +4890,43 @@
             "zoom"
           ],
           0,
-          10,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "ocean",
+              "sea",
+              "bay",
+              "strait"
+            ],
+            10,
+            9
+          ],
           8,
-          14
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "ocean",
+              "sea",
+              "bay",
+              "strait"
+            ],
+            14,
+            11
+          ]
         ]
       },
       "paint": {
-        "text-color": "#045258",
-        "text-halo-color": "#77cacc",
-        "text-halo-width": 1.5
+        "text-color": "#023a3d",
+        "text-halo-color": "rgba(255,255,255,0.7)",
+        "text-halo-width": 0
       }
     },
     {
@@ -4959,9 +4987,9 @@
         "text-size": 14
       },
       "paint": {
-        "text-color": "#045258",
-        "text-halo-color": "#77cacc",
-        "text-halo-width": 1.5
+        "text-color": "#023a3d",
+        "text-halo-color": "rgba(255,255,255,0.7)",
+        "text-halo-width": 0
       }
     },
     {
@@ -5826,27 +5854,239 @@
       }
     },
     {
-      "id": "label_other",
+      "id": "label_minor_place",
       "type": "symbol",
       "source": "openmaptiles",
       "source-layer": "place",
       "minzoom": 8,
       "filter": [
-        "match",
+        "all",
         [
-          "get",
-          "class"
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "city",
+            "continent",
+            "country",
+            "state",
+            "town",
+            "village"
+          ],
+          false,
+          true
         ],
         [
-          "city",
-          "continent",
-          "country",
-          "state",
-          "town",
-          "village"
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "suburb",
+            "borough",
+            "quarter",
+            "neighbourhood",
+            "island"
+          ],
+          false,
+          true
+        ]
+      ],
+      "layout": {
+        "text-field": [
+          "case",
+          [
+            "has",
+            "name:nonlatin"
+          ],
+          [
+            "concat",
+            [
+              "get",
+              "name:latin"
+            ],
+            "\n",
+            [
+              "get",
+              "name:nonlatin"
+            ]
+          ],
+          [
+            "coalesce",
+            [
+              "get",
+              "name_en"
+            ],
+            [
+              "get",
+              "name"
+            ]
+          ]
         ],
-        false,
-        true
+        "text-font": [
+          "Jost Regular"
+        ],
+        "text-letter-spacing": 0.1,
+        "text-max-width": 9,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          9,
+          12,
+          10
+        ],
+        "text-transform": "none"
+      },
+      "paint": {
+        "text-color": "#333",
+        "text-halo-blur": 1,
+        "text-halo-color": "#fff8f0",
+        "text-halo-width": 1
+      }
+    },
+    {
+      "id": "label_island",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "place",
+      "minzoom": 12,
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "city",
+            "continent",
+            "country",
+            "state",
+            "town",
+            "village"
+          ],
+          false,
+          true
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "island"
+          ],
+          true,
+          false
+        ]
+      ],
+      "layout": {
+        "text-field": [
+          "case",
+          [
+            "has",
+            "name:nonlatin"
+          ],
+          [
+            "concat",
+            [
+              "get",
+              "name:latin"
+            ],
+            "\n",
+            [
+              "get",
+              "name:nonlatin"
+            ]
+          ],
+          [
+            "coalesce",
+            [
+              "get",
+              "name_en"
+            ],
+            [
+              "get",
+              "name"
+            ]
+          ]
+        ],
+        "text-font": [
+          "Jost Italic"
+        ],
+        "text-letter-spacing": 0.1,
+        "text-max-width": 9,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          9,
+          12,
+          10
+        ],
+        "text-transform": "none"
+      },
+      "paint": {
+        "text-color": "#333",
+        "text-halo-blur": 1,
+        "text-halo-color": "#fff8f0",
+        "text-halo-width": 1
+      }
+    },
+    {
+      "id": "label_neighbourhood",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "place",
+      "minzoom": 8,
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "city",
+            "continent",
+            "country",
+            "state",
+            "town",
+            "village"
+          ],
+          false,
+          true
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "quarter",
+            "neighbourhood"
+          ],
+          true,
+          false
+        ]
       ],
       "layout": {
         "text-field": [
@@ -5901,6 +6141,105 @@
       },
       "paint": {
         "text-color": "#333",
+        "text-halo-blur": 1,
+        "text-halo-color": "#fff8f0",
+        "text-halo-width": 1
+      }
+    },
+    {
+      "id": "label_borough",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "place",
+      "minzoom": 8,
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "city",
+            "continent",
+            "country",
+            "state",
+            "town",
+            "village"
+          ],
+          false,
+          true
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "suburb",
+            "borough"
+          ],
+          true,
+          false
+        ]
+      ],
+      "layout": {
+        "text-field": [
+          "case",
+          [
+            "has",
+            "name:nonlatin"
+          ],
+          [
+            "concat",
+            [
+              "get",
+              "name:latin"
+            ],
+            "\n",
+            [
+              "get",
+              "name:nonlatin"
+            ]
+          ],
+          [
+            "coalesce",
+            [
+              "get",
+              "name_en"
+            ],
+            [
+              "get",
+              "name"
+            ]
+          ]
+        ],
+        "text-font": [
+          "Jost Medium"
+        ],
+        "text-letter-spacing": 0.3,
+        "text-max-width": 9,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          11,
+          13,
+          13,
+          16,
+          15
+        ],
+        "text-transform": "uppercase"
+      },
+      "paint": {
+        "text-color": "#000000",
         "text-halo-blur": 1,
         "text-halo-color": "#fff8f0",
         "text-halo-width": 1

@@ -16,7 +16,7 @@ def mix(color, other, fraction):
 # light mode background
 PAPER = "#fff8f0"
 WATER = mix(hue_colors["cyan"], PAPER, 0.45)
-WATER_LABEL = mix(hue_colors["cyan"], "#000000", 0.5)
+WATER_LABEL = mix(hue_colors["cyan"], "#000000", 0.65)
 PARK = mix(hue_colors["green"], PAPER, 0.4)
 WOOD = mix(hue_colors["green"], PAPER, 0.25)
 RED = hue_colors["red"]
@@ -49,6 +49,10 @@ LABEL_FONTS = {
     "label_city_capital": "Jost Bold",
     "label_town": "Jost Medium",
 }
+
+
+WATER_LABEL_PAINT = {"text-color": WATER_LABEL, "text-halo-width": 0}
+LARGE_WATER = ["ocean", "sea", "bay", "strait"]
 
 
 def width(stops):
@@ -96,9 +100,9 @@ paints = {
     "boundary_3": {"line-color": BORDER},
     "boundary_2": {"line-color": BORDER},
     "boundary_disputed": {"line-color": BORDER},
-    "waterway_line_label": {"text-color": WATER_LABEL, "text-halo-color": WATER},
-    "water_name_point_label": {"text-color": WATER_LABEL, "text-halo-color": WATER},
-    "water_name_line_label": {"text-color": WATER_LABEL, "text-halo-color": WATER},
+    "waterway_line_label": WATER_LABEL_PAINT,
+    "water_name_point_label": WATER_LABEL_PAINT,
+    "water_name_line_label": WATER_LABEL_PAINT,
 }
 
 for layer in result["layers"]:
@@ -162,10 +166,62 @@ for layer in result["layers"]:
     # yards and sidings
     if layer["id"].startswith("railway-service"):
         layer["minzoom"] = 15
+    if layer["id"] == "water_name_point_label":
+        # lakes and ponds, down to single fountains, are smaller than seas
+        layer["layout"]["text-size"] = [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            0,
+            ["match", ["get", "class"], LARGE_WATER, 10, 9],
+            8,
+            ["match", ["get", "class"], LARGE_WATER, 14, 11],
+        ]
     if "text-font" in layer.get("layout", {}):
         layer["layout"]["text-font"] = [
             LABEL_FONTS.get(layer["id"], f.replace("Noto Sans", "Jost")) for f in layer["layout"]["text-font"]
         ]
+
+
+
+def place_label(base, ident, classes, layout, minzoom=None):
+    """A copy of bright's catch-all place label, limited to `classes` (or to the rest, if None)."""
+    layer = json.loads(json.dumps(base))
+    layer["id"] = ident
+    if classes is not None:
+        layer["filter"] = ["all", base["filter"], ["match", ["get", "class"], classes, True, False]]
+    layer["layout"].update(layout)
+    if minzoom is not None:
+        layer["minzoom"] = minzoom
+    return layer
+
+
+# bright gives every place below a village the same small uppercase italic, from boroughs to hamlets
+other = next(layer for layer in result["layers"] if layer["id"] == "label_other")
+split_classes = ["suburb", "borough", "quarter", "neighbourhood", "island"]
+split = [
+    place_label(
+        other,
+        "label_borough",
+        ["suburb", "borough"],
+        {
+            "text-font": ["Jost Medium"],
+            "text-letter-spacing": 0.3,
+            # suburb is NYC's boroughs but also ordinary neighborhoods in e.g. Boston and London, so
+            # these stay below city labels
+            "text-size": ["interpolate", ["linear"], ["zoom"], 10, 11, 13, 13, 16, 15],
+        },
+    ),
+    place_label(other, "label_neighbourhood", ["quarter", "neighbourhood"], {}),
+    # boroughs and counties often share their island's name, and cover it at low zoom
+    place_label(other, "label_island", ["island"], {"text-transform": "none"}, minzoom=12),
+    place_label(other, "label_minor_place", None, {"text-font": ["Jost Regular"], "text-transform": "none"}),
+]
+split[0]["paint"]["text-color"] = "#000000"
+split[-1]["filter"] = ["all", other["filter"], ["match", ["get", "class"], split_classes, False, True]]
+index = result["layers"].index(other)
+# later layers win label collisions, so boroughs go last
+result["layers"][index : index + 1] = split[::-1]
 
 # relative, so temp.html can resolve it against wherever it is served; see build_glyphs.js
 result["glyphs"] = "/fonts/{fontstack}/{range}.pbf"
