@@ -169,6 +169,8 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
                     todaysQuiz={pageData.quiz}
                 />
             )
+        case 'quizArchive':
+            return <pageData.archivePanel highlight={pageData.highlight} />
         case 'syau':
             return <pageData.syauPanel typ={pageData.typ} universe={pageData.universe} counts={pageData.counts} syauData={pageData.syauData} />
         case 'mapper':

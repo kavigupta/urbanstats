@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
-import { loadPageDescriptor, PageData, PageDescriptor } from '../navigation/PageDescriptor'
+import { loadPageDescriptor, PageData, QuizPageDescriptor } from '../navigation/PageDescriptor'
 import { LongLoad } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { Settings } from '../page_template/settings'
@@ -120,6 +120,9 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
         const history = todaysQuizHistory
         const idx = history.correct_pattern.length
         const question = questions[idx]
+        if ('archive' in props.quizDescriptor && props.quizDescriptor.archive) {
+            history.archive = true
+        }
         history.choices.push(selected)
         history.correct_pattern.push((selected === 'A') === aCorrect(question))
         setTodaysQuizHistory(history)
@@ -197,7 +200,25 @@ export function JuxtastatInfiniteButton(): ReactNode {
         </a>
     )
 }
-type QuizPageDescriptor = Extract<PageDescriptor, { kind: 'quiz' }>
+
+export function ArchiveButton({ quizName }: { quizName: QuizDescriptor['name'] }): ReactNode {
+    const colors = useColors()
+    const navContext = useContext(Navigator.Context)
+
+    return (
+        <a
+            style={{
+                ...buttonStyle(colors.hueColors.blue, colors.buttonTextWhite),
+                width: '30%',
+                textDecoration: 'none',
+            }}
+            {...navContext.link({ kind: 'quiz', mode: 'archive', date: quizName.toString() }, { scroll: { kind: 'none' } })}
+        >
+            Archive
+        </a>
+    )
+}
+
 interface TodoQuiz {
     pageData: Extract<PageData, {
         kind: 'quiz'
