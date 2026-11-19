@@ -27,7 +27,7 @@ Only comment on things that are actually problematic. No praise-only comments, n
 - **Memory leaks in React**: event listeners or subscriptions added without cleanup, growing arrays stored in refs across re-renders, closures capturing stale large objects
 - **Unnecessary re-renders**: React components that receive new object/array references on every render as props, missing `useMemo`/`useCallback` for expensive computations passed to child components
 - **Missing loading/error states in UI**: new data fetches without corresponding loading spinners, skeleton screens, or error fallbacks — leaves users staring at blank content
-- **Accessibility regressions**: missing alt text on images, non-interactive elements given click handlers without keyboard support, broken tab order
+- **Accessibility regressions** that axe-core in the e2e tests can't see: non-interactive elements given click handlers without keyboard support, broken tab order, state shown only by colour, link or button text that is meaningless out of context (a bare number, "click here"), focus left at the top of the page after scrolling to a target, headings or lists built from plain `div`s
 - **Browser compatibility**: use of newer JS/CSS APIs (e.g., `structuredClone`, `container queries`, `:has()`) without checking if they're supported by the target browsers
 - **Map rendering issues**: changes to GeoJSON handling, layer ordering, or zoom-level thresholds that could cause visual glitches, missing regions, or overlapping labels on the map
 - **URL and routing breakage**: changes to URL structure or query parameters that would break existing bookmarks, shared links, or SEO — the site has publicly indexed pages
