@@ -1,15 +1,20 @@
 import os
-import pickle
 import tempfile
 import zipfile
+from dataclasses import dataclass
 
 import geopandas as gpd
 import numpy as np
 import pandas as pd
 
+from urbanstats.compatibility.compatibility import remapping_pickle
+from urbanstats.data.wikipedia.congressional_wikidata import (
+    CongressionalDistrictWikidataSourcer,
+)
 from urbanstats.geometry.districts import consistent_district_padding
-from urbanstats.geometry.shapefiles.shapefile import Shapefile
-from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
+from urbanstats.geometry.shapefiles.row_functions import RowFunction, column
+from urbanstats.geometry.shapefiles.shapefile import make_shapefile
+from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.geometry.temporal_stacking import collapse_unchanged
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
@@ -104,8 +109,77 @@ mid_district_redistricting_for_2025 = {
     ),
 }
 
+ca_leg = dict(
+    linkText="CA Assembly",
+    link="https://aelc.assembly.ca.gov/proposed-congressional-map",
+)
+
+ut_gov = dict(
+    linkText="UT UGRIC",
+    link="https://opendata.gis.utah.gov/datasets/utah-us-congress-districts-2026-to-2032/about",
+)
+
+tx_capitol = dict(
+    linkText="TX Capitol",
+    link="https://data.capitol.texas.gov/dataset/planc2333",
+)
+
+oh_sos_2 = dict(
+    linkText="OH Secretary of State",
+    link="https://www.ohiosos.gov/elections/district-maps#fed-congress-district-2026-2032",
+)
+
+tn_gov = dict(
+    linkText="TN GeoData",
+    link="https://geodata.tn.gov/datasets/tn-congressional-districts/explore?location=35.801050%2C-86.022500%2C7",
+)
+
+nc_leg_2 = dict(
+    linkText="NC Legislature",
+    link="https://www.ncleg.gov/Redistricting/C2025E",
+    text="Enacted 2025 (to be used for 2026 election)",
+)
+
+la_gov = dict(
+    linkText="LA Legislature",
+    link="https://redist.legis.la.gov/",
+    text="The relevant file is SB_121_Enrolled",
+)
+
+al_sos_2 = dict(
+    linkText="AL SOS",
+    link="https://www.sos.alabama.gov/alabama-votes/state-district-maps",
+)
+
+fl_sen = dict(
+    linkText="FL Senate",
+    link="https://www.flsenate.gov/Session/Redistricting/Congressional",
+)
+
+mid_district_redistricting_for_2027 = {
+    "cd118": dict(
+        states_and_sources={
+            "CA": ca_leg,
+            "UT": ut_gov,
+            "TX": tx_capitol,
+            "OH": oh_sos_2,
+            "TN": tn_gov,
+            "NC": nc_leg_2,
+            "LA": la_gov,
+            "AL": al_sos_2,
+            "FL": fl_sen,
+        },
+        prefix="named_region_shapefiles/redistricting/2027/CD-",
+    ),
+}
+
+all_redistricting = {
+    2025: mid_district_redistricting_for_2025,
+    2027: mid_district_redistricting_for_2027,
+}
+
 version_tag_by_file_name = {
-    "cd118": "_6",
+    "cd118": "_8",
     "sldl": "_6.1",
     "sldu": "_6.1",
 }
@@ -152,32 +226,43 @@ def load_districts_all_2020s(file_name, *, minimum_district_length):
         f"named_region_shapefiles/current_district_shapefiles/shapefiles/{file_name}.pkl",
         "rb",
     ) as f:
-        result = pickle.load(f)
+        result = remapping_pickle().Unpickler(f).load()
 
     result = result[["state", "district", "geometry"]].reset_index(drop=True)
 
     result["start_date"] = 2023
     result["end_date"] = 2032
 
-    redistricted = mid_district_redistricting_for_2025[file_name]
+    for year, redistricted in sorted(all_redistricting.items()):
+        if file_name in redistricted:
+            result = _handle_redistricting(redistricted[file_name], result, year)
 
+    result.district = consistent_district_padding(
+        result.state, result.district.apply(str), minimum_length=minimum_district_length
+    )
+    result = collapse_unchanged(result, identity_columns=("state", "district"))
+    return result
+
+
+def _handle_redistricting(redistricted, result, year_start):
     for state in redistricted["states_and_sources"]:
         for_state = read_shapefile(f"{redistricted['prefix']}{state}.zip").to_crs(
             "epsg:4326"
         )
         for_state["district"] = get_district_column(for_state)
         for_state["state"] = state
-        for_state["start_date"] = 2025
+        for_state["start_date"] = year_start
         for_state["end_date"] = 2032
-        [state_idxs] = np.where(result["state"] == state)
-        result.loc[state_idxs, "end_date"] = 2024
+        # only the ones that haven't already been redistricted
+        [state_idxs] = np.where(
+            (result["state"] == state) & (result["end_date"] == 2032)
+        )
+        result.loc[state_idxs, "end_date"] = year_start - 1
         result = result.copy()
         for_state = for_state[list(result)]
-        result = pd.concat([result, for_state]).reset_index(drop=True)
-    result.district = consistent_district_padding(
-        result.state, result.district.apply(str), minimum_length=minimum_district_length
-    )
-    result = collapse_unchanged(result, identity_columns=("state", "district"))
+        result = pd.concat(
+            [result.to_crs("epsg:4326"), for_state.to_crs("epsg:4326")]
+        ).reset_index(drop=True)
     return result
 
 
@@ -193,43 +278,38 @@ def load_shapefile(file_name, *, only_keep, minimum_district_length):
     raise ValueError(f"Unknown value for only_keep: {only_keep}")
 
 
-def deduplicate(for_state, existing):
-    districts_a = for_state.district.apply(
-        lambda x: int(x) if x.isnumeric() else x.lstrip("0")
-    )
-    districts_existing = existing.district.apply(
-        lambda x: int(x) if x.isnumeric() else x.lstrip("0")
-    )
-    keep_mask = []
-    existing_changed_idxs = []
-    for a in districts_a:
-        if a not in districts_existing:
-            keep_mask.append(True)
-            continue
-        [[idx_a]] = np.where(districts_a == a)
-        [[idx_existing]] = np.where(districts_existing == a)
-        geo_a = for_state.geometry.iloc[idx_a]
-        geo_existing = existing.geometry.iloc[idx_existing]
-        existing_changed_idxs.append(idx_existing)
-        # keep only if district is not a duplicate
-        keep_mask.append(
-            geo_a.intersection(geo_existing).area / min(geo_a.area, geo_existing.area)
-            < 1 - 0.00001
-        )
-    for_state = for_state[keep_mask]
-    return for_state, existing_changed_idxs
+@dataclass(frozen=True)
+class DistrictShortname(RowFunction):
+    district_abbrev: str
+    include_date: bool = True
+
+    def __call__(self, row):
+        district = row["district"]
+        if district == "" or district.isnumeric() and int(district) == 0:
+            district = "AL"
+        dist_name = f'{row["state"]}-{self.district_abbrev}{district}'
+        if self.include_date:
+            return f'{dist_name} ({row["start_date"]})'
+        return dist_name
 
 
-def get_shortname(district_abbrev, x, include_date=True):
-    district = x["district"]
-    if district == "" or district.isnumeric() and int(district) == 0:
-        district = "AL"
-    dist_name = f'{x["state"]}-{district_abbrev}{district}'
-    if include_date:
-        return f'{dist_name} ({x["start_date"]})'
-    return dist_name
+def data_credit_for_redistricting(file_name):
+    result = []
+    for year, redistricted in all_redistricting.items():
+        if file_name in redistricted:
+            for state, dc in sorted(
+                redistricted[file_name]["states_and_sources"].items()
+            ):
+                result.append(
+                    {
+                        **dc,
+                        "linkText": f"{state} redistricting (for {year-1} election): {dc['linkText']}",
+                    }
+                )
+    return result
 
 
+# pylint: disable-next=too-many-arguments
 def districts(
     file_name,
     district_type,
@@ -239,39 +319,39 @@ def districts(
     overrides=None,
     data_credit,
     minimum_district_length,
+    does_overlap_self,
+    special_data_sources=(),
+    wikidata_sourcer=None,
 ):
-    return Shapefile(
-        hash_key=f"current_districts_{file_name}"
+    return make_shapefile(
+        geometry_key=f"current_districts_{file_name}"
         + version_tag_by_file_name.get(file_name, ""),
         path=lambda: load_shapefile(
             file_name,
             only_keep="up-to-date",
             minimum_district_length=minimum_district_length,
         ),
-        shortname_extractor=lambda x: get_shortname(district_abbrev, x),
-        longname_extractor=lambda x: get_shortname(district_abbrev, x) + ", USA",
-        longname_sans_date_extractor=lambda x: get_shortname(
-            district_abbrev, x, include_date=False
+        shortname_extractor=DistrictShortname(district_abbrev),
+        cleanname_extractor=DistrictShortname(district_abbrev, include_date=False),
+        longname_extractor=DistrictShortname(district_abbrev) + ", USA",
+        longname_sans_date_extractor=DistrictShortname(
+            district_abbrev, include_date=False
         )
         + ", USA",
         meta=dict(type=district_type, source="Census", type_category="Political"),
         filter=lambda x: True,
+        does_overlap_self=does_overlap_self,
         universe_provider=us_domestic_provider(overrides),
-        subset_masks={"USA": SelfSubset()},
+        source_countries=InCountry("USA"),
+        special_data_sources=special_data_sources,
         abbreviation=abbreviation,
-        data_credit=[data_credit]
-        + [
-            {**dc, "linkText": f"{state} redistricting: {dc['linkText']}"}
-            for state, dc in sorted(
-                mid_district_redistricting_for_2025[file_name][
-                    "states_and_sources"
-                ].items()
-            )
-        ],
-        start_date=lambda x: x["start_date"],
-        end_date=lambda x: x["end_date"],
+        data_credit=[data_credit] + data_credit_for_redistricting(file_name),
+        start_date=column("start_date"),
+        end_date=column("end_date"),
         start_date_overall=2023,
         end_date_overall=2032,
+        include_in_syau=False,
+        wikidata_sourcer=wikidata_sourcer,
     )
 
 
@@ -285,6 +365,9 @@ CONGRESSIONAL_DISTRICTS = districts(
         link="https://www2.census.gov/geo/tiger/TIGER_RD18/LAYER/CD",
     ),
     minimum_district_length=2,
+    does_overlap_self=False,
+    special_data_sources=["congressional_representatives"],
+    wikidata_sourcer=CongressionalDistrictWikidataSourcer(),
 )
 
 district_shapefiles = dict(
@@ -305,6 +388,8 @@ district_shapefiles = dict(
             link="https://www2.census.gov/geo/tiger/TIGER2018/SLDL/",
         ),
         minimum_district_length=0,
+        does_overlap_self=False,
+        special_data_sources=["congressional_representatives_indirect"],
     ),
     state_senate=districts(
         "sldu",
@@ -317,5 +402,7 @@ district_shapefiles = dict(
             link="https://www2.census.gov/geo/tiger/TIGER2018/SLDU/",
         ),
         minimum_district_length=0,
+        does_overlap_self=False,
+        special_data_sources=["congressional_representatives_indirect"],
     ),
 )

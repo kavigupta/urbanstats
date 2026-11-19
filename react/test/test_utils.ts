@@ -1,10 +1,20 @@
 import fs from 'fs'
 import path from 'path'
+import { gzipSync } from 'zlib'
 
+import chalkTemplate from 'chalk-template'
+import type { Protocol } from 'devtools-protocol'
 import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
+import xmlFormat from 'xml-formatter'
 
-export const target = process.env.URBANSTATS_TEST_TARGET ?? 'http://localhost:8000'
+import { port } from '../port'
+import type { TestWindow } from '../src/utils/TestUtils'
+
+import { collapseAnimationMs, editCheckbox, editCheckboxPrefixes, withEditMode } from './edit_mode_test_utils'
+import { urlFromCode } from './mapper-utils'
+
+export const target = process.env.URBANSTATS_TEST_TARGET ?? `http://localhost:${port()}`
 export const searchField = Selector('input').withAttribute('placeholder', 'Search Urban Stats')
 export const getLocation = ClientFunction(() => document.location.href)
 export const getLocationWithoutSettings = ClientFunction(() => {
@@ -13,29 +23,39 @@ export const getLocationWithoutSettings = ClientFunction(() => {
     return url.toString()
 })
 
-export const isTesting = true
-
 export function comparisonPage(locations: string[]): string {
     const params = new URLSearchParams()
     params.set('longnames', JSON.stringify(locations))
     return `${target}/comparison.html?${params.toString()}`
 }
 
-export async function checkTextboxes(t: TestController, txts: string[]): Promise<void> {
-    await withHamburgerMenu(t, async () => {
-        for (const txt of txts) {
-            const checkbox = Selector('div.checkbox-setting:not([inert] *)')
-            // filter for label
-                .filter(node => node.querySelector('label')!.innerText === txt, { txt })
-            // find checkbox
-                .find('input')
+export async function checkTextboxesDirect(t: TestController, txts: string[], nth: number = 0): Promise<void> {
+    for (const txt of txts) {
+        const checkbox = Selector('div.checkbox-setting:not([inert] *)')
+        // filter for label
+            .filter(node => node.querySelector('label')!.innerText === txt, { txt })
+        // get nth
+            .nth(nth)
+        // find checkbox
+            .find('input')
+        // a click that lands while the panel is still moving misses, leaving the setting as it was
+        await flaky(t, async () => {
+            const wasChecked = await checkbox.checked
             await t.click(checkbox)
-        }
+            await t.expect(checkbox.checked).eql(!wasChecked, `Clicking ${txt} did not toggle it`)
+        })
+    }
+}
+/** For the checkboxes that are still in the sidebar: the settings, appearance and random ones. */
+export async function checkSidebarTextboxes(t: TestController, txts: string[]): Promise<void> {
+    await withHamburgerMenu(t, async () => {
+        await checkTextboxesDirect(t, txts)
     })
 }
 
+export const hamburgerMenu = Selector('div').withAttribute('class', 'hamburgermenu')
+
 export async function withHamburgerMenu(t: TestController, block: () => Promise<void>): Promise<void> {
-    const hamburgerMenu = Selector('div').withAttribute('class', 'hamburgermenu')
     if (await hamburgerMenu.exists) {
         await t.click(hamburgerMenu)
     }
@@ -45,7 +65,69 @@ export async function withHamburgerMenu(t: TestController, block: () => Promise<
     }
 }
 
+export function warningNamed(message: string, name: string): Selector {
+    return Selector('.for-testing-table-row')
+        .withText(message)
+        .find('[data-test-id=article-warning-name]')
+        .withExactText(name)
+}
+
+export async function warningRowNames(): Promise<string[]> {
+    const cells = await arrayFromSelector(Selector('[data-test-id=article-warning-name]'))
+    return Promise.all(cells.map(async cell => (await cell.innerText).trim()))
+}
+
+/**
+ * Categories, years and sources are always reachable on the edit tree; a group inside a
+ * collapsed category is not (see checkIndividualStat).
+ */
+export async function checkTextboxes(t: TestController, txts: string[]): Promise<void> {
+    await withEditMode(t, async () => {
+        for (const txt of txts) {
+            await t.click(editCheckbox(txt))
+        }
+    })
+}
+
+// individual (non-category) stat checkboxes -- e.g. "Mean high temp" within the "Weather"
+// category -- are nested inside their category's collapsible section and only become
+// interactable once the category itself is expanded.
+export async function checkIndividualStat(t: TestController, category: string, stat: string): Promise<void> {
+    await withEditMode(t, async () => {
+        await t.click(Selector(`[aria-label="Expand ${category} category"]`))
+        // wait for the open animation
+        await t.wait(collapseAnimationMs)
+        await t.click(editCheckbox(stat))
+    })
+}
+
+async function checkUncheckedStatBoxes(t: TestController): Promise<boolean> {
+    const { category, year, source } = editCheckboxPrefixes
+    let checkedAny = false
+    for (const prefix of [category, year, source]) {
+        for (const check of await arrayFromSelector(Selector(`input[data-test-id^="${prefix}"]`))) {
+            // Forced-on sources are disabled, and clicking a checked category would cycle it off.
+            if (!await check.checked && !await check.hasAttribute('disabled')) {
+                await t.click(check)
+                checkedAny = true
+            }
+        }
+    }
+    return checkedAny
+}
+
 export async function checkAllCategoryBoxes(t: TestController): Promise<void> {
+    await withEditMode(t, async () => {
+        // Enabling a category can reveal years and sources that only its statistics have,
+        // so keep passing over them until nothing is left unchecked.
+        for (let pass = 0; pass < 5; pass++) {
+            if (!await checkUncheckedStatBoxes(t)) {
+                break
+            }
+        }
+    })
+    // The appearance settings, which are still in the sidebar. The years and sources are there
+    // too, so this skips whatever the pass above already turned on rather than undoing it.
     await withHamburgerMenu(t, async () => {
         const checkboxes = Selector('div.checkbox-setting:not([inert] *)')
             .filter((node) => {
@@ -54,25 +136,16 @@ export async function checkAllCategoryBoxes(t: TestController): Promise<void> {
                     label !== 'Use Imperial Units'
                     && label !== 'Include Historical Districts'
                     && label !== 'Simple Ordinals'
-                    && label !== '2020'
-                    && label !== 'Main'
-                    && label !== 'US Census'
                 )
             }).find('input')
         for (let i = 0; i < await checkboxes.count; i++) {
-            await t.click(checkboxes.nth(i))
+            if (!await checkboxes.nth(i).checked) {
+                await t.click(checkboxes.nth(i))
+            }
         }
     })
     // reload
     await safeReload(t)
-}
-
-export async function waitForLoading(t: TestController): Promise<void> {
-    // Wait for various components that need to load
-    while (await Selector('[data-test-loading=true]').exists) {
-        await t.wait(1000)
-    }
-    await t.wait(1000) // Wait for map to finish rendering
 }
 
 export async function waitForQuizLoading(t: TestController): Promise<void> {
@@ -83,40 +156,54 @@ export async function waitForQuizLoading(t: TestController): Promise<void> {
     }
 }
 
-async function prepForImage(t: TestController, options: { hover: boolean, wait: boolean }): Promise<void> {
+export async function waitForLoading(): Promise<void> {
+    return ClientFunction(() => (window as unknown as TestWindow).testUtils.waitForLoading('test_utils'))()
+}
+
+export async function debugLog(): Promise<{ tab: string, text: string }[]> {
+    return ClientFunction(() => (window as unknown as TestWindow).testUtils.debugLog())()
+}
+
+export async function waitForMapsToRender(): Promise<void> {
+    return ClientFunction(() => (window as unknown as TestWindow).testUtils.waitForMapsToRender())()
+}
+
+async function prepForImage(t: TestController, options: { hover: boolean, removeEntireMap: boolean, resetPaneScroll: boolean }): Promise<void> {
     if (options.hover) {
-        await t.hover('#searchbox') // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
-    }
-    if (options.wait) {
-        await t.wait(1000)
+        await t.hover('body', { offsetX: 0, offsetY: 0 }) // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
     }
     await t.eval(() => {
-        // disable the map, so that we're not testing the tiles
-        for (const x of Array.from(document.getElementsByClassName('map-container-for-testing'))) {
-            if (x instanceof HTMLElement) {
-                x.style.visibility = 'hidden'
+        if (options.removeEntireMap) {
+            // disable the map, so that we're not testing the tiles
+            for (const x of document.getElementsByClassName('maplibregl-canvas-container')) {
+                if (x instanceof HTMLElement) {
+                    x.style.visibility = 'hidden'
+                }
             }
         }
-        const currentVersion = document.getElementById('current-version')
-        if (currentVersion !== null) {
-            currentVersion.innerHTML = '&lt;VERSION&gt;'
+        else {
+            // disable the basemap layers, so that we're not testing the tiles
+            (window as unknown as TestWindow).testUtils.disableBasemapLayers()
         }
-        const lastUpdated = document.getElementById('last-updated')
-        if (lastUpdated !== null) {
-            lastUpdated.innerHTML = '&lt;LAST UPDATED&gt;'
-        }
-        for (const x of Array.from(document.getElementsByClassName('juxtastat-user-id'))) {
+
+        for (const x of document.getElementsByClassName('juxtastat-user-id')) {
             x.innerHTML = '&lt;USER ID&gt;'
         }
 
         // remove the flashing text caret
-        document.querySelectorAll('input[type=text]').forEach((element) => { element.setAttribute('style', `${element.getAttribute('style')} caret-color: transparent;`) })
+        document.querySelectorAll('input[type=text],textarea,[contenteditable]:not([contenteditable="false"])').forEach((element) => { element.setAttribute('style', `${element.getAttribute('style')} caret-color: transparent;`) })
 
         // stop all animations (intended for moving spinners)
         document.querySelectorAll('[style*=animation]').forEach((element) => { (element as HTMLElement).style.animation = 'none' })
-    })
-    // Wait for the map to finish loading
-    await waitForLoading(t)
+
+        // hide corners on some elements where having corners causes screenshot comparison flakes
+        document.querySelectorAll('[data-test-hide-corners]').forEach((element) => { (element as HTMLElement).style.borderRadius = '0px' })
+
+        // A pane that scrolls on its own would otherwise photograph wherever the last click left it
+        if (options.resetPaneScroll) {
+            document.querySelectorAll('[data-test=split-left]').forEach((pane) => { (pane as HTMLElement).scrollTop = 0 })
+        }
+    }, { dependencies: { options } })
 }
 
 let screenshotNumber = 0
@@ -126,61 +213,242 @@ function screenshotPath(t: TestController): string {
     return `${t.browser.name}/${t.test.name}-${screenshotNumber}.png`
 }
 
-export async function screencap(t: TestController, { fullPage = true, wait = true }: { fullPage?: boolean, wait?: boolean } = {}): Promise<void> {
-    await prepForImage(t, { hover: fullPage, wait })
-    return t.takeScreenshot({
-    // include the browser name in the screenshot path
-        path: screenshotPath(t),
-        fullPage,
-    })
+/** Scrolling panes start each screenshot at the top. `scrollPaneTo` scrolls a lower subject into view. */
+type ScreencapOptions = { wait?: boolean, fullPage?: boolean, removeEntireMap?: boolean, scrollPaneTo?: Selector } & ({ selector?: undefined } | ({ selector?: Selector } & TakeElementScreenshotOptions))
+
+export async function screencap(t: TestController, { fullPage = true, wait = true, selector, removeEntireMap = true, scrollPaneTo, ...options }: ScreencapOptions = {}): Promise<void> {
+    if (wait) {
+        await waitForLoading()
+    }
+    await prepForImage(t, { hover: fullPage, removeEntireMap, resetPaneScroll: selector === undefined })
+    if (!removeEntireMap) {
+        await waitForMapsToRender()
+    }
+    if (scrollPaneTo !== undefined) {
+        await t.scrollIntoView(scrollPaneTo)
+    }
+    if (selector !== undefined) {
+        await t.takeElementScreenshot(selector, screenshotPath(t), options)
+    }
+    else {
+        await t.takeScreenshot({
+            path: screenshotPath(t),
+            fullPage,
+        })
+    }
 }
 
-export async function grabDownload(t: TestController, button: Selector): Promise<void> {
-    await prepForImage(t, { hover: true, wait: true })
-    await t
-        .click(button)
-    await t.wait(3000)
-    copyMostRecentFile(t)
+export async function grabDownload(t: TestController, button: Selector, suffix: string): Promise<void> {
+    const laterThan = new Date().getTime()
+    await t.click(button)
+    await copyMostRecentFile(t, laterThan, suffix)
 }
 
 export async function downloadImage(t: TestController): Promise<void> {
-    const download = Selector('img').withAttribute('src', '/screenshot.png')
-    await grabDownload(t, download)
+    const download = Selector('button').withAttribute('aria-label', 'Take screenshot')
+    await grabDownload(t, download, '.png')
 }
 
 export async function downloadHistogram(t: TestController, nth: number): Promise<void> {
     const download = Selector('img').withAttribute('src', '/download.png').nth(nth)
-    await grabDownload(t, download)
+    await grabDownload(t, download, '.png')
 }
 
-export function mostRecentDownloadPath(): string {
+export async function downloadCSV(t: TestController): Promise<string> {
+    const laterThan = Date.now()
+    const csvButton = Selector('button').withAttribute('aria-label', 'Export as CSV')
+    await t.click(csvButton)
+
+    const downloadedFilePath = await waitForDownload(t, laterThan, '.csv')
+    const csvContent = fs.readFileSync(downloadedFilePath, 'utf-8')
+    return csvContent
+}
+
+function mostRecentDownload(suffix: string): { path: string, mtime: number } | undefined {
     // get the most recent file in the downloads folder
     const files = fs.readdirSync(downloadsFolder())
-    const sorted = files.map(x => path.join(downloadsFolder(), x)).sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)
-    return sorted[0]
+    const sorted = files
+        .filter(x => !x.startsWith('.') && !x.endsWith('.crdownload') && x.endsWith(suffix))
+        .map(x => path.join(downloadsFolder(), x))
+        .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)
+    if (sorted.length === 0) {
+        return undefined
+    }
+    const latest = sorted[0]
+    const mtime = fs.statSync(latest).mtimeMs
+    return { path: latest, mtime }
 }
 
-function copyMostRecentFile(t: TestController): void {
-    // copy the file to the screenshots folder
+export async function waitForDownload(t: TestController, laterThan: number, suffix: string): Promise<string> {
+    while (true) {
+        const download = mostRecentDownload(suffix)
+        if (download !== undefined && download.mtime > laterThan) {
+            return download.path
+        }
+        console.warn(chalkTemplate`{yellow No file found in downloads folder, waiting for download to complete}`)
+        // wait for the download to finish
+        await t.wait(100)
+    }
+}
+
+/** Puts a file the browser never wrote in front of the snapshot comparison. */
+function saveSnapshot(t: TestController, relativePath: string, contents: Buffer | string): void {
     // @ts-expect-error -- TestCafe doesn't have a public API for the screenshots folder
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- TestCafe doesn't have a public API for the screenshots folder
-    const screenshotsFolder: string = t.testRun.opts.screenshots.path ?? (() => { throw new Error() })()
-    fs.copyFileSync(mostRecentDownloadPath(), path.join(screenshotsFolder, screenshotPath(t)))
+    const snapshotsFolder: string = t.testRun.opts.screenshots.path ?? (() => { throw new Error() })()
+    const dest = path.join(snapshotsFolder, relativePath)
+    fs.mkdirSync(path.dirname(dest), { recursive: true })
+    fs.writeFileSync(dest, contents)
 }
 
-export async function downloadOrCheckString(t: TestController, string: string, name: string): Promise<void> {
-    const pathToFile = path.join(__dirname, '..', '..', 'tests', 'reference_strings', `${name}.txt`)
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- We might want to change this variable
-    if (isTesting) {
-        const expected = fs.readFileSync(pathToFile, 'utf8')
-        await t.expect(string).eql(expected)
+export function saveImage(t: TestController, image: Buffer): void {
+    saveSnapshot(t, screenshotPath(t), image)
+}
+
+async function copyMostRecentFile(t: TestController, laterThan: number, suffix: string): Promise<void> {
+    const mrdp = await waitForDownload(t, laterThan, suffix)
+    saveImage(t, fs.readFileSync(mrdp))
+}
+
+/** Compared against the reference of the same name by `checkSnapshots`. */
+export function saveString(t: TestController, string: string, name: string, format: 'json' | 'xml' | 'txt' | 'csv', gzip = true): void {
+    switch (format) {
+        case 'json':
+            string = JSON.stringify(JSON.parse(string), null, 2)
+            break
+        case 'xml':
+            string = xmlFormat(string)
+            break
+        case 'txt':
+        case 'csv':
+            break
     }
-    else {
-        fs.writeFileSync(pathToFile, string)
+
+    saveSnapshot(t, `${t.browser.name}/${name}.${format}${gzip ? '.gz' : ''}`, gzip ? gzipSync(string) : string)
+}
+
+export async function safeClearLocalStorage(t: TestController): Promise<void> {
+    await flaky(t, () =>
+        ClientFunction(() => {
+            (window as unknown as TestWindow).testUtils.safeClearLocalStorage()
+        })(),
+    )
+}
+
+const consoleEnabled = new WeakSet()
+let failTestConsoleMessages: string[] = []
+
+async function printConsoleMessages(t: TestController): Promise<void> {
+    const cdp = await t.getCurrentCDPSession()
+    if (consoleEnabled.has(cdp)) {
+        return
+    }
+    consoleEnabled.add(cdp)
+    cdp.Console.on('messageAdded', (event) => {
+        const timestamp = new Date().toISOString()
+        if (event.message.text.includes('[failtest]')) {
+            failTestConsoleMessages.push(event.message.text)
+        }
+        let text: string
+        switch (event.message.level) {
+            case 'error':
+                text = chalkTemplate`{red ${event.message.text}}`
+                break
+            case 'warning':
+                text = chalkTemplate`{yellow ${event.message.text}}`
+                break
+            default:
+                text = event.message.text
+        }
+        console.warn(chalkTemplate`{gray ${timestamp} From Browser:} ${text}`)
+    })
+    await cdp.Console.enable()
+}
+
+/** Takes the messages that would otherwise fail the test, for a test that means to provoke one */
+export async function takeFailTestConsoleMessages(t: TestController, expected: number): Promise<string[]> {
+    const deadline = Date.now() + 5000
+    while (failTestConsoleMessages.length < expected && Date.now() < deadline) {
+        await t.wait(100)
+    }
+    const messages = failTestConsoleMessages
+    failTestConsoleMessages = []
+    return messages
+}
+
+async function throwIfTestFailFromConsole(t: TestController): Promise<void> {
+    try {
+        await t.expect(failTestConsoleMessages).eql([])
+    }
+    finally {
+        failTestConsoleMessages = []
     }
 }
 
-export function urbanstatsFixture(name: string, url: string, beforeEach: undefined | ((t: TestController) => Promise<void>) = undefined): FixtureFn {
+const networkEnabled = new WeakSet()
+
+async function printFailedNetworkRequests(t: TestController): Promise<void> {
+    const cdp = await t.getCurrentCDPSession()
+    if (networkEnabled.has(cdp)) {
+        return
+    }
+    networkEnabled.add(cdp)
+
+    const inFlight = new Map<Protocol.Network.RequestId, { sent: Protocol.Network.RequestWillBeSentEvent, response?: Protocol.Network.Response }>()
+
+    cdp.Network.on('requestWillBeSent', (sent) => {
+        inFlight.set(sent.requestId, { sent })
+    })
+    cdp.Network.on('responseReceived', (event) => {
+        const inFlightRequest = inFlight.get(event.requestId)
+        if (inFlightRequest !== undefined) {
+            inFlightRequest.response = event.response
+        }
+    })
+    cdp.Network.on('loadingFinished', (event) => {
+        inFlight.delete(event.requestId)
+    })
+    cdp.Network.on('loadingFailed', (event) => {
+        const inFlightRequest = inFlight.get(event.requestId)
+        inFlight.delete(event.requestId)
+        // `inspector` means withInterceptedRequests failed this one on purpose
+        if (event.canceled || event.blockedReason === 'inspector') {
+            return
+        }
+        const { sent, response } = inFlightRequest ?? {}
+        const details = [
+            `${event.errorText} after ${Math.round((event.timestamp - (sent?.timestamp ?? event.timestamp)) * 1000)}ms, type ${event.type}`,
+            ...event.blockedReason === undefined ? [] : [`blocked: ${event.blockedReason}`],
+            ...event.corsErrorStatus === undefined ? [] : [`cors: ${event.corsErrorStatus.corsError} (${event.corsErrorStatus.failedParameter})`],
+            // A response means the headers arrived and the failure was partway through the body
+            ...response === undefined ? [] : [`response: ${response.status} ${response.statusText} from ${response.remoteIPAddress}, headers ${JSON.stringify(response.headers)}`],
+            ...(sent?.initiator.stack?.callFrames ?? []).slice(0, 5).map(frame => `at ${frame.functionName || '<anonymous>'} (${frame.url}:${frame.lineNumber})`),
+        ]
+        console.error(chalkTemplate`{red Request failed} ${sent?.request.method ?? '???'} ${sent?.request.url ?? event.requestId}\n${details.map(line => `    ${line}`).join('\n')}`)
+    })
+
+    await cdp.Network.enable({ })
+
+    // The search and script workers fetch too, and requests are only reported on the session of
+    // the target that made them
+    await cdp.Target.setDiscoverTargets({ discover: true })
+    cdp.Target.on('targetCreated', ({ targetInfo }) => {
+        if (targetInfo.type !== 'worker' && targetInfo.type !== 'service_worker') {
+            return
+        }
+        void (async () => {
+            const { sessionId } = await cdp.Target.attachToTarget({ ...targetInfo, flatten: true })
+            await cdpSessionWithSessionId(cdp, sessionId).Network.enable({})
+        })().catch((error: unknown) => {
+            console.warn(chalkTemplate`{yellow Could not watch requests of ${targetInfo.url}}`, error)
+        })
+    })
+}
+
+export function urbanstatsFixture(name: string, url: string, beforeEach?: (t: TestController) => Promise<void>, { afterEach, requestHooks = [] }: {
+    afterEach?: (t: TestController) => Promise<void>
+    requestHooks?: object[]
+} = {}): FixtureFn {
     if (url.startsWith('/')) {
         url = target + url
     }
@@ -193,21 +461,48 @@ export function urbanstatsFixture(name: string, url: string, beforeEach: undefin
     return fixture(name)
         .page(url)
         .beforeEach(async (t) => {
+            await printConsoleMessages(t)
+            await printFailedNetworkRequests(t)
             screenshotNumber = 0
-            await t.eval(() => { localStorage.clear() })
+            await safeClearLocalStorage(t)
             await t.resizeWindow(1400, 800)
-            if (beforeEach !== undefined) {
-                await beforeEach(t)
+            await beforeEach?.(t)
+        }).skipJsErrors({ pageUrl: /google\.com/ }).afterEach(async (t) => {
+            await throwIfTestFailFromConsole(t)
+            await afterEach?.(t)
+        }).requestHooks(requestHooks)
+}
+
+let totalTOTPWait = 0
+
+// A flaky block containing a TOTP wait would otherwise spend its whole budget sleeping, and never get a second attempt
+export function creditTOTPWait(wait: number): void {
+    totalTOTPWait += wait
+}
+
+export async function flaky<T>(t: TestController, doThing: () => Promise<T>): Promise<T> {
+    const start = Date.now()
+    const startTOTPWait = totalTOTPWait
+    while (true) {
+        try {
+            return await doThing()
+        }
+        catch (error) {
+            console.error(chalkTemplate`{red flaky failed with error}`, error)
+            await t.takeScreenshot({
+                path: `${t.browser.name}/${t.test.name}.flaky.error.png`,
+                fullPage: true,
+            })
+            if (Date.now() - (totalTOTPWait - startTOTPWait) > start + 30 * 1000) {
+                console.error(chalkTemplate`{red flaky timed out}`)
+                throw error
             }
-        })
+        }
+    }
 }
 
 export async function arrayFromSelector(selector: Selector): Promise<Selector[]> {
     return Array.from({ length: await selector.count }, (_, n) => selector.nth(n))
-}
-
-export async function waitForPageLoaded(t: TestController): Promise<void> {
-    await t.expect(Selector('#pageState_kind').value).eql('loaded') // Wait for initial loading to finish
 }
 
 export function pageDescriptorKind(): Promise<string | undefined> {
@@ -217,13 +512,18 @@ export function pageDescriptorKind(): Promise<string | undefined> {
 export async function safeReload(t: TestController): Promise<void> {
     // eslint-disable-next-line no-restricted-syntax -- This is the utility that replaces location.reload()
     await t.eval(() => setTimeout(() => { location.reload() }, 0))
-    await waitForPageLoaded(t)
+    await flaky(t, async () => {
+        await waitForLoading() // This is flaky since the page can unload while it's running
+    })
 }
 
 export const openInNewTabModifiers = process.platform === 'darwin' ? { meta: true } : { ctrl: true }
 
-export async function waitForSelectedSearchResult(t: TestController): Promise<void> {
-    await t.expect(Selector('[data-test-id=selected-search-result]').exists).ok()
+export async function waitForSelectedSearchResult(t: TestController): Promise<string> {
+    await waitForLoading()
+    const selectedSearchResult = Selector('[data-test-id=selected-search-result]')
+    await t.expect(selectedSearchResult.exists).ok()
+    return await selectedSearchResult.textContent
 }
 
 export async function doSearch(t: TestController, searchTerm: string): Promise<void> {
@@ -232,26 +532,173 @@ export async function doSearch(t: TestController, searchTerm: string): Promise<v
     await t.pressKey('enter')
 }
 
-export async function createComparison(t: TestController, searchTerm: string): Promise<void> {
-    const otherRegion = Selector('input').withAttribute('placeholder', 'Other region...')
+export async function createComparison(t: TestController, searchTerm: string, expectResult?: string): Promise<void> {
+    const otherRegion = Selector('input[placeholder="Other region..."],input[placeholder="Name"]')
     await t
         .click(otherRegion)
         .typeText(otherRegion, searchTerm)
-    await waitForSelectedSearchResult(t)
+    const result = await waitForSelectedSearchResult(t)
+    if (expectResult !== undefined) {
+        await t.expect(result).eql(expectResult)
+    }
     await t.pressKey('enter')
 }
 
-export function mapElement(r: RegExp): Selector {
-    return Selector('div').withAttribute('clickable-polygon', r)
+export function mapFeatureName(r: RegExp): Promise<string | undefined> {
+    return ClientFunction(() => {
+        for (const { features } of (window as unknown as TestWindow).testUtils.clickableMaps.values()) {
+            for (const feature of features) {
+                if (r.test(feature)) {
+                    return feature
+                }
+            }
+        }
+        return
+    }, { dependencies: { r } })()
 }
 
-export async function clickMapElement(t: TestController, r: RegExp): Promise<void> {
-    const element = mapElement(r)
-    const clickablePolygon: string = (await element.getAttribute('clickable-polygon'))!
-    await t.eval(() => {
-        const cm = (window as unknown as {
-            clickMapElement: (longname: string) => void
-        }).clickMapElement
-        cm(clickablePolygon)
-    }, { dependencies: { clickablePolygon } })
+export async function clickMapFeature(r: RegExp): Promise<void> {
+    return ClientFunction(() => {
+        for (const { features, clickFeature } of (window as unknown as TestWindow).testUtils.clickableMaps.values()) {
+            for (const feature of features) {
+                if (r.test(feature)) {
+                    clickFeature(feature)
+                    return
+                }
+            }
+        }
+        throw new Error(`No feature clicked, none matching ${r}`)
+    }, { dependencies: { r } })()
+}
+
+export async function dataValues(): Promise<string[]> {
+    const selector = Selector('span').withAttribute('class', /testing-statistic-value/)
+    const values = [] as string[]
+    for (let i = 0; i < await selector.count; i++) {
+        values.push(await selector.nth(i).innerText)
+    }
+    return values
+}
+
+export function cdpSessionWithSessionId<T extends Object>(cdpSession: T, sessionId: string): T {
+    // https://issues.chromium.org/issues/406821212#comment2
+    return new Proxy(cdpSession, {
+        get(s, prop: keyof Object) {
+            // eslint-disable-next-line @typescript-eslint/unbound-method -- the proxy binds it to the target below
+            const value: unknown = s[prop]
+            if (value instanceof Function) {
+                return function (...args: unknown[]) {
+                    return value.apply(s, args.concat([sessionId])) as unknown
+                }
+            }
+            if (value instanceof Object) {
+                return cdpSessionWithSessionId(value, sessionId)
+            }
+            return value
+        },
+    })
+}
+
+export async function clickUniverseFlag(t: TestController, alt: string): Promise<void> {
+    await flaky(t, async () => { // Universe flag sometimes isn't loaded
+        await t.click(
+            Selector('img')
+                .withAttribute('class', 'universe-selector-option')
+                .withAttribute('alt', alt))
+    })
+}
+
+export async function resizeForPlatform(t: TestController, platform: 'mobile' | 'desktop'): Promise<void> {
+    switch (platform) {
+        case 'mobile':
+            await t.resizeWindow(400, 800)
+            break
+        case 'desktop':
+            await t.resizeWindow(1400, 800)
+            break
+    }
+}
+
+export async function uncheckAllCategories(t: TestController): Promise<void> {
+    for (const check of await arrayFromSelector(Selector(`input[data-test-id^=${editCheckboxPrefixes.category}]`))) {
+        if (await check.checked) {
+            await t.click(check)
+        }
+    }
+}
+
+// Gets the non-extension part of the test file, e.g. if running search.test.ts -> search
+export function getCurrentTest(t: TestController): string {
+    // @ts-expect-error -- TestCafe private API
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- TestCafe private API
+    const testFileName: string = t.testRun.test.testFile.filename
+    return /([^/]+)\.test\.ts$/.exec(testFileName)![1]
+}
+
+export const mapper = (testFn: () => TestFn) => (
+    name: string,
+    { code, geo = 'Urban Center', universe = 'Iceland' }: { code: string, geo?: string, universe?: string },
+    testBlock: (t: TestController) => Promise<void>,
+): void => {
+    // use Iceland and Urban Center as a quick test (less data to load)
+    urbanstatsFixture(`quick-${code}`, urlFromCode(geo, universe, code))
+    testFn()(name, testBlock)
+}
+
+export const goBack = ClientFunction(() => { window.history.back() })
+export const goForward = ClientFunction(() => { window.history.forward() })
+export const getScroll = ClientFunction(() => window.scrollY)
+
+export function dragHandle(n: number): Selector {
+    return Selector('button[aria-roledescription="sortable"]:not([inert] *)').nth(n)
+}
+
+type RequestHandler = (request: Protocol.Network.Request) => 'continue' | 'fail'
+
+const interceptors = new WeakMap<object, (h: RequestHandler) => void>()
+
+// Exists to simplify request interception for tests, since Fetch CDP is carried over between tests
+export async function withInterceptedRequests(t: TestController, requestHandler: RequestHandler, testBlock: () => void | Promise<void>): Promise<void> {
+    const cdp = await t.getCurrentCDPSession()
+    let interceptor = interceptors.get(cdp)
+    if (interceptor === undefined) {
+        // Interceptor's default state is to continue
+        let interceptorRequestHandler: RequestHandler = () => 'continue'
+        interceptor = (newRequestHandler) => {
+            interceptorRequestHandler = newRequestHandler
+        }
+        cdp.Fetch.on('requestPaused', async ({ requestId, request }) => {
+            switch (interceptorRequestHandler(request)) {
+                case 'continue':
+                    await cdp.Fetch.continueRequest({ requestId })
+                    break
+                case 'fail':
+                    await cdp.Fetch.failRequest({ requestId, errorReason: 'BlockedByClient' })
+                    break
+            }
+        })
+        interceptors.set(cdp, interceptor)
+    }
+    interceptor(requestHandler)
+    await cdp.Fetch.enable({})
+    try {
+        await testBlock()
+    }
+    finally {
+        interceptor(() => 'continue')
+        await cdp.Fetch.disable()
+    }
+}
+
+export async function wheel(t: TestController, selector: string, deltaY: number, offset: { x: number, y: number }): Promise<void> {
+    return ClientFunction(() => {
+        const element = document.querySelector(`${selector} .maplibregl-canvas-container`)!
+        const elementRect = element.getBoundingClientRect()
+        const eventLocation = {
+            clientX: ((elementRect.left + elementRect.right) / 2) + offset.x,
+            clientY: ((elementRect.bottom + elementRect.top) / 2) + offset.y,
+        }
+        // Magic constant simulates a scroll wheel so our events are processed properly
+        element.dispatchEvent(new WheelEvent('wheel', { deltaY: deltaY * 4.000244140625, ...eventLocation }))
+    }, { dependencies: { selector, deltaY, offset } })()
 }

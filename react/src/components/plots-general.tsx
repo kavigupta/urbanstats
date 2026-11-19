@@ -1,65 +1,790 @@
 import * as Plot from '@observablehq/plot'
-import React, { ReactElement, useEffect, useRef } from 'react'
+import React, { ReactElement, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
 
-import { useScreenshotMode } from './screenshot'
+import { Navigator } from '../navigation/Navigator'
+import { Colors } from '../page_template/color-themes'
+import { useColors } from '../page_template/colors'
+import { useUniverse } from '../universe'
+import { assert } from '../utils/defensive'
+import { useTranspose } from '../utils/transpose'
+import { zIndex } from '../utils/zIndex'
 
-interface DetailedPlotSpec {
+import { plotFontSize, PlotRect, tipRender } from './plots-tip-anchor'
+import { attachDismissButtons, dismissButtonTipIndex, pinnedTipClassName, stampTipIndex } from './plots-tip-dismiss'
+import { createScreenshot, useScreenshotMode } from './screenshot'
+import { SearchBox } from './search'
+
+import './plots.css'
+
+const strokeDasharrays = ['1,0', '10,10', '2,5']
+
+// Plot's default placement for the bottom-axis label
+// is `marginBottom - 3` which pins it to the very bottom
+// edge and clips e.g., "g" keeping the offset smaller than the
+// bottom margin leaves headroom below the text.
+export const bottomLabelOffset = 50
+export const bottomLabelOffsetTranspose = 70
+
+// The left-axis label needs a strip of the left margin to itself, next to
+// however much room the tick labels happen to take.
+// To estimate this, we render the plot once, measure the left axis, and rerender
+// These are the provisional values for the first pass.
+const provisionalMarginLeft = 80
+const provisionalMarginLeftTranspose = 140
+
+// gap between the frame's left edge and the rotated label
+const labelEdgePad = 8
+// gap between the rotated label and the tick labels
+const labelTickGap = 10
+// Plot insets left tick labels from the frame by tickSize + tickPadding
+const tickLabelInset = 9
+
+interface LeftAxisLayout {
+    marginLeft: number
+    labelOffset: number
+}
+
+function provisionalLeftAxisLayout(transpose: boolean): LeftAxisLayout {
+    const margin = transpose ? provisionalMarginLeftTranspose : provisionalMarginLeft
+    return { marginLeft: margin, labelOffset: margin - labelEdgePad }
+}
+
+// measures a rendered plot's left axis and works out the margin that fits its tick labels and its
+// rotated label side by side. The label is rotated, so it is its bbox *height* that eats into the
+// margin; the ticks are horizontal, so it is their width.
+function measureLeftAxisLayout(plot: SVGSVGElement | HTMLElement): LeftAxisLayout {
+    const widthOf = (selector: string, dimension: 'width' | 'height'): number => {
+        const elements = Array.from(plot.querySelectorAll<SVGGraphicsElement>(`g[aria-label="${selector}"] text`))
+        return Math.max(0, ...elements.map(element => element.getBBox()[dimension]))
+    }
+    const tickWidth = widthOf('y-axis tick label', 'width')
+    const labelThickness = widthOf('y-axis label', 'height')
+    // no label means no strip to reserve for it, and hence no gap either
+    const labelStrip = labelThickness === 0 ? 0 : labelEdgePad + labelThickness + labelTickGap
+    return {
+        marginLeft: labelStrip + tickWidth + tickLabelInset,
+        labelOffset: labelStrip + tickWidth + tickLabelInset - labelEdgePad,
+    }
+}
+
+function renderMeasuredPlot(container: HTMLElement, config: (leftAxis: LeftAxisLayout) => Plot.PlotOptions, transpose: boolean): SVGSVGElement | HTMLElement {
+    const probe = Plot.plot(config(provisionalLeftAxisLayout(transpose)))
+    container.replaceChildren(probe)
+    const layout = measureLeftAxisLayout(probe)
+    const plot = Plot.plot(config(layout))
+    container.replaceChildren(plot)
+    return plot
+}
+
+// picks the axis/grid mark constructors for whichever side is currently the visual x-axis
+export function axisAndGrid(transpose: boolean): [typeof Plot.axisX, typeof Plot.gridX] {
+    return transpose ? [Plot.axisY, Plot.gridY] : [Plot.axisX, Plot.gridX]
+}
+
+function valueGrid(transpose: boolean): typeof Plot.gridY {
+    return transpose ? Plot.gridX : Plot.gridY
+}
+
+export function paddedYDomain(values: number[], pad: number, anchoredBottom?: number): [number, number] {
+    const maxValue = Math.max(...values)
+    const minValue = anchoredBottom ?? Math.min(...values)
+    const p = (maxValue - minValue) * pad || Math.max(Math.abs(maxValue), 1) * pad
+    return [anchoredBottom ?? minValue - p, maxValue + p]
+}
+
+export function categoricalAxisMarks(tickIdxs: number[], transpose: boolean, tickFormat: (idx: number) => string, leftLabelOffset: number): Plot.Markish[] {
+    const [axis, grid] = axisAndGrid(transpose)
+    // this axis is the horizontal (bottom) one unless transposed, in which case it is the left one
+    const labelOffset = transpose ? leftLabelOffset : bottomLabelOffset
+    return [
+        axis(tickIdxs, { tickFormat, labelAnchor: 'center', labelArrow: 'none', labelOffset }),
+        grid(tickIdxs),
+        valueGrid(transpose)(),
+    ]
+}
+
+// entries sharing a name (a region's multiple years, or its High/Low pair) stack onto one line in
+// the order given, headed by the subseries names; a lone entry drops the name (or uses singleLabel,
+// e.g. Histogram's "Frequency")
+export function groupedTipTitle(prefix: string, entries: { name: string, subseriesName: string, value: number }[], formatValue: (v: number) => string, singleLabel?: string): string {
+    const groups = new Map<string, { subseriesName: string, value: number }[]>()
+    const nameOrder: string[] = []
+    for (const entry of entries) {
+        if (!groups.has(entry.name)) {
+            groups.set(entry.name, [])
+            nameOrder.push(entry.name)
+        }
+        groups.get(entry.name)!.push(entry)
+    }
+    if (nameOrder.length === 1 && groups.get(nameOrder[0])!.length === 1) {
+        const { value } = groups.get(nameOrder[0])![0]
+        return singleLabel !== undefined ? `${prefix}\n${singleLabel}: ${formatValue(value)}` : `${prefix}\n${formatValue(value)}`
+    }
+    const sequences = nameOrder.map(name => groups.get(name)!.map(entry => entry.subseriesName))
+    const labelSubseries = new Set(entries.map(entry => entry.subseriesName)).size > 1
+    // one header only lines up if every name carries the same subseries in the same order
+    const sharedHeader = labelSubseries && sequences.every(sequence => sequence.join('\u0000') === sequences[0].join('\u0000'))
+    const lines = nameOrder.map(name => `${name}: ${groups.get(name)!.map(entry =>
+        labelSubseries && !sharedHeader ? `${formatValue(entry.value)} (${entry.subseriesName})` : formatValue(entry.value),
+    ).join(' / ')}`)
+    if (sharedHeader) {
+        lines.unshift(sequences[0].join(' / '))
+    }
+    return `${prefix}\n${lines.join('\n')}`
+}
+
+export function ordinalSeriesMarks(
+    seriesData: { series: { color: string, subseriesName: string }, values: number[] }[],
+    idxs: number[],
+    idxKey: string,
+    transpose: boolean,
+    dashPatterns: Map<string, { pattern: string, name: string }>,
+    xFor: (i: number) => number = i => i,
+): Plot.Markish[] {
+    const marks: Plot.Markish[] = []
+    marks.push(
+        ...seriesData.map(({ series, values }) =>
+            Plot.line(
+                idxs.map(i => ({ [idxKey]: xFor(i), value: values[i] })),
+                {
+                    x: transpose ? 'value' : idxKey,
+                    y: transpose ? idxKey : 'value',
+                    stroke: series.color,
+                    strokeWidth: 3,
+                    strokeDasharray: dashPatterns.size > 1 ? dashPatterns.get(series.subseriesName)?.pattern : undefined,
+                },
+            ),
+        ),
+    )
+    marks.push(
+        ...seriesData.map(({ series, values }) =>
+            Plot.dot(
+                idxs.map(i => ({ [idxKey]: xFor(i), value: values[i] })),
+                {
+                    x: transpose ? 'value' : idxKey,
+                    y: transpose ? idxKey : 'value',
+                    fill: series.color,
+                    r: 3,
+                },
+            ),
+        ),
+    )
+    return marks
+}
+
+// unlike the density histogram, these are centered between bins
+export function ordinalSeriesBarMarks(
+    seriesData: { series: { color: string }, values: number[] }[],
+    idxs: number[],
+    transpose: boolean,
+    xFor: (i: number) => number = i => i,
+): Plot.Markish {
+    const width = 1 / seriesData.length * 0.8
+    const bars = seriesData.flatMap(({ series, values }, seriesIdx) => {
+        const centerOffset = (seriesIdx - (seriesData.length - 1) / 2) * width
+        return idxs.map(i => ({
+            left: xFor(i) + centerOffset - width / 2,
+            right: xFor(i) + centerOffset + width / 2,
+            value: values[i],
+            color: series.color,
+        }))
+    })
+    return transpose
+        ? Plot.rectX(bars, { y1: 'left', y2: 'right', x: 'value', fill: 'color' })
+        : Plot.rectY(bars, { x1: 'left', x2: 'right', y: 'value', fill: 'color' })
+}
+
+export function seriesTip(
+    seriesData: { series: PlotSeriesItem, values: number[] }[],
+    idxs: number[],
+    transpose: boolean,
+    xFor: (i: number) => number,
+    prefixFor: (idx: number) => string,
+    formatValue: (v: number) => string,
+    colors: Colors,
+    pinnedTips: PinnedTips,
+    legend: PlotRect | undefined,
+): Plot.Markish[] {
+    const tipData = idxs.map(i => ({
+        x: xFor(i),
+        prefix: prefixFor(i),
+        entries: seriesData.map(s => ({ name: s.series.shortname, subseriesName: s.series.subseriesName, value: s.values[i] })),
+    }))
+    return transposeAwareTip(
+        tipData,
+        transpose,
+        d => d.x,
+        d => d.entries.map(e => e.value),
+        d => groupedTipTitle(d.prefix, d.entries, formatValue),
+        colors,
+        pinnedTips,
+        legend,
+    )
+}
+
+// what separates a tap on a point from a scroll or a long press that happens to start on the plot
+const tapDuration = 500
+const tapMovement = 10
+
+// The tooltips the user has clicked on, identified by their position in the tip mark's data.
+// Indices rather than the data themselves because the data is rebuilt from scratch whenever the
+// plot re-renders, and it means the same points stay pinned across a transpose or a settings change.
+export type PinnedTips = ReadonlySet<number>
+
+function withTipToggled(pinnedTips: PinnedTips, tipIndex: number): PinnedTips {
+    const result = new Set(pinnedTips)
+    // clicking an already-pinned point unpins it, like clicking a toggle
+    if (!result.delete(tipIndex)) {
+        result.add(tipIndex)
+    }
+    return result
+}
+
+function withoutTip(pinnedTips: PinnedTips, tipIndex: number): PinnedTips {
+    const result = new Set(pinnedTips)
+    result.delete(tipIndex)
+    return result
+}
+
+// each tip datum is wrapped so that the plot's `value` (which Plot sets to the pointed-at datum)
+// tells us which tooltip a click would pin
+interface TipRow<T> { datum: T, tipIndex: number }
+
+// the index of the tooltip the pointer is currently over, or null if it isn't over the plot. Plot
+// publishes the pointed-at datum on the plot element whenever it changes, which is on pointer
+// movement and, on a touch device, on the pointerenter the spec requires before every pointerdown
+function pointedTipIndex(plot: HTMLElement | SVGSVGElement): number | null {
+    const value: unknown = (plot as { value?: unknown }).value
+    if (typeof value !== 'object' || value === null || !('tipIndex' in value)) {
+        return null
+    }
+    const { tipIndex } = value as TipRow<unknown>
+    return tipIndex
+}
+
+// a Plot.tip anchored at the tallest series' value at each point, swapping x/y when transposed,
+// styled with the theme's tooltip colors, and placed by tipRender rather than by Plot's own fitting.
+// Comes in two flavors: the one that follows the pointer, and one ordinary (non-interactive) mark
+// per point the user has pinned.
+export function transposeAwareTip<T>(
+    data: T[],
+    transpose: boolean,
+    getX: (d: T) => number,
+    getValues: (d: T) => number[],
+    title: (d: T) => string,
+    colors: Colors,
+    pinnedTips: PinnedTips,
+    legend: PlotRect | undefined,
+): Plot.Markish[] {
+    const rows: TipRow<T>[] = data.map((datum, tipIndex) => ({ datum, tipIndex }))
+    const position = (row: TipRow<T>): number => getX(row.datum)
+    const value = (row: TipRow<T>): number => Math.max(...getValues(row.datum))
+    const options = {
+        x: transpose ? value : position,
+        y: transpose ? position : value,
+        title: (row: TipRow<T>) => title(row.datum),
+        fill: colors.slightlyDifferentBackground,
+        stroke: colors.borderNonShadow,
+        textColor: colors.textMain,
+    }
+    // the plot draws at 1em, or 2em when transposed (see plotConfig), which is what sizes the
+    // tooltip text and hence the box the placement is worked out from
+    const fontSize = transpose ? 2 * plotFontSize : plotFontSize
+    const marks: Plot.Markish[] = [
+        Plot.tip(rows, (transpose ? Plot.pointerY : Plot.pointerX)({
+            ...options,
+            render: tipRender({ fontSize, legend, leaderColor: colors.textMain }),
+        })),
+    ]
+    // being plain marks rather than pointer-driven ones, pinned tooltips stay put when the mouse
+    // leaves, and are drawn into the plot we re-render for the downloaded image
+    for (const tipIndex of pinnedTips) {
+        // a pin can outlive the point it was made on, e.g. if a setting change shortens the data
+        if (tipIndex < rows.length) {
+            marks.push(Plot.tip([rows[tipIndex]], {
+                ...options,
+                className: pinnedTipClassName,
+                render: tipRender({ fontSize, legend, leaderColor: colors.textMain, decorate: stampTipIndex(tipIndex) }),
+            }))
+        }
+    }
+    return marks
+}
+
+// the screenshot-download icon shared by every plot type's settings bar
+function PlotDownloadButton(props: { makePlot: () => HTMLElement, shortnames: string[], filenameSuffix: string }): ReactNode {
+    const universe = useUniverse()
+    const colors = useColors()
+    return (
+        <img
+            src="/download.png"
+            onClick={async () => {
+                const plot = props.makePlot()
+                document.body.appendChild(plot)
+                // a pinned tooltip is laid out on the frame after the plot is rendered, so wait for
+                // it; otherwise the capture below can catch the tooltip before it is placed
+                await new Promise<void>((resolve) => { requestAnimationFrame(() => { resolve() }) })
+                const uniqueShortnames = Array.from(new Set(props.shortnames))
+                await createScreenshot(
+                    () => ({
+                        path: `${uniqueShortnames.join('_')}_${props.filenameSuffix}`,
+                        overallWidth: plot.offsetWidth * 2,
+                        elementsToRender: [plot],
+                        topPadding: 0,
+                    }),
+                    universe,
+                    colors,
+                    { render: new Set(), wait: new Set() },
+                )
+                plot.remove()
+            }}
+            width="20"
+            height="20"
+            style={{ cursor: 'pointer' }}
+        />
+    )
+}
+
+function deduplicate(arr: string[]): string[] {
+    return Array.from(new Set(arr))
+}
+
+export const transposeSettingsHeight = 30.5
+
+// shared settings bar: download, "add region" search, and optional mode switcher / extra controls
+function PlotSettingsBar(props: {
+    makePlot: () => HTMLElement
+    shortnames: string[]
+    longnames: string[]
+    sharedTypeOfAllArticles?: string
+    filenameSuffix: string
+    modeSwitcher?: ReactElement
+    children?: ReactNode
+}): ReactNode {
+    const colors = useColors()
+    const universe = useUniverse()
+    const transpose = useTranspose()
+    const navContext = useContext(Navigator.Context)
+    const [showSearchBox, setShowSearchBox] = useState(false)
+
+    return (
+        <div
+            className="serif"
+            style={{
+                backgroundColor: transpose ? undefined : colors.background,
+                padding: transpose ? undefined : '0.5em',
+                border: transpose ? undefined : `1px solid ${colors.textMain}`,
+                display: 'flex',
+                gap: '0.5em',
+                height: transpose ? `${transposeSettingsHeight}px` : undefined,
+                alignItems: transpose ? 'center' : undefined,
+                justifyContent: transpose ? 'center' : undefined,
+                position: 'relative',
+            }}
+        >
+            <PlotDownloadButton makePlot={props.makePlot} shortnames={props.shortnames} filenameSuffix={props.filenameSuffix} />
+            <div style={{ position: 'relative' }}>
+                <img
+                    src="/add.png"
+                    onClick={() => { setShowSearchBox(!showSearchBox) }}
+                    width="20"
+                    height="20"
+                    style={{ cursor: 'pointer' }}
+                />
+                {showSearchBox && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: '25px',
+                            left: '0px',
+                            backgroundColor: colors.background,
+                            border: `1px solid ${colors.textMain}`,
+                            borderRadius: '4px',
+                            padding: '0.5em',
+                            zIndex: zIndex.plotSettings,
+                            minWidth: '200px',
+                        }}
+                    >
+                        <SearchBox
+                            style={{ width: '100%' }}
+                            placeholder="Add region..."
+                            autoFocus={true}
+                            prioritizeArticleType={props.sharedTypeOfAllArticles}
+                            onChange={() => {
+                                setShowSearchBox(false)
+                            }}
+                            articleLink={(regionName) => {
+                                return navContext.link({
+                                    kind: 'comparison',
+                                    universe,
+                                    longnames: [...deduplicate(props.longnames), regionName],
+                                }, { scroll: { kind: 'none' } })
+                            }}
+                        />
+                    </div>
+                )}
+            </div>
+            {props.children}
+            {props.modeSwitcher}
+        </div>
+    )
+}
+
+interface LegendItem {
+    shortname: string
+    color: string
+    subseriesName: string
+}
+
+function computeColorItems(items: LegendItem[]): { label: string, color: string }[] {
+    const colorItems: { label: string, color: string }[] = []
+    for (const item of items) {
+        // handles duplicate names by just putting them all in if they're different colors
+        const index = colorItems.findIndex(existing => existing.label === item.shortname && existing.color === item.color)
+        if (index === -1) {
+            colorItems.push({
+                label: item.shortname,
+                color: item.color,
+            })
+        }
+    }
+    if (colorItems.length <= 1) {
+        return []
+    }
+    return colorItems
+}
+
+export function computeDashPatterns(items: LegendItem[], order?: string[]): Map<string, { pattern: string, name: string }> {
+    const dashPatterns = new Map<string, { pattern: string, name: string }>()
+    const subseriesNames = new Set<string>()
+    items.forEach((item) => {
+        subseriesNames.add(item.subseriesName)
+    })
+    const subseriesNamesOrdered = order ?? Array.from(subseriesNames).sort()
+    assert(subseriesNamesOrdered.length <= strokeDasharrays.length, 'Too many subseries for dash patterns')
+    items.forEach((item) => {
+        const subId = subseriesNamesOrdered.indexOf(item.subseriesName)
+        assert(subId !== -1, `subseriesName ${item.subseriesName} missing from dash order`)
+        if (!dashPatterns.has(item.subseriesName)) {
+            dashPatterns.set(item.subseriesName, {
+                pattern: strokeDasharrays[subseriesNamesOrdered.length - 1 - subId],
+                name: item.subseriesName,
+            })
+        }
+    })
+    return dashPatterns
+}
+
+const legendPaddingX = 12
+const legendPaddingY = 10
+const legendRowHeight = 22
+const legendSquareSize = 14
+const legendLineLength = 36
+const legendFontSize = 13
+const legendTextSpacing = 10
+
+// the legend sits inside the frame, so tooltips have to know where it is to stay clear of it
+function legendBounds(labels: string[], rows: number, transpose: boolean): PlotRect {
+    let maxTextWidth = 0
+    // Use canvas to measure text width accurately
+    const context = document.createElement('canvas').getContext('2d')
+    if (context !== null) {
+        context.font = `${legendFontSize}px serif`
+        labels.forEach((label) => {
+            maxTextWidth = Math.max(maxTextWidth, context.measureText(label).width)
+        })
+    }
+    // Width = paddingX (left) + max(squareSize/lineLength) + textSpacing + textWidth + paddingX (right)
+    const maxSymbolWidth = Math.max(legendSquareSize, legendLineLength)
+    return {
+        // Position on the left side, but offset enough to avoid the y-axis
+        x: transpose ? 200 : 100,
+        y: 70,
+        width: legendPaddingX + maxSymbolWidth + legendTextSpacing + maxTextWidth + legendPaddingX,
+        height: legendPaddingY * 2 + legendRowHeight * rows,
+    }
+}
+
+interface DrawnLegend { marks: Plot.Markish[], bounds: PlotRect | undefined }
+
+function manualLegend(items: LegendItem[], transpose: boolean, themeColors: Colors, dashOrder?: string[]): DrawnLegend {
+    const colorItems = computeColorItems(items)
+
+    const dashPatterns = computeDashPatterns(items, dashOrder)
+
+    const dashPatternItems: { label: string, dashPattern: string }[] = []
+    if (dashPatterns.size > 1) {
+        const dashPatternsEnumerated = Array.from(dashPatterns.values()).sort((a, b) => a.name.localeCompare(b.name))
+        dashPatternsEnumerated.forEach(({ pattern, name }) => {
+            dashPatternItems.push({
+                label: name,
+                dashPattern: pattern,
+            })
+        })
+    }
+
+    const totalItems = colorItems.length + dashPatternItems.length
+    if (totalItems === 0) {
+        return { marks: [], bounds: undefined }
+    }
+
+    const allLabels = [...colorItems.map(item => item.label), ...dashPatternItems.map(item => item.label)]
+    const bounds = legendBounds(allLabels, totalItems, transpose)
+
+    const createLegend = (): SVGElement => {
+        const svgNS = 'http://www.w3.org/2000/svg'
+        const group = document.createElementNS(svgNS, 'g')
+        group.setAttribute('data-test-id', 'plot_legend')
+        group.setAttribute('transform', `translate(${bounds.x} ${bounds.y})`)
+
+        const paddingX = legendPaddingX
+        const paddingY = legendPaddingY
+        const rowHeight = legendRowHeight
+        const squareSize = legendSquareSize
+        const lineLength = legendLineLength
+        const fontSize = legendFontSize
+
+        const { width, height } = bounds
+
+        const background = document.createElementNS(svgNS, 'rect')
+        background.setAttribute('width', String(width))
+        background.setAttribute('height', String(height))
+        background.setAttribute('rx', '6')
+        background.setAttribute('fill', themeColors.slightlyDifferentBackground)
+        background.setAttribute('stroke', themeColors.borderNonShadow)
+        group.appendChild(background)
+
+        let rowIndex = 0
+
+        // Render color squares
+        colorItems.forEach((item) => {
+            const row = document.createElementNS(svgNS, 'g')
+            row.setAttribute('transform', `translate(${paddingX} ${paddingY + rowHeight * rowIndex})`)
+
+            const centerY = rowHeight / 2
+            const square = document.createElementNS(svgNS, 'rect')
+            square.setAttribute('x', '0')
+            square.setAttribute('y', String(centerY - squareSize / 2))
+            square.setAttribute('width', String(squareSize))
+            square.setAttribute('height', String(squareSize))
+            square.setAttribute('fill', item.color)
+            row.appendChild(square)
+
+            const text = document.createElementNS(svgNS, 'text')
+            text.setAttribute('x', String(squareSize + 10))
+            text.setAttribute('y', String(centerY))
+            text.setAttribute('font-size', `${fontSize}px`)
+            text.setAttribute('fill', themeColors.textMain)
+            text.setAttribute('dominant-baseline', 'middle')
+            text.setAttribute('text-anchor', 'start')
+            text.textContent = item.label
+            row.appendChild(text)
+
+            group.appendChild(row)
+            rowIndex++
+        })
+
+        // Render dash pattern lines
+        dashPatternItems.forEach((item) => {
+            const row = document.createElementNS(svgNS, 'g')
+            row.setAttribute('transform', `translate(${paddingX} ${paddingY + rowHeight * rowIndex})`)
+
+            const centerY = rowHeight / 2
+            const line = document.createElementNS(svgNS, 'line')
+            line.setAttribute('x1', '0')
+            line.setAttribute('x2', String(lineLength))
+            line.setAttribute('y1', String(centerY))
+            line.setAttribute('y2', String(centerY))
+            line.setAttribute('stroke', themeColors.textMain)
+            line.setAttribute('stroke-width', '3')
+            if (item.dashPattern !== '1,0') {
+                line.setAttribute('stroke-dasharray', item.dashPattern)
+            }
+            row.appendChild(line)
+
+            const text = document.createElementNS(svgNS, 'text')
+            text.setAttribute('x', String(lineLength + 10))
+            text.setAttribute('y', String(centerY))
+            text.setAttribute('font-size', `${fontSize}px`)
+            text.setAttribute('fill', themeColors.textMain)
+            text.setAttribute('dominant-baseline', 'middle')
+            text.setAttribute('text-anchor', 'start')
+            text.textContent = item.label
+            row.appendChild(text)
+
+            group.appendChild(row)
+            rowIndex++
+        })
+
+        return group
+    }
+
+    return { marks: [createLegend], bounds }
+}
+
+export interface DetailedPlotSpec {
     marks: Plot.Markish[]
-    xlabel: string
+    xlabel: string | null
     ylabel: string
     ydomain?: [number, number]
     legend?: { legend: boolean, range: string[], domain: string[] }
 }
 
 export function PlotComponent(props: {
-    plotSpec: DetailedPlotSpec
-    settingsElement: (plotRef: React.RefObject<HTMLDivElement>) => ReactElement
+    plotSpec: (transpose: boolean, leftLabelOffset: number, pinnedTips: PinnedTips) => DetailedPlotSpec
+    settingsElement: (makePlot: () => HTMLElement) => ReactElement
 }): ReactElement {
+    const transpose = useTranspose()
+    // the theme reaches the plot through plotSpec, which closes over it; nothing here needs it
     const plotRef = useRef<HTMLDivElement>(null)
-    useEffect(() => {
-        if (plotRef.current) {
-            const { marks, xlabel, ylabel, ydomain, legend } = props.plotSpec
-            // y grid marks
-            // marks.push(Plot.gridY([0, 25, 50, 75, 100]));
-            const plotConfig = {
-                marks,
-                x: {
-                    label: xlabel,
-                },
-                y: {
-                    label: ylabel,
-                    domain: ydomain,
-                },
-                grid: false,
-                width: 1000,
-                style: {
-                    fontSize: '1em',
-                    // font-family: 'Jost', 'Arial', sans-serif;
-                    fontFamily: 'Jost|Arial|sans-serif',
-                },
-                marginTop: 80,
-                marginBottom: 40,
-                marginLeft: 80,
-                color: legend,
-            }
-            const plot = Plot.plot(plotConfig)
-            plotRef.current.innerHTML = ''
-            plotRef.current.appendChild(plot)
+
+    // clicking a point pins its tooltip in place, and any number of them can be pinned at once.
+    // Deliberately component state rather than a setting: pins should survive clicking elsewhere on
+    // the page, but not a navigation or a reload.
+    const [pinnedTips, setPinnedTips] = useState<PinnedTips>(() => new Set())
+    // the tooltip the pointer is over, which is the one a click pins. Remembered here rather than
+    // read off the plot at click time because pinning re-renders the plot, and the replacement
+    // element's value starts out null -- so a second click without an intervening pointer move
+    // (which is how a point gets unpinned) would see nothing.
+    const pointedTip = useRef<number | null>(null)
+
+    const plotSpec = props.plotSpec
+
+    const plotConfig = useCallback((transposeConfig: boolean, leftAxis: LeftAxisLayout): Plot.PlotOptions => {
+        const { marks, xlabel, ylabel, ydomain, legend } = plotSpec(transposeConfig, leftAxis.labelOffset, pinnedTips)
+        const result: Plot.PlotOptions = {
+            marks,
+            x: {
+                label: xlabel,
+                labelAnchor: 'center',
+                labelArrow: 'none',
+                labelOffset: transposeConfig ? bottomLabelOffsetTranspose : bottomLabelOffset,
+            },
+            y: {
+                label: ylabel,
+                domain: ydomain,
+                labelAnchor: 'center',
+                labelArrow: 'none',
+                labelOffset: leftAxis.labelOffset,
+            },
+            grid: false,
+            width: transposeConfig ? undefined : 1000,
+            height: transposeConfig ? 1000 : undefined,
+            style: {
+                fontSize: transposeConfig ? '2em' : '1em',
+                fontFamily: 'Jost, Arial, sans-serif',
+            },
+            marginTop: 80,
+            marginBottom: transposeConfig ? 90 : 62,
+            marginLeft: leftAxis.marginLeft,
+            color: legend,
         }
-    }, [props.plotSpec])
+        if (transposeConfig) {
+            result.x = {
+                label: ylabel,
+                domain: ydomain,
+                labelAnchor: 'center',
+                labelArrow: 'none',
+                labelOffset: bottomLabelOffsetTranspose,
+            }
+            result.y = {
+                label: xlabel,
+                reverse: true,
+                labelAnchor: 'center',
+                labelArrow: 'none',
+                labelOffset: leftAxis.labelOffset,
+            }
+        }
+        return result
+    }, [plotSpec, pinnedTips])
+
+    useEffect(() => {
+        const container = plotRef.current
+        if (container === null) {
+            return
+        }
+        const plot = renderMeasuredPlot(container, leftAxis => plotConfig(transpose, leftAxis), transpose)
+
+        const dismiss = (tipIndex: number): void => {
+            setPinnedTips(current => withoutTip(current, tipIndex))
+        }
+        const recordPointedTip = (): void => {
+            pointedTip.current = pointedTipIndex(plot)
+        }
+        const act = (target: EventTarget | null): void => {
+            const dismissed = dismissButtonTipIndex(target)
+            if (dismissed !== null) {
+                dismiss(dismissed)
+                return
+            }
+            const pointed = pointedTip.current
+            if (pointed !== null) {
+                setPinnedTips(current => withTipToggled(current, pointed))
+            }
+        }
+        // where and when a touch began, so that the lift can tell a tap from a scroll
+        let touchStart: { time: number, x: number, y: number } | null = null
+        const handlePointerDown = (event: PointerEvent): void => {
+            // Plot's own click-to-stick tooltip would double up with the pinned ones we draw
+            event.stopPropagation()
+            if (event.pointerType === 'touch') {
+                touchStart = { time: event.timeStamp, x: event.clientX, y: event.clientY }
+                return
+            }
+            act(event.target)
+        }
+        // A touch on the plot is usually a scroll (kavigupta/urbanstats#2239), so only a short, still
+        // touch pins a tooltip.
+        const handlePointerUp = (event: PointerEvent): void => {
+            const start = touchStart
+            touchStart = null
+            if (start === null || event.pointerType !== 'touch') {
+                return
+            }
+            if (event.timeStamp - start.time > tapDuration) {
+                return
+            }
+            if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > tapMovement) {
+                return
+            }
+            act(event.target)
+        }
+        plot.addEventListener('input', recordPointedTip)
+        container.addEventListener('pointerdown', handlePointerDown, true)
+        container.addEventListener('pointerup', handlePointerUp, true)
+        const frame = requestAnimationFrame(() => {
+            attachDismissButtons(plot, transpose, dismiss)
+        })
+
+        return () => {
+            cancelAnimationFrame(frame)
+            plot.removeEventListener('input', recordPointedTip)
+            container.removeEventListener('pointerdown', handlePointerDown, true)
+            container.removeEventListener('pointerup', handlePointerUp, true)
+        }
+    }, [transpose, plotConfig])
 
     const screenshotMode = useScreenshotMode()
 
+    const transposeTopMargin = '35px'
+
     // put a button panel in the top right corner
     return (
-        <div style={{ width: '100%', position: 'relative' }}>
+        <>
             <div
-                className="histogram-svg-panel"
+                // both tied to CSS; the screenshot class hides the pinned tooltip's dismiss button,
+                // which is interactive chrome rather than part of the chart
+                className={screenshotMode ? 'histogram-svg-panel screenshot-mode' : 'histogram-svg-panel'}
                 ref={plotRef}
                 style={
                     {
                         width: '100%',
-                        // height: "20em"
+                        height: transpose ? `calc(100% - ${transposeTopMargin})` : undefined,
+                        position: transpose ? 'relative' : undefined,
+                        top: transpose ? transposeTopMargin : undefined,
+                        // horizontal drags scrub the tooltip, leaving vertical ones to scroll the page;
+                        // a transposed plot scrubs vertically
+                        touchAction: transpose ? undefined : 'pan-y',
                     }
                 }
             >
@@ -67,10 +792,77 @@ export function PlotComponent(props: {
             {screenshotMode
                 ? undefined
                 : (
-                        <div style={{ zIndex: 1000, position: 'absolute', top: 0, right: 0 }}>
-                            {props.settingsElement(plotRef)}
+                        <div style={{ zIndex: zIndex.plotSettings, position: 'absolute', top: 0, right: 0, left: transpose ? 0 : undefined }}>
+                            {props.settingsElement(() => {
+                                const div = document.createElement('div')
+                                // the exported image is sized from this div, so it has to hug the plot exactly
+                                div.style.width = 'fit-content'
+                                // measuring needs layout, so render while attached, then hand the
+                                // finished element back for the caller to place
+                                document.body.appendChild(div)
+                                const plot = renderMeasuredPlot(div, leftAxis => plotConfig(false, leftAxis), false)
+                                div.remove()
+                                // `display: block` drops the descender gap an inline <svg> would leave underneath
+                                plot.style.display = 'block'
+                                return div
+                            })}
                         </div>
                     )}
-        </div>
+        </>
+    )
+}
+
+export interface PlotSeriesItem {
+    shortname: string
+    longname: string
+    color: string
+    subseriesName: string
+}
+
+// shared plot shell: title, legend and settings bar from `items`; buildPlot supplies the rest
+export function SeriesPlot(props: {
+    items: PlotSeriesItem[]
+    filenameSuffix: string
+    sharedTypeOfAllArticles?: string
+    modeSwitcher?: ReactElement
+    dashOrder?: string[]
+    extraSettingsControls?: ReactNode
+    buildPlot: (transpose: boolean, leftLabelOffset: number, pinnedTips: PinnedTips, legend: PlotRect | undefined) => DetailedPlotSpec
+}): ReactElement {
+    const colors = useColors()
+    const { items, dashOrder, buildPlot } = props
+
+    const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
+        <PlotSettingsBar
+            makePlot={makePlot}
+            shortnames={props.items.map(i => i.shortname)}
+            longnames={props.items.map(i => i.longname)}
+            sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
+            filenameSuffix={props.filenameSuffix}
+            modeSwitcher={props.modeSwitcher}
+        >
+            {props.extraSettingsControls}
+        </PlotSettingsBar>
+    )
+
+    const plotSpec = useCallback(
+        (transpose: boolean, leftLabelOffset: number, pinnedTips: PinnedTips): DetailedPlotSpec => {
+            const title = new Set(items.map(i => i.shortname)).size === 1 ? items[0].shortname : ''
+            // built first so that the tooltips can be told where it is and keep out of it, and
+            // drawn last, over the plot -- a leader up to a point behind it passes underneath
+            const drawnLegend = manualLegend(items, transpose, colors, dashOrder)
+            const { marks, xlabel, ylabel, ydomain, legend } = buildPlot(transpose, leftLabelOffset, pinnedTips, drawnLegend.bounds)
+            marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
+            marks.push(...drawnLegend.marks)
+            return { marks, xlabel, ylabel, ydomain, legend }
+        },
+        [items, buildPlot, colors, dashOrder],
+    )
+
+    return (
+        <PlotComponent
+            plotSpec={plotSpec}
+            settingsElement={settingsElement}
+        />
     )
 }

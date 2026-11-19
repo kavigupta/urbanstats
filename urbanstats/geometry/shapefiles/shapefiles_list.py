@@ -1,6 +1,14 @@
-from urbanstats.geometry.shapefiles.shapefile import (
-    multiple_localized_type_names,
-    subset_mask_key,
+from urbanstats.geometry.shapefiles.shapefile import multiple_localized_type_names
+from urbanstats.geometry.shapefiles.shapefiles.australian import (
+    AUSTRALIAN_FEDERAL_ELECTORATES,
+    AUSTRALIAN_LGAS,
+    AUSTRALIAN_POSTCODES,
+    AUSTRALIAN_SA2S,
+    AUSTRALIAN_SALS,
+    AUSTRALIAN_STATE_LOWER_HOUSE_DISTRICTS,
+    AUSTRALIAN_STATE_UPPER_HOUSE_REGIONS,
+    AUSTRALIAN_SUAS,
+    AUSTRALIAN_UCLS,
 )
 from urbanstats.geometry.shapefiles.shapefiles.canadian_census_divisions import (
     CANADIAN_CENSUS_DIVISIONS,
@@ -23,7 +31,7 @@ from urbanstats.geometry.shapefiles.shapefiles.continents import CONTINENTS
 from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
 from urbanstats.geometry.shapefiles.shapefiles.countries import COUNTRIES
 from urbanstats.geometry.shapefiles.shapefiles.county_cross_cd import COUNTY_CROSS_CD
-from urbanstats.geometry.shapefiles.shapefiles.csas import CSAs
+from urbanstats.geometry.shapefiles.shapefiles.csas_msas import CSAs, MSAs
 from urbanstats.geometry.shapefiles.shapefiles.districts import district_shapefiles
 from urbanstats.geometry.shapefiles.shapefiles.historical_congressional import (
     HISTORICAL_CONGRESSIONALs,
@@ -31,7 +39,9 @@ from urbanstats.geometry.shapefiles.shapefiles.historical_congressional import (
 from urbanstats.geometry.shapefiles.shapefiles.hospital import hospital_shapefiles
 from urbanstats.geometry.shapefiles.shapefiles.judicial import judicial_shapefiles
 from urbanstats.geometry.shapefiles.shapefiles.media_markets import MEDIA_MARKETS
-from urbanstats.geometry.shapefiles.shapefiles.msas import MSAs
+from urbanstats.geometry.shapefiles.shapefiles.metropolitan_clusters import (
+    METROPOLITAN_CLUSTERS,
+)
 from urbanstats.geometry.shapefiles.shapefiles.native import native_shapefiles
 from urbanstats.geometry.shapefiles.shapefiles.neighborhoods import NEIGHBORHOODS
 from urbanstats.geometry.shapefiles.shapefiles.population_circle import (
@@ -71,38 +81,22 @@ shapefiles = dict(
     canadian_population_centers=CANADIAN_CENSUS_POPULATION_CENTERS,
     candian_cmas=CANADIAN_CENSUS_METROPOLITAN_AREAS,
     canadian_districts=CANADIAN_DISTRICTS,
+    australian_lgas=AUSTRALIAN_LGAS,
+    australian_sa2s=AUSTRALIAN_SA2S,
+    australian_suas=AUSTRALIAN_SUAS,
+    australian_ucls=AUSTRALIAN_UCLS,
+    australian_sals=AUSTRALIAN_SALS,
+    australian_postcodes=AUSTRALIAN_POSTCODES,
+    australian_federal_electorates=AUSTRALIAN_FEDERAL_ELECTORATES,
+    australian_state_lower_house_districts=AUSTRALIAN_STATE_LOWER_HOUSE_DISTRICTS,
+    australian_state_upper_house_regions=AUSTRALIAN_STATE_UPPER_HOUSE_REGIONS,
     # International
     continents=CONTINENTS,
     countries=COUNTRIES,
     subnational_regions=SUBNATIONAL_REGIONS,
     urban_centers=URBAN_CENTERS,
+    metropolitan_clusters=METROPOLITAN_CLUSTERS,
     **population_circles_shapefiles,
 )
 
 localized_type_names = multiple_localized_type_names(shapefiles)
-unlocalization_map = {
-    localized: (unlocalized, subset)
-    for subset, localization_map in localized_type_names.items()
-    for unlocalized, localized in localization_map.items()
-}
-
-
-def filter_table_for_type(table, typ):
-    unlocalized_typ, subset = unlocalization_map.get(typ, (typ, None))
-    table = table[table["type"] == unlocalized_typ]
-    if subset is not None:
-        table = table[table[subset_mask_key(subset)]]
-    return table
-
-
-def load_file_for_type(typ):
-    if typ not in unlocalization_map:
-        unlocalized_typ = typ
-    else:
-        unlocalized_typ, _ = unlocalization_map[typ]
-    [loaded_shapefile] = [
-        x for x in shapefiles.values() if x.meta["type"] == unlocalized_typ
-    ]
-    loaded_file = loaded_shapefile.load_file()
-    loaded_file["type"] = loaded_shapefile.meta["type"]
-    return filter_table_for_type(loaded_file, typ)

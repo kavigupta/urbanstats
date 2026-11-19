@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Poverty %",
+      "stat_path": "poverty_below_line",
+      "question": "higher % of people who are in poverty",
+      "longname_a": "TX-01 (2023), USA",
+      "longname_b": "MD-03 (2023), USA",
+      "stat_a": 0.1580184837758811,
+      "stat_b": 0.055634970070207505
+    },
+    "b": {
+      "stat_column": "High windspeed (>10mph) days %",
+      "stat_path": "wind_speed_over_10mph_4",
+      "question": "higher % of days with wind speed over 10mph (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Nampula, Mozambique",
+      "longname_b": "Veracruz de Ignacio de la Llave, Mexico",
+      "stat_a": 0.059414977724697456,
+      "stat_b": 0.0210450769572237
+    },
+    "a_ease": 0.7392529950669485,
+    "b_ease": 0.32177894048397643
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km)",
+      "stat_path": "ad_1",
+      "question": "higher population-weighted density (r=1km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Columbia MSA, SC, USA",
+      "longname_b": "Waco MSA, TX, USA",
+      "stat_a": 650.2918481811438,
+      "stat_b": 898.6281577519379
+    },
+    "b": {
+      "stat_column": "Undergrad Humanities %",
+      "stat_path": "education_field_humanities",
+      "question": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
+      "longname_a": "Colorado Springs MSA, CO, USA",
+      "longname_b": "Stockton-Lodi MSA, CA, USA",
+      "stat_a": 0.12716690509318254,
+      "stat_b": 0.06266770809645728
+    },
+    "a_ease": 0.23118279569892472,
+    "b_ease": 0.6532258064516129
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Public Insurance %",
+      "stat_path": "insurance_coverage_govt",
+      "question": "higher % of people who are on public insurance!TOOLTIP The denominator for this statistic is the the total number of adults, including those without health insurance coverage.",
+      "longname_a": "Raleigh city, North Carolina, USA",
+      "longname_b": "Fresno city, California, USA",
+      "stat_a": 0.08879925269612476,
+      "stat_b": 0.3515519404642422
+    },
+    "b": {
+      "stat_column": "Health diagnosing and treating practitioners and other technical occupations %",
+      "stat_path": "occupation_health_diagnosing_and_treating_practitioners_and_other_technical_occupations",
+      "question": "higher % of workers employed in health diagnosing and treating practitioners and other technical occupations!TOOLTIP doctors, registered nurses, physical therapists, pharmacists, dietitians, veterinarians, paramedics, etc.",
+      "longname_a": "KY-03 (2023), USA",
+      "longname_b": "TX-29 (2023), USA",
+      "stat_a": 0.050049278878032094,
+      "stat_b": 0.013871778365835159
+    },
+    "a_ease": 0.6664486592544147,
+    "b_ease": 0.2219873150105708
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Current asthma %",
+      "stat_path": "CASTHMA_cdc_2",
+      "question": "higher % of adults with asthma",
+      "longname_a": "Greenville County, South Carolina, USA",
+      "longname_b": "Pinal County, Arizona, USA",
+      "stat_a": 0.09247104566657381,
+      "stat_b": 0.1046914152207768
+    },
+    "b": {
+      "stat_column": "Life Expectancy (2019)",
+      "stat_path": "life_expectancy_2019",
+      "question": "higher life expectancy",
+      "longname_a": "Allentown-Bethlehem-Easton MSA, PA-NJ, USA",
+      "longname_b": "Tulsa MSA, OK, USA",
+      "stat_a": 79.70635870946174,
+      "stat_b": 76.81624701698257
+    },
+    "a_ease": 0.3664552501761804,
+    "b_ease": 0.7942521227955585
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad STEM [25-64] % [StatCan]",
+      "stat_path": "education_field_stem_canada",
+      "question": "higher % of people between 25 and 64 who have a STEM degree, as a percentage of the overall population",
+      "longname_a": "Oshawa CMA, ON, Canada",
+      "longname_b": "Halifax CMA, NS, Canada",
+      "stat_a": 0.1205014020132398,
+      "stat_b": 0.17166419111763617
+    },
+    "b": {
+      "stat_column": "Individual income < C$50k %",
+      "stat_path": "individual_income_under_50cad",
+      "question": "higher % of people who have individual income under C$50k",
+      "longname_a": "Gatineau Territory, Quebec, Canada",
+      "longname_b": "Division No. 11, Saskatchewan, Canada",
+      "stat_a": 0.5307616751495673,
+      "stat_b": 0.5664495180945721
+    },
+    "a_ease": 0.34108527131782945,
+    "b_ease": 0.804089709762533
+  }
+]

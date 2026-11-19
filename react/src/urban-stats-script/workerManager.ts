@@ -1,0 +1,96 @@
+import { useEffect, useRef } from 'react'
+
+import validGeographies from '../data/mapper/used_geographies'
+import { Universe } from '../universe'
+import { debugTabId } from '../utils/debug-logging'
+
+import { UrbanStatsASTStatement } from './ast'
+import { EditorError } from './editor-utils'
+import { USSOpaqueType, USSOpaqueValue, USSValue } from './types-values'
+
+export type GeographyKind = typeof validGeographies[number]
+
+export interface GeographySelection {
+    universe: Universe
+    geographyKind: GeographyKind
+}
+
+export type USSExecutionDescriptor = { kind: 'generic' } | { kind: 'mapper', geographies: GeographySelection[] } | { kind: 'statistics', geographies: GeographySelection[] }
+export interface USSExecutionRequest { descriptor: USSExecutionDescriptor, stmts: UrbanStatsASTStatement }
+export type AsyncInterpretationError = EditorError[]
+
+export interface AssignmentsResult {
+    variables: Map<string, USSValue> | undefined
+    // Values functions recorded for the expressions they came from, keyed by block ident
+    blockValues: Map<string, USSValue> | undefined
+}
+
+// Assignments can be large and get held by React memoization, so clear the old ones once replaced
+export function useClearPreviousAssignments(assignments: AssignmentsResult): void {
+    const prev = useRef(assignments)
+    useEffect(() => {
+        if (assignments !== prev.current) {
+            prev.current.variables = undefined
+            prev.current.blockValues = undefined
+            prev.current = assignments
+        }
+    })
+}
+
+export interface USSExecutionResult<Value extends USSValue = USSValue> {
+    resultingValue?: Value
+    error: AsyncInterpretationError
+    assignments: AssignmentsResult
+}
+
+export function executeAsync(request: { descriptor: { kind: 'mapper', geographies: GeographySelection[] }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' | 'clusterMap' } }>>
+export function executeAsync(request: { descriptor: { kind: 'statistics', geographies: GeographySelection[] }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: USSOpaqueValue & { opaqueType: 'table' } }>>
+export function executeAsync(request: USSExecutionRequest): Promise<USSExecutionResult>
+export async function executeAsync(request: USSExecutionRequest): Promise<USSExecutionResult> {
+    sharedUSSWorker ??= createUSSWorker()
+    return await sharedUSSWorker(request)
+}
+
+type USSWorker = (params: USSExecutionRequest) => Promise<USSExecutionResult>
+
+let sharedUSSWorker: USSWorker | undefined
+
+const terminationDelay = 10_000
+
+function createUSSWorker(): USSWorker {
+    const worker = new Worker(new URL('./worker', import.meta.url), { name: `${debugTabId}/uss` })
+    // The worker may return responses out of order, so we need to give them identifiers
+    const messageQueue = new Map<number, (result: USSExecutionResult) => void>()
+    worker.addEventListener('message', (message: MessageEvent<{ result: USSExecutionResult, id: number }>) => {
+        messageQueue.get(message.data.id)!(message.data.result)
+        messageQueue.delete(message.data.id)
+    })
+
+    // worker should terminate if not used
+    let terminationTimer: ReturnType<typeof setTimeout> | undefined
+    function resetTerminationTimer(): void {
+        clearTimeout(terminationTimer)
+        terminationTimer = setTimeout(() => {
+            if (messageQueue.size > 0) {
+                resetTerminationTimer()
+            }
+            else {
+                worker.terminate()
+                sharedUSSWorker = undefined
+            }
+        }, terminationDelay)
+    }
+    resetTerminationTimer()
+
+    let counter = 0
+    const result: USSWorker = (request) => {
+        resetTerminationTimer()
+        const id = ++counter
+        worker.postMessage({ request, id })
+        return new Promise((resolve) => {
+            messageQueue.set(id, resolve)
+        })
+    }
+
+    return result
+}

@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2012-2016 Swing",
+      "stat_path": "2012-2016 Swing-margin",
+      "question": "!FULL Which swung less towards Republicans from 2012 to 2016?",
+      "longname_a": "Fresno MSA, CA, USA",
+      "longname_b": "Grand Rapids-Wyoming MSA, MI, USA",
+      "stat_a": 0.09107445169400466,
+      "stat_b": 0.01574075807438896
+    },
+    "b": {
+      "stat_column": "2BR Rent > $1500 %",
+      "stat_path": "rent_2br_over_1500",
+      "question": "higher % of units with 2br rent over $1500",
+      "longname_a": "Myrtle Beach-Conway-North Myrtle Beach MSA, SC-NC, USA",
+      "longname_b": "Greeley MSA, CO, USA",
+      "stat_a": 0.054561237342133376,
+      "stat_b": 0.22277606019826854
+    },
+    "a_ease": 0.6512042818911686,
+    "b_ease": 0.24977698483496877
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2008 Presidential Election",
+      "stat_path": "2008 Presidential Election-margin",
+      "question": "!FULL Which voted more for Obama in the 2008 presidential election?",
+      "longname_a": "Toledo MSA, OH, USA",
+      "longname_b": "Jacksonville MSA, FL, USA",
+      "stat_a": 0.23464189684673598,
+      "stat_b": -0.15774440496134723
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km)",
+      "stat_path": "ad_4",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Connecticut, USA",
+      "longname_b": "Illinois, USA",
+      "stat_a": 930.0150737138828,
+      "stat_b": 1828.2690568491375
+    },
+    "a_ease": 0.7106135986733002,
+    "b_ease": 0.3043117744610282
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Cancer (excluding skin cancer) %",
+      "stat_path": "CANCER_cdc_2",
+      "question": "higher % of adults with cancer (excluding skin cancer)",
+      "longname_a": "Bell County, Texas, USA",
+      "longname_b": "Kent County, Michigan, USA",
+      "stat_a": 0.05010032729613745,
+      "stat_b": 0.06420588632314025
+    },
+    "b": {
+      "stat_column": "Undergrad Business [25-64] % [StatCan]",
+      "stat_path": "education_field_business_canada",
+      "question": "higher % of people between 25 and 64 who have a business degree, as a percentage of the overall population",
+      "longname_a": "Alberta, Canada",
+      "longname_b": "Ontario, Canada",
+      "stat_a": 0.06694832454337706,
+      "stat_b": 0.08415591608044715
+    },
+    "a_ease": 0.31612223393045313,
+    "b_ease": 0.743940990516333
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household income < C$50k %",
+      "stat_path": "household_income_under_50cad",
+      "question": "higher % of households that have household income under C$50k",
+      "longname_a": "Kitchener Urban Center, Canada",
+      "longname_b": "Quebec Urban Center, Canada",
+      "stat_a": 0.24066864525534762,
+      "stat_b": 0.32638216126508457
+    },
+    "b": {
+      "stat_column": "Renter %",
+      "stat_path": "rent_or_own_rent",
+      "question": "higher % of people who are renters",
+      "longname_a": "FL-10 (2023), USA",
+      "longname_b": "IL-11 (2023), USA",
+      "stat_a": 0.5056062581894198,
+      "stat_b": 0.2449757382091765
+    },
+    "a_ease": 0.357379767827529,
+    "b_ease": 0.7689562890276539
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2015GE 2-Coalition Margin",
+      "stat_path": "2015GE-coalition_margin",
+      "question": "!FULL Which voted more for the left-of-center parties in the 2015 Canadian general election?!TOOLTIP By 2-Coalition Margin, which is calculated as (Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation.",
+      "longname_a": "Qu\u00e9bec Population Center, QC, Canada",
+      "longname_b": "Windsor Population Center, ON, Canada",
+      "stat_a": 0.11793000030848845,
+      "stat_b": 0.46953122714174744
+    },
+    "b": {
+      "stat_column": "Stroke %",
+      "stat_path": "STROKE_cdc_2",
+      "question": "higher % of adults who have had a stroke",
+      "longname_a": "Sonoma County, California, USA",
+      "longname_b": "Spartanburg County, South Carolina, USA",
+      "stat_a": 0.027037127027320647,
+      "stat_b": 0.032690206463864065
+    },
+    "a_ease": 0.42571127502634354,
+    "b_ease": 0.8276990185387132
+  }
+]

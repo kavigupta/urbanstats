@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Sleeping less than 7 hours %",
+      "stat_path": "SLEEP_cdc_2",
+      "question": "higher % of adults who sleep less than 7 hours",
+      "longname_a": "FL-01 (2023), USA",
+      "longname_b": "TX-37 (2023), USA",
+      "stat_a": 0.34838478508245896,
+      "stat_b": 0.29506655468183185
+    },
+    "b": {
+      "stat_column": "% units built pre-1970",
+      "stat_path": "year_built_1969_or_earlier",
+      "question": "higher % of housing units built before 1970",
+      "longname_a": "Wichita-Hutchinson KS Media Market, USA",
+      "longname_b": "Anchorage AK Media Market, USA",
+      "stat_a": 0.49525571269052854,
+      "stat_b": 0.13918661394860682
+    },
+    "a_ease": 0.3462350457424349,
+    "b_ease": 0.7600644122383253
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Vacancy %",
+      "stat_path": "vacancy",
+      "question": "higher % of units that are vacant!TOOLTIP Vacancy is the % of housing units that were not occupied on April 1, 2020 (census night). This includes vacation homes but does *not* include units that were not occupied due to the pandemic, the census attempted to account for this.",
+      "longname_a": "Sarasota County, Florida, USA",
+      "longname_b": "Lehigh County, Pennsylvania, USA",
+      "stat_a": 0.20905484118265377,
+      "stat_b": 0.045803259643055066
+    },
+    "b": {
+      "stat_column": "Born in state of residence %",
+      "stat_path": "birthplace_us_state",
+      "question": "higher % of people who were born in their state of residence",
+      "longname_a": "Reno [Urban Area], NV-CA, USA",
+      "longname_b": "Shreveport [Urban Area], LA, USA",
+      "stat_a": 0.3337153563740119,
+      "stat_b": 0.713817234711313
+    },
+    "a_ease": 0.3898635477582846,
+    "b_ease": 0.8024691358024691
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2019GE 2-Coalition Margin",
+      "stat_path": "2019GE-coalition_margin",
+      "question": "!FULL Which voted more for the left-of-center parties in the 2019 Canadian general election?!TOOLTIP By 2-Coalition Margin, which is calculated as (Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation.",
+      "longname_a": "Capital Regional district, British Columbia, Canada",
+      "longname_b": "Division No. 11, Alberta, Canada",
+      "stat_a": 0.6078848364584898,
+      "stat_b": -0.2502084557006618
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km)",
+      "stat_path": "ad_1",
+      "question": "higher population-weighted density (r=1km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Fresno-Visalia CA Media Market, USA",
+      "longname_b": "Louisville KY Media Market, USA",
+      "stat_a": 1653.2811707117296,
+      "stat_b": 853.0401799302042
+    },
+    "a_ease": 0.8271604938271605,
+    "b_ease": 0.42337662337662335
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household Income < $50k %",
+      "stat_path": "household_income_under_50k",
+      "question": "higher % of households who have household income under $50k",
+      "longname_a": "Richmond [Urban Area], VA, USA",
+      "longname_b": "Honolulu [Urban Area], HI, USA",
+      "stat_a": 0.3452167949752026,
+      "stat_b": 0.2622656572642152
+    },
+    "b": {
+      "stat_column": "High school diploma [25-64] %",
+      "stat_path": "education_high_school_canada",
+      "question": "higher % of people between 25 and 64 who have at least a high school diploma",
+      "longname_a": "Surrey City, Greater Vancouver Regional district, British Columbia, Canada",
+      "longname_b": "Halifax Regional Municipality, Halifax County, Nova Scotia, Canada",
+      "stat_a": 0.8915046736702787,
+      "stat_b": 0.933702038024251
+    },
+    "a_ease": 0.5611916264090178,
+    "b_ease": 0.16093366093366093
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Self-care disability %",
+      "stat_path": "SELFCARE_cdc_2",
+      "question": "higher % of adults with a self-care disability",
+      "longname_a": "GA-07 (2025), USA",
+      "longname_b": "TX-18 (2023), USA",
+      "stat_a": 0.02471265072239506,
+      "stat_b": 0.056876576276792004
+    },
+    "b": {
+      "stat_column": "Farming, fishing, and forestry occupations %",
+      "stat_path": "occupation_farming,_fishing,_and_forestry_occupations",
+      "question": "higher % of workers employed in farming, fishing, and forestry occupations!TOOLTIP farmers, ranchers, fishers, loggers, forest workers, etc.",
+      "longname_a": "Jackson County, Missouri, USA",
+      "longname_b": "Ada County, Idaho, USA",
+      "stat_a": 0.001731899705243995,
+      "stat_b": 0.006844306175632816
+    },
+    "a_ease": 0.43376623376623374,
+    "b_ease": 0.8384520884520884
+  }
+]

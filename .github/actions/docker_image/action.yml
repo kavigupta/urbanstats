@@ -4,6 +4,10 @@ inputs:
   dockerfile:
     description: "Path to the Dockerfile"
     required: true
+  extra-hash-files:
+    description: "Space separated files the Dockerfile copies in, which must also change the tag"
+    required: false
+    default: ""
   repository:
     description: "The docker respository"
     required: false
@@ -22,9 +26,9 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Create the tag by hashing the dockerfile
+    - name: Create the tag by hashing the dockerfile and whatever it copies in
       id: tag
-      run: echo "tag=$(shasum -a 256 ${{ inputs.dockerfile }} | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
+      run: echo "tag=$(shasum -a 256 ${{ inputs.dockerfile }} ${{ inputs.extra-hash-files }} | shasum -a 256 | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: concat the Docker image name
@@ -35,12 +39,21 @@ runs:
     - name: Check for existing image
       id: existing-image
       run: |
-        GHCR_TOKEN=$(echo -n ${{ inputs.token }} | base64)
-        echo "response=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${GHCR_TOKEN}" https://${{ inputs.registry }}/v2/${{ inputs.repository }}/manifests/${{ steps.tag.outputs.tag }})" >> $GITHUB_OUTPUT
+        # -w0 because base64 wraps at 76 columns by default, and ghcr.io answers 400 to a header with a newline.
+        GHCR_TOKEN=$(echo -n "${{ inputs.token }}" | base64 -w0)
+        # --http1.1 because ghcr.io intermittently kills HTTP/2 streams (curl exit 92).
+        response=$(curl -s -o /dev/null -w "%{http_code}" --http1.1 --retry 3 --retry-all-errors -H "Authorization: Bearer ${GHCR_TOKEN}" https://${{ inputs.registry }}/v2/${{ inputs.repository }}/manifests/${{ steps.tag.outputs.tag }})
+        echo "Manifest query returned $response"
+        case "$response" in
+          200) echo "exists=true" >> $GITHUB_OUTPUT ;;
+          404) echo "exists=false" >> $GITHUB_OUTPUT ;;
+          # Treating this as "missing" once hid a 400 that made every run rebuild the image.
+          *) echo "Unexpected response from the registry"; exit 1 ;;
+        esac
       shell: bash
 
     - name: Log in to the Container registry
-      if: ${{ steps.existing-image.outputs.response == '404' }}
+      if: ${{ steps.existing-image.outputs.exists == 'false' }}
       uses: docker/login-action@v3
       with:
         registry: ${{ inputs.registry }}
@@ -48,7 +61,7 @@ runs:
         password: ${{ inputs.token }}
 
     - name: Build and push Docker image
-      if: ${{ steps.existing-image.outputs.response == '404' }}
+      if: ${{ steps.existing-image.outputs.exists == 'false' }}
       uses: docker/build-push-action@v6
       with:
         context: .

@@ -2,9 +2,6 @@ import attr
 import geopandas as gpd
 import pandas as pd
 
-from ..osm.buses import national_stops
-from .within_distance import shapefile_points_to_radius
-
 
 @attr.s
 class Feature:
@@ -13,8 +10,9 @@ class Feature:
     radius_km = attr.ib()
     load_fn = attr.ib()
 
-    def load_as_shapefile(self):
-        return shapefile_points_to_radius(self.radius_km, self.load_fn())
+    def __permacache_hash__(self):
+        # load_fn is a function, which stable_hash can't hash, so hash_key stands in for it
+        return [self.hash_key, self.name, self.radius_km]
 
     def within_distance_column_name(self):
         return (
@@ -49,15 +47,6 @@ def load_airports():
         | (file["type"] == "medium_airport") & (file.scheduled_ == "yes")
     ]
     return file[["geometry"]]
-
-
-def load_buses():
-    s = national_stops().copy()
-    s.geometry = s.geometry.centroid
-    s = s[~s.geometry.is_empty]
-    s = s.set_crs("epsg:4326")
-    # s = s[["geometry"]]
-    return s
 
 
 def load_schools():

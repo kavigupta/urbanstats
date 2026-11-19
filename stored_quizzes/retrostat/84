@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Mean Elevation",
+      "stat_path": "gridded_elevation",
+      "question": "higher population-weighted mean elevation !TOOLTIP Population weighted elevation/hilliness statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Nuevo Laredo Urban Center, Mexico-USA",
+      "longname_b": "Pune Urban Center, India",
+      "stat_a": 136.72515869140625,
+      "stat_b": 583.826171875
+    },
+    "b": {
+      "stat_column": "High School %",
+      "stat_path": "education_high_school",
+      "question": "higher % of people who have at least a high school diploma",
+      "longname_a": "Bell County, Texas, USA",
+      "longname_b": "Los Angeles County, California, USA",
+      "stat_a": 0.9151527113887767,
+      "stat_b": 0.8040888491156064
+    },
+    "a_ease": 0.6325128792215227,
+    "b_ease": 0.21487603305785125
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High school diploma [25-64] %",
+      "stat_path": "education_high_school_canada",
+      "question": "higher % of people between 25 and 64 who have at least a high school diploma",
+      "longname_a": "Halifax Regional Municipality, Halifax County, Nova Scotia, Canada",
+      "longname_b": "Hamilton City, Hamilton CDR, Ontario, Canada",
+      "stat_a": 0.933702038024251,
+      "stat_b": 0.8955425709515858
+    },
+    "b": {
+      "stat_column": "Pedestrian/Cyclist Fatalities Per Capita Per Year",
+      "stat_path": "traffic_fatalities_ped_last_decade_per_capita",
+      "question": "higher pedestrian/cyclist fatalities per capita between 2013 and 2022!TOOLTIP pedestrian and cyclist fatalities in the region, divided by the population of the region",
+      "longname_a": "Baton Rouge LA Media Market, USA",
+      "longname_b": "Colorado Springs-Pueblo CO Media Market, USA",
+      "stat_a": 3.8564425963738815e-05,
+      "stat_b": 1.654573444192979e-05
+    },
+    "a_ease": 0.21416083916083917,
+    "b_ease": 0.640119760479042
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household income > C$100k %",
+      "stat_path": "household_income_above_100_cad",
+      "question": "higher % of households that have household income over C$100k",
+      "longname_a": "London City, Middlesex County, Ontario, Canada",
+      "longname_b": "Winnipeg City, Division No. 11, Manitoba, Canada",
+      "stat_a": 0.3587488640694166,
+      "stat_b": 0.38339555433777406
+    },
+    "b": {
+      "stat_column": "High temperature Below 40\u00b0F %",
+      "stat_path": "days_below_40_4",
+      "question": "higher % of cold days (days with high temp under 40\u00b0F, population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "KS-02 (2023), USA",
+      "longname_b": "OH-13 (2023), USA",
+      "stat_a": 0.11079057137958094,
+      "stat_b": 0.1956886118012909
+    },
+    "a_ease": 0.3961076130509445,
+    "b_ease": 0.806015037593985
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Rainfall",
+      "stat_path": "rainfall_4",
+      "question": "higher rainfall (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Davenport [Urban Area], IA-IL, USA",
+      "longname_b": "Riverside-San Bernardino [Urban Area], CA, USA",
+      "stat_a": 0.8762914025621525,
+      "stat_b": 0.40232873873856634
+    },
+    "b": {
+      "stat_column": "Commute Work From Home %",
+      "stat_path": "transportation_means_worked_at_home",
+      "question": "higher % of people who work from home",
+      "longname_a": "Charlotte city, North Carolina, USA",
+      "longname_b": "Newark city, New Jersey, USA",
+      "stat_a": 0.16709479295219123,
+      "stat_b": 0.037757638263832424
+    },
+    "a_ease": 0.8488838008013738,
+    "b_ease": 0.44647967945048656
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Bike %",
+      "stat_path": "transportation_means_bike",
+      "question": "higher % of people who commute by bike",
+      "longname_a": "Sherman TX-Ada OK Media Market, USA",
+      "longname_b": "Chico-Redding CA Media Market, USA",
+      "stat_a": 0.003002500969627246,
+      "stat_b": 0.013217312605469813
+    },
+    "b": {
+      "stat_column": "Gen Z %",
+      "stat_path": "generation_genz",
+      "question": "higher % of people who are gen z!TOOLTIP born between 1997 and 2011",
+      "longname_a": "Tucson city, Arizona, USA",
+      "longname_b": "Anaheim city, California, USA",
+      "stat_a": 0.2414980873158259,
+      "stat_b": 0.20872013930342073
+    },
+    "a_ease": 0.8548872180451128,
+    "b_ease": 0.4223404255319149
+  }
+]

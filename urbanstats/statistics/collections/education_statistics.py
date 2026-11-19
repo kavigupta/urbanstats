@@ -18,6 +18,19 @@ class EducationStatistics(ACSStatisticsColection):
             "education_field_business": "Undergrad Business %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
+    def varname_for_each_statistic(self):
+        return {
+            "education_high_school": "high_school",
+            "education_ugrad": "undergrad",
+            "education_grad": "graduate",
+            "education_field_stem": "stem_degree",
+            "education_field_humanities": "humanities_degree",
+            "education_field_business": "business_degree",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("education")
 
@@ -40,9 +53,6 @@ class EducationStatistics(ACSStatisticsColection):
                 },
             ),
         }
-
-    def quiz_question_unused(self):
-        return []
 
     def mutate_acs_results(self, statistics_table):
         education_denominator = (

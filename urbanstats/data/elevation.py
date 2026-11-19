@@ -12,7 +12,6 @@ from urbanstats.data.nasa import get_nasa_data
 
 PER_CELL = 3600
 CHUNK = 15  # double GPW's 30 arcsecond resolution
-reduced_cell = PER_CELL // CHUNK
 
 r_earth = 6371
 hilliness_dist = 0.1
@@ -181,13 +180,3 @@ elevation_gds = {
     "gridded_hilliness": HillinessGriddedData(),
     "gridded_elevation": ElevationGriddedData(),
 }
-
-
-@lru_cache(maxsize=1)
-def full_elevation():
-    return create_full_image(aggregated_elevation, 2)
-
-
-@lru_cache(maxsize=1)
-def full_hilliness():
-    return create_full_image(aggregated_hilliness, 2)

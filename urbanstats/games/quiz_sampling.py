@@ -1,18 +1,28 @@
 from functools import lru_cache
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
 
+from urbanstats.games.fit_distribution.distribution import QuizQuestionPossibilities
+from urbanstats.games.infinite.stored import (
+    juxta_version,
+    stored_quiz_question_distribution,
+)
 from urbanstats.games.quiz_question_distribution import MIN_POP, MIN_POP_INTERNATIONAL
+from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.utils import DiscreteDistribution
+from urbanstats.website_data.centroids import compute_all_centroids
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 from .quiz_question_distribution import collections_index, quiz_question_weights
-from .quiz_regions import region_map
+from .quiz_regions import QuizTable, region_map
 
 
 @lru_cache()
-def compute_quiz_question_distribution():
+def compute_quiz_question_distribution() -> (
+    Tuple[np.ndarray, QuizQuestionPossibilities, List[DiscreteDistribution]]
+):
     geographies_by_type = compute_geographies_by_type()
     lookup_table = pd.concat([x.data for x in geographies_by_type.values()])
     prob_res = quiz_question_weights(geographies_by_type)
@@ -23,9 +33,12 @@ def compute_quiz_question_distribution():
     return data, qqp, ps
 
 
-def compute_geographies_by_type():
+def compute_geographies_by_type() -> Dict[str, QuizTable]:
     t = shapefile_without_ordinals().copy()
     t["local_region_mask"] = t.universes.apply(lambda x: "Canada" in x or "USA" in x)
+    centroids = compute_all_centroids(shapefiles).loc[t.longname]
+    t["centroid_lat"] = [c.y for c in centroids]
+    t["centroid_lon"] = [c.x for c in centroids]
     filtered_for_pop = t[
         t.best_population_estimate
         > t.local_region_mask.apply(lambda x: MIN_POP if x else MIN_POP_INTERNATIONAL)
@@ -37,8 +50,8 @@ def compute_geographies_by_type():
     return geographies_by_type
 
 
-def sample_quiz_indices(rng):
-    _, qqp, ps = compute_quiz_question_distribution()
+def sample_quiz_indices(rng: Any) -> np.ndarray:
+    _, qqp, ps = stored_quiz_question_distribution(juxta_version)
     while True:
         indices = np.array([pi.sample(rng, 10) for pi in ps])
         stat_indices = np.array(
@@ -49,8 +62,8 @@ def sample_quiz_indices(rng):
                 return indices[:, i]
 
 
-def sample_quiz(rng):
-    data, qqp, _ = compute_quiz_question_distribution()
+def sample_quiz(rng: Any) -> List[Dict[str, Any]]:
+    data, qqp, _ = stored_quiz_question_distribution(juxta_version)
     indices = sample_quiz_indices(rng)
     quiz = []
     for qs, idx in zip(qqp.questions_by_number, indices):

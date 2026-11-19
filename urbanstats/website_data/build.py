@@ -2,15 +2,16 @@ import hashlib
 import os
 import shutil
 import subprocess
+from typing import FrozenSet, Set, Union
 
 from urbanstats.consolidated_data.produce_consolidated_data import (
     full_consolidated_data,
-    output_boundaries,
     output_names,
 )
 from urbanstats.games.infinite.data import output_quiz_sampling_info
 from urbanstats.games.quiz import generate_quizzes
 from urbanstats.games.retrostat import generate_retrostats
+from urbanstats.geometry.insets import compute_all_insets
 from urbanstats.geometry.relationship import map_relationships_by_type
 from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 from urbanstats.geometry.relationship import type_to_type_category
@@ -20,8 +21,11 @@ from urbanstats.geometry.shapefiles.shapefiles_list import (
     shapefiles,
 )
 from urbanstats.mapper.ramp import output_ramps
+from urbanstats.metadata.congressional_representatives import load_party_pages
+from urbanstats.metadata.export import export_metadata_types
 from urbanstats.ordinals.ordering_info_outputter import output_ordering
 from urbanstats.protobuf.data_files_pb2_hash import proto_hash
+from urbanstats.protobuf.utils import save_universes_list_all
 from urbanstats.special_cases.symlinks.compute_symlinks import compute_symlinks
 from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.occupation import OccupationStatistics
@@ -37,20 +41,29 @@ from urbanstats.universe.universe_list import all_universes, default_universes
 from urbanstats.website_data.centroids import export_centroids
 from urbanstats.website_data.create_article_gzips import (
     create_article_gzips,
-    create_symlink_gzips,
     extra_stats,
+)
+from urbanstats.website_data.cross_source_border_types import (
+    cross_source_border_types,
+    geography_data_source_country,
+    statistic_data_source_country,
+    universe_data_source_country,
+)
+from urbanstats.website_data.default_universe_by_stat_geo import (
+    output_default_universe_by_stat_geo,
 )
 from urbanstats.website_data.index import export_index, type_to_priority_list
 from urbanstats.website_data.ordinals import all_ordinals
 from urbanstats.website_data.output_geometry import produce_all_geometry_json
 from urbanstats.website_data.sitemap import output_sitemap
+from urbanstats.website_data.syau import get_suffixes_from_table, syau_regions
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 from ..utils import output_typescript
 from .colors import hue_colors, related_button_colors
 
 
-def check_proto_hash():
+def check_proto_hash() -> None:
     with open("data_files.proto", "rb") as f:
         h = hashlib.sha256(f.read()).hexdigest()
     if h == proto_hash:
@@ -60,7 +73,7 @@ def check_proto_hash():
     )
 
 
-def link_scripts_folder(site_folder, mode):
+def link_scripts_folder(site_folder: str, mode: str) -> None:
     if os.path.islink(f"{site_folder}/scripts"):
         os.unlink(f"{site_folder}/scripts")
     else:
@@ -71,7 +84,7 @@ def link_scripts_folder(site_folder, mode):
         shutil.copytree("dist", f"{site_folder}/scripts")
 
 
-def create_react_jsons():
+def create_react_jsons() -> None:
     with open("react/src/data/map_relationship.ts", "w") as f:
         output_typescript(map_relationships_by_type, f)
 
@@ -97,6 +110,12 @@ def create_react_jsons():
     with open("react/src/data/universes_default.ts", "w") as f:
         output_typescript(default_universes, f)
 
+    with open("react/src/data/metadata.ts", "w") as f:
+        output_typescript(export_metadata_types(), f)
+
+    with open("react/src/data/party_pages.ts", "w") as f:
+        output_typescript(load_party_pages(version="main"), f)
+
     with open("react/src/data/explanation_industry_occupation_table.ts", "w") as f:
         output_typescript(
             {
@@ -109,8 +128,9 @@ def create_react_jsons():
     with open("react/src/data/extra_stats.ts", "w") as f:
         output_typescript(
             [
-                (k, v.extra_stat_spec(list(internal_statistic_names())))
-                for k, v in sorted(extra_stats().items())
+                (k, spec.extra_stat_spec(list(internal_statistic_names())))
+                for k, specs in sorted(extra_stats().items())
+                for spec in specs
             ],
             f,
         )
@@ -120,6 +140,25 @@ def create_react_jsons():
 
     with open("react/src/data/relatedButtonColors.ts", "w") as f:
         output_typescript(list(related_button_colors.items()), f)
+
+    with open("react/src/data/syau_region_types.ts", "w") as f:
+        output_typescript(syau_regions(), f)
+
+    with open("react/src/data/cross_source_border_types.ts", "w") as f:
+        output_typescript(cross_source_border_types(), f)
+
+    with open("react/src/data/universe_data_source_country.ts", "w") as f:
+        output_typescript(
+            universe_data_source_country(), f, data_type="Record<string, string>"
+        )
+
+    with open("react/src/data/statistic_data_source_country.ts", "w") as f:
+        output_typescript(statistic_data_source_country(), f)
+
+    with open("react/src/data/geography_data_source_country.ts", "w") as f:
+        output_typescript(
+            geography_data_source_country(), f, data_type="Record<string, string>"
+        )
 
     mapper_folder = "react/src/data/mapper"
     try:
@@ -141,7 +180,8 @@ def create_react_jsons():
         output_typescript(
             compute_data_credits(
                 sorted(
-                    shapefiles.values(), key=lambda x: type_ordering_idx[x.meta["type"]]
+                    shapefiles.values(),
+                    key=lambda x: type_ordering_idx[x.metadata.meta["type"]],
                 )
             ),
             f,
@@ -149,7 +189,7 @@ def create_react_jsons():
         )
 
 
-def build_react_site(site_folder, mode):
+def build_react_site(site_folder: str, mode: str) -> None:
     if mode != "ci":
         # In ci, we cache the node_modules
         subprocess.run(
@@ -157,12 +197,6 @@ def build_react_site(site_folder, mode):
         )
 
     create_react_jsons()
-
-    subprocess.run(
-        ["npx", "eslint", "--fix", "src/data"],
-        check=True,
-        cwd="react",
-    )
 
     subprocess.run(
         f"cd react; npm run {'dev' if mode == 'dev' else 'prod'}",
@@ -173,38 +207,16 @@ def build_react_site(site_folder, mode):
     link_scripts_folder(site_folder, mode)
 
 
-# pylint: disable-next=too-many-branches,too-many-arguments,too-many-statements
-def build_urbanstats(
-    site_folder,
-    *,
-    no_geo=False,
-    no_data=False,
-    no_juxta=False,
-    no_data_jsons=False,
-    no_index=False,
-    no_sitemap=False,
-    no_ordering=False,
-    mode=None,
-):
-    if not mode:
-        print("Must pass --mode=dev,prod,ci")
-        return
+BUILD_STEPS = frozenset({"shapes", "articles", "index", "ordering", "sitemap", "juxta"})
 
+
+# pylint: disable-next=too-many-branches,too-many-statements,too-many-locals
+def build_urbanstats(
+    site_folder: str, *, steps: Union[Set[str], FrozenSet[str]], mode: str
+) -> None:
     check_proto_hash()
-    if not no_geo:
-        print("Producing geometry jsons")
-    if not no_data_jsons and not no_data:
-        print("Producing data for each article")
-    if not no_index and not no_data:
-        print("Producing index")
-    if not no_ordering and not no_data:
-        print("Producing ordering")
-    if not no_sitemap and not no_data:
-        print("Producing sitemap")
-    if not no_data:
-        print("Producing summary data")
-    if not no_juxta:
-        print("Producing juxta quizzes")
+    print("Steps to run:", *steps, "scripts")
+
     for sub in [
         "index",
         "r",
@@ -222,37 +234,57 @@ def build_urbanstats(
         except FileExistsError:
             pass
 
-    if not no_geo:
+    if "shapes" in steps:
         produce_all_geometry_json(
-            f"{site_folder}/shape", set(shapefile_without_ordinals().longname)
+            f"{site_folder}/shape",
+            set(shapefile_without_ordinals().longname),
+            symlinks=compute_symlinks(),
         )
 
-    if not no_data:
-        if not no_data_jsons:
-            create_article_gzips(
-                site_folder, shapefile_without_ordinals(), all_ordinals()
-            )
-            create_symlink_gzips(site_folder, compute_symlinks())
+    if "articles" in steps:
+        create_article_gzips(
+            site_folder,
+            shapefile_without_ordinals(),
+            all_ordinals(),
+            symlinks=compute_symlinks(),
+        )
 
-        if not no_index:
-            export_index(shapefile_without_ordinals(), site_folder)
+    if "index" in steps:
+        export_index(shapefile_without_ordinals(), site_folder)
 
-        if not no_ordering:
-            table = shapefile_without_ordinals()
-            output_ordering(
-                site_folder,
-                all_ordinals(),
-                longname_to_type=dict(zip(table.longname, table.type)),
-            )
+    if "ordering" in steps:
+        table = shapefile_without_ordinals()
+        save_universes_list_all(
+            table,
+            all_ordinals(),
+            site_folder,
+        )
+        output_ordering(
+            site_folder,
+            all_ordinals(),
+            longname_to_type=dict(zip(table.longname, table.type)),
+            longname_to_shortname=dict(zip(table.longname, table.shortname)),
+            longname_to_cleanname=dict(zip(table.longname, table.cleanname)),
+        )
 
         full_consolidated_data(site_folder)
-        output_boundaries(site_folder)
         export_centroids(site_folder, shapefiles, all_ordinals())
 
-        if not no_sitemap:
-            output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
+        with open("react/src/data/syau_suffixes.ts", "w") as f_suffixes:
+            output_typescript(
+                get_suffixes_from_table(shapefile_without_ordinals()),
+                f_suffixes,
+                data_type="string[]",
+            )
 
-    if not no_juxta:
+        compute_all_insets(shapefile_without_ordinals())
+
+        output_default_universe_by_stat_geo(shapefile_without_ordinals(), site_folder)
+
+    if "sitemap" in steps:
+        output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
+
+    if "juxta" in steps:
         output_quiz_sampling_info(site_folder, "quiz_sampling_info")
         generate_quizzes(f"{site_folder}/quiz/")
 
@@ -266,17 +298,31 @@ def build_urbanstats(
         "random",
         "about",
         "data-credit",
+        "uss-documentation",
         "mapper",
+        "editor",
+        "oauth-callback",
+        "snapshot-diff-viewer",
+        "embed-preview",
     ]:
-        with open(f"{site_folder}/{entrypoint}.html", "w") as f:
-            f.write(html_index())
+        with open(f"{site_folder}/{entrypoint}.html", "w") as f_entry:
+            f_entry.write(html_index())
 
-    with open(f"{site_folder}/quiz.html", "w") as f:
-        f.write(
+    with open(f"{site_folder}/quiz.html", "w") as f_quiz:
+        f_quiz.write(
             html_index(
                 title="Juxtastat",
                 image="https://urbanstats.org/juxtastat-link-preview.png",  # Image url must be absolute, or gets messed up from juxtastat.org
                 description="Test your knowledge of geography and statistics! New quiz every day",
+            )
+        )
+
+    with open(f"{site_folder}/syau.html", "w") as f_syau:
+        f_syau.write(
+            html_index(
+                title="So you're an urbanist?",
+                image="https://urbanstats.org/syau-link-preview.png",
+                description="Name every urb 😤",
             )
         )
 
@@ -288,17 +334,51 @@ def build_urbanstats(
     shutil.copy("icons/main/share.png", f"{site_folder}/")
     shutil.copy("icons/main/screenshot.png", f"{site_folder}/")
     shutil.copy("icons/main/download.png", f"{site_folder}/")
+    shutil.copy("icons/main/add.png", f"{site_folder}/")
+    shutil.copy("icons/main/add-green-small.png", f"{site_folder}/")
     shutil.copy("icons/main/link-preview.png", f"{site_folder}/")
     shutil.copy("icons/main/juxtastat-link-preview.png", f"{site_folder}/")
+    shutil.copy("icons/main/syau-link-preview.png", f"{site_folder}/")
     shutil.copy("icons/main/life.png", f"{site_folder}/")
     shutil.copy("icons/main/life-lost.png", f"{site_folder}/")
     shutil.copy("icons/main/life-colorblind.png", f"{site_folder}/")
+    shutil.copy("icons/main/replace.png", f"{site_folder}/")
+    shutil.copy("icons/main/close.png", f"{site_folder}/")
+    shutil.copy("icons/main/close-red-small.png", f"{site_folder}/")
+    shutil.copy("icons/main/pencil-light.png", f"{site_folder}/")
+    shutil.copy("icons/main/pencil-dark.png", f"{site_folder}/")
+    shutil.copy("icons/main/sort-up.png", f"{site_folder}/")
+    shutil.copy("icons/main/sort-down.png", f"{site_folder}/")
+    shutil.copy("icons/main/sort-both.png", f"{site_folder}/")
+    shutil.copy("icons/main/csv.png", f"{site_folder}/")
+    shutil.copy("icons/main/wikipedia.svg", f"{site_folder}/")
+    shutil.copy("icons/main/wikidata-light.svg", f"{site_folder}/")
+    shutil.copy("icons/main/wikidata-dark.svg", f"{site_folder}/")
+    shutil.copy("icons/main/mapper-banner.png", f"{site_folder}/")
+    shutil.copy("icons/main/mapper-banner-dark.png", f"{site_folder}/")
+    shutil.copy("icons/main/duplicate.png", f"{site_folder}/")
+    shutil.copy("icons/main/arrow-right.png", f"{site_folder}/")
 
-    with open(f"{site_folder}/CNAME", "w") as f:
-        f.write("urbanstats.org")
+    os.makedirs(f"{site_folder}/.github/workflows", exist_ok=True)
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
+    ).stdout.strip()
+    for workflow in [
+        "update-retrostat.yml",
+        "deploy-cf-og-worker.yml",
+        "sync-cf-proxy.yml",
+        "purge-cf-cache.yml",
+    ]:
+        with open(f"site_workflows/{workflow}") as f_workflow:
+            contents = f_workflow.read()
+        with open(f"{site_folder}/.github/workflows/{workflow}", "w") as f_workflow:
+            f_workflow.write(contents.replace("$URBANSTATS_REF", head))
 
-    with open(f"{site_folder}/.nojekyll", "w") as f:
-        f.write("")
+    with open(f"{site_folder}/CNAME", "w") as f_cname:
+        f_cname.write("urbanstats.org")
+
+    with open(f"{site_folder}/.nojekyll", "w") as f_nojekyll:
+        f_nojekyll.write("")
 
     build_react_site(site_folder, mode)
 
@@ -306,11 +386,12 @@ def build_urbanstats(
 
 
 def html_index(
-    title="Urban Stats",
-    image="/link-preview.png",
-    description="Urban Stats is a database of statistics related to density, housing, race, transportation, elections, and climate change.",
-):
-    return f"""<html>
+    title: str = "Urban Stats",
+    image: str = "/link-preview.png",
+    description: str = "Urban Stats is a database of statistics related to density, housing, race, transportation, elections, and climate change.",
+) -> str:
+    return f"""<!DOCTYPE html>
+<html>
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/png" href="/thumbnail.png" />

@@ -4,7 +4,7 @@ import React, { ReactElement, ReactNode, useMemo } from 'react'
 // imort Observable plot
 
 import { TimeSeriesExtraStat } from './load-article'
-import { PlotComponent } from './plots-general'
+import { bottomLabelOffset, PlotComponent } from './plots-general'
 
 export interface TimeSeriesPlotProps {
     stat: TimeSeriesExtraStat
@@ -15,22 +15,26 @@ export interface TimeSeriesPlotProps {
 export function TimeSeriesPlot(props: { stats: TimeSeriesPlotProps[] }): ReactNode {
     // TODO this is largely unfinished. We need to make several improvements to this component
     // for it to be production-ready.
+    // Including working with transposed comparisons
     const settingsElement = (): ReactElement => <div></div>
 
     const plotSpec = useMemo(
         () => {
-            const marks = props.stats.map((stat) => {
+            const marks: Plot.Markish[] = props.stats.map((stat) => {
                 const x = stat.stat.years
                 const y = stat.stat.timeSeries
                 return Plot.line(
                     x.map((xval, i) => [xval, y[i]]),
                     { stroke: stat.color, strokeWidth: 2 },
-                ) as Plot.Markish
+                )
             })
             marks.push(
                 Plot.axisX({
                     label: 'Year',
                     tickFormat: (d: number) => d.toString(),
+                    labelAnchor: 'center',
+                    labelArrow: 'none',
+                    labelOffset: bottomLabelOffset,
                 }),
             )
             const xlabel = 'Year'
@@ -44,7 +48,7 @@ export function TimeSeriesPlot(props: { stats: TimeSeriesPlotProps[] }): ReactNo
 
     return (
         <PlotComponent
-            plotSpec={plotSpec}
+            plotSpec={() => plotSpec}
             settingsElement={settingsElement}
         />
     )

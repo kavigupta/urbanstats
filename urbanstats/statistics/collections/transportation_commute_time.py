@@ -1,20 +1,49 @@
+import numpy as np
+
 from urbanstats.acs.load import ACSDataEntity
+from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import (
     COMMUTE_TIME,
     QuizQuestionDescriptor,
     QuizQuestionSkip,
 )
-from urbanstats.statistics.statistic_collection import ACSStatisticsColection
+from urbanstats.statistics.national_census import (
+    ACSCounts,
+    NationalCensusStatistics,
+    StatCanCounts,
+)
 from urbanstats.statistics.utils import fractionalize
+from urbanstats.utils import approximate_quantile
 
 
-class TransportationCommuteTimeStatistics(ACSStatisticsColection):
+class TransportationCommuteTimeStatistics(NationalCensusStatistics):
+    version: int = 8
+
     def name_for_each_statistic(self):
         return {
+            "transportation_commute_time_median": "Median Commute Time (min)",
             "transportation_commute_time_under_15": "Commute Time < 15 min %",
             "transportation_commute_time_15_to_29": "Commute Time 15 - 29 min %",
             "transportation_commute_time_30_to_59": "Commute Time 30 - 59 min %",
             "transportation_commute_time_over_60": "Commute Time > 60 min %",
+        }
+
+    def unit_for_each_statistic(self):
+        return {
+            "transportation_commute_time_median": "minutes",
+            "transportation_commute_time_under_15": "percentage",
+            "transportation_commute_time_15_to_29": "percentage",
+            "transportation_commute_time_30_to_59": "percentage",
+            "transportation_commute_time_over_60": "percentage",
+        }
+
+    def varname_for_each_statistic(self):
+        return {
+            "transportation_commute_time_median": "commute_time_median",
+            "transportation_commute_time_under_15": "commute_time_under_15",
+            "transportation_commute_time_15_to_29": "commute_time_15_to_29",
+            "transportation_commute_time_30_to_59": "commute_time_30_to_59",
+            "transportation_commute_time_over_60": "commute_time_over_60",
         }
 
     def explanation_page_for_each_statistic(self):
@@ -25,27 +54,83 @@ class TransportationCommuteTimeStatistics(ACSStatisticsColection):
             **QuizQuestionDescriptor.several(
                 COMMUTE_TIME,
                 {
-                    "transportation_commute_time_under_15": "higher % of people who have commute time under 15 min",
-                    "transportation_commute_time_over_60": "higher % of people who have commute time over 60 min",
+                    "transportation_commute_time_median": "higher median commute time",
                 },
             ),
             **QuizQuestionSkip.several(
+                "transportation_commute_time_under_15",
                 "transportation_commute_time_15_to_29",
                 "transportation_commute_time_30_to_59",
+                "transportation_commute_time_over_60",
             ),
         }
 
-    def mutate_acs_results(self, statistics_table):
+    def mutate_counts(self, counts):
+        bins = counts[
+            [
+                "transportation_commute_time_under_15",
+                "transportation_commute_time_15_to_29",
+                "transportation_commute_time_30_to_44",
+                "transportation_commute_time_45_to_59",
+                "transportation_commute_time_over_60",
+            ]
+        ].to_numpy()
+        # Interpolating log time, with the first bin starting at 4 minutes, makes US medians from these
+        # bins, which are Canada's, match those from the ACS's finer bins best.
+        median_commute = [
+            (
+                np.exp(approximate_quantile(np.log([4, 15, 30, 45, 60, 120]), s, 0.5))
+                if s.sum() > 0
+                else np.nan
+            )
+            for s in bins
+        ]
+        counts["transportation_commute_time_30_to_59"] = counts.pop(
+            "transportation_commute_time_30_to_44"
+        ) + counts.pop("transportation_commute_time_45_to_59")
         fractionalize(
-            statistics_table,
+            counts,
             "transportation_commute_time_under_15",
             "transportation_commute_time_15_to_29",
             "transportation_commute_time_30_to_59",
             "transportation_commute_time_over_60",
         )
+        counts["transportation_commute_time_median"] = median_commute
 
-    def acs_name(self):
-        return "transportation_commute_time"
+    def country_inputs(self):
+        return {
+            "USA": ACSCounts(self.acs_entity()),
+            "Canada": StatCanCounts(self.census_tables_canada()),
+        }
+
+    def census_tables_canada(self):
+        # pylint: disable=line-too-long
+        return CensusTables(
+            [
+                "Total - Commuting duration for the employed labour force aged 15 years and over with a usual place of work or no fixed workplace address - 25% sample data (201)"
+            ],
+            {
+                None: [
+                    "Total - Commuting duration for the employed labour force aged 15 years and over with a usual place of work or no fixed workplace address - 25% sample data (201)",
+                ],
+                "transportation_commute_time_under_15": [
+                    "  Less than 15 minutes",
+                ],
+                "transportation_commute_time_15_to_29": [
+                    "  15 to 29 minutes",
+                ],
+                "transportation_commute_time_30_to_44": [
+                    "  30 to 44 minutes",
+                ],
+                "transportation_commute_time_45_to_59": [
+                    "  45 to 59 minutes",
+                ],
+                "transportation_commute_time_over_60": [
+                    "  60 minutes and over",
+                ],
+            },
+            "population",
+        )
 
     def acs_entity(self):
         # pylint: disable=line-too-long
@@ -63,9 +148,11 @@ class TransportationCommuteTimeStatistics(ACSStatisticsColection):
                     "Estimate!!Total:!!20 to 24 minutes",
                     "Estimate!!Total:!!25 to 29 minutes",
                 ],
-                "transportation_commute_time_30_to_59": [
+                "transportation_commute_time_30_to_44": [
                     "Estimate!!Total:!!30 to 34 minutes",
                     "Estimate!!Total:!!35 to 44 minutes",
+                ],
+                "transportation_commute_time_45_to_59": [
                     "Estimate!!Total:!!45 to 59 minutes",
                 ],
                 "transportation_commute_time_over_60": [

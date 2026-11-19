@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Work From Home %",
+      "stat_path": "transportation_means_worked_at_home",
+      "question": "higher % of people who work from home",
+      "longname_a": "Wichita MSA, KS, USA",
+      "longname_b": "Fort Smith MSA, AR-OK, USA",
+      "stat_a": 0.05555591490352641,
+      "stat_b": 0.03996489523597038
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km)",
+      "stat_path": "ad_1",
+      "question": "higher population-weighted density (r=1km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Fort Worth city, Texas, USA",
+      "longname_b": "Hamilton City, Hamilton CDR, Ontario, Canada",
+      "stat_a": 1718.1054759363712,
+      "stat_b": 2994.749804611307
+    },
+    "a_ease": 0.677722498618021,
+    "b_ease": 0.274981765134938
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mobility disability %",
+      "stat_path": "MOBILITY_cdc_2",
+      "question": "higher % of adults with a mobility disability",
+      "longname_a": "IN-07 (2023), USA",
+      "longname_b": "VA-08 (2023), USA",
+      "stat_a": 0.14979273434662302,
+      "stat_b": 0.0795699693428755
+    },
+    "b": {
+      "stat_column": "Educational services %",
+      "stat_path": "industry_educational_services",
+      "question": "higher % of workers employed in the educational services industry!TOOLTIP elementary and secondary schools, colleges, universities,etc.",
+      "longname_a": "New Brunswick, Canada",
+      "longname_b": "Arkansas, USA",
+      "stat_a": 0.07764898457240554,
+      "stat_b": 0.09433743757492559
+    },
+    "a_ease": 0.6733847065797274,
+    "b_ease": 0.2691167753408417
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Public School",
+      "stat_path": "mean_dist_Public School_updated",
+      "question": "!FULL Which has less access to public schools (higher population-weighted mean distance)?",
+      "longname_a": "New York-Newark-Jersey City MSA, NY-NJ-PA, USA",
+      "longname_b": "Ann Arbor MSA, MI, USA",
+      "stat_a": 0.6723425660633958,
+      "stat_b": 1.6516055957180695
+    },
+    "b": {
+      "stat_column": "Cancer (excluding skin cancer) %",
+      "stat_path": "CANCER_cdc_2",
+      "question": "higher % of adults with cancer (excluding skin cancer)",
+      "longname_a": "Syracuse Urban Center, USA",
+      "longname_b": "Virginia Beach Urban Center, USA",
+      "stat_a": 0.06543762459235929,
+      "stat_b": 0.055960109707728585
+    },
+    "a_ease": 0.7870167760758571,
+    "b_ease": 0.3752808988764045
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population",
+      "stat_path": "population",
+      "question": "higher population",
+      "longname_a": "Surabaya Urban Center, Indonesia",
+      "longname_b": "Changzhou Urban Center, China",
+      "stat_a": 8439546.0,
+      "stat_b": 2762945.5
+    },
+    "b": {
+      "stat_column": "Electricity heating %",
+      "stat_path": "heating_electricity",
+      "question": "!FULL Which has a larger % of homes heated using electricity?",
+      "longname_a": "Tampa-St. Petersburg-Clearwater MSA, FL, USA",
+      "longname_b": "Kansas City MSA, MO-KS, USA",
+      "stat_a": 0.9257894753638831,
+      "stat_b": 0.27122756847640256
+    },
+    "a_ease": 0.19047619047619047,
+    "b_ease": 0.6058091286307054
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household income < C$50k %",
+      "stat_path": "household_income_under_50cad",
+      "question": "higher % of households that have household income under C$50k",
+      "longname_a": "Victoria CMA, BC, Canada",
+      "longname_b": "Saskatoon CMA, SK, Canada",
+      "stat_a": 0.23823868638936424,
+      "stat_b": 0.22160870281852618
+    },
+    "b": {
+      "stat_column": "Divorced %",
+      "stat_path": "marriage_divorced",
+      "question": "higher % of people who are divorced",
+      "longname_a": "Lancaster MSA, PA, USA",
+      "longname_b": "Savannah MSA, GA, USA",
+      "stat_a": 0.08205618546447525,
+      "stat_b": 0.11666599934088792
+    },
+    "a_ease": 0.1814814814814815,
+    "b_ease": 0.5854063018242123
+  }
+]

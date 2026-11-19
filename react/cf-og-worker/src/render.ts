@@ -1,0 +1,81 @@
+/* Dynamically imported, since evaluating satori is most of startup and rewriting tags doesn't need it. */
+import { Resvg, initWasm } from '@resvg/resvg-wasm'
+import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm'
+// Standalone satori, since the default build compiles wasm on import, which Workers only allow while
+// the global scope evaluates.
+import { ReactElement } from 'react'
+import satori, { init as initYoga } from 'satori/standalone'
+import yogaWasm from 'satori/yoga.wasm'
+
+import { PageDescriptor } from '../../src/navigation/PageDescriptor'
+import jostRegular from '../assets/Jost-400.ttf'
+import jostSemiBold from '../assets/Jost-600.ttf'
+
+import { articleCard, comparisonCard, loadPage, loadShape, mapCard, statisticCard } from './data'
+import { comparisonEmbedCard, embedCard, mapEmbedCard, mappedRegions, statisticEmbedCard } from './embed'
+
+export type DrawableDescriptor = Extract<PageDescriptor, { kind: 'article' | 'comparison' | 'mapper' | 'statistic' }>
+
+let wasmReady: Promise<unknown> | undefined
+
+const size = { width: 1200, height: 630 }
+
+async function cardFor(origin: string, descriptor: DrawableDescriptor, tileOrigin: string): Promise<ReactElement | undefined> {
+    if (descriptor.kind === 'mapper') {
+        const page = await loadPage(origin, descriptor)
+        if (page.pageData.kind !== 'mapper') {
+            return undefined
+        }
+        const card = await mapCard(origin, page.pageData, page.settings)
+        return card === undefined ? undefined : mapEmbedCard(card, size, tileOrigin)
+    }
+    if (descriptor.kind === 'statistic') {
+        const page = await loadPage(origin, descriptor)
+        if (page.pageData.kind !== 'statistic') {
+            return undefined
+        }
+        const card = await statisticCard(origin, page.pageData, page.settings)
+        return card === undefined ? undefined : statisticEmbedCard(card, size)
+    }
+    if (descriptor.kind === 'comparison') {
+        // A comparison of more regions than the card maps never reads their shapes.
+        const [page, shapes] = await Promise.all([
+            loadPage(origin, descriptor).catch(() => undefined),
+            descriptor.longnames.length > mappedRegions
+                ? []
+                : Promise.all(descriptor.longnames.map(longname => loadShape(origin, longname).catch(() => []))),
+        ])
+        if (page?.pageData.kind !== 'comparison') {
+            return undefined
+        }
+        return comparisonEmbedCard(comparisonCard(page.pageData, page.settings), shapes, size, tileOrigin)
+    }
+    const [page, rings] = await Promise.all([
+        loadPage(origin, descriptor).catch(() => undefined),
+        loadShape(origin, descriptor.longname).catch(() => []),
+    ])
+    if (page?.pageData.kind !== 'article') {
+        return undefined
+    }
+    return embedCard(await articleCard(page.pageData, page.settings), rings, size, tileOrigin)
+}
+
+export async function renderCard(origin: string, descriptor: DrawableDescriptor, tileOrigin: string): Promise<Uint8Array | undefined> {
+    const card = await cardFor(origin, descriptor, tileOrigin)
+    if (card === undefined) {
+        return undefined
+    }
+
+    wasmReady ??= Promise.all([initYoga(yogaWasm), initWasm(resvgWasm)])
+    await wasmReady
+
+    const svg = await satori(card, {
+        ...size,
+        fonts: [
+            { name: 'Jost', data: jostRegular, weight: 400, style: 'normal' },
+            { name: 'Jost', data: jostSemiBold, weight: 600, style: 'normal' },
+        ],
+    })
+
+    return new Resvg(svg, { fitTo: { mode: 'width', value: size.width } }).render().asPng()
+}

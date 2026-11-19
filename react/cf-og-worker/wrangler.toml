@@ -1,0 +1,69 @@
+name = "urbanstats-og"
+main = "src/index.ts"
+compatibility_date = "2026-08-01"
+# Bundled dependencies reach for `process` without guarding on it (satori's style layer reads
+# `process.env.JEST_WORKER_ID`), so the Worker needs node's globals.
+compatibility_flags = ["nodejs_compat"]
+
+# Only pages whose embeds vary by query string, plus the renderer. Patterns match the query string too,
+# hence the trailing `*`. Must stay above the first [table], or wrangler silently deploys no routes.
+routes = [
+  { pattern = "urbanstats.org/article.html*", zone_name = "urbanstats.org" },
+  { pattern = "urbanstats.org/comparison.html*", zone_name = "urbanstats.org" },
+  { pattern = "urbanstats.org/statistic.html*", zone_name = "urbanstats.org" },
+  { pattern = "urbanstats.org/mapper.html*", zone_name = "urbanstats.org" },
+  { pattern = "urbanstats.org/og/*", zone_name = "urbanstats.org" },
+]
+
+# A render costs ~230 ms of CPU. Exceeding this kills the isolate uncatchably, so it only bounds what
+# a runaway bills.
+[limits]
+cpu_ms = 2_000
+
+# Bundled since satori needs the fonts on every render. .wasm is handled by default.
+[[rules]]
+type = "Data"
+globs = ["**/*.ttf"]
+fallthrough = true
+
+# The logo, which satori inlines rather than fetches.
+[[rules]]
+type = "Text"
+globs = ["**/*.svg"]
+fallthrough = true
+
+[vars]
+# The same host the routes above are on. Fetching it does not re-enter the Worker; see index.ts.
+SITE_ORIGIN = "https://urbanstats.org"
+
+# Modules only reachable from page kinds the Worker never loads (~1.3 MiB gzip instead of ~2.2).
+# Keys must match PageDescriptor.ts's import specifiers exactly.
+[alias]
+"../components/article-panel" = "./src/panel-stub.ts"
+"../map-partition" = "./src/panel-stub.ts"
+"../components/comparison-panel" = "./src/panel-stub.ts"
+"../stat/StatisticPanel" = "./src/panel-stub.ts"
+"../data-credit" = "./src/panel-stub.ts"
+"../uss-documentation" = "./src/panel-stub.ts"
+"../mapper/components/DebugMapTextBox" = "./src/panel-stub.ts"
+"../urban-stats-script/DebugEditorPanel" = "./src/panel-stub.ts"
+"../components/quiz-panel" = "./src/panel-stub.ts"
+"../quiz/quiz" = "./src/panel-stub.ts"
+"../quiz/statistics" = "./src/panel-stub.ts"
+"../quiz/infinite" = "./src/panel-stub.ts"
+"../quiz/friends" = "./src/panel-stub.ts"
+"../syau/syau-panel" = "./src/panel-stub.ts"
+"../mapper/components/MapperPanel" = "./src/panel-stub.ts"
+"../quiz/OauthCallbackPanel" = "./src/panel-stub.ts"
+"../quiz/AuthenticationStateMachine" = "./src/panel-stub.ts"
+"../dev/ScreenshotDiffViewerPanel" = "./src/panel-stub.ts"
+"../dev/EmbedPreviewPanel" = "./src/panel-stub.ts"
+
+# Only the top-level switch is documented. The defaults under it are what we want.
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+# A render emits a span per subrequest, and from 2026-10-01 these bill against the logs' quota.
+[observability.traces]
+enabled = false

@@ -1,20 +1,25 @@
 import React, { CSSProperties, ReactElement, useState, useRef, useEffect } from 'react'
+import { MoonLoader } from 'react-spinners'
 
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
+import { zIndex } from '../utils/zIndex'
 
 export function GenericSearchBox<T>(
     props: {
         matches: T[]
         doSearch: (sq: string) => Promise<T[]>
         onChange?: (inp: T) => void
-        link: (inp: T) => ReturnType<Navigator['link']>
+        link?: (inp: T) => ReturnType<Navigator['link']> | undefined
         onFocus?: () => void
         onBlur?: () => void
+        onTextPresenceChange?: (hasText: boolean) => void
         autoFocus: boolean
         placeholder: string
         style: CSSProperties | string
         renderMatch: (currentMatch: () => T, onMouseOver: () => void, onClick: () => void, style: CSSProperties, dataTestId: string | undefined) => ReactElement
+        allowEmptyQuery?: boolean
+        loadingStatus?: string
     }): ReactElement {
     const colors = useColors()
 
@@ -24,13 +29,22 @@ export function GenericSearchBox<T>(
     const [focused, setFocused] = React.useState(0)
     const [matches, setMatches] = useState<T[]>([])
 
+    const [isFocused, setIsFocused] = useState(false)
+    const searchboxRef = useRef<HTMLInputElement>(null)
+
     const searchQuery = queryRef.current
 
     const reset = (): void => {
+        // blur the input if we allow empty queries
+        if (props.allowEmptyQuery) {
+            searchboxRef.current?.blur()
+            setIsFocused(false)
+        }
         setQuery('')
         queryRef.current = ''
         setMatches([])
         setFocused(0)
+        props.onTextPresenceChange?.(false)
     }
 
     const searchboxDropdownItemStyle = (idx: number): CSSProperties => {
@@ -45,7 +59,7 @@ export function GenericSearchBox<T>(
         event.preventDefault()
         const terms = matches
         if (terms.length > 0) {
-            void props.link(terms[focused]).onClick()
+            void props.link?.(terms[focused])?.onClick()
             props.onChange?.(terms[focused])
             reset()
         }
@@ -66,10 +80,13 @@ export function GenericSearchBox<T>(
 
     const doSearch = props.doSearch
 
+    // Blurring with a query shouldn't search again, since that spawns a new search worker
+    const shouldSearch = props.allowEmptyQuery ? isFocused : searchQuery !== ''
+
     // Do the search
     useEffect(() => {
         void (async () => {
-            if (searchQuery === '') {
+            if (!shouldSearch) {
                 setMatches([])
                 setFocused(0)
                 return
@@ -85,7 +102,7 @@ export function GenericSearchBox<T>(
             setMatches(result)
             setFocused(f => Math.max(0, Math.min(f, result.length - 1)))
         })()
-    }, [searchQuery, doSearch])
+    }, [searchQuery, doSearch, shouldSearch])
 
     return (
         <form
@@ -104,12 +121,27 @@ export function GenericSearchBox<T>(
                 placeholder={props.placeholder}
                 onKeyUp={onTextBoxKeyUp}
                 onChange={(e) => {
-                    setQuery(e.target.value)
-                    queryRef.current = e.target.value
+                    const newValue = e.target.value
+                    setQuery(newValue)
+                    queryRef.current = newValue
+                    props.onTextPresenceChange?.(newValue.length > 0)
                 }}
                 value={query}
-                onFocus={props.onFocus}
-                onBlur={props.onBlur}
+                onFocus={() => {
+                    setIsFocused(true)
+                    props.onFocus?.()
+                }}
+                onBlur={() => {
+                    // allow people to click on stuff
+                    void setTimeout(() => {
+                        if (document.activeElement !== searchboxRef.current) {
+                            setIsFocused(false)
+                            props.onBlur?.()
+                        }
+                    }, 200)
+                }}
+                spellCheck={false}
+                ref={searchboxRef}
             />
 
             <div
@@ -120,10 +152,11 @@ export function GenericSearchBox<T>(
                     overflowY: 'auto',
                     backgroundColor: colors.slightlyDifferentBackground,
                     borderRadius: '0.25em',
-                    zIndex: '3',
+                    zIndex: zIndex.searchResults,
+                    border: isFocused && matches.length > 0 ? `1px solid ${colors.ordinalTextColor}` : undefined,
                 }}
             >
-                {matches.map((_, idx) => (
+                {isFocused && matches.map((_, idx) => (
                     props.renderMatch(
                         () => matches[idx],
                         () => { setFocused(idx) },
@@ -137,6 +170,54 @@ export function GenericSearchBox<T>(
                 ),
                 )}
             </div>
+
+            {/* When the user has typed a query, show them what's going on */}
+            {isFocused && query.length > 0 && props.loadingStatus && <LoadingIndicator type={matches.length === 0 ? 'dropdown' : 'field'} message={props.loadingStatus} />}
         </form>
     )
+}
+
+function LoadingIndicator({ type, message }: { type: 'dropdown' | 'field', message: string }): ReactElement {
+    const colors = useColors()
+
+    switch (type) {
+        case 'field':
+            return (
+                <div
+                    style={{
+                        position: 'absolute',
+                        right: '0.5em',
+                        top: 0,
+                        bottom: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                    }}
+                    data-test-id="search-load-field"
+                >
+                    <MoonLoader color={colors.textMain} size="24px" />
+                </div>
+            )
+        case 'dropdown':
+            return (
+                <div
+                    style={{
+                        color: colors.ordinalTextColor,
+                        padding: '0.5em',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5em',
+                        borderRadius: '0.25em',
+                        backgroundColor: colors.slightlyDifferentBackground,
+                        zIndex: zIndex.searchResults,
+                        position: 'absolute',
+                        width: '100%',
+                        border: `1px solid ${colors.ordinalTextColor}`,
+                    }}
+                    data-test-id="search-load-dropdown"
+                >
+                    <MoonLoader color={colors.textMain} size="20px" />
+                    {message}
+                </div>
+            )
+    }
 }

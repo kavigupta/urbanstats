@@ -1,0 +1,730 @@
+import Color from 'color'
+import React, { createContext, ReactNode, RefObject, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { MapInstance, MapRef } from 'react-map-gl/maplibre'
+
+import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
+import { Basemap as BasemapComponent, CommonMaplibreMap, MapAttribution, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
+import { tileAttribution } from '../components/map-common-utils'
+import { bannerCreditBottom, bannerCreditSize, bannerLockupStart, screencapElement, ScreenshotContext, ScreenshotContextType, withScreenshotMode } from '../components/screenshot'
+import { shapesByName } from '../consolidated-shapes'
+import { boundingBox } from '../map-partition'
+import { RelativeLoader } from '../navigation/loading'
+import { Colors, colorThemes } from '../page_template/color-themes'
+import { OverrideTheme, useColors } from '../page_template/colors'
+import { proportionalRelativeArea } from '../syau/cluster-geometry'
+import { ClusterScaleProvider } from '../syau/cluster-scale-context'
+import { ClusterMap as SyauClusterMap } from '../syau/syau-cluster-map'
+import { Universe } from '../universe'
+import { getAllParseErrors } from '../urban-stats-script/ast'
+import { doRender } from '../urban-stats-script/constants/color-utils'
+import { Inset, keepInsets, LaidOutInset, layoutInsets } from '../urban-stats-script/constants/insets'
+import { CommonMap } from '../urban-stats-script/constants/map'
+import { ScaleInstance } from '../urban-stats-script/constants/scale'
+import { TextBox } from '../urban-stats-script/constants/text-box'
+import { mapRampUnitAndLabel } from '../urban-stats-script/derive-unit'
+import { EditorError } from '../urban-stats-script/editor-utils'
+import { noLocation } from '../urban-stats-script/location'
+import { TypeEnvironment } from '../urban-stats-script/types-values'
+import { AssignmentsResult, executeAsync, GeographySelection, useClearPreviousAssignments } from '../urban-stats-script/workerManager'
+import { loadImage } from '../utils/Image'
+import { Edit } from '../utils/array-edits'
+import { computeAspectRatioForInsets } from '../utils/coordinates'
+import { makeDebugLogger } from '../utils/debug-logging'
+import { HumanReadableName } from '../utils/human-readable-element'
+import { boxesOverlap, CoordBox } from '../utils/partition-boxes'
+import { ICoordinate } from '../utils/protos'
+import { StoredUnit } from '../utils/quantity'
+import { plainNumber } from '../utils/unit'
+import { useDebouncedResolve } from '../utils/useDebouncedResolve'
+
+import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar'
+import { InsetEditHandlers, InsetMap } from './components/InsetMap'
+import { AddTextBox, MapTextBoxComponent } from './components/MapTextBox'
+import { loadInsets } from './context'
+import { canonicalWidth, centroidsByName, markerArea, markerRadius, MapResult, mapVisuals, mergedByName } from './map-rendering'
+import { Basemap, computeUSS, dedupeGeographies, MapSettings, universesOf } from './settings/utils'
+
+const mapUpdateInterval = 500
+
+const debugLog = makeDebugLogger('mapExport')
+
+export function useMapGenerator({ mapSettings, typeEnvironment }: { mapSettings: MapSettings, typeEnvironment: TypeEnvironment }): MapGenerator {
+    const cache = useRef<MapCache>({})
+
+    const compute = useCallback((previousGenerator: () => Promise<MapGenerator<{ loading: boolean }>>) => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator, typeEnvironment }), [mapSettings, typeEnvironment])
+
+    const result: MapGenerator = useDebouncedResolve(
+        compute,
+        {
+            interval: mapUpdateInterval,
+            initial: {
+                ui: ({ loading }) => ({ node: <EmptyMapLayout geographies={mapSettings.geographies} loading={loading} /> }),
+                errors: [],
+                assignments: { variables: new Map(), blockValues: new Map() },
+            },
+            ui: (generator, loading) => ({
+                ...generator,
+                ui: props => generator.ui({ ...props, loading }),
+            }),
+        },
+    )
+
+    useClearPreviousAssignments(result.assignments)
+
+    return result
+}
+
+type MapUIProps<T> = T & (
+    { mode: 'view' }
+    | { mode: 'uss' }
+    | { mode: 'insets', editInsets: { edited: LaidOutInset[], handlers: (i: number) => InsetEditHandlers, overlay: (container: RefObject<HTMLDivElement>) => ReactNode } }
+    | { mode: 'textBoxes', editTextBoxes: { edited: TextBox[], add: () => void, handlers: (i: number) => Edit<TextBox> } }
+)
+
+export interface MapGenerator<T = unknown> {
+    ui: (props: MapUIProps<T>) => { node: ReactNode, exportImage?: () => Promise<HTMLCanvasElement> }
+    exportGeoJSON?: () => string
+    exportCSV?: CSVExportData
+    errors: EditorError[]
+    assignments: AssignmentsResult
+    aspectRatio?: number
+}
+
+async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnvironment }: {
+    mapSettings: MapSettings
+    cache: MapCache
+    previousGenerator: () => Promise<MapGenerator<{ loading: boolean }>>
+    typeEnvironment: TypeEnvironment
+}): Promise<MapGenerator<{ loading: boolean }>> {
+    if (mapSettings.geographies.length === 0) {
+        return {
+            ui: ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout geographies={mapSettings.geographies} loading={loading} /> }),
+            errors: [{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }],
+            assignments: { variables: new Map(), blockValues: new Map() },
+        }
+    }
+
+    const geographies = dedupeGeographies(mapSettings.geographies)
+
+    const stmts = computeUSS(mapSettings.script)
+
+    const parseErrors = getAllParseErrors(stmts)
+    if (parseErrors.length > 0) {
+        const prev = await previousGenerator()
+        return {
+            ...prev,
+            errors: parseErrors.map(e => ({ ...e, kind: 'error' })),
+        }
+    }
+
+    const execResult = await executeAsync({ descriptor: { kind: 'mapper', geographies }, stmts })
+
+    if (execResult.resultingValue === undefined) {
+        const prev = await previousGenerator()
+        return {
+            ...prev,
+            // A failed run stops partway, so its block values are missing everything after the error
+            assignments: { variables: execResult.assignments.variables, blockValues: prev.assignments.blockValues },
+            errors: execResult.error,
+        }
+    }
+
+    const mapResultMain = execResult.resultingValue.value
+    const rampLabelling = mapRampUnitAndLabel(mapSettings.script.uss, typeEnvironment, mapResultMain.value.unit)
+    let label: HumanReadableName
+
+    if (mapResultMain.value.label === undefined) {
+        const derivedLabel = rampLabelling.label
+        if (derivedLabel === undefined) {
+            label = '[Unlabeled Map]'
+            execResult.error.push({
+                type: 'error',
+                kind: 'warning',
+                value: `Label could not be derived for map, please pass label="<your label here>" to ${mapResultMain.opaqueType}(...)`,
+                location: noLocation,
+            })
+        }
+        else {
+            label = derivedLabel
+        }
+    }
+    else {
+        label = mapResultMain.value.label
+    }
+
+    const csvExportCallback: CSVExportData = () => {
+        const csvData = generateMapperCSVData(mapResultMain, execResult.assignments.variables!)
+        const csvFilename = `${geographies.map(g => `${g.geographyKind}-${g.universe}`).join('-')}-data.csv`
+        return {
+            csvData,
+            csvFilename,
+        }
+    }
+
+    const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, geographies, cache, label, derivedUnit: rampLabelling.unit })
+
+    // Keyed by map bounds, which layoutInsets keeps as it copies each inset
+    const featuresByCoordBox = new Map<CoordBox, GeoJSON.Feature[]>()
+    const featuresIn = (coordBox: CoordBox): GeoJSON.Feature[] => {
+        if (!featuresByCoordBox.has(coordBox)) {
+            featuresByCoordBox.set(coordBox, features.filter(feature => overlaps(feature, coordBox)))
+        }
+        return featuresByCoordBox.get(coordBox)!
+    }
+    const acceptedInsets = layoutInsets(keepInsets(mapResultMain.value.insets, coordBox => featuresIn(coordBox).length > 0)).leaves
+        .map(inset => ({ inset, insetFeatures: inset.mainMap ? features : featuresIn(inset.coordBox) }))
+
+    // Don't change the aspect ratio while editing, otherwise things get nasty
+    const aspectRatio = computeAspectRatioForInsets(acceptedInsets.map(({ inset }) => inset))
+
+    function MapComponent({ props, exportImageRef }: { props: MapUIProps<{ loading: boolean }>, exportImageRef: (fn: () => Promise<HTMLCanvasElement>) => void }): ReactNode {
+        const mapsRef: (MapRef | null)[] = []
+
+        const mapsContainerRef = useRef<HTMLDivElement>(null)
+        const wholeRenderRef = useRef<HTMLDivElement>(null)
+
+        const maybeEditingInsets = props.mode === 'insets'
+            ? props.editInsets.edited.map(inset => ({ inset, insetFeatures: filterOverlaps(inset, features) }))
+            : acceptedInsets
+
+        const insetMaps = (
+            <ClusterScaleProvider numInsets={maybeEditingInsets.length}>
+                {(i: number) => {
+                    const { inset, insetFeatures } = maybeEditingInsets[i]
+                    return (
+                        <InsetMap
+                            i={i}
+                            inset={inset}
+                            ref={e => mapsRef[i] = e}
+                            container={mapsContainerRef}
+                            numInsets={maybeEditingInsets.length}
+                            editInset={props.mode === 'insets'
+                                ? props.editInsets.handlers(i)
+                                : undefined}
+                            interactive={props.mode !== 'textBoxes'}
+                        >
+                            {(mapLibreProps, mC, ref) => mapComponentCreator(
+                                mapLibreProps,
+                                mC,
+                                ref,
+                                insetFeatures,
+                                ['uss', 'view'].includes(props.mode),
+                            )}
+                        </InsetMap>
+                    )
+                }}
+            </ClusterScaleProvider>
+        )
+
+        const colorbar = (
+            <Colorbar
+                ramp={ramp}
+                basemap={mapResultMain.value.basemap}
+            />
+        )
+
+        const screenshotContext = useRef<ScreenshotContextType>({ render: new Set(), wait: new Set() })
+
+        const colors = useColors()
+
+        exportImageRef(async () => {
+            debugLog('exportImage: starting PNG export,', mapsRef.length, 'inset map(s)')
+            const restoreMaps = mapsRef.map(r => r!.getMap()).map(prepareMapForImageExport)
+            debugLog('exportImage: all maps prepared for export, entering screenshot mode')
+
+            const image = await withScreenshotMode(screenshotContext.current, async () => {
+                debugLog('exportImage: screenshot mode active, capturing element canvas at', canonicalWidth(aspectRatio) * exportPixelRatio, 'px wide')
+                const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth(aspectRatio) * exportPixelRatio, { mapBorderRadius: 0, testing: false })
+                debugLog('exportImage: screencapElement returned', elementCanvas.width, 'x', elementCanvas.height, 'canvas, compositing banner')
+                return mapImageExport(elementCanvas, mapResultMain.value.basemap, colors)
+            })
+
+            debugLog('exportImage: screenshot mode exited, restoring', restoreMaps.length, 'map(s)')
+            restoreMaps.forEach((restore) => { restore() })
+            debugLog('exportImage: export complete, final canvas', image.width, 'x', image.height)
+
+            return image
+        })
+
+        const textBoxes = props.mode === 'insets'
+            ? props.editInsets.overlay(mapsContainerRef)
+            : (
+                    <OverrideTheme theme="Light Mode">
+                        {(props.mode === 'textBoxes' ? props.editTextBoxes.edited : mapResultMain.value.textBoxes).map((textBox, i, boxes) => (
+                            <MapTextBoxComponent
+                                container={mapsContainerRef}
+                                key={i}
+                                textBox={textBox}
+                                i={i}
+                                count={boxes.length}
+                                edit={props.mode === 'textBoxes' ? props.editTextBoxes.handlers(i) : undefined}
+                            />
+                        )).concat(props.mode === 'textBoxes' ? [<AddTextBox key="add" container={mapsContainerRef} add={props.editTextBoxes.add} />] : [])}
+                    </OverrideTheme>
+                )
+
+        return (
+            <ScreenshotContext.Provider value={screenshotContext.current}>
+                <MapLayout
+                    maps={insetMaps}
+                    loading={props.loading}
+                    colorbar={colorbar}
+                    attribution={mapResultMain.value.basemap.type !== 'none' && ['uss', 'view'].includes(props.mode)}
+                    aspectRatio={aspectRatio}
+                    mapsContainerRef={mapsContainerRef}
+                    wholeRenderRef={wholeRenderRef}
+                    textBoxes={textBoxes}
+                />
+            </ScreenshotContext.Provider>
+        )
+    }
+
+    return {
+        errors: execResult.error,
+        exportCSV: csvExportCallback,
+        exportGeoJSON: () => exportAsGeoJSON(features),
+        aspectRatio,
+        ui: (props) => {
+            let exportImage: () => Promise<HTMLCanvasElement>
+
+            return {
+                node: (
+                    <MapComponent props={props} exportImageRef={fn => exportImage = fn} />
+                ),
+                exportImage: () => exportImage(),
+            }
+        },
+        assignments: execResult.assignments,
+    }
+}
+
+const exportPixelRatio = 4
+
+function prepareMapForImageExport(map: MapInstance): () => void {
+    const originalPixelRatio = map.getPixelRatio()
+    debugLog('prepareMapForImageExport: setting pixel ratio', originalPixelRatio, '→', exportPixelRatio)
+    map.setPixelRatio(exportPixelRatio)
+
+    return () => {
+        debugLog('prepareMapForImageExport: restoring pixel ratio', exportPixelRatio, '→', originalPixelRatio)
+        map.setPixelRatio(originalPixelRatio)
+    }
+}
+
+async function mapImageExport(elementCanvas: HTMLCanvasElement, basemap: Basemap, colors: Colors): Promise<HTMLCanvasElement> {
+    debugLog('mapImageExport: element canvas size', elementCanvas.width, 'x', elementCanvas.height, 'basemap', basemap)
+    const { backgroundColor, color } = styleFromBasemap(basemap, colors)
+    debugLog('mapImageExport: background color', backgroundColor, 'text color', color)
+    const bannerUrl = color === undefined ? colors.screenshotFooterUrl : colorThemes[Color(color).l() < 50 ? 'Light Mode' : 'Dark Mode'].screenshotFooterUrl
+    debugLog('mapImageExport: loading banner from', bannerUrl)
+    const bannerImage = await loadImage(bannerUrl)
+    const bannerHeight = 50 * exportPixelRatio
+    const bannerWidth = bannerImage.width * (bannerHeight / bannerImage.height)
+    const bannerSquish = 10 * exportPixelRatio
+    debugLog('mapImageExport: banner natural size', bannerImage.width, 'x', bannerImage.height, '→ rendered', bannerWidth, 'x', bannerHeight, '(squish', bannerSquish, ')')
+
+    const resultCanvas = document.createElement('canvas')
+    const ctx = resultCanvas.getContext('2d')!
+    resultCanvas.width = elementCanvas.width
+    resultCanvas.height = elementCanvas.height + bannerHeight - bannerSquish
+    debugLog('mapImageExport: final canvas size', resultCanvas.width, 'x', resultCanvas.height)
+
+    ctx.drawImage(elementCanvas, 0, 0)
+
+    ctx.fillStyle = backgroundColor
+    ctx.fillRect(0, elementCanvas.height, elementCanvas.width, bannerHeight)
+
+    ctx.drawImage(
+        bannerImage,
+        resultCanvas.width - bannerWidth,
+        resultCanvas.height - bannerHeight,
+        bannerWidth,
+        bannerHeight,
+    )
+
+    if (basemap.type !== 'none') {
+        ctx.fillStyle = colors.ordinalTextColor
+        ctx.font = `${bannerHeight * bannerCreditSize}px Jost, sans-serif`
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'alphabetic'
+        const lockupLeft = resultCanvas.width - bannerWidth * (1 - bannerLockupStart)
+        ctx.fillText(tileAttribution, lockupLeft / 2, resultCanvas.height - bannerHeight * bannerCreditBottom)
+    }
+
+    debugLog('mapImageExport: done compositing')
+    return resultCanvas
+}
+
+function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, wholeRenderRef, textBoxes, attribution }: {
+    maps: ReactNode
+    textBoxes: ReactNode
+    colorbar: ReactNode
+    loading: boolean
+    mapsContainerRef?: React.Ref<HTMLDivElement>
+    aspectRatio: number
+    wholeRenderRef?: React.Ref<HTMLDivElement>
+    attribution: boolean
+}): ReactNode {
+    return (
+        <TransformConstantWidth width={canonicalWidth(aspectRatio)}>
+            <div
+                ref={wholeRenderRef}
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    position: 'relative',
+                    minHeight: 0, // https://stackoverflow.com/questions/36230944/prevent-flex-items-from-overflowing-a-container/66689926#66689926
+                }}
+            >
+                <RelativeLoader loading={loading} />
+                <div
+                    style={{ width: '100%', aspectRatio }}
+                >
+                    <div
+                        ref={mapsContainerRef}
+                        style={{
+                            aspectRatio,
+                            position: 'relative',
+                            maxHeight: '100%',
+                            margin: 'auto',
+                            // Keeps the z-index of edit handles local
+                            isolation: 'isolate',
+                        }}
+                    >
+                        {maps}
+                        {textBoxes}
+                    </div>
+                </div>
+                {colorbar}
+            </div>
+            {attribution && <MapAttribution />}
+        </TransformConstantWidth>
+    )
+}
+
+function EmptyMapLayout({ geographies, loading }: { geographies: GeographySelection[], loading: boolean }): ReactNode {
+    const insets = layoutInsets(loadInsets(geographies.length > 0 ? universesOf(geographies) : 'world')).leaves
+
+    return (
+        <MapLayout
+            maps={insets.map((inset, i) => (
+                <InsetMap
+                    i={i}
+                    key={i}
+                    inset={inset}
+                    container={React.createRef()}
+                    numInsets={insets.length}
+                    interactive={false}
+                >
+                    {(mapLibreProps, mC, ref) => (
+                        <CommonMaplibreMap
+                            ref={ref}
+                            {...mapLibreProps}
+                        >
+                            {mC}
+                        </CommonMaplibreMap>
+                    )}
+                </InsetMap>
+            ))}
+            textBoxes={null}
+            loading={loading}
+            colorbar={null}
+            attribution={true}
+            aspectRatio={computeAspectRatioForInsets(insets)}
+        />
+    )
+}
+
+type MapComponentCreator = (
+    mapLibreProps: React.ComponentProps<typeof CommonMaplibreMap>,
+    otherMapChildren: ReactNode,
+    ref: React.Ref<MapRef>,
+    fs: GeoJSON.Feature[],
+    clickable: boolean,
+) => ReactNode
+
+async function loadMapResult({ mapResultMain, geographies, cache, label, derivedUnit }:
+{
+    mapResultMain: MapResult
+    geographies: GeographySelection[]
+    cache: MapCache
+    label: HumanReadableName
+    derivedUnit: StoredUnit | undefined
+}): Promise<{ features: GeoJSON.Feature[], mapComponentCreator: MapComponentCreator, ramp: RampToDisplay }> {
+    const { opaqueType, value } = mapResultMain
+    const visuals = mapVisuals(mapResultMain)
+    const colors = visuals.colors
+    const clusterCategoryColors = visuals.categoryColors ?? []
+    const clusterRampBins = visuals.bins ?? []
+    const ramp: RampToDisplay = opaqueType === 'cMapRGB'
+        ? { type: 'label', value: value.label }
+        : computeRampToDisplay(value, label, derivedUnit, visuals.ramp!)
+
+    let features: GeoJSON.Feature[]
+    let mapChildren: (fs: GeoJSON.Feature[], clickable: boolean) => ReactNode
+    switch (opaqueType) {
+        case 'clusterMap':
+            const clusterPoints: Point[] = Array.from(value.data.entries()).map(([i, dataValue]) => {
+                return {
+                    name: value.geo[i],
+                    fillColor: colors[i],
+                    fillOpacity: value.opacity,
+                    radius: markerRadius(value.relativeArea[i], value.maxRadius),
+                    rampBin: clusterRampBins[i],
+                    statistic: dataValue,
+                }
+            })
+
+            features = await pointsGeojson(geographies, clusterPoints, cache)
+
+            return {
+                features,
+                mapComponentCreator: (mapLibreProps, otherMapChildren, ref, fs) => (
+                    <SyauClusterMap
+                        centroids={fs.map((f) => {
+                            const [lon, lat] = (f.geometry as GeoJSON.Point).coordinates
+                            return { lon, lat } satisfies ICoordinate
+                        })}
+                        categories={fs.map(f => f.properties!.rampBin as number)}
+                        pieChartSizeFor={fs.map((f) => {
+                            const radius = f.properties?.radius as number | undefined
+                            return radius === undefined ? 1 : markerArea(radius)
+                        })}
+                        categoryColors={clusterCategoryColors}
+                        clusterMarkerLabel={() => ''}
+                        unclusteredMarkerLabel={() => ''}
+                        maxClusterRadius={value.maxRadius}
+                        markerOpacity={value.opacity}
+                        computeRelativeArea={proportionalRelativeArea}
+                        clusterRadiusSpacing={value.clusterRadiusSpacing}
+                        mapLibreProps={mapLibreProps}
+                        mapRef={ref}
+                        basemap={value.basemap}
+                        doZoom={false}
+                    >
+                        {otherMapChildren}
+                    </SyauClusterMap>
+                ),
+                ramp,
+            }
+        case 'pMap':
+            const points: Point[] = Array.from(value.data.entries()).map(([i, dataValue]) => {
+                return {
+                    name: value.geo[i],
+                    fillColor: colors[i],
+                    fillOpacity: value.opacity,
+                    radius: markerRadius(value.relativeArea[i], value.maxRadius),
+                    statistic: dataValue,
+                }
+            })
+
+            features = await pointsGeojson(geographies, points, cache)
+
+            mapChildren = (fs, clickable) => <PointFeatureCollection features={fs} clickable={clickable} />
+
+            break
+        case 'cMap':
+        case 'cMapRGB':
+            const polys: Polygon[] = Array.from(colors.entries()).map(([i, color]) => {
+                let meta
+                switch (opaqueType) {
+                    case 'cMap':
+                        meta = { statistic: value.data[i] }
+                        break
+                    case 'cMapRGB':
+                        meta = { statistic: [value.dataR[i], value.dataG[i], value.dataB[i]] }
+                        break
+                }
+
+                return {
+                    name: value.geo[i],
+                    fillColor: color,
+                    fillOpacity: value.opacity,
+                    color: doRender(value.outline.color),
+                    weight: value.outline.weight,
+                    ...meta,
+                }
+            })
+
+            features = await polygonsGeojson(geographies, polys, cache)
+
+            mapChildren = (fs, clickable) => <PolygonFeatureCollection features={fs} clickable={clickable} />
+
+            break
+    }
+
+    return {
+        features,
+        mapComponentCreator: (mapLibreProps, otherMapChildren, ref, fs, clickable) => (
+
+            <CommonMaplibreMap
+                ref={ref}
+                {...mapLibreProps}
+            >
+                <>
+                    {mapChildren(fs, clickable)}
+                    <BasemapComponent basemap={value.basemap} />
+                </>
+                {otherMapChildren}
+            </CommonMaplibreMap>
+
+        ),
+        ramp,
+    }
+}
+
+function computeRampToDisplay(value: CommonMap, label: HumanReadableName, derivedUnit: StoredUnit | undefined, { scale, ticks }: { scale: ScaleInstance, ticks: number[] }): RampToDisplay & { type: 'ramp' } {
+    const hasValuesClampedToStart = value.data.some(val => scale.forward(val) < 0)
+    const hasValuesClampedToEnd = value.data.some(val => scale.forward(val) > 1)
+    const unit = derivedUnit ?? plainNumber
+    return { type: 'ramp', value: { ramp: value.ramp, interpolations: ticks, scale, label, unit, hasValuesClampedToStart, hasValuesClampedToEnd } }
+}
+
+export const transformContext = createContext({ selfDetermineHeight: false })
+
+function TransformConstantWidth({ children, width }: { children: ReactNode, width: number }): ReactNode {
+    const [layout, setLayout] = useState({ scale: 1, top: 0, left: 0, selfDeterminedHeight: 0 })
+    const ref = useRef<HTMLDivElement>(null)
+    const childRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        const updateScale = (): void => {
+            if (ref.current === null || childRef.current === null) {
+                return
+            }
+            const scale = Math.min(...[
+                ref.current.offsetWidth / width,
+                ...(ref.current.offsetHeight > 0 ? [ref.current.offsetHeight / childRef.current.offsetHeight] : []),
+            ])
+            setLayout({
+                scale,
+                top: Math.max(0, (ref.current.offsetHeight - childRef.current.offsetHeight * scale) / 2),
+                left: Math.max(0, (ref.current.offsetWidth - childRef.current.offsetWidth * scale) / 2),
+                selfDeterminedHeight: childRef.current.offsetHeight * scale,
+            })
+        }
+        updateScale()
+
+        const observer = new ResizeObserver(updateScale)
+        observer.observe(ref.current!)
+        observer.observe(childRef.current!)
+        return () => {
+            observer.disconnect()
+        }
+    }, [width])
+
+    return (
+        <div ref={ref} style={{ ...(useContext(transformContext).selfDetermineHeight ? { height: layout.selfDeterminedHeight } : { position: 'absolute' }), inset: 0 }}>
+            <div
+                ref={childRef}
+                style={{
+                    transform: `scale(${layout.scale})`,
+                    transformOrigin: 'top left',
+                    width: `${width}px`,
+                    position: 'relative',
+                    top: `${layout.top}px`,
+                    left: `${layout.left}px`,
+                }}
+            >
+                {children}
+            </div>
+        </div>
+    )
+}
+
+function filterOverlaps(inset: Inset, features: GeoJSON.Feature[]): GeoJSON.Feature[] {
+    return inset.mainMap ? features : features.filter(feature => overlaps(feature, inset.coordBox))
+}
+
+function overlaps(feature: GeoJSON.Feature, coordBox: CoordBox): boolean {
+    const bounds = boundingBox(feature.geometry)
+    return boxesOverlap([bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()], coordBox)
+}
+
+interface MapCache {
+    geo?: { geographies: GeographySelection[] } & (
+        { type: 'points', centroidsByName: Map<string, FromUniverse<ICoordinate>> }
+        | { type: 'polygons', polygonsByName: Map<string, FromUniverse<GeoJSON.Geometry>> }
+    )
+}
+
+interface FromUniverse<T> { value: T, universe: Universe }
+
+/** Clicking a geography goes to its article in the universe it was drawn from, not the page's default. */
+function fromUniverse<T>(universe: Universe, byName: Map<string, T>): Map<string, FromUniverse<T>> {
+    return new Map(Array.from(byName, ([name, value]) => [name, { value, universe }]))
+}
+
+function sameGeographies(a: GeographySelection[] | undefined, b: GeographySelection[]): boolean {
+    return a?.length === b.length && a.every((g, i) => g.universe === b[i].universe && g.geographyKind === b[i].geographyKind)
+}
+
+interface Point {
+    name: string
+
+    fillColor: string
+    fillOpacity: number
+    radius: number
+    rampBin?: number
+
+    [meta: string]: unknown
+
+}
+
+async function pointsGeojson(geographies: GeographySelection[], points: Point[], cache: MapCache): Promise<GeoJSON.Feature[]> {
+    if (cache.geo?.type !== 'points' || !sameGeographies(cache.geo.geographies, geographies)) {
+        cache.geo = {
+            type: 'points',
+            geographies,
+            centroidsByName: await mergedByName(geographies, async g => fromUniverse(g.universe, await centroidsByName(g.universe, g.geographyKind))),
+        }
+    }
+
+    const geo = cache.geo
+
+    return points.map((point) => {
+        const { value: centroid, universe } = geo.centroidsByName.get(point.name)!
+
+        return {
+            type: 'Feature' as const,
+            properties: { ...point, universe },
+            geometry: {
+                type: 'Point',
+                coordinates: [centroid.lon!, centroid.lat!],
+            },
+        }
+    })
+}
+
+async function polygonsGeojson(geographies: GeographySelection[], polygons: Polygon[], cache: MapCache): Promise<GeoJSON.Feature[]> {
+    if (cache.geo?.type !== 'polygons' || !sameGeographies(cache.geo.geographies, geographies)) {
+        cache.geo = {
+            type: 'polygons',
+            geographies,
+            polygonsByName: await mergedByName(geographies, async g => fromUniverse(g.universe, await shapesByName(g.universe, g.geographyKind))),
+        }
+    }
+
+    const geo = cache.geo
+
+    return polygons.map((polygon) => {
+        const { value: shape, universe } = geo.polygonsByName.get(polygon.name)!
+
+        return {
+            type: 'Feature' as const,
+            properties: { ...polygon, universe },
+            geometry: shape,
+        }
+    })
+}
+
+function exportAsGeoJSON(features: GeoJSON.Feature[]): string {
+    return JSON.stringify(
+        {
+            type: 'FeatureCollection',
+            features,
+        },
+        null,
+        2,
+    )
+}

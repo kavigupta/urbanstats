@@ -19,6 +19,19 @@ class HouseHeating(ACSStatisticsColection):
             "heating_no": "No heating %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
+    def varname_for_each_statistic(self):
+        return {
+            "heating_utility_gas": "utility_gas",
+            "heating_electricity": "electricity",
+            "heating_bottled_tank_lp_gas": "bottled_tank_lp_gas",
+            "heating_feul_oil_kerosene": "fuel_oil_kerosene",
+            "heating_other": "other_fuel",
+            "heating_no": "no_heating",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("climate-acs")
 
@@ -40,7 +53,7 @@ class HouseHeating(ACSStatisticsColection):
         }
 
     def mutate_acs_results(self, statistics_table):
-        fractionalize(statistics_table, *self.name_for_each_statistic().keys())
+        fractionalize(statistics_table, *self.internal_statistic_names_list())
 
     def acs_name(self):
         return "house_heating"

@@ -23,6 +23,10 @@ Source: https://www.census.gov/geographies/mapping-files/time-series/geo/carto-b
 
  - cb_2015_us_county_500k.zip
 
+Source: https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.2010.html#list-tab-1556094155
+
+ - gz_2010_us_050_00_500k.zip
+
 # USDA
 
 Source: https://www.ers.usda.gov/data-products/county-typology-codes/
@@ -82,3 +86,9 @@ Linked from: https://sites.wustl.edu/acag/datasets/surface-pm2-5/
 
     - `named_region_shapefiles/pollution/Annual-selected`
 
+
+# Health care performance data
+
+Source: https://ghdx.healthdata.org/record/ihme-data/us-health-care-performance-county-2014-2019
+
+  - `IHME_USA_HEALTH_CARE_PERFORMANCE_COUNTY_2014_2019_Y2025M08D22.CSV`

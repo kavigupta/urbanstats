@@ -1,0 +1,80 @@
+import { Selector } from 'testcafe'
+
+import { target, comparisonPage, screencap, urbanstatsFixture, getLocationWithoutSettings, resizeForPlatform } from './test_utils'
+
+// Test data for drag and drop tests
+const china = 'China'
+const usa = 'USA'
+const japan = 'Japan'
+const indonesia = 'Indonesia'
+const brazil = 'Brazil'
+
+const sortableButton = Selector('[role="button"][aria-roledescription="sortable"]')
+
+urbanstatsFixture('drag and drop basic reordering', comparisonPage([china, usa, japan]))
+
+test('drag and drop basic reordering desktop', async (t) => {
+    await screencap(t)
+
+    const firstHeader = sortableButton.nth(0)
+    const secondHeader = sortableButton.nth(1)
+
+    await t.dragToElement(firstHeader, secondHeader)
+
+    await screencap(t)
+
+    await t.expect(getLocationWithoutSettings())
+        .eql(comparisonPage([usa, china, japan]))
+})
+
+urbanstatsFixture('drag and drop transpose mode', `${target}/comparison.html?longnames=%5B%22China%22%2C%22USA%22%2C%22Japan%22%2C%22Indonesia%22%5D&s=6TunChiToWxwZeDP`)
+
+test('drag and drop transpose mode desktop', async (t) => {
+    await screencap(t)
+
+    const firstHeader = sortableButton.nth(0)
+    const secondHeader = sortableButton.nth(1)
+
+    await t.dragToElement(firstHeader, secondHeader)
+
+    await screencap(t)
+
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}/comparison.html?longnames=%5B%22USA%22%2C%22China%22%2C%22Japan%22%2C%22Indonesia%22%5D`)
+})
+
+urbanstatsFixture('drag and drop multiple reorderings', `${comparisonPage([china, usa, japan, indonesia, brazil])}&s=PnVFWSX4G4xJd`)
+
+test('drag and drop multiple reorderings', async (t) => {
+    await t.resizeWindow(1400, 800)
+
+    await screencap(t)
+
+    const chinaHeader = sortableButton.nth(0)
+    const brazilHeader = sortableButton.nth(4)
+
+    await t.dragToElement(chinaHeader, brazilHeader)
+
+    await screencap(t)
+
+    await t.expect(getLocationWithoutSettings())
+        .eql(comparisonPage([usa, japan, indonesia, brazil, china]))
+
+    const japanHeader = sortableButton.nth(1)
+    const usaHeader = sortableButton.nth(0)
+
+    await t.dragToElement(japanHeader, usaHeader)
+
+    await screencap(t)
+
+    await t.expect(getLocationWithoutSettings())
+        .eql(comparisonPage([japan, usa, indonesia, brazil, china]))
+})
+
+urbanstatsFixture('mobile comparison', `${target}/comparison.html?longnames=%5B%22California%2C+USA%22%2C%22Nevada%2C+USA%22%5D&s=CM4bTBmWGaxvULp8y1L6`, t => resizeForPlatform(t, 'mobile'))
+
+// https://github.com/kavigupta/urbanstats/issues/2189
+test('click on first histogram', async (t) => {
+    await t.click(Selector('.expand-toggle').nth(0))
+    await t.expect(Selector('.histogram-svg-panel').count).eql(1)
+})

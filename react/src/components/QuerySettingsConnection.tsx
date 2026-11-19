@@ -7,8 +7,9 @@ import { Settings, SettingsDictionary, sourceEnabledKey, statPathsWithExtra } fr
 import { useVector, VectorSettingKey, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { getAvailableGroups, getAvailableYears, getDataSourceCheckboxes, groupYearKeys, statIsEnabled, useStatPathsAll } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, StatPath } from '../page_template/statistic-tree'
+import { assert } from '../utils/defensive'
 
-import { isSinglePointerCell } from './table'
+import { isSinglePointerCell } from './pointer-cell'
 
 /**
  * - Query Params -> Settings
@@ -34,7 +35,9 @@ export function QuerySettingsConnection(): null {
     const settingsVector = useVector()
 
     useEffect(() => {
-        navContext.setSettingsVector(settingsVector)
+        const kind = navContext.currentDescriptor.kind
+        assert(kind === 'article' || kind === 'comparison', 'query settings connection may not be used on this page type')
+        navContext.unsafeUpdateCurrentDescriptor({ s: settingsVector, kind }, { history: 'replaceState' })
     }, [settingsVector, navContext])
 
     useEffect(() => {
@@ -51,12 +54,19 @@ export function QuerySettingsConnection(): null {
     return null
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No non-histogram extras yet
-export const statPathsWithHistogram = extra_stats.filter(([,{ type }]) => type === 'histogram').map(([index]) => stat_path_list[index])
+function statPathsWithExtraOfType(extraType: (typeof extra_stats)[number][1]['type']): StatPath[] {
+    return extra_stats.filter(([,{ type }]) => type === extraType).map(([index]) => stat_path_list[index])
+}
+
+const statPathsWithHistogram = statPathsWithExtraOfType('histogram')
+
+// plot_mode picks between a stat's monthly series and its temperature histogram
+const statPathsWithMonthlySeries = new Set(statPathsWithExtraOfType('monthly_time_series'))
+const statPathsWithPlotModes = statPathsWithExtraOfType('temperature_histogram').filter(statPath => statPathsWithMonthlySeries.has(statPath))
 
 interface SettingsConnectionConfig { stagedSettingsKeys: readonly VectorSettingKey[], applySettingsKeys: (visibleStatPaths: StatPath[]) => readonly VectorSettingKey[] }
 
-export function getStagedSettingsKeys(statPaths: StatPath[][]): readonly VectorSettingKey[] {
+function getStagedSettingsKeys(statPaths: StatPath[][]): readonly VectorSettingKey[] {
     const flatStatPaths = statPaths.flat()
     return [
         'use_imperial',
@@ -65,10 +75,10 @@ export function getStagedSettingsKeys(statPaths: StatPath[][]): readonly VectorS
         ...getAvailableYears(flatStatPaths).map(year => `show_stat_year_${year}` as const),
         ...getAvailableGroups(flatStatPaths).map(group => `show_stat_group_${group.id}` as const),
         ...getDataSourceCheckboxes(statPaths)
-            .flatMap(({ category, checkboxSpecs }) =>
-                checkboxSpecs.flatMap(({ name, forcedOn }) => forcedOn
+            .flatMap(({ checkboxSpecs }) =>
+                checkboxSpecs.flatMap(({ source, forcedOn }) => forcedOn
                     ? []
-                    : [sourceEnabledKey({ category, name })]),
+                    : [sourceEnabledKey(source)]),
             ),
         'temperature_unit',
     ] as const
@@ -82,6 +92,7 @@ export function settingsConnectionConfig({ pageKind, statPaths, settings }: { pa
         const result = [
             ...statPathsWithExtra.filter(path => visibleStatPaths.includes(path)).map(path => `expanded__${path}` as const),
             ...(statPathsWithHistogram.some(path => visibleStatPaths.includes(path)) ? ['histogram_relative', 'histogram_type'] as const : []),
+            ...(statPathsWithPlotModes.some(path => visibleStatPaths.includes(path)) ? ['plot_mode'] as const : []),
             ...(pageKind === 'article' && singlePointerCell ? ['mobile_article_pointers'] as const : []),
         ] as const
         return result

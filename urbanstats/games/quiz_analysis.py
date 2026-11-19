@@ -1,16 +1,21 @@
 import sqlite3
 import subprocess
 import tempfile
+import time
+from collections import Counter
 
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from permacache import permacache
 
 from urbanstats.games.quiz import quiz_is_guaranteed_past
 
+CURRENT_TIME = time.time() // 1000 * 1000  # Round to the nearest 1000 seconds
+
 questions = [f"q{i}" for i in range(1, 1 + 5)]
 
-named_users = dict(
+named_users_basal = dict(
     vo=1000233398257748901,
     avery=1027246234047181785,
     kavi=225074120239201340,
@@ -27,17 +32,52 @@ named_users = dict(
     # violetncs_mother=0xEEA892F929650B4,
     twotwofourtysix=0xFD1E9A8EFD1BD33,
     bethany=0x97815DC19AFF5D4,
+    carl=0x6905B2EC39B67CB,
 )
 
 
-def get_full_statistics_table():
+def get_named_users():
+    email_mapping, _ = get_full_statistics_table()
+    named_users = {k: email_mapping.get(v, v) for k, v in named_users_basal.items()}
+    return named_users
+
+
+# vulture: ignore -- used in notebooks
+def unique_names_each_user():
+    names = {k: "" for k in get_named_users()}
+    while True:
+        duplicates = {v for v, count in Counter(names.values()).items() if count > 1}
+        if not duplicates:
+            return names
+        for k, v in names.items():
+            if v in duplicates:
+                names[k] = v + k[len(v)]
+
+
+@permacache("juxtastat_analysis/get_full_statistics_table")
+def get_full_statistics_table(date=CURRENT_TIME):
+    del date
     c = open_connection()
     c = c.execute(
         """SELECT JuxtaStatUserDomain.user, domain, day, corrects, time
             FROM JuxtaStatUserDomain, JuxtaStatIndividualStats
             WHERE JuxtaStatUserDomain.user = JuxtaStatIndividualStats.user"""
     )
-    return c.fetchall()
+    result = c.fetchall()
+    result = pd.DataFrame(
+        result, columns=["user_id", "host", "problem", "pattern", "time"]
+    )
+    email_mapping = get_email_mapping(c)
+    result["raw_user_id"] = result.user_id
+    result["user_id"] = result.user_id.apply(lambda x: email_mapping.get(x, x))
+    return email_mapping, result
+
+
+def get_email_mapping(c):
+    # CREATE TABLE IF NOT EXISTS EmailUsers (email text, user integer PRIMARY KEY, UNIQUE(email, user))
+    c.execute("SELECT email, user FROM EmailUsers")
+    email_mapping = {user: email for email, user in c.fetchall()}
+    return email_mapping
 
 
 def open_connection():
@@ -62,10 +102,8 @@ def get_secure_id_for_user(user):
 
 
 def get_full_statistics(*, after_problem, debug=False):
-    result = get_full_statistics_table()
-    result = pd.DataFrame(
-        result, columns=["user_id", "host", "problem", "pattern", "time"]
-    )
+    _, result = get_full_statistics_table()
+    result = result.copy()
     time_problem = result[["time", "problem"]]
     time_problem = time_problem[time_problem.time == time_problem.time]
     result["last_in_batch"] = 0
@@ -100,6 +138,7 @@ def get_full_statistics(*, after_problem, debug=False):
     return result
 
 
+# vulture: ignore -- used in notebooks
 def get_dau(after_problem=49, radius=14):
     result = get_full_statistics(after_problem=after_problem, debug=False)
     num_users_by_problem = result.groupby("problem").count().user_id
@@ -152,6 +191,7 @@ def rounded_power(x):
     return 10**fl * {0: 1, 3: 2, 7: 5}[round(x * 10)]
 
 
+# vulture: ignore -- used in notebooks
 def plot_sampling_bias(prob_res):
     qqp = prob_res["qqp"]
     geo_target = prob_res["geo_target"]

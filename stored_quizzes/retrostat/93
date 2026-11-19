@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual income < C$50k %",
+      "stat_path": "individual_income_under_50cad",
+      "question": "higher % of people who have individual income under C$50k",
+      "longname_a": "Toronto CDR, Ontario, Canada",
+      "longname_b": "Fraser Valley Regional district, British Columbia, Canada",
+      "stat_a": 0.6057062623057122,
+      "stat_b": 0.6291171272493572
+    },
+    "b": {
+      "stat_column": "Rent/Income < 20%",
+      "stat_path": "rent_burden_under_20",
+      "question": "higher % of people whose rent is less than 20% of their income",
+      "longname_a": "Baton Rouge MSA, LA, USA",
+      "longname_b": "Milwaukee-Waukesha-West Allis MSA, WI, USA",
+      "stat_a": 0.2651926418599085,
+      "stat_b": 0.2927743553023805
+    },
+    "a_ease": 0.7429577464788732,
+    "b_ease": 0.3392857142857143
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Health diagnosing and treating practitioners and other technical occupations %",
+      "stat_path": "occupation_health_diagnosing_and_treating_practitioners_and_other_technical_occupations",
+      "question": "higher % of workers employed in health diagnosing and treating practitioners and other technical occupations!TOOLTIP doctors, registered nurses, physical therapists, pharmacists, dietitians, veterinarians, paramedics, etc.",
+      "longname_a": "AZ-03 (2023), USA",
+      "longname_b": "MN-01 (2023), USA",
+      "stat_a": 0.021797673465055,
+      "stat_b": 0.06295464393246691
+    },
+    "b": {
+      "stat_column": "Uninsured %",
+      "stat_path": "insurance_coverage_none",
+      "question": "higher % of people who are uninsured",
+      "longname_a": "WA-04 (2023), USA",
+      "longname_b": "NY-22 (2025), USA",
+      "stat_a": 0.16890411010352968,
+      "stat_b": 0.04536024366473956
+    },
+    "a_ease": 0.325207756232687,
+    "b_ease": 0.7310606060606061
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Work From Home %",
+      "stat_path": "transportation_means_worked_at_home",
+      "question": "higher % of people who work from home",
+      "longname_a": "Bluefield-Beckley-Oak Hill WV Media Market, USA",
+      "longname_b": "Tucson (Sierra Vista) AZ Media Market, USA",
+      "stat_a": 0.036136398787034965,
+      "stat_b": 0.0986811881416504
+    },
+    "b": {
+      "stat_column": "LICO-AT %",
+      "stat_path": "lico_at_canada",
+      "question": "higher % of people who are low income based on the Low-income cut-offs, after tax (LICO-AT)",
+      "longname_a": "Montr\u00e9al Territory, Quebec, Canada",
+      "longname_b": "Peel Regional municipality, Ontario, Canada",
+      "stat_a": 0.10930730104187711,
+      "stat_b": 0.053857203269876294
+    },
+    "a_ease": 0.7965367965367965,
+    "b_ease": 0.38756715272448194
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Wholesale trade %",
+      "stat_path": "industry_wholesale_trade",
+      "question": "higher % of workers employed in the wholesale trade industry!TOOLTIP wholesalers of all kinds of goods",
+      "longname_a": "St. Louis city, Missouri, USA",
+      "longname_b": "Surrey City, Greater Vancouver Regional district, British Columbia, Canada",
+      "stat_a": 0.021259565203470665,
+      "stat_b": 0.0387183822650338
+    },
+    "b": {
+      "stat_column": "No internet access %",
+      "stat_path": "internet_no_access",
+      "question": "higher % of people who have no internet access",
+      "longname_a": "Springfield MSA, MO, USA",
+      "longname_b": "Sacramento--Roseville--Arden-Arcade MSA, CA, USA",
+      "stat_a": 0.12663856832591205,
+      "stat_b": 0.06381905919725683
+    },
+    "a_ease": 0.4681504221028396,
+    "b_ease": 0.8687392055267703
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Households With 1+ Vehicles %",
+      "stat_path": "vehicle_ownership_at_least_1",
+      "question": "higher % of households with at least 1 vehicle",
+      "longname_a": "Boston city, Massachusetts, USA",
+      "longname_b": "Tampa city, Florida, USA",
+      "stat_a": 0.6628633818566788,
+      "stat_b": 0.910335534573051
+    },
+    "b": {
+      "stat_column": "2020 Presidential Election",
+      "stat_path": "2020 Presidential Election-margin",
+      "question": "!FULL Which voted more for Biden in the 2020 presidential election?",
+      "longname_a": "Port St. Lucie MSA, FL, USA",
+      "longname_b": "Tulsa MSA, OK, USA",
+      "stat_a": -0.09940985878632441,
+      "stat_b": -0.28127276331407663
+    },
+    "a_ease": 0.8910207214121258,
+    "b_ease": 0.4802816901408451
+  }
+]

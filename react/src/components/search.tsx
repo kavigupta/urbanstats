@@ -1,109 +1,214 @@
-import React, { CSSProperties, ReactElement, ReactNode, useMemo, useRef } from 'react'
+import React, { CSSProperties, ReactElement, ReactNode, useCallback, useMemo, useRef, useState } from 'react'
 
+import type_ordering_idx from '../data/type_ordering_idx'
+import universes_ordered from '../data/universes_ordered'
 import { Navigator } from '../navigation/Navigator'
-import { searchIconLink } from '../navigation/links'
+import { searchIconLink, typesInOrder } from '../navigation/links'
 import { useColors } from '../page_template/colors'
-import { useSetting } from '../page_template/settings'
+import { useSettings } from '../page_template/settings'
 import '../common.css'
-import { SearchResult, SearchParams, debugPerformance, getIndexCacheKey } from '../search'
+import { SearchResult, SearchParams, getIndexCacheKey, SearchIndexConfig } from '../search'
+import type { SearchWorkerInputMessage, SearchWorkerOutputMessage, SearchWorkerStatus } from '../searchWorker'
+import { Universe, useUniverse } from '../universe'
+import { GeographyKind } from '../urban-stats-script/workerManager'
+import { Property } from '../utils/Property'
+import { TestUtils } from '../utils/TestUtils'
+import { withButtonRole } from '../utils/a11y'
+import { debugTabId, makeDebugLogger } from '../utils/debug-logging'
 
 import { GenericSearchBox } from './search-generic'
 
+const defaultWorkerStatusProperty = new Property<SearchWorkerStatus>({ status: 'ready' })
+
+const debugPerformance = makeDebugLogger('searchPerformance')
+
 export function SearchBox(props: {
     onChange?: (inp: string) => void
-    link: (inp: string) => ReturnType<Navigator['link']>
+    articleLink: (inp: string) => ReturnType<Navigator['link']>
+    compareLink?: (inp: string) => ReturnType<Navigator['link']> | undefined
+    statisticLink?: (statIdx: number, articleType: GeographyKind, universe: Universe) => ReturnType<Navigator['link']>
     autoFocus: boolean
     placeholder: string
     style: CSSProperties
+    prioritizeArticleType?: string
+    onTextPresenceChange?: (hasText: boolean) => void
 }): ReactNode {
     const colors = useColors()
-    const [showHistoricalCDs] = useSetting('show_historical_cds')
+    const showSettings = useSettings(['show_historical_cds', 'show_person_circles'])
+    const universe = useUniverse()
+    const statsUniverse = props.statisticLink && (universe ?? 'allUniverses')
 
     // Keep these in sync
-    const cacheKey = useMemo(() => getIndexCacheKey(), [])
+    const cacheKeyPromise = useMemo(() => getIndexCacheKey(), [])
+    const searchWorker = useRef<SearchWorker | undefined>()
+    const searchWorkerConfig = useRef<AsyncConfig | undefined>()
+    const searchFocused = useRef(false)
 
-    const searchWorker = useRef<Promise<SearchWorker> | undefined>()
+    const [workerStatusProperty, setWorkerStatusProperty] = useState(defaultWorkerStatusProperty)
+    const workerStatus = workerStatusProperty.use()
+
+    const createSearchWorkerIfNeeded = useCallback(() => {
+        if (searchWorker.current === undefined || searchWorkerConfig.current?.cacheKeyPromise !== cacheKeyPromise || searchWorkerConfig.current.statsUniverse !== statsUniverse) {
+            searchWorker.current = createSearchWorker({ cacheKeyPromise, statsUniverse })
+            searchWorkerConfig.current = { cacheKeyPromise, statsUniverse }
+            setWorkerStatusProperty(searchWorker.current.status)
+        }
+    }, [cacheKeyPromise, statsUniverse])
 
     const doSearch = useMemo(() => {
         return async (sq: string): Promise<SearchResult[]> => {
             if (sq === '') {
                 return []
             }
-            if (searchWorker.current === undefined) {
-                searchWorker.current = cacheKey.then(createSearchWorker)
-            }
-            const result = await (await searchWorker.current)({ unnormalizedPattern: sq, maxResults: 10, showHistoricalCDs })
+            createSearchWorkerIfNeeded()
+            TestUtils.shared.startLoading('doSearch')
+            const result = await searchWorker.current!.executeSearch({
+                unnormalizedPattern: sq,
+                maxResults: 10,
+                showSettings,
+                prioritizeTypeIndex: props.prioritizeArticleType !== undefined ? type_ordering_idx[props.prioritizeArticleType] : undefined,
+            })
+            void TestUtils.shared.finishLoading('doSearch')
             return result
         }
-    }, [searchWorker, cacheKey, showHistoricalCDs])
+    }, [searchWorker, showSettings, props.prioritizeArticleType, createSearchWorkerIfNeeded])
 
-    const renderMatch = (currentMatch: (() => SearchResult), onMouseOver: () => void, onClick: () => void, style: React.CSSProperties, dataTestId: string | undefined): ReactElement => (
-        <a
-            key={currentMatch().longname}
-            {...props.link(currentMatch().longname)}
-            style={{
-                textDecoration: 'none',
-                color: colors.textMain,
-            }}
-            data-test-id={dataTestId}
-        >
+    function link(sr: SearchResult): ReturnType<Navigator['link']> | undefined {
+        switch (sr.type) {
+            case 'article':
+                return props.articleLink(sr.longname)
+            case 'statistic':
+                if (props.statisticLink === undefined) {
+                    // This occurs when the props have changed but the results have not updated
+                    return undefined
+                }
+                return props.statisticLink(sr.statisticIndex, typesInOrder[sr.typeIndex], universes_ordered[sr.universeIndex])
+        }
+    }
+
+    const renderMatch = (currentMatch: (() => SearchResult), onMouseOver: () => void, onClick: () => void, style: React.CSSProperties, dataTestId: string | undefined): ReactElement => {
+        const match = currentMatch()
+        const compare = match.type === 'article' ? props.compareLink?.(match.longname) : undefined
+        return (
             <div
+                key={match.longname}
                 className="serif searchbox-dropdown-item"
-                style={style}
+                style={{ ...style, display: 'flex', alignItems: 'center', gap: '0.5em' }}
                 onClick={onClick}
                 onMouseOver={onMouseOver}
             >
-                <SingleSearchResult {...currentMatch()} />
+                <a
+                    {...link(match)}
+                    style={{
+                        flexGrow: 1,
+                        minWidth: 0,
+                        textDecoration: 'none',
+                        color: colors.textMain,
+                    }}
+                    data-test-id={dataTestId}
+                >
+                    <SingleSearchResult {...match} />
+                </a>
+                {compare === undefined
+                    ? undefined
+                    : (
+                            // This is an anchor so we get modifier key functionality (e.g. open link in new tab)
+                            <a
+                                {...compare}
+                                {...withButtonRole(`Compare with ${match.longname}`, compare.onClick)}
+                                data-test-id="search-result-compare"
+                            >
+                                Compare
+                            </a>
+                        )}
             </div>
-        </a>
-    )
+        )
+    }
 
     return (
         <GenericSearchBox
             matches={[]}
             doSearch={doSearch}
             onChange={(result) => { props.onChange?.(result.longname) }}
-            link={result => props.link(result.longname)}
+            link={link}
             onFocus={(): void => {
-                if (searchWorker.current === undefined) {
-                    searchWorker.current = cacheKey.then(createSearchWorker)
-                }
+                searchFocused.current = true
+                createSearchWorkerIfNeeded()
             }}
             onBlur={() => {
-                searchWorker.current = undefined
+                searchFocused.current = false
+                // Keep a worker that's still building so refocusing reuses it rather than building a second index
+                // Weak so a worker whose build never finishes can still be collected and closed
+                const worker = searchWorker.current && new WeakRef(searchWorker.current)
+                void searchWorker.current?.indexBuilt.then(() => {
+                    if (!searchFocused.current && searchWorker.current === worker?.deref()) {
+                        searchWorker.current = undefined
+                        setWorkerStatusProperty(defaultWorkerStatusProperty)
+                    }
+                })
             }}
+            onTextPresenceChange={props.onTextPresenceChange}
             autoFocus={props.autoFocus}
             placeholder={props.placeholder}
             style={props.style}
             renderMatch={renderMatch}
+            loadingStatus={workerStatus.status !== 'ready' ? workerStatus.message : undefined}
         />
     )
 }
 
 function SingleSearchResult(props: SearchResult): ReactNode {
+    const src = props.type === 'article' ? searchIconLink(props.typeIndex) : '/icons/search_icons/table.png'
     return (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{ width: '80%' }}>{props.longname}</div>
-            <div style={{ width: '20%', textAlign: 'right' }}><img height="25em" src={searchIconLink(props.typeIndex)} /></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5em' }}>
+            <img height="25em" src={src} />
+            <div>{props.longname}</div>
         </div>
     )
 }
 
-const workerTerminatorRegistry = new FinalizationRegistry<Worker>((worker) => { worker.terminate() })
-type SearchWorker = (params: SearchParams) => Promise<SearchResult[]>
+const workerTerminatorRegistry = new FinalizationRegistry<Worker>((worker) => { worker.postMessage({ type: 'close' } satisfies SearchWorkerInputMessage) })
 
-function createSearchWorker(cacheKey: string | undefined): SearchWorker {
-    const worker = new Worker(new URL('../searchWorker', import.meta.url), { name: cacheKey })
+interface SearchWorker {
+    executeSearch: (params: SearchParams) => Promise<SearchResult[]>
+    status: Property<SearchWorkerStatus>
+    indexBuilt: Promise<void>
+}
+
+type AsyncConfig = Omit<SearchIndexConfig, 'cacheKey'> & { cacheKeyPromise: Promise<string | undefined> }
+
+function createSearchWorker(config: AsyncConfig): SearchWorker {
+    const worker = new Worker(new URL('../searchWorker', import.meta.url), { name: `${debugTabId}/search` })
+    const { cacheKeyPromise, ...configWithoutPromise } = config
+    const configured = cacheKeyPromise.then((cacheKey) => { worker.postMessage({ type: 'configure', config: { ...configWithoutPromise, cacheKey } } satisfies SearchWorkerInputMessage) })
     debugPerformance(`Requested new search worker at timestamp ${Date.now()}`)
     const messageQueue: ((results: SearchResult[]) => void)[] = []
-    worker.addEventListener('message', (message: MessageEvent<SearchResult[]>) => {
-        messageQueue.shift()!(message.data)
+    const statusProperty = new Property<SearchWorkerStatus>({ status: 'loading', message: 'Spawning worker...' })
+    let resolveIndexBuilt: () => void
+    const indexBuilt = new Promise<void>((resolve) => { resolveIndexBuilt = resolve })
+    worker.addEventListener('message', (message: MessageEvent<SearchWorkerOutputMessage>) => {
+        switch (message.data.type) {
+            case 'result':
+                messageQueue.shift()!(message.data.results)
+                break
+            case 'status':
+                statusProperty.value = message.data.status
+                if (message.data.status.status === 'ready') {
+                    resolveIndexBuilt()
+                }
+                break
+        }
     })
-    const result: SearchWorker = (params) => {
-        worker.postMessage(params)
-        return new Promise((resolve) => {
-            messageQueue.push(resolve)
-        })
+    const result: SearchWorker = {
+        executeSearch: async (params) => {
+            await configured
+            worker.postMessage({ type: 'search', params } satisfies SearchWorkerInputMessage)
+            return new Promise((resolve) => {
+                messageQueue.push(resolve)
+            })
+        },
+        status: statusProperty,
+        indexBuilt,
     }
     workerTerminatorRegistry.register(result, worker)
     return result

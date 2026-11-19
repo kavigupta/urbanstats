@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Bike %",
+      "stat_path": "transportation_means_bike_no_wfh",
+      "question": "higher % of people who commute by bike",
+      "longname_a": "CO-02 (2023), USA",
+      "longname_b": "CA-40 (2023), USA",
+      "stat_a": 0.03844683791558454,
+      "stat_b": 0.006570115627778425
+    },
+    "b": {
+      "stat_column": "Household Income > $100k %",
+      "stat_path": "household_income_over_100k",
+      "question": "higher % of households who have household income over $100k",
+      "longname_a": "Antioch [Urban Area], CA, USA",
+      "longname_b": "Phoenix West-Goodyear-Avondale [Urban Area], AZ, USA",
+      "stat_a": 0.47361104711301,
+      "stat_b": 0.34965556772957984
+    },
+    "a_ease": 0.34213197969543147,
+    "b_ease": 0.7431289640591966
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean sunny hours",
+      "stat_path": "hours_sunny_4",
+      "question": "!FULL Which has more hours of sun per day on average? (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Varanasi Urban Center, India",
+      "longname_b": "Kampala Urban Center, Uganda",
+      "stat_a": 7.386409510888178,
+      "stat_b": 2.790749864492501
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Airport",
+      "stat_path": "mean_dist_Airport_updated",
+      "question": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
+      "longname_a": "Antioch Urban Center, USA",
+      "longname_b": "Cincinnati Urban Center, USA",
+      "stat_a": 47.38301224203534,
+      "stat_b": 25.450946543176336
+    },
+    "a_ease": 0.35237329042638776,
+    "b_ease": 0.7538461538461538
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Vacancy %",
+      "stat_path": "vacancy",
+      "question": "higher % of units that are vacant!TOOLTIP Vacancy is the % of housing units that were not occupied on April 1, 2020 (census night). This includes vacation homes but does *not* include units that were not occupied due to the pandemic, the census attempted to account for this.",
+      "longname_a": "Springfield MSA, MO, USA",
+      "longname_b": "Ponce MSA, PR, USA",
+      "stat_a": 0.07542651756418843,
+      "stat_b": 0.16692193211865508
+    },
+    "b": {
+      "stat_column": "PW Household Size",
+      "stat_path": "household_size_pw",
+      "question": "higher average population weighted household size!TOOLTIP The average household size a person is in; i.e., the average over all people of the number of people in their household. This is population-weighted, meaning that if there is one household of 3 and three households of 1, the average household size is 2, not 1.5.",
+      "longname_a": "Marin County, California, USA",
+      "longname_b": "Weber County, Utah, USA",
+      "stat_a": 3.076530562549249,
+      "stat_b": 3.783765764542902
+    },
+    "a_ease": 0.3695431472081218,
+    "b_ease": 0.7864693446088795
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad Humanities %",
+      "stat_path": "education_field_humanities",
+      "question": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
+      "longname_a": "Yakima-Pasco-Richland-Kennewick WA Media Market, USA",
+      "longname_b": "Columbus OH Media Market, USA",
+      "stat_a": 0.083368655346213,
+      "stat_b": 0.11653416521621915
+    },
+    "b": {
+      "stat_column": "Racial Homogeneity %",
+      "stat_path": "homogeneity_250_2020",
+      "question": "lower racial diversity!TOOLTIP We define racial diversity as the average probability a person selecting a random person in a 250m radius will select someone of a different race",
+      "longname_a": "Oklahoma City OK Media Market, USA",
+      "longname_b": "Savannah GA Media Market, USA",
+      "stat_a": 0.5215196324774379,
+      "stat_b": 0.5862763624139689
+    },
+    "a_ease": 0.6518218623481782,
+    "b_ease": 0.20047923322683706
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad %",
+      "stat_path": "education_ugrad",
+      "question": "higher % of people who have at least an undergrad degree",
+      "longname_a": "Santa Clara County, California, USA",
+      "longname_b": "Westmoreland County, Pennsylvania, USA",
+      "stat_a": 0.5356867318211251,
+      "stat_b": 0.297431331796648
+    },
+    "b": {
+      "stat_column": "Household income > C$100k %",
+      "stat_path": "household_income_above_100_cad",
+      "question": "higher % of households that have household income over C$100k",
+      "longname_a": "Qu\u00e9bec Territory, Quebec, Canada",
+      "longname_b": "Waterloo Regional municipality, Ontario, Canada",
+      "stat_a": 0.3300818295128167,
+      "stat_b": 0.46603333102189004
+    },
+    "a_ease": 0.8568037974683544,
+    "b_ease": 0.4504792332268371
+  }
+]

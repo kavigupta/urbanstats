@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Bike %",
+      "stat_path": "transportation_means_bike",
+      "question": "higher % of people who commute by bike",
+      "longname_a": "Boise City [Urban Area], ID, USA",
+      "longname_b": "South Bend [Urban Area], IN-MI, USA",
+      "stat_a": 0.018946641437472787,
+      "stat_b": 0.005653637909413985
+    },
+    "b": {
+      "stat_column": "Graduate degree [25-64] %",
+      "stat_path": "education_grad_canada",
+      "question": "higher % of people between 25 and 64 who have a graduate degree",
+      "longname_a": "Qu\u00e9bec Ville, Qu\u00e9bec Territory, Quebec, Canada",
+      "longname_b": "Saskatoon City, Division No. 11, Saskatchewan, Canada",
+      "stat_a": 0.11640466260293031,
+      "stat_b": 0.10383438343834386
+    },
+    "a_ease": 0.408983451536643,
+    "b_ease": 0.8158429248476642
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad Humanities %",
+      "stat_path": "education_field_humanities",
+      "question": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
+      "longname_a": "South Central Connecticut Planning Region, Connecticut, USA",
+      "longname_b": "Stanislaus County, California, USA",
+      "stat_a": 0.14332327710093962,
+      "stat_b": 0.06523269003088189
+    },
+    "b": {
+      "stat_column": "Commute Time < 15 min %",
+      "stat_path": "transportation_commute_time_under_15",
+      "question": "higher % of people who have commute time under 15 min",
+      "longname_a": "TN-08 (2023), USA",
+      "longname_b": "HI-01 (2023), USA",
+      "stat_a": 0.2993560308451481,
+      "stat_b": 0.2038632702492844
+    },
+    "a_ease": 0.7791027825099376,
+    "b_ease": 0.29566744730679156
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Pedestrian/Cyclist Fatalities Per Capita Per Year",
+      "stat_path": "traffic_fatalities_ped_last_decade_per_capita",
+      "question": "higher pedestrian/cyclist fatalities per capita between 2013 and 2022!TOOLTIP pedestrian and cyclist fatalities in the region, divided by the population of the region",
+      "longname_a": "FL-07 (2023), USA",
+      "longname_b": "NH-02 (2023), USA",
+      "stat_a": 2.8730364875633916e-05,
+      "stat_b": 1.0163118044616089e-05
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Active Superfund Site",
+      "stat_path": "mean_dist_Active Superfund Site_updated",
+      "question": "!FULL Which has less exposure to active EPA superfund sites (higher population-weighted mean distance)?!TOOLTIP EPA superfund sites are hazardous waste sites identified by the Environmental Protection Agency.",
+      "longname_a": "Wichita [Urban Area], KS, USA",
+      "longname_b": "San Diego [Urban Area], CA, USA",
+      "stat_a": 13.594594728965909,
+      "stat_b": 53.699161311902635
+    },
+    "a_ease": 0.8336172629187961,
+    "b_ease": 0.42915690866510536
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Time < 15 min %",
+      "stat_path": "transportation_commute_time_under_15",
+      "question": "higher % of people who have commute time under 15 min",
+      "longname_a": "Lubbock city, Texas, USA",
+      "longname_b": "Chicago city, Illinois, USA",
+      "stat_a": 0.5082335429112762,
+      "stat_b": 0.11277327680654838
+    },
+    "b": {
+      "stat_column": "Educational services %",
+      "stat_path": "industry_educational_services",
+      "question": "higher % of workers employed in the educational services industry!TOOLTIP elementary and secondary schools, colleges, universities,etc.",
+      "longname_a": "Lubbock [Urban Area], TX, USA",
+      "longname_b": "Denver-Aurora [Urban Area], CO, USA",
+      "stat_a": 0.15011766622368702,
+      "stat_b": 0.0807190881713057
+    },
+    "a_ease": 0.5809798270893372,
+    "b_ease": 0.16476552598225602
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Vision disability %",
+      "stat_path": "VISION_cdc_2",
+      "question": "higher % of adults with a vision disability",
+      "longname_a": "MA-07 (2023), USA",
+      "longname_b": "CA-13 (2023), USA",
+      "stat_a": 0.05188963008489171,
+      "stat_b": 0.08416002712497779
+    },
+    "b": {
+      "stat_column": "Educational instruction, and library occupations %",
+      "stat_path": "occupation_educational_instruction,_and_library_occupations",
+      "question": "higher % of workers employed in educational instruction, and library occupations!TOOLTIP teachers, tutors, professors, librarians, and archivists",
+      "longname_a": "MA-01 (2023), USA",
+      "longname_b": "FL-19 (2023), USA",
+      "stat_a": 0.07393124686888797,
+      "stat_b": 0.0474220733790159
+    },
+    "a_ease": 0.47596479350033855,
+    "b_ease": 0.8893258426966292
+  }
+]

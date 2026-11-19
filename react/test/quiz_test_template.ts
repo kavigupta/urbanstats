@@ -6,11 +6,13 @@ import { gzipSync } from 'zlib'
 import { ClientFunction, Selector } from 'testcafe'
 
 import { clickButton, clickButtons, quizFixture, quizScreencap, tempfileName, withMockedClipboard } from './quiz_test_utils'
-import { target, mostRecentDownloadPath, safeReload, screencap, getLocation } from './test_utils'
+import { target, safeReload, screencap, safeClearLocalStorage, waitForDownload, withInterceptedRequests } from './test_utils'
 
 export async function runQuery(t: TestController, query: string): Promise<string> {
     // dump given query to a string
-    const commandLine = `sqlite3 ../urbanstats-persistent-data/db.sqlite3 "${query}"`
+    // The CLI's default busy timeout is zero, so without this it gives up the instant the quiz
+    // server happens to be holding the write lock.
+    const commandLine = `sqlite3 -cmd ".timeout 10000" ../urbanstats-persistent-data/db.sqlite3 "${query}"`
     await t.wait(500)
     const result = await promisify(exec)(commandLine)
     return result.stdout
@@ -31,7 +33,7 @@ function secureIdTable(t: TestController): Promise<string> {
 // eslint-disable-next-line no-restricted-syntax -- Persisted data
 type QuizHistory = Record<string | number, { choices: ('A' | 'B')[], correct_pattern: [boolean, boolean, boolean, boolean, boolean] }>
 
-function exampleQuizHistory(minQuiz: number, maxQuiz: number, minRetro?: number, maxRetro?: number): QuizHistory {
+export function exampleQuizHistory(minQuiz: number, maxQuiz: number, minRetro?: number, maxRetro?: number): QuizHistory {
     const quizHistory: QuizHistory = {}
     for (let i = minQuiz; i <= maxQuiz; i++) {
         quizHistory[i] = {
@@ -54,6 +56,25 @@ function exampleQuizHistory(minQuiz: number, maxQuiz: number, minRetro?: number,
         }
     }
     return quizHistory
+}
+
+async function checkText(t: TestController, words: string, emoji: string): Promise<void> {
+    const text = await Selector('#quiz-result-summary-words').innerText
+    await t.expect(text).eql(words)
+    const emojiText = await Selector('#quiz-result-summary-emoji').innerText
+    await t.expect(emojiText).eql(emoji)
+}
+
+function customQuizURL(quiz: object): string {
+    const quizStr = JSON.stringify(quiz)
+    const quizBuffer = Buffer.from(quizStr)
+    const quizBufferGzip = gzipSync(quizBuffer)
+    const quizBase64 = quizBufferGzip.toString('base64')
+    const params = new URLSearchParams()
+    params.set('mode', 'custom')
+    params.set('quizContent', quizBase64)
+    const url = `${target}/quiz.html#${params.toString()}`
+    return url
 }
 
 export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void {
@@ -115,6 +136,16 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await t.expect(await secureIdTable(t)).eql('7|3\n')
     })
 
+    test('loading indicator', async (t) => {
+        // Loading indicator appears when shape load fails or is delayed
+        await withInterceptedRequests(t, request => request.url.includes('shape') ? 'fail' : 'continue', async () => {
+            await clickButtons(t, ['a'])
+            await t.expect(Selector('[data-test-id=longLoad]').exists).ok()
+
+            await screencap(t, { wait: false })
+        })
+    })
+
     quizFixture(
         'trust on first use',
         `${target}/quiz.html#date=99`,
@@ -154,6 +185,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         // authentication failure, so no change to the database
         await t.expect(await juxtastatTable(t)).eql('7|30|0\n')
         await t.expect(await secureIdTable(t)).eql('7|4\n')
+        await t.expect(Selector('b').withText(/attempting to hijack your account/).exists).ok()
         await quizScreencap(t)
     })
 
@@ -188,6 +220,31 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     })
 
     quizFixture(
+        'do not report incomplete quiz results',
+        `${target}/quiz.html#date=99`,
+        {
+            persistent_id: '000000000000007',
+            // Day 95 was only partially answered (1 of 5 questions), e.g. the user
+            // answered the first question correctly then closed the tab.
+            quiz_history: JSON.stringify({ 95: { choices: ['A'], correct_pattern: [true] } }),
+        },
+        `
+    CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
+        (user integer, day integer, corrects integer, time integer, PRIMARY KEY (user, day));
+    `,
+        platform,
+    )
+
+    test('quiz-do-not-report-incomplete-results', async (t) => {
+        await safeReload(t)
+        await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
+        // Completing day 99 must not sweep the in-progress day 95 to the server.
+        // Reporting it persists [true], which the server pads to 5 bits and decodes
+        // to green/red/red/red/red even though the user never finished day 95 (#1900).
+        await t.expect(await juxtastatTable(t)).eql('7|99|15\n')
+    })
+
+    quizFixture(
         'percentage correct test',
         `${target}/quiz.html#date=99`,
         { persistent_id: '000000000000007' },
@@ -199,37 +256,54 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     INSERT INTO JuxtastatUserDomain VALUES (7, 'testproxy.nonexistent');
     INSERT INTO JuxtastatUserDomain VALUES (8, 'testproxy.nonexistent');
     
-    ${Array.from(Array(30).keys()).map(
+    ${Array.from(Array(29).keys()).map(
         i => `INSERT INTO JuxtaStatIndividualStats VALUES(${i + 30}, 99, 101, 0); INSERT INTO JuxtaStatUserDomain VALUES(${i + 30}, 'testproxy.nonexistent');`,
     ).join('\n')}`,
         platform,
     )
 
+    const otherUsers = `${Array.from(Array(29).keys()).map(i => `${i + 30}|99|101`).join('\n')}\n`
+
+    // The result page fetches audience statistics while reporting this user's result, so assertions
+    // that depend on whether they count this user are made after a reload.
     test('quiz-percentage-correct', async (t) => {
         await safeReload(t)
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
+        await t.expect(await juxtastatTable(t)).eql(`${otherUsers}7|99|15\n`)
+        await safeReload(t)
         await quizScreencap(t)
-        await t.expect(await juxtastatTable(t)).eql(
-            `${Array.from(Array(30).keys()).map(i => `${i + 30}|99|101`).join('\n')}\n` + `7|99|15\n`,
-        )
-        // assert no element with id quiz-audience-statistics
+        // 30 users is not enough to show the statistics
         await t.expect(Selector('#quiz-audience-statistics').exists).notOk()
         // now become user 8
+        await safeClearLocalStorage(t)
         await t.eval(() => {
-            localStorage.clear()
             localStorage.setItem('persistent_id', '000000000000008')
             localStorage.setItem('testHostname', 'testproxy.nonexistent')
         })
         await safeReload(t)
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
-        await quizScreencap(t)
-        await t.expect(await juxtastatTable(t)).eql(
-            `${Array.from(Array(30).keys()).map(i => `${i + 30}|99|101`).join('\n')}\n` + `7|99|15\n` + `8|99|15\n`,
-        )
-        // assert element with id quiz-audience-statistics exists
+        await t.expect(await juxtastatTable(t)).eql(`${otherUsers}7|99|15\n8|99|15\n`)
+        await safeReload(t)
         await t.expect(Selector('#quiz-audience-statistics').exists).ok()
+        await quizScreencap(t)
         const stats = await Selector('#quiz-audience-statistics').innerText
-        await t.expect(stats).eql('Question Difficulty\n100%\nQ1 Correct\n3%\nQ2 Correct\n100%\nQ3 Correct\n3%\nQ4 Correct\n0%\nQ5 Correct')
+        await t.expect(stats).eql('Question Difficulty\n100%\nQ1 Correct\n6%\nQ2 Correct\n100%\nQ3 Correct\n6%\nQ4 Correct\n0%\nQ5 Correct')
+        // now become user 9, for whom there is enough data either way the race goes,
+        // so the statistics show up without a reload
+        await safeClearLocalStorage(t)
+        await t.eval(() => {
+            localStorage.setItem('persistent_id', '000000000000009')
+            localStorage.setItem('testHostname', 'testproxy.nonexistent')
+        })
+        await safeReload(t)
+        await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
+        await t.expect(Selector('#quiz-audience-statistics').exists).ok()
+        const statsWithoutReload = await Selector('#quiz-audience-statistics').innerText
+        // Whether user 9 is one of the 31 or one of the 32 is the race
+        await t.expect([
+            'Question Difficulty\n100%\nQ1 Correct\n6%\nQ2 Correct\n100%\nQ3 Correct\n6%\nQ4 Correct\n0%\nQ5 Correct',
+            'Question Difficulty\n100%\nQ1 Correct\n9%\nQ2 Correct\n100%\nQ3 Correct\n9%\nQ4 Correct\n0%\nQ5 Correct',
+        ]).contains(statsWithoutReload)
     })
 
     quizFixture(
@@ -241,7 +315,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     )
 
     function hexToDec(hex: string): string {
-    // https://stackoverflow.com/a/53751162/1549476
+        // https://stackoverflow.com/a/53751162/1549476
         if (hex.length % 2) { hex = `0${hex}` }
 
         const bn = BigInt(`0x${hex}`)
@@ -325,13 +399,6 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         platform,
     )
 
-    async function checkText(t: TestController, words: string, emoji: string): Promise<void> {
-        const text = await Selector('#quiz-result-summary-words').innerText
-        await t.expect(text).eql(words)
-        const emojiText = await Selector('#quiz-result-summary-emoji').innerText
-        await t.expect(emojiText).eql(emoji)
-    }
-
     test('quiz-results-test', async (t) => {
         await safeReload(t)
         await quizScreencap(t)
@@ -396,6 +463,28 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await checkText(t, 'Excellent! 😊 4/5', '🟩🟩🟩🟩🟥')
     })
 
+    quizFixture('custom quiz long names', customQuizURL({
+        name: 'long names',
+        questions: [
+            {
+                stat_column: 'Population',
+                stat_path: 'population',
+                question: 'higher population',
+                longname_a: 'Thiruvananthapuram Urban Center, India',
+                longname_b: 'Massachusetts, USA',
+                stat_a: 2787000,
+                stat_b: 7029917,
+                kind: 'juxtastat',
+            },
+        ],
+    }), {}, '', platform)
+
+    test('custom-quiz-long-names', async (t) => {
+        await screencap(t)
+    })
+}
+
+export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobile' }): void {
     quizFixture('export quiz progress', `${target}/quiz.html#date=90`,
         {
             quiz_history: JSON.stringify({
@@ -410,6 +499,10 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
             }),
             persistent_id: 'b0bacafe',
             secure_id: 'baddecaf',
+            quiz_friends: JSON.stringify([
+                ['name', 'id'],
+                [null, 'id2', 1234],
+            ]),
         },
         '',
         platform,
@@ -452,16 +545,17 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
                 ],
             },
         },
-        quiz_friends: [],
+        quiz_friends: [
+            ['name', 'id'],
+            [null, 'id2', 1234],
+        ],
     }
 
     test('export quiz progress', async (t) => {
+        const laterThan = new Date().getTime()
         await t.click(Selector('button').withExactText('Export Quiz History'))
 
-        // Give it a second to download...
-        await t.wait(1000)
-
-        const { date_exported, ...downloadContents } = JSON.parse(readFileSync(mostRecentDownloadPath()).toString()) as Record<string, unknown>
+        const { date_exported, ...downloadContents } = JSON.parse(readFileSync(await waitForDownload(t, laterThan, '.json')).toString()) as Record<string, unknown>
 
         await t.expect(typeof date_exported === 'string').ok()
 
@@ -493,7 +587,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     )
 
     test('import quiz progress', async (t) => {
-    // Write the file to upload
+        // Write the file to upload
         const tempfile = `${tempfileName()}.json`
         writeFileSync(tempfile, JSON.stringify(expectedExportWithoutDate, null, 2))
 
@@ -576,9 +670,9 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
                 + '• Juxtastat 91\n'
                 + '• Retrostat W39\n'
                 + '\n'
-                + 'Are you sure you want to merge them? (The lowest score will be used)',
+                + 'Are you sure you want to merge them? (Whichever result is further along will be used, and otherwise the lowest score)',
                 type: 'confirm',
-                url: 'http://localhost:8000/quiz.html#date=91',
+                url: `${target}/quiz.html#date=91`,
             },
         ])
 
@@ -639,7 +733,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     )
 
     test('import quiz progress with numbers', async (t) => {
-    // Write the file to upload
+        // Write the file to upload
         const tempfile = `${tempfileName()}.json`
         writeFileSync(tempfile, JSON.stringify(expectedExportWithoutDateNumbers, null, 2))
 
@@ -665,11 +759,11 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     )
 
     test('quiz results go to compare pages', async (t) => {
-    // only using the image tests because the links are not stable across versions
-        await t.click(Selector('a').withText(/Colorado, USA/))
+        // only using the image tests because the links are not stable across versions
+        await t.click(Selector('.quiz_result_cell').withText(/Colorado, USA/))
         await screencap(t)
         await ClientFunction(() => { history.back() })()
-        await t.click(Selector('a').withText(/Toronto CDR, Ontario, Canada/))
+        await t.click(Selector('.quiz_result_cell').withText(/Toronto CDR, Ontario, Canada/))
         await screencap(t)
     })
 
@@ -685,14 +779,16 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await t.expect(copies[0]).match(/^Juxtastat [0-9]+ [012345]\/5\n\n[🟩🟥]{10}\n\nhttps:\/\/juxtastat\.org$/)
     })
 
-    quizFixture('current juxta ending in 10s', `${target}/quiz.html`, {
-        debug_quiz_transition: '15000',
+    const debugTime = 25
+
+    quizFixture(`current juxta ending in ${debugTime}s`, `${target}/quiz.html`, {
+        debug_quiz_transition: `${debugTime * 1000}`,
     }, '', platform)
 
     test('next quiz button when quiz ends', async (t) => {
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
         await t.expect(Selector('a').withExactText('Next Quiz').exists).notOk()
-        await t.click(Selector('a').withExactText('Next Quiz'))
+        await t.click(Selector('a', { timeout: debugTime * 1000 }).withExactText('Next Quiz'))
         await t.expect(Selector('a').withExactText('Next Quiz').exists).notOk()
     })
 
@@ -707,18 +803,6 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         // Emoji are double length
         await t.expect(copies[0]).match(/^Retrostat Week [0-9]+ [012345]\/5\n\n[🟩🟥]{10}\n\nhttps:\/\/juxtastat\.org\/#mode=retro$/)
     })
-
-    function customQuizURL(quiz: object): string {
-        const quizStr = JSON.stringify(quiz)
-        const quizBuffer = Buffer.from(quizStr)
-        const quizBufferGzip = gzipSync(quizBuffer)
-        const quizBase64 = quizBufferGzip.toString('base64')
-        const params = new URLSearchParams()
-        params.set('mode', 'custom')
-        params.set('quizContent', quizBase64)
-        const url = `${target}/quiz.html#${params.toString()}`
-        return url
-    }
 
     const quiz5Q = {
         name: 'this is a testing quiz',
@@ -819,8 +903,9 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await t.expect(lines[3]).eql('')
         await t.expect(lines[4]).match(/^https:\/\/s\.urbanstats\.org\/s\?c=.*$/)
         // navigate to the url, should bring us back to the same quiz
-        await t.navigateTo(lines[4])
-        await t.expect(getLocation()).eql(customQuizURL(quiz5Q))
+        const response = await fetch(lines[4].replaceAll('https://s.urbanstats.org', 'http://localhost:54579'), { redirect: 'manual' })
+        await t.expect(response.status).eql(302)
+        await t.expect(response.headers.get('Location')).eql(customQuizURL(quiz5Q).replaceAll(target, 'https://urbanstats.org'))
     })
 
     const quiz3Q = {

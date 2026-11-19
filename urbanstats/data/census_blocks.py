@@ -8,7 +8,19 @@ import pandas as pd
 
 from urbanstats.geometry.ellipse import compute_density_for_radius
 
-RADII = (0.25, 0.5, 1, 2, 4)
+ONE_MILE = 1.609344
+
+RADII = (0.25, 0.5, 1, ONE_MILE, 2, 4, 8, 16, 32, 64)
+
+
+def format_radius(x):
+    if x in (0.25, 0.5):
+        return f"{x * 1000:.0f}m"
+    if x == ONE_MILE:
+        return "1mi"
+    assert x == int(x)
+    return f"{x:.0f}km"
+
 
 racial_demographics = {
     "hispanic": "P0020002",
@@ -28,8 +40,13 @@ housing_units = {
 }
 
 
-@lru_cache(None)
 def load_raw_census(year=2020, filter_zero_pop=True):
+    # lru_cache keys on how the arguments are spelled, so normalize them to share one copy
+    return _load_raw_census(year, filter_zero_pop)
+
+
+@lru_cache(None)
+def _load_raw_census(year, filter_zero_pop):
     census_blocks = f"outputs/census_blocks/raw_census_{year}.csv"
 
     if not os.path.exists(census_blocks):
@@ -75,7 +92,16 @@ def all_densities(year):
     return {radius: density_in_radius(radius, year)[:, 0] for radius in RADII}
 
 
-@lru_cache(None)
+def census_block_points(year=2020):
+    """Each block's point, indexed like all_densities_gpd, without building the rest of it."""
+    *_, coordinates = load_raw_census(year)
+    return gpd.GeoDataFrame(
+        index=np.arange(len(coordinates)),
+        geometry=gpd.points_from_xy(coordinates[:, 1], coordinates[:, 0]),
+        crs="EPSG:4326",
+    )
+
+
 def all_densities_gpd(year=2020):
     geoid, population, pop_18, stats, coordinates = load_raw_census(year)
     densities = all_densities(year)

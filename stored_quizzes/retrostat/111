@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "LICO-AT %",
+      "stat_path": "lico_at_canada",
+      "question": "higher % of people who are low income based on the Low-income cut-offs, after tax (LICO-AT)",
+      "longname_a": "Qu\u00e9bec Territory, Quebec, Canada",
+      "longname_b": "Toronto CDR, Ontario, Canada",
+      "stat_a": 0.05905283164971299,
+      "stat_b": 0.08730106495035206
+    },
+    "b": {
+      "stat_column": "Personal care and service occupations %",
+      "stat_path": "occupation_personal_care_and_service_occupations",
+      "question": "higher % of workers employed in personal care and service occupations!TOOLTIP hairdressers, childcare workers, fitness trainers, funeral service workers, travel guides, animal trainers, etc.",
+      "longname_a": "Monroe LA-El Dorado AR Media Market, USA",
+      "longname_b": "Las Vegas NV Media Market, USA",
+      "stat_a": 0.01918732346738631,
+      "stat_b": 0.05051360766218394
+    },
+    "a_ease": 0.3497983870967742,
+    "b_ease": 0.798992443324937
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household income > C$100k %",
+      "stat_path": "household_income_above_100_cad",
+      "question": "higher % of households that have household income over C$100k",
+      "longname_a": "Niagara Regional municipality, Ontario, Canada",
+      "longname_b": "Division No. 6, Alberta, Canada",
+      "stat_a": 0.3764346828046747,
+      "stat_b": 0.5149437847343751
+    },
+    "b": {
+      "stat_column": "2012 Presidential Election",
+      "stat_path": "2012 Presidential Election-margin",
+      "question": "!FULL Which voted more for Obama in the 2012 presidential election?",
+      "longname_a": "Oakland County, Michigan, USA",
+      "longname_b": "New Castle County, Delaware, USA",
+      "stat_a": 0.08076813069539558,
+      "stat_b": 0.34062946499444224
+    },
+    "a_ease": 0.41535332994407725,
+    "b_ease": 0.8315575849822425
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Car %",
+      "stat_path": "transportation_means_car",
+      "question": "higher % of people who commute by car",
+      "longname_a": "MN-05 (2023), USA",
+      "longname_b": "AR-02 (2023), USA",
+      "stat_a": 0.6970085708340964,
+      "stat_b": 0.9098026630430563
+    },
+    "b": {
+      "stat_column": "Housing Units per Adult",
+      "stat_path": "housing_per_pop",
+      "question": "higher number of housing units per adult",
+      "longname_a": "Oklahoma County, Oklahoma, USA",
+      "longname_b": "Tarrant County, Texas, USA",
+      "stat_a": 0.585732990817883,
+      "stat_b": 0.5135523358275426
+    },
+    "a_ease": 0.8409718387631143,
+    "b_ease": 0.433832709113608
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Racial Homogeneity %",
+      "stat_path": "homogeneity_250_2020",
+      "question": "lower racial diversity!TOOLTIP We define racial diversity as the average probability a person selecting a random person in a 250m radius will select someone of a different race",
+      "longname_a": "IL-01 (2023), USA",
+      "longname_b": "NY-06 (2025), USA",
+      "stat_a": 0.7357160443392465,
+      "stat_b": 0.4449782541450296
+    },
+    "b": {
+      "stat_column": "Electricity heating %",
+      "stat_path": "heating_electricity",
+      "question": "!FULL Which has a larger % of homes heated using electricity?",
+      "longname_a": "Greenville County, South Carolina, USA",
+      "longname_b": "Boulder County, Colorado, USA",
+      "stat_a": 0.5726371226994235,
+      "stat_b": 0.23287598423702185
+    },
+    "a_ease": 0.8519463943841736,
+    "b_ease": 0.44789018810371123
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Arthritis %",
+      "stat_path": "ARTHRITIS_cdc_2",
+      "question": "higher % of adults with arthritis",
+      "longname_a": "Round Lake Beach-McHenry-Grayslake [Urban Area], IL-WI, USA",
+      "longname_b": "Hartford [Urban Area], CT, USA",
+      "stat_a": 0.19818085305422078,
+      "stat_b": 0.24636196036359384
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km)",
+      "stat_path": "ad_1",
+      "question": "higher population-weighted density (r=1km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Denver-Aurora-Lakewood MSA, CO, USA",
+      "longname_b": "Albuquerque MSA, NM, USA",
+      "stat_a": 2049.578794572042,
+      "stat_b": 1440.4525170712584
+    },
+    "a_ease": 0.45348246059989833,
+    "b_ease": 0.8564231738035264
+  }
+]

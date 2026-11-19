@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Stroke %",
+      "stat_path": "STROKE_cdc_2",
+      "question": "higher % of adults who have had a stroke",
+      "longname_a": "Seminole County, Florida, USA",
+      "longname_b": "Clay County, Missouri, USA",
+      "stat_a": 0.033198565310703046,
+      "stat_b": 0.026295176442725225
+    },
+    "b": {
+      "stat_column": "Health diagnosing and treating practitioners and other technical occupations %",
+      "stat_path": "occupation_health_diagnosing_and_treating_practitioners_and_other_technical_occupations",
+      "question": "higher % of workers employed in health diagnosing and treating practitioners and other technical occupations!TOOLTIP doctors, registered nurses, physical therapists, pharmacists, dietitians, veterinarians, paramedics, etc.",
+      "longname_a": "San Jose [Urban Area], CA, USA",
+      "longname_b": "Lexington-Fayette [Urban Area], KY, USA",
+      "stat_a": 0.03304912267681752,
+      "stat_b": 0.06249700364581854
+    },
+    "a_ease": 0.7041172365666434,
+    "b_ease": 0.3007676203768318
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual Income > $100k %",
+      "stat_path": "individual_income_over_100k",
+      "question": "higher % of people who have individual income over $100k",
+      "longname_a": "Volusia County, Florida, USA",
+      "longname_b": "Dakota County, Minnesota, USA",
+      "stat_a": 0.0736571982162537,
+      "stat_b": 0.1592390319496604
+    },
+    "b": {
+      "stat_column": "Black %",
+      "stat_path": "black",
+      "question": "higher % of people who are Black",
+      "longname_a": "Dutchess County, New York, USA",
+      "longname_b": "Thurston County, Washington, USA",
+      "stat_a": 0.10180763810740391,
+      "stat_b": 0.03016693069374103
+    },
+    "a_ease": 0.31491294473883424,
+    "b_ease": 0.7554882664647994
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2020-2024 Swing",
+      "stat_path": "2020-2024 Swing-margin",
+      "question": "!FULL Which swung less towards Republicans from 2020 to 2024?",
+      "longname_a": "Johnstown-Altoona PA Media Market, USA",
+      "longname_b": "Santa Barbara-Santa Maria-San Luis Obispo CA Media Market, USA",
+      "stat_a": -0.011460840331873667,
+      "stat_b": -0.04062247855906195
+    },
+    "b": {
+      "stat_column": "Utility gas heating %",
+      "stat_path": "heating_utility_gas",
+      "question": "!FULL Which has a larger % of homes heated using utility gas?",
+      "longname_a": "South Carolina, USA",
+      "longname_b": "Florida, USA",
+      "stat_a": 0.23120630257338443,
+      "stat_b": 0.04820331519438915
+    },
+    "a_ease": 0.2958827634333566,
+    "b_ease": 0.7557354925775979
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Catholic % [StatCan]",
+      "stat_path": "religion_catholic_canada",
+      "question": "higher % of people who are Catholic",
+      "longname_a": "Newfoundland and Labrador, Canada",
+      "longname_b": "British Columbia, Canada",
+      "stat_a": 0.3189224708692905,
+      "stat_b": 0.11944871073825686
+    },
+    "b": {
+      "stat_column": "Renter %",
+      "stat_path": "rent_or_own_rent",
+      "question": "higher % of people who are renters",
+      "longname_a": "WI-04 (2023), USA",
+      "longname_b": "NJ-02 (2023), USA",
+      "stat_a": 0.5426099437143017,
+      "stat_b": 0.26253737829780016
+    },
+    "a_ease": 0.8037735849056604,
+    "b_ease": 0.4023224043715847
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Housing Cost/Income > 30% [StatCan]",
+      "stat_path": "rent_burden_over_30_canada",
+      "question": "higher % of households spending 30% or more of income on shelter costs",
+      "longname_a": "Ontario, Canada",
+      "longname_b": "New Brunswick, Canada",
+      "stat_a": 0.24033713320799507,
+      "stat_b": 0.11923653318839011
+    },
+    "b": {
+      "stat_column": "Commute Transit %",
+      "stat_path": "transportation_means_transit_no_wfh",
+      "question": "higher % of people who commute by transit",
+      "longname_a": "Mobile County, Alabama, USA",
+      "longname_b": "Washoe County, Nevada, USA",
+      "stat_a": 0.00431174874861951,
+      "stat_b": 0.02233106575963701
+    },
+    "a_ease": 0.8231488138030194,
+    "b_ease": 0.4205607476635514
+  }
+]

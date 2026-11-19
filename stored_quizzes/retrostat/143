@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Housing Cost/Income > 30% [StatCan]",
+      "stat_path": "rent_burden_over_30_canada",
+      "question": "higher % of households spending 30% or more of income on shelter costs",
+      "longname_a": "Division No. 6, Alberta, Canada",
+      "longname_b": "Ottawa CDR, Ontario, Canada",
+      "stat_a": 0.22093072296778665,
+      "stat_b": 0.1979583666933552
+    },
+    "b": {
+      "stat_column": "No religion % [StatCan]",
+      "stat_path": "religion_no_religion_canada",
+      "question": "higher % of people with no religion",
+      "longname_a": "Laval Territory, Quebec, Canada",
+      "longname_b": "Ottawa CDR, Ontario, Canada",
+      "stat_a": 0.17953910614525134,
+      "stat_b": 0.3163499770225178
+    },
+    "a_ease": 0.24550898203592814,
+    "b_ease": 0.647887323943662
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual Income > $100k %",
+      "stat_path": "individual_income_over_100k",
+      "question": "higher % of people who have individual income over $100k",
+      "longname_a": "MO-02 (2023), USA",
+      "longname_b": "MN-01 (2023), USA",
+      "stat_a": 0.17580388130945737,
+      "stat_b": 0.0846913182442604
+    },
+    "b": {
+      "stat_column": "High school diploma [25-64] %",
+      "stat_path": "education_high_school_canada",
+      "question": "higher % of people between 25 and 64 who have at least a high school diploma",
+      "longname_a": "Fraser Valley Regional district, British Columbia, Canada",
+      "longname_b": "Toronto CDR, Ontario, Canada",
+      "stat_a": 0.8751237011380506,
+      "stat_b": 0.9149481339954275
+    },
+    "a_ease": 0.4171656686626746,
+    "b_ease": 0.8202764976958525
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Life Expectancy (2019)",
+      "stat_path": "life_expectancy_2019",
+      "question": "higher life expectancy",
+      "longname_a": "Alaska, USA",
+      "longname_b": "Vermont, USA",
+      "stat_a": 79.09568849193587,
+      "stat_b": 80.12362027540826
+    },
+    "b": {
+      "stat_column": "Vision disability %",
+      "stat_path": "VISION_cdc_2",
+      "question": "higher % of adults with a vision disability",
+      "longname_a": "Winston-Salem [Urban Area], NC, USA",
+      "longname_b": "Lincoln [Urban Area], NE, USA",
+      "stat_a": 0.06271071101617351,
+      "stat_b": 0.037537066049314956
+    },
+    "a_ease": 0.9162754303599374,
+    "b_ease": 0.4903169014084507
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Racial Homogeneity %",
+      "stat_path": "homogeneity_250_2020",
+      "question": "lower racial diversity!TOOLTIP We define racial diversity as the average probability a person selecting a random person in a 250m radius will select someone of a different race",
+      "longname_a": "Anchorage AK Media Market, USA",
+      "longname_b": "Missoula MT Media Market, USA",
+      "stat_a": 0.47824224503360324,
+      "stat_b": 0.7806223916075592
+    },
+    "b": {
+      "stat_column": "Undergrad Business [25-64] % [StatCan]",
+      "stat_path": "education_field_business_canada",
+      "question": "higher % of people between 25 and 64 who have a business degree, as a percentage of the overall population",
+      "longname_a": "Ontario, Canada",
+      "longname_b": "Manitoba, Canada",
+      "stat_a": 0.08415591608044715,
+      "stat_b": 0.06073443321547499
+    },
+    "a_ease": 0.5459081836327345,
+    "b_ease": 0.9463299131807419
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Black %",
+      "stat_path": "black",
+      "question": "higher % of people who are Black",
+      "longname_a": "Missouri, USA",
+      "longname_b": "Kansas, USA",
+      "stat_a": 0.11255611566744723,
+      "stat_b": 0.05560199872016556
+    },
+    "b": {
+      "stat_column": "Poverty %",
+      "stat_path": "poverty_below_line",
+      "question": "higher % of people who are in poverty",
+      "longname_a": "Washington D.C. Urban Center, USA",
+      "longname_b": "Syracuse Urban Center, USA",
+      "stat_a": 0.09443355711511664,
+      "stat_b": 0.20771945584209017
+    },
+    "a_ease": 0.9281934996220711,
+    "b_ease": 0.4869431643625192
+  }
+]

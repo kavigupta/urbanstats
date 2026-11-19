@@ -1,0 +1,166 @@
+import fs from 'fs'
+import { gunzipSync, gzipSync } from 'zlib'
+
+import chalkTemplate from 'chalk-template'
+import * as diff from 'diff'
+import { ClientFunction, Selector } from 'testcafe'
+
+import { target, saveString, waitForDownload, grabDownload, waitForLoading, urbanstatsFixture, safeReload, screencap } from './test_utils'
+
+async function saveGeojson(t: TestController, path: string): Promise<void> {
+    const laterThan = new Date().getTime()
+    // download the geojson by clicking the button
+    await t.click(Selector('button').withExactText('Export as GeoJSON'))
+    const mrdp = await waitForDownload(t, laterThan, '.geojson')
+    saveString(t, fs.readFileSync(mrdp, 'utf8'), path, 'json')
+}
+
+export async function downloadPNG(t: TestController): Promise<void> {
+    await waitForLoading()
+    const download = Selector('button:not(:disabled)').withExactText('Export as PNG')
+    await grabDownload(t, download, '.png')
+}
+
+export function checkSelector(label: RegExp): Selector {
+    const labelEl = Selector('label:not([inert] *)').withText(label)
+    const parent = labelEl.parent()
+    const checkbox = parent.find('input[type="checkbox"]')
+    return checkbox
+}
+
+export async function checkBox(t: TestController, label: RegExp): Promise<void> {
+    await t.click(checkSelector(label))
+}
+
+export async function toggleCustomScript(t: TestController): Promise<void> {
+    await checkBox(t, /^Enable custom script/)
+}
+
+export function urlFromCode(geographyKind: string, universe: string, code: string): string {
+    const settingsJSON = JSON.stringify({
+        geographies: [{ universe, geographyKind }],
+        script: {
+            uss: code,
+        },
+    })
+    const url = `${target}/mapper.html?settings=${encodeURIComponent(gzipSync(settingsJSON).toString('base64'))}`
+    return url
+}
+
+// The Bay Area inset's border runs under the Boston inset, which should cover it.
+export const overlappingInsetsCode = `cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampUridis,
+    basemap=noBasemap(),
+    insets=constructInsets([
+        constructInset(screenBounds={north: 1, east: 1, south: 0, west: 0}, mapBounds={north: 49.833, east: -65.092, south: 22.269, west: -130.026}, mainMap=true, name="USA"),
+        constructInset(screenBounds={north: 0.6, east: 0.6, south: 0.1, west: 0.1}, mapBounds={north: 38.047, east: -121.37, south: 37.128, west: -122.766}, mainMap=false, name="Bay Area"),
+        constructInset(screenBounds={north: 0.9, east: 0.9, south: 0.4, west: 0.4}, mapBounds={north: 42.519, east: -70.812, south: 42.033, west: -71.413}, mainMap=false, name="Boston")
+    ])
+)`
+
+export function settingsFromURL(url: string): unknown {
+    const encodedSettings = new URL(url).searchParams.get('settings') ?? (() => { throw new Error('no settings') })()
+    return JSON.parse(gunzipSync(Buffer.from(encodedSettings, 'base64')).toString())
+}
+
+export function getCodeFromMainField(): Promise<string> {
+    return Selector('#test-editor-body').textContent
+}
+
+export function getErrors(): Promise<string[]> {
+    return ClientFunction(() =>
+        Array.from(document.querySelectorAll('#test-editor-result:not([inert] *)')).map(element => element.textContent!),
+    )()
+}
+
+export function computedValue(name: string): Selector {
+    return Selector('input[data-test="computed-value"]:not([inert] *)').withAttribute('data-test-name', name)
+}
+
+export function getInput(original: string | RegExp, nth = 0): Selector {
+    return Selector('input:not([inert] *)').withAttribute('value', original).nth(nth)
+}
+
+export async function replaceInput(t: TestController, original: string | RegExp, newv: string, nth = 0): Promise<void> {
+    const inputSelector = getInput(original, nth)
+    await t.click(inputSelector)
+    await t.selectText(inputSelector)
+    await t.typeText(inputSelector, newv)
+    await t.pressKey('enter')
+}
+
+export async function drag(t: TestController, selector: Selector | string, deltaX: number, deltaY: number): Promise<void> {
+    const elementRect = await Selector(selector).boundingClientRect
+    const downEvent = { pointerId: 1, clientX: (elementRect.left + elementRect.right) / 2, clientY: (elementRect.bottom + elementRect.top) / 2 }
+    const upEvent = { ...downEvent, clientX: downEvent.clientX + deltaX, clientY: downEvent.clientY + deltaY }
+    await t.dispatchEvent(selector, 'pointerdown', downEvent).dispatchEvent(selector, 'pointermove', upEvent).dispatchEvent(selector, 'pointerup', upEvent)
+}
+
+export function nastyDiff(actual: string, expected: string): void {
+    actual = actual.replaceAll('\u00a0', ' ')
+
+    if (actual === expected) {
+        return
+    }
+
+    const changes = diff.diffChars(actual, expected)
+
+    console.error(changes.map(change => ({
+        ...change,
+        chars: Array.from(change.value).map(c => c.charCodeAt(0)),
+    })))
+
+    changes.forEach((part) => {
+        // green for additions, red for deletions, grey for common parts
+        // eslint-disable-next-line no-restricted-syntax -- Colors for test output
+        const color = part.added ? 'green' : part.removed ? 'red' : 'grey'
+        process.stdout.write(chalkTemplate`{${color} ${part.value}}`)
+    })
+
+    throw new Error(`strings different\n${actual}`)
+}
+
+export function testCode(testFn: () => TestFn, geographyKind: string, universe: string, code: string, name: string, includeGeojson: boolean = false): void {
+    const url = urlFromCode(geographyKind, universe, code)
+    urbanstatsFixture(name, url)
+
+    testFn()(name, async (t) => {
+        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
+        await t.expect(getErrors()).eql([])
+        await toggleCustomScript(t)
+        // now in autoux mode
+        await t.expect(getErrors()).eql([])
+        await toggleCustomScript(t)
+        // now in custom mode
+        await t.expect(getErrors()).eql([])
+        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
+        await toggleCustomScript(t)
+        // now in autoux mode
+        await t.expect(getErrors()).eql([])
+        await safeReload(t)
+        await toggleCustomScript(t)
+        // back to custom mode
+        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
+        await screencap(t, { removeEntireMap: false })
+        if (includeGeojson) {
+            await saveGeojson(t, `mapping-geojson-${name}`)
+        }
+        await downloadPNG(t)
+    })
+}
+
+export const editInsetsButton = Selector('button[data-test=edit-insets]')
+
+export function numMaps(): Promise<number> {
+    return Selector('[id^="map-"]').count
+}
+
+export function map(n: number): string {
+    return `[id^="map-${n}"]`
+}
+
+export function handle(mapNumber: number, pos: 'move' | 'topRight' | 'bottomRight' | 'bottomLeft' | 'topLeft' | 'duplicate' | 'delete' | 'add' | 'moveUp' | 'moveDown' | 'splitHorizontal' | 'splitVertical'): string {
+    return `${map(mapNumber)} [data-test="${pos}"]`
+}

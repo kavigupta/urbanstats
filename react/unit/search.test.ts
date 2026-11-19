@@ -1,42 +1,79 @@
-import { test } from 'uvu'
-import * as assert from 'uvu/assert'
+import assert from 'assert/strict'
+import { test } from 'node:test'
 
+import { AllUniverses } from '../src/components/search-statistic'
+import type_ordering_idx from '../src/data/type_ordering_idx'
 import './util/fetch'
-import { createIndex, SearchResult } from '../src/search'
+import { createIndex, SearchResult, simulateSlowSearchDelayMs } from '../src/search'
+import { Universe } from '../src/universe'
+import { DefaultMap } from '../src/utils/DefaultMap'
 
-const search = await createIndex(undefined)
+const search = new DefaultMap<Universe | AllUniverses | undefined, ReturnType<typeof createIndex>>(statsUniverse => createIndex({ cacheKey: undefined, statsUniverse }, () => Promise.resolve()))
 
-const computeFirstResult = (query: string): SearchResult => search({ unnormalizedPattern: query, maxResults: 10, showHistoricalCDs: false })[0]
+const computeNthResult = async (n: number, query: string, prioritizeType: string | undefined, statsUniverse: Universe | AllUniverses | undefined): Promise<SearchResult> => (await search.get(statsUniverse))({
+    unnormalizedPattern: query,
+    maxResults: 10,
+    showSettings: {
+        show_historical_cds: false,
+        show_person_circles: true,
+    },
+    prioritizeTypeIndex: prioritizeType !== undefined ? type_ordering_idx[prioritizeType] : undefined,
+})[n]
 
 // We curry based on testFn so we can use test.only, test.skip, etc
-const firstResult = (testFn: (name: string, testBlock: () => void) => void) => (query: string, result: string): void => {
-    testFn(`First result for '${query}' is '${result}'`, () => {
-        assert.is(computeFirstResult(query).longname, result)
+const nthResult = (testFn: (name: string, testBlock: () => void) => void) => (n: number, query: string, result: string, prioritizeType?: string, statsUniverse?: Universe | AllUniverses): void => {
+    const parentheticalElements = []
+    if (prioritizeType !== undefined) {
+        parentheticalElements.push(`Prioritizing ${prioritizeType}`)
+    }
+    if (statsUniverse !== undefined) {
+        parentheticalElements.push(`Stats universe key: ${statsUniverse}`)
+    }
+    const parenthetical = parentheticalElements.length > 0 ? ` (${parentheticalElements.join(', ')})` : ''
+
+    testFn(`result ${n} for '${query}'${parenthetical} is '${result}'`, async () => {
+        assert.equal((await computeNthResult(n, query, prioritizeType, statsUniverse)).longname, result)
     })
 }
 
-firstResult(test)('china', 'China')
-firstResult(test)('ontario california', 'Ontario city, California, USA')
-firstResult(test)('onatrio california', 'Ontario city, California, USA') // Letter flip
-firstResult(test)('la canada', 'La Cañada Flintridge city, California, USA')
-firstResult(test)('east fiji', 'Eastern, Fiji')
-firstResult(test)('london on', 'London Population Center, ON, Canada') // Something in canada
-firstResult(test)('baltimore city md', 'Baltimore city, Maryland, USA')
-firstResult(test)('ca usa', 'California, USA')
-firstResult(test)('nv usa', 'NV-04 (2023), USA') // Nevada, USA or a NV-??
-firstResult(test)('usa', 'USA')
-firstResult(test)('london', 'London Urban Center, United Kingdom')
-firstResult(test)('berlin', 'Berlin, Germany')
-firstResult(test)('los angeles urban area', 'Los Angeles-Long Beach-Anaheim [Urban Area], CA, USA')
-firstResult(test)('san marino', 'San Marino') // Should not be "San Marino, San Marino"
-firstResult(test)('queens', 'Queens County, New York, USA')
-firstResult(test)('india', 'India')
-firstResult(test)('urban center', 'Guangzhou Urban Center, China') // Should be some Urban Center
-firstResult(test)('urban area', 'Chicago [Urban Area], IL-IN, USA') // Should be some Urban Area
-firstResult(test)('msa', 'Pittsburgh MSA, PA, USA') // Should be some MSA
-firstResult(test)('dalas', 'Dallas Urban Center, USA') // Correct for misspelling
-firstResult(test)('ventura city', 'San Buenaventura (Ventura) city, California, USA') // handles alias
-firstResult(test)('france-germany', 'Strasbourg Urban Center, Germany-France') // reach test, should find something in both
-firstResult(test)('united states of america', 'United States of America') // symlink
+nthResult(test)(0, 'china', 'China')
+nthResult(test)(0, 'ontario california', 'Ontario city, California, USA')
+nthResult(test)(0, 'onatrio california', 'Ontario city, California, USA') // Letter flip
+nthResult(test)(0, 'la canada', 'La Cañada Flintridge city, California, USA')
+nthResult(test)(0, 'east fiji', 'Eastern, Fiji')
+nthResult(test)(0, 'london on', 'London Population Center, ON, Canada') // Something in canada
+nthResult(test)(0, 'baltimore city md', 'Baltimore city, Maryland, USA')
+nthResult(test)(0, 'ca usa', 'California, USA')
+nthResult(test)(0, 'usa', 'USA')
+nthResult(test)(0, 'london', 'London Population Center, ON, Canada')
+nthResult(test)(0, 'berlin', 'Berlin, Germany')
+nthResult(test)(0, 'los angeles', 'Los Angeles city, California, USA')
+nthResult(test)(0, 'los angeles urban area', 'Los Angeles-Long Beach-Anaheim [Urban Area], CA, USA')
+nthResult(test)(0, 'san marino', 'San Marino') // Should not be "San Marino, San Marino"
+nthResult(test)(0, 'queens', 'Queens County, New York, USA')
+nthResult(test)(0, 'india', 'India')
+nthResult(test)(0, 'urban center', 'Guangzhou Urban Center, China') // Should be some Urban Center
+nthResult(test)(0, 'urban area', 'Chicago [Urban Area], IL-IN, USA') // Should be some Urban Area
+nthResult(test)(0, 'msa', 'Pittsburgh MSA, PA, USA') // Should be some MSA
+nthResult(test)(0, 'dalas', 'Dallas city, Texas, USA') // Correct for misspelling
+nthResult(test)(0, 'ventura city', 'San Buenaventura (Ventura) city, California, USA') // handles alias
+nthResult(test)(0, 'france-germany', 'Saarbrücken Metropolitan Cluster, Germany-France') // reach test, should find something in both
+nthResult(test)(0, 'united states of america', 'United States of America') // symlink
+nthResult(test)(0, 'shatiʾ', 'Wādī ash Shāţiʾ, Libya') // haystacks are utf8 bytes, so non-ascii names must survive
 
-test.run()
+nthResult(test)(0, 'san jose', 'San Jose city, California, USA', 'City')
+nthResult(test)(0, 'london', 'London Population Center, ON, Canada', 'CA Population Center')
+nthResult(test)(1, 'berlin', 'Berlin Urban Center, Germany', 'Urban Center')
+nthResult(test)(1, 'virginia', 'Virginia, USA', 'City')
+
+nthResult(test)(0, 'white city', 'White Plains city, New York, USA')
+nthResult(test)(0, 'white city', 'White % by City', undefined, 'allUniverses')
+nthResult(test)(0, 'white city', 'White Plains city, New York, USA', undefined, 'Canada') // white % by city should not match anything in canada
+nthResult(test)(0, 'by population center', 'Thunder Bay Population Center, ON, Canada')
+nthResult(test)(0, 'by population center', 'Area by CA Population Center', undefined, 'allUniverses')
+nthResult(test)(0, 'by population center', 'Area by CA Population Center', undefined, 'Canada')
+nthResult(test)(0, 'agriculture by riding', 'Natural resources and agriculture occupations % by CA Riding', undefined, 'allUniverses')
+
+void test('do not leave slow mode on', () => {
+    assert.equal(simulateSlowSearchDelayMs, undefined)
+})

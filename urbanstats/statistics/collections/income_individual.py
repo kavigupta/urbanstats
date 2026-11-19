@@ -16,6 +16,16 @@ class IncomeIndividual(ACSStatisticsColection):
             "individual_income_over_100k": "Individual Income > $100k %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
+    def varname_for_each_statistic(self):
+        return {
+            "individual_income_under_50k": "individual_income_under_50k_usd",
+            "individual_income_50k_to_100k": "individual_income_50k_to_100k_usd",
+            "individual_income_over_100k": "individual_income_over_100k_usd",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("income")
 

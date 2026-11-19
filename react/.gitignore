@@ -1,6 +1,10 @@
 node_modules
-screenshots
+test_snapshots
 delta
-changed_screenshots
+changed_snapshots
 videos
 .eslintcache
+coverage
+test_histories
+HiGHS.log
+totp_wait_time

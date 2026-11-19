@@ -18,6 +18,18 @@ class SexualOrientationRelationshipStatusStatistics(ACSStatisticsColection):
             "sors_other": "Other Living Situation %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
+    def varname_for_each_statistic(self):
+        return {
+            "sors_unpartnered_householder": "single_householder",
+            "sors_cohabiting_partnered_gay": "cohabiting_gay",
+            "sors_cohabiting_partnered_straight": "cohabiting_straight",
+            "sors_child": "living_with_parents",
+            "sors_other": "other_living_situation",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("sors")
 

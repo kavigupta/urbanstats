@@ -1,0 +1,361 @@
+/*
+ * Loads an embed's data through the site's own routing and loading code, so it can't drift from the page.
+ * Only the origin handling is ours, since those modules fetch root-relative paths.
+ */
+import { ArticleStatisticRow, getHighlightIndex } from '../../src/components/load-article'
+import { shapesByName } from '../../src/consolidated-shapes'
+import { defaultTypeEnvironment } from '../../src/mapper/context'
+import { centroidsByName, markerArea, markerRadius, MapResult, mapVisuals, mergedByName } from '../../src/mapper/map-rendering'
+import { Basemap, computeUSS, dedupeGeographies, describeGeographies, universesOf } from '../../src/mapper/settings/utils'
+import { loadPageDescriptor, PageData, PageDescriptor } from '../../src/navigation/PageDescriptor'
+import { universePath } from '../../src/navigation/links'
+import { Settings, SettingsDictionary } from '../../src/page_template/settings'
+import { groupYearKeys } from '../../src/page_template/statistic-settings'
+import { StatName } from '../../src/page_template/statistic-tree'
+import { mapUSSFromStat, pageRowIndices, sortedRowIndices, statDataFromTable } from '../../src/stat/utils'
+import { clusterRadius } from '../../src/syau/cluster-geometry'
+import { toStatement } from '../../src/urban-stats-script/ast'
+import { doRender } from '../../src/urban-stats-script/constants/color-utils'
+import { Inset, keepInsets, layoutInsets } from '../../src/urban-stats-script/constants/insets'
+import { ClusterMap, CMap, CMapRGB, PMap } from '../../src/urban-stats-script/constants/map'
+import { Table, TableCellValue } from '../../src/urban-stats-script/constants/table'
+import { deriveConditionLabel } from '../../src/urban-stats-script/derive-human-readable-name'
+import { mapRampUnitAndLabel } from '../../src/urban-stats-script/derive-unit'
+import { createRequestExecutor } from '../../src/urban-stats-script/execute-request'
+import { GeographySelection } from '../../src/urban-stats-script/workerManager'
+import { geometry } from '../../src/utils/geometry'
+import { HumanReadableName } from '../../src/utils/human-readable-element'
+import { reifyString } from '../../src/utils/human-readable-name'
+import { boxesOverlap, CoordBox } from '../../src/utils/partition-boxes'
+import { Feature } from '../../src/utils/protos'
+import { StoredUnit } from '../../src/utils/quantity'
+import { loadFeatureFromPossibleSymlink } from '../../src/utils/symlinks'
+import { NormalizeProto } from '../../src/utils/types'
+
+import { Ring } from './map-layout'
+
+let siteOrigin: string | undefined
+
+const originalFetch = globalThis.fetch
+globalThis.fetch = (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+    if (typeof input === 'string' && input.startsWith('/') && siteOrigin !== undefined) {
+        return originalFetch(new URL(input, siteOrigin), init)
+    }
+    return originalFetch(input, init)
+}
+
+function setOrigin(origin: string): void {
+    siteOrigin = origin
+}
+
+/** How many rows fit the card before it overflows. */
+const maxRows = 6
+
+/** The same, for a comparison, whose widest layout has no map to leave room for. */
+const maxComparisonRows = 8
+
+/** The same, for a statistic table, whose rows are one line each. */
+const maxStatisticRows = 8
+
+/** Past this a column is too narrow to read a value in. */
+const maxStatisticColumns = 3
+
+export interface Page {
+    pageData: PageData
+    settings: Settings
+}
+
+/** Settings are per call rather than `Settings.shared`, since `?s` mutates them. */
+export async function loadPage(origin: string, descriptor: PageDescriptor): Promise<Page> {
+    setOrigin(origin)
+    const settings = new Settings()
+    const { pageData, effects } = await loadPageDescriptor(descriptor, settings)
+    effects()
+    return { pageData, settings }
+}
+
+export type Units = Pick<SettingsDictionary, 'use_imperial' | 'temperature_unit'>
+
+export interface ArticleCard {
+    shortname: string
+    longname: string
+    articleType: string
+    universe: string
+    /** The flag as a data URI, or undefined if it could not be read. */
+    flag: string | undefined
+    stats: { name: StatName, value: number, ordinal: number, percentile: number }[]
+    units: Units
+}
+
+/** Inlined because satori would fetch the source with no origin to resolve it against. */
+async function flagImage(universe: string): Promise<string | undefined> {
+    const response = await fetch(universePath(universe)).catch(() => undefined)
+    if (response?.ok !== true) {
+        return undefined
+    }
+    const bytes = new Uint8Array(await response.arrayBuffer())
+    let binary = ''
+    for (const byte of bytes) {
+        binary += String.fromCharCode(byte)
+    }
+    return `data:image/png;base64,${btoa(binary)}`
+}
+
+export async function articleCard(pageData: Extract<PageData, { kind: 'article' }>, settings: Settings): Promise<ArticleCard> {
+    const stats = pageData.rows(settings.getMultiple(groupYearKeys()))[0]
+        // Metadata rows carry a representative or a string where a statistic row carries a number.
+        .filter(row => row.kind === 'statistic')
+        .slice(0, maxRows)
+        .map(row => ({
+            name: row.statname,
+            value: row.statval,
+            ordinal: row.ordinal,
+            percentile: row.percentileByPopulation,
+        }))
+    const { shortname, longname, articleType } = pageData.article
+    // The value renderer takes these separately from the rows, and `?s` carries them.
+    const units = settings.getMultiple(['use_imperial', 'temperature_unit'])
+    const universe = pageData.universe
+    return { shortname, longname, articleType, universe, flag: await flagImage(universe), stats, units }
+}
+
+export interface ComparisonCard {
+    regions: { shortname: string, longname: string }[]
+    /** One per statistic, with a value per region and the index of the largest of them. */
+    stats: { name: StatName, values: number[], highlight: number | undefined }[]
+    units: Units
+}
+
+export function comparisonCard(pageData: Extract<PageData, { kind: 'comparison' }>, settings: Settings): ComparisonCard {
+    const byRegion = pageData.rows(settings.getMultiple(groupYearKeys()))
+    const stats = byRegion[0]
+        .map((_, statIndex) => byRegion.map(rows => rows[statIndex]))
+        // A statistic only some of the regions report as a number has nothing to compare.
+        .flatMap(rows => rows.every((row): row is ArticleStatisticRow => row.kind === 'statistic') ? [rows] : [])
+        // More than the card draws: how many fit depends on whether the layout keeps the map.
+        .slice(0, maxComparisonRows)
+        .map(rows => ({
+            name: rows[0].statname,
+            values: rows.map(row => row.statval),
+            highlight: getHighlightIndex(rows),
+        }))
+    return {
+        regions: pageData.articles.map(({ shortname, longname }) => ({ shortname, longname })),
+        stats,
+        units: settings.getMultiple(['use_imperial', 'temperature_unit']),
+    }
+}
+
+export interface StatisticCard {
+    /** e.g. "Cities", "Counties" */
+    heading: string
+    /** Without the condition, which is `filter`. */
+    title: HumanReadableName
+    columns: { name: HumanReadableName, unit: StoredUnit | undefined }[]
+    sortColumn: number
+    order: 'ascending' | 'descending'
+    /** Absent when the script filters nothing. */
+    filter: HumanReadableName | undefined
+    rows: { longname: string, ordinal: number | undefined, values: TableCellValue[] }[]
+    /** Undefined when the rows span several universes, which no one flag stands for. */
+    universe: string | undefined
+    /** The flag as a data URI, or undefined if it could not be read. */
+    flag: string | undefined
+    units: Units
+}
+
+/** Runs the interpreter directly, since the page's generator runs it in a web worker. */
+export async function statisticCard(origin: string, pageData: Extract<PageData, { kind: 'statistic' }>, settings: Settings): Promise<StatisticCard | undefined> {
+    setOrigin(origin)
+    const { stat, view } = pageData.settings
+    const geographies = dedupeGeographies(stat.geographies)
+    const universes = universesOf(geographies)
+    const typeEnvironment = defaultTypeEnvironment(universes)
+    const mapUSS = mapUSSFromStat(stat)
+    // A fresh executor, so the isolate doesn't keep the previous card's columns.
+    const executed = await createRequestExecutor()({
+        descriptor: { kind: 'statistics', geographies },
+        stmts: toStatement(mapUSS),
+    })
+    const table = (executed.resultingValue?.value as { value: Table } | undefined)?.value
+    if (table === undefined || table.columns.length === 0) {
+        return undefined
+    }
+
+    const data = statDataFromTable({ table, stat, mapUSS, typeEnvironment, warn: () => undefined })
+    const sortColumn = Math.max(0, Math.min(view.sortColumn, data.table.length - 1))
+    // The rows show the sort column's rank, so it takes the last slot if it would otherwise be cut off.
+    const columns = sortColumn < maxStatisticColumns
+        ? data.table.slice(0, maxStatisticColumns)
+        : [...data.table.slice(0, maxStatisticColumns - 1), data.table[sortColumn]]
+    const page = pageRowIndices(sortedRowIndices(data, sortColumn, view.order), view.start, view.amount)
+
+    return {
+        heading: describeGeographies(geographies),
+        title: typeof data.renderedStatname === 'string'
+            ? data.renderedStatname
+            : data.renderedStatname.filter(element => element.type !== 'where'),
+        columns: columns.map(column => ({ name: column.name, unit: column.unit })),
+        sortColumn: Math.min(sortColumn, maxStatisticColumns - 1),
+        order: view.order,
+        filter: deriveConditionLabel(mapUSS, typeEnvironment),
+        rows: page.slice(0, maxStatisticRows).map(index => ({
+            longname: data.articleNames[index],
+            ordinal: data.table[sortColumn].ordinal?.[index],
+            values: columns.map(column => column.value[index]),
+        })),
+        universe: universes.length === 1 ? universes[0] : undefined,
+        flag: universes.length === 1 ? await flagImage(universes[0]) : undefined,
+        units: settings.getMultiple(['use_imperial', 'temperature_unit']),
+    }
+}
+
+/** Cluster points carry a category and size rather than a colour and radius, since the card clusters them itself. */
+export type MapContents =
+    | { kind: 'shapes', shapes: { rings: Ring[], fill: string }[], outline: { color: string, weight: number } }
+    | { kind: 'points', points: { lon: number, lat: number, fill: string, radius: number }[] }
+    | {
+        kind: 'clusters'
+        points: { lon: number, lat: number, category: number, size: number }[]
+        categoryColors: string[]
+        maxRadius: number
+        clusterRadius: number
+    }
+
+export interface MapCard {
+    label: string
+    contents: MapContents
+    opacity: number
+    insets: Inset[]
+    basemap: Basemap
+    /** The colourbar, absent on an RGB map, which has no single scale to show. */
+    ramp?: { colors: string[], ticks: number[], unit: StoredUnit | undefined }
+    units: Units
+}
+
+/** Islands and holes flatten together, since the card fills them with an even-odd rule. */
+function rings(shape: GeoJSON.Geometry): Ring[] {
+    const polygons = shape.type === 'MultiPolygon'
+        ? shape.coordinates
+        : shape.type === 'Polygon' ? [shape.coordinates] : []
+    return polygons.flatMap(polygon => polygon.map(ring => ring.map(([lon, lat]): [number, number] => [lon, lat])))
+}
+
+async function shapeContents(geographies: GeographySelection[], map: CMap | CMapRGB, fills: string[]): Promise<MapContents> {
+    const shapes = await mergedByName(geographies, g => shapesByName(g.universe, g.geographyKind))
+    return {
+        kind: 'shapes',
+        shapes: map.geo.flatMap((name, i) => {
+            const shape = shapes.get(name)
+            return shape === undefined ? [] : [{ rings: rings(shape), fill: fills[i] }]
+        }),
+        outline: { color: doRender(map.outline.color), weight: map.outline.weight },
+    }
+}
+
+async function pointContents(geographies: GeographySelection[], map: PMap, fills: string[]): Promise<MapContents> {
+    const at = await mergedByName(geographies, g => centroidsByName(g.universe, g.geographyKind))
+    return {
+        kind: 'points',
+        points: map.geo.flatMap((name, i) => {
+            const centroid = at.get(name)
+            return centroid === undefined
+                ? []
+                : [{ lon: centroid.lon!, lat: centroid.lat!, fill: fills[i], radius: markerRadius(map.relativeArea[i], map.maxRadius) }]
+        }),
+    }
+}
+
+/** Sizes are areas, so merging points adds their areas as the site does. */
+async function clusterContents(geographies: GeographySelection[], map: ClusterMap, bins: number[], categoryColors: string[]): Promise<MapContents> {
+    const at = await mergedByName(geographies, g => centroidsByName(g.universe, g.geographyKind))
+    return {
+        kind: 'clusters',
+        points: map.geo.flatMap((name, i) => {
+            const centroid = at.get(name)
+            return centroid === undefined
+                ? []
+                : [{
+                        lon: centroid.lon!,
+                        lat: centroid.lat!,
+                        category: bins[i],
+                        size: markerArea(markerRadius(map.relativeArea[i], map.maxRadius)),
+                    }]
+        }),
+        categoryColors,
+        maxRadius: map.maxRadius,
+        clusterRadius: clusterRadius(map.maxRadius, map.clusterRadiusSpacing),
+    }
+}
+
+function hasContent(contents: MapContents, coordBox: CoordBox): boolean {
+    switch (contents.kind) {
+        case 'shapes':
+            return contents.shapes.some(shape => boxesOverlap(
+                shape.rings.flat().reduce<CoordBox>(
+                    ([west, south, east, north], [lon, lat]) => [Math.min(west, lon), Math.min(south, lat), Math.max(east, lon), Math.max(north, lat)],
+                    [Infinity, Infinity, -Infinity, -Infinity],
+                ),
+                coordBox,
+            ))
+        case 'points':
+        case 'clusters':
+            return contents.points.some(({ lon, lat }) => boxesOverlap([lon, lat, lon, lat], coordBox))
+    }
+}
+
+export async function mapCard(origin: string, pageData: Extract<PageData, { kind: 'mapper' }>, settings: Settings): Promise<MapCard | undefined> {
+    setOrigin(origin)
+    const { script } = pageData.settings
+    const geographies = dedupeGeographies(pageData.settings.geographies)
+    if (geographies.length === 0) {
+        return undefined
+    }
+
+    const executed = await createRequestExecutor()({ descriptor: { kind: 'mapper', geographies }, stmts: computeUSS(script) })
+    const result = executed.resultingValue?.value as MapResult | undefined
+    if (result === undefined) {
+        return undefined
+    }
+    const { opaqueType, value: map } = result
+    const visuals = mapVisuals(result)
+
+    let contents: MapContents
+    switch (opaqueType) {
+        case 'cMap':
+        case 'cMapRGB':
+            contents = await shapeContents(geographies, map, visuals.colors)
+            break
+        case 'pMap':
+            contents = await pointContents(geographies, map, visuals.colors)
+            break
+        case 'clusterMap':
+            contents = await clusterContents(geographies, map, visuals.bins!, visuals.categoryColors!)
+            break
+    }
+
+    const typeEnvironment = defaultTypeEnvironment(universesOf(geographies))
+    const rampLabelling = mapRampUnitAndLabel(script.uss, typeEnvironment, map.unit)
+    const unit = rampLabelling.unit
+    const label = map.label ?? rampLabelling.label
+    return {
+        label: label === undefined ? '' : reifyString(label, { unicode: true }),
+        contents,
+        opacity: map.opacity,
+        insets: layoutInsets(keepInsets(map.insets, coordBox => hasContent(contents, coordBox))).leaves,
+        basemap: map.basemap,
+        ramp: visuals.ramp === undefined
+            ? undefined
+            : {
+                    ticks: visuals.ramp.ticks,
+                    colors: visuals.ramp.colors,
+                    unit,
+                },
+        units: settings.getMultiple(['use_imperial', 'temperature_unit']),
+    }
+}
+
+export async function loadShape(origin: string, longname: string): Promise<Ring[]> {
+    setOrigin(origin)
+    return rings(geometry(await loadFeatureFromPossibleSymlink(longname) as NormalizeProto<Feature>))
+}

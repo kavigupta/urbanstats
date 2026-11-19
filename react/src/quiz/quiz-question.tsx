@@ -1,35 +1,55 @@
 import '../common.css'
 import '../components/quiz.css'
 
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useMemo, useState } from 'react'
 import { isFirefox } from 'react-device-detect'
+import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
-import { MapGeneric, MapGenericProps, Polygons } from '../components/map'
+import { CommonMaplibreMap, CustomAttributionControlComponent, PolygonFeatureCollection, polygonFeatureCollection, useZoomFirstFeature } from '../components/map-common'
+import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
+import { withButtonRole } from '../utils/a11y'
+import { notWaiting, waiting } from '../utils/promiseStream'
 import { useMobileLayout } from '../utils/responsive'
 
 import { JuxtastatLivesDisplay } from './infinite'
 import { JuxtaQuestion, QuizHistory, QuizKind, RetroQuestion, aCorrect } from './quiz'
 import { Footer, Header, Help } from './quiz-components'
 
-interface MapProps extends MapGenericProps {
+interface MapProps {
     longname: string
     color: string
+    attribution: boolean
 }
 
-class Map extends MapGeneric<MapProps> {
-    override computePolygons(): Promise<Polygons> {
-        return Promise.resolve({
-            polygons: [
-                {
-                    name: this.props.longname,
-                    style: { interactive: false, fillOpacity: 0.5, weight: 1, color: this.props.color, fillColor: this.props.color },
-                    meta: {},
-                },
-            ],
-            zoomIndex: 0,
-        })
-    }
+function Map({ longname, color, attribution }: MapProps): ReactNode {
+    const [mapRef, setMapRef] = useState<MapRef | null>(null)
+
+    const features = useMemo(() => polygonFeatureCollection(
+        [
+            {
+                name: longname,
+                fillOpacity: 0.5, weight: 1, color, fillColor: color,
+            },
+        ],
+    ), [longname, color]).use()
+
+    const readyFeatures = useMemo(() => features.filter(notWaiting), [features])
+
+    useZoomFirstFeature(mapRef, features)
+
+    const firstFeatureWaiting = features.length > 0 && features[0] === waiting
+
+    return (
+        <div style={{ position: 'relative' }}>
+            <RelativeLoader loading={firstFeatureWaiting} />
+            <CommonMaplibreMap ref={setMapRef}>
+                <PolygonFeatureCollection features={readyFeatures} clickable={false} />
+                <FullscreenControl position="top-left" />
+                { attribution && <CustomAttributionControlComponent startShowingAttribution={false} /> }
+            </CommonMaplibreMap>
+        </div>
+    )
 }
 
 export function QuizQuestionDispatch(props: QuizQuestionProps & (
@@ -58,7 +78,7 @@ interface QuizQuestionProps {
 
 function QuizQuestion(props: QuizQuestionProps & {
     getQuestion: () => ReactNode
-    getOption: (letter: 'a' | 'b') => ReactNode
+    getOption: (letter: 'a' | 'b') => string
     getDemo: (letter: 'a' | 'b') => ReactNode
 }): ReactNode {
     let buttonA = 'quiz_clickable'
@@ -85,6 +105,7 @@ function QuizQuestion(props: QuizQuestionProps & {
         alignItems: 'center',
         flexDirection: 'column',
         padding: '0.5em',
+        containerType: 'inline-size',
     }
 
     const rowStyle = { display: 'flex', justifyContent: 'center', width: '90%', margin: 'auto' }
@@ -103,19 +124,23 @@ function QuizQuestion(props: QuizQuestionProps & {
             <div className="gap"></div>
             <div style={rowStyle}>
                 <div style={{ width: '50%', padding: '0.5em' }}>
-                    <div role="button" id="quiz-answer-button-a" className={buttonA} onClick={() => { props.onSelect('A') }} style={buttonStyle}>
+                    <div {...withButtonRole(`Select ${props.getOption('a')}`, () => { props.onSelect('A') })} id="quiz-answer-button-a" className={buttonA} style={buttonStyle}>
                         <span style={{ margin: 'auto' }}>
                             <div className={`centered_text ${quizTextCSS}`}>
-                                {props.getOption('a')}
+                                <div style={fitWidthStyle(props.getOption('a'))}>
+                                    {props.getOption('a')}
+                                </div>
                             </div>
                         </span>
                     </div>
                 </div>
                 <div style={{ width: '50%', padding: '0.5em' }}>
-                    <div role="button" id="quiz-answer-button-b" className={buttonB} onClick={() => { props.onSelect('B') }} style={buttonStyle}>
+                    <div {...withButtonRole(`Select ${props.getOption('b')}`, () => { props.onSelect('B') })} id="quiz-answer-button-b" className={buttonB} style={buttonStyle}>
                         <span style={{ margin: 'auto' }}>
                             <div className={`centered_text ${quizTextCSS}`}>
-                                {props.getOption('b')}
+                                <div style={fitWidthStyle(props.getOption('b'))}>
+                                    {props.getOption('b')}
+                                </div>
                             </div>
                         </span>
                     </div>
@@ -142,6 +167,12 @@ function QuizQuestion(props: QuizQuestionProps & {
                     )}
         </div>
     )
+}
+
+// Shrinks the text so its longest word fits the button, estimating word width from character count
+function fitWidthStyle(text: string): React.CSSProperties {
+    const longestWord = Math.max(...text.split(/[\s-]/).map(word => word.length))
+    return { fontSize: `min(1em, calc(100cqi / ${longestWord * 0.5}))`, overflowWrap: 'anywhere' }
 }
 
 function RetroQuizQuestion(props: QuizQuestionProps & { question: RetroQuestion }): ReactNode {
@@ -186,15 +217,15 @@ function JuxtastatQuizQuestion(props: QuizQuestionProps & {
             getDemo={letter => (
                 <Map
                     longname={props.question[`longname_${letter}`]}
-                    basemap={{ type: 'osm' }}
                     color={colors.hueColors.blue}
+                    attribution={letter === 'b'}
                 />
             )}
         />
     )
 }
 
-export function questionString(question: string): string {
+function questionString(question: string): string {
     if (question.startsWith('!FULL ')) {
         return question.slice(6)
     }
@@ -215,7 +246,7 @@ export function renderQuestion(questionText: string): ReactNode {
     return q
 }
 
-export function Tooltip(props: { content: ReactNode }): ReactNode {
+function Tooltip(props: { content: ReactNode }): ReactNode {
     // create an image that looks like a little [?] text superscript that when you click on it
     // shows the tooltip
     const [show, setShow] = React.useState(false)
@@ -233,9 +264,8 @@ export function Tooltip(props: { content: ReactNode }): ReactNode {
                         height: 'unset',
                         padding: '0px 5px',
                     }}
-                    onClick={() => { setShow(!show) }}
                     className="quiz_clickable"
-                    role="button"
+                    {...withButtonRole('Get more info about this question', () => { setShow(!show) })}
                 >
                     {'ⓘ\ufe0e'}
                 </div>

@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Business and financial operations occupations %",
+      "stat_path": "occupation_business_and_financial_operations_occupations",
+      "question": "higher % of workers employed in business and financial operations occupations!TOOLTIP sales agents, insurance agents, compliance officers, consultants, fundraisers, accountants, auditors, HR workers, etc.",
+      "longname_a": "Youngstown-Warren-Boardman MSA, OH-PA, USA",
+      "longname_b": "Durham-Chapel Hill MSA, NC, USA",
+      "stat_a": 0.030335471034049988,
+      "stat_b": 0.06563016772270203
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Active Superfund Site",
+      "stat_path": "mean_dist_Active Superfund Site_updated",
+      "question": "!FULL Which has less exposure to active EPA superfund sites (higher population-weighted mean distance)?!TOOLTIP EPA superfund sites are hazardous waste sites identified by the Environmental Protection Agency.",
+      "longname_a": "AL-07 (2025), USA",
+      "longname_b": "OR-03 (2023), USA",
+      "stat_a": 53.142635345458984,
+      "stat_b": 9.359526634216309
+    },
+    "a_ease": 0.7820392890551918,
+    "b_ease": 0.38115449915110355
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Muslim %",
+      "stat_path": "religion_muslim_canada",
+      "question": "higher % of people who are Muslim",
+      "longname_a": "Windsor CMA, ON, Canada",
+      "longname_b": "Vancouver CMA, BC, Canada",
+      "stat_a": 0.06874681264162064,
+      "stat_b": 0.03868529200553894
+    },
+    "b": {
+      "stat_column": "Hearing disability %",
+      "stat_path": "HEARING_cdc_2",
+      "question": "higher % of adults with a hearing disability",
+      "longname_a": "Richmond Urban Center, USA",
+      "longname_b": "Orlando Urban Center, USA",
+      "stat_a": 0.046108126640319824,
+      "stat_b": 0.07226797193288803
+    },
+    "a_ease": 0.3834080717488789,
+    "b_ease": 0.7903587443946188
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2016-2020 Swing",
+      "stat_path": "2016-2020 Swing-margin",
+      "question": "!FULL Which swung towards Democrats more from 2016 to 2020?",
+      "longname_a": "Huntsville-Decatur (Florence) AL Media Market, USA",
+      "longname_b": "Wheeling WV-Steubenville OH Media Market, USA",
+      "stat_a": 0.03992515802383423,
+      "stat_b": -0.013516830280423164
+    },
+    "b": {
+      "stat_column": "Individual Income < $50k %",
+      "stat_path": "individual_income_under_50k",
+      "question": "higher % of people who have individual income under $50k",
+      "longname_a": "Jefferson County, Texas, USA",
+      "longname_b": "Morris County, New Jersey, USA",
+      "stat_a": 0.7050029635429382,
+      "stat_b": 0.4640582799911499
+    },
+    "a_ease": 0.4292527821939587,
+    "b_ease": 0.831918505942275
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Bachelor's degree [25-64] %",
+      "stat_path": "education_ugrad_canada",
+      "question": "higher % of people between 25 and 64 who have at least an undergrad degree",
+      "longname_a": "New Brunswick, Canada",
+      "longname_b": "Manitoba, Canada",
+      "stat_a": 0.22406882047653198,
+      "stat_b": 0.2789566218852997
+    },
+    "b": {
+      "stat_column": "2021GE 2-Coalition Margin",
+      "stat_path": "2021GE-coalition_margin",
+      "question": "!FULL Which voted more for the left-of-center parties in the 2021 Canadian general election?!TOOLTIP By 2-Coalition Margin, which is calculated as (Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation.",
+      "longname_a": "Kitchener - Cambridge - Waterloo CMA, ON, Canada",
+      "longname_b": "Saskatoon CMA, SK, Canada",
+      "stat_a": 0.23902979493141174,
+      "stat_b": -0.13169224560260773
+    },
+    "a_ease": 0.4159592529711375,
+    "b_ease": 0.8615528531337698
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean sunny hours",
+      "stat_path": "hours_sunny_4",
+      "question": "!FULL Which has more hours of sun per day on average? (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Tigray, Ethiopia",
+      "longname_b": "Hainan Sheng, China",
+      "stat_a": 7.184632778167725,
+      "stat_b": 3.694878101348877
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Airport",
+      "stat_path": "mean_dist_Airport_updated",
+      "question": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
+      "longname_a": "Tucson Urban Center, USA",
+      "longname_b": "Modesto Urban Center, USA",
+      "stat_a": 15.128944396972656,
+      "stat_b": 89.20082092285156
+    },
+    "a_ease": 0.8632286995515696,
+    "b_ease": 0.5622076707202993
+  }
+]

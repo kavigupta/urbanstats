@@ -1,0 +1,501 @@
+import React, { CSSProperties, Fragment, ReactNode, useMemo } from 'react'
+
+import { RelativeLoader } from '../navigation/loading'
+import { useColors } from '../page_template/colors'
+import { Universe, useUniverse } from '../universe'
+import { HumanReadableName } from '../utils/human-readable-element'
+import { Article } from '../utils/protos'
+
+import { WarningColumn, WarningRow } from './ArticleWarnings'
+import { CongressionalColumnData, congressionalDataForRow } from './congressional-table/model'
+import { CongressionalRepresentativesWidget } from './congressional-table/render'
+import { EditModeButton, EditModeHeader, TableEditButton } from './edit-mode-header'
+import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
+import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
+import { useScreenshotMode } from './screenshot'
+import { ColumnIdentifier, MainHeaderRow, valueOnlyColumns, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeDisclaimerFootnotes, maxLayoutInformation, CommonLayoutInformation } from './table'
+
+export interface PlotSpec {
+    statDescription: string
+    plotProps: PlotProps[]
+}
+
+export interface SuperHeaderSpec {
+    headerSpecs: CellSpec[]
+    showBottomBar: boolean
+    groupNames?: (string | undefined)[]
+    handleReorder?: (from: number, to: number) => void
+}
+
+export interface LeftHeaderSpec {
+    leftHeaderSpecs: CellSpec[]
+    groupNames?: (string | undefined)[]
+}
+
+export interface DisclaimerFootnote {
+    symbol: string
+    text: string
+}
+
+export interface TableLayout {
+    widthLeftHeader: number
+    columnWidth: number
+    onlyColumns: ColumnIdentifier[]
+    simpleOrdinals: boolean
+}
+
+export interface MeasuredTableLayout extends TableLayout {
+    columnWidthsInfo: (CommonLayoutInformation | undefined)[]
+    extraSpaceRight: number[]
+    onlyColumnsEach: ColumnIdentifier[][]
+}
+
+/**
+ * Empty columns go unmeasured, since zero would cap the header at no width. Separate from
+ * `measuredLayout` so the edit table, which measures every statistic, can memoize it.
+ */
+export function measureColumns(columnRows: StatisticCellRenderingInfo[][], universe: Universe | undefined, simpleOrdinals: boolean): (CommonLayoutInformation | undefined)[] {
+    return columnRows.map(rows => rows.length === 0 ? undefined : maxLayoutInformation(rows, universe, simpleOrdinals))
+}
+
+/**
+ * `extraSpaceRight` is asked for per column rather than passed as an array, so it can't
+ * disagree with the measurements about the column count.
+ */
+export function measuredLayout(layout: TableLayout, columnWidthsInfo: (CommonLayoutInformation | undefined)[], extraSpaceRight: (columnIndex: number) => number, onlyColumnsEach?: ColumnIdentifier[][]): MeasuredTableLayout {
+    return {
+        ...layout,
+        columnWidthsInfo,
+        extraSpaceRight: columnWidthsInfo.map((_, columnIndex) => extraSpaceRight(columnIndex)),
+        onlyColumnsEach: onlyColumnsEach ?? columnWidthsInfo.map(() => layout.onlyColumns),
+    }
+}
+
+function columnFullWidths(layout: MeasuredTableLayout): number[] {
+    return layout.extraSpaceRight.map(extra => layout.columnWidth + extra)
+}
+
+export interface TableContentsProps {
+    layout: TableLayout
+    superHeaderSpec?: SuperHeaderSpec
+    leftHeaderSpec: LeftHeaderSpec
+    rowSpecs: CellSpec[][]
+    horizontalPlotSpecs: (PlotSpec | undefined)[]
+    verticalPlotSpecs: (PlotSpec | undefined)[]
+    topLeftSpec: TopLeftCellSpec
+    editButton?: TableEditButton
+    warningRows?: WarningRow[]
+    /** The column itself must already be in `rowSpecs` and the super header, as a blank cell. */
+    warningColumns?: WarningColumn[]
+    highlightRowIndex?: number
+    loading?: boolean
+}
+
+export function TableContents(props: TableContentsProps): ReactNode {
+    const universe = useUniverse()
+    const colors = useColors()
+    const screenshotMode = useScreenshotMode()
+    const { widthLeftHeader, columnWidth, simpleOrdinals } = props.layout
+
+    const { leftHeaderSpecs } = props.leftHeaderSpec
+    const superHeaderSpecs = props.superHeaderSpec?.headerSpecs
+
+    const disclaimerFootnotes = useMemo(
+        () => computeDisclaimerFootnotes([...leftHeaderSpecs, ...(superHeaderSpecs ?? [])]),
+        [leftHeaderSpecs, superHeaderSpecs],
+    )
+
+    const withFootnote = (spec: CellSpec): CellSpec =>
+        screenshotMode && spec.type === 'statistic-name' && spec.row?.disclaimer !== undefined
+            ? { ...spec, footnoteSymbol: disclaimerFootnotes.getSymbol(spec.row.disclaimer) }
+            : spec
+
+    const headerHeight = props.verticalPlotSpecs.flatMap(p => p === undefined ? [] : p.plotProps).map(p => extraHeaderSpaceForVertical(p)).reduce((a, b) => Math.max(a, b), 0)
+    const contentHeight = '379.5px'
+
+    const shouldSetMinHeight = props.verticalPlotSpecs.some(p => p !== undefined)
+    const overallMinHeight = shouldSetMinHeight ? `calc(${headerHeight}px + ${contentHeight})` : undefined
+    const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${leftHeaderSpecs.length})` : undefined
+
+    // should be 1 column, unless there are header specs. only use header specs if we can't infer from the cells.
+    const ncols = props.rowSpecs.length !== 0 ? props.rowSpecs[0].length : superHeaderSpecs?.length ?? 1
+
+    const columnRows = Array.from({ length: ncols }).map((_, colIndex) => props.rowSpecs.flatMap((row) => {
+        const cell = row[colIndex]
+        return cell.type === 'statistic-row' ? [cell.row] : []
+    }))
+
+    const layout = measuredLayout(
+        props.layout,
+        measureColumns(columnRows, universe, simpleOrdinals),
+        colIndex => props.verticalPlotSpecs[colIndex] === undefined ? 0 : columnWidth,
+        // A column of text has no ordinal or percentile for its header to promise.
+        columnRows.map(rows => rows.length > 0 && rows.every(row => row.kind !== 'statistic') ? valueOnlyColumns : props.layout.onlyColumns),
+    )
+    const fullWidths = columnFullWidths(layout)
+
+    const superHeaderSpec = props.superHeaderSpec === undefined
+        ? undefined
+        : { ...props.superHeaderSpec, headerSpecs: props.superHeaderSpec.headerSpecs.map(withFootnote) }
+
+    const placedIn = (placement: TableEditButton['placement']): EditModeButton | undefined =>
+        props.editButton?.placement === placement ? props.editButton : undefined
+
+    // Warnings are interleaved with the statistic rows, so the stripes are counted over both.
+    const warningRows = props.warningRows ?? []
+    const bodyRows: ReactNode[] = []
+    let nextWarning = 0
+    const emitWarningsBefore = (rowIndex: number): void => {
+        while (nextWarning < warningRows.length && warningRows[nextWarning].index <= rowIndex) {
+            bodyRows.push(
+                <WarningTableRow
+                    key={`warning_${nextWarning}`}
+                    layout={layout}
+                    stripeIndex={bodyRows.length}
+                    name={warningRows[nextWarning].name}
+                    content={warningRows[nextWarning].content}
+                />,
+            )
+            nextWarning++
+        }
+    }
+    props.rowSpecs.forEach((rowSpecsForItem, rowIndex) => {
+        emitWarningsBefore(rowIndex)
+        bodyRows.push(
+            <SuperTableRow
+                key={`TableRowContainer_${rowIndex}`}
+                layout={layout}
+                stripeIndex={bodyRows.length}
+                rowMinHeight={rowMinHeight}
+                cellSpecs={rowSpecsForItem}
+                plotSpec={props.horizontalPlotSpecs[rowIndex]}
+                leftHeaderSpec={withFootnote(leftHeaderSpecs[rowIndex])}
+                groupName={props.leftHeaderSpec.groupNames?.[rowIndex]}
+                prevGroupName={rowIndex > 0 ? props.leftHeaderSpec.groupNames?.[rowIndex - 1] : undefined}
+                isHighlighted={props.highlightRowIndex === rowIndex}
+            />,
+        )
+    })
+    emitWarningsBefore(props.rowSpecs.length)
+
+    return (
+        <>
+            <TableFrame
+                layout={layout}
+                topLeftSpec={{ ...props.topLeftSpec, editMode: placedIn('top-left') }}
+                superHeaderSpec={superHeaderSpec}
+                superHeaderEditButton={placedIn('super-header')}
+                blankColumns={props.warningColumns?.map(({ columnIndex }) => columnIndex)}
+                minHeight={overallMinHeight}
+            >
+                <div style={{ position: 'relative' }}>
+                    {bodyRows}
+                    {(props.warningColumns ?? []).map(({ columnIndex, content }) => (
+                        <WarningColumnMessage
+                            key={`warningColumn_${columnIndex}`}
+                            layout={layout}
+                            columnIndex={columnIndex}
+                            content={content}
+                        />
+                    ))}
+                </div>
+                {props.verticalPlotSpecs.map((plotSpec, statIndex) => plotSpec
+                    ? (
+                            <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${widthLeftHeader + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + fullWidths[i], columnWidth)}%`, bottom: 0, width: `${columnWidth}%` }}>
+                                <RenderedPlot statDescription={plotSpec.statDescription} plotProps={plotSpec.plotProps} />
+                            </div>
+                        )
+                    : null,
+                )}
+                <RelativeLoader loading={props.loading ?? false} />
+            </TableFrame>
+            {screenshotMode && disclaimerFootnotes.footnotes.length > 0 && (
+                <div className="disclaimer-footnotes serif" style={{ fontSize: '0.85em', marginTop: '1em', color: colors.textMain }}>
+                    {disclaimerFootnotes.footnotes.map(({ symbol, text }) => (
+                        <div key={symbol} style={{ marginBottom: '0.35em' }}>
+                            <sup>{symbol}</sup>
+                            {' '}
+                            {text}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </>
+    )
+}
+
+export function TableFrame(props: {
+    layout: MeasuredTableLayout
+    superHeaderSpec?: SuperHeaderSpec
+    topLeftSpec: TopLeftCellSpec
+    superHeaderEditButton?: EditModeButton
+    blankColumns?: number[]
+    minHeight?: string
+    children: ReactNode
+}): ReactNode {
+    const { widthLeftHeader, columnWidth, onlyColumnsEach, simpleOrdinals, columnWidthsInfo, extraSpaceRight } = props.layout
+    return (
+        <>
+            {props.superHeaderSpec !== undefined && (
+                <SuperHeaderHorizontal
+                    {...props.superHeaderSpec}
+                    editMode={props.superHeaderEditButton}
+                    leftSpacerWidth={widthLeftHeader}
+                    widthsEach={columnFullWidths(props.layout)}
+                />
+            )}
+            <div style={{ position: 'relative', minHeight: props.minHeight }}>
+                <TableHeaderContainer>
+                    <MainHeaderRow
+                        columnWidth={columnWidth}
+                        topLeftSpec={props.topLeftSpec}
+                        topLeftWidth={widthLeftHeader}
+                        onlyColumnsEach={onlyColumnsEach}
+                        extraSpaceRight={extraSpaceRight}
+                        simpleOrdinals={simpleOrdinals}
+                        columnWidthsInfo={columnWidthsInfo}
+                        blankColumns={props.blankColumns}
+                    />
+                </TableHeaderContainer>
+                {props.children}
+            </div>
+        </>
+    )
+}
+
+function WarningTableRow(props: { layout: MeasuredTableLayout, stripeIndex: number, name?: string, content: ReactNode }): ReactNode {
+    return (
+        <TableRowContainer index={props.stripeIndex}>
+            {props.name !== undefined && (
+                <div style={{ width: `${props.layout.widthLeftHeader}%`, padding: '1px' }} data-test-id="article-warning-name">
+                    <span className="serif value">{props.name}</span>
+                </div>
+            )}
+            <WarningRowMessage layout={props.layout} content={props.content} fullRow={props.name === undefined} />
+        </TableRowContainer>
+    )
+}
+
+export function WarningRowMessage(props: { layout: MeasuredTableLayout, content: ReactNode, fullRow?: boolean }): ReactNode {
+    const colors = useColors()
+    const width = props.fullRow === true ? 100 : columnFullWidths(props.layout).reduce((a, b) => a + b, 0)
+    return (
+        <div
+            style={{ width: `${width}%`, padding: '1px', color: colors.ordinalTextColor, fontStyle: 'italic' }}
+            data-test-id="article-warning"
+        >
+            <span className="serif value">{props.content}</span>
+        </div>
+    )
+}
+
+function WarningColumnMessage(props: { layout: MeasuredTableLayout, columnIndex: number, content: ReactNode }): ReactNode {
+    const colors = useColors()
+    const fullWidths = columnFullWidths(props.layout)
+    const left = props.layout.widthLeftHeader + fullWidths.slice(0, props.columnIndex).reduce((a, b) => a + b, 0)
+    return (
+        <div
+            style={{
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                left: `${left}%`,
+                width: `${props.layout.columnWidth}%`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
+                // Enough horizontal room that neighbouring columns' messages don't read as one
+                padding: '1px 0.75em',
+                color: colors.ordinalTextColor,
+                fontStyle: 'italic',
+            }}
+            data-test-id="article-warning"
+        >
+            <span className="serif value">{props.content}</span>
+        </div>
+    )
+}
+
+function SuperTableRow(props: {
+    layout: MeasuredTableLayout
+    stripeIndex: number
+    leftHeaderSpec: CellSpec
+    cellSpecs: CellSpec[]
+    plotSpec?: PlotSpec
+    rowMinHeight?: string
+    groupName?: string
+    prevGroupName?: string
+    isHighlighted: boolean
+}): ReactNode {
+    return (
+        <div>
+            {props.groupName !== undefined && (props.groupName !== props.prevGroupName) && (
+                <TableRowContainer index={props.stripeIndex} isHighlighted={props.isHighlighted}>
+                    <div style={{ width: '100%', padding: '1px' }}>
+                        <span className="serif value">
+                            <span>{props.groupName}</span>
+                        </span>
+                    </div>
+                </TableRowContainer>
+            )}
+            <StatisticTableRow
+                layout={props.layout}
+                index={props.stripeIndex}
+                leftHeader={<Cell {...props.leftHeaderSpec} width={props.layout.widthLeftHeader} />}
+                cellSpecs={props.cellSpecs}
+                plotSpec={props.plotSpec}
+                minHeight={props.rowMinHeight}
+                isHighlighted={props.isHighlighted}
+            />
+        </div>
+    )
+}
+
+export function StatisticTableRow(props: {
+    layout: MeasuredTableLayout
+    index: number
+    leftHeader: ReactNode
+    cellSpecs: CellSpec[]
+    plotSpec?: PlotSpec
+    /** Unset omits the (large) representatives table, as the edit tree does for statistics that are off. */
+    withCongressional?: boolean
+    minHeight?: string
+    isHighlighted?: boolean
+}): ReactNode {
+    const { layout, cellSpecs, withCongressional = true } = props
+    /*
+     * Deliberately not memoized. The representatives widget only puts the terms that were
+     * on screen into a screenshot, and it re-measures which those are off a change of
+     * identity here -- so holding this steady across renders empties the screenshot.
+     */
+    const congressionalRegions = withCongressional ? congressionalRegionsForCells(cellSpecs) : []
+
+    return (
+        <>
+            <TableRowContainer index={props.index} minHeight={props.minHeight} isHighlighted={props.isHighlighted}>
+                {props.leftHeader}
+                <RowCells layout={layout} cellSpecs={cellSpecs} />
+            </TableRowContainer>
+            {props.plotSpec && (
+                <div style={{ width: '100%', position: 'relative' }}>
+                    <RenderedPlot statDescription={props.plotSpec.statDescription} plotProps={props.plotSpec.plotProps} />
+                </div>
+            )}
+            {congressionalRegions.length > 0 && (
+                <div data-test-id="congressional-representatives">
+                    <CongressionalRepresentativesWidget
+                        regions={congressionalRegions}
+                        widthLeftHeader={layout.widthLeftHeader}
+                        columnWidth={layout.columnWidth}
+                        extraSpaceRight={layout.extraSpaceRight}
+                    />
+                </div>
+            )}
+        </>
+    )
+}
+
+function RowCells(props: { layout: MeasuredTableLayout, cellSpecs: CellSpec[] }): ReactNode {
+    const { columnWidth, extraSpaceRight, columnWidthsInfo } = props.layout
+    return props.cellSpecs.map((spec, colIndex) => (
+        <Fragment key={colIndex}>
+            <Cell
+                {...(spec.type === 'statistic-row' ? { ...spec, columnWidthsInfo: columnWidthsInfo[colIndex] } : spec)}
+                width={columnWidth}
+            />
+            <div style={{ width: `${extraSpaceRight[colIndex]}%` }}></div>
+        </Fragment>
+    ))
+}
+
+function congressionalRegionsForCells(cellSpecs: CellSpec[]): CongressionalColumnData[] {
+    return cellSpecs.flatMap((cell) => {
+        if (cell.type !== 'statistic-row') {
+            return []
+        }
+        const data = congressionalDataForRow(cell.row, cell.longname)
+        return data === undefined ? [] : [data]
+    })
+}
+
+export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCellProps) |
+    ({ type: 'statistic-name' } & StatisticNameCellProps) |
+    ({ type: 'statistic-row' } & StatisticRowCellProps) |
+    ({ type: 'statistic-panel-longname' } & StatisticPanelLongnameCellProps) |
+    ({ type: 'comparison-top-left-header' } & TopLeftHeaderProps) |
+    ({ type: 'top-left-header' } & TopLeftHeaderProps) |
+    { type: 'blank' }
+
+export function Cell(props: CellSpec & { width: number }): ReactNode {
+    switch (props.type) {
+        case 'blank':
+            return <div style={{ width: `${props.width}%` }} />
+
+        case 'comparison-longname':
+            return <ComparisonLongnameCell {...props} width={props.width} />
+        case 'statistic-name':
+            return <StatisticNameCell {...props} width={props.width} />
+        case 'statistic-row':
+            return <StatisticRowCells {...props} width={props.width} />
+        case 'statistic-panel-longname':
+            return <StatisticPanelLongnameCell {...props} width={props.width} />
+        case 'comparison-top-left-header':
+            return <ComparisonTopLeftHeader {...props} width={props.width} />
+        case 'top-left-header':
+            return <TopLeftHeader {...props} width={props.width} />
+    }
+}
+
+export interface ComparisonLongnameCellProps {
+    articleIndex: number
+    articles: Article[]
+    names: string[]
+    transpose: boolean
+    sharedTypeOfAllArticles: string | null | undefined
+    highlightIndex?: number
+    draggable?: boolean
+    articleId?: string
+}
+
+export interface StatisticPanelLongnameCellProps {
+    longname: string
+    currentUniverse: Universe | undefined
+}
+
+export interface StatisticNameCellProps {
+    row?: ArticleRow
+    renderedStatname: HumanReadableName
+    longname: string
+    currentUniverse: Universe | undefined
+    center?: boolean
+    highlightIndex?: number
+    transpose?: boolean
+    isIndented?: boolean
+    displayName?: HumanReadableName
+    footnoteSymbol?: string
+    sortInfo?: {
+        sortDirection: 'up' | 'down' | 'both'
+        onSort: () => void
+    }
+    handleDelete?: () => void
+}
+
+export interface StatisticRowCellProps {
+    longname: string
+    statisticStyle?: CSSProperties
+    row: StatisticCellRenderingInfo
+    onlyColumns?: string[]
+    blankColumns?: string[]
+    onNavigate?: (newArticle: string) => void
+    simpleOrdinals: boolean
+    extraSpaceRight?: number
+    columnWidthsInfo?: CommonLayoutInformation
+}
+
+export interface TopLeftHeaderProps {
+    statNameOverride?: string
+    editMode?: EditModeHeader
+}
+
+export type TopLeftCellSpec = Extract<CellSpec, { type: 'comparison-top-left-header' | 'top-left-header' }>

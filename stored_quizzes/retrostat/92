@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High windspeed (>10mph) days %",
+      "stat_path": "wind_speed_over_10mph_4",
+      "question": "higher % of days with wind speed over 10mph (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Pasco County, Florida, USA",
+      "longname_b": "Hamilton County, Ohio, USA",
+      "stat_a": 0.21227354825074501,
+      "stat_b": 0.12057103702924751
+    },
+    "b": {
+      "stat_column": "Arts, entertainment, and recreation %",
+      "stat_path": "industry_arts,_entertainment,_and_recreation",
+      "question": "higher % of workers employed in the arts, entertainment, and recreation industry!TOOLTIP performing arts companies, sports, museums, amusement parks, gambling industries, etc.",
+      "longname_a": "Biloxi-Gulfport MS Media Market, USA",
+      "longname_b": "Bakersfield CA Media Market, USA",
+      "stat_a": 0.05937012023108026,
+      "stat_b": 0.012862319410483132
+    },
+    "a_ease": 0.663447251114413,
+    "b_ease": 0.2625570776255708
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2016-2020 Swing",
+      "stat_path": "2016-2020 Swing-margin",
+      "question": "!FULL Which swung towards Democrats more from 2016 to 2020?",
+      "longname_a": "Baltimore city, Maryland, USA",
+      "longname_b": "Los Angeles city, California, USA",
+      "stat_a": 0.024671009202752336,
+      "stat_b": -0.06940170732356366
+    },
+    "b": {
+      "stat_column": "Household income < C$50k %",
+      "stat_path": "household_income_under_50cad",
+      "question": "higher % of households that have household income under C$50k",
+      "longname_a": "Oshawa CMA, ON, Canada",
+      "longname_b": "Montr\u00e9al CMA, QC, Canada",
+      "stat_a": 0.1616814313010251,
+      "stat_b": 0.2950913647880532
+    },
+    "a_ease": 0.6567607726597325,
+    "b_ease": 0.2546230440967283
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Healthcare support occupations %",
+      "stat_path": "occupation_healthcare_support_occupations",
+      "question": "higher % of workers employed in healthcare support occupations!TOOLTIP nursing assistants, orderlies, home health aides, massage therapists, dental assistants, etc.",
+      "longname_a": "Orange County, New York, USA",
+      "longname_b": "Fulton County, Georgia, USA",
+      "stat_a": 0.040490972199410884,
+      "stat_b": 0.013524087713430048
+    },
+    "b": {
+      "stat_column": "PW Mean Elevation",
+      "stat_path": "gridded_elevation",
+      "question": "higher population-weighted mean elevation !TOOLTIP Population weighted elevation/hilliness statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Harbin Urban Center, China",
+      "longname_b": "Singapore Urban Center, Malaysia-Singapore",
+      "stat_a": 142.72393798828125,
+      "stat_b": 24.51714324951172
+    },
+    "a_ease": 0.3597560975609756,
+    "b_ease": 0.7881489250131096
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population",
+      "stat_path": "population",
+      "question": "higher population",
+      "longname_a": "Xinjiang Uygur Zizhiqu, China",
+      "longname_b": "Koshi, Nepal",
+      "stat_a": 25406224.665239293,
+      "stat_b": 5308618.266953238
+    },
+    "b": {
+      "stat_column": "Commute Time > 60 min %",
+      "stat_path": "transportation_commute_time_over_60",
+      "question": "higher % of people who have commute time over 60 min",
+      "longname_a": "Panama City FL Media Market, USA",
+      "longname_b": "Champaign & Springfield-Decatur IL Media Market, USA",
+      "stat_a": 0.08901727289834128,
+      "stat_b": 0.038015531404459485
+    },
+    "a_ease": 0.7965631929046563,
+    "b_ease": 0.3556507766470273
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Management occupations %",
+      "stat_path": "occupation_management_occupations",
+      "question": "higher % of workers employed as managers!TOOLTIP a variety of roles titled 'managers'",
+      "longname_a": "CA-51 (2023), USA",
+      "longname_b": "LA-02 (2025), USA",
+      "stat_a": 0.10935723962765685,
+      "stat_b": 0.08823614372762409
+    },
+    "b": {
+      "stat_column": "Chronic kidney disease %",
+      "stat_path": "KIDNEY_cdc_2",
+      "question": "higher % of adults with chronic kidney disease",
+      "longname_a": "NM-02 (2023), USA",
+      "longname_b": "GA-05 (2025), USA",
+      "stat_a": 0.035034466332335513,
+      "stat_b": 0.02909087408984361
+    },
+    "a_ease": 0.8274777136864184,
+    "b_ease": 0.4011887072808321
+  }
+]

@@ -5,7 +5,7 @@ import { useColors, useJuxtastatColors } from '../page_template/colors'
 
 import { QuizDescriptor, QuizDescriptorWithTime, QuizHistory } from './quiz'
 import { ResultToDisplayForFriends } from './quiz-friends'
-import { getInfiniteQuizzes, parseTimeIdentifier } from './statistics'
+import { getInfiniteQuizzes, historyKeyForTimeIdentifier, parseTimeIdentifier } from './statistics'
 
 export function QuizStatistics(
     props: {
@@ -24,23 +24,21 @@ export function QuizStatistics(
     }
 }
 
-export function QuizStatisticsForTimedStatistics(
-    props: {
-        quiz: QuizDescriptorWithTime
-        wholeHistory: QuizHistory
-    },
-): ReactNode {
-    const colors = useColors()
-    const history = (i: number): QuizHistory[string] | undefined => {
-        switch (props.quiz.kind) {
-            case 'juxtastat':
-                return props.wholeHistory[i]
-            case 'retrostat':
-                return props.wholeHistory[`W${i}`]
-        }
-    }
+export function computeUserStatisticsData(
+    quiz: QuizDescriptorWithTime,
+    wholeHistory: QuizHistory,
+): {
+        meanScore: number
+        numPlays: number
+        currentStreak: number
+        maxStreak: number
+        winRate: number
+        totalFrequency: number
+        frequencies: number[]
+    } {
+    const history = (i: number): QuizHistory[string] | undefined => wholeHistory[historyKeyForTimeIdentifier(quiz.kind, i)]
 
-    const today = parseTimeIdentifier(props.quiz.kind, props.quiz.name.toString())
+    const today = parseTimeIdentifier(quiz.kind, quiz.name.toString())
     const historicalCorrect = new Array(today + 1).fill(-1)
     const frequencies = new Array<number>(6).fill(0)
     const playedGames = []
@@ -56,6 +54,17 @@ export function QuizStatisticsForTimedStatistics(
             playedGames.push(amount)
         }
     }
+    if (playedGames.length === 0) {
+        return {
+            meanScore: 0,
+            numPlays: 0,
+            currentStreak: 0,
+            maxStreak: 0,
+            winRate: 0,
+            totalFrequency: 0,
+            frequencies,
+        }
+    }
     const maxStreaks = new Array<number>(historicalCorrect.length).fill(0)
     for (let val = 0; val < maxStreaks.length; val++) {
         if (historicalCorrect[val] >= 3) {
@@ -64,33 +73,48 @@ export function QuizStatisticsForTimedStatistics(
     }
     const maxStreak = Math.max(...maxStreaks)
     const currentStreak = maxStreaks[today]
-    const totalFreq = frequencies.reduce((partialSum, a) => partialSum + a, 0)
+    const meanScore = playedGames.reduce((partialSum, a) => partialSum + a, 0) / playedGames.length
+    const winRate = playedGames.filter(x => x >= 3).length / playedGames.length * 100
+    const totalFrequency = frequencies.reduce((partialSum, a) => partialSum + a, 0)
+    return {
+        meanScore,
+        numPlays: playedGames.length,
+        currentStreak,
+        maxStreak,
+        winRate,
+        totalFrequency,
+        frequencies,
+    }
+}
+
+function QuizStatisticsForTimedStatistics(
+    props: {
+        quiz: QuizDescriptorWithTime
+        wholeHistory: QuizHistory
+    },
+): ReactNode {
+    const colors = useColors()
+    const data = computeUserStatisticsData(props.quiz, props.wholeHistory)
     const statistics = [
         {
             name: 'Played',
-            value: playedGames.length.toString(),
+            value: data.numPlays.toString(),
         },
         {
             name: 'Mean score',
-            value: (
-                playedGames.reduce((partialSum, a) => partialSum + a, 0)
-                / playedGames.length
-            ).toFixed(2),
+            value: data.meanScore.toFixed(2),
         },
         {
             name: 'Win Rate (3+)',
-            value: `${(
-                playedGames.filter(x => x >= 3).length
-                / playedGames.length * 100
-            ).toFixed(0)}%`,
+            value: `${data.winRate.toFixed(0)}%`,
         },
         {
             name: 'Current Streak (3+)',
-            value: currentStreak.toString(),
+            value: data.currentStreak.toString(),
         },
         {
             name: 'Max Streak (3+)',
-            value: maxStreak.toString(),
+            value: data.maxStreak.toString(),
         },
     ]
     return (
@@ -100,14 +124,14 @@ export function QuizStatisticsForTimedStatistics(
             <div className="gap_small" />
             <table className="quiz_barchart">
                 <tbody>
-                    {frequencies.map((amt, i) => (
+                    {data.frequencies.map((amt, i) => (
                         <tr key={i}>
                             <td className="quiz_bar_td serif" style={{ color: colors.textMain }}>
                                 {i}
                                 /5
                             </td>
                             <td className="quiz_bar_td serif">
-                                <span className="quiz_bar" style={{ width: `${amt / totalFreq * 20}em`, backgroundColor: colors.hueColors.blue }}>
+                                <span className="quiz_bar" style={{ width: `${amt / data.totalFrequency * 20}em`, backgroundColor: colors.hueColors.blue }}>
                                 </span>
                                 {amt > 0
                                     ? (
@@ -115,7 +139,7 @@ export function QuizStatisticsForTimedStatistics(
                                                 {amt}
                                                 {' '}
                                                 (
-                                                {(amt / totalFreq * 100).toFixed(1)}
+                                                {(amt / data.totalFrequency * 100).toFixed(1)}
                                                 %)
                                             </span>
                                         )
@@ -148,7 +172,7 @@ export function AudienceStatistics({ total, perQuestion }: { total: number, perQ
         </div>
     )
 }
-export function DisplayedStats({ statistics }: {
+function DisplayedStats({ statistics }: {
     statistics: {
         value: string
         name: string
@@ -179,7 +203,7 @@ export function DisplayedStats({ statistics }: {
         </div>
     )
 }
-export function DisplayedStat({ number, name, additionalClass, color, onClick }: {
+function DisplayedStat({ number, name, additionalClass, color, onClick }: {
     number: string
     name: string
     additionalClass?: string
@@ -259,6 +283,26 @@ export function ordinalThis(quiz: QuizDescriptor & { kind: 'infinite' }, wholeHi
     }
 }
 
+/**
+ * Our result on the quiz immediately preceding `quiz` (yesterday's juxtastat, last week's retrostat).
+ * Quizzes we didn't finish are reported as not done, since that's how friends' unfinished quizzes are reported.
+ */
+export function ourPreviousResultToDisplayForFriends(
+    quiz: QuizDescriptorWithTime,
+    wholeHistory: QuizHistory,
+    isDone: (correctPattern: boolean[]) => boolean,
+): ResultToDisplayForFriends {
+    const previousKey = historyKeyForTimeIdentifier(quiz.kind, parseTimeIdentifier(quiz.kind, quiz.name.toString()) - 1)
+    if (!(previousKey in wholeHistory)) {
+        return { corrects: null }
+    }
+    const corrects = wholeHistory[previousKey].correct_pattern
+    if (!isDone(corrects.map(correct => correct ? true : false))) {
+        return { corrects: null }
+    }
+    return { corrects }
+}
+
 export function ourResultToDisplayForFriends(quiz: QuizDescriptor & { kind: 'infinite' }, wholeHistory: QuizHistory): ResultToDisplayForFriends {
     const { sortedIndices, seedVersions, numCorrects } = juxtastatInfiniteDisplay(quiz, wholeHistory)
     const thisIndex = seedVersions.findIndex(([seed, version]) => seed === quiz.seed && version === quiz.version)
@@ -273,7 +317,7 @@ export function ourResultToDisplayForFriends(quiz: QuizDescriptor & { kind: 'inf
     }
 }
 
-export function QuizStatisticsForInfinite(
+function QuizStatisticsForInfinite(
     props: {
         quiz: QuizDescriptor & { kind: 'infinite' }
         wholeHistory: QuizHistory

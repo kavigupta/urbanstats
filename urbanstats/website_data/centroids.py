@@ -1,32 +1,59 @@
 import os
+from typing import Any, Dict, List
 
 import pandas as pd
 import tqdm.auto as tqdm
-from permacache import permacache
 
+from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
+from urbanstats.geometry.shapefiles.longnames import shapefile_longnames
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 
 
-@permacache(
-    "urbanstats/website_data/centroids/compute_centroids_2",
-    key_function=dict(sf=lambda x: x.hash_key),
+def compute_internal_point(geo: Any) -> Any:
+    geo = geo.buffer(0)
+    centroid = geo.centroid
+    if geo.contains(centroid):
+        return centroid
+    if geo.geom_type == "MultiPolygon":
+        # If the geometry is a MultiPolygon, we want to find the largest
+        # polygon and compute the centroid of that one
+        geo = max(list(geo.geoms), key=lambda x: x.area)
+        centroid = geo.centroid
+        if geo.contains(centroid):
+            return centroid
+    return geo.representative_point()
+
+
+@permacache_with_remapping_pickle(
+    "urbanstats/website_data/centroids/compute_centroids_4",
     multiprocess_safe=True,
 )
-def compute_centroids(sf):
-    sf_fr = sf.load_file()
-    sf_fr = sf_fr.set_index("longname")
-    centroids = sf_fr.centroid
-    return centroids
+def compute_centroids(geometry: Any) -> List[Any]:
+    """Each region's centroid, in row order."""
+    return [
+        compute_internal_point(geo)
+        for geo in tqdm.tqdm(
+            geometry.load_rows().geometry.values, desc=f"centroids for {geometry.key}"
+        )
+    ]
 
 
-def compute_all_centroids(shapefiles):
+def compute_all_centroids(shapefiles: Dict[str, Any]) -> pd.Series:
     return pd.concat(
-        [compute_centroids(sf) for sf in tqdm.tqdm(shapefiles.values())], axis=0
+        [
+            pd.Series(
+                compute_centroids(sf.geometry), index=shapefile_longnames(sf.names)
+            )
+            for sf in tqdm.tqdm(shapefiles.values())
+        ],
+        axis=0,
     )
 
 
-def export_centroids(folder, shapefiles, ordering_info):
+def export_centroids(
+    folder: str, shapefiles: Dict[str, Any], ordering_info: Any
+) -> None:
     centroids = compute_all_centroids(shapefiles)
     for (universe, typ), idx in tqdm.tqdm(ordering_info.universe_type_to_idx.items()):
         longnames_for_ut = ordering_info.longnames[

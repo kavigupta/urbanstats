@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Community and social service occupations %",
+      "stat_path": "occupation_community_and_social_service_occupations",
+      "question": "higher % of workers employed in community and social service occupations!TOOLTIP social workers, therapists, counselors, probation officers, clergy, etc.",
+      "longname_a": "IL-08 (2023), USA",
+      "longname_b": "VA-09 (2023), USA",
+      "stat_a": 0.011383380440629533,
+      "stat_b": 0.024147184391437516
+    },
+    "b": {
+      "stat_column": "Vision disability %",
+      "stat_path": "VISION_cdc_2",
+      "question": "higher % of adults with a vision disability",
+      "longname_a": "GA-12 (2023), USA",
+      "longname_b": "CA-16 (2023), USA",
+      "stat_a": 0.07210563438779995,
+      "stat_b": 0.032629957187304666
+    },
+    "a_ease": 0.2207931404072883,
+    "b_ease": 0.6652956298200514
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2015-2019 Swing 2-Coalition Margin",
+      "stat_path": "2015-2019 Swing-coalition_margin",
+      "question": "!FULL Which swung less towards the right-of-center parties between the 2015 and 2019 elections?!TOOLTIP By 2-Coalition Margin, which is calculated as (Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation.",
+      "longname_a": "Niagara Regional municipality, Ontario, Canada",
+      "longname_b": "Laval Territory, Quebec, Canada",
+      "stat_a": 0.03551075105093987,
+      "stat_b": -0.08972944867024396
+    },
+    "b": {
+      "stat_column": "Rent/Income < 20%",
+      "stat_path": "rent_burden_under_20",
+      "question": "higher % of people whose rent is less than 20% of their income",
+      "longname_a": "Little Rock-Pine Bluff AR Media Market, USA",
+      "longname_b": "Savannah GA Media Market, USA",
+      "stat_a": 0.29929061771105503,
+      "stat_b": 0.26950784764659474
+    },
+    "a_ease": 0.40332512315270935,
+    "b_ease": 0.8158730158730159
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Cohabiting With Partner (Gay) %",
+      "stat_path": "sors_cohabiting_partnered_gay",
+      "question": "higher % of people who are gay and cohabiting with a partner/spouse",
+      "longname_a": "Rockland County, New York, USA",
+      "longname_b": "Guilford County, North Carolina, USA",
+      "stat_a": 0.003185877527973019,
+      "stat_b": 0.006620524194702711
+    },
+    "b": {
+      "stat_column": "Traffic Fatalities Per Capita Per Year",
+      "stat_path": "traffic_fatalities_last_decade_per_capita",
+      "question": "higher traffic fatalities per capita between 2013 and 2022!TOOLTIP traffic fatalities in the region, divided by the population of the region",
+      "longname_a": "Bakersfield Urban Center, USA",
+      "longname_b": "Madison Urban Center, USA",
+      "stat_a": 0.0001123909062759235,
+      "stat_b": 3.306141767358985e-05
+    },
+    "a_ease": 0.12992610837438423,
+    "b_ease": 0.6078014184397164
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2008-2012 Swing",
+      "stat_path": "2008-2012 Swing-margin",
+      "question": "!FULL Which swung less towards Republicans from 2008 to 2012?",
+      "longname_a": "Memphis MSA, TN-MS-AR, USA",
+      "longname_b": "Waco MSA, TX, USA",
+      "stat_a": -0.009745739088333732,
+      "stat_b": -0.05798772678000688
+    },
+    "b": {
+      "stat_column": "Mean high temperature in Dec/Jan/Feb",
+      "stat_path": "mean_high_temp_djf",
+      "question": "higher mean daily high temperature in Dec/Jan/Feb (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Bangkok Urban Center, Thailand",
+      "longname_b": "Saint Petersburg Urban Center, Russia",
+      "stat_a": 90.14274020389459,
+      "stat_b": 26.704627738757836
+    },
+    "a_ease": 0.6683804627249358,
+    "b_ease": 0.9694533762057878
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "1BR Rent < $750 %",
+      "stat_path": "rent_1br_under_750",
+      "question": "higher % of units with 1br rent under $750",
+      "longname_a": "Texas, USA",
+      "longname_b": "Wyoming, USA",
+      "stat_a": 0.2012119811958941,
+      "stat_b": 0.6254658385093175
+    },
+    "b": {
+      "stat_column": "High windspeed (>10mph) days %",
+      "stat_path": "wind_speed_over_10mph_4",
+      "question": "higher % of days with wind speed over 10mph (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Seoul Urban Center, South Korea",
+      "longname_b": "Ahmedabad Urban Center, India",
+      "stat_a": 0.18581813594107324,
+      "stat_b": 0.04095265796488019
+    },
+    "a_ease": 0.8798586572438163,
+    "b_ease": 0.6787234042553192
+  }
+]

@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km) Change (2010-2020)",
+      "stat_path": "ad_1_change_2010",
+      "question": "higher % increase in population-weighted density (r=1km) from 2010 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Fresno MSA, CA, USA",
+      "longname_b": "Lancaster MSA, PA, USA",
+      "stat_a": 0.041860861727535184,
+      "stat_b": -0.015524927431597323
+    },
+    "b": {
+      "stat_column": "High blood pressure %",
+      "stat_path": "BPHIGH_cdc_2",
+      "question": "higher % of adults with high blood pressure",
+      "longname_a": "IL-13 (2023), USA",
+      "longname_b": "TX-32 (2023), USA",
+      "stat_a": 0.326254212869416,
+      "stat_b": 0.29496574442374895
+    },
+    "a_ease": 0.6528098537336413,
+    "b_ease": 0.2523191094619666
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Mean Elevation",
+      "stat_path": "gridded_elevation",
+      "question": "higher population-weighted mean elevation !TOOLTIP Population weighted elevation/hilliness statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Georgia",
+      "longname_b": "Georgia, USA",
+      "stat_a": 428.56884765625,
+      "stat_b": 232.69265747070312
+    },
+    "b": {
+      "stat_column": "Cancer (excluding skin cancer) %",
+      "stat_path": "CANCER_cdc_2",
+      "question": "higher % of adults with cancer (excluding skin cancer)",
+      "longname_a": "NC-07 (2025), USA",
+      "longname_b": "PA-04 (2023), USA",
+      "stat_a": 0.06710702023057027,
+      "stat_b": 0.07488796808187097
+    },
+    "a_ease": 0.8411633109619687,
+    "b_ease": 0.43033102386451116
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built pre-1970",
+      "stat_path": "year_built_1969_or_earlier",
+      "question": "higher % units built pre-1970",
+      "longname_a": "San Diego [Urban Area], CA, USA",
+      "longname_b": "Cleveland [Urban Area], OH, USA",
+      "stat_a": 0.3066955539259081,
+      "stat_b": 0.6340641690258405
+    },
+    "b": {
+      "stat_column": "Individual Income > $100k %",
+      "stat_path": "individual_income_over_100k",
+      "question": "higher % of people who have individual income over $100k",
+      "longname_a": "Kennewick-Richland-Pasco [Urban Area], WA, USA",
+      "longname_b": "Kissimmee-St. Cloud [Urban Area], FL, USA",
+      "stat_a": 0.1309136552077898,
+      "stat_b": 0.048121396281773886
+    },
+    "a_ease": 0.850654349499615,
+    "b_ease": 0.44837758112094395
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Cohabiting With Partner (Gay) %",
+      "stat_path": "sors_cohabiting_partnered_gay",
+      "question": "higher % of people who are gay and cohabiting with a partner/spouse",
+      "longname_a": "Portland [Urban Area], OR-WA, USA",
+      "longname_b": "Portland [Urban Area], ME, USA",
+      "stat_a": 0.01142462945746076,
+      "stat_b": 0.017387265037346337
+    },
+    "b": {
+      "stat_column": "Cognitive disability %",
+      "stat_path": "COGNITION_cdc_2",
+      "question": "higher % of adults with a cognitive disability",
+      "longname_a": "CA-38 (2023), USA",
+      "longname_b": "NY-22 (2025), USA",
+      "stat_a": 0.11921008237699267,
+      "stat_b": 0.1406662290278664
+    },
+    "a_ease": 0.1342281879194631,
+    "b_ease": 0.5919317300232738
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Traffic Fatalities Per Capita Per Year",
+      "stat_path": "traffic_fatalities_last_decade_per_capita",
+      "question": "higher traffic fatalities per capita between 2013 and 2022!TOOLTIP traffic fatalities in the region, divided by the population of the region",
+      "longname_a": "NC-09 (2025), USA",
+      "longname_b": "CA-52 (2023), USA",
+      "stat_a": 0.00015261422262633252,
+      "stat_b": 6.397902223763675e-05
+    },
+    "b": {
+      "stat_column": "White %",
+      "stat_path": "white",
+      "question": "higher % of people who are White",
+      "longname_a": "Albuquerque [Urban Area], NM, USA",
+      "longname_b": "Columbus [Urban Area], OH, USA",
+      "stat_a": 0.38256799816064957,
+      "stat_b": 0.6144243370889466
+    },
+    "a_ease": 0.4842300556586271,
+    "b_ease": 0.9093567251461988
+  }
+]

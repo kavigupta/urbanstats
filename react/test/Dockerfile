@@ -1,31 +1,43 @@
 # You may want to update ../../Dockerfile when updating this file
 # This version for compatibility with pandas
-FROM python:3.10
+# Pinned by digest because a moving tag invalidates the build cache. bookworm to match the snapshot below.
+# Python for the quiz tests, which start urbanstats-persistent-data with the image's pip3.
+# slim, since the full toolchain is 330MB.
+FROM python:3.10-slim-bookworm@sha256:7ed92b32353e8d8bd865b5ba811e0315d3999c3b57b1c2df2b504a359d4a1707
 
-# 😭
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-RUN apt-get install -y nodejs
+# One layer, because /var/lib/apt/lists is 44MB that only the build uses.
+RUN apt-get -y update \
+    && apt-get -y install --no-install-recommends curl ca-certificates gnupg \
+    # 😭
+    && curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+    && apt-get -y install nodejs \
+    && dpkg --add-architecture i386 \
+    # needed for window resizing in Testcafe. From the base image's repo, since libc6:i386 must
+    # match its libc6 exactly and the snapshot is older.
+    && apt-get -y update \
+    && apt-get -y install libc6:i386 libx11-6:i386 \
+    # Use only the snapshot repo so all packages come from the same consistent state
+    # This is primarily so we can install older Chromium and not have to update all the time
+    # The timestamp may need to be bumped if installing newer packages
+    && echo 'deb [check-valid-until=no] https://snapshot.debian.org/archive/debian/20260115T000000Z/ bookworm main' \
+        > /etc/apt/sources.list \
+    # Not *.list, since Debian's config is debian.sources and would leave deb.debian.org enabled
+    && rm -f /etc/apt/sources.list.d/* \
+    && apt-get -o Acquire::Check-Valid-Until=false -y update \
+    && apt-get -y install \
+        chromium=143.* chromium-common=143.* \
+        xvfb \
+        # so a --docker run can be watched over VNC
+        x11vnc \
+        sqlite3 \
+        fluxbox \
+        # the checkout step clones inside the container, and the runner diffs against the
+        # base ref; procps is for the pkill in quiz_test_utils.ts
+        git procps \
+        # needed for downloads directory in TestCafe
+        xdg-user-dirs \
+        # needed for emoji display in tests
+        fonts-noto-color-emoji fonts-noto-core \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --upgrade pip virtualenv
-RUN pip3 cache purge
-
-RUN dpkg --add-architecture i386
-RUN apt-get -y update
-
-RUN apt-get -y install chromium=133.*
-RUN apt-get -y install xvfb
-
-RUN apt-get -y install sqlite3
-
-# needed for window resizing in Testcafe
-RUN apt-get -y install libc6:i386
-RUN apt-get -y install libx11-6:i386
-RUN apt-get -y install fluxbox
-
-# needed for downloads directory in TestCafe
-RUN apt-get -y install xdg-user-dirs
-
-# needed for emoji display in tests
-RUN apt-get -y install fonts-noto-color-emoji fonts-noto-core
-
-ENTRYPOINT [ "/bin/bash" ] 
+ENTRYPOINT [ "/bin/bash", "-l", "-c" ]

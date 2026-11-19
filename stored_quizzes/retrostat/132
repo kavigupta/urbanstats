@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Muslim % [StatCan]",
+      "stat_path": "religion_muslim_canada",
+      "question": "higher % of people who are Muslim",
+      "longname_a": "Fraser Valley Regional district, British Columbia, Canada",
+      "longname_b": "Niagara Regional municipality, Ontario, Canada",
+      "stat_a": 0.006486758824826027,
+      "stat_b": 0.018413401633670248
+    },
+    "b": {
+      "stat_column": "High windspeed (>10mph) days %",
+      "stat_path": "wind_speed_over_10mph_4",
+      "question": "higher % of days with wind speed over 10mph (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Malaysia",
+      "longname_b": "Turkmenistan",
+      "stat_a": 0.03490080821918342,
+      "stat_b": 0.1669748983442905
+    },
+    "a_ease": 0.724841660802252,
+    "b_ease": 0.32458442694663164
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Cohabiting With Partner (Gay) %",
+      "stat_path": "sors_cohabiting_partnered_gay",
+      "question": "higher % of people who are gay and cohabiting with a partner/spouse",
+      "longname_a": "Gainesville [Urban Area], GA, USA",
+      "longname_b": "Albuquerque [Urban Area], NM, USA",
+      "stat_a": 0.006690237643818782,
+      "stat_b": 0.010683388409526389
+    },
+    "b": {
+      "stat_column": "2008-2012 Swing",
+      "stat_path": "2008-2012 Swing-margin",
+      "question": "!FULL Which swung less towards Republicans from 2008 to 2012?",
+      "longname_a": "Maine, USA",
+      "longname_b": "Mississippi, USA",
+      "stat_a": -0.02211034057754896,
+      "stat_b": 0.011448554107234513
+    },
+    "a_ease": 0.7432164129715421,
+    "b_ease": 0.3268845897264843
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Rent/Income > 40%",
+      "stat_path": "rent_burden_over_40",
+      "question": "higher % of people whose rent is greater than 40% of their income",
+      "longname_a": "Detroit-Warren-Dearborn MSA, MI, USA",
+      "longname_b": "Shreveport-Bossier City MSA, LA, USA",
+      "stat_a": 0.3397115941003323,
+      "stat_b": 0.40946962745457777
+    },
+    "b": {
+      "stat_column": "Employed in Agriculture, forestry, fishing and hunting %",
+      "stat_path": "industry_agriculture,_forestry,_fishing_and_hunting",
+      "question": "higher % of workers employed in the agriculture, forestry, fishing, and hunting industries!TOOLTIP agriculture, forestry, logging, fishing, and hunting",
+      "longname_a": "Omaha Urban Center, USA",
+      "longname_b": "Minneapolis [Saint Paul] Urban Center, USA",
+      "stat_a": 0.007256172569891988,
+      "stat_b": 0.0039547632857047915
+    },
+    "a_ease": 0.2413793103448276,
+    "b_ease": 0.6544181977252843
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Chronic kidney disease %",
+      "stat_path": "KIDNEY_cdc_2",
+      "question": "higher % of adults with chronic kidney disease",
+      "longname_a": "Dayton OH Media Market, USA",
+      "longname_b": "Albany-Schenectady-Troy NY Media Market, USA",
+      "stat_a": 0.032199133341561006,
+      "stat_b": 0.029331491793282257
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km) Change (2010-2020)",
+      "stat_path": "ad_1_change_2010",
+      "question": "higher % increase in population-weighted density (r=1km) from 2010 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Louisville/Jefferson County [Urban Area], KY-IN, USA",
+      "longname_b": "Salem [Urban Area], OR, USA",
+      "stat_a": 0.013797804665592498,
+      "stat_b": 0.07337276489707122
+    },
+    "a_ease": 0.7917760279965005,
+    "b_ease": 0.3700787401574803
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=4km)",
+      "stat_path": "ad_4",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Gansu Sheng, China",
+      "longname_b": "Ouest, Haiti",
+      "stat_a": 2107.697369654793,
+      "stat_b": 4936.786790141192
+    },
+    "b": {
+      "stat_column": "Mobility disability %",
+      "stat_path": "MOBILITY_cdc_2",
+      "question": "higher % of adults with a mobility disability",
+      "longname_a": "Santa Clarita [Urban Area], CA, USA",
+      "longname_b": "Corpus Christi [Urban Area], TX, USA",
+      "stat_a": 0.08650807100337847,
+      "stat_b": 0.156788629980962
+    },
+    "a_ease": 0.3642428285523682,
+    "b_ease": 0.8220663265306123
+  }
+]

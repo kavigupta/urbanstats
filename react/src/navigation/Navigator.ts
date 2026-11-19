@@ -1,11 +1,13 @@
-import React, { createContext, useEffect, useState } from 'react'
+import React, { createContext, useEffect, useState, useSyncExternalStore } from 'react'
 import { z } from 'zod'
 
 import { discordFix } from '../discord-fix'
 import { Settings } from '../page_template/settings'
 import { StatPath } from '../page_template/statistic-tree'
+import { TestUtils } from '../utils/TestUtils'
+import { assert } from '../utils/defensive'
 
-import { ExceptionalPageDescriptor, loadPageDescriptor, PageData, PageDescriptor, pageDescriptorFromURL, pageDescriptorSchema, urlFromPageDescriptor } from './PageDescriptor'
+import { elementIdFromHash, ExceptionalPageDescriptor, loadPageDescriptor, PageData, PageDescriptor, pageDescriptorFromURL, pageDescriptorSchema, urlFromPageDescriptor } from './PageDescriptor'
 
 const historyStateSchema = z.object({
     pageDescriptor: pageDescriptorSchema,
@@ -40,6 +42,25 @@ function loadingStateFromPageState(pageState: PageState): SubsequentLoadingState
     return Date.now() - pageState.loadStartTime >= quickThresholdDuration ? { kind: 'longLoad', updateAt: undefined } : { kind: 'quickLoad', updateAt: pageState.loadStartTime + quickThresholdDuration }
 }
 
+const chunkReloadKey = 'lastChunkReload'
+
+// A deploy replaces the hashed chunk files, so an index.js cached from an earlier one asks for chunks
+// that are gone. Chrome's reload only revalidates the document, so evict that index.js ourselves first.
+async function reloadIfBundleIsStale(error: unknown): Promise<boolean> {
+    if (!(error instanceof Error) || error.name !== 'ChunkLoadError') {
+        return false
+    }
+    const lastReload = Number(sessionStorage.getItem(chunkReloadKey) ?? 0)
+    if (Date.now() - lastReload < 60_000) {
+        return false
+    }
+    sessionStorage.setItem(chunkReloadKey, String(Date.now()))
+    await fetch('/scripts/index.js', { cache: 'reload' }).catch(() => undefined)
+    // eslint-disable-next-line no-restricted-syntax -- The loaded bundle is the thing that's broken, so navigating within it won't help
+    location.reload()
+    return true
+}
+
 export interface NavigationOptions {
     history: 'push' | 'replace' | null // What should we do with this browser history? `null` means nothing, usually you want 'push' or 'replace'
     scroll: { kind: 'none' } // Does not perform any scrolling when navigating, just re-render the page in place (will scroll to anchor if hash is present)
@@ -47,9 +68,14 @@ export interface NavigationOptions {
     | { kind: 'element', element: HTMLElement } // Scroll keeping a specific element in the same place
 }
 
+export interface NavLink { href: string, onClick: (e?: React.MouseEvent | React.KeyboardEvent) => Promise<void> }
+
 export class Navigator {
     /* eslint-disable react-hooks/rules-of-hooks, no-restricted-syntax -- This is a logic class with custom hooks and core navigation functions */
     static Context = createContext(new Navigator())
+
+    // Set by the error boundary, since navigating won't rerender anything once it's displayed
+    static crashed = false
 
     private pageState: PageState
     private pageStateObservers = new Set<() => void>()
@@ -61,10 +87,11 @@ export class Navigator {
     constructor() {
         try {
             const url = new URL(discordFix(window.location.href))
+            const descriptor = pageDescriptorFromURL(url)
             this.pageState = {
                 kind: 'loading',
-                loading: { descriptor: pageDescriptorFromURL(url) },
-                current: { descriptor: { kind: 'initialLoad', url }, data: { kind: 'initialLoad' } },
+                loading: { descriptor },
+                current: { descriptor: { kind: 'initialLoad', url, descriptor }, data: { kind: 'initialLoad', descriptor } },
                 loadStartTime: Date.now(),
             }
             void this.navigate(this.pageState.loading.descriptor, { history: 'replace', scroll: { kind: 'none' } })
@@ -84,6 +111,10 @@ export class Navigator {
             void this.navigate(pageDescriptorFromURL(new URL(discordFix(window.location.href))), { history: 'replace', scroll: { kind: 'none' } })
         })
         window.addEventListener('popstate', (popStateEvent: PopStateEvent): void => {
+            if (Navigator.crashed) {
+                location.reload()
+                return
+            }
             if (popStateEvent.state === null) {
                 // When we use window.location.replace for hashes
                 return
@@ -182,6 +213,8 @@ export class Navigator {
         this.pageState = { kind: 'loading', loading: { descriptor: newDescriptor }, current: this.pageState.current, loadStartTime: Date.now() }
         this.pageStateObservers.forEach((observer) => { observer() })
         try {
+            TestUtils.shared.startLoading('navigate')
+
             const { pageData, newPageDescriptor, effects } = await loadPageDescriptor(newDescriptor, Settings.shared)
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Async function, pageState can change during await
             if (this.pageState.kind !== 'loading' || this.pageState.loading.descriptor !== newDescriptor) {
@@ -223,6 +256,9 @@ export class Navigator {
         }
         catch (error) {
             console.error('Error loading page', error)
+            if (await reloadIfBundleIsStale(error)) {
+                return
+            }
             if (this.pageState.kind !== 'loading' || this.pageState.loading.descriptor !== newDescriptor) {
                 // Another load has started, don't race it
                 return
@@ -235,6 +271,9 @@ export class Navigator {
                 },
             }
             this.pageStateObservers.forEach((observer) => { observer() })
+        }
+        finally {
+            void TestUtils.shared.finishLoading('navigate')
         }
     }
 
@@ -268,7 +307,7 @@ export class Navigator {
         }
 
         const seekToHash = (): void => {
-            const element = document.getElementById(url.hash.substring(1))
+            const element = document.getElementById(elementIdFromHash(url.hash))
             if (element !== null) {
                 const position = element.getBoundingClientRect().top + window.scrollY
                 if (Math.round(position) !== Math.round(window.scrollY)) {
@@ -289,13 +328,13 @@ export class Navigator {
     link(pageDescriptor: PageDescriptor, options: {
         scroll: NavigationOptions['scroll']
         postNavigationCallback?: () => void
-    }): { href: string, onClick: (e?: React.MouseEvent) => Promise<void> } {
+    }): NavLink {
         const url = urlFromPageDescriptor(pageDescriptor)
         return {
             href: url.pathname + url.search + url.hash,
-            onClick: async (e?: React.MouseEvent) => {
+            onClick: async (e?: React.MouseEvent | React.KeyboardEvent) => {
                 if (e?.altKey || e?.ctrlKey || e?.metaKey || e?.shiftKey) {
-                    // Some sort of shortcut to open in new tab, etc.
+                    // Some sort of shortcut to open in new tab, etc. Every NavLink is spread onto an anchor, so the browser handles these.
                     return
                 }
                 e?.preventDefault()
@@ -308,66 +347,17 @@ export class Navigator {
         }
     }
 
+    private subscribeToPageState: Parameters<typeof useSyncExternalStore>[0] = (observer) => {
+        this.pageStateObservers.add(observer)
+        return () => { this.pageStateObservers.delete(observer) }
+    }
+
     usePageState(): PageState {
-        const [result, setResult] = useState(this.pageState)
-
-        useEffect(() => {
-            const observer = (): void => {
-                setResult(this.pageState)
-            }
-            this.pageStateObservers.add(observer)
-            return () => { this.pageStateObservers.delete(observer) }
-        }, [])
-
-        return result
+        return useSyncExternalStore(this.subscribeToPageState, () => this.pageState)
     }
 
     get currentDescriptor(): ExceptionalPageDescriptor {
         return this.pageState.current.descriptor
-    }
-
-    get universe(): string | undefined {
-        const data = this.pageState.current.data
-        switch (data.kind) {
-            case 'article':
-            case 'comparison':
-            case 'statistic':
-                return data.universe
-            default:
-                return undefined
-        }
-    }
-
-    useUniverse(): string | undefined {
-        const [universe, setUniverse] = useState(this.universe)
-
-        useEffect(() => {
-            const observer = (): void => {
-                setUniverse(this.universe)
-            }
-            this.pageStateObservers.add(observer)
-            return () => { this.pageStateObservers.delete(observer) }
-        }, [])
-
-        return universe
-    }
-
-    setUniverse(newUniverse: string): void {
-        switch (this.pageState.current.descriptor.kind) {
-            case 'article':
-            case 'comparison':
-            case 'statistic':
-                void this.navigate({
-                    ...this.pageState.current.descriptor,
-                    universe: newUniverse,
-                }, {
-                    history: 'push',
-                    scroll: { kind: 'none' },
-                })
-                break
-            default:
-                throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have a universe`)
-        }
     }
 
     private get statPaths(): StatPath[][] | undefined {
@@ -381,40 +371,22 @@ export class Navigator {
     }
 
     useStatPathsAll(): StatPath[][] | undefined {
-        const [statPaths, setStatPaths] = useState(this.statPaths)
+        return useSyncExternalStore(this.subscribeToPageState, () => this.statPaths)
+    }
 
-        useEffect(() => {
-            const observer = (): void => {
-                setStatPaths(this.statPaths)
+    unsafeUpdateCurrentDescriptor(newDescriptor: Partial<PageDescriptor> & { kind: PageDescriptor['kind'] }, options: { history: 'replaceState' | 'pushState' }): void {
+        assert(this.pageState.current.descriptor.kind === newDescriptor.kind, 'heterogenous unsafe update')
+        for (const key of Object.keys(newDescriptor)) {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Undefined is used to clear fields
+            if (newDescriptor[key] === undefined) {
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- Undefined is used to clear fields
+                delete (this.pageState.current.descriptor as never)[key]
             }
-            this.pageStateObservers.add(observer)
-            return () => { this.pageStateObservers.delete(observer) }
-        }, [])
-
-        return statPaths
-    }
-
-    setSettingsVector(newVector: string): void {
-        switch (this.pageState.current.descriptor.kind) {
-            case 'article':
-            case 'comparison':
-                this.pageState.current.descriptor.s = newVector
-                history.replaceState({ pageDescriptor: this.pageState.current.descriptor, scrollPosition: window.scrollY }, '', urlFromPageDescriptor(this.pageState.current.descriptor))
-                break
-            default:
-                throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have a settings vector`)
+            else {
+                this.pageState.current.descriptor[key] = newDescriptor[key]
+            }
         }
-    }
-
-    setMapperSettings(newSettings: string): void {
-        switch (this.pageState.current.descriptor.kind) {
-            case 'mapper':
-                this.pageState.current.descriptor.settings = newSettings
-                history.replaceState({ pageDescriptor: this.pageState.current.descriptor, scrollPosition: window.scrollY }, '', urlFromPageDescriptor(this.pageState.current.descriptor))
-                break
-            default:
-                throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have mapper settings`)
-        }
+        history[options.history]({ pageDescriptor: this.pageState.current.descriptor, scrollPosition: window.scrollY }, '', urlFromPageDescriptor(this.pageState.current.descriptor))
     }
 
     useSubsequentLoading(): SubsequentLoadingState['kind'] {
@@ -424,6 +396,12 @@ export class Navigator {
             const observer = (): void => {
                 setLoading(loadingStateFromPageState(this.pageState))
             }
+            /*
+             * Need to account for the race condition where the page state changes between the first render and the effect
+             * Normally we use useSyncExternalStore, but we can't use that here because we set state in a timeout
+             */
+            setLoading(loadingStateFromPageState(this.pageState))
+
             this.pageStateObservers.add(observer)
             return () => { this.pageStateObservers.delete(observer) }
         }, [])

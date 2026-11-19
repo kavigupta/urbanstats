@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual Income < $50k %",
+      "stat_path": "individual_income_under_50k",
+      "question": "higher % of people who have individual income under $50k",
+      "longname_a": "Asheville [Urban Area], NC, USA",
+      "longname_b": "Madison [Urban Area], WI, USA",
+      "stat_a": 0.7172893681266399,
+      "stat_b": 0.5724052606483663
+    },
+    "b": {
+      "stat_column": "Commute Transit %",
+      "stat_path": "transportation_means_transit",
+      "question": "higher % of people who commute by transit",
+      "longname_a": "Waukesha County, Wisconsin, USA",
+      "longname_b": "Anchorage Municipality, Alaska, USA",
+      "stat_a": 0.003849161283115824,
+      "stat_b": 0.01516744353022633
+    },
+    "a_ease": 0.6923076923076923,
+    "b_ease": 0.2648171500630517
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Health care and social assistance %",
+      "stat_path": "industry_health_care_and_social_assistance",
+      "question": "higher % of workers employed in the health care and social assistance industry!TOOLTIP hospitals, nursing care facilities, offices of physicians, dentists, day care centers, etc.",
+      "longname_a": "Ponce MSA, PR, USA",
+      "longname_b": "Kennewick-Richland MSA, WA, USA",
+      "stat_a": 0.14798905881456192,
+      "stat_b": 0.13005885995210684
+    },
+    "b": {
+      "stat_column": "Undergrad Humanities %",
+      "stat_path": "education_field_humanities",
+      "question": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
+      "longname_a": "Alachua County, Florida, USA",
+      "longname_b": "Webb County, Texas, USA",
+      "stat_a": 0.13641669181408753,
+      "stat_b": 0.07079331887649724
+    },
+    "a_ease": 0.37057877813504825,
+    "b_ease": 0.7757909215955984
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Racial Homogeneity Change (2000-2020) %",
+      "stat_path": "homogeneity_250_diff_2000",
+      "question": "!FULL Which diversified less between 2000 and 2020?!TOOLTIP We define racial diversity as the average probability a person selecting a random person in a 250m radius will select someone of a different race",
+      "longname_a": "Wichita Urban Center, USA",
+      "longname_b": "San Antonio Urban Center, USA",
+      "stat_a": -0.17247138170835236,
+      "stat_b": -0.05184901297182953
+    },
+    "b": {
+      "stat_column": "Mobility disability %",
+      "stat_path": "MOBILITY_cdc_2",
+      "question": "higher % of adults with a mobility disability",
+      "longname_a": "MA-01 (2023), USA",
+      "longname_b": "WA-01 (2023), USA",
+      "stat_a": 0.14059310994245314,
+      "stat_b": 0.08028860114810335
+    },
+    "a_ease": 0.21638655462184875,
+    "b_ease": 0.6237964236588721
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Racial Homogeneity Change (2000-2020) %",
+      "stat_path": "homogeneity_250_diff_2000",
+      "question": "!FULL Which diversified less between 2000 and 2020?!TOOLTIP We define racial diversity as the average probability a person selecting a random person in a 250m radius will select someone of a different race",
+      "longname_a": "Miami-Fort Lauderdale-West Palm Beach MSA, FL, USA",
+      "longname_b": "Manchester-Nashua MSA, NH, USA",
+      "stat_a": -0.07339805170779024,
+      "stat_b": -0.16339805323900203
+    },
+    "b": {
+      "stat_column": "Binge drinking among adults %",
+      "stat_path": "BINGE_cdc_2",
+      "question": "higher % of adults who binge drink",
+      "longname_a": "Pittsburgh [Urban Area], PA, USA",
+      "longname_b": "Eugene [Urban Area], OR, USA",
+      "stat_a": 0.18778616037806423,
+      "stat_b": 0.16864510077322928
+    },
+    "a_ease": 0.34456671251719395,
+    "b_ease": 0.7946745562130177
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Bachelor's degree [25-64] %",
+      "stat_path": "education_ugrad_canada",
+      "question": "higher % of people between 25 and 64 who have at least an undergrad degree",
+      "longname_a": "Vaughan City, York Regional municipality, Ontario, Canada",
+      "longname_b": "Laval Ville, Laval Territory, Quebec, Canada",
+      "stat_a": 0.45766416975137714,
+      "stat_b": 0.3139133513298229
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Hospital",
+      "stat_path": "mean_dist_Hospital_updated",
+      "question": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
+      "longname_a": "Jersey City city, New Jersey, USA",
+      "longname_b": "Reno city, Nevada, USA",
+      "stat_a": 1.865398550310423,
+      "stat_b": 3.9707535715956035
+    },
+    "a_ease": 0.4338235294117647,
+    "b_ease": 0.8362387744321184
+  }
+]

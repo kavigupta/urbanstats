@@ -1,14 +1,15 @@
+import stats from '../data/statistic_list'
 import { loadProtobuf } from '../load_json'
 import { CountsByArticleUniverseAndType, ICountsByArticleType, ICountsByColumnCompressed } from '../utils/protos'
+
+import { StatCol } from './load-article'
 
 export type CountsByUT = Record<string, Record<string, [number, number][]>>
 
 let countsByArticleType: Promise<CountsByUT> | null = null
 
 export async function getCountsByArticleType(): Promise<CountsByUT> {
-    if (countsByArticleType === null) {
-        countsByArticleType = getCountsByArticleTypeDirect()
-    }
+    countsByArticleType ??= getCountsByArticleTypeDirect()
     return countsByArticleType
 }
 
@@ -31,4 +32,50 @@ async function getCountsByArticleTypeDirect(): Promise<CountsByUT> {
         )
         return [universe, countsByType]
     }))
+}
+
+export function articleTypes(counts: CountsByUT, universe: string): string[] {
+    if (!(universe in counts)) {
+        return []
+    }
+    return Object.keys(counts[universe]).filter(k => k !== 'overall')
+}
+
+export function forTypeByIndex(counts: CountsByUT, universe: string, statIdx: number, typ: string): number {
+    if (!(universe in counts)) {
+        return 0
+    }
+    if (!(typ in counts[universe])) {
+        return 0
+    }
+    const countsByType = counts[universe][typ]
+
+    return lookupInCompressedSequence(countsByType, statIdx)
+}
+
+/**
+ * The number of articles of this type in this universe, i.e. the count for whichever
+ * statistic covers the most of them.
+ */
+export function totalForType(counts: CountsByUT, universe: string, typ: string): number {
+    if (!(universe in counts) || !(typ in counts[universe])) {
+        return 0
+    }
+    return Math.max(0, ...counts[universe][typ].map(([count]) => count /** Ignore the run lengths */))
+}
+
+export function forType(counts: CountsByUT, universe: string, statcol: StatCol, typ: string): number {
+    const idx = stats.indexOf(statcol) // Works because `require` is global
+    return forTypeByIndex(counts, universe, idx, typ)
+}
+
+function lookupInCompressedSequence(seq: [number, number][], idx: number): number {
+    // translation of sharding.py::lookup_in_compressed_sequence
+    for (const [value, length] of seq) {
+        if (idx < length) {
+            return value
+        }
+        idx -= length
+    }
+    throw new Error('Index out of bounds')
 }

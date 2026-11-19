@@ -11,7 +11,9 @@ latitudes = []
 longitudes = []
 for file in files:
     print(file)
+    # pylint: disable=no-member
     with netCDF4.Dataset(os.path.join(annual_selected, file), "r") as dset:
+        # pylint: enable=no-member
         sum_over_years += dset["PM25"][:].data
         latitudes.append(dset["lat"][:].data)
         longitudes.append(dset["lon"][:].data)

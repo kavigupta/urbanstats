@@ -1,12 +1,14 @@
 import { saveAs } from 'file-saver'
-import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
+import { LegacyStatName } from '../data/legacy_statistic_columns'
 import { StatPath, StatName } from '../page_template/statistic-tree'
+import { Property } from '../utils/Property'
 import { randomID } from '../utils/random'
 import { cancelled, uploadFile } from '../utils/upload'
 
 import { infiniteQuizIsDone, sampleRandomQuestion } from './infinite'
+import { historyConflicts, mergeHistories } from './merge'
 
 export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string } | { kind: 'infinite', name: string, seed: string, version: number }
 
@@ -14,11 +16,9 @@ export type QuizKind = QuizDescriptor['kind']
 export type QuizKindWithStats = 'juxtastat' | 'retrostat' | 'infinite'
 export type QuizKindWithTime = 'juxtastat' | 'retrostat'
 
-export const endpoint = 'https://persistent.urbanstats.org'
-
 /* eslint-disable no-restricted-syntax -- Data from server */
 // stat_path is optional for backwards compatibility
-export interface JuxtaQuestionJSON { stat_a: number, stat_b: number, question: string, longname_a: string, longname_b: string, stat_column: StatName | '%', stat_path?: StatPath };
+export interface JuxtaQuestionJSON { stat_a: number, stat_b: number, question: string, longname_a: string, longname_b: string, stat_column: StatName | LegacyStatName | '%', stat_path?: StatPath };
 export interface JuxtaQuestion extends JuxtaQuestionJSON { kind: 'juxtastat' }
 export interface RetroQuestionJSON { a_ease: number, b_ease: number, a: JuxtaQuestionJSON, b: JuxtaQuestionJSON };
 export interface RetroQuestion { kind: 'retrostat', a_ease: number, b_ease: number, a: JuxtaQuestion, b: JuxtaQuestion }
@@ -51,9 +51,14 @@ export function loadJuxta(quiz: JuxtaQuestionJSON): JuxtaQuestion {
     return { kind: 'juxtastat', ...quiz }
 }
 
+/** @public this is included dynamically */
 export function loadRetro(quiz: RetroQuestionJSON): RetroQuestion {
     return { kind: 'retrostat', a: loadJuxta(quiz.a), b: loadJuxta(quiz.b), a_ease: quiz.a_ease, b_ease: quiz.b_ease }
 }
+
+/**
+ * When modifying any of the below schemas, ensure that you update exim tests with a new example version of your data.
+ */
 
 export const quizHistorySchema = z.record(
     z.string(),
@@ -67,12 +72,16 @@ export const quizHistorySchema = z.record(
 
 export type QuizHistory = z.infer<typeof quizHistorySchema>
 
-// list of [name, id] pairs
-export const quizFriends = z.array(z.tuple([z.string(), z.string()]))
+// list of [name, id, timestamp] pairs
+// null name is a tombstone
+export const quizFriends = z.array(z.union([
+    z.tuple([z.string(), z.string()]), // v1
+    z.tuple([z.nullable(z.string()), z.string(), z.number()]), // v2
+]))
 
 export type QuizFriends = z.infer<typeof quizFriends>
 
-export const quizPersonaSchema = z.object({
+const quizPersonaSchema = z.object({
     persistent_id: z.string(),
     secure_id: z.string(),
     quiz_history: quizHistorySchema,
@@ -82,47 +91,39 @@ export const quizPersonaSchema = z.object({
 
 export type QuizPersona = z.infer<typeof quizPersonaSchema>
 
-export class StoredProperty<T> {
-    private _value: T
-    private observers = new Set<() => void>()
-
-    constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T, private readonly store: (value: T) => string) {
-        this._value = load(localStorage.getItem(localStorageKey))
-    }
-
-    get value(): T {
-        return this._value
-    }
-
-    set value(newValue: T) {
-        this._value = newValue
-        localStorage.setItem(this.localStorageKey, this.store(newValue))
-        this.observers.forEach((observer) => { observer() })
-    }
-
-    /* eslint-disable react-hooks/rules-of-hooks -- Custom hook method */
-    use(): T {
-        const [, setCounter] = useState(0)
-        useEffect(() => {
-            const observer = (): void => {
-                setCounter(counter => counter + 1)
+export class StoredProperty<T> extends Property<T> {
+    constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T, private readonly store: (value: T) => string | null) {
+        super(load(localStorage.getItem(localStorageKey)))
+        const listener = (event: StorageEvent): void => {
+            if (event.key === localStorageKey) {
+                this.value = load(localStorage.getItem(localStorageKey))
             }
-            this.observers.add(observer)
-            return () => {
-                this.observers.delete(observer)
-            }
-        }, [])
-        return this.value
+        }
+        addEventListener('storage', listener)
     }
-    /* eslint-enable react-hooks/rules-of-hooks */
+
+    override get value(): T {
+        return super.value
+    }
+
+    override set value(newValue: T) {
+        const storeValue = this.store(newValue)
+        if (storeValue === null) {
+            localStorage.removeItem(this.localStorageKey)
+        }
+        else {
+            localStorage.setItem(this.localStorageKey, storeValue)
+        }
+        super.value = newValue
+    }
 }
 
-export class QuizLocalStorage {
+export class QuizModel {
     private constructor() {
         // Private constructor
     }
 
-    static shared = new QuizLocalStorage()
+    static shared = new QuizModel()
 
     readonly history = new StoredProperty<QuizHistory>(
         'quiz_history',
@@ -154,6 +155,10 @@ export class QuizLocalStorage {
 
     readonly uniqueSecureId = new StoredProperty<string>('secure_id', () => createAndStoreId('secure_id'), value => value)
 
+    readonly authenticationError = new Property<boolean>(false)
+
+    readonly dismissAuthNag = new StoredProperty<number | null>('dismiss_auth_nag', v => z.nullable(z.coerce.number()).parse(v), v => v?.toString() ?? null)
+
     exportQuizPersona(): void {
         const exported: QuizPersona = {
             date_exported: new Date(),
@@ -179,24 +184,15 @@ export class QuizLocalStorage {
             const currentHistory = this.history.value
             let newHistory: QuizHistory
 
-            const conflicts = Object.keys(persona.quiz_history)
-                .filter(key =>
-                    key in currentHistory
-                    && JSON.stringify(persona.quiz_history[key]) !== JSON.stringify(currentHistory[key]))
+            const conflicts = historyConflicts(currentHistory, persona.quiz_history)
 
             if (conflicts.length > 0) {
                 if (confirm(`The following quiz results exist both locally and in the uploaded file, and are different:
 
 ${conflicts.map(key => `• ${key.startsWith('W') ? 'Retrostat' : 'Juxtastat'} ${key}`).join('\n')}
 
-Are you sure you want to merge them? (The lowest score will be used)`)) {
-                    newHistory = {
-                        ...currentHistory, ...persona.quiz_history, ...Object.fromEntries(conflicts.map((key) => {
-                            const currentCorrect = currentHistory[key].correct_pattern.filter(value => value).length
-                            const importCorrect = persona.quiz_history[key].correct_pattern.filter(value => value).length
-                            return [key, importCorrect >= currentCorrect ? currentHistory[key] : persona.quiz_history[key]]
-                        })),
-                    }
+Are you sure you want to merge them? (Whichever result is further along will be used, and otherwise the lowest score)`)) {
+                    newHistory = mergeHistories(currentHistory, persona.quiz_history)
                 }
                 else {
                     return
@@ -217,38 +213,10 @@ Are you sure you want to merge them? (The lowest score will be used)`)) {
         }
     }
 
-    async addFriend(friendID: string, friendName: string): Promise<undefined | { errorMessage: string, problemDomain: 'friendID' | 'friendName' | 'other' }> {
-        const user = this.uniquePersistentId.value
-        const secureID = this.uniqueSecureId.value
-        if (friendID === '') {
-            return { errorMessage: 'Friend ID cannot be empty', problemDomain: 'friendID' }
-        }
-        if (friendID === user) {
-            return { errorMessage: 'Friend ID cannot be your own ID', problemDomain: 'friendID' }
-        }
-        if (this.friends.value.map(x => x[1]).includes(friendID)) {
-            const friendNameDup = this.friends.value.find(x => x[1] === friendID)![0]
-            return { errorMessage: `Friend ID ${friendID} already exists as ${friendNameDup}`, problemDomain: 'friendID' }
-        }
-        if (friendName === '') {
-            return { errorMessage: 'Friend name cannot be empty', problemDomain: 'friendName' }
-        }
-        if (this.friends.value.map(x => x[0]).includes(friendName)) {
-            return { errorMessage: 'Friend name already exists', problemDomain: 'friendName' }
-        }
-        try {
-            await fetch(`${endpoint}/juxtastat/friend_request`, {
-                method: 'POST',
-                body: JSON.stringify({ user, secureID, requestee: friendID }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
-            this.friends.value = [...this.friends.value, [friendName, friendID]]
-            return undefined
-        }
-        catch {
-            return { errorMessage: 'Network Error', problemDomain: 'other' }
+    userHeaders(): { 'x-user': string, 'x-secure-id': string } {
+        return {
+            'x-user': this.uniquePersistentId.value,
+            'x-secure-id': this.uniqueSecureId.value,
         }
     }
 }
@@ -262,24 +230,6 @@ function createAndStoreId(key: string): string {
         localStorage.setItem(key, randomID())
     }
     return localStorage.getItem(key)!
-}
-
-export async function addFriendFromLink(friendID: string, friendName: string): Promise<void> {
-    const result = await QuizLocalStorage.shared.addFriend(friendID, friendName)
-    if (result === undefined) {
-        alert(`Friend added: ${friendName} !`)
-    }
-    else {
-        if (result.problemDomain === 'friendName') {
-            const newFriendName = prompt(`Could not add friend: ${result.errorMessage}\n\nPlease correct the friend name:`, friendName)
-            if (newFriendName !== null) {
-                await addFriendFromLink(friendID, newFriendName.trim())
-            }
-        }
-        else {
-            alert(`Could not add friend: ${result.errorMessage}`)
-        }
-    }
 }
 
 // represents a quiz, which is a collection of questions. Designed so quizzes can be infinite
@@ -307,6 +257,7 @@ export function wrapQuestionsModel(questions: QuizQuestion[]): QuizQuestionsMode
     }
 }
 
+/** @public this is included dynamically */
 export function infiniteQuiz(seed: string, version: number): QuizQuestionsModel {
     return {
         questionByIndex: (index: number) => sampleRandomQuestion(seed, version, index),
@@ -314,4 +265,8 @@ export function infiniteQuiz(seed: string, version: number): QuizQuestionsModel 
         isDone: (correctPattern: boolean[]) => infiniteQuizIsDone(correctPattern),
         uniqueKey: uniqueKey(),
     }
+}
+
+export function getCorrectPattern(history: QuizHistory, name: QuizDescriptor['name']): boolean[] {
+    return (history[name] ?? { choices: [], correct_pattern: [] }).correct_pattern.map(correct => correct ? true : false)
 }

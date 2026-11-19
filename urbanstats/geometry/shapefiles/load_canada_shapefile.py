@@ -34,28 +34,30 @@ pruid_to_province_abbr = {
     "60": "YT",
 }
 
+province_abbr_to_province = {
+    pruid_to_province_abbr[k]: v for k, v in pruid_to_province.items()
+}
+
 
 @permacache(
     "urbanstats/geometry/shapefiles/load_canada_shapefile/canada_shape",
-    key_function=dict(countries_shapefile=lambda x: x.hash_key),
+    key_function=dict(countries=stable_hash),
 )
-def compute_canada_shape(countries_shapefile):
-    sh = countries_shapefile.load_file()
-    sh = sh[sh.longname == "Canada"]
-    return sh.iloc[0].geometry
+def compute_canada_shape(countries):
+    sh = countries.load_rows()
+    [geo] = sh[sh.ISO_CC == "CA"].geometry
+    return geo
 
 
 @permacache(
     "urbanstats/geometry/shapefiles/load_canada_shapefile/compute_qconmt",
-    key_function=dict(subnationals_shapefile=lambda x: x.hash_key),
+    key_function=dict(subnationals=stable_hash),
 )
-def compute_qconmt(subnationals_shapefile):
-    sh = subnationals_shapefile.load_file()
-    geos = [
-        sh[sh.longname == province].geometry.iloc[0]
-        for province in ["Quebec, Canada", "Ontario, Canada", "Manitoba, Canada"]
-    ]
-    return shapely.ops.unary_union(geos)
+def compute_qconmt(subnationals):
+    sh = subnationals.load_rows()
+    sh = sh[(sh.ISO_CC == "CA") & sh.ISO_SUB.isin(["QC", "ON", "MB"])]
+    assert sh.shape[0] == 3
+    return shapely.ops.unary_union(list(sh.geometry))
 
 
 @permacache(
@@ -80,11 +82,9 @@ def load_canadian_shapefile_with_canada_shape(
     return data
 
 
-def load_canadian_shapefile(
-    shapefile_path, countries_shapefile, subnationals_shapefile
-):
-    canada_shape = compute_canada_shape(countries_shapefile)
-    qtconmt_shape = compute_qconmt(subnationals_shapefile)
+def load_canadian_shapefile(shapefile_path, countries, subnationals):
+    canada_shape = compute_canada_shape(countries)
+    qtconmt_shape = compute_qconmt(subnationals)
     return load_canadian_shapefile_with_canada_shape(
         shapefile_path, canada_shape, qtconmt_shape
     )

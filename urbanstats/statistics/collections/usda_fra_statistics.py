@@ -19,6 +19,17 @@ class USDAFRAStatistics(USAStatistics):
             "lapop20share_usda_fra_1": "Within 20mi of a grocery store %",
         }
 
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
+    def varname_for_each_statistic(self):
+        return {
+            "lapophalfshare_usda_fra_1": "grocery_store_within_half_mile",
+            "lapop1share_usda_fra_1": "grocery_store_within_one_mile",
+            "lapop10share_usda_fra_1": "grocery_store_within_ten_miles",
+            "lapop20share_usda_fra_1": "grocery_store_within_twenty_miles",
+        }
+
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("usda_fra")
 
@@ -48,11 +59,11 @@ class USDAFRAStatistics(USAStatistics):
     ):
         statistics_table = {}
 
-        t = aggregated_usda_fra(shapefile)
+        t = aggregated_usda_fra(shapefile.geometry)
         for column in t.columns:
             statistics_table[column] = t[column]
 
-        for cdc in self.name_for_each_statistic():
+        for cdc in self.internal_statistic_names_list():
             statistics_table[cdc] /= existing_statistics["population_2010"]
             # not having access to grocery stores -> having access to grocery stores
             statistics_table[cdc] = 1 - statistics_table[cdc]

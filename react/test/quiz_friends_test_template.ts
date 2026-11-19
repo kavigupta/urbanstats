@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { addFriend, createUser, JuxtastatUserState, removeFriend, restoreUser, startingState } from './quiz_friends_test_utils'
+import { addFriend, createUser, JuxtastatUserState, makeAliceBobFriends, removeFriend, restoreUser, startingState } from './quiz_friends_test_utils'
 import { quizFixture, clickButtons, quizScreencap, friendsText } from './quiz_test_utils'
 import { safeReload, target } from './test_utils'
 
@@ -22,6 +22,9 @@ export function quizFriendsTest(
         today: string
         yesterday: string
         other: string
+        // labels of the friends panel toggle for today's quiz and the preceding one
+        todayLabel: string
+        yesterdayLabel: string
         platform: 'desktop' | 'mobile'
     },
 ): void {
@@ -32,42 +35,25 @@ export function quizFriendsTest(
         today,
         yesterday,
         other,
+        todayLabel,
+        yesterdayLabel,
     } = props
 
     const bobPattern = toBobPattern(alicePattern)
+    const bobPatternPrev = toBobPattern(alicePatternPrev)
     const charliePattern = toCharliePattern(alicePattern)
     const charliePatternPrev = toCharliePattern(alicePatternPrev)
 
     quizFixture(
         `${props.name} friends test`,
         `${target}/${today}`,
-        { },
+        {},
         '',
         props.platform,
     )
 
-    async function aliceBobFriends(t: TestController, screenshots: boolean): Promise<JuxtastatUserState> {
-        const state = startingState()
-        // Alice does the quiz
-        await createUser(t, 'Alice', '000000a', state)
-        await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
-        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`])
-        await createUser(t, 'Bob', '000000b', state)
-        await clickButtons(t, ['b', 'b', 'b', 'b', 'b'])
-        await t.expect(friendsText()).eql([`You${bobPattern}Copy Link`])
-        await addFriend(t, 'Alice', '000000a')
-        if (screenshots) {
-            await quizScreencap(t) // screencap of pending friend request
-        }
-        await t.expect(friendsText()).eql([`You${bobPattern}Copy Link`, 'AliceAsk\u00a0Alice\u00a0to add youRemove'])
-        await restoreUser(t, 'Alice', state)
-        await addFriend(t, 'Bob', '000000b')
-        // Alice and Bob are now friends
-        if (screenshots) {
-            await quizScreencap(t) // screencap of friends' score
-        }
-        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
-        return state
+    async function aliceBobFriends(t: TestController, screenshots: boolean, startState?: JuxtastatUserState): Promise<JuxtastatUserState> {
+        return makeAliceBobFriends(t, screenshots, alicePattern, bobPattern, startState)
     }
 
     test(`${props.name}-basic-friends-test`, async (t) => {
@@ -109,7 +95,6 @@ export function quizFriendsTest(
         await t.pressKey('enter')
         await t.expect(friendsText()).eql([`You${bobPattern}Copy Link`, 'Alice2Ask\u00a0Alice2\u00a0to add youRemove'])
         await safeReload(t)
-        await t.wait(1000)
         await t.expect(friendsText()).eql([`You${bobPattern}Copy Link`, 'Alice2Ask\u00a0Alice2\u00a0to add youRemove'])
     })
 
@@ -120,8 +105,8 @@ export function quizFriendsTest(
         await addFriend(t, 'Bob2', '000000b')
         // Bob2 not added
         await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
-        // check that the text 'Friend ID 000000b already exists as Bob' is displayed
-        await t.expect(Selector('div').withExactText('Friend ID 000000b already exists as Bob').exists).ok()
+        // check that the text 'Friend ID or Email 000000b already exists as Bob' is displayed
+        await t.expect(Selector('div').withExactText('Friend ID or Email 000000b already exists as Bob').exists).ok()
         // should error because we are attempting to add a duplicate name
         await addFriend(t, 'Bob', 'abc')
         // Bob not added
@@ -138,8 +123,8 @@ export function quizFriendsTest(
         await addFriend(t, 'Bob2', '')
         // empty ID not added
         await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
-        // check that the text 'Friend ID cannot be empty' is displayed
-        await t.expect(Selector('div').withExactText('Friend ID cannot be empty').exists).ok()
+        // check that the text 'Friend ID or Email cannot be empty' is displayed
+        await t.expect(Selector('div').withExactText('Friend ID or Email cannot be empty').exists).ok()
         // add an additional friend
         await addFriend(t, 'Charlie', '000000c')
         // Charlie added
@@ -160,23 +145,53 @@ export function quizFriendsTest(
         const state = await aliceBobFriends(t, false)
         await restoreUser(t, 'Alice', state)
         await addFriend(t, 'Bob2', 'this id does not work')
-        // Bob2 added but shows up as an invalid user
-        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`, 'Bob2Invalid User IDRemove'])
-        // after a reload, same invalid user
+        await t.expect(Selector('div').withExactText('Invalid Friend ID or Email').exists).ok()
+        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
+        // after a reload, user is not there
         await safeReload(t)
-        await t.wait(1000)
-        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`, 'Bob2Invalid User IDRemove'])
+        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
         await addFriend(t, 'Bob3', '000000b   ')
         // duplicate error
-        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`, 'Bob2Invalid User IDRemove'])
-        await t.expect(Selector('div').withExactText('Friend ID 000000b already exists as Bob').exists).ok()
+        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
+        await t.expect(Selector('div').withExactText('Friend ID or Email 000000b already exists as Bob').exists).ok()
         // remove Bob
         await removeFriend(t, 0)
-        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, 'Bob2Invalid User IDRemove'])
+        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`])
         // add Bob3
         await addFriend(t, 'Bob3', '000000b    ')
         // Bob3 added
-        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, 'Bob2Invalid User IDRemove', `Bob3${bobPattern}Remove`])
+        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob3${bobPattern}Remove`])
+    })
+
+    test(`${props.name}-friends-previous-quiz`, async (t) => {
+        const state = startingState()
+        // Alice and Bob each play the previous quiz before today's, so the server has both results
+        for (const [user, id, choice] of [['Alice', '000000a', 'a'], ['Bob', '000000b', 'b']] as const) {
+            await createUser(t, user, id, state)
+            await t.navigateTo(`${target}/${yesterday}`)
+            await clickButtons(t, [choice, choice, choice, choice, choice])
+            await t.navigateTo(`${target}/${today}`)
+            await clickButtons(t, [choice, choice, choice, choice, choice])
+        }
+        // Bob is the current user
+        await addFriend(t, 'Alice', '000000a')
+        await restoreUser(t, 'Alice', state)
+        await addFriend(t, 'Bob', '000000b')
+        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
+        // the previous quiz's scores, rather than today's
+        await t.click(Selector('button').withExactText(yesterdayLabel))
+        await t.expect(friendsText()).eql([`You${alicePatternPrev}Copy Link`, `Bob${bobPatternPrev}Remove`])
+        await quizScreencap(t) // scores on the previous quiz
+        await t.click(Selector('button').withExactText(todayLabel))
+        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
+    })
+
+    test(`${props.name}-friends-previous-quiz-not-done`, async (t) => {
+        // Neither Alice nor Bob has played the previous quiz
+        const state = await aliceBobFriends(t, false)
+        await restoreUser(t, 'Alice', state)
+        await t.click(Selector('button').withExactText(yesterdayLabel))
+        await t.expect(friendsText()).eql(['YouNot Done YetCopy Link', 'BobNot Done YetRemove'])
     })
 
     test(`${props.name}-same-on-juxta-and-retro`, async (t) => {

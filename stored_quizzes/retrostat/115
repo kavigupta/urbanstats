@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Public Insurance %",
+      "stat_path": "insurance_coverage_govt",
+      "question": "higher % of people who are on public insurance!TOOLTIP The denominator for this statistic is the the total number of adults, including those without health insurance coverage.",
+      "longname_a": "Hartford Urban Center, USA",
+      "longname_b": "Atlanta Urban Center, USA",
+      "stat_a": 0.31466615323609254,
+      "stat_b": 0.08633177608508591
+    },
+    "b": {
+      "stat_column": "Commute Work From Home %",
+      "stat_path": "transportation_means_worked_at_home",
+      "question": "higher % of people who work from home",
+      "longname_a": "Palm Bay Urban Center, USA",
+      "longname_b": "Wichita Urban Center, USA",
+      "stat_a": 0.09859158889299874,
+      "stat_b": 0.042048148891675054
+    },
+    "a_ease": 0.24522673031026254,
+    "b_ease": 0.652744630071599
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "No internet access %",
+      "stat_path": "internet_no_access",
+      "question": "higher % of people who have no internet access",
+      "longname_a": "San Juan [Urban Area], PR, USA",
+      "longname_b": "Killeen [Urban Area], TX, USA",
+      "stat_a": 0.2716518029466475,
+      "stat_b": 0.06863688714169698
+    },
+    "b": {
+      "stat_column": "Median Commute Time (min)",
+      "stat_path": "transportation_commute_time_median",
+      "question": "higher median commute time",
+      "longname_a": "Santa Maria-Santa Barbara MSA, CA, USA",
+      "longname_b": "Indianapolis-Carmel-Anderson MSA, IN, USA",
+      "stat_a": 17.50587464817452,
+      "stat_b": 23.497166056031546
+    },
+    "a_ease": 0.7805157593123209,
+    "b_ease": 0.36885245901639346
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Walk %",
+      "stat_path": "transportation_means_walk",
+      "question": "higher % of people who commute by walking",
+      "longname_a": "Columbus-Tupelo-West Point MS Media Market, USA",
+      "longname_b": "Rapid City SD Media Market, USA",
+      "stat_a": 0.007881429816913718,
+      "stat_b": 0.03559873135580346
+    },
+    "b": {
+      "stat_column": "Personal care and service occupations %",
+      "stat_path": "occupation_personal_care_and_service_occupations",
+      "question": "higher % of workers employed in personal care and service occupations!TOOLTIP hairdressers, childcare workers, fitness trainers, funeral service workers, travel guides, animal trainers, etc.",
+      "longname_a": "Kansas City [Urban Area], MO-KS, USA",
+      "longname_b": "Bradenton-Sarasota-Venice [Urban Area], FL, USA",
+      "stat_a": 0.025294399982344378,
+      "stat_b": 0.03049964638250754
+    },
+    "a_ease": 0.3345747982619491,
+    "b_ease": 0.7833643699565487
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mobility disability %",
+      "stat_path": "MOBILITY_cdc_2",
+      "question": "higher % of adults with a mobility disability",
+      "longname_a": "IL-05 (2023), USA",
+      "longname_b": "MO-07 (2023), USA",
+      "stat_a": 0.0979411366758124,
+      "stat_b": 0.16277300915195247
+    },
+    "b": {
+      "stat_column": "Undergrad Business %",
+      "stat_path": "education_field_business",
+      "question": "!FULL Which has more people with a business degree, as a percentage of the overall population?",
+      "longname_a": "CT-01 (2023), USA",
+      "longname_b": "TX-03 (2023), USA",
+      "stat_a": 0.06969853622658952,
+      "stat_b": 0.12259767876704673
+    },
+    "a_ease": 0.6693409742120344,
+    "b_ease": 0.21577380952380953
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Non-citizen %",
+      "stat_path": "citizenship_not_citizen",
+      "question": "higher % of residents who are non-citizens",
+      "longname_a": "Yakima MSA, WA, USA",
+      "longname_b": "Lancaster MSA, PA, USA",
+      "stat_a": 0.12597246336483045,
+      "stat_b": 0.0218863537276558
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km)",
+      "stat_path": "ad_4",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "India",
+      "longname_b": "Malawi",
+      "stat_a": 4726.96737090026,
+      "stat_b": 790.8252804757118
+    },
+    "a_ease": 0.4876790830945559,
+    "b_ease": 0.8991172761664565
+  }
+]

@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Muslim % [StatCan]",
+      "stat_path": "religion_muslim_canada",
+      "question": "higher % of people who are Muslim",
+      "longname_a": "Ontario, Canada",
+      "longname_b": "British Columbia, Canada",
+      "stat_a": 0.06397256674280398,
+      "stat_b": 0.022440844943127716
+    },
+    "b": {
+      "stat_column": "Current asthma %",
+      "stat_path": "CASTHMA_cdc_2",
+      "question": "higher % of adults with asthma",
+      "longname_a": "Rhode Island, USA",
+      "longname_b": "Nevada, USA",
+      "stat_a": 0.12011320417946965,
+      "stat_b": 0.09974257322297576
+    },
+    "a_ease": 0.7258536585365853,
+    "b_ease": 0.3092485549132948
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Mean PM2.5 Pollution",
+      "stat_path": "pm_25_2018_2022",
+      "question": "higher population-weighted PM2.5 pollution !TOOLTIP Population weighted pollution statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Recife Urban Center, Brazil",
+      "longname_b": "\u00dcr\u00fcmqi Urban Center, China",
+      "stat_a": 8.087838172912598,
+      "stat_b": 46.82865905761719
+    },
+    "b": {
+      "stat_column": "Utility gas heating %",
+      "stat_path": "heating_utility_gas",
+      "question": "!FULL Which has a larger % of homes heated using utility gas?",
+      "longname_a": "Sacramento--Roseville--Arden-Arcade MSA, CA, USA",
+      "longname_b": "Greensboro-High Point MSA, NC, USA",
+      "stat_a": 0.5797840131539098,
+      "stat_b": 0.3406729643734446
+    },
+    "a_ease": 0.7869090909090909,
+    "b_ease": 0.3790720631786772
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population",
+      "stat_path": "population",
+      "question": "higher population",
+      "longname_a": "Venezuela",
+      "longname_b": "Laos",
+      "stat_a": 28473575.11963222,
+      "stat_b": 7299412.593372694
+    },
+    "b": {
+      "stat_column": "PW Mean % of parkland within 1km",
+      "stat_path": "park_percent_1km_v2",
+      "question": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
+      "longname_a": "Lancaster County, Nebraska, USA",
+      "longname_b": "Middlesex County, New Jersey, USA",
+      "stat_a": 0.045462329216141975,
+      "stat_b": 0.01894450805672252
+    },
+    "a_ease": 0.6264450867052023,
+    "b_ease": 0.19940769990128332
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Grad %",
+      "stat_path": "education_grad",
+      "question": "higher % of people who have a graduate degree",
+      "longname_a": "Tallahassee MSA, FL, USA",
+      "longname_b": "Greeley MSA, CO, USA",
+      "stat_a": 0.15986301532753827,
+      "stat_b": 0.09762902034492056
+    },
+    "b": {
+      "stat_column": "Life Expectancy (2019)",
+      "stat_path": "life_expectancy_2019",
+      "question": "higher life expectancy",
+      "longname_a": "Kentucky, USA",
+      "longname_b": "Montana, USA",
+      "stat_a": 75.68626206385957,
+      "stat_b": 79.12074228135296
+    },
+    "a_ease": 0.40948905109489053,
+    "b_ease": 0.8181069958847736
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "LIM-AT %",
+      "stat_path": "lim_at_canada",
+      "question": "higher % of people who are low income based on the Low-income measure, after tax (LIM-AT)",
+      "longname_a": "Ottawa City, Ottawa CDR, Ontario, Canada",
+      "longname_b": "Longueuil Ville, Longueuil Territory, Quebec, Canada",
+      "stat_a": 0.08921292177470824,
+      "stat_b": 0.11893062714345895
+    },
+    "b": {
+      "stat_column": "2024 Presidential Election",
+      "stat_path": "2024 Presidential Election-margin",
+      "question": "!FULL Which voted more for Harris in the 2024 presidential election?",
+      "longname_a": "Riverside city, California, USA",
+      "longname_b": "Toledo city, Ohio, USA",
+      "stat_a": 0.07216018880199902,
+      "stat_b": 0.3002490423232841
+    },
+    "a_ease": 0.5851351351351352,
+    "b_ease": 0.17448559670781894
+  }
+]

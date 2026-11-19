@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any, Tuple
 
 import numpy as np
 import tqdm.auto as tqdm
@@ -13,7 +14,7 @@ class FlatOrdinals:
     ordinals_flat: np.ndarray  # sum(u)
     percentiles_flat: np.ndarray  # sum(u)
 
-    def query(self, longname_idx):
+    def query(self, longname_idx: int) -> Tuple[np.ndarray, np.ndarray]:
         start = self.start_in_array_each[longname_idx]
         length = self.length_each[longname_idx]
 
@@ -25,7 +26,7 @@ class FlatOrdinals:
         return ordinals, percentiles
 
 
-def compute_flat_ordinals(full, ordering):
+def compute_flat_ordinals(full: Any, ordering: Any) -> FlatOrdinals:
     universes_each = (
         full[["longname", "type", "universes"]].set_index("longname").loc[full.longname]
     )
@@ -41,21 +42,24 @@ def compute_flat_ordinals(full, ordering):
             for u in us
         ]
     ).T
-    ordinals_flat = np.array(
-        [
-            np.array(ordering.by_column[k].ordinal[idx_in_sorted, ut_idxs])[0]
-            for k in tqdm.tqdm(internal_statistic_names())
-        ]
-    )
-    percentiles_flat = np.array(
-        [
-            np.array(ordering.by_column[k].percentile[idx_in_sorted, ut_idxs])[0]
-            for k in tqdm.tqdm(internal_statistic_names())
-        ]
-    )
+    ordinals_flat = _gather(ordering, "ordinal", idx_in_sorted, ut_idxs)
+    percentiles_flat = _gather(ordering, "percentile", idx_in_sorted, ut_idxs)
     return FlatOrdinals(
         start_in_array_each=start_in_arry_each,
         length_each=num_universes_each,
         ordinals_flat=ordinals_flat,
         percentiles_flat=percentiles_flat,
     )
+
+
+def _gather(ordering: Any, field: str, idx_in_sorted: Any, ut_idxs: Any) -> np.ndarray:
+    names = internal_statistic_names()
+    result = np.empty(
+        (len(names), len(idx_in_sorted)),
+        dtype=getattr(ordering.by_column[names[0]], field).dtype,
+    )
+    for i, k in enumerate(tqdm.tqdm(names, desc=f"Computing flat {field}s")):
+        result[i] = np.array(
+            getattr(ordering.by_column[k], field)[idx_in_sorted, ut_idxs]
+        )[0]
+    return result
