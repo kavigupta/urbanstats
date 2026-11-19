@@ -20,6 +20,7 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { ScreenshotAwareLayer } from './ScreenshotAwareLayer'
 import { keptByNoBasemap, tileAttributionParts, urbanStatsLayerPrefix } from './map-common-utils'
+import { mapBackgroundColor, mapStyle } from './map-style'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotCallback, useScreenshotMode } from './screenshot'
 
 const debugLog = makeDebugLogger('mapExport')
@@ -43,7 +44,7 @@ function CommonMaplibreMapImpl(props: CommonMapProps, ref: React.Ref<MapRef>): R
     return (
         <Map
             ref={ref}
-            mapStyle="https://tiles.openfreemap.org/styles/bright"
+            mapStyle={mapStyle}
             maxPitch={0}
             dragRotate={false}
             pitchWithRotate={false}
@@ -403,9 +404,6 @@ function useClickable({ id, clickable, features }: { id: string, clickable: bool
     }, [id, map, clickable, navigator, features, universe])
 }
 
-// eslint-disable-next-line no-restricted-syntax -- This is the default maplibre background color
-const defaultBackgroundColor = '#f8f4f0'
-
 const basemapSubnationalsId = 'boundary_subn_overlayed'
 
 export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
@@ -422,7 +420,7 @@ export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
                 const layer = map.getLayer(layerId)!
                 map.getMap().setLayoutProperty(layerId, 'visibility', isVisible(basemap, layer) ? 'visible' : 'none')
             }
-            map.getMap().setPaintProperty('background', 'background-color', basemap.type === 'none' ? basemap.backgroundColor : defaultBackgroundColor)
+            map.getMap().setPaintProperty('background', 'background-color', basemap.type === 'none' ? basemap.backgroundColor : mapBackgroundColor)
             map.getMap().setPaintProperty('background', 'background-color-transition', { duration: 0, delay: 0 })
         }
     }, [map, basemap, mapLoaded])
