@@ -2,13 +2,13 @@ import json
 import os
 import subprocess
 import tempfile
-import urllib.parse
 
-import requests
 from fontTools.ttLib import TTFont
 from fontTools.varLib import instancer
 
-# name: (variable font, weight, Noto fallback)
+# name: (variable font, weight, Noto fallback). icons/fonts/noto-glyphs has OpenFreeMap's glyphs for each
+# fallback, from https://tiles.openfreemap.org/fonts/{fallback}/{range}.pbf, for the ranges Jost covers; the
+# map requests the rest from OpenFreeMap
 JOST_FONTS = {
     "Jost Regular": ("Jost-VariableFont_wght.ttf", 400, "Noto Sans Regular"),
     "Jost Medium": ("Jost-VariableFont_wght.ttf", 500, "Noto Sans Regular"),
@@ -28,12 +28,12 @@ LABEL_FONTS = {
 }
 
 
-def build_glyphs(fonts_folder: str) -> dict[str, list[int]]:
+def build_glyphs(fonts_folder: str) -> dict[str, dict[str, object]]:
     """
     MapLibre glyphs for each Jost font in `fonts_folder`, for the ranges it covers, with Noto filling in characters
-    it lacks. Returns the starts of the ranges written for each font.
+    it lacks. Returns, for each font, the starts of the ranges written and its fallback.
     """
-    ranges = {}
+    fonts = {}
     jobs = []
     with tempfile.TemporaryDirectory() as temp:
         for name, (file, weight, noto) in JOST_FONTS.items():
@@ -42,23 +42,18 @@ def build_glyphs(fonts_folder: str) -> dict[str, list[int]]:
             )
             font_path = os.path.join(temp, f"{name}.ttf")
             font.save(font_path)
-            ranges[name] = sorted({code - code % 256 for code in font.getBestCmap()})
+            starts = sorted({code - code % 256 for code in font.getBestCmap()})
+            fonts[name] = {"ranges": starts, "fallback": noto}
             os.makedirs(os.path.join(fonts_folder, name), exist_ok=True)
-            for start in ranges[name]:
+            for start in starts:
                 file_name = f"{start}-{start + 255}.pbf"
-                response = requests.get(
-                    f"https://tiles.openfreemap.org/fonts/{urllib.parse.quote(noto)}/{file_name}",
-                    timeout=60,
-                )
-                response.raise_for_status()
-                fallback = os.path.join(temp, f"{noto}-{file_name}")
-                with open(fallback, "wb") as f:
-                    f.write(response.content)
                 jobs.append(
                     {
                         "font": font_path,
                         "start": start,
-                        "fallback": fallback,
+                        "fallback": os.path.abspath(
+                            f"icons/fonts/noto-glyphs/{noto}/{file_name}"
+                        ),
                         "out": os.path.abspath(
                             os.path.join(fonts_folder, name, file_name)
                         ),
@@ -71,7 +66,7 @@ def build_glyphs(fonts_folder: str) -> dict[str, list[int]]:
             cwd="react",
             check=True,
         )
-    return ranges
+    return fonts
 
 
 def build_map_style(site_folder: str) -> None:
@@ -86,7 +81,7 @@ def build_map_style(site_folder: str) -> None:
             ]
     # relative, so map-style.ts can resolve it against wherever the site is served
     style["glyphs"] = "/map/fonts/{fontstack}/{range}.pbf"
-    style.setdefault("metadata", {})["urbanstats:jost_ranges"] = build_glyphs(
+    style.setdefault("metadata", {})["urbanstats:jost_fonts"] = build_glyphs(
         f"{site_folder}/map/fonts"
     )
     with open("react/src/data/map_style.json", "w") as f:
