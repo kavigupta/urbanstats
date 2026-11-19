@@ -59,7 +59,7 @@ export function ArchivePanel({ highlight }: { highlight: string | undefined }): 
                 {Array.from(months, ([month, rows]) => (
                     <div key={month} className="serif" style={{ width: 'min(100%, 22em)' }}>
                         <div className="quiz_summary" role="heading" aria-level={2}>{month}</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.2em', textAlign: 'center', color: colors.textMain }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.4em', textAlign: 'center', color: colors.textMain }}>
                             {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((name, index) => <div key={index} aria-hidden={true}>{name}</div>)}
                             {rows.flatMap((row, rowIndex) => {
                                 // Going by the Saturday shows straddling weeks once
@@ -140,7 +140,7 @@ function ArchiveCell({ historyKey, pattern, label, name, wide, highlighted, desc
                 lineHeight: wide ? wideCellHeight : calendarCellHeight,
                 fontSize: wide ? '0.8em' : undefined,
                 marginBottom: wide ? '0.4em' : undefined,
-                borderRadius: '0.25em',
+                borderRadius: '0.6em',
                 outline: highlighted ? `0.3em solid ${colors.textMain}` : undefined,
                 outlineOffset: '-0.3em',
                 textDecoration: 'none',
