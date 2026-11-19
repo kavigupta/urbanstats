@@ -20,7 +20,7 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { ScreenshotAwareLayer } from './ScreenshotAwareLayer'
 import { keptByNoBasemap, tileAttributionParts, urbanStatsLayerPrefix } from './map-common-utils'
-import { mapBackgroundColor, mapStyle } from './map-style'
+import { mapBackgroundColor, mapStyle, mapTransformRequest } from './map-style'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotCallback, useScreenshotMode } from './screenshot'
 
 const debugLog = makeDebugLogger('mapExport')
@@ -44,7 +44,8 @@ function CommonMaplibreMapImpl(props: CommonMapProps, ref: React.Ref<MapRef>): R
     return (
         <Map
             ref={ref}
-            mapStyle={mapStyle}
+            mapStyle={mapStyle()}
+            transformRequest={mapTransformRequest}
             maxPitch={0}
             dragRotate={false}
             pitchWithRotate={false}
