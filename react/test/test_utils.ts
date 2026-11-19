@@ -469,6 +469,7 @@ export function urbanstatsFixture(name: string, url: string, beforeEach?: (t: Te
             await beforeEach?.(t)
         }).skipJsErrors({ pageUrl: /google\.com/ }).afterEach(async (t) => {
             await throwIfTestFailFromConsole(t)
+            await expectNoA11yViolations(t)
             await afterEach?.(t)
         }).requestHooks(requestHooks)
 }
@@ -701,4 +702,25 @@ export async function wheel(t: TestController, selector: string, deltaY: number,
         // Magic constant simulates a scroll wheel so our events are processed properly
         element.dispatchEvent(new WheelEvent('wheel', { deltaY: deltaY * 4.000244140625, ...eventLocation }))
     }, { dependencies: { selector, deltaY, offset } })()
+}
+
+const axeSource = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf-8')
+
+const runAxe = ClientFunction(() => {
+    if (!('axe' in window)) {
+        (0, eval)(axeSource)
+    }
+    return (window as unknown as { axe: typeof import('axe-core') }).axe.run().then(results => results.violations.map(violation => ({
+        id: violation.id,
+        help: violation.help,
+        targets: violation.nodes.map(node => node.target.join(' ')),
+    })))
+}, { dependencies: { axeSource } })
+
+async function expectNoA11yViolations(t: TestController): Promise<void> {
+    if (!(await getLocation()).startsWith(target)) {
+        return
+    }
+    const violations = await runAxe()
+    await t.expect(violations.length).eql(0, JSON.stringify(violations, undefined, 2))
 }
