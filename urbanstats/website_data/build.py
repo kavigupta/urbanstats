@@ -359,6 +359,14 @@ def build_urbanstats(
     shutil.copy("icons/main/duplicate.png", f"{site_folder}/")
     shutil.copy("icons/main/arrow-right.png", f"{site_folder}/")
 
+    for map_asset in ["sprites", "fonts"]:
+        shutil.copytree(
+            f"map_style/{map_asset}",
+            f"{site_folder}/map/{map_asset}",
+            dirs_exist_ok=True,
+        )
+    shutil.copy("map_style/transit.pmtiles", f"{site_folder}/map/")
+
     os.makedirs(f"{site_folder}/.github/workflows", exist_ok=True)
     head = subprocess.run(
         ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True

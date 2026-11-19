@@ -8,7 +8,9 @@ from PIL import Image
 
 from urbanstats.website_data.colors import hue_colors
 
-with open("bright.json", "r") as f:
+HERE = os.path.dirname(os.path.abspath(__file__))
+
+with open(os.path.join(HERE, "bright.json"), "r") as f:
     result = json.load(f)
 
 
@@ -44,8 +46,8 @@ STREET_SCALE = 1
 MEDIUM_ROAD_SCALE = 1.25
 MAJOR_ROAD_SCALE = 1.6
 # motorways are an orange line in a red outline, each side of which is a street wide
-MOTORWAY_SCALE = MAJOR_ROAD_SCALE
-MOTORWAY_LINK_SCALE = MEDIUM_ROAD_SCALE
+MOTORWAY_SCALE = STREET_SCALE
+MOTORWAY_LINK_SCALE = 0.75
 RAIL_SCALE = 1
 RAIL_HATCHING_SCALE = 3
 BORDER = hue_colors["darkGrey"]
@@ -652,9 +654,9 @@ result["layers"].insert(
     },
 )
 
-os.makedirs("sprites", exist_ok=True)
+os.makedirs(os.path.join(HERE, "sprites"), exist_ok=True)
 write_sprite(
-    "sprites/urbanstats",
+    os.path.join(HERE, "sprites/urbanstats"),
     {
         name: lambda ratio, coverage=coverage: mottled(
             hex_rgb(GREEN_LIGHT), hex_rgb(GREEN_DARK), coverage, ratio
@@ -667,14 +669,16 @@ write_sprite(
         )
     }
     | {
-        name: lambda ratio, name=name: svg_icon(f"map_icons/{name}.svg", ratio)
+        name: lambda ratio, name=name: svg_icon(
+            os.path.join(HERE, f"map_icons/{name}.svg"), ratio
+        )
         for name in ("train", "bus", "ferry")
     },
 )
 result["sprite"] = [
     {"id": "default", "url": result["sprite"]},
-    # relative like the glyphs, see temp.html
-    {"id": "urbanstats", "url": "/sprites/urbanstats"},
+    # relative like the glyphs, see map-style.ts
+    {"id": "urbanstats", "url": "/map/sprites/urbanstats"},
 ]
 
 # tunnels are dashed, each dash TUNNEL_DASH base widths long whatever the line's width; dash arrays are in line
@@ -729,8 +733,49 @@ for layer in result["layers"]:
             2 if layer["id"].startswith("label_") else 1.5
         )
 
-# relative, so temp.html can resolve it against wherever it is served; see build_glyphs.js
-result["glyphs"] = "/fonts/{fontstack}/{range}.pbf"
+# metro, light rail and tram lines from ../international-metro-lines, each in its own color; lines sharing a
+# track have offsets one line width apart, so they sit side by side
+TRANSIT_SCALE = 2
+result["sources"]["transit"] = {
+    "type": "vector",
+    # relative like the glyphs, see map-style.ts
+    "url": "pmtiles:///map/transit.pmtiles",
+    "attribution": '<a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>',
+}
+transit_lines = {
+    "id": "transit-lines",
+    "type": "line",
+    "source": "transit",
+    "source-layer": "transit",
+    "minzoom": 9,
+    "layout": {"line-cap": "round", "line-join": "round"},
+    "paint": {
+        "line-color": ["to-color", ["get", "color"], RAIL],
+        "line-width": scaled(TRANSIT_SCALE),
+        "line-offset": width(
+            [
+                x
+                for zoom, w in width_stops(TRANSIT_SCALE)
+                for x in (zoom, ["*", ["get", "offset"], w])
+            ]
+        ),
+    },
+}
+# a street wide on each side, so the lines stand clear of the railway hatching and the roads they run along
+transit_casing = json.loads(json.dumps(transit_lines))
+transit_casing["id"] = "transit-lines-casing"
+transit_casing["paint"].update(
+    {"line-color": PAPER, "line-width": scaled(TRANSIT_SCALE + 2)}
+)
+first_symbol = next(
+    i for i, layer in enumerate(result["layers"]) if layer["type"] == "symbol"
+)
+result["layers"][first_symbol:first_symbol] = [transit_casing, transit_lines]
 
-with open("style.json", "w") as f:
+# relative, so map-style.ts can resolve it against wherever the site is served; see build_glyphs.js
+result["glyphs"] = "/map/fonts/{fontstack}/{range}.pbf"
+with open(os.path.join(HERE, "fonts/ranges.json")) as f:
+    result.setdefault("metadata", {})["urbanstats:jost_ranges"] = json.load(f)
+
+with open(os.path.join(HERE, "../react/src/data/map_style.json"), "w") as f:
     json.dump(result, f, indent=2)

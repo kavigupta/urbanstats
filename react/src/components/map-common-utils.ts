@@ -2,7 +2,7 @@
 export const urbanStatsLayerPrefix = 'urban-stats'
 
 export function keptByNoBasemap(layer: { id: string, source: string }): boolean {
-    return layer.id === 'background' || layer.source !== 'openmaptiles'
+    return layer.id === 'background' || !['openmaptiles', 'transit'].includes(layer.source)
 }
 
 // openfreemap's credit line, as its TileJSON states it.

@@ -30,6 +30,7 @@
     <div id="map-container">
     </div>
     <script src="https://unpkg.com/maplibre-gl@5.2.0/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/pmtiles@4.3.0/dist/pmtiles.js"></script>
     <script>
         const london3d = {
             center: [-0.114, 51.506],
@@ -63,7 +64,8 @@
                     const noto = { Regular: 'Regular', Medium: 'Regular', 550: 'Bold', Bold: 'Bold', Italic: 'Italic' }[match[1]]
                     return { url: `https://tiles.openfreemap.org/fonts/Noto%20Sans%20${noto}/${match[2]}-${match[3]}.pbf` }
                 }
-                return { url: new URL(url, location.href).href }
+                // URL would read the http in pmtiles://http://... as a host, and drop its colon
+                return { url: url.startsWith('pmtiles://') ? url : new URL(url, location.href).href }
             }
 
             // MapLibre requires sprite URLs to be absolute, and checks before transformRequest
@@ -74,6 +76,9 @@
                 ...sprite,
                 url: new URL(sprite.url, location.href).href + (sprite.id === 'urbanstats' ? version : ''),
             }))
+            maplibregl.addProtocol('pmtiles', new pmtiles.Protocol().tile)
+            const transit = style.sources.transit
+            transit.url = `pmtiles://${new URL(transit.url.slice('pmtiles://'.length), location.href).href}`
 
             const map = new maplibregl.Map({
                 style,
