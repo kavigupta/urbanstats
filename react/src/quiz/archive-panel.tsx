@@ -77,7 +77,7 @@ export function ArchivePanel({ highlight }: { highlight: string | undefined }): 
                                                     name={fullDateFormat.format(dayStart(day))}
                                                     wide={false}
                                                     highlighted={highlightKey === day.toString()}
-                                                    descriptor={{ kind: 'quiz', mode: undefined, date: day === today ? undefined : day }}
+                                                    descriptor={{ kind: 'quiz', mode: undefined, date: day }}
                                                 />
                                             )),
                                     ...(saturday !== undefined && week >= 0 && week <= currentWeek
@@ -90,7 +90,7 @@ export function ArchivePanel({ highlight }: { highlight: string | undefined }): 
                                                     name={`Retrostat ${fullDateFormat.formatRange(dayStart(saturday - 6), dayStart(saturday))}`}
                                                     wide={true}
                                                     highlighted={highlightKey === `W${week}`}
-                                                    descriptor={{ kind: 'quiz', mode: 'retro', date: week === currentWeek ? undefined : week }}
+                                                    descriptor={{ kind: 'quiz', mode: 'retro', date: week }}
                                                 />
                                             )]
                                         : []),
