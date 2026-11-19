@@ -27,7 +27,7 @@ function archiveTest(name: string, keys: [string, string, string], liveUrl: stri
         await clickButton(t, 'a')
         await t.expect(Selector('#quiz-timer').exists).notOk()
         await t.expect(await runQuery(t, `SELECT user, ${column} FROM ${table} WHERE archive = 1`)).eql(archiveRow)
-        await t.expect(Selector('a').withExactText(`Play ${name === 'juxtastat' ? 'Juxtastat' : 'Retrostat'}`).exists).ok()
+        await t.expect(Selector('a').withExactText(`Play Current ${name === 'juxtastat' ? 'Juxtastat' : 'Retrostat'}`).exists).ok()
 
         const hashFor = (key: string): string => `#${key.startsWith('W') ? 'mode=retro&' : ''}date=${key.replaceAll('W', '')}`
         await t.click(Selector('a').withExactText('Next Quiz'))

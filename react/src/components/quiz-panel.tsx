@@ -17,6 +17,7 @@ import { QuizQuestionDispatch } from '../quiz/quiz-question'
 import { QuizResult } from '../quiz/quiz-result'
 import { parseTimeIdentifier } from '../quiz/statistics'
 import { TestUtils } from '../utils/TestUtils'
+import { assert } from '../utils/defensive'
 import { useHeaderTextClass } from '../utils/responsive'
 
 import { buttonStyle } from './GenericShareButton'
@@ -261,15 +262,16 @@ export function OtherQuizzesButtons(): ReactNode {
     const navContext = useContext(Navigator.Context)
 
     const { current } = navContext.usePageState()
+    assert(current.descriptor.kind === 'quiz', 'OtherQuizzesButtons is only on quiz pages')
+    const currentQuizMode = current.descriptor.mode
     // Finishing a past quiz shouldn't hide today's
     const isArchivePlay = current.data.kind === 'quiz' && 'archive' in current.data.quizDescriptor && current.data.quizDescriptor.archive
-    const currentQuizMode = current.descriptor.kind === 'quiz' && !isArchivePlay ? current.descriptor.mode : 'notAQuiz'
 
     const otherQuizPages: QuizPageDescriptor[] = useMemo(() => ([
         { kind: 'quiz', mode: undefined },
         { kind: 'quiz', mode: 'retro' },
         { kind: 'quiz', mode: 'infinite' },
-    ] as const).filter(({ mode }) => mode !== currentQuizMode), [currentQuizMode])
+    ] as const).filter(({ mode }) => isArchivePlay || mode !== currentQuizMode), [currentQuizMode, isArchivePlay])
 
     const [todoQuizzes, setTodoQuizzes] = useState<TodoQuiz[]>([])
 
@@ -320,7 +322,7 @@ export function OtherQuizzesButtons(): ReactNode {
                         style={otherQuizButtonStyle}
                         {...navContext.link(quiz.newPageDescriptor, { scroll: { kind: 'position', top: 0 } })}
                     >
-                        Play
+                        {quiz.newPageDescriptor.mode === currentQuizMode ? 'Play Current' : 'Play'}
                         {' '}
                         { nameOfQuizKind(quiz.pageData.quizDescriptor.kind) }
                     </a>
