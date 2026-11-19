@@ -79,7 +79,7 @@ function nextToLiveTest(name: string, live: () => number, historyKey: (offset: n
         await safeReload(t)
 
         await t.click(Selector('a').withExactText('Next Quiz'))
-        await t.expect(ClientFunction(() => location.hash)()).eql(modeParam === '' ? '' : `#${modeParam}`)
+        await t.expect(ClientFunction(() => location.hash)()).eql(`#${modeParam === '' ? '' : `${modeParam}&`}date=${current}`)
         await t.expect(Selector('#quiz-timer').exists).ok()
         await t.expect(Selector('a').withExactText('Next Quiz').exists).notOk()
         await t.expect(Selector('a').withExactText('Previous Quiz').exists).ok()

@@ -239,7 +239,7 @@ export function AdjacentQuizButton({ quiz, offset, label }: { quiz: QuizDescript
                 width: '30%',
                 textDecoration: 'none',
             }}
-            {...navContext.link({ kind: 'quiz', mode: quiz.kind === 'retrostat' ? 'retro' : undefined, date: target === current ? undefined : target }, { scroll: { kind: 'position', top: 0 } })}
+            {...navContext.link({ kind: 'quiz', mode: quiz.kind === 'retrostat' ? 'retro' : undefined, date: target }, { scroll: { kind: 'position', top: 0 } })}
         >
             {label}
         </a>
