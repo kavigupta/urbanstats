@@ -61,6 +61,7 @@ from urbanstats.website_data.table import shapefile_without_ordinals
 
 from ..utils import output_typescript
 from .colors import hue_colors, related_button_colors
+from .map_style import build_map_style
 
 
 def check_proto_hash() -> None:
@@ -197,6 +198,7 @@ def build_react_site(site_folder: str, mode: str) -> None:
         )
 
     create_react_jsons()
+    build_map_style(site_folder)
 
     subprocess.run(
         f"cd react; npm run {'dev' if mode == 'dev' else 'prod'}",
