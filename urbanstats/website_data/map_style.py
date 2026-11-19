@@ -27,6 +27,9 @@ LABEL_FONTS = {
     "label_city": "Jost 550",
     "label_city_capital": "Jost 550",
     "label_town": "Jost Medium",
+    "label_borough": "Jost Medium",
+    # upright, unlike the neighborhoods and islands split off bright's italic catch-all with it
+    "label_minor_place": "Jost Regular",
 }
 
 

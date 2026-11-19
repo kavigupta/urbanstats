@@ -19,6 +19,13 @@ RED = hue_colors["red"]
 ORANGE = hue_colors["orange"]
 STREET = mix(hue_colors["grey"], PAPER, 0.45)
 MEDIUM_ROAD = hue_colors["darkGrey"]
+RAIL = hue_colors["grey"]
+BORDER = hue_colors["darkGrey"]
+BORDER_HIGHLIGHT = hue_colors["orange"]
+AIRPORT = mix(hue_colors["purple"], PAPER, 0.7)
+RUNWAY = mix(hue_colors["purple"], PAPER, 0.5)
+INDUSTRIAL = mix(hue_colors["pink"], PAPER, 0.8)
+
 # softens the hard pixel edges of thin lines, a bit like ink spreading into paper
 INK_BLUR = 0.4
 # the width of a street at each zoom, which every road and rail width is a multiple of; at least a pixel,
@@ -35,13 +42,6 @@ MOTORWAY_OUTLINE_ZOOM = 9
 MOTORWAY_LINK_OUTLINE_ZOOM = 13
 RAIL_SCALE = 1
 RAIL_HATCHING_SCALE = 3
-BORDER = hue_colors["darkGrey"]
-BORDER_HIGHLIGHT = hue_colors["orange"]
-RAIL = hue_colors["grey"]
-AIRPORT = mix(hue_colors["purple"], PAPER, 0.7)
-INDUSTRIAL = mix(hue_colors["pink"], PAPER, 0.8)
-RUNWAY = mix(hue_colors["purple"], PAPER, 0.5)
-PATH = mix(hue_colors["grey"], PAPER, 0.3)
 
 WATER_LABEL_PAINT = {"text-color": WATER_LABEL, "text-halo-width": 0}
 LARGE_WATER = ["ocean", "sea", "bay", "strait"]
@@ -178,7 +178,7 @@ def road_paint(ident, kind):
             "line-width": scaled(MAJOR_ROAD_SCALE),
             "line-blur": INK_BLUR,
         }
-    if kind in ("secondary-tertiary", "link", "minor", "service-track", "street"):
+    if kind in ("secondary-tertiary", "link", "minor", "service-track"):
         # single lines with no casing
         if casing:
             return {"line-opacity": 0}
@@ -193,8 +193,6 @@ def road_paint(ident, kind):
             "line-blur": INK_BLUR,
             "line-width": scaled(STREET_SCALE),
         }
-    if kind in ("path", "path-casing"):
-        return {"line-color": PATH}
     if kind.startswith("railway"):
         return rail_paint(ident)
     return None
@@ -253,8 +251,8 @@ def recolor(style):
         if layer["type"] == "symbol" and "text-halo-color" in layer.get("paint", {}):
             paints.setdefault(ident, {"text-halo-color": PAPER})
 
-    # footpaths, which include the sidewalks mapped along both sides of most streets, and the
-    # raised building tops, which shade blocks differently as you zoom
+    # footpaths, which include the sidewalks mapped along both sides of most streets, the raised building tops,
+    # which shade blocks differently as you zoom, and ferry routes
     style["layers"] = [
         layer
         for layer in style["layers"]
@@ -306,7 +304,6 @@ def split_place_labels(style):
             "label_borough",
             ["suburb", "borough"],
             {
-                "text-font": ["Jost Medium"],
                 "text-letter-spacing": 0.45,
                 # suburb is NYC's boroughs but also ordinary neighborhoods in e.g. Boston and London, so
                 # these stay below city labels
@@ -332,7 +329,7 @@ def split_place_labels(style):
             other,
             "label_minor_place",
             None,
-            {"text-font": ["Jost Regular"], "text-transform": "none"},
+            {"text-transform": "none"},
         ),
     ]
     split[0]["paint"]["text-color"] = "#000000"
@@ -440,6 +437,21 @@ def borders(style):
     style["layers"][1:1] = [border_highlight(layer) for layer in boundaries]
 
 
+def tunnels(style):
+    for layer in style["layers"]:
+        if layer["id"] in TUNNEL_SCALES:
+            layer["paint"]["line-dasharray"] = tunnel_dash(TUNNEL_SCALES[layer["id"]])
+        if layer["id"] in TUNNEL_CASINGS:
+            fill_scale, outline_zoom = TUNNEL_CASINGS[layer["id"]]
+            layer["paint"]["line-dasharray"] = [
+                "step",
+                ["zoom"],
+                ["literal", tunnel_dash(fill_scale)],
+                outline_zoom,
+                ["literal", tunnel_dash(fill_scale + 2)],
+            ]
+
+
 def labels(style):
     # street names in small capitals beside the street rather than on it; MapLibre flips line labels to stay
     # upright, which also flips the offset, so a name can land on either side
@@ -478,16 +490,5 @@ def restyle(style):
     recolor(style)
     split_place_labels(style)
     borders(style)
-    for layer in style["layers"]:
-        if layer["id"] in TUNNEL_SCALES:
-            layer["paint"]["line-dasharray"] = tunnel_dash(TUNNEL_SCALES[layer["id"]])
-        if layer["id"] in TUNNEL_CASINGS:
-            fill_scale, outline_zoom = TUNNEL_CASINGS[layer["id"]]
-            layer["paint"]["line-dasharray"] = [
-                "step",
-                ["zoom"],
-                ["literal", tunnel_dash(fill_scale)],
-                outline_zoom,
-                ["literal", tunnel_dash(fill_scale + 2)],
-            ]
+    tunnels(style)
     labels(style)
