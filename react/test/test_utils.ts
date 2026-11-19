@@ -710,11 +710,15 @@ const runAxe = ClientFunction(() => {
     if (!('axe' in window)) {
         (0, eval)(axeSource)
     }
-    return (window as unknown as { axe: typeof import('axe-core') }).axe.run().then(results => results.violations.map(violation => ({
-        id: violation.id,
-        help: violation.help,
-        targets: violation.nodes.map(node => node.target.join(' ')),
-    })))
+    // color-contrast reads the colours mid-fade otherwise. Spinners never finish, so skip infinite ones.
+    const finiteAnimations = document.getAnimations().filter(animation => animation.effect?.getComputedTiming().endTime !== Infinity)
+    return Promise.all(finiteAnimations.map(animation => animation.finished.catch(() => undefined)))
+        .then(() => (window as unknown as { axe: typeof import('axe-core') }).axe.run())
+        .then(results => results.violations.map(violation => ({
+            id: violation.id,
+            help: violation.help,
+            targets: violation.nodes.map(node => node.target.join(' ')),
+        })))
 }, { dependencies: { axeSource } })
 
 async function expectNoA11yViolations(t: TestController): Promise<void> {
