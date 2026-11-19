@@ -540,21 +540,7 @@ void test('more if expressions', (): void => {
     assert.throws(
         () => execute(parseProgram(codeWNested), emptyContext()),
         (err: Error): boolean => {
-            return err instanceof InterpretationError && err.message === 'Error merging values for variable x: Cannot condition on a mask of type [[boolean]] at 3:9 - 5:10'
-        },
-    )
-    // same as above but the mask's second dimensions don't line up
-    const codeWIncompatibleNested = `
-        x = [[1, 2, 3, 4, 5, 6]]
-        if ([[1, 1, 2, 2, 3]] == 1) {
-            y = x + 1
-        }
-        y
-        `
-    assert.throws(
-        () => execute(parseProgram(codeWIncompatibleNested), emptyContext()),
-        (err: Error): boolean => {
-            return err instanceof InterpretationError && err.message === 'Conditional error: Error indexing variable x: Mask length 5 does not match value length 6 at 3:13-34'
+            return err instanceof InterpretationError && err.message === 'Condition in if statement must be a boolean, but got [boolean] at 3:13-37'
         },
     )
     // does not define y
@@ -689,6 +675,35 @@ void test('more if expressions', (): void => {
     )
 })
 
+void test('evaluate split expressions', (): void => {
+    const codeWVectorValues = `
+        x = [1, 2, 3, 10, 20, 30]
+        universes = [["a"], ["a"], ["a"], ["a", "b"], ["a", "b"], ["a", "b"]]
+        split (universes) {
+            y = x - mean(x)
+        }
+        y
+        `
+    assert.deepStrictEqual(
+        execute(parseProgram(codeWVectorValues), emptyContext()),
+        undocValue([-1, 0, 1, -10, 0, 10], numVectorType),
+    )
+    assert.deepStrictEqual(
+        execute(parseProgram('x = [1, 2, 3]; split ([1, 2, 1]) { sum(x) }'), emptyContext()),
+        undocValue([4, 2, 4], numVectorType),
+    )
+    assert.deepStrictEqual(
+        execute(parseProgram('x = [1, 2, 3]; split ([1, 0 / 0, 1]) { y = sum(x) }; y'), emptyContext()),
+        undocValue([4, 2, 4], numVectorType),
+    )
+    assert.throws(
+        () => execute(parseProgram('x = [1, 2, 3]; split ([1, 2]) { x }'), emptyContext()),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message === 'Split error: Error indexing variable x: Mask length 2 does not match value length 3 at 1:23-28'
+        },
+    )
+})
+
 void test('evaluate if expressions mutations', (): void => {
     const ctx: Context = emptyContext()
     ctx.assignVariable('xs', undocValue([1, 2, 3, 4, 5, 6], numVectorType))
@@ -775,7 +790,7 @@ void test('evaluate objects', (): void => {
     assert.throws(
         () => evaluate(parseExpr('if ({a: 1, b: 2}) {}'), ctx),
         (err: Error): boolean => {
-            return err instanceof InterpretationError && err.message === 'Conditional mask must be a vector of numbers, strings, or booleans, but got {a: number, b: number} at 1:5-16'
+            return err instanceof InterpretationError && err.message === 'Conditional mask must be a vector of numbers, strings, booleans, or vectors of those, but got {a: number, b: number} at 1:5-16'
         },
     )
     // duplicate keys

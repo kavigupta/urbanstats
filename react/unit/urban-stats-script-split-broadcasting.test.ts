@@ -6,7 +6,7 @@ import { LocInfo } from '../src/urban-stats-script/location'
 import { indexMask, mergeValuesViaMasks, splitMask } from '../src/urban-stats-script/split-broadcasting'
 import { USSRawValue, USSType, USSValue, USSVectorType, undocValue } from '../src/urban-stats-script/types-values'
 
-import { numMatrixType, numType, numVectorType, testingContext } from './urban-stats-script-utils'
+import { numMatrixType, numType, numVectorType, stringType, testingContext } from './urban-stats-script-utils'
 
 void test('index mask', (): void => {
     // vector/vector
@@ -231,6 +231,7 @@ void test('split mask testing', (): void => {
             lengthFn,
             defaultLocInfo,
             defaultLocInfo,
+            'Conditional',
         ),
         undocValue([5, 5, 5, 4, 4, 5, 5, 4, 4], numVectorType),
     )
@@ -243,6 +244,7 @@ void test('split mask testing', (): void => {
             },
             defaultLocInfo,
             defaultLocInfo,
+            'Conditional',
         ),
         undocValue(9, numType),
     )
@@ -253,6 +255,7 @@ void test('split mask testing', (): void => {
             lengthFn,
             defaultLocInfo,
             defaultLocInfo,
+            'Conditional',
         ),
         undocValue(1, numType),
     )
@@ -263,6 +266,7 @@ void test('split mask testing', (): void => {
             lengthFn,
             defaultLocInfo,
             defaultLocInfo,
+            'Conditional',
         ),
         undocValue([3, 2, 1, 3, 1, 3, 1, 1, 2], numVectorType),
     )
@@ -273,7 +277,58 @@ void test('split mask testing', (): void => {
             lengthFn,
             defaultLocInfo,
             defaultLocInfo,
+            'Conditional',
         ),
         undocValue(9, numType),
     )
+    // each vector of primitives in the mask is one value
+    assert.deepStrictEqual(
+        splitMask(
+            basicContext(),
+            undocValue([[1, 2], [3], [1, 2], [], [3], [1, 2], [], [1], [1, 2]], numMatrixType),
+            (value: USSValue, ctx: Context): USSValue => {
+                return undocValue((value.value as number[]).length * 100 + (ctx.getVariable('a')!.value as USSRawValue[]).length, numType)
+            },
+            defaultLocInfo,
+            defaultLocInfo,
+            'Conditional',
+        ),
+        undocValue([204, 102, 204, 2, 102, 204, 2, 101, 204], numVectorType),
+    )
+    assert.deepStrictEqual(
+        splitMask(
+            basicContext(),
+            undocValue([NaN, 1, NaN, 1, NaN, 1, NaN, 1, NaN], numVectorType),
+            lengthFn,
+            defaultLocInfo,
+            defaultLocInfo,
+            'Conditional',
+        ),
+        undocValue([5, 4, 5, 4, 5, 4, 5, 4, 5], numVectorType),
+    )
+    assert.deepStrictEqual(
+        splitMask(
+            basicContext(),
+            undocValue([[NaN], [1], [NaN], [1], [NaN], [1], [NaN], [1], [NaN]], numMatrixType),
+            lengthFn,
+            defaultLocInfo,
+            defaultLocInfo,
+            'Conditional',
+        ),
+        undocValue([5, 4, 5, 4, 5, 4, 5, 4, 5], numVectorType),
+    )
+    // variables assigned in each group are merged back
+    const ctx = basicContext()
+    splitMask(
+        ctx,
+        undocValue([['a,b'], ['a', 'b'], ['a,b'], ['a', 'b'], ['a,b'], ['a', 'b'], ['a,b'], ['a', 'b'], ['a,b']], { type: 'vector', elementType: { type: 'vector', elementType: stringType } }),
+        (value: USSValue, subCtx: Context): USSValue => {
+            subCtx.assignVariable('c', lengthFn(value, subCtx))
+            return undocValue(null, { type: 'null' })
+        },
+        defaultLocInfo,
+        defaultLocInfo,
+        'Conditional',
+    )
+    assert.deepStrictEqual(ctx.getVariable('c'), undocValue([5, 4, 5, 4, 5, 4, 5, 4, 5], numVectorType))
 })

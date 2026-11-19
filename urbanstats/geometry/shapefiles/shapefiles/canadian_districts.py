@@ -18,9 +18,9 @@ CANADIAN_DISTRICTS = make_shapefile(
     path=lambda countries, subnationals: load_canadian_shapefile(
         "named_region_shapefiles/canada/lfed000a21a_e.zip", countries, subnationals
     ),
-    path_inputs=(COUNTRIES.names, SUBNATIONAL_REGIONS.names),
-    shortname_extractor=column("FEDENAME"),
-    longname_extractor=column("FEDENAME")
+    path_inputs=(COUNTRIES.geometry, SUBNATIONAL_REGIONS.geometry),
+    shortname_extractor=column("FEDENAME").replace("\x92", "'"),
+    longname_extractor=column("FEDENAME").replace("\x92", "'")
     + " (Riding), "
     + Lookup(column("PRUID"), pruid_to_province),
     additional_columns_computer={"scgc": column("FEDUID")},
