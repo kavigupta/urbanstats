@@ -10,7 +10,7 @@ def mix(color, other, fraction):
     return "#" + "".join(f"{round(x + (y - x) * fraction):02x}" for x, y in zip(a, b))
 
 
-# light mode background
+# the site's light mode background
 PAPER = "#fff8f0"
 WATER = mix(hue_colors["cyan"], PAPER, 0.45)
 WATER_LABEL = mix(hue_colors["cyan"], "#000000", 0.65)
