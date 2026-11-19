@@ -1,10 +1,13 @@
 import json
 import os
+import shutil
 import subprocess
 import tempfile
 
 from fontTools.ttLib import TTFont
 from fontTools.varLib import instancer
+
+from urbanstats.website_data.map_restyle import restyle
 
 # name: (variable font, weight, Noto fallback). icons/fonts/noto-glyphs has OpenFreeMap's glyphs for each
 # fallback, from https://tiles.openfreemap.org/fonts/{fallback}/{range}.pbf, for the ranges Jost covers; the
@@ -70,9 +73,12 @@ def build_glyphs(fonts_folder: str) -> dict[str, dict[str, object]]:
 
 
 def build_map_style(site_folder: str) -> None:
-    """Bright, labeled in Jost, at react/src/data/map_style.json, and its glyphs in the site."""
+    """
+    The map style at react/src/data/map_style.json, and the glyphs, sprites and transit lines it uses in the site.
+    """
     with open("icons/map_style/bright.json") as f:
         style = json.load(f)
+    restyle(style)
     for layer in style["layers"]:
         if "text-font" in layer.get("layout", {}):
             layer["layout"]["text-font"] = [
@@ -86,3 +92,8 @@ def build_map_style(site_folder: str) -> None:
     )
     with open("react/src/data/map_style.json", "w") as f:
         json.dump(style, f, indent=2)
+    shutil.copytree(
+        "icons/map_style/sprites", f"{site_folder}/map/sprites", dirs_exist_ok=True
+    )
+    # metro, light rail and tram lines, from international-metro-lines
+    shutil.copy("icons/map_style/transit.pmtiles", f"{site_folder}/map/")
