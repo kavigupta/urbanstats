@@ -28,6 +28,7 @@ function archiveTest(name: string, keys: [string, string, string], liveUrl: stri
         const yellow = colorThemes['Light Mode'].hueColors.yellow
         await t.expect(Selector('a').withAttribute('data-archive-quiz', keys[1]).getStyleProperty('background-color'))
             .eql(`rgb(${[1, 3, 5].map(index => parseInt(yellow.slice(index, index + 2), 16)).join(', ')})`)
+        await t.expect(Selector('a').withAttribute('data-archive-quiz', keys[1]).getAttribute('aria-label')).match(/, 4 of 5 answered$/)
         await t.click(Selector('a').withAttribute('data-archive-quiz', keys[1]))
         await clickButton(t, 'a')
         await t.expect(Selector('#quiz-timer').exists).notOk()
@@ -41,6 +42,7 @@ function archiveTest(name: string, keys: [string, string, string], liveUrl: stri
             return rect !== undefined && rect.top >= 0 && rect.bottom <= window.innerHeight
         })
         await t.expect(playedCellIsVisible(keys[1])).ok()
+        await t.expect(ClientFunction(() => document.activeElement?.getAttribute('data-archive-quiz'))()).eql(keys[1])
         // Just the played quiz's month, since the whole archive grows every day
         await screencap(t, { selector: Selector('a').withAttribute('data-archive-quiz', keys[1]).parent().parent() })
 

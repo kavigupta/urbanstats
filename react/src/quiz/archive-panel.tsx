@@ -1,3 +1,4 @@
+import Color from 'color'
 import React, { ReactNode, useContext, useEffect, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
@@ -16,6 +17,7 @@ const calendarCellHeight = '2.2em'
 const wideCellHeight = '1.8em'
 const weekRangeFormat = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' })
 const monthFormat = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' })
+const fullDateFormat = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 
 export function ArchivePanel({ highlight }: { highlight: string | undefined }): ReactNode {
     const history = QuizModel.shared.history.use()
@@ -56,9 +58,9 @@ export function ArchivePanel({ highlight }: { highlight: string | undefined }): 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5em', justifyContent: 'center' }}>
                 {Array.from(months, ([month, rows]) => (
                     <div key={month} className="serif" style={{ width: 'min(100%, 22em)' }}>
-                        <div className="quiz_summary">{month}</div>
+                        <div className="quiz_summary" role="heading" aria-level={2}>{month}</div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0.2em', textAlign: 'center', color: colors.textMain }}>
-                            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((name, index) => <div key={index}>{name}</div>)}
+                            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((name, index) => <div key={index} aria-hidden={true}>{name}</div>)}
                             {rows.flatMap((row, rowIndex) => {
                                 // Going by the Saturday shows straddling weeks once
                                 const saturday = row[6]
@@ -72,6 +74,7 @@ export function ArchivePanel({ highlight }: { highlight: string | undefined }): 
                                                     historyKey={day}
                                                     pattern={getCorrectPattern(history, day)}
                                                     label={dayStart(day).getDate().toString()}
+                                                    name={fullDateFormat.format(dayStart(day))}
                                                     wide={false}
                                                     highlighted={highlightKey === day.toString()}
                                                     descriptor={{ kind: 'quiz', mode: undefined, date: day === today ? undefined : day }}
@@ -84,6 +87,7 @@ export function ArchivePanel({ highlight }: { highlight: string | undefined }): 
                                                     historyKey={`W${week}`}
                                                     pattern={getCorrectPattern(history, `W${week}`)}
                                                     label={`Retrostat ${weekRangeFormat.formatRange(dayStart(saturday - 6), dayStart(saturday))}`}
+                                                    name={`Retrostat ${fullDateFormat.formatRange(dayStart(saturday - 6), dayStart(saturday))}`}
                                                     wide={true}
                                                     highlighted={highlightKey === `W${week}`}
                                                     descriptor={{ kind: 'quiz', mode: 'retro', date: week === currentWeek ? undefined : week }}
@@ -100,7 +104,7 @@ export function ArchivePanel({ highlight }: { highlight: string | undefined }): 
     )
 }
 
-function ArchiveCell({ historyKey, pattern, label, wide, highlighted, descriptor }: { historyKey: string | number, pattern: boolean[], label: string, wide: boolean, highlighted: boolean, descriptor: PageDescriptor }): ReactNode {
+function ArchiveCell({ historyKey, pattern, label, name, wide, highlighted, descriptor }: { historyKey: string | number, pattern: boolean[], label: string, name: string, wide: boolean, highlighted: boolean, descriptor: PageDescriptor }): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     const navContext = useContext(Navigator.Context)
@@ -110,6 +114,7 @@ function ArchiveCell({ historyKey, pattern, label, wide, highlighted, descriptor
         if (highlighted) {
             const scroll = (): void => { ref.current?.scrollIntoView({ block: 'center', behavior: 'instant' }) }
             scroll()
+            ref.current?.focus({ preventScroll: true })
             // Loading fonts reflows the months above
             void document.fonts.ready.then(scroll)
         }
@@ -117,10 +122,17 @@ function ArchiveCell({ historyKey, pattern, label, wide, highlighted, descriptor
 
     const score = pattern.filter(correct => correct).length
     const done = pattern.length >= quizLength
+    const backgroundColor = pattern.length === 0 ? colors.hueColors.blue : !done ? colors.hueColors.yellow : score >= 3 ? juxtaColors.correct : juxtaColors.incorrect
+    // White matches the site's other buttons, so only switch where it's hard to read. Blue is ~4:1
+    // eslint-disable-next-line no-restricted-syntax -- No theme color is black in both themes
+    const textColor = Color(backgroundColor).contrast(Color(colors.buttonTextWhite)) >= 4 ? colors.buttonTextWhite : '#000000'
+    const status = pattern.length === 0 ? 'not played' : !done ? `${pattern.length} of ${quizLength} answered` : `scored ${score} of ${quizLength}`
     return (
         <a
             ref={ref}
             data-archive-quiz={historyKey}
+            aria-label={`${name}, ${status}`}
+            aria-current={highlighted ? 'true' : undefined}
             title={done ? `${score}/${quizLength}` : undefined}
             style={{
                 gridColumn: wide ? '1 / -1' : undefined,
@@ -132,8 +144,8 @@ function ArchiveCell({ historyKey, pattern, label, wide, highlighted, descriptor
                 outline: highlighted ? `0.3em solid ${colors.textMain}` : undefined,
                 outlineOffset: '-0.3em',
                 textDecoration: 'none',
-                color: colors.buttonTextWhite,
-                backgroundColor: pattern.length === 0 ? colors.hueColors.blue : !done ? colors.hueColors.yellow : score >= 3 ? juxtaColors.correct : juxtaColors.incorrect,
+                color: textColor,
+                backgroundColor,
             }}
             {...navContext.link(descriptor, { scroll: { kind: 'position', top: 0 } })}
         >
