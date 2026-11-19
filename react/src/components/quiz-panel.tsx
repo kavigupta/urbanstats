@@ -296,7 +296,7 @@ export function OtherQuizzesButtons(): ReactNode {
                         style={otherQuizButtonStyle}
                         {...navContext.link(quiz.newPageDescriptor, { scroll: { kind: 'position', top: 0 } })}
                     >
-                        Play
+                        {quiz.newPageDescriptor.mode === currentQuizMode ? 'Play Current' : 'Play'}
                         {' '}
                         { nameOfQuizKind(quiz.pageData.quizDescriptor.kind) }
                     </a>
