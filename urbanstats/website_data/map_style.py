@@ -73,6 +73,9 @@ def build_map_style(site_folder: str) -> None:
     """Bright, labeled in Jost, at react/src/data/map_style.json, and its glyphs in the site."""
     with open("icons/map_style/bright.json") as f:
         style = json.load(f)
+    background = next(layer for layer in style["layers"] if layer["id"] == "background")
+    # the site's light mode background
+    background["paint"]["background-color"] = "#fff8f0"
     for layer in style["layers"]:
         if "text-font" in layer.get("layout", {}):
             layer["layout"]["text-font"] = [
