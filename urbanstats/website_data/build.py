@@ -215,7 +215,7 @@ def build_map_style(site_folder: str) -> None:
         ["node", "build-glyphs.js", fonts, sys.executable], cwd="react", check=True
     )
     subprocess.run(
-        [sys.executable, "map_style/style.py", f"{fonts}/ranges.json"], check=True
+        [sys.executable, "icons/map_style/style.py", f"{fonts}/ranges.json"], check=True
     )
 
 

@@ -30,5 +30,5 @@ result["glyphs"] = "/map/fonts/{fontstack}/{range}.pbf"
 with open(sys.argv[1]) as f:
     result.setdefault("metadata", {})["urbanstats:jost_ranges"] = json.load(f)
 
-with open(os.path.join(HERE, "../react/src/data/map_style.json"), "w") as f:
+with open(os.path.join(HERE, "../../react/src/data/map_style.json"), "w") as f:
     json.dump(result, f, indent=2)
