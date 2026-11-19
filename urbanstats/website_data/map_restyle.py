@@ -42,6 +42,8 @@ MOTORWAY_OUTLINE_ZOOM = 9
 MOTORWAY_LINK_OUTLINE_ZOOM = 13
 RAIL_SCALE = 1
 RAIL_HATCHING_SCALE = 3
+# the zoom from which rail has its hatching
+RAIL_HATCHING_ZOOM = 15
 
 WATER_LABEL_PAINT = {"text-color": WATER_LABEL, "text-halo-width": 0}
 LARGE_WATER = ["ocean", "sea", "bay", "strait"]
@@ -142,17 +144,13 @@ def rail_paint(ident):
         return {
             "line-color": RAIL,
             "line-blur": INK_BLUR,
-            "line-width": scaled(RAIL_HATCHING_SCALE, 15),
+            "line-width": scaled(RAIL_HATCHING_SCALE, RAIL_HATCHING_ZOOM),
         }
     return {"line-color": RAIL, "line-blur": INK_BLUR, "line-width": scaled(RAIL_SCALE)}
 
 
 def layer_by_id(style, ident):
     return next(layer for layer in style["layers"] if layer["id"] == ident)
-
-
-def index_of(style, ident):
-    return next(i for i, layer in enumerate(style["layers"]) if layer["id"] == ident)
 
 
 # pylint: disable-next=too-many-return-statements
@@ -295,7 +293,10 @@ def place_label(base, ident, classes, layout, minzoom=None):
 
 
 def split_place_labels(style):
-    """bright gives every place below a village the same small uppercase italic, from boroughs to hamlets."""
+    """
+    Splits bright's catch-all place label, which gives every place below a village the same small uppercase italic,
+    from boroughs to hamlets.
+    """
     other = layer_by_id(style, "label_other")
     split_classes = ["suburb", "borough", "quarter", "neighbourhood", "island"]
     split = [
@@ -453,7 +454,7 @@ def tunnels(style):
 
 
 def labels(style):
-    # street names in small capitals beside the street rather than on it; MapLibre flips line labels to stay
+    # street names in small uppercase beside the street rather than on it; MapLibre flips line labels to stay
     # upright, which also flips the offset, so a name can land on either side
     for layer in style["layers"]:
         if layer["id"].startswith("highway-name"):
@@ -475,7 +476,8 @@ def labels(style):
                     "text-offset": [0, -0.9],
                 }
             )
-            layer["paint"].update({"text-halo-color": PAPER, "text-halo-width": 1})
+            # bright gives these a halo width but no color
+            layer["paint"]["text-halo-color"] = PAPER
 
     # wider halos, so labels stand clear of the roads beneath them; water labels have none
     for layer in style["layers"]:

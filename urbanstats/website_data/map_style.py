@@ -19,8 +19,9 @@ JOST_FONTS = {
     "Jost Italic": ("Jost-Italic-VariableFont_wght.ttf", 400, "Noto Sans Italic"),
 }
 
-# heavier type for more important places, as on print maps
+# where a layer's font isn't bright's in Jost
 LABEL_FONTS = {
+    # heavier type for more important places, as on print maps
     "label_country_1": "Jost Bold",
     "label_country_2": "Jost Bold",
     "label_country_3": "Jost Bold",
@@ -75,9 +76,7 @@ def build_glyphs(fonts_folder: str) -> dict[str, dict[str, object]]:
 
 
 def build_map_style(site_folder: str) -> None:
-    """
-    The map style at react/src/data/map_style.json, and the glyphs it uses in the site.
-    """
+    """The map style at react/src/data/map_style.json, and the glyphs it uses in the site."""
     with open("icons/map_style/bright.json") as f:
         style = json.load(f)
     restyle(style)
