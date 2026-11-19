@@ -16,7 +16,7 @@ export function Header({ quiz }: { quiz: { kind: QuizKind, name: string | number
         text += ` ${quiz.name}`
     }
     if ('archive' in quiz && quiz.archive && typeof quiz.name === 'number') {
-        text += ` (${dayStart(quiz.name).toLocaleDateString()})`
+        text += ` (${dayStart(quiz.name).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })})`
     }
     return (<div className={useHeaderTextClass()}>{text}</div>)
 }
