@@ -61,6 +61,7 @@ from urbanstats.website_data.table import shapefile_without_ordinals
 
 from ..utils import output_typescript
 from .colors import hue_colors, related_button_colors
+from .map_style import build_map_style
 
 
 def check_proto_hash() -> None:
@@ -197,6 +198,7 @@ def build_react_site(site_folder: str, mode: str) -> None:
         )
 
     create_react_jsons()
+    build_map_style(site_folder)
 
     subprocess.run(
         f"cd react; npm run {'dev' if mode == 'dev' else 'prod'}",
@@ -358,14 +360,6 @@ def build_urbanstats(
     shutil.copy("icons/main/mapper-banner-dark.png", f"{site_folder}/")
     shutil.copy("icons/main/duplicate.png", f"{site_folder}/")
     shutil.copy("icons/main/arrow-right.png", f"{site_folder}/")
-
-    for map_asset in ["sprites", "fonts"]:
-        shutil.copytree(
-            f"map_style/{map_asset}",
-            f"{site_folder}/map/{map_asset}",
-            dirs_exist_ok=True,
-        )
-    shutil.copy("map_style/transit.pmtiles", f"{site_folder}/map/")
 
     os.makedirs(f"{site_folder}/.github/workflows", exist_ok=True)
     head = subprocess.run(
