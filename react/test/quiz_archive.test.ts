@@ -1,5 +1,7 @@
 import { ClientFunction, Selector } from 'testcafe'
 
+import { colorThemes } from '../src/page_template/color-themes'
+
 import { runQuery } from './quiz_test_template'
 import { clickButton, quizFixture } from './quiz_test_utils'
 import { screencap, target } from './test_utils'
@@ -23,6 +25,9 @@ function archiveTest(name: string, keys: [string, string, string], liveUrl: stri
         await t.expect(todayCellIsVisible()).ok()
         const retrostatCells = await t.eval(() => Array.from(document.querySelectorAll('a[data-archive-quiz^="W"]'), cell => cell.getAttribute('data-archive-quiz'))) as string[]
         await t.expect(new Set(retrostatCells).size).eql(retrostatCells.length)
+        const yellow = colorThemes['Light Mode'].hueColors.yellow
+        await t.expect(Selector('a').withAttribute('data-archive-quiz', keys[1]).getStyleProperty('background-color'))
+            .eql(`rgb(${[1, 3, 5].map(index => parseInt(yellow.slice(index, index + 2), 16)).join(', ')})`)
         await t.click(Selector('a').withAttribute('data-archive-quiz', keys[1]))
         await clickButton(t, 'a')
         await t.expect(Selector('#quiz-timer').exists).notOk()

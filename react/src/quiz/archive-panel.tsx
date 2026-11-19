@@ -133,7 +133,7 @@ function ArchiveCell({ historyKey, pattern, label, wide, highlighted, descriptor
                 outlineOffset: '-0.3em',
                 textDecoration: 'none',
                 color: colors.buttonTextWhite,
-                backgroundColor: !done ? colors.hueColors.blue : score >= 3 ? juxtaColors.correct : juxtaColors.incorrect,
+                backgroundColor: pattern.length === 0 ? colors.hueColors.blue : !done ? colors.hueColors.yellow : score >= 3 ? juxtaColors.correct : juxtaColors.incorrect,
             }}
             {...navContext.link(descriptor, { scroll: { kind: 'position', top: 0 } })}
         >
