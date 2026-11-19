@@ -30,6 +30,9 @@ MAJOR_ROAD_SCALE = 1.6
 # motorways are an orange line in a red outline, each side of which is a street wide
 MOTORWAY_SCALE = STREET_SCALE
 MOTORWAY_LINK_SCALE = 0.75
+# the zooms from which motorways and their links have outlines
+MOTORWAY_OUTLINE_ZOOM = 9
+MOTORWAY_LINK_OUTLINE_ZOOM = 13
 RAIL_SCALE = 1
 RAIL_HATCHING_SCALE = 3
 BORDER = hue_colors["darkGrey"]
@@ -46,9 +49,7 @@ LARGE_WATER = ["ocean", "sea", "bay", "strait"]
 # widths, so each is divided by its line's scale, which also keeps a motorway's outline and fill dashes in step
 TUNNEL_DASH = [8, 4]
 TUNNEL_SCALES = {
-    "tunnel-motorway-casing": MOTORWAY_SCALE + 2,
     "tunnel-motorway": MOTORWAY_SCALE,
-    "tunnel-motorway-link-casing": MOTORWAY_LINK_SCALE + 2,
     "tunnel-motorway-link": MOTORWAY_LINK_SCALE,
     "tunnel-trunk-primary": MAJOR_ROAD_SCALE,
     "tunnel-secondary-tertiary": MEDIUM_ROAD_SCALE,
@@ -57,6 +58,15 @@ TUNNEL_SCALES = {
     "tunnel-service-track": STREET_SCALE,
     "tunnel-railway": RAIL_SCALE,
 }
+# below its outline zoom, a motorway's casing is only the outline, as wide as the fill
+TUNNEL_CASINGS = {
+    "tunnel-motorway-casing": (MOTORWAY_SCALE, MOTORWAY_OUTLINE_ZOOM),
+    "tunnel-motorway-link-casing": (MOTORWAY_LINK_SCALE, MOTORWAY_LINK_OUTLINE_ZOOM),
+}
+
+
+def tunnel_dash(scale):
+    return [x / scale for x in TUNNEL_DASH]
 
 
 def fade_in(color, stops):
@@ -151,9 +161,9 @@ def road_paint(ident, kind):
     casing = ident.endswith("-casing")
     if kind in ("motorway", "motorway-link"):
         outline, fill = (
-            outlined(MOTORWAY_SCALE, 9)
+            outlined(MOTORWAY_SCALE, MOTORWAY_OUTLINE_ZOOM)
             if kind == "motorway"
-            else outlined(MOTORWAY_LINK_SCALE, 13)
+            else outlined(MOTORWAY_LINK_SCALE, MOTORWAY_LINK_OUTLINE_ZOOM)
         )
         return {
             "line-color": RED if casing else ORANGE,
@@ -300,7 +310,17 @@ def split_place_labels(style):
                 "text-letter-spacing": 0.45,
                 # suburb is NYC's boroughs but also ordinary neighborhoods in e.g. Boston and London, so
                 # these stay below city labels
-                "text-size": ["interpolate", ["linear"], ["zoom"], 10, 11, 13, 13, 16, 15],
+                "text-size": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    10,
+                    11,
+                    13,
+                    13,
+                    16,
+                    15,
+                ],
             },
         ),
         place_label(other, "label_neighbourhood", ["quarter", "neighbourhood"], {}),
@@ -388,9 +408,11 @@ def borders(style):
         layer for layer in style["layers"] if layer["id"].startswith("boundary")
     ]
     for layer in boundaries:
-        layer["filter"] = [
-            c for c in layer["filter"] if c != ["!=", ["get", "maritime"], 1]
-        ]
+        # disputed boundaries out at sea stay hidden, as in bright
+        if layer["id"] != "boundary_disputed":
+            layer["filter"] = [
+                c for c in layer["filter"] if c != ["!=", ["get", "maritime"], 1]
+            ]
         if layer["id"] == "boundary_2":
             # maritime country borders with only one country next to them face international waters
             layer["filter"].append(
@@ -416,10 +438,6 @@ def borders(style):
         }
     # just above the background, so parks, land use and water all draw over the band
     style["layers"][1:1] = [border_highlight(layer) for layer in boundaries]
-
-
-
-
 
 
 def labels(style):
@@ -455,8 +473,6 @@ def labels(style):
             )
 
 
-
-
 def restyle(style):
     """Bright in Urban Stats colors; leaves the fonts alone."""
     recolor(style)
@@ -464,7 +480,14 @@ def restyle(style):
     borders(style)
     for layer in style["layers"]:
         if layer["id"] in TUNNEL_SCALES:
+            layer["paint"]["line-dasharray"] = tunnel_dash(TUNNEL_SCALES[layer["id"]])
+        if layer["id"] in TUNNEL_CASINGS:
+            fill_scale, outline_zoom = TUNNEL_CASINGS[layer["id"]]
             layer["paint"]["line-dasharray"] = [
-                x / TUNNEL_SCALES[layer["id"]] for x in TUNNEL_DASH
+                "step",
+                ["zoom"],
+                ["literal", tunnel_dash(fill_scale)],
+                outline_zoom,
+                ["literal", tunnel_dash(fill_scale + 2)],
             ]
     labels(style)
