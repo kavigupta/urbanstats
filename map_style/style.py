@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -23,9 +24,10 @@ for layer in result["layers"]:
             for f in layer["layout"]["text-font"]
         ]
 
-# relative, so map-style.ts can resolve it against wherever the site is served; see build_glyphs.js
+# relative, so map-style.ts can resolve it against wherever the site is served
 result["glyphs"] = "/map/fonts/{fontstack}/{range}.pbf"
-with open(os.path.join(HERE, "fonts/ranges.json")) as f:
+# the ranges that build-glyphs.js wrote
+with open(sys.argv[1]) as f:
     result.setdefault("metadata", {})["urbanstats:jost_ranges"] = json.load(f)
 
 with open(os.path.join(HERE, "../react/src/data/map_style.json"), "w") as f:

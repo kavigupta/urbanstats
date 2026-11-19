@@ -2,6 +2,7 @@ import hashlib
 import os
 import shutil
 import subprocess
+import sys
 from typing import FrozenSet, Set, Union
 
 from urbanstats.consolidated_data.produce_consolidated_data import (
@@ -197,6 +198,7 @@ def build_react_site(site_folder: str, mode: str) -> None:
         )
 
     create_react_jsons()
+    build_map_style(site_folder)
 
     subprocess.run(
         f"cd react; npm run {'dev' if mode == 'dev' else 'prod'}",
@@ -205,6 +207,16 @@ def build_react_site(site_folder: str, mode: str) -> None:
     )
 
     link_scripts_folder(site_folder, mode)
+
+
+def build_map_style(site_folder: str) -> None:
+    fonts = os.path.abspath(f"{site_folder}/map/fonts")
+    subprocess.run(
+        ["node", "build-glyphs.js", fonts, sys.executable], cwd="react", check=True
+    )
+    subprocess.run(
+        [sys.executable, "map_style/style.py", f"{fonts}/ranges.json"], check=True
+    )
 
 
 BUILD_STEPS = frozenset({"shapes", "articles", "index", "ordering", "sitemap", "juxta"})
@@ -358,8 +370,6 @@ def build_urbanstats(
     shutil.copy("icons/main/mapper-banner-dark.png", f"{site_folder}/")
     shutil.copy("icons/main/duplicate.png", f"{site_folder}/")
     shutil.copy("icons/main/arrow-right.png", f"{site_folder}/")
-
-    shutil.copytree("map_style/fonts", f"{site_folder}/map/fonts", dirs_exist_ok=True)
 
     os.makedirs(f"{site_folder}/.github/workflows", exist_ok=True)
     head = subprocess.run(
