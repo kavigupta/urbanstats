@@ -2,7 +2,6 @@ import hashlib
 import os
 import shutil
 import subprocess
-import sys
 from typing import FrozenSet, Set, Union
 
 from urbanstats.consolidated_data.produce_consolidated_data import (
@@ -62,6 +61,7 @@ from urbanstats.website_data.table import shapefile_without_ordinals
 
 from ..utils import output_typescript
 from .colors import hue_colors, related_button_colors
+from .map_style import build_map_style
 
 
 def check_proto_hash() -> None:
@@ -207,16 +207,6 @@ def build_react_site(site_folder: str, mode: str) -> None:
     )
 
     link_scripts_folder(site_folder, mode)
-
-
-def build_map_style(site_folder: str) -> None:
-    fonts = os.path.abspath(f"{site_folder}/map/fonts")
-    subprocess.run(
-        ["node", "build-glyphs.js", fonts, sys.executable], cwd="react", check=True
-    )
-    subprocess.run(
-        [sys.executable, "icons/map_style/style.py", f"{fonts}/ranges.json"], check=True
-    )
 
 
 BUILD_STEPS = frozenset({"shapes", "articles", "index", "ordering", "sitemap", "juxta"})
