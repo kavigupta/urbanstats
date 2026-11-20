@@ -6,6 +6,8 @@ import tempfile
 from fontTools.ttLib import TTFont
 from fontTools.varLib import instancer
 
+from urbanstats.website_data.map_restyle import restyle
+
 # name: (variable font, weight, Noto fallback). icons/fonts/noto-glyphs has OpenFreeMap's glyphs for each
 # fallback, from https://tiles.openfreemap.org/fonts/{fallback}/{range}.pbf, for the ranges Jost covers; the
 # map requests the rest from OpenFreeMap
@@ -17,14 +19,18 @@ JOST_FONTS = {
     "Jost Italic": ("Jost-Italic-VariableFont_wght.ttf", 400, "Noto Sans Italic"),
 }
 
-# heavier type for more important places, as on print maps
+# where a layer's font isn't bright's in Jost
 LABEL_FONTS = {
+    # heavier type for more important places, as on print maps
     "label_country_1": "Jost Bold",
     "label_country_2": "Jost Bold",
     "label_country_3": "Jost Bold",
     "label_city": "Jost 550",
     "label_city_capital": "Jost 550",
     "label_town": "Jost Medium",
+    "label_borough": "Jost Medium",
+    # upright, unlike the neighborhoods and islands split off bright's italic catch-all with it
+    "label_minor_place": "Jost Regular",
 }
 
 
@@ -70,12 +76,10 @@ def build_glyphs(fonts_folder: str) -> dict[str, dict[str, object]]:
 
 
 def build_map_style(site_folder: str) -> None:
-    """Bright, labeled in Jost, at react/src/data/map_style.json, and its glyphs in the site."""
+    """The map style at react/src/data/map_style.json, and the glyphs it uses in the site."""
     with open("icons/map_style/bright.json") as f:
         style = json.load(f)
-    background = next(layer for layer in style["layers"] if layer["id"] == "background")
-    # the site's light mode background
-    background["paint"]["background-color"] = "#fff8f0"
+    restyle(style)
     for layer in style["layers"]:
         if "text-font" in layer.get("layout", {}):
             layer["layout"]["text-font"] = [
