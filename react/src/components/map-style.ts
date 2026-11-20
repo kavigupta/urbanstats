@@ -6,10 +6,11 @@ const style = mapStyleJson as unknown as StyleSpecification & { metadata: { 'urb
 
 let resolvedStyle: StyleSpecification | undefined
 
-// MapLibre requires glyph URLs to be absolute
+// MapLibre requires sprite and glyph URLs to be absolute, and checks the sprite's before transformRequest
 export function mapStyle(): StyleSpecification {
     return resolvedStyle ??= {
         ...style,
+        sprite: (style.sprite as { id: string, url: string }[]).map(sprite => ({ ...sprite, url: new URL(sprite.url, location.href).href })),
         // keeps the braces, which URL would escape
         glyphs: `${location.origin}${style.glyphs}`,
     }

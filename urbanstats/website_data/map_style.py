@@ -7,6 +7,7 @@ from fontTools.ttLib import TTFont
 from fontTools.varLib import instancer
 
 from urbanstats.website_data.map_restyle import restyle
+from urbanstats.website_data.map_sprites import build_sprites
 
 # name: (variable font, weight, Noto fallback). icons/fonts/noto-glyphs has OpenFreeMap's glyphs for each
 # fallback, from https://tiles.openfreemap.org/fonts/{fallback}/{range}.pbf, for the ranges Jost covers; the
@@ -76,7 +77,7 @@ def build_glyphs(fonts_folder: str) -> dict[str, dict[str, object]]:
 
 
 def build_map_style(site_folder: str) -> None:
-    """The map style at react/src/data/map_style.json, and the glyphs it uses in the site."""
+    """The map style at react/src/data/map_style.json, and the glyphs and sprites it uses in the site."""
     with open("icons/map_style/bright.json") as f:
         style = json.load(f)
     restyle(style)
@@ -93,3 +94,5 @@ def build_map_style(site_folder: str) -> None:
     )
     with open("react/src/data/map_style.json", "w") as f:
         json.dump(style, f, indent=2)
+    os.makedirs(f"{site_folder}/map/sprites", exist_ok=True)
+    build_sprites(f"{site_folder}/map/sprites/urbanstats")

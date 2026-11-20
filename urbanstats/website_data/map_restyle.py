@@ -14,6 +14,13 @@ def mix(color, other, fraction):
 PAPER = "#fff8f0"
 WATER = mix(hue_colors["cyan"], PAPER, 0.45)
 WATER_LABEL = mix(hue_colors["cyan"], "#000000", 0.65)
+# green areas are blotches of a darker green on a lighter one, the blotches covering more of woods than parks,
+# and more of parks than grass
+GREEN_LIGHT = mix(hue_colors["green"], PAPER, 0.65)
+GREEN_DARK = mix(hue_colors["green"], PAPER, 0.4)
+# scrub and heath, e.g. sagebrush, which the tiles class as grass, in a dry mottle between sand and grass
+SCRUB_LIGHT = mix(hue_colors["yellow"], PAPER, 0.75)
+SCRUB_DARK = mix(mix(hue_colors["yellow"], hue_colors["green"], 0.5), PAPER, 0.55)
 SAND = mix(hue_colors["yellow"], PAPER, 0.65)
 RED = hue_colors["red"]
 ORANGE = hue_colors["orange"]
@@ -47,6 +54,7 @@ RAIL_HATCHING_ZOOM = 15
 
 WATER_LABEL_PAINT = {"text-color": WATER_LABEL, "text-halo-width": 0}
 LARGE_WATER = ["ocean", "sea", "bay", "strait"]
+DRY_GRASS = ["scrub", "heath"]
 # tunnels are dashed, each dash TUNNEL_DASH base widths long whatever the line's width; dash arrays are in line
 # widths, so each is divided by its line's scale, which also keeps a motorway's outline and fill dashes in step
 TUNNEL_DASH = [8, 4]
@@ -206,7 +214,15 @@ def recolor(style):
         "landuse-industrial": {"fill-color": INDUSTRIAL},
         "landuse-hospital": {"fill-color": INDUSTRIAL},
         "landuse-school": {"fill-color": INDUSTRIAL},
+        "landuse-cemetery": {"fill-pattern": "urbanstats:grass"},
+        "landcover-grass-park": {"fill-pattern": "urbanstats:park", "fill-opacity": 1},
+        "landcover-grass": {"fill-pattern": "urbanstats:grass", "fill-opacity": 1},
         "landcover-sand": {"fill-color": SAND},
+        "landcover-wood": {
+            "fill-pattern": "urbanstats:wood",
+            "fill-opacity": 1,
+            "fill-outline-color": "rgba(0,0,0,0)",
+        },
         "water": {"fill-color": WATER},
         "water-intermittent": {"fill-color": WATER, "fill-opacity": 0.5},
         "aeroway-area": {"fill-color": AIRPORT},
@@ -453,6 +469,53 @@ def tunnels(style):
             ]
 
 
+def green_areas(style):
+    grass = layer_by_id(style, "landcover-grass")
+    scrub = copy.deepcopy(grass)
+    scrub["id"] = "landcover-scrub"
+    scrub["filter"] = [
+        "all",
+        grass["filter"],
+        ["match", ["get", "subclass"], DRY_GRASS, True, False],
+    ]
+    scrub["paint"]["fill-pattern"] = "urbanstats:scrub"
+    grass["filter"] = [
+        "all",
+        grass["filter"],
+        ["match", ["get", "subclass"], DRY_GRASS, False, True],
+    ]
+    style["layers"].insert(style["layers"].index(grass) + 1, scrub)
+
+    # the park layer is every kind of protected area, from parks to reservations (classed nature_reserve, like
+    # the Muscogee Nation, which covers most of Tulsa) and planning boundaries (Adirondack Park, with whole towns
+    # inside), so green comes from the land cover
+    park = layer_by_id(style, "park")
+    style["layers"].remove(park)
+    # except the classes that are reliably parkland without towns inside; the high Sierra, for one, is almost all
+    # national park and wilderness but has little land cover mapped
+    style["layers"].insert(
+        style["layers"].index(layer_by_id(style, "landcover-grass-park")) + 1,
+        {
+            "id": "park-fill",
+            "type": "fill",
+            "source": park["source"],
+            "source-layer": park["source-layer"],
+            "filter": [
+                "all",
+                park["filter"],
+                [
+                    "match",
+                    ["get", "class"],
+                    ["national_park", "wilderness_preserve", "State Park"],
+                    True,
+                    False,
+                ],
+            ],
+            "paint": {"fill-pattern": "urbanstats:park"},
+        },
+    )
+
+
 def labels(style):
     # street names in small uppercase beside the street rather than on it; MapLibre flips line labels to stay
     # upright, which also flips the offset, so a name can land on either side
@@ -488,9 +551,15 @@ def labels(style):
 
 
 def restyle(style):
-    """Bright in Urban Stats colors; leaves the fonts alone."""
+    """Bright in Urban Stats colors, with patterned green areas; leaves the fonts alone."""
     recolor(style)
     split_place_labels(style)
     borders(style)
+    green_areas(style)
+    style["sprite"] = [
+        {"id": "default", "url": style["sprite"]},
+        # relative like the glyphs, see map-style.ts
+        {"id": "urbanstats", "url": "/map/sprites/urbanstats"},
+    ]
     tunnels(style)
     labels(style)
