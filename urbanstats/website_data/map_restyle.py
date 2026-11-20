@@ -214,12 +214,18 @@ def recolor(style):
         "landuse-industrial": {"fill-color": INDUSTRIAL},
         "landuse-hospital": {"fill-color": INDUSTRIAL},
         "landuse-school": {"fill-color": INDUSTRIAL},
-        "landuse-cemetery": {"fill-pattern": "urbanstats:grass"},
-        "landcover-grass-park": {"fill-pattern": "urbanstats:park", "fill-opacity": 1},
-        "landcover-grass": {"fill-pattern": "urbanstats:grass", "fill-opacity": 1},
+        "landuse-cemetery": {"fill-pattern": "greenspacemottle:grass"},
+        "landcover-grass-park": {
+            "fill-pattern": "greenspacemottle:park",
+            "fill-opacity": 1,
+        },
+        "landcover-grass": {
+            "fill-pattern": "greenspacemottle:grass",
+            "fill-opacity": 1,
+        },
         "landcover-sand": {"fill-color": SAND},
         "landcover-wood": {
-            "fill-pattern": "urbanstats:wood",
+            "fill-pattern": "greenspacemottle:wood",
             "fill-opacity": 1,
             "fill-outline-color": "rgba(0,0,0,0)",
         },
@@ -478,7 +484,7 @@ def green_areas(style):
         grass["filter"],
         ["match", ["get", "subclass"], DRY_GRASS, True, False],
     ]
-    scrub["paint"]["fill-pattern"] = "urbanstats:scrub"
+    scrub["paint"]["fill-pattern"] = "greenspacemottle:scrub"
     grass["filter"] = [
         "all",
         grass["filter"],
@@ -512,7 +518,7 @@ def green_areas(style):
                     False,
                 ],
             ],
-            "paint": {"fill-pattern": "urbanstats:park"},
+            "paint": {"fill-pattern": "greenspacemottle:park"},
         },
     )
 
@@ -560,7 +566,7 @@ def restyle(style):
     style["sprite"] = [
         {"id": "default", "url": style["sprite"]},
         # relative like the glyphs, see map-style.ts
-        {"id": "urbanstats", "url": "/map/sprites/urbanstats"},
+        {"id": "greenspacemottle", "url": "/map/sprites/greenspacemottle"},
     ]
     tunnels(style)
     labels(style)

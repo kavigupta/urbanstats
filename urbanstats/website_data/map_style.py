@@ -95,4 +95,4 @@ def build_map_style(site_folder: str) -> None:
     with open("react/src/data/map_style.json", "w") as f:
         json.dump(style, f, indent=2)
     os.makedirs(f"{site_folder}/map/sprites", exist_ok=True)
-    build_sprites(f"{site_folder}/map/sprites/urbanstats")
+    build_sprites(f"{site_folder}/map/sprites/greenspacemottle")

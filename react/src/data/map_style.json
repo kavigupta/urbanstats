@@ -20,8 +20,8 @@
       "url": "https://tiles.openfreemap.org/sprites/ofm_f384/ofm"
     },
     {
-      "id": "urbanstats",
-      "url": "/map/sprites/urbanstats"
+      "id": "greenspacemottle",
+      "url": "/map/sprites/greenspacemottle"
     }
   ],
   "glyphs": "/map/fonts/{fontstack}/{range}.pbf",
@@ -643,7 +643,7 @@
         ]
       ],
       "paint": {
-        "fill-pattern": "urbanstats:park"
+        "fill-pattern": "greenspacemottle:park"
       }
     },
     {
@@ -801,7 +801,7 @@
       ],
       "paint": {
         "fill-color": "#e0e4dd",
-        "fill-pattern": "urbanstats:grass"
+        "fill-pattern": "greenspacemottle:grass"
       }
     },
     {
@@ -881,7 +881,7 @@
         "fill-color": "#6a4",
         "fill-opacity": 1,
         "fill-outline-color": "rgba(0,0,0,0)",
-        "fill-pattern": "urbanstats:wood"
+        "fill-pattern": "greenspacemottle:wood"
       }
     },
     {
@@ -916,7 +916,7 @@
       "paint": {
         "fill-color": "#d8e8c8",
         "fill-opacity": 1,
-        "fill-pattern": "urbanstats:grass"
+        "fill-pattern": "greenspacemottle:grass"
       }
     },
     {
@@ -951,7 +951,7 @@
       "paint": {
         "fill-color": "#d8e8c8",
         "fill-opacity": 1,
-        "fill-pattern": "urbanstats:scrub"
+        "fill-pattern": "greenspacemottle:scrub"
       }
     },
     {
@@ -970,7 +970,7 @@
       "paint": {
         "fill-color": "#d8e8c8",
         "fill-opacity": 1,
-        "fill-pattern": "urbanstats:park"
+        "fill-pattern": "greenspacemottle:park"
       }
     },
     {
