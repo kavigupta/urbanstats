@@ -2,7 +2,7 @@
 Draws the map's transit icons into icons/map_style/sprites, which is committed since drawing them needs inkscape.
 Run from the repo root after changing an icon:
 
-    python -m urbanstats.website_data.map_sprites
+    python -m scripts.draw_map_sprites
 """
 
 import json
