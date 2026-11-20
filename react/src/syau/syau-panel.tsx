@@ -114,9 +114,9 @@ function SYAUGame(props: {
     const jColors = useJuxtastatColors()
     const [history, setHistory] = SYAULocalStorage.shared.useHistory(props.typ, props.universe)
     const totalPopulation = props.syauData.populations.reduce((a, b) => a + b, 0)
-    const totalPopulationGuessed = history.guessed
-        .map(name => props.syauData.populations[props.syauData.longnameToIndex[name]] as number | undefined)
-        .reduce<number>((a, b) => a + (b ?? 0), 0)
+    // history can hold names that are no longer in the game, e.g. ones renamed without a symlink
+    const guessedInGame = history.guessed.filter(name => name in props.syauData.longnameToIndex)
+    const totalPopulationGuessed = guessedInGame.map(name => props.syauData.populations[props.syauData.longnameToIndex[name]]).reduce((a, b) => a + b, 0)
     const [alreadyGuessed, setAlreadyGuessed] = React.useState(false)
 
     const shareRef = React.createRef<HTMLButtonElement>()
@@ -149,7 +149,7 @@ function SYAUGame(props: {
                 <div style={{ marginBlockEnd: '1em' }} />
                 <div style={{ textAlign: 'center' }} id="test-syau-status">
                     <b>
-                        {history.guessed.length}
+                        {guessedInGame.length}
                         /
                         {props.syauData.longnames.length}
                     </b>
@@ -190,7 +190,7 @@ function SYAUGame(props: {
                                 const numRed = 10 - numGreen
                                 const emoji = jColors.correctEmoji.repeat(numGreen) + jColors.incorrectEmoji.repeat(numRed)
                                 const lines = [
-                                    `I named ${history.guessed.length}/${props.syauData.longnames.length} ${pluralType} in ${props.universe}`,
+                                    `I named ${guessedInGame.length}/${props.syauData.longnames.length} ${pluralType} in ${props.universe}`,
                                     `(${renderPct(frac)} of the population)`,
                                     '',
                                     emoji,

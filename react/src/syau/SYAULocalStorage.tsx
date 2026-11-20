@@ -26,18 +26,14 @@ export class SYAULocalStorage {
         }]
     }
 
-    /** Follows renames of guessed articles, dropping guesses that aren't in `longnames` even then. */
-    async updateRenamedGuesses(typ: Type, universe: Universe, longnames: Set<string>): Promise<void> {
+    /** Renames guesses of articles that have been renamed since; only names not in `longnames` are looked up. */
+    async normalizeGuesses(typ: Type, universe: Universe, longnames: Set<string>): Promise<void> {
         const key = `${typ}-${universe}` satisfies SYAUHistoryKey
-        const stale = ((this.history.value[key] as SYAUHistoryForGame | undefined)?.guessed ?? []).filter(name => !longnames.has(name))
-        if (stale.length === 0) {
+        const guessed = (this.history.value[key] as SYAUHistoryForGame | undefined)?.guessed ?? []
+        if (guessed.every(name => longnames.has(name))) {
             return
         }
-        const renamed = new Map(await Promise.all(stale.map(async name => [name, await currentLongname(name)] as const)))
-        // reread, in case of guesses made while resolving
-        const guessed = this.history.value[key].guessed
-            .map(name => renamed.has(name) ? renamed.get(name) : name)
-            .filter(name => name !== undefined && longnames.has(name))
-        this.history.value = { ...this.history.value, [key]: { guessed: [...new Set(guessed)] } }
+        const normalized = await Promise.all(guessed.map(async name => longnames.has(name) ? name : (await currentLongname(name)) ?? name))
+        this.history.value = { ...this.history.value, [key]: { guessed: [...new Set(normalized)] } }
     }
 }

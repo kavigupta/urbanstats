@@ -126,7 +126,7 @@ export async function loadSYAUData(
     articleNames.sort((a, b) => articleNameToValue.get(b)! - articleNameToValue.get(a)!)
     const values = articleNames.map(name => articleNameToValue.get(name)!)
 
-    await SYAULocalStorage.shared.updateRenamedGuesses(typ, universe, new Set(articleNames))
+    await SYAULocalStorage.shared.normalizeGuesses(typ, universe, new Set(articleNames))
 
     const centroids = await loadCentroids(universe, typ, articleNames)
 
