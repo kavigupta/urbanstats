@@ -3,7 +3,7 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useStat
 import { GenericShareButton } from '../components/GenericShareButton'
 import { Icon } from '../components/Icon'
 import { CheckboxSetting } from '../components/checkbox-setting'
-import { ArchiveButton, JuxtastatInfiniteButton, OtherQuizzesButtons } from '../components/quiz-panel'
+import { AdjacentQuizButton, ArchiveButton, JuxtastatInfiniteButton, OtherQuizzesButtons } from '../components/quiz-panel'
 import { QuantityTogether } from '../components/unit-display'
 import { LegacyStatName } from '../data/legacy_statistic_columns'
 import { Navigator } from '../navigation/Navigator'
@@ -196,7 +196,11 @@ export function QuizResult(props: QuizResultProps): ReactNode {
             {(props.quizDescriptor.kind === 'juxtastat' || props.quizDescriptor.kind === 'retrostat') && (
                 <>
                     <div className="gap"></div>
-                    <div style={{ display: 'flex', justifyContent: 'center' }}><ArchiveButton quizName={props.quizDescriptor.name} /></div>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '1em' }}>
+                        <AdjacentQuizButton quiz={props.quizDescriptor} offset={-1} label="Previous Quiz" />
+                        <ArchiveButton quizName={props.quizDescriptor.name} />
+                        <AdjacentQuizButton quiz={props.quizDescriptor} offset={1} label="Next Quiz" />
+                    </div>
                 </>
             )}
             <OtherQuizzesButtons />

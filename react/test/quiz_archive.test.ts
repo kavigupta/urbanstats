@@ -4,7 +4,7 @@ import { colorThemes } from '../src/page_template/color-themes'
 
 import { runQuery } from './quiz_test_template'
 import { clickButton, quizFixture } from './quiz_test_utils'
-import { screencap, target } from './test_utils'
+import { safeReload, screencap, target } from './test_utils'
 
 const win = { choices: ['A', 'A', 'A', 'A', 'A'], correct_pattern: [true, true, true, true, true] }
 const fourWins = { choices: ['A', 'A', 'A', 'A'], correct_pattern: [true, true, true, true] }
@@ -35,6 +35,12 @@ function archiveTest(name: string, keys: [string, string, string], liveUrl: stri
         await t.expect(await runQuery(t, `SELECT user, ${column} FROM ${table} WHERE archive = 1`)).eql(archiveRow)
         await t.expect(Selector('a').withExactText(`Play Current ${name === 'juxtastat' ? 'Juxtastat' : 'Retrostat'}`).exists).ok()
 
+        const hashFor = (key: string): string => `#${key.startsWith('W') ? 'mode=retro&' : ''}date=${key.replaceAll('W', '')}`
+        await t.click(Selector('a').withExactText('Next Quiz'))
+        await t.expect(ClientFunction(() => location.hash)()).eql(hashFor(keys[2]))
+        await t.click(Selector('a').withExactText('Previous Quiz'))
+        await t.expect(ClientFunction(() => location.hash)()).eql(hashFor(keys[1]))
+
         await t.click(Selector('a').withExactText('Archive'))
         await t.expect(ClientFunction(() => location.hash)()).eql(`#mode=archive&date=${keys[1]}`)
         const playedCellIsVisible = ClientFunction((key: string) => {
@@ -55,3 +61,30 @@ function archiveTest(name: string, keys: [string, string, string], liveUrl: stri
 
 archiveTest('juxtastat', ['98', '99', '100'], 'quiz.html#date=100', 'JuxtaStatIndividualStats', 'day', '7|99\n')
 archiveTest('retrostat', ['W37', 'W38', 'W39'], 'quiz.html#mode=retro&date=39', 'JuxtaStatIndividualStatsRetrostat', 'week', '7|38\n')
+
+// getDailyOffsetNumber and getRetrostatOffsetNumber, which can't be imported here since their module touches window.
+// Computed just before navigating so a test running across midnight can't disagree with the page about which day is live
+const today = (): number => Math.round((new Date().setHours(0, 0, 0, 0) - new Date(2023, 8, 2).valueOf()) / (24 * 60 * 60 * 1000))
+const thisWeek = (): number => Math.floor((today() - 1) / 7) - 11
+
+function nextToLiveTest(name: string, live: () => number, historyKey: (offset: number) => string, modeParam: string): void {
+    quizFixture(`${name} next to live`, `${target}/quiz.html#mode=archive`, { testQuizArchive: 'true' }, '', 'desktop')
+
+    test(`${name}-next-from-latest-past-quiz-opens-the-live-one`, async (t) => {
+        const current = live()
+        const history = JSON.stringify({ [historyKey(current - 1)]: win, [historyKey(current)]: win })
+        await t.eval(() => { localStorage.setItem('quiz_history', history) }, { dependencies: { history } })
+        await t.navigateTo(`${target}/quiz.html#${modeParam === '' ? '' : `${modeParam}&`}date=${current - 1}`)
+        // Load the history set above, since the page holds it in memory
+        await safeReload(t)
+
+        await t.click(Selector('a').withExactText('Next Quiz'))
+        await t.expect(ClientFunction(() => location.hash)()).eql(`#${modeParam === '' ? '' : `${modeParam}&`}date=${current}`)
+        await t.expect(Selector('#quiz-timer').exists).ok()
+        await t.expect(Selector('a').withExactText('Next Quiz').exists).notOk()
+        await t.expect(Selector('a').withExactText('Previous Quiz').exists).ok()
+    })
+}
+
+nextToLiveTest('juxtastat', today, offset => offset.toString(), '')
+nextToLiveTest('retrostat', thisWeek, offset => `W${offset}`, 'mode=retro')
