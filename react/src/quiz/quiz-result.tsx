@@ -3,7 +3,7 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useStat
 import { GenericShareButton } from '../components/GenericShareButton'
 import { Icon } from '../components/Icon'
 import { CheckboxSetting } from '../components/checkbox-setting'
-import { JuxtastatInfiniteButton, OtherQuizzesButtons } from '../components/quiz-panel'
+import { ArchiveButton, JuxtastatInfiniteButton, OtherQuizzesButtons } from '../components/quiz-panel'
 import { QuantityTogether } from '../components/unit-display'
 import { LegacyStatName } from '../data/legacy_statistic_columns'
 import { Navigator } from '../navigation/Navigator'
@@ -132,7 +132,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                     )
                 : undefined}
             {
-                props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite'
+                props.quizDescriptor.kind === 'custom' || props.quizDescriptor.kind === 'infinite' || props.quizDescriptor.archive
                     ? undefined
                     : <TimeToNextQuiz quiz={props.quizDescriptor} />
             }
@@ -193,6 +193,12 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                 <UserId />
                 <ExportImport />
             </div>
+            {(props.quizDescriptor.kind === 'juxtastat' || props.quizDescriptor.kind === 'retrostat') && (
+                <>
+                    <div className="gap"></div>
+                    <div style={{ display: 'flex', justifyContent: 'center' }}><ArchiveButton quizName={props.quizDescriptor.name} /></div>
+                </>
+            )}
             <OtherQuizzesButtons />
         </div>
     )
@@ -287,7 +293,7 @@ function TimeToNextQuiz({ quiz }: { quiz: QuizDescriptorWithTime }): ReactNode {
 
     let contents: ReactNode
 
-    if (msRemaining(quiz) < 0 && navigator.currentDescriptor.kind === 'quiz') {
+    if (msRemaining(quiz) < 0 && navigator.currentDescriptor.kind === 'quiz' && navigator.currentDescriptor.mode !== 'archive') {
         contents = (
             <a
                 {...navigator.link({

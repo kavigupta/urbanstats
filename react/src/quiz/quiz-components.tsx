@@ -6,13 +6,17 @@ import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { useHeaderTextClass } from '../utils/responsive'
 
 import { AuthenticationStateMachine } from './AuthenticationStateMachine'
+import { dayStart } from './dates'
 import { juxtaInfiniteCorrectForBonus } from './infinite'
-import { nameOfQuizKind, QuizHistory, QuizKind, QuizModel } from './quiz'
+import { nameOfQuizKind, QuizDescriptor, QuizHistory, QuizKind, QuizModel } from './quiz'
 
-export function Header({ quiz }: { quiz: { kind: QuizKind, name: string | number } }): ReactNode {
+export function Header({ quiz }: { quiz: { kind: QuizKind, name: string | number } | QuizDescriptor }): ReactNode {
     let text = nameOfQuizKind(quiz.kind)
     if (typeof quiz.name !== 'number' && quiz.kind !== 'infinite') {
         text += ` ${quiz.name}`
+    }
+    if ('archive' in quiz && quiz.archive && typeof quiz.name === 'number') {
+        text += ` (${dayStart(quiz.name).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })})`
     }
     return (<div className={useHeaderTextClass()}>{text}</div>)
 }

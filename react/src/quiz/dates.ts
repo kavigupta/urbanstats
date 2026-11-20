@@ -1,3 +1,5 @@
+import { TestUtils } from '../utils/TestUtils'
+
 import { type QuizDescriptorWithTime } from './quiz'
 
 const reference = new Date(2023, 8, 2) // 2023-09-02. 8 is September, since months are 0-indexed for some fucking reason
@@ -32,7 +34,20 @@ export function getRetrostatOffsetNumber(): number {
     return Math.floor((daily - 1) / 7) - 11
 }
 
-function dayStart(offset: number): Date {
+// Retrostat week W asks questions from Juxtastat days 7W+43 through 7W+49
+export function retrostatWeekAskingDay(day: number): number {
+    return Math.floor((day - 43) / 7)
+}
+
+export function isArchiveDate(date: number | undefined, current: number): boolean {
+    // E2E tests play fixed past quizzes and expect them to behave like the live one
+    if (TestUtils.shared.isTesting && localStorage.getItem('testQuizArchive') === null) {
+        return false
+    }
+    return date !== undefined && date < current
+}
+
+export function dayStart(offset: number): Date {
     const date = new Date(reference)
     date.setDate(date.getDate() + offset)
     return date

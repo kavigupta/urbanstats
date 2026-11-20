@@ -21,7 +21,8 @@ import { activeVectorKeys, fromVector, getVector } from '../page_template/settin
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { allGroups, CategoryIdentifier, StatPath, statsTree } from '../page_template/statistic-tree'
 import { OauthCallbackPanel } from '../quiz/OauthCallbackPanel'
-import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
+import type { ArchivePanel } from '../quiz/archive-panel'
+import { getDailyOffsetNumber, getRetrostatOffsetNumber, isArchiveDate } from '../quiz/dates'
 import type {
     QuizQuestionsModel, CustomQuizContent, JuxtaQuestionJSON,
     QuizDescriptor, RetroQuestionJSON, QuizHistory,
@@ -176,6 +177,13 @@ const quizSchema = z.intersection(
             v: z.optional(z.undefined()),
         }),
         z.object({
+            mode: z.literal('archive'),
+            date: z.optional(z.string()),
+            quizContent: z.optional(z.undefined()),
+            seed: z.optional(z.undefined()),
+            v: z.optional(z.undefined()),
+        }),
+        z.object({
             mode: z.literal('custom'),
             date: z.optional(z.undefined()),
             quizContent: z.string(),
@@ -280,6 +288,7 @@ export type PageData =
     | { kind: 'dataCredit', dataCreditPanel: typeof DataCreditPanel }
     | { kind: 'ussDocumentation', ussDocumentationPanel: typeof USSDocumentationPanel, doc?: ConstantCategory, hash?: string }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
+    | { kind: 'quizArchive', archivePanel: typeof ArchivePanel, highlight: string | undefined }
     | { kind: 'syau', typ: string | undefined, universe: Universe | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
     | { kind: 'mapper', settings: MapSettings, title: string, view: boolean, mapperPanel: typeof MapperPanel, counts: CountsByUT }
     | { kind: 'editor', editorPanel: typeof DebugEditorPanel | typeof DebugMapTextBoxPanel, undoChunking?: number }
@@ -499,9 +508,11 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
     return result
 }
 
+export type QuizPageDescriptor = Exclude<Extract<PageDescriptor, { kind: 'quiz' }>, { mode: 'archive' }>
+
 // Should not do side-effects in this function, since it can race with other calls of itself. Instead, return effects in the effects result value
 // Only use one await per block (or use overlapping promises), so that resources may be loaded in parallel to improve performance
-export async function loadPageDescriptor(newDescriptor: Extract<PageDescriptor, { kind: 'quiz' }>, settings: Settings): Promise<{ pageData: Extract<PageData, { kind: 'quiz' }>, newPageDescriptor: Extract<PageDescriptor, { kind: 'quiz' }>, effects: () => void }>
+export async function loadPageDescriptor(newDescriptor: QuizPageDescriptor, settings: Settings): Promise<{ pageData: Extract<PageData, { kind: 'quiz' }>, newPageDescriptor: QuizPageDescriptor, effects: () => void }>
 export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }>
 export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings: Settings): Promise<{ pageData: PageData, newPageDescriptor: PageDescriptor, effects: () => void }> {
     switch (newDescriptor.kind) {
@@ -701,6 +712,13 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
 
         case 'quiz': {
+            if (newDescriptor.mode === 'archive') {
+                return {
+                    pageData: { kind: 'quizArchive', archivePanel: (await import('../quiz/archive-panel')).ArchivePanel, highlight: newDescriptor.date },
+                    newPageDescriptor: newDescriptor,
+                    effects: () => undefined,
+                }
+            }
             let quiz: QuizQuestionsModel
             let quizDescriptor: QuizDescriptor
             let todayName: string | undefined
@@ -724,6 +742,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     quizDescriptor = {
                         kind: 'retrostat',
                         name: `W${retro}`,
+                        archive: isArchiveDate(newDescriptor.date, getRetrostatOffsetNumber()),
                     }
                     const [json, { wrapQuestionsModel, loadRetro }] = await Promise.all([
                         loadJSON(`/retrostat/${retro}`),
@@ -757,7 +776,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 }
                 case undefined:
                     const today = newDescriptor.date ?? getDailyOffsetNumber()
-                    quizDescriptor = { kind: 'juxtastat', name: today }
+                    quizDescriptor = { kind: 'juxtastat', name: today, archive: isArchiveDate(newDescriptor.date, getDailyOffsetNumber()) }
                     const [json, { wrapQuestionsModel, loadJuxta }] = await Promise.all([
                         loadJSON(`/quiz/${today}`),
                         import('../quiz/quiz'),
@@ -904,6 +923,8 @@ export function pageTitle(pageData: PageData): string {
                 case 'infinite':
                     return 'Juxtastat Infinite'
             }
+        case 'quizArchive':
+            return 'Archive'
         case 'syau':
             return `So you're an urbanist?`
         case 'article':

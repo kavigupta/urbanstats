@@ -3,6 +3,7 @@ import React, { ReactNode, useContext } from 'react'
 import { Navigator } from '../navigation/Navigator'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 
+import { getDailyOffsetNumber, getRetrostatOffsetNumber } from './dates'
 import { QuizDescriptor, QuizDescriptorWithTime, QuizHistory } from './quiz'
 import { ResultToDisplayForFriends } from './quiz-friends'
 import { getInfiniteQuizzes, historyKeyForTimeIdentifier, parseTimeIdentifier } from './statistics'
@@ -38,7 +39,14 @@ export function computeUserStatisticsData(
     } {
     const history = (i: number): QuizHistory[string] | undefined => wholeHistory[historyKeyForTimeIdentifier(quiz.kind, i)]
 
-    const today = parseTimeIdentifier(quiz.kind, quiz.name.toString())
+    let today = parseTimeIdentifier(quiz.kind, quiz.name.toString())
+    if (quiz.archive) {
+        // Streaks are as of now, and not having finished the current quiz yet doesn't end one
+        today = quiz.kind === 'juxtastat' ? getDailyOffsetNumber() : getRetrostatOffsetNumber()
+        if ((history(today)?.correct_pattern.length ?? 0) < 5) {
+            today -= 1
+        }
+    }
     const historicalCorrect = new Array(today + 1).fill(-1)
     const frequencies = new Array<number>(6).fill(0)
     const playedGames = []

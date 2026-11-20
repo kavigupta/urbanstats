@@ -10,7 +10,7 @@ import { cancelled, uploadFile } from '../utils/upload'
 import { infiniteQuizIsDone, sampleRandomQuestion } from './infinite'
 import { historyConflicts, mergeHistories } from './merge'
 
-export type QuizDescriptor = { kind: 'juxtastat', name: number } | { kind: 'retrostat', name: string } | { kind: 'custom', name: string } | { kind: 'infinite', name: string, seed: string, version: number }
+export type QuizDescriptor = { kind: 'juxtastat', name: number, archive: boolean } | { kind: 'retrostat', name: string, archive: boolean } | { kind: 'custom', name: string } | { kind: 'infinite', name: string, seed: string, version: number }
 
 export type QuizKind = QuizDescriptor['kind']
 export type QuizKindWithStats = 'juxtastat' | 'retrostat' | 'infinite'
