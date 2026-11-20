@@ -7,6 +7,10 @@ from urbanstats.statistics.collections.census import (
     CensusChange2000,
     CensusChange2010,
 )
+from urbanstats.statistics.collections.census_australia_income import (
+    CensusAustraliaIncomeHousehold,
+    CensusAustraliaIncomeIndividual,
+)
 from urbanstats.statistics.collections.census_canada_education_field import (
     CensusCanadaEducationField,
 )
@@ -18,9 +22,6 @@ from urbanstats.statistics.collections.census_canada_language import (
 )
 from urbanstats.statistics.collections.census_canada_occupation import (
     CensusCanadaOccupation,
-)
-from urbanstats.statistics.collections.census_canada_religion import (
-    CensusCanadaReligion,
 )
 from urbanstats.statistics.collections.census_canada_simple import census_canada_simple
 from urbanstats.statistics.collections.census_national import (
@@ -73,6 +74,7 @@ from urbanstats.statistics.collections.pollution import PollutionStatistics
 from urbanstats.statistics.collections.population_median import (
     PopulationMedianStatistics,
 )
+from urbanstats.statistics.collections.religion import ReligionStatistics
 from urbanstats.statistics.collections.segregation import SegregationStatistics
 from urbanstats.statistics.collections.sexual_orientation_and_relationship_status import (
     SexualOrientationRelationshipStatusStatistics,
@@ -148,7 +150,9 @@ statistic_collections = (
     CensusCanadaLanguage(),
     CensusCanadaEducationField(),
     CensusCanadaHousingRent(),
-    CensusCanadaReligion(),
+    ReligionStatistics(),
+    CensusAustraliaIncomeIndividual(),
+    CensusAustraliaIncomeHousehold(),
     CensusCanadaOccupation(),
     PollutionStatistics(),
     IMHELifeExpectancyStatistics(),
