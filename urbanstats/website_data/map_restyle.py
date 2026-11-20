@@ -48,6 +48,7 @@ TRANSIT_SCALE = 2
 
 WATER_LABEL_PAINT = {"text-color": WATER_LABEL, "text-halo-width": 0}
 LARGE_WATER = ["ocean", "sea", "bay", "strait"]
+TRANSIT_CLASSES = ["railway", "bus", "ferry_terminal"]
 # tunnels are dashed, each dash TUNNEL_DASH base widths long whatever the line's width; dash arrays are in line
 # widths, so each is divided by its line's scale, which also keeps a motorway's outline and fill dashes in step
 TUNNEL_DASH = [8, 4]
@@ -152,6 +153,10 @@ def rail_paint(ident):
 
 def layer_by_id(style, ident):
     return next(layer for layer in style["layers"] if layer["id"] == ident)
+
+
+def index_of(style, ident):
+    return next(i for i, layer in enumerate(style["layers"]) if layer["id"] == ident)
 
 
 # pylint: disable-next=too-many-return-statements
@@ -454,6 +459,67 @@ def tunnels(style):
             ]
 
 
+def stations(style):
+    """
+    bright looks for stations under class "rail", but the tiles use "railway", so they were only shown as ordinary
+    POIs from z15; bus stops, which are far more numerous, get their own layer from z16, before the stations so
+    that stations win label collisions
+    """
+    transit = layer_by_id(style, "poi_transit")
+    bus = copy.deepcopy(transit)
+    bus["id"] = "poi_bus"
+    bus["filter"] = ["==", ["get", "class"], "bus"]
+    bus["minzoom"] = 16
+    bus["layout"].update(
+        {
+            "icon-image": "transiticons:bus",
+            "icon-size": 0.85,
+            "text-size": 11,
+            "text-offset": [1.1, 0],
+        }
+    )
+    transit["filter"] = [
+        "match",
+        ["get", "class"],
+        ["airport", "railway", "ferry_terminal"],
+        True,
+        False,
+    ]
+    # the train icon for every station, subway included
+    transit["layout"].update(
+        {
+            "icon-image": [
+                "match",
+                ["get", "class"],
+                "railway",
+                "transiticons:train",
+                "ferry_terminal",
+                "transiticons:ferry",
+                "airport",
+            ],
+            "icon-size": ["match", ["get", "class"], "airport", 0.9, 0.85],
+            "text-offset": [1.1, 0],
+        }
+    )
+    for layer in style["layers"]:
+        if layer["id"] in ("poi_r1", "poi_r7", "poi_r20"):
+            layer["filter"] = [
+                "all",
+                layer["filter"],
+                ["match", ["get", "class"], TRANSIT_CLASSES, False, True],
+            ]
+    style["layers"].insert(style["layers"].index(transit), bus)
+    # after road labels and neighborhood names, which hid e.g. Kendall/MIT under the MIT label, but before towns
+    # and cities; the icon still shows when the name doesn't fit
+    style["layers"].remove(transit)
+    style["layers"].insert(index_of(style, "label_village"), transit)
+    transit["layout"]["text-optional"] = True
+    # a stop served by several kinds of train often has a station for each, e.g. Porter on the Red Line and the
+    # commuter rail; padding makes them collide so only the best-ranked one shows
+    transit["layout"]["icon-padding"] = 12
+    transit["layout"]["symbol-sort-key"] = ["get", "rank"]
+
+
 def labels(style):
     # street names in small uppercase beside the street rather than on it; MapLibre flips line labels to stay
     # upright, which also flips the offset, so a name can land on either side
@@ -531,10 +597,16 @@ def transit_lines(style):
 
 
 def restyle(style):
-    """Bright in Urban Stats colors, with transit lines; leaves the fonts alone."""
+    """Bright in Urban Stats colors, with transit lines and station icons; leaves the fonts alone."""
     recolor(style)
     split_place_labels(style)
     borders(style)
+    stations(style)
+    style["sprite"] = [
+        {"id": "default", "url": style["sprite"]},
+        # relative like the glyphs, see map-style.ts; drawn by map_sprites.py
+        {"id": "transiticons", "url": "/map/sprites/transiticons"},
+    ]
     tunnels(style)
     labels(style)
     transit_lines(style)

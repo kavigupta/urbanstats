@@ -9,16 +9,18 @@ const style = mapStyleJson as unknown as StyleSpecification & { metadata: { 'urb
 
 let resolvedStyle: StyleSpecification | undefined
 
-// MapLibre requires glyph and source URLs to be absolute
+// MapLibre requires sprite, glyph and source URLs to be absolute, and checks the sprite's before transformRequest
 export function mapStyle(): StyleSpecification {
+    const absolute = (url: string): string => new URL(url, location.href).href
     const transit = style.sources.transit as { url: string }
     return resolvedStyle ??= {
         ...style,
+        sprite: (style.sprite as { id: string, url: string }[]).map(sprite => ({ ...sprite, url: absolute(sprite.url) })),
         // keeps the braces, which URL would escape
         glyphs: `${location.origin}${style.glyphs}`,
         sources: {
             ...style.sources,
-            transit: { ...style.sources.transit, url: `pmtiles://${new URL(transit.url.slice('pmtiles://'.length), location.href).href}` } as StyleSpecification['sources'][string],
+            transit: { ...style.sources.transit, url: `pmtiles://${absolute(transit.url.slice('pmtiles://'.length))}` } as StyleSpecification['sources'][string],
         },
     }
 }
