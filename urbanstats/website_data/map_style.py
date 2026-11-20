@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import subprocess
 import tempfile
 
@@ -76,7 +77,7 @@ def build_glyphs(fonts_folder: str) -> dict[str, dict[str, object]]:
 
 
 def build_map_style(site_folder: str) -> None:
-    """The map style at react/src/data/map_style.json, and the glyphs it uses in the site."""
+    """The map style at react/src/data/map_style.json, and the glyphs and transit lines it uses in the site."""
     with open("icons/map_style/bright.json") as f:
         style = json.load(f)
     restyle(style)
@@ -93,3 +94,5 @@ def build_map_style(site_folder: str) -> None:
     )
     with open("react/src/data/map_style.json", "w") as f:
         json.dump(style, f, indent=2)
+    # metro, light rail and tram lines, from international-metro-lines
+    shutil.copy("icons/map_style/transit.pmtiles", f"{site_folder}/map/")

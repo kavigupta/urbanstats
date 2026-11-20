@@ -119,6 +119,7 @@
     "object-hash": "^3.0.0",
     "openapi-fetch": "^0.14.0",
     "pbf": "^3.3.0",
+    "pmtiles": "^4.3.0",
     "prng": "^0.0.1",
     "protobufjs": "^7.2.4",
     "quill": "^2.0.3",
