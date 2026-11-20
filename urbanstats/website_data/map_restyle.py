@@ -44,6 +44,7 @@ RAIL_SCALE = 1
 RAIL_HATCHING_SCALE = 3
 # the zoom from which rail has its hatching
 RAIL_HATCHING_ZOOM = 15
+TRANSIT_SCALE = 2
 
 WATER_LABEL_PAINT = {"text-color": WATER_LABEL, "text-halo-width": 0}
 LARGE_WATER = ["ocean", "sea", "bay", "strait"]
@@ -487,10 +488,53 @@ def labels(style):
             )
 
 
+def transit_lines(style):
+    """
+    Metro, light rail and tram lines, each in its own color; lines sharing a track have offsets one line width
+    apart, so they sit side by side.
+    """
+    style["sources"]["transit"] = {
+        "type": "vector",
+        # relative like the glyphs, see map-style.ts
+        "url": "pmtiles:///map/transit.pmtiles",
+        "attribution": '<a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>',
+    }
+    lines = {
+        "id": "transit-lines",
+        "type": "line",
+        "source": "transit",
+        "source-layer": "transit",
+        "minzoom": 9,
+        "layout": {"line-cap": "round", "line-join": "round"},
+        "paint": {
+            "line-color": ["to-color", ["get", "color"], RAIL],
+            "line-width": scaled(TRANSIT_SCALE),
+            "line-offset": width(
+                [
+                    x
+                    for zoom, w in width_stops(TRANSIT_SCALE)
+                    for x in (zoom, ["*", ["get", "offset"], w])
+                ]
+            ),
+        },
+    }
+    # a street wide on each side, so the lines stand clear of the railway hatching and the roads they run along
+    casing = copy.deepcopy(lines)
+    casing["id"] = "transit-lines-casing"
+    casing["paint"].update(
+        {"line-color": PAPER, "line-width": scaled(TRANSIT_SCALE + 2)}
+    )
+    first_symbol = next(
+        i for i, layer in enumerate(style["layers"]) if layer["type"] == "symbol"
+    )
+    style["layers"][first_symbol:first_symbol] = [casing, lines]
+
+
 def restyle(style):
-    """Bright in Urban Stats colors; leaves the fonts alone."""
+    """Bright in Urban Stats colors, with transit lines; leaves the fonts alone."""
     recolor(style)
     split_place_labels(style)
     borders(style)
     tunnels(style)
     labels(style)
+    transit_lines(style)
