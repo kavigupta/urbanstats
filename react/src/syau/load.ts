@@ -7,6 +7,8 @@ import { Universe } from '../universe'
 import { normalize } from '../utils/normalize-string'
 import { ICoordinate } from '../utils/protos'
 
+import { SYAULocalStorage } from './SYAULocalStorage'
+
 const populationStatcols: DataStatistic[] = allGroups
     .find(g => g.id === 'population')!
     .contents
@@ -123,6 +125,8 @@ export async function loadSYAUData(
     const articleNames = Array.from(articleNameToValue.keys())
     articleNames.sort((a, b) => articleNameToValue.get(b)! - articleNameToValue.get(a)!)
     const values = articleNames.map(name => articleNameToValue.get(name)!)
+
+    await SYAULocalStorage.shared.updateRenamedGuesses(typ, universe, new Set(articleNames))
 
     const centroids = await loadCentroids(universe, typ, articleNames)
 

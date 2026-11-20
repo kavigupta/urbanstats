@@ -114,7 +114,9 @@ function SYAUGame(props: {
     const jColors = useJuxtastatColors()
     const [history, setHistory] = SYAULocalStorage.shared.useHistory(props.typ, props.universe)
     const totalPopulation = props.syauData.populations.reduce((a, b) => a + b, 0)
-    const totalPopulationGuessed = history.guessed.map(name => props.syauData.populations[props.syauData.longnameToIndex[name]]).reduce((a, b) => a + b, 0)
+    const totalPopulationGuessed = history.guessed
+        .map(name => props.syauData.populations[props.syauData.longnameToIndex[name]] as number | undefined)
+        .reduce<number>((a, b) => a + (b ?? 0), 0)
     const [alreadyGuessed, setAlreadyGuessed] = React.useState(false)
 
     const shareRef = React.createRef<HTMLButtonElement>()

@@ -184,6 +184,15 @@ export async function loadArticleFromConsolidatedShard(shardUrl: string, longnam
     return undefined
 }
 
+/** The longname an article goes by now, following renames, or undefined if there's no such article. */
+export async function currentLongname(longname: string): Promise<string | undefined> {
+    const shard = await getConsolidatedArticlesShard(await dataLink(longname))
+    if (!shard) return undefined
+    if (shard.longnames.includes(longname)) return longname
+    const symIdx = shard.symlinkLinkNames.indexOf(longname)
+    return symIdx >= 0 ? currentLongname(shard.symlinkTargetNames[symIdx]) : undefined
+}
+
 /** Load one shape from a consolidated shard (fetch whole .gz via loadProtobuf, find by longname). Resolves symlinks to target. */
 export async function loadFeatureFromConsolidatedShard(shardUrl: string, longname: string): Promise<Feature | undefined> {
     const shard = await getConsolidatedShapesShard(shardUrl)
