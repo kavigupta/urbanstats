@@ -604,7 +604,7 @@ def restyle(style):
     stations(style)
     style["sprite"] = [
         {"id": "default", "url": style["sprite"]},
-        # relative like the glyphs, see map-style.ts; drawn by map_sprites.py
+        # relative like the glyphs, see map-style.ts; drawn by scripts/draw_map_sprites.py
         {"id": "transiticons", "url": "/map/sprites/transiticons"},
     ]
     tunnels(style)
