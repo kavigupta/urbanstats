@@ -1,0 +1,1 @@
+{"train": {"x": 0, "y": 0, "width": 20, "height": 20, "pixelRatio": 1}, "bus": {"x": 20, "y": 0, "width": 20, "height": 20, "pixelRatio": 1}, "ferry": {"x": 40, "y": 0, "width": 20, "height": 20, "pixelRatio": 1}}

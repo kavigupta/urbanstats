@@ -19,7 +19,16 @@
       "attribution": "<a href=\"https://www.openstreetmap.org/copyright\">\u00a9 OpenStreetMap contributors</a>"
     }
   },
-  "sprite": "https://tiles.openfreemap.org/sprites/ofm_f384/ofm",
+  "sprite": [
+    {
+      "id": "default",
+      "url": "https://tiles.openfreemap.org/sprites/ofm_f384/ofm"
+    },
+    {
+      "id": "transiticons",
+      "url": "/map/sprites/transiticons"
+    }
+  ],
   "glyphs": "/map/fonts/{fontstack}/{range}.pbf",
   "layers": [
     {
@@ -6417,24 +6426,41 @@
       "filter": [
         "all",
         [
-          "match",
+          "all",
           [
-            "geometry-type"
+            "match",
+            [
+              "geometry-type"
+            ],
+            [
+              "MultiPoint",
+              "Point"
+            ],
+            true,
+            false
           ],
           [
-            "MultiPoint",
-            "Point"
-          ],
-          true,
-          false
+            ">=",
+            [
+              "get",
+              "rank"
+            ],
+            20
+          ]
         ],
         [
-          ">=",
+          "match",
           [
             "get",
-            "rank"
+            "class"
           ],
-          20
+          [
+            "railway",
+            "bus",
+            "ferry_terminal"
+          ],
+          false,
+          true
         ]
       ],
       "layout": {
@@ -6514,32 +6540,49 @@
       "filter": [
         "all",
         [
+          "all",
+          [
+            "match",
+            [
+              "geometry-type"
+            ],
+            [
+              "MultiPoint",
+              "Point"
+            ],
+            true,
+            false
+          ],
+          [
+            ">=",
+            [
+              "get",
+              "rank"
+            ],
+            7
+          ],
+          [
+            "<",
+            [
+              "get",
+              "rank"
+            ],
+            20
+          ]
+        ],
+        [
           "match",
           [
-            "geometry-type"
-          ],
-          [
-            "MultiPoint",
-            "Point"
-          ],
-          true,
-          false
-        ],
-        [
-          ">=",
-          [
             "get",
-            "rank"
+            "class"
           ],
-          7
-        ],
-        [
-          "<",
           [
-            "get",
-            "rank"
+            "railway",
+            "bus",
+            "ferry_terminal"
           ],
-          20
+          false,
+          true
         ]
       ],
       "layout": {
@@ -6619,32 +6662,49 @@
       "filter": [
         "all",
         [
+          "all",
+          [
+            "match",
+            [
+              "geometry-type"
+            ],
+            [
+              "MultiPoint",
+              "Point"
+            ],
+            true,
+            false
+          ],
+          [
+            ">=",
+            [
+              "get",
+              "rank"
+            ],
+            1
+          ],
+          [
+            "<",
+            [
+              "get",
+              "rank"
+            ],
+            7
+          ]
+        ],
+        [
           "match",
           [
-            "geometry-type"
-          ],
-          [
-            "MultiPoint",
-            "Point"
-          ],
-          true,
-          false
-        ],
-        [
-          ">=",
-          [
             "get",
-            "rank"
+            "class"
           ],
-          1
-        ],
-        [
-          "<",
           [
-            "get",
-            "rank"
+            "railway",
+            "bus",
+            "ferry_terminal"
           ],
-          7
+          false,
+          true
         ]
       ],
       "layout": {
@@ -6716,33 +6776,21 @@
       }
     },
     {
-      "id": "poi_transit",
+      "id": "poi_bus",
       "type": "symbol",
       "source": "openmaptiles",
       "source-layer": "poi",
       "filter": [
-        "match",
+        "==",
         [
           "get",
           "class"
         ],
-        [
-          "airport",
-          "bus",
-          "rail"
-        ],
-        true,
-        false
+        "bus"
       ],
       "layout": {
-        "icon-image": [
-          "to-string",
-          [
-            "get",
-            "class"
-          ]
-        ],
-        "icon-size": 0.7,
+        "icon-image": "transiticons:bus",
+        "icon-size": 0.85,
         "text-anchor": "left",
         "text-field": [
           "case",
@@ -6779,17 +6827,18 @@
         ],
         "text-max-width": 9,
         "text-offset": [
-          0.9,
+          1.1,
           0
         ],
-        "text-size": 12
+        "text-size": 11
       },
       "paint": {
         "text-color": "#2e5a80",
         "text-halo-blur": 0.5,
         "text-halo-color": "#fff8f0",
         "text-halo-width": 1.5
-      }
+      },
+      "minzoom": 16
     },
     {
       "id": "highway-name-minor",
@@ -7677,6 +7726,102 @@
         "text-halo-blur": 1,
         "text-halo-color": "#fff8f0",
         "text-halo-width": 2
+      }
+    },
+    {
+      "id": "poi_transit",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "poi",
+      "filter": [
+        "match",
+        [
+          "get",
+          "class"
+        ],
+        [
+          "airport",
+          "railway",
+          "ferry_terminal"
+        ],
+        true,
+        false
+      ],
+      "layout": {
+        "icon-image": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          "railway",
+          "transiticons:train",
+          "ferry_terminal",
+          "transiticons:ferry",
+          "airport"
+        ],
+        "icon-size": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          "airport",
+          0.9,
+          0.85
+        ],
+        "text-anchor": "left",
+        "text-field": [
+          "case",
+          [
+            "has",
+            "name:nonlatin"
+          ],
+          [
+            "concat",
+            [
+              "get",
+              "name:latin"
+            ],
+            "\n",
+            [
+              "get",
+              "name:nonlatin"
+            ]
+          ],
+          [
+            "coalesce",
+            [
+              "get",
+              "name_en"
+            ],
+            [
+              "get",
+              "name"
+            ]
+          ]
+        ],
+        "text-font": [
+          "Jost Italic"
+        ],
+        "text-max-width": 9,
+        "text-offset": [
+          1.1,
+          0
+        ],
+        "text-size": 12,
+        "text-optional": true,
+        "icon-padding": 12,
+        "symbol-sort-key": [
+          "get",
+          "rank"
+        ]
+      },
+      "paint": {
+        "text-color": "#2e5a80",
+        "text-halo-blur": 0.5,
+        "text-halo-color": "#fff8f0",
+        "text-halo-width": 1.5
       }
     },
     {
