@@ -9,11 +9,13 @@ from ..db.stats import (
     has_infinite_stats,
     latest_day,
     latest_week_retrostat,
+    played_mask,
     register_user,
     store_user_stats,
     store_user_stats_infinite,
     store_user_stats_retrostat,
 )
+from ..db.utils import QuizKind
 from ..dependencies.authenticate import AuthenticateRequest, authenticate_responses
 from ..dependencies.db_session import GetDbSession
 from ..main import app
@@ -51,8 +53,26 @@ def retrostat_latest_week_request(
     return LatestDayResponse(latest_day=ld)
 
 
+class PlayedDaysResponse(BaseModel):
+    mask: str  # vulture: ignore -- used by the client
+
+
+@app.get("/juxtastat/played_days", responses=authenticate_responses)
+def juxtastat_played_days_request(
+    req: AuthenticateRequest,
+) -> PlayedDaysResponse:
+    return PlayedDaysResponse(mask=played_mask(req, QuizKind.juxtastat))
+
+
+@app.get("/retrostat/played_weeks", responses=authenticate_responses)
+def retrostat_played_weeks_request(
+    req: AuthenticateRequest,
+) -> PlayedDaysResponse:
+    return PlayedDaysResponse(mask=played_mask(req, QuizKind.retrostat))
+
+
 class StoreUserStatsBody(BaseModel):
-    day_stats: t.List[t.Tuple[int, t.List[bool]]]
+    day_stats: t.List[t.Tuple[int, t.List[bool], bool]]
 
 
 @app.post(

@@ -1,3 +1,5 @@
+import pytest
+
 from .utils import (
     associate_email,
     check_infinite_results,
@@ -9,6 +11,7 @@ from .utils import (
     send_friend_request_with_email,
     store_infinite_stats,
     store_juxtastat_stats,
+    store_retrostat_stats,
     unfriend_user,
     unfriend_user_with_email,
 )
@@ -429,3 +432,25 @@ def test_friends_summary_stats_across_associated_devices(client):
             }
         ]
     }
+
+
+@pytest.mark.parametrize(
+    "kind, store",
+    [("juxtastat", store_juxtastat_stats), ("retrostat", store_retrostat_stats)],
+)
+def test_archive_plays_count_as_plays_but_break_streaks(client, kind, store):
+    send_friend_request(client, identity_a, "b")
+    send_friend_request(client, identity_b, "a")
+    for problem in [1, 3]:
+        store(client, identity_b, problem, [True] * 5)
+    response = client.post(
+        f"/{kind}/store_user_stats",
+        headers=identity_b,
+        json={"day_stats": [[2, [True] * 5, True]]},
+    )
+    assert response.status_code == 204
+
+    stats = check_summary_stats(client, identity_a, ["b"], kind)["results"][0]
+    assert stats["numPlays"] == 3
+    assert stats["currentStreak"] == 1
+    assert stats["maxStreak"] == 1

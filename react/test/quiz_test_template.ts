@@ -369,7 +369,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
             correct_pattern: [true, true, true, true, false],
         }
         await t.expect(quizHistory).eql(expectedQuizHistory)
-        await t.expect(await juxtastatTable(t)).eql('7|90|0\n7|91|15\n7|92|7\n7|93|23\n7|99|15\n')
+        await t.expect(await juxtastatTable(t)).eql('7|90|0\n7|87|7\n7|88|15\n7|89|23\n7|91|15\n7|92|7\n7|93|23\n7|99|15\n')
         await t.expect(await retrostatTable(t)).eql('7|30|0\n')
     })
 
@@ -388,7 +388,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         }
         await t.expect(quizHistory).eql(expectedQuizHistory)
         await t.expect(await juxtastatTable(t)).eql('7|90|0\n')
-        await t.expect(await retrostatTable(t)).eql('7|30|0\n7|31|15\n7|32|7\n7|33|23\n7|38|20\n')
+        await t.expect(await retrostatTable(t)).eql('7|30|0\n7|27|7\n7|28|15\n7|29|23\n7|31|15\n7|32|7\n7|33|23\n7|38|20\n')
     })
 
     quizFixture(
@@ -495,6 +495,7 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
                 W38: {
                     choices: ['A', 'A', 'A', 'A', 'A'],
                     correct_pattern: [true, false, true, false, true],
+                    archive: true,
                 },
             }),
             persistent_id: 'b0bacafe',
@@ -543,6 +544,7 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
                     false,
                     true,
                 ],
+                archive: true,
             },
         },
         quiz_friends: [
@@ -599,6 +601,7 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
         await t.navigateTo('/quiz.html#mode=retro&date=38')
         // Should transfer over retro results
         await checkText(t, 'Good! 🙃 3/5', '🟩🟥🟩🟥🟩')
+        await t.expect(t.eval(() => (JSON.parse(localStorage.getItem('quiz_history')!) as Record<string, { archive?: true }>).W38.archive)).eql(true)
 
         // Should transfer over the user id
         await t.expect(Selector('.juxtastat-user-id').withExactText('b0bacafe').exists).ok()

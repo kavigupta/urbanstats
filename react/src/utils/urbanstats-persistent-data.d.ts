@@ -242,6 +242,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/juxtastat/played_days": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Juxtastat Played Days Request */
+        get: operations["juxtastat_played_days_request_juxtastat_played_days_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/retrostat/played_weeks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Retrostat Played Weeks Request */
+        get: operations["retrostat_played_weeks_request_retrostat_played_weeks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/juxtastat/store_user_stats": {
         parameters: {
             query?: never;
@@ -478,6 +512,11 @@ export interface components {
             /** Per Question */
             per_question: number[];
         };
+        /** PlayedDaysResponse */
+        PlayedDaysResponse: {
+            /** Mask */
+            mask: string;
+        };
         /**
          * QuizKind
          * @enum {string}
@@ -525,7 +564,8 @@ export interface components {
             /** Day Stats */
             day_stats: [
                 number,
-                boolean[]
+                boolean[],
+                boolean
             ][];
         };
         /** ValidationError */
@@ -1225,6 +1265,106 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LatestDayResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPExceptionModel"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPExceptionModel"];
+                };
+            };
+        };
+    };
+    juxtastat_played_days_request_juxtastat_played_days_get: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-user": string;
+                "x-secure-id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlayedDaysResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPExceptionModel"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPExceptionModel"];
+                };
+            };
+        };
+    };
+    retrostat_played_weeks_request_retrostat_played_weeks_get: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-user": string;
+                "x-secure-id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlayedDaysResponse"];
                 };
             };
             /** @description Unauthorized */
