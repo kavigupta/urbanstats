@@ -614,6 +614,44 @@
       }
     },
     {
+      "id": "park-fill",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "park",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "MultiPolygon",
+            "Polygon"
+          ],
+          true,
+          false
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "national_park",
+            "wilderness_preserve",
+            "State Park"
+          ],
+          true,
+          false
+        ]
+      ],
+      "paint": {
+        "fill-color": "#d6e5bc"
+      }
+    },
+    {
       "id": "landcover-glacier",
       "type": "fill",
       "source": "openmaptiles",
@@ -767,7 +805,7 @@
         "cemetery"
       ],
       "paint": {
-        "fill-color": "#e0e4dd"
+        "fill-color": "#d6e5bc"
       }
     },
     {
@@ -822,41 +860,6 @@
       }
     },
     {
-      "id": "park",
-      "type": "fill",
-      "source": "openmaptiles",
-      "source-layer": "park",
-      "filter": [
-        "match",
-        [
-          "geometry-type"
-        ],
-        [
-          "MultiPolygon",
-          "Polygon"
-        ],
-        true,
-        false
-      ],
-      "paint": {
-        "fill-color": "#d8e8c8",
-        "fill-opacity": [
-          "interpolate",
-          [
-            "exponential",
-            1.8
-          ],
-          [
-            "zoom"
-          ],
-          9,
-          0.5,
-          12,
-          0.2
-        ]
-      }
-    },
-    {
       "id": "landcover-wood",
       "type": "fill",
       "source": "openmaptiles",
@@ -879,9 +882,9 @@
           9,
           true
         ],
-        "fill-color": "#6a4",
-        "fill-opacity": 0.1,
-        "fill-outline-color": "hsla(0,0%,0%,0.03)"
+        "fill-color": "#b9d896",
+        "fill-opacity": 1,
+        "fill-outline-color": "rgba(0,0,0,0)"
       }
     },
     {
@@ -890,15 +893,65 @@
       "source": "openmaptiles",
       "source-layer": "landcover",
       "filter": [
-        "==",
+        "all",
         [
-          "get",
-          "class"
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "grass"
         ],
-        "grass"
+        [
+          "match",
+          [
+            "get",
+            "subclass"
+          ],
+          [
+            "scrub",
+            "heath"
+          ],
+          false,
+          true
+        ]
       ],
       "paint": {
-        "fill-color": "#d8e8c8",
+        "fill-color": "#d6e5bc",
+        "fill-opacity": 1
+      }
+    },
+    {
+      "id": "landcover-scrub",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "landcover",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "grass"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "subclass"
+          ],
+          [
+            "scrub",
+            "heath"
+          ],
+          true,
+          false
+        ]
+      ],
+      "paint": {
+        "fill-color": "#dee0b4",
         "fill-opacity": 1
       }
     },
@@ -916,8 +969,8 @@
         "public_park"
       ],
       "paint": {
-        "fill-color": "#d8e8c8",
-        "fill-opacity": 0.8
+        "fill-color": "#d6e5bc",
+        "fill-opacity": 1
       }
     },
     {
