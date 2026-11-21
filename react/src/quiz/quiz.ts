@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { LegacyStatName } from '../data/legacy_statistic_columns'
 import { StatPath, StatName } from '../page_template/statistic-tree'
-import { Property } from '../utils/Property'
+import { Property, StoredProperty } from '../utils/Property'
 import { randomID } from '../utils/random'
 import { cancelled, uploadFile } from '../utils/upload'
 
@@ -90,33 +90,6 @@ const quizPersonaSchema = z.object({
 }).strict()
 
 export type QuizPersona = z.infer<typeof quizPersonaSchema>
-
-export class StoredProperty<T> extends Property<T> {
-    constructor(readonly localStorageKey: string, load: (storageValue: string | null) => T, private readonly store: (value: T) => string | null) {
-        super(load(localStorage.getItem(localStorageKey)))
-        const listener = (event: StorageEvent): void => {
-            if (event.key === localStorageKey) {
-                this.value = load(localStorage.getItem(localStorageKey))
-            }
-        }
-        addEventListener('storage', listener)
-    }
-
-    override get value(): T {
-        return super.value
-    }
-
-    override set value(newValue: T) {
-        const storeValue = this.store(newValue)
-        if (storeValue === null) {
-            localStorage.removeItem(this.localStorageKey)
-        }
-        else {
-            localStorage.setItem(this.localStorageKey, storeValue)
-        }
-        super.value = newValue
-    }
-}
 
 export class QuizModel {
     private constructor() {

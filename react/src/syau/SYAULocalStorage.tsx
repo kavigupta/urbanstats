@@ -1,5 +1,5 @@
-import { StoredProperty } from '../quiz/quiz'
 import { Universe } from '../universe'
+import { StoredProperty } from '../utils/Property'
 
 import { SYAUHistory, Type, SYAUHistoryForGame, SYAUHistoryKey } from './syau-panel'
 
