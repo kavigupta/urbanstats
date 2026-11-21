@@ -4,10 +4,8 @@ import { Keypoints } from '../mapper/ramps'
 
 import { assert } from './defensive'
 
-export function randomColor(name: string): string {
-    // randomly choose a color hex code where H is between 0 and 360,
-    // S is between 50 and 100, and L is between 20 and 50
-    // seed random with the hash of longname
+export function randomColor(name: string, avoidHue: number, avoidHueRadius: number): string {
+    // H is at least avoidHueRadius away from avoidHue, S is between 50 and 100, and L is between 20 and 50
 
     let seed = 0
     for (let j = 0; j < name.length; j++) {
@@ -20,7 +18,8 @@ export function randomColor(name: string): string {
         return x - Math.floor(x)
     }
 
-    return `hsl(${random() * 360}, ${50 + random() * 50}%, ${20 + random() * 30}%)`
+    const hue = (avoidHue + avoidHueRadius + random() * (360 - 2 * avoidHueRadius)) % 360
+    return `hsl(${hue}, ${50 + random() * 50}%, ${20 + random() * 30}%)`
 }
 
 export function interpolateColor(ramp: Keypoints, item: number, color?: string): string {
