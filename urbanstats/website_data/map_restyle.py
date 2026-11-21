@@ -509,6 +509,7 @@ def green_areas(style):
                 [
                     "match",
                     ["get", "class"],
+                    # the tiles copy a protected area's protection_title into its class as written
                     ["national_park", "wilderness_preserve", "State Park"],
                     True,
                     False,
