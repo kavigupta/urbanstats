@@ -53,7 +53,7 @@ mapper(() => test)('cluster map enable insets', { code: 'clusterMap(data=density
     await t.expect(getErrors()).eql([])
     await checkBox(t, /^Insets/)
     await t.expect(getErrors()).eql([])
-    await screencap(t, { removeEntireMap: false, scrollPaneTo: checkSelector(/^Insets/) })
+    await screencap(t, { scrollPaneTo: checkSelector(/^Insets/) })
 })
 
 mapper(() => test)('scale shows the bounds it computed', { code: 'cMap(data=density_pw_1km, scale=linearScale(min=1, max=3), ramp=rampUridis)' }, async (t) => {
@@ -80,7 +80,7 @@ const errorInSubfield = (testFn: () => TestFn) => (category: string, errorCausin
         await replaceInput(t, 'Linear Scale', 'Custom Expression')
         await typeInEditor(t, 0, errorCausingCode, true)
         await t.expect(getErrors()).eql([error])
-        await screencap(t, { removeEntireMap: false })
+        await screencap(t)
     })
 }
 
@@ -95,7 +95,7 @@ const errorInSubsubfield = (testFn: () => TestFn) => (category: string, errorCau
         await replaceInput(t, 'Constant', 'Custom Expression')
         await typeInEditor(t, 0, errorCausingCode, true)
         await t.expect(getErrors()).eql([error])
-        await screencap(t, { removeEntireMap: false })
+        await screencap(t)
     })
 }
 

@@ -18,15 +18,15 @@ cMap(
 
 mapper(() => test)('missing values', { code, geo: 'Subnational Region', universe: 'Iceland' }, async (t) => {
     await t.expect(getErrors()).eql([])
-    await screencap(t, { removeEntireMap: false })
+    await screencap(t)
 
     await checkBox(t, /^Show Missing Data/)
     await t.expect(getErrors()).eql([])
-    await screencap(t, { removeEntireMap: false })
+    await screencap(t)
 
     await checkBox(t, /^Color/)
     await t.expect(getErrors()).eql([])
-    await screencap(t, { removeEntireMap: false, scrollPaneTo: checkSelector(/^Show Missing Data/) })
+    await screencap(t, { scrollPaneTo: checkSelector(/^Show Missing Data/) })
 
     await toggleCustomScript(t)
     await t.expect(getCodeFromMainField()).contains('missingData=constructMissingData(color=rgb(0, 0, 0))')
@@ -56,15 +56,15 @@ clusterMap(
 
 mapper(() => test)('missing values on a cluster map', { code: clusterCode, geo: 'Subnational Region', universe: 'Iceland' }, async (t) => {
     await t.expect(getErrors()).eql([])
-    await screencap(t, { removeEntireMap: false })
+    await screencap(t)
 
     await checkBox(t, /^Show Missing Data/)
     await t.expect(getErrors()).eql([])
-    await screencap(t, { removeEntireMap: false })
+    await screencap(t)
 
     await checkBox(t, /^Color/)
     await t.expect(getErrors()).eql([])
-    await screencap(t, { removeEntireMap: false, scrollPaneTo: checkSelector(/^Show Missing Data/) })
+    await screencap(t, { scrollPaneTo: checkSelector(/^Show Missing Data/) })
 })
 
 // The same four regions on an RGB map, whose NaN channels used to render as the literal
@@ -82,15 +82,15 @@ cMapRGB(
 
 mapper(() => test)('missing values on an RGB map', { code: rgbCode, geo: 'Subnational Region', universe: 'Iceland' }, async (t) => {
     await t.expect(getErrors()).eql([])
-    await screencap(t, { removeEntireMap: false })
+    await screencap(t)
 
     await checkBox(t, /^Show Missing Data/)
     await t.expect(getErrors()).eql([])
-    await screencap(t, { removeEntireMap: false })
+    await screencap(t)
 
     await checkBox(t, /^Color/)
     await t.expect(getErrors()).eql([])
-    await screencap(t, { removeEntireMap: false, scrollPaneTo: checkSelector(/^Show Missing Data/) })
+    await screencap(t, { scrollPaneTo: checkSelector(/^Show Missing Data/) })
 })
 
 mapper(() => test)('a hidden region on an RGB map is still clickable', { code: rgbCode, geo: 'Subnational Region', universe: 'Iceland' }, async (t) => {

@@ -17,6 +17,6 @@ urbanstatsFixture('tall map', urlFromCode('Urban Center', 'Argentina', argentina
 
 test('tall-map-argentina', async (t) => {
     await t.expect(getErrors()).eql([])
-    await screencap(t, { removeEntireMap: false })
+    await screencap(t)
     await downloadPNG(t)
 })
