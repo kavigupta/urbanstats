@@ -147,6 +147,12 @@ function unsettled(mapId: string, map: maplibregl.Map): string[] {
     if (!map.loaded()) {
         return [`${mapId} (loading)`]
     }
+    // maplibre resizes the canvas from a ResizeObserver, so it can lag a window resize
+    const canvas = map.getCanvas()
+    const container = map.getContainer()
+    if (canvas.clientWidth !== container.clientWidth || canvas.clientHeight !== container.clientHeight) {
+        return [`${mapId} (resizing)`]
+    }
     const idealZoom = map.transform.tileZoom
     return Object.entries(map.style.sourceCaches).flatMap(([sourceId, cache]) => {
         if (!sourceId.startsWith(urbanStatsLayerPrefix)) {
