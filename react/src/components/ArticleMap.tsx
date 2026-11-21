@@ -1,3 +1,4 @@
+import Color from 'color'
 import indefinite from 'indefinite'
 import React, { ReactNode, useMemo, useState } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
@@ -75,13 +76,9 @@ function useArticleFeatures({ articleType, related, longname }: ArticleMapProps)
             return element
         }
 
-        const relateds = [
-            ...getRelated('contained_by'),
-            ...getRelated('intersects'),
-            ...getRelated('borders'),
-            ...getRelated('contains'),
-            ...getRelated('same_geography'),
-        ]
+        const relateds = (['contained_by', 'intersects', 'borders', 'contains', 'same_geography'] as const).flatMap(
+            relationship => getRelated(relationship).map(button => ({ ...button, relationship })),
+        )
 
         const relatedShapes = (() => {
             const result: Polygon[] = []
@@ -94,24 +91,35 @@ function useArticleFeatures({ articleType, related, longname }: ArticleMapProps)
                     continue
                 }
 
-                const color = randomColor(relateds[i].longname)
                 result.push({
                     name: relateds[i].longname,
-                    color, weight: 1, fillColor: color, fillOpacity: 0.1,
+                    ...atlasStyle(
+                        randomColor(relateds[i].longname, Color(colors.hueColors.blue).hue(), 60),
+                        0.05,
+                        relateds[i].relationship === 'borders' || relateds[i].relationship === 'contained_by',
+                    ),
                 })
             }
             return result
         })()
 
-        const color = colors.hueColors.blue
-
         return polygonFeatureCollection([
             {
                 name: longname,
-                fillOpacity: 0.5, weight: 1, color, fillColor: color,
+                ...atlasStyle(colors.hueColors.blue, 0.25, true),
                 clickable: false,
             },
             ...relatedShapes,
         ])
     }, [articleType, colors.hueColors.blue, longname, related, relatedCheckboxSettings, settings])
+}
+
+function atlasStyle(color: string, fillOpacity: number, halo: boolean): Pick<Polygon, 'color' | 'weight' | 'haloColor' | 'haloWidth' | 'fillColor' | 'fillOpacity'> {
+    return {
+        color: halo ? Color(color).darken(0.4).hex() : color,
+        weight: 1,
+        ...(halo ? { haloColor: color, haloWidth: 8 } : {}),
+        fillColor: color,
+        fillOpacity,
+    }
 }

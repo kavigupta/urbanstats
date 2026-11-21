@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import React, { ReactNode, useContext, useEffect, useId, useMemo } from 'react'
+import React, { ReactNode, useContext, useEffect, useId, useMemo, useState } from 'react'
 import { Map, MapProps, MapRef, Source, useControl, useMap } from 'react-map-gl/maplibre'
 
 import { boundingBox, extendBoxes } from '../map-partition'
@@ -19,6 +19,7 @@ import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { ScreenshotAwareLayer } from './ScreenshotAwareLayer'
+import { compactness, haloBand } from './halo-band'
 import { keptByNoBasemap, tileAttributionParts, urbanStatsLayerPrefix } from './map-common-utils'
 import { mapBackgroundColor, mapStyle, mapTransformRequest } from './map-style'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotCallback, useScreenshotMode } from './screenshot'
@@ -181,11 +182,85 @@ export interface Polygon {
     fillOpacity: number
     color: string
     weight?: number
+    haloColor?: string
+    haloWidth?: number
 
     [meta: string]: unknown
 }
 
-function polygonsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
+const minHaloScreenPx = 60
+const haloOpacity = 0.35
+// Polygons less compact than this are shaded throughout instead of haloed
+const minHaloCompactness = 0.1
+
+const compactnessCache = new WeakMap<GeoJSON.Geometry, number>()
+
+function cachedCompactness(geo: GeoJSON.Geometry): number {
+    let result = compactnessCache.get(geo)
+    if (result === undefined) {
+        result = compactness(geo)
+        compactnessCache.set(geo, result)
+    }
+    return result
+}
+
+const haloBandCache = new WeakMap<GeoJSON.Geometry, globalThis.Map<string, GeoJSON.MultiPolygon>>()
+
+function cachedHaloBand(geo: GeoJSON.Geometry, zoom: number, widthPx: number): GeoJSON.MultiPolygon {
+    let byZoom = haloBandCache.get(geo)
+    if (byZoom === undefined) {
+        byZoom = new globalThis.Map()
+        haloBandCache.set(geo, byZoom)
+    }
+    const key = `${zoom},${widthPx}`
+    let result = byZoom.get(key)
+    if (result === undefined) {
+        result = haloBand(geo, zoom, widthPx)
+        byZoom.set(key, result)
+    }
+    return result
+}
+
+function useHaloCollection(map: MapRef | undefined, features: GeoJSON.Feature[]): GeoJSON.FeatureCollection {
+    const [zoom, setZoom] = useState(() => map === undefined ? 0 : Math.round(map.getZoom()))
+    useEffect(() => {
+        if (map === undefined) {
+            return
+        }
+        const update = (): void => {
+            setZoom(Math.round(map.getZoom()))
+        }
+        update()
+        map.on('zoomend', update)
+        return () => {
+            map.off('zoomend', update)
+        }
+    }, [map])
+
+    return useMemo(() => ({
+        type: 'FeatureCollection',
+        features: features.flatMap((feature) => {
+            const { haloWidth, haloColor, extentDegrees } = feature.properties as Polygon & { extentDegrees: number }
+            if (haloWidth === undefined || extentDegrees * 512 / 360 * 2 ** zoom < minHaloScreenPx) {
+                return []
+            }
+            if (cachedCompactness(feature.geometry) < minHaloCompactness) {
+                return [{
+                    type: 'Feature' as const,
+                    properties: { haloColor, haloOpacity: haloOpacity / 2 },
+                    geometry: feature.geometry,
+                }]
+            }
+            return [{
+                type: 'Feature' as const,
+                properties: { haloColor, haloOpacity },
+                geometry: cachedHaloBand(feature.geometry, zoom, haloWidth),
+            }]
+        }),
+    }), [features, zoom])
+}
+
+function polygonsId(id: string, kind: 'source' | 'halo-source' | 'fill' | 'halo' | 'outline'): string {
     return `${urbanStatsLayerPrefix}-polygons-${kind}-${id}`
 }
 
@@ -197,6 +272,8 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
         type: 'FeatureCollection',
         features,
     }), [features])
+
+    const haloCollection = useHaloCollection(map, features)
 
     const id = useId()
 
@@ -235,6 +312,23 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
                 }}
                 beforeId={beforeId}
             />
+            <Source
+                key={polygonsId(instanceId, 'halo-source')}
+                id={polygonsId(instanceId, 'halo-source')}
+                type="geojson"
+                data={haloCollection}
+                {...(isScreenshotMode ? { tolerance: 0 } : { })}
+            />
+            <ScreenshotAwareLayer
+                id={polygonsId(instanceId, 'halo')}
+                type="fill"
+                source={polygonsId(instanceId, 'halo-source')}
+                paint={{
+                    'fill-color': ['get', 'haloColor'],
+                    'fill-opacity': ['get', 'haloOpacity'],
+                }}
+                beforeId={beforeId}
+            />
             <ScreenshotAwareLayer
                 id={polygonsId(instanceId, 'outline')}
                 type="line"
@@ -251,10 +345,12 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
 
 async function polygonGeojson(polygon: Polygon): Promise<GeoJSON.Feature> {
     const feature = await loadFeatureFromPossibleSymlink(polygon.name) as NormalizeProto<Feature>
+    const geo = geometry(feature)
+    const bounds = boundingBox(geo)
     return {
         type: 'Feature' as const,
-        properties: polygon,
-        geometry: geometry(feature),
+        properties: { ...polygon, extentDegrees: Math.max(bounds.getEast() - bounds.getWest(), bounds.getNorth() - bounds.getSouth()) },
+        geometry: geo,
     }
 }
 
