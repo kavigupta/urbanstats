@@ -5,6 +5,25 @@ and each with its own PR: `01-foo` off `main`, `02-bar` off `01-foo`, and so on.
 retargets a PR to `main` automatically when its base branch merges, as long as the repo
 deletes branches on merge — which this one does.
 
+## Creating the stack on GitHub
+
+Make the chain a real GitHub stack, not just PRs whose bases happen to line up. Open each PR
+with `gh pr create --base <branch below>` so it gets a proper title and description, then link
+them, bottom to top:
+
+```bash
+gh stack link 01-foo 02-bar 03-baz
+gh stack link <stack-number> 04-qux   # append to an existing stack
+```
+
+`link` pushes the branches and creates PRs for any that lack one, but those get auto-generated
+titles, so create them yourself first. Use `link` rather than `gh stack init`/`submit`: it
+needs no local stack tracking, and `submit` without a terminal makes drafts with generated
+titles.
+
+Don't use `gh stack sync`, `rebase` or `push`. They rebase and force-push, which breaks the
+rules below. Use `scripts/propagate-stack.sh` to keep the chain up to date instead.
+
 ## Rules
 
 **Merge up the chain, never rebase it.** Rebasing rewrites every branch above the one you
