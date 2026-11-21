@@ -652,6 +652,102 @@
       }
     },
     {
+      "id": "landcover-wood",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "landcover",
+      "filter": [
+        "==",
+        [
+          "get",
+          "class"
+        ],
+        "wood"
+      ],
+      "paint": {
+        "fill-antialias": [
+          "step",
+          [
+            "zoom"
+          ],
+          false,
+          9,
+          true
+        ],
+        "fill-color": "#b9d896",
+        "fill-opacity": 1,
+        "fill-outline-color": "rgba(0,0,0,0)"
+      }
+    },
+    {
+      "id": "landcover-grass",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "landcover",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "grass"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "subclass"
+          ],
+          [
+            "scrub",
+            "heath"
+          ],
+          false,
+          true
+        ]
+      ],
+      "paint": {
+        "fill-color": "#d6e5bc",
+        "fill-opacity": 1
+      }
+    },
+    {
+      "id": "landcover-scrub",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "landcover",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "grass"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "subclass"
+          ],
+          [
+            "scrub",
+            "heath"
+          ],
+          true,
+          false
+        ]
+      ],
+      "paint": {
+        "fill-color": "#dee0b4",
+        "fill-opacity": 1
+      }
+    },
+    {
       "id": "landcover-glacier",
       "type": "fill",
       "source": "openmaptiles",
@@ -857,102 +953,6 @@
       ],
       "paint": {
         "fill-color": "rgba(0,0,0,0)"
-      }
-    },
-    {
-      "id": "landcover-wood",
-      "type": "fill",
-      "source": "openmaptiles",
-      "source-layer": "landcover",
-      "filter": [
-        "==",
-        [
-          "get",
-          "class"
-        ],
-        "wood"
-      ],
-      "paint": {
-        "fill-antialias": [
-          "step",
-          [
-            "zoom"
-          ],
-          false,
-          9,
-          true
-        ],
-        "fill-color": "#b9d896",
-        "fill-opacity": 1,
-        "fill-outline-color": "rgba(0,0,0,0)"
-      }
-    },
-    {
-      "id": "landcover-grass",
-      "type": "fill",
-      "source": "openmaptiles",
-      "source-layer": "landcover",
-      "filter": [
-        "all",
-        [
-          "==",
-          [
-            "get",
-            "class"
-          ],
-          "grass"
-        ],
-        [
-          "match",
-          [
-            "get",
-            "subclass"
-          ],
-          [
-            "scrub",
-            "heath"
-          ],
-          false,
-          true
-        ]
-      ],
-      "paint": {
-        "fill-color": "#d6e5bc",
-        "fill-opacity": 1
-      }
-    },
-    {
-      "id": "landcover-scrub",
-      "type": "fill",
-      "source": "openmaptiles",
-      "source-layer": "landcover",
-      "filter": [
-        "all",
-        [
-          "==",
-          [
-            "get",
-            "class"
-          ],
-          "grass"
-        ],
-        [
-          "match",
-          [
-            "get",
-            "subclass"
-          ],
-          [
-            "scrub",
-            "heath"
-          ],
-          true,
-          false
-        ]
-      ],
-      "paint": {
-        "fill-color": "#dee0b4",
-        "fill-opacity": 1
       }
     },
     {

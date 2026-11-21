@@ -495,8 +495,7 @@ def green_areas(style):
     park = layer_by_id(style, "park")
     style["layers"].remove(park)
     # except the classes that are reliably parkland without towns inside; the high Sierra, for one, is almost all
-    # national park and wilderness but has little land cover mapped. Below all the other land cover and land use,
-    # so woods, glaciers and towns inside these parks still show
+    # national park and wilderness but has little land cover mapped
     style["layers"].insert(
         index_of(style, "landcover-glacier"),
         {
@@ -518,6 +517,11 @@ def green_areas(style):
             "paint": {"fill-color": GREEN_LIGHT},
         },
     )
+
+    # opaque, so below the land use, or e.g. a wooded campus would be all wood
+    for layer in [layer_by_id(style, "landcover-wood"), grass, scrub]:
+        style["layers"].remove(layer)
+        style["layers"].insert(index_of(style, "landcover-glacier"), layer)
 
 
 def stations(style):
