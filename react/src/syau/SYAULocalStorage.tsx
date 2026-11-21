@@ -30,6 +30,8 @@ export class SYAULocalStorage {
     async normalizeGuesses(typ: Type, universe: Universe, longnames: Set<string>): Promise<void> {
         const key = `${typ}-${universe}` satisfies SYAUHistoryKey
         const guessed = (this.history.value[key] as SYAUHistoryForGame | undefined)?.guessed ?? []
+        // just a fallback, since any names that are removed should be migrated;
+        // here to avoid an accidental deletion causing inconsistent state
         const outdated = guessed.filter(name => !longnames.has(name))
         if (outdated.length === 0) {
             return
