@@ -797,6 +797,9 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             const panel = import('../syau/syau-panel')
             const counts = await getCountsByArticleType()
             const syauData = await loadSYAUData(newDescriptor.typ, newDescriptor.universe, counts)
+            if (syauData !== undefined) {
+                await (await panel).normalizeGuesses(newDescriptor.typ!, newDescriptor.universe!, syauData)
+            }
             return {
                 pageData: {
                     kind: 'syau',

@@ -30,6 +30,10 @@ export interface SYAUHistoryForGame {
 
 export type SYAUHistory = Record<SYAUHistoryKey, SYAUHistoryForGame>
 
+export function normalizeGuesses(typ: Type, universe: Universe, syauData: SYAUData): Promise<void> {
+    return SYAULocalStorage.shared.normalizeGuesses(typ, universe, new Set(syauData.longnames))
+}
+
 export function SYAUPanel(props: { typ?: string, universe?: Universe, counts: CountsByUT, syauData?: SYAUData }): ReactNode {
     const headerClass = useHeaderTextClass()
     const subHeaderClass = useSubHeaderTextClass()

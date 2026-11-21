@@ -124,10 +124,6 @@ export async function loadSYAUData(
     articleNames.sort((a, b) => articleNameToValue.get(b)! - articleNameToValue.get(a)!)
     const values = articleNames.map(name => articleNameToValue.get(name)!)
 
-    // imported here so the quiz code it depends on stays out of the main bundle
-    const { SYAULocalStorage } = await import('./SYAULocalStorage')
-    await SYAULocalStorage.shared.normalizeGuesses(typ, universe, new Set(articleNames))
-
     const centroids = await loadCentroids(universe, typ, articleNames)
 
     const matchChunks = computeMatchChunksAll(articleNames)
