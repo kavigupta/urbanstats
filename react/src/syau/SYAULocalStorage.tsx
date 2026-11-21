@@ -45,7 +45,9 @@ export class SYAULocalStorage {
             return
         }
         const renamed = new Map(outdated.map((name, i) => [name, targets[i]]))
-        const normalized = guessed.map(name => renamed.get(name) ?? name)
+        // reread, since another tab may have added guesses during the lookup
+        const current = (this.history.value[key] as SYAUHistoryForGame | undefined)?.guessed ?? []
+        const normalized = current.map(name => renamed.get(name) ?? name)
         this.history.value = { ...this.history.value, [key]: { guessed: [...new Set(normalized)] } }
     }
 }

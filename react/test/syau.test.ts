@@ -381,6 +381,15 @@ test('guesses of renamed and removed urban centers', async (t) => {
     })
     await safeReload(t)
     await assertText(t, '2/65 Urban Centers named, which is 23% of the total population.')
+    await t.expect(await t.eval(() => JSON.parse(localStorage.getItem('syau_history')!) as unknown)).eql({
+        'Urban Center-Morocco': {
+            guessed: [
+                'Casablanca Urban Center, Morocco',
+                'Youssoufia Urban Center, Morocco',
+                'Nonexistent Urban Center, Morocco',
+            ],
+        },
+    })
     await addInputText(t, 'Youssoufia')
     await assertText(t, '2/65 Urban Centers named, which is 23% of the total population.')
 })
