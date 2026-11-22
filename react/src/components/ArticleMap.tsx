@@ -14,6 +14,7 @@ import { IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 import { NormalizeProto } from '../utils/types'
 
+import { atlasStyle } from './atlas-style'
 import { CommonMaplibreMap, MapAttribution, Polygon, PolygonFeatureCollection, polygonFeatureCollection, useZoomFirstFeature } from './map-common'
 
 interface ArticleMapProps {
@@ -95,21 +96,18 @@ function useArticleFeatures({ articleType, related, longname }: ArticleMapProps)
                     continue
                 }
 
-                const color = randomColor(relateds[i].longname, Color(colors.hueColors.blue).hue(), 60)
                 result.push({
                     name: relateds[i].longname,
-                    color, weight: 1, fillColor: color, fillOpacity: 0.1,
+                    ...atlasStyle(randomColor(relateds[i].longname, Color(colors.hueColors.blue).hue(), 60), 0.1),
                 })
             }
             return result
         })()
 
-        const color = colors.hueColors.blue
-
         return polygonFeatureCollection([
             {
                 name: longname,
-                fillOpacity: 0.5, weight: 1, color, fillColor: color,
+                ...atlasStyle(colors.hueColors.blue, 0.5),
                 clickable: false,
             },
             ...relatedShapes,

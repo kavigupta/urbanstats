@@ -1,6 +1,7 @@
 import stableStringify from 'json-stable-stringify'
 import React, { ReactNode, useCallback, useMemo, useState } from 'react'
 
+import { atlasStyle } from '../components/atlas-style'
 import { MapAttribution, PolygonFeatureCollection, polygonFeatureCollection } from '../components/map-common'
 import { notWaiting } from '../utils/promiseStream'
 import { ICoordinate } from '../utils/protos'
@@ -37,9 +38,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
 
     const features = useMemo(() => polygonFeatureCollection(polysOnScreen.map(({ idxIntoCentroids, category }) => ({
         name: props.longnames[idxIntoCentroids],
-        fillColor: categoryColors[category],
-        fillOpacity: 0.5,
-        color: categoryColors[category],
+        ...atlasStyle(categoryColors[category], 0.5),
         weight: 2,
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Only want to reload these when polys actually change
     }))), [stableStringify(polysOnScreen), props.guessedColor, props.notGuessedColor]).use()
