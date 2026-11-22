@@ -1,3 +1,4 @@
+import Color from 'color'
 import indefinite from 'indefinite'
 import React, { ReactNode, useMemo, useState } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
@@ -94,7 +95,7 @@ function useArticleFeatures({ articleType, related, longname }: ArticleMapProps)
                     continue
                 }
 
-                const color = randomColor(relateds[i].longname)
+                const color = randomColor(relateds[i].longname, Color(colors.hueColors.blue).hue(), 60)
                 result.push({
                     name: relateds[i].longname,
                     color, weight: 1, fillColor: color, fillOpacity: 0.1,
