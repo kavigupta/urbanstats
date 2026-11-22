@@ -5,11 +5,14 @@ import { MapRef } from 'react-map-gl/maplibre'
 
 import { Polygon } from './map-common'
 
+// MapLibre draws the world this many pixels wide at zoom 0
+const worldPxAtZoom0 = 512
+
 // Clipper works in integers, so project to this many units per screen pixel
 const unitsPerPx = 4
 
 function worldSize(zoom: number): number {
-    return 512 * 2 ** zoom * unitsPerPx
+    return worldPxAtZoom0 * 2 ** zoom * unitsPerPx
 }
 
 function mercator([lon, lat]: GeoJSON.Position): [number, number] {
