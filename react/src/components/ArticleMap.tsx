@@ -14,6 +14,7 @@ import { IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 import { NormalizeProto } from '../utils/types'
 
+import { atlasStyle } from './atlas-style'
 import { CommonMaplibreMap, MapAttribution, Polygon, PolygonFeatureCollection, polygonFeatureCollection, useZoomFirstFeature } from './map-common'
 
 interface ArticleMapProps {
@@ -77,7 +78,7 @@ function useArticleFeatures({ articleType, related, longname }: ArticleMapProps)
         }
 
         const relateds = (['contained_by', 'intersects', 'borders', 'contains', 'same_geography'] as const).flatMap(
-            relationship => getRelated(relationship).map(button => ({ ...button, relationship })),
+            relationship => getRelated(relationship).map(button => ({ ...button, halo: relationship === 'borders' })),
         )
 
         const relatedShapes = (() => {
@@ -93,11 +94,7 @@ function useArticleFeatures({ articleType, related, longname }: ArticleMapProps)
 
                 result.push({
                     name: relateds[i].longname,
-                    ...atlasStyle(
-                        randomColor(relateds[i].longname, Color(colors.hueColors.blue).hue(), 60),
-                        0.05,
-                        relateds[i].relationship === 'borders' || relateds[i].relationship === 'contained_by',
-                    ),
+                    ...atlasStyle(randomColor(relateds[i].longname, Color(colors.hueColors.blue).hue(), 60), 0.05, relateds[i].halo),
                 })
             }
             return result
@@ -112,14 +109,4 @@ function useArticleFeatures({ articleType, related, longname }: ArticleMapProps)
             ...relatedShapes,
         ])
     }, [articleType, colors.hueColors.blue, longname, related, relatedCheckboxSettings, settings])
-}
-
-function atlasStyle(color: string, fillOpacity: number, halo: boolean): Pick<Polygon, 'color' | 'weight' | 'haloColor' | 'haloWidth' | 'fillColor' | 'fillOpacity'> {
-    return {
-        color: halo ? Color(color).darken(0.4).hex() : color,
-        weight: 1,
-        ...(halo ? { haloColor: color, haloWidth: 8 } : {}),
-        fillColor: color,
-        fillOpacity,
-    }
 }
