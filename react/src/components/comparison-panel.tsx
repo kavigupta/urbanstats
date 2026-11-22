@@ -25,6 +25,7 @@ import { zIndex } from '../utils/zIndex'
 import { placeWarnings, useArticleWarnings, WarningRow } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { StagingControls } from './StagingControls'
+import { atlasStyle } from './atlas-style'
 import { useCSVExport } from './csv-export'
 import { TableEditButton } from './edit-mode-header'
 import { EditModeState, EditTable, editRowsByGroup, useEditModeState, useEditTableLayout } from './edit-table'
@@ -647,7 +648,7 @@ function ComparisonMap({ longnames, colors, attribution }: { longnames: string[]
 
     const features = useMemo(() => polygonFeatureCollection(longnames.map((longname, i) => ({
         name: longname,
-        color: colors[i], fillColor: colors[i], fillOpacity: 0.5, weight: 1,
+        ...atlasStyle(colors[i], 0.5),
     }))), [longnames, colors]).use()
 
     const readyFeatures = useMemo(() => features.filter(notWaiting), [features])
