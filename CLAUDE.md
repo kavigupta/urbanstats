@@ -23,7 +23,7 @@ Read these when the task calls for them, rather than up front:
 | [`react/test/AGENTS.md`](react/test/AGENTS.md) | running or writing e2e tests |
 | [`react/unit/AGENTS.md`](react/unit/AGENTS.md) | running or writing unit tests |
 | [`react/cf-og-worker/README.md`](react/cf-og-worker/README.md) | working on link embeds or the preview card |
-| [`scripts/AGENTS.md`](scripts/AGENTS.md) | moving commits between a stacked chain of PR branches (`01-*`, `02-*`, ...) |
+| [`scripts/AGENTS.md`](scripts/AGENTS.md) | creating or moving commits between a stacked chain of PR branches (`01-*`, `02-*`, ...) |
 | [`.github/code-review-guidelines.md`](.github/code-review-guidelines.md) | reviewing a change |
 
 DO NOT run tests as part of a code review.
