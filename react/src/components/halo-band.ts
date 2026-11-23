@@ -50,12 +50,21 @@ function shrink(polygon: ClipperLib.Paths, widthPx: number): ClipperLib.Paths {
     return result
 }
 
-function difference(subject: ClipperLib.Paths, clip: ClipperLib.Paths): ClipperLib.ExPolygons {
+function difference(subject: ClipperLib.Paths, clip: ClipperLib.Paths): ClipperLib.Paths {
+    const clipper = new ClipperLib.Clipper()
+    clipper.AddPaths(subject, ClipperLib.PolyType.ptSubject, true)
+    clipper.AddPaths(clip, ClipperLib.PolyType.ptClip, true)
+    const result: ClipperLib.Paths = []
+    clipper.Execute(ClipperLib.ClipType.ctDifference, result, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero)
+    return result
+}
+
+function intersection(subject: ClipperLib.Paths, clip: ClipperLib.Paths): ClipperLib.ExPolygons {
     const clipper = new ClipperLib.Clipper()
     clipper.AddPaths(subject, ClipperLib.PolyType.ptSubject, true)
     clipper.AddPaths(clip, ClipperLib.PolyType.ptClip, true)
     const tree = new ClipperLib.PolyTree()
-    clipper.Execute(ClipperLib.ClipType.ctDifference, tree, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero)
+    clipper.Execute(ClipperLib.ClipType.ctIntersection, tree, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero)
     return ClipperLib.JS.PolyTreeToExPolygons(tree)
 }
 
@@ -72,7 +81,7 @@ function toGeoJSONRing(path: ClipperLib.Path, renderedRegion: RenderedRegion): G
  */
 export function haloBandDirect(geometry: GeoJSON.Geometry, renderedRegion: RenderedRegion, widthPx: number): GeoJSON.MultiPolygon {
     const size = worldSize(renderedRegion.zoom)
-    // the clip edge gets a band too, so clip far enough out that it lies outside the region
+    // the clip edge gets a band too, so clip far enough out that it lies outside the region, then cut it off
     const pad = (widthPx + 1) * unitsPerPx / size
     const polygon = projectedRings(geometry).flatMap(({ points, hole }) => {
         const clipped = clipPolygon(points, [renderedRegion.x0 - pad, renderedRegion.y0 - pad, renderedRegion.x1 + pad, renderedRegion.y1 + pad])
@@ -90,9 +99,13 @@ export function haloBandDirect(geometry: GeoJSON.Geometry, renderedRegion: Rende
         return [clippedShiftedSimplified]
     })
 
+    const width = Math.round((renderedRegion.x1 - renderedRegion.x0) * size)
+    const height = Math.round((renderedRegion.y1 - renderedRegion.y0) * size)
+    const region = [{ X: 0, Y: 0 }, { X: width, Y: 0 }, { X: width, Y: height }, { X: 0, Y: height }]
+
     return {
         type: 'MultiPolygon',
-        coordinates: difference(polygon, shrink(polygon, widthPx)).map(({ outer, holes }) => [
+        coordinates: intersection(difference(polygon, shrink(polygon, widthPx)), [region]).map(({ outer, holes }) => [
             toGeoJSONRing(outer, renderedRegion), ...holes.map(x => toGeoJSONRing(x, renderedRegion)),
         ]),
     }
