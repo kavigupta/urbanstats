@@ -72,8 +72,10 @@ function toGeoJSONRing(path: ClipperLib.Path, renderedRegion: RenderedRegion): G
  */
 export function haloBandDirect(geometry: GeoJSON.Geometry, renderedRegion: RenderedRegion, widthPx: number): GeoJSON.MultiPolygon {
     const size = worldSize(renderedRegion.zoom)
+    // the clip edge gets a band too, so clip far enough out that it lies outside the region
+    const pad = (widthPx + 1) * unitsPerPx / size
     const polygon = projectedRings(geometry).flatMap(({ points, hole }) => {
-        const clipped = clipPolygon(points, [renderedRegion.x0, renderedRegion.y0, renderedRegion.x1, renderedRegion.y1])
+        const clipped = clipPolygon(points, [renderedRegion.x0 - pad, renderedRegion.y0 - pad, renderedRegion.x1 + pad, renderedRegion.y1 + pad])
         // shifted so that (0, 0) is the top left and units are in pixels*unitsPerPx, so that Clipper can work with integers
         const clippedShifted = clipped.map(([x, y]) => ({ X: Math.round((x - renderedRegion.x0) * size), Y: Math.round((y - renderedRegion.y0) * size) }))
         // "lighten" is simplify

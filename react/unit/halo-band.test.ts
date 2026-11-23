@@ -69,12 +69,17 @@ void describe('haloBandDirect', () => {
         assert.equal(band.coordinates.length, 0)
     })
 
-    void test('stays within the region for a polygon larger than it', () => {
+    void test('has no band inside the region along its edge', () => {
         const band = haloBandDirect({ type: 'Polygon', coordinates: [square(-1000, -1000, 6000)] }, region, 8)
         for (const position of band.coordinates.flat(2)) {
             const [x, y] = pixels(position)
-            assert(x > -0.5 && x < 3000.5 && y > -0.5 && y < 2000.5)
+            assert(x < 0 || x > 3000 || y < 0 || y > 2000)
         }
+    })
+
+    void test('keeps the band along a real edge that crosses the region', () => {
+        const band = haloBandDirect({ type: 'Polygon', coordinates: [square(-1000, 500, 2000)] }, region, 8)
+        assert(band.coordinates.flat(2).map(pixels).some(([x, y]) => x > 0 && x < 1000 && y > 507 && y < 509))
     })
 
     void test('handles each part of a multipolygon', () => {
