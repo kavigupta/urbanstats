@@ -79,6 +79,17 @@ void describe('haloBandDirect', () => {
         assert(band.coordinates.flat(2).map(pixels).some(([x, y]) => x > 0 && x < 1000 && y > 507 && y < 509))
     })
 
+    void test('draws the band on the copy of a shape stored a world away', () => {
+        for (const world of [-1, 1]) {
+            const band = haloBandDirect({ type: 'Polygon', coordinates: [square(1000 + world * pxSize, 500, 200)] }, region, 8)
+            assert(Math.abs(area(band) - (200 ** 2 - 184 ** 2)) < 10)
+            for (const position of band.coordinates.flat(2)) {
+                const [x] = pixels(position)
+                assert(x > 900 && x < 1300)
+            }
+        }
+    })
+
     void test('handles each part of a multipolygon', () => {
         const band = haloBandDirect({ type: 'MultiPolygon', coordinates: [[square(1000, 500, 200)], [square(2000, 500, 200)]] }, region, 8)
         assert.equal(band.coordinates.length, 2)

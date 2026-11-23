@@ -83,10 +83,12 @@ export function haloBandDirect(geometry: GeoJSON.Geometry, renderedRegion: Rende
     const size = worldSize(renderedRegion.zoom)
     // the clip edge gets a band too, so clip far enough out that it lies outside the region, then cut it off
     const pad = (widthPx + 1) * unitsPerPx / size
-    const polygon = projectedRings(geometry).flatMap(({ points, hole }) => {
-        const clipped = clipPolygon(points, [renderedRegion.x0 - pad, renderedRegion.y0 - pad, renderedRegion.x1 + pad, renderedRegion.y1 + pad])
+    // MapLibre draws a copy of the world every 1 unit of x, and the region can reach into those copies
+    const worldCopies = Array.from({ length: Math.ceil(renderedRegion.x1) - Math.floor(renderedRegion.x0) + 2 }, (_, i) => Math.floor(renderedRegion.x0) - 1 + i)
+    const polygon = worldCopies.flatMap(copy => projectedRings(geometry).flatMap(({ points, hole }) => {
+        const clipped = clipPolygon(points, [renderedRegion.x0 - copy - pad, renderedRegion.y0 - pad, renderedRegion.x1 - copy + pad, renderedRegion.y1 + pad])
         // shifted so that (0, 0) is the top left and units are in pixels*unitsPerPx, so that Clipper can work with integers
-        const clippedShifted = clipped.map(([x, y]) => ({ X: Math.round((x - renderedRegion.x0) * size), Y: Math.round((y - renderedRegion.y0) * size) }))
+        const clippedShifted = clipped.map(([x, y]) => ({ X: Math.round((x + copy - renderedRegion.x0) * size), Y: Math.round((y - renderedRegion.y0) * size) }))
         // "lighten" is simplify
         const clippedShiftedSimplified = ClipperLib.JS.Lighten(clippedShifted, unitsPerPx / 2)
         if (clippedShiftedSimplified.length < 3) {
@@ -97,7 +99,7 @@ export function haloBandDirect(geometry: GeoJSON.Geometry, renderedRegion: Rende
             clippedShiftedSimplified.reverse()
         }
         return [clippedShiftedSimplified]
-    })
+    }))
 
     const width = Math.round((renderedRegion.x1 - renderedRegion.x0) * size)
     const height = Math.round((renderedRegion.y1 - renderedRegion.y0) * size)
