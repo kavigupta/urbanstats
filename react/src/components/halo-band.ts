@@ -17,112 +17,125 @@ function worldSize(zoom: number): number {
     return worldPxAtZoom0 * 2 ** zoom * unitsPerPx
 }
 
-/** In mercator coordinates, which run from 0 to 1 across the world */
-interface Region { zoom: number, x0: number, y0: number, x1: number, y1: number }
+/** A region of the map to be rendered, in the internal Mercator coordinates which are [0, 1]^2 across the entire world */
+interface RenderedRegion { zoom: number, x0: number, y0: number, x1: number, y1: number }
 
-const projectedCache = new WeakMap<GeoJSON.Geometry, { points: Point[], hole: boolean }[]>()
+const projectedRingsCache = new WeakMap<GeoJSON.Geometry, { points: Point[], hole: boolean }[]>()
+
+function projectedRingsDirect(geometry: GeoJSON.Geometry): { points: Point[], hole: boolean }[] {
+    const polygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.type === 'MultiPolygon' ? geometry.coordinates : []
+    return polygons.flatMap(polygon => polygon.map((ring, i) => ({
+        points: ring.map(([lon, lat]) => {
+            const { x, y } = MercatorCoordinate.fromLngLat([lon, lat])
+            return [x, y] satisfies Point
+        }),
+        hole: i > 0,
+    })))
+}
 
 function projectedRings(geometry: GeoJSON.Geometry): { points: Point[], hole: boolean }[] {
-    let result = projectedCache.get(geometry)
+    let result = projectedRingsCache.get(geometry)
     if (result === undefined) {
-        const polygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.type === 'MultiPolygon' ? geometry.coordinates : []
-        result = polygons.flatMap(polygon => polygon.map((ring, i) => ({
-            points: ring.map(([lon, lat]) => {
-                const { x, y } = MercatorCoordinate.fromLngLat([lon, lat])
-                return [x, y] satisfies Point
-            }),
-            hole: i > 0,
-        })))
-        projectedCache.set(geometry, result)
+        result = projectedRingsDirect(geometry)
+        projectedRingsCache.set(geometry, result)
     }
     return result
 }
 
-/**
- * Returns the polygon minus its inset by widthPx at the region's zoom, within the region. The region's edges cut a
- * false band, so it should reach well past the screen.
- */
-function haloBand(geometry: GeoJSON.Geometry, region: Region, widthPx: number): GeoJSON.MultiPolygon {
-    const size = worldSize(region.zoom)
-    const polygon = projectedRings(geometry).flatMap(({ points, hole }) => {
-        const ring = ClipperLib.JS.Lighten(
-            // relative to the region's corner, as clipper is slower once coordinates pass 2^25 or so
-            clipPolygon(points, [region.x0, region.y0, region.x1, region.y1])
-                .map(([x, y]) => ({ X: Math.round((x - region.x0) * size), Y: Math.round((y - region.y0) * size) })),
-            unitsPerPx / 2,
-        )
-        if (ring.length < 3) {
-            return []
-        }
-        // so holes grow when the polygon is inset
-        if (ClipperLib.Clipper.Orientation(ring) === hole) {
-            ring.reverse()
-        }
-        return [ring]
-    })
-
-    const offset = new ClipperLib.ClipperOffset(2, unitsPerPx / 4)
+// moves the polygon inwards, creating the smaller version
+function shrink(polygon: ClipperLib.Paths, widthPx: number): ClipperLib.Paths {
+    const offset = new ClipperLib.ClipperOffset(/* miter limit, does nothing */ 2, /* Tolerance on arcs */ unitsPerPx / 4)
     offset.AddPaths(polygon, ClipperLib.JoinType.jtRound, ClipperLib.EndType.etClosedPolygon)
-    const inset: ClipperLib.Paths = []
-    offset.Execute(inset, -widthPx * unitsPerPx)
+    const result: ClipperLib.Paths = []
+    offset.Execute(result, -widthPx * unitsPerPx)
+    return result
+}
 
+function difference(subject: ClipperLib.Paths, clip: ClipperLib.Paths): ClipperLib.ExPolygons {
     const clipper = new ClipperLib.Clipper()
-    clipper.AddPaths(polygon, ClipperLib.PolyType.ptSubject, true)
-    clipper.AddPaths(inset, ClipperLib.PolyType.ptClip, true)
+    clipper.AddPaths(subject, ClipperLib.PolyType.ptSubject, true)
+    clipper.AddPaths(clip, ClipperLib.PolyType.ptClip, true)
     const tree = new ClipperLib.PolyTree()
     clipper.Execute(ClipperLib.ClipType.ctDifference, tree, ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero)
+    return ClipperLib.JS.PolyTreeToExPolygons(tree)
+}
 
-    const close = (path: ClipperLib.Path): GeoJSON.Position[] => {
-        const ring = path.map(({ X, Y }) => new MercatorCoordinate(region.x0 + X / size, region.y0 + Y / size).toLngLat().toArray())
-        return [...ring, ring[0]]
-    }
+/** Undoes the projection in haloBandDirect, and repeats the first point at the end as GeoJSON requires */
+function toGeoJSONRing(path: ClipperLib.Path, renderedRegion: RenderedRegion): GeoJSON.Position[] {
+    const size = worldSize(renderedRegion.zoom)
+    const ring = path.map(({ X, Y }) => new MercatorCoordinate(renderedRegion.x0 + X / size, renderedRegion.y0 + Y / size).toLngLat().toArray())
+    return [...ring, ring[0]]
+}
+
+/**
+ * Returns the 'halo band' which is the area of the polygon that is within the widthPx of the polygon's edge,
+ * at the current zoom level. This is clipped to the rendered region, for efficiency.
+ */
+function haloBandDirect(geometry: GeoJSON.Geometry, renderedRegion: RenderedRegion, widthPx: number): GeoJSON.MultiPolygon {
+    const size = worldSize(renderedRegion.zoom)
+    const polygon = projectedRings(geometry).flatMap(({ points, hole }) => {
+        const clipped = clipPolygon(points, [renderedRegion.x0, renderedRegion.y0, renderedRegion.x1, renderedRegion.y1])
+        // shifted so that (0, 0) is the top left and units are in pixels*unitsPerPx, so that Clipper can work with integers
+        const clippedShifted = clipped.map(([x, y]) => ({ X: Math.round((x - renderedRegion.x0) * size), Y: Math.round((y - renderedRegion.y0) * size) }))
+        // "lighten" is simplify
+        const clippedShiftedSimplified = ClipperLib.JS.Lighten(clippedShifted, unitsPerPx / 2)
+        if (clippedShiftedSimplified.length < 3) {
+            return []
+        }
+        // direction is used to encode outer/inner ring
+        if (ClipperLib.Clipper.Orientation(clippedShiftedSimplified) === hole) {
+            clippedShiftedSimplified.reverse()
+        }
+        return [clippedShiftedSimplified]
+    })
+
     return {
         type: 'MultiPolygon',
-        coordinates: ClipperLib.JS.PolyTreeToExPolygons(tree).map(({ outer, holes }) => [close(outer), ...holes.map(close)]),
+        coordinates: difference(polygon, shrink(polygon, widthPx)).map(({ outer, holes }) => [
+            toGeoJSONRing(outer, renderedRegion), ...holes.map(x => toGeoJSONRing(x, renderedRegion)),
+        ]),
     }
 }
 
 export const haloOpacity = 0.35
 
-const haloBandCache = new WeakMap<GeoJSON.Geometry, { region: Region, widthPx: number, band: GeoJSON.MultiPolygon }>()
+const haloBandCache = new WeakMap<GeoJSON.Geometry, { region: RenderedRegion, widthPx: number, band: GeoJSON.MultiPolygon }>()
 
-function cachedHaloBand(geometry: GeoJSON.Geometry, region: Region, widthPx: number): GeoJSON.MultiPolygon {
+function haloBand(geometry: GeoJSON.Geometry, region: RenderedRegion, widthPx: number): GeoJSON.MultiPolygon {
     const cached = haloBandCache.get(geometry)
     if (cached?.region === region && cached.widthPx === widthPx) {
         return cached.band
     }
-    const band = haloBand(geometry, region, widthPx)
+    const band = haloBandDirect(geometry, region, widthPx)
     haloBandCache.set(geometry, { region, widthPx, band })
     return band
 }
 
-function screen(map: maplibregl.Map): Region {
+/**
+ * Keeps the current region while the screen stays inside it at the same zoom. Otherwise returns the screen and a
+ * screen's width and height past each side, so panning shows the halo before it is recomputed.
+ */
+function nextRenderedRegion(map: maplibregl.Map, current: RenderedRegion | undefined): RenderedRegion {
     const bounds = map.getBounds()
     const { x: x0, y: y0 } = MercatorCoordinate.fromLngLat(bounds.getNorthWest())
     const { x: x1, y: y1 } = MercatorCoordinate.fromLngLat(bounds.getSouthEast())
-    return { zoom: Math.round(map.getZoom()), x0, y0, x1, y1 }
-}
-
-/** The screen and a screen's width and height past each side, so panning shows the halo before it is recomputed */
-function regionAround({ zoom, x0, y0, x1, y1 }: Region): Region {
+    const zoom = Math.round(map.getZoom())
+    if (current?.zoom === zoom && x0 >= current.x0 && x1 <= current.x1 && y0 >= current.y0 && y1 <= current.y1) {
+        return current
+    }
     const width = x1 - x0
     const height = y1 - y0
     return { zoom, x0: x0 - width, y0: y0 - height, x1: x1 + width, y1: y1 + height }
 }
 
-function within(inner: Region, outer: Region): boolean {
-    return inner.zoom === outer.zoom && inner.x0 >= outer.x0 && inner.x1 <= outer.x1 && inner.y0 >= outer.y0 && inner.y1 <= outer.y1
-}
-
 export function useHaloCollection(map: MapRef | undefined, features: GeoJSON.Feature[]): GeoJSON.FeatureCollection {
-    const [region, setRegion] = useState<Region | undefined>(undefined)
+    const [renderedRegion, setRenderedRegion] = useState<RenderedRegion | undefined>(undefined)
     useEffect(() => {
         if (map === undefined) {
             return
         }
         const update = (): void => {
-            const now = screen(map.getMap())
-            setRegion(current => current !== undefined && within(now, current) ? current : regionAround(now))
+            setRenderedRegion(current => nextRenderedRegion(map.getMap(), current))
         }
         update()
         map.on('moveend', update)
@@ -133,7 +146,7 @@ export function useHaloCollection(map: MapRef | undefined, features: GeoJSON.Fea
 
     return useMemo(() => ({
         type: 'FeatureCollection',
-        features: region === undefined
+        features: renderedRegion === undefined
             ? []
             : features.flatMap((feature) => {
                 const { haloWidth, haloColor } = feature.properties as Polygon
@@ -143,8 +156,8 @@ export function useHaloCollection(map: MapRef | undefined, features: GeoJSON.Fea
                 return [{
                     type: 'Feature' as const,
                     properties: { haloColor },
-                    geometry: cachedHaloBand(feature.geometry, region, haloWidth),
+                    geometry: haloBand(feature.geometry, renderedRegion, haloWidth),
                 }]
             }),
-    }), [features, region])
+    }), [features, renderedRegion])
 }
