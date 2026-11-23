@@ -1,7 +1,6 @@
 import ClipperLib from 'clipper-lib'
 import { clipPolygon, Point } from 'lineclip'
-import { MercatorCoordinate } from 'maplibre-gl'
-import type maplibregl from 'maplibre-gl'
+import maplibregl from 'maplibre-gl'
 import { useEffect, useMemo, useState } from 'react'
 import { MapRef } from 'react-map-gl/maplibre'
 
@@ -11,14 +10,14 @@ import { Polygon } from './map-common'
 const worldPxAtZoom0 = 512
 
 // Clipper works in integers, so project to this many units per screen pixel
-const unitsPerPx = 4
+export const unitsPerPx = 4
 
-function worldSize(zoom: number): number {
+export function worldSize(zoom: number): number {
     return worldPxAtZoom0 * 2 ** zoom * unitsPerPx
 }
 
 /** A region of the map to be rendered, in the internal Mercator coordinates which are [0, 1]^2 across the entire world */
-interface RenderedRegion { zoom: number, x0: number, y0: number, x1: number, y1: number }
+export interface RenderedRegion { zoom: number, x0: number, y0: number, x1: number, y1: number }
 
 const projectedRingsCache = new WeakMap<GeoJSON.Geometry, { points: Point[], hole: boolean }[]>()
 
@@ -26,7 +25,7 @@ function projectedRingsDirect(geometry: GeoJSON.Geometry): { points: Point[], ho
     const polygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.type === 'MultiPolygon' ? geometry.coordinates : []
     return polygons.flatMap(polygon => polygon.map((ring, i) => ({
         points: ring.map(([lon, lat]) => {
-            const { x, y } = MercatorCoordinate.fromLngLat([lon, lat])
+            const { x, y } = maplibregl.MercatorCoordinate.fromLngLat([lon, lat])
             return [x, y] satisfies Point
         }),
         hole: i > 0,
@@ -63,7 +62,7 @@ function difference(subject: ClipperLib.Paths, clip: ClipperLib.Paths): ClipperL
 /** Undoes the projection in haloBandDirect, and repeats the first point at the end as GeoJSON requires */
 function toGeoJSONRing(path: ClipperLib.Path, renderedRegion: RenderedRegion): GeoJSON.Position[] {
     const size = worldSize(renderedRegion.zoom)
-    const ring = path.map(({ X, Y }) => new MercatorCoordinate(renderedRegion.x0 + X / size, renderedRegion.y0 + Y / size).toLngLat().toArray())
+    const ring = path.map(({ X, Y }) => new maplibregl.MercatorCoordinate(renderedRegion.x0 + X / size, renderedRegion.y0 + Y / size).toLngLat().toArray())
     return [...ring, ring[0]]
 }
 
@@ -71,7 +70,7 @@ function toGeoJSONRing(path: ClipperLib.Path, renderedRegion: RenderedRegion): G
  * Returns the 'halo band' which is the area of the polygon that is within the widthPx of the polygon's edge,
  * at the current zoom level. This is clipped to the rendered region, for efficiency.
  */
-function haloBandDirect(geometry: GeoJSON.Geometry, renderedRegion: RenderedRegion, widthPx: number): GeoJSON.MultiPolygon {
+export function haloBandDirect(geometry: GeoJSON.Geometry, renderedRegion: RenderedRegion, widthPx: number): GeoJSON.MultiPolygon {
     const size = worldSize(renderedRegion.zoom)
     const polygon = projectedRings(geometry).flatMap(({ points, hole }) => {
         const clipped = clipPolygon(points, [renderedRegion.x0, renderedRegion.y0, renderedRegion.x1, renderedRegion.y1])
@@ -115,10 +114,10 @@ function haloBand(geometry: GeoJSON.Geometry, region: RenderedRegion, widthPx: n
  * Keeps the current region while the screen stays inside it at the same zoom. Otherwise returns the screen and a
  * screen's width and height past each side, so panning shows the halo before it is recomputed.
  */
-function nextRenderedRegion(map: maplibregl.Map, current: RenderedRegion | undefined): RenderedRegion {
+export function nextRenderedRegion(map: maplibregl.Map, current: RenderedRegion | undefined): RenderedRegion {
     const bounds = map.getBounds()
-    const { x: x0, y: y0 } = MercatorCoordinate.fromLngLat(bounds.getNorthWest())
-    const { x: x1, y: y1 } = MercatorCoordinate.fromLngLat(bounds.getSouthEast())
+    const { x: x0, y: y0 } = maplibregl.MercatorCoordinate.fromLngLat(bounds.getNorthWest())
+    const { x: x1, y: y1 } = maplibregl.MercatorCoordinate.fromLngLat(bounds.getSouthEast())
     const zoom = Math.round(map.getZoom())
     if (current?.zoom === zoom && x0 >= current.x0 && x1 <= current.x1 && y0 >= current.y0 && y1 <= current.y1) {
         return current
