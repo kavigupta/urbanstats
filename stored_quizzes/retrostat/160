@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual income < C$50k %",
+      "stat_path": "individual_income_under_50cad",
+      "question": "higher % of people who have individual income under C$50k",
+      "longname_a": "Halifax Regional Municipality, Halifax County, Nova Scotia, Canada",
+      "longname_b": "Laval Ville, Laval Territory, Quebec, Canada",
+      "stat_a": 0.5923810601234436,
+      "stat_b": 0.6139777302742004
+    },
+    "b": {
+      "stat_column": "Pedestrian/Cyclist Fatalities Per Capita Per Year",
+      "stat_path": "traffic_fatalities_ped_last_decade_per_capita",
+      "question": "higher pedestrian/cyclist fatalities per capita between 2013 and 2022!TOOLTIP pedestrian and cyclist fatalities in the region, divided by the population of the region",
+      "longname_a": "Ft. Wayne IN Media Market, USA",
+      "longname_b": "New Orleans LA Media Market, USA",
+      "stat_a": 1.3296426004671957e-05,
+      "stat_b": 3.39267571689561e-05
+    },
+    "a_ease": 0.31089459698848537,
+    "b_ease": 0.7130203720106288
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built in 2010s+",
+      "stat_path": "year_built_2010_or_later",
+      "question": "higher % of housing units built in 2010 or later",
+      "longname_a": "Hattiesburg-Laurel MS Media Market, USA",
+      "longname_b": "Chico-Redding CA Media Market, USA",
+      "stat_a": 0.09889514744281769,
+      "stat_b": 0.0462234728038311
+    },
+    "b": {
+      "stat_column": "Median Household Income (USD)",
+      "stat_path": "median_household_income",
+      "question": "higher median household income",
+      "longname_a": "Howard County, Maryland, USA",
+      "longname_b": "Fulton County, Georgia, USA",
+      "stat_a": 146982.0,
+      "stat_b": 91490.0
+    },
+    "a_ease": 0.317984361424848,
+    "b_ease": 0.7322222222222222
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km)",
+      "stat_path": "ad_1",
+      "question": "higher population-weighted density (r=1km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Des Moines-West Des Moines MSA, IA, USA",
+      "longname_b": "Laredo MSA, TX, USA",
+      "stat_a": 1106.8663330078125,
+      "stat_b": 2017.2645263671875
+    },
+    "b": {
+      "stat_column": "Self-care disability %",
+      "stat_path": "SELFCARE_cdc_2",
+      "question": "higher % of adults with a self-care disability",
+      "longname_a": "NY-11 (2023), USA",
+      "longname_b": "LA-06 (2025), USA",
+      "stat_a": 0.03599321469664574,
+      "stat_b": 0.06454819440841675
+    },
+    "a_ease": 0.36055603822762816,
+    "b_ease": 0.7663702506063056
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population Change (2010-2020)",
+      "stat_path": "population_change_2010",
+      "question": "higher % increase in population from 2010 to 2020",
+      "longname_a": "Monmouth County, New Jersey, USA",
+      "longname_b": "Cumberland County, Pennsylvania, USA",
+      "stat_a": 0.020887289196252823,
+      "stat_b": 0.10229875147342682
+    },
+    "b": {
+      "stat_column": "Non-citizen %",
+      "stat_path": "citizenship_not_citizen",
+      "question": "higher % of residents who are non-citizens",
+      "longname_a": "MA-02 (2023), USA",
+      "longname_b": "IN-08 (2023), USA",
+      "stat_a": 0.06437521427869797,
+      "stat_b": 0.014874291606247425
+    },
+    "a_ease": 0.2722222222222222,
+    "b_ease": 0.7491197183098591
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2019-2021 Swing 2-Coalition Margin",
+      "stat_path": "2019-2021 Swing-coalition_margin",
+      "question": "!FULL Which swung less towards the right-of-center parties between the 2019 and 2021 elections?!TOOLTIP By 2-Coalition Margin, which is calculated as (Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation.",
+      "longname_a": "Calgary CMA, AB, Canada",
+      "longname_b": "London CMA, ON, Canada",
+      "stat_a": 0.18792955577373505,
+      "stat_b": -0.15322622656822205
+    },
+    "b": {
+      "stat_column": "Undergrad Business %",
+      "stat_path": "education_field_business",
+      "question": "!FULL Which has more people with a business degree, as a percentage of the overall population?",
+      "longname_a": "TX-13 (2023), USA",
+      "longname_b": "MN-06 (2023), USA",
+      "stat_a": 0.04127836227416992,
+      "stat_b": 0.07879683375358582
+    },
+    "a_ease": 0.3863080684596577,
+    "b_ease": 0.8051738075990299
+  }
+]
