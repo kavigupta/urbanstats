@@ -17,7 +17,7 @@ export interface RenderedRegion { zoom: number, x0: number, y0: number, x1: numb
 
 export interface ProjectedRing { points: Point[], hole: boolean }
 
-export function projectedRingsDirect(geometry: GeoJSON.Geometry): ProjectedRing[] {
+export function projectedRings(geometry: GeoJSON.Geometry): ProjectedRing[] {
     const polygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.type === 'MultiPolygon' ? geometry.coordinates : []
     return polygons.flatMap(polygon => polygon.map((ring, i) => ({
         points: ring.map(([lon, lat]) => {
@@ -66,7 +66,7 @@ function toGeoJSONRing(path: ClipperLib.Path, renderedRegion: RenderedRegion): G
  * Returns the 'halo band' which is the area of the polygon that is within the widthPx of the polygon's edge,
  * at the current zoom level. This is clipped to the rendered region, for efficiency.
  */
-export function haloBandDirect(rings: ProjectedRing[], renderedRegion: RenderedRegion, widthPx: number): GeoJSON.MultiPolygon {
+export function haloBand(rings: ProjectedRing[], renderedRegion: RenderedRegion, widthPx: number): GeoJSON.MultiPolygon {
     const size = worldSize(renderedRegion.zoom)
     // the clip edge gets a band too, so clip far enough out that it lies outside the region, then cut it off
     const pad = (widthPx + 1) * unitsPerPx / size

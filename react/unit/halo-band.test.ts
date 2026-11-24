@@ -4,14 +4,14 @@ import { describe, test } from 'node:test'
 import maplibregl from 'maplibre-gl'
 
 import { nextRenderedRegion } from '../src/components/halo-band'
-import { haloBandDirect, projectedRingsDirect, RenderedRegion, unitsPerPx, worldSize } from '../src/components/halo-geometry'
+import { haloBand, projectedRings, RenderedRegion, unitsPerPx, worldSize } from '../src/components/halo-geometry'
 
 const zoom = 10
 const pxSize = worldSize(zoom) / unitsPerPx
 const region: RenderedRegion = { zoom, x0: 0.25, y0: 0.4, x1: 0.25 + 3000 / pxSize, y1: 0.4 + 2000 / pxSize }
 
 function bandOf(geometry: GeoJSON.Geometry, renderedRegion: RenderedRegion, widthPx: number): GeoJSON.MultiPolygon {
-    return haloBandDirect(projectedRingsDirect(geometry), renderedRegion, widthPx)
+    return haloBand(projectedRings(geometry), renderedRegion, widthPx)
 }
 
 function lngLat([x, y]: [number, number]): GeoJSON.Position {

@@ -2,15 +2,15 @@ import maplibregl from 'maplibre-gl'
 import { useEffect, useMemo, useState } from 'react'
 import { MapRef } from 'react-map-gl/maplibre'
 
-import { haloBandDirect, projectedRingsDirect, ProjectedRing, RenderedRegion } from './halo-geometry'
+import { haloBand, projectedRings, ProjectedRing, RenderedRegion } from './halo-geometry'
 import { Polygon } from './map-common'
 
 const projectedRingsCache = new WeakMap<GeoJSON.Geometry, ProjectedRing[]>()
 
-function projectedRings(geometry: GeoJSON.Geometry): ProjectedRing[] {
+function projectedRingsCached(geometry: GeoJSON.Geometry): ProjectedRing[] {
     let result = projectedRingsCache.get(geometry)
     if (result === undefined) {
-        result = projectedRingsDirect(geometry)
+        result = projectedRings(geometry)
         projectedRingsCache.set(geometry, result)
     }
     return result
@@ -20,12 +20,12 @@ export const haloOpacity = 0.35
 
 const haloBandCache = new WeakMap<GeoJSON.Geometry, { region: RenderedRegion, widthPx: number, band: GeoJSON.MultiPolygon }>()
 
-function haloBand(geometry: GeoJSON.Geometry, region: RenderedRegion, widthPx: number): GeoJSON.MultiPolygon {
+function haloBandCached(geometry: GeoJSON.Geometry, region: RenderedRegion, widthPx: number): GeoJSON.MultiPolygon {
     const cached = haloBandCache.get(geometry)
     if (cached?.region === region && cached.widthPx === widthPx) {
         return cached.band
     }
-    const band = haloBandDirect(projectedRings(geometry), region, widthPx)
+    const band = haloBand(projectedRingsCached(geometry), region, widthPx)
     haloBandCache.set(geometry, { region, widthPx, band })
     return band
 }
@@ -75,7 +75,7 @@ export function useHaloCollection(map: MapRef | undefined, features: GeoJSON.Fea
                 return [{
                     type: 'Feature' as const,
                     properties: { haloColor },
-                    geometry: haloBand(feature.geometry, renderedRegion, haloWidth),
+                    geometry: haloBandCached(feature.geometry, renderedRegion, haloWidth),
                 }]
             }),
     }), [features, renderedRegion])
