@@ -648,7 +648,7 @@ function ComparisonMap({ longnames, colors, attribution }: { longnames: string[]
 
     const features = useMemo(() => polygonFeatureCollection(longnames.map((longname, i) => ({
         name: longname,
-        ...atlasStyle(colors[i], 0.5),
+        ...atlasStyle(colors[i], 0.25, true),
     }))), [longnames, colors]).use()
 
     const readyFeatures = useMemo(() => features.filter(notWaiting), [features])

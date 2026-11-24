@@ -30,7 +30,7 @@ function Map({ longname, color, attribution }: MapProps): ReactNode {
         [
             {
                 name: longname,
-                ...atlasStyle(color, 0.5),
+                ...atlasStyle(color, 0.25, true),
             },
         ],
     ), [longname, color]).use()

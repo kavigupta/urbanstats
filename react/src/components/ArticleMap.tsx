@@ -77,13 +77,9 @@ function useArticleFeatures({ articleType, related, longname }: ArticleMapProps)
             return element
         }
 
-        const relateds = [
-            ...getRelated('contained_by'),
-            ...getRelated('intersects'),
-            ...getRelated('borders'),
-            ...getRelated('contains'),
-            ...getRelated('same_geography'),
-        ]
+        const relateds = (['contained_by', 'intersects', 'borders', 'contains', 'same_geography'] as const).flatMap(
+            relationship => getRelated(relationship).map(button => ({ ...button, halo: relationship === 'borders' })),
+        )
 
         const relatedShapes = (() => {
             const result: Polygon[] = []
@@ -98,7 +94,7 @@ function useArticleFeatures({ articleType, related, longname }: ArticleMapProps)
 
                 result.push({
                     name: relateds[i].longname,
-                    ...atlasStyle(randomColor(relateds[i].longname, Color(colors.hueColors.blue).hue(), 60), 0.1),
+                    ...atlasStyle(randomColor(relateds[i].longname, Color(colors.hueColors.blue).hue(), 60), 0.05, relateds[i].halo),
                 })
             }
             return result
@@ -107,7 +103,7 @@ function useArticleFeatures({ articleType, related, longname }: ArticleMapProps)
         return polygonFeatureCollection([
             {
                 name: longname,
-                ...atlasStyle(colors.hueColors.blue, 0.5),
+                ...atlasStyle(colors.hueColors.blue, 0.25, true),
                 clickable: false,
             },
             ...relatedShapes,

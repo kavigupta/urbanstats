@@ -38,7 +38,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
 
     const features = useMemo(() => polygonFeatureCollection(polysOnScreen.map(({ idxIntoCentroids, category }) => ({
         name: props.longnames[idxIntoCentroids],
-        ...atlasStyle(categoryColors[category], 0.5),
+        ...atlasStyle(categoryColors[category], 0.5, false),
         weight: 2,
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Only want to reload these when polys actually change
     }))), [stableStringify(polysOnScreen), props.guessedColor, props.notGuessedColor]).use()
