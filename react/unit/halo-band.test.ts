@@ -3,11 +3,16 @@ import { describe, test } from 'node:test'
 
 import maplibregl from 'maplibre-gl'
 
-import { haloBandDirect, nextRenderedRegion, RenderedRegion, unitsPerPx, worldSize } from '../src/components/halo-band'
+import { nextRenderedRegion } from '../src/components/halo-band'
+import { haloBandDirect, projectedRingsDirect, RenderedRegion, unitsPerPx, worldSize } from '../src/components/halo-geometry'
 
 const zoom = 10
 const pxSize = worldSize(zoom) / unitsPerPx
 const region: RenderedRegion = { zoom, x0: 0.25, y0: 0.4, x1: 0.25 + 3000 / pxSize, y1: 0.4 + 2000 / pxSize }
+
+function bandOf(geometry: GeoJSON.Geometry, renderedRegion: RenderedRegion, widthPx: number): GeoJSON.MultiPolygon {
+    return haloBandDirect(projectedRingsDirect(geometry), renderedRegion, widthPx)
+}
 
 function lngLat([x, y]: [number, number]): GeoJSON.Position {
     return new maplibregl.MercatorCoordinate(region.x0 + x / pxSize, region.y0 + y / pxSize).toLngLat().toArray()
@@ -44,44 +49,44 @@ function fakeMap(x0: number, y0: number, x1: number, y1: number, mapZoom: number
 
 void describe('haloBandDirect', () => {
     void test('is a band of the given width inside a square', () => {
-        const band = haloBandDirect({ type: 'Polygon', coordinates: [square(1000, 500, 200)] }, region, 8)
+        const band = bandOf({ type: 'Polygon', coordinates: [square(1000, 500, 200)] }, region, 8)
         assert.equal(band.coordinates.length, 1)
         assert.equal(band.coordinates[0].length, 2)
         assert(Math.abs(area(band) - (200 ** 2 - 184 ** 2)) < 10)
     })
 
     void test('fills a shape narrower than twice the width', () => {
-        const band = haloBandDirect({ type: 'Polygon', coordinates: [square(1000, 500, 10)] }, region, 8)
+        const band = bandOf({ type: 'Polygon', coordinates: [square(1000, 500, 10)] }, region, 8)
         assert.equal(band.coordinates.length, 1)
         assert.equal(band.coordinates[0].length, 1)
         assert(Math.abs(area(band) - 100) < 1)
     })
 
     void test('puts a band inside the polygon around a hole', () => {
-        const band = haloBandDirect({ type: 'Polygon', coordinates: [square(1000, 500, 200), square(1050, 550, 100).reverse()] }, region, 8)
+        const band = bandOf({ type: 'Polygon', coordinates: [square(1000, 500, 200), square(1050, 550, 100).reverse()] }, region, 8)
         // the band grows out from the hole, so its corners are quarter circles
         const holeBand = 4 * 100 * 8 + Math.PI * 8 ** 2
         assert(Math.abs(area(band) - (200 ** 2 - 184 ** 2 + holeBand)) < 20)
     })
 
     void test('is empty for a polygon outside the region', () => {
-        const band = haloBandDirect({ type: 'Polygon', coordinates: [square(-1000, -1000, 200)] }, region, 8)
+        const band = bandOf({ type: 'Polygon', coordinates: [square(-1000, -1000, 200)] }, region, 8)
         assert.equal(band.coordinates.length, 0)
     })
 
     void test('has no band along the edge of the region', () => {
-        const band = haloBandDirect({ type: 'Polygon', coordinates: [square(-1000, -1000, 6000)] }, region, 8)
+        const band = bandOf({ type: 'Polygon', coordinates: [square(-1000, -1000, 6000)] }, region, 8)
         assert.equal(band.coordinates.length, 0)
     })
 
     void test('keeps the band along a real edge that crosses the region', () => {
-        const band = haloBandDirect({ type: 'Polygon', coordinates: [square(-1000, 500, 2000)] }, region, 8)
+        const band = bandOf({ type: 'Polygon', coordinates: [square(-1000, 500, 2000)] }, region, 8)
         assert(band.coordinates.flat(2).map(pixels).some(([x, y]) => x > 0 && x < 1000 && y > 507 && y < 509))
     })
 
     void test('draws the band on the copy of a shape stored a world away', () => {
         for (const world of [-1, 1]) {
-            const band = haloBandDirect({ type: 'Polygon', coordinates: [square(1000 + world * pxSize, 500, 200)] }, region, 8)
+            const band = bandOf({ type: 'Polygon', coordinates: [square(1000 + world * pxSize, 500, 200)] }, region, 8)
             assert(Math.abs(area(band) - (200 ** 2 - 184 ** 2)) < 10)
             for (const position of band.coordinates.flat(2)) {
                 const [x] = pixels(position)
@@ -91,7 +96,7 @@ void describe('haloBandDirect', () => {
     })
 
     void test('handles each part of a multipolygon', () => {
-        const band = haloBandDirect({ type: 'MultiPolygon', coordinates: [[square(1000, 500, 200)], [square(2000, 500, 200)]] }, region, 8)
+        const band = bandOf({ type: 'MultiPolygon', coordinates: [[square(1000, 500, 200)], [square(2000, 500, 200)]] }, region, 8)
         assert.equal(band.coordinates.length, 2)
     })
 })
