@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Protestant (non-Catholic Christian) %",
+      "stat_path": "religion_protestant_canada",
+      "question": "higher % of people who are Protestant",
+      "longname_a": "Longueuil Ville, Longueuil Territory, Quebec, Canada",
+      "longname_b": "Ottawa City, Ottawa CDR, Ontario, Canada",
+      "stat_a": 0.1289478987455368,
+      "stat_b": 0.22463984787464142
+    },
+    "b": {
+      "stat_column": "Undergrad Business %",
+      "stat_path": "education_field_business",
+      "question": "!FULL Which has more people with a business degree, as a percentage of the overall population?",
+      "longname_a": "TX-31 (2023), USA",
+      "longname_b": "NY-24 (2025), USA",
+      "stat_a": 0.06972092390060425,
+      "stat_b": 0.03410482779145241
+    },
+    "a_ease": 0.7339945897204689,
+    "b_ease": 0.31993299832495814
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Mean PM2.5 Pollution",
+      "stat_path": "pm_25_2018_2022",
+      "question": "higher population-weighted PM2.5 pollution !TOOLTIP Population weighted pollution statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Yangon, Myanmar",
+      "longname_b": "Ar Riy\u0101\u1e11, Saudi Arabia",
+      "stat_a": 32.17280197143555,
+      "stat_b": 109.97148132324219
+    },
+    "b": {
+      "stat_column": "Commute Transit %",
+      "stat_path": "transportation_means_transit_no_wfh",
+      "question": "higher % of people who commute by transit",
+      "longname_a": "Monmouth County, New Jersey, USA",
+      "longname_b": "Sacramento County, California, USA",
+      "stat_a": 0.0758170410990715,
+      "stat_b": 0.022958561778068542
+    },
+    "a_ease": 0.35571687840290384,
+    "b_ease": 0.7753496503496503
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Mean PM2.5 Pollution",
+      "stat_path": "pm_25_2018_2022",
+      "question": "higher population-weighted PM2.5 pollution !TOOLTIP Population weighted pollution statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Kampala Urban Center, Uganda",
+      "longname_b": "Rio de Janeiro Urban Center, Brazil",
+      "stat_a": 72.79550170898438,
+      "stat_b": 16.25043487548828
+    },
+    "b": {
+      "stat_column": "Population",
+      "stat_path": "population",
+      "question": "higher population",
+      "longname_a": "United Kingdom",
+      "longname_b": "Kazakhstan",
+      "stat_a": 67055348.0,
+      "stat_b": 18974526.0
+    },
+    "a_ease": 0.41939120631341603,
+    "b_ease": 0.8199329983249581
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household Income < $50k %",
+      "stat_path": "household_income_under_50k",
+      "question": "higher % of households who have household income under $50k",
+      "longname_a": "IL-05 (2023), USA",
+      "longname_b": "NC-06 (2025), USA",
+      "stat_a": 0.2342814952135086,
+      "stat_b": 0.4361138641834259
+    },
+    "b": {
+      "stat_column": "Gen Alpha %",
+      "stat_path": "generation_genalpha",
+      "question": "higher % of people who are gen alpha!TOOLTIP born between 2012 and 2021",
+      "longname_a": "Portland (Oregon-Washington) Urban Center, USA",
+      "longname_b": "Modesto Urban Center, USA",
+      "stat_a": 0.11144237220287323,
+      "stat_b": 0.1455514132976532
+    },
+    "a_ease": 0.8,
+    "b_ease": 0.3480613165013526
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Vision disability %",
+      "stat_path": "VISION_cdc_2",
+      "question": "higher % of adults with a vision disability",
+      "longname_a": "Augusta GA Media Market, USA",
+      "longname_b": "Cedar Rapids-Waterloo-Iowa City & Dubuque IA Media Market, USA",
+      "stat_a": 0.069700226187706,
+      "stat_b": 0.04009747505187988
+    },
+    "b": {
+      "stat_column": "Cancer (excluding skin cancer) %",
+      "stat_path": "CANCER_cdc_2",
+      "question": "higher % of adults with cancer (excluding skin cancer)",
+      "longname_a": "Utica-Rome MSA, NY, USA",
+      "longname_b": "Birmingham-Hoover MSA, AL, USA",
+      "stat_a": 0.07527028769254684,
+      "stat_b": 0.06538300216197968
+    },
+    "a_ease": 0.576048951048951,
+    "b_ease": 0.161217587373168
+  }
+]

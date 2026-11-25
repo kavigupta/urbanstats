@@ -5,6 +5,7 @@ import React, { ReactNode, useMemo, useState } from 'react'
 import { isFirefox } from 'react-device-detect'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
+import { atlasStyle } from '../components/atlas-style'
 import { CommonMaplibreMap, CustomAttributionControlComponent, PolygonFeatureCollection, polygonFeatureCollection, useZoomFirstFeature } from '../components/map-common'
 import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
@@ -29,7 +30,7 @@ function Map({ longname, color, attribution }: MapProps): ReactNode {
         [
             {
                 name: longname,
-                fillOpacity: 0.5, weight: 1, color, fillColor: color,
+                ...atlasStyle(color, 0.25, true),
             },
         ],
     ), [longname, color]).use()

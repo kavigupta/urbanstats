@@ -19,6 +19,7 @@ import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { ScreenshotAwareLayer } from './ScreenshotAwareLayer'
+import { haloOpacity, useHaloCollection } from './halo-band'
 import { keptByNoBasemap, tileAttributionParts, urbanStatsLayerPrefix } from './map-common-utils'
 import { mapBackgroundColor, mapStyle, mapTransformRequest } from './map-style'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotCallback, useScreenshotMode } from './screenshot'
@@ -181,11 +182,13 @@ export interface Polygon {
     fillOpacity: number
     color: string
     weight?: number
+    haloColor?: string
+    haloWidth?: number
 
     [meta: string]: unknown
 }
 
-function polygonsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
+function polygonsId(id: string, kind: 'source' | 'halo-source' | 'fill' | 'halo' | 'outline'): string {
     return `${urbanStatsLayerPrefix}-polygons-${kind}-${id}`
 }
 
@@ -197,6 +200,8 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
         type: 'FeatureCollection',
         features,
     }), [features])
+
+    const haloCollection = useHaloCollection(map, features)
 
     const id = useId()
 
@@ -232,6 +237,23 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
                 paint={{
                     'fill-color': ['get', 'fillColor'],
                     'fill-opacity': ['get', 'fillOpacity'],
+                }}
+                beforeId={beforeId}
+            />
+            <Source
+                key={polygonsId(instanceId, 'halo-source')}
+                id={polygonsId(instanceId, 'halo-source')}
+                type="geojson"
+                data={haloCollection}
+                {...(isScreenshotMode ? { tolerance: 0 } : { })}
+            />
+            <ScreenshotAwareLayer
+                id={polygonsId(instanceId, 'halo')}
+                type="fill"
+                source={polygonsId(instanceId, 'halo-source')}
+                paint={{
+                    'fill-color': ['get', 'haloColor'],
+                    'fill-opacity': haloOpacity,
                 }}
                 beforeId={beforeId}
             />
