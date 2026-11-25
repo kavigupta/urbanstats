@@ -354,7 +354,7 @@ test('canada-ridings', async (t) => {
     await t.expect(await allSyauPredictions()).eql([])
     await addInputText(t, 'madawaska', '')
     await t.expect(await allSyauPredictions()).eql([
-        '329. Madawaska--Restigouche (Riding)',
+        '329. Madawaska--Restigouche (Riding) (2015)',
     ])
 })
 
@@ -362,7 +362,7 @@ urbanstatsFixture('au-federal-electorates', '/syau.html#typ=AU%20Federal%20Elect
 
 test('australia-federal-electorates', async (t) => {
     await addInputText(t, 'kingsford smith', '')
-    await t.expect(await allSyauPredictions()).eql(['35. Kingsford Smith Division'])
+    await t.expect(await allSyauPredictions()).eql(['35. Kingsford Smith Division (2025)'])
 })
 
 urbanstatsFixture('morocco-urban-centers', '/syau.html#typ=Urban+Center&universe=Morocco')
