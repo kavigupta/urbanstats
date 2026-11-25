@@ -33,7 +33,7 @@ urbanstatsFixture('far apart geographies', url({ geographies: geographies('USA',
 // Too far apart to share a map, so each gets one, and each keeps its insets over its own half.
 test('far apart geographies', async (t) => {
     await t.expect(getErrors()).eql([])
-    await screencap(t, { removeEntireMap: false })
+    await screencap(t)
 })
 
 urbanstatsFixture('neighbouring geographies', url({ geographies: geographies('USA', 'Canada') }))
@@ -41,7 +41,7 @@ urbanstatsFixture('neighbouring geographies', url({ geographies: geographies('US
 // Neighbours share one map, and the USA's insets stay over the part of it the USA covers.
 test('neighbouring geographies', async (t) => {
     await t.expect(getErrors()).eql([])
-    await screencap(t, { removeEntireMap: false })
+    await screencap(t)
 })
 
 urbanstatsFixture('clicking a geography goes to its own universe', url({ geographies: geographies('USA', 'France') }))

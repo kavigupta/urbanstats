@@ -216,7 +216,7 @@ function screenshotPath(t: TestController): string {
 /** Scrolling panes start each screenshot at the top. `scrollPaneTo` scrolls a lower subject into view. */
 type ScreencapOptions = { wait?: boolean, fullPage?: boolean, removeEntireMap?: boolean, scrollPaneTo?: Selector } & ({ selector?: undefined } | ({ selector?: Selector } & TakeElementScreenshotOptions))
 
-export async function screencap(t: TestController, { fullPage = true, wait = true, selector, removeEntireMap = true, scrollPaneTo, ...options }: ScreencapOptions = {}): Promise<void> {
+export async function screencap(t: TestController, { fullPage = true, wait = true, selector, removeEntireMap = false, scrollPaneTo, ...options }: ScreencapOptions = {}): Promise<void> {
     if (wait) {
         await waitForLoading()
     }

@@ -32,7 +32,7 @@ test('view opens a viewer whose edit button returns to the editor', async (t) =>
     await waitForLoading()
     await t.expect(await getLocation()).contains('view=true')
     await t.expect(editButton.exists).ok()
-    await screencap(t, { fullPage: false, removeEntireMap: false })
+    await screencap(t, { fullPage: false })
     await t.click(editButton)
     await waitForLoading()
     await t.expect(editButton.exists).notOk()

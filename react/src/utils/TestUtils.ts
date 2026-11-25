@@ -100,7 +100,16 @@ export class TestUtils {
             // A frame first: right after a commit, `loaded()` can still be true from before the map noticed the new work.
             await new Promise(resolve => requestAnimationFrame(resolve))
             // Read the maps afresh each frame, since one can mount, or remount under a new id, while we wait.
-            const pending = Array.from(this.maps.entries()).flatMap(([id, map]) => map._removed ? [] : unsettled(id, map))
+            const maps = Array.from(this.maps.entries()).filter(([, map]) => !map._removed)
+            // maplibre resizes from a throttled ResizeObserver, which can fire after the screenshot
+            const resized = maps.filter(([, map]) => {
+                const { clientWidth, clientHeight } = map.getContainer()
+                // a hidden map's container is empty, which maplibre sizes as 400 by 300 whatever happens
+                const hidden = clientWidth === 0 || clientHeight === 0
+                return !hidden && (map.transform.width !== clientWidth || map.transform.height !== clientHeight)
+            })
+            resized.forEach(([, map]) => map.resize())
+            const pending = [...resized.map(([id]) => `${id} (resizing)`), ...maps.flatMap(([id, map]) => unsettled(id, map))]
             if (pending.length === 0) {
                 return
             }
