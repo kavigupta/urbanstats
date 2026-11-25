@@ -1,6 +1,8 @@
 import re
 from dataclasses import dataclass
 
+import pandas as pd
+
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
 from urbanstats.geometry.shapefiles.row_functions import RowFunction, column
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
@@ -112,6 +114,17 @@ class UclKind(RowFunction):
 ASGS_2021_ID = SimpleWikidataSourcer("wdt:P10112", "asgs_id")
 
 
+@dataclass(frozen=True)
+class AsgsIdIfAny(RowFunction):
+    """The ASGS 2021 ID, or None for a region drawn since 2021"""
+
+    layer: str
+
+    def __call__(self, row):
+        code = row[f"{self.layer}_CODE21"]
+        return None if pd.isna(code) else self.layer + code
+
+
 def abs_shapefile(
     *,
     layer,
@@ -121,6 +134,7 @@ def abs_shapefile(
     type_category,
     abbreviation,
     version,
+    year=2021,
     in_wikidata=False,
     include_in_syau=False,
     gridded_data=False,
@@ -131,6 +145,8 @@ def abs_shapefile(
     """
     # pylint: disable=too-many-arguments
     name = AbsName(column(name_column), layer)
+    # a later year's layer carries over the 2021 codes, which regions drawn since then lack
+    asgs_id = layer + column(f"{layer}_CODE21") if year == 2021 else AsgsIdIfAny(layer)
     shortname = name
     if kind is not None:
         shortname = shortname + " " + kind
@@ -139,13 +155,11 @@ def abs_shapefile(
 
     return make_shapefile(
         geometry_key=f"australian_{layer.lower()}_{version}",
-        path=f"{PROCESSED}/{layer}_2021_AUST_SHP.zip",
+        path=f"{PROCESSED}/{layer}_{year}_AUST_SHP.zip",
         shortname_extractor=shortname,
         cleanname_extractor=name,
         longname_extractor=shortname + state + ", Australia",
-        additional_columns_computer=(
-            {"asgs_id": layer + column(f"{layer}_CODE21")} if in_wikidata else {}
-        ),
+        additional_columns_computer=({"asgs_id": asgs_id} if in_wikidata else {}),
         filter=lambda row: not row[name_column].startswith(NOT_PLACES),
         meta=dict(type=type_name, source="ABS", type_category=type_category),
         does_overlap_self=False,
@@ -227,12 +241,13 @@ AUSTRALIAN_POSTCODES = abs_shapefile(
 )
 AUSTRALIAN_FEDERAL_ELECTORATES = abs_shapefile(
     layer="CED",
-    name_column="CED_NAME21",
+    name_column="CED_NAME25",
     kind="Division",
     type_name="AU Federal Electorate",
     type_category="Political",
     abbreviation="FDIV",
-    version=2,
+    version=3,
+    year=2025,
     in_wikidata=True,
     include_in_syau=True,
     gridded_data=True,
