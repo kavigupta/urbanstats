@@ -16,8 +16,6 @@ function projectedRingsCached(geometry: GeoJSON.Geometry): ProjectedRing[] {
     return result
 }
 
-export const haloOpacity = 0.35
-
 const haloBandCache = new WeakMap<GeoJSON.Geometry, { region: RenderedRegion, widthPx: number, band: GeoJSON.MultiPolygon }>()
 
 function haloBandCached(geometry: GeoJSON.Geometry, region: RenderedRegion, widthPx: number): GeoJSON.MultiPolygon {
