@@ -2,7 +2,7 @@
  * Paints openfreemap's vector tiles into SVG by hand, since maplibre needs a GL context and a DOM.
  * The styling approximates openfreemap's "bright" rather than implementing the maplibre style spec.
  */
-import { VectorTile, VectorTileLayer } from '@mapbox/vector-tile'
+import { VectorTile, VectorTileFeature } from '@mapbox/vector-tile'
 import Pbf from 'pbf'
 
 import { LineStyle } from '../../src/mapper/settings/utils'
@@ -163,39 +163,70 @@ async function coveringTiles(layout: MapLayout, width: number, height: number, t
     return loaded.filter(tile => tile !== undefined)
 }
 
-/** One path for all matching features, since a dense tile holds thousands of roads for resvg to parse. */
-function rulePath(rule: Rule, strokeWidth: number, tiles: Tile[], width: number, height: number): string {
-    const parts: string[] = []
+interface DecodedFeature {
+    feature: VectorTileFeature
+    /** Empty if the feature misses the card's map box. */
+    path: string
+}
+
+/** Decoded once per source layer, since several rules read the same one. */
+function decodedFeatures(tiles: Tile[], sourceLayer: string, width: number, height: number, cache: Map<string, DecodedFeature[]>): DecodedFeature[] {
+    let result = cache.get(sourceLayer)
+    if (result !== undefined) {
+        return result
+    }
+    result = []
     for (const { tile, left, top, px } of tiles) {
-        if (!Object.hasOwn(tile.layers, rule.layer)) {
+        if (!Object.hasOwn(tile.layers, sourceLayer)) {
             continue
         }
-        const layer: VectorTileLayer = tile.layers[rule.layer]
+        const layer = tile.layers[sourceLayer]
         const unit = px / layer.extent
         for (let i = 0; i < layer.length; i++) {
             const feature = layer.feature(i)
-            if (feature.type === 1 || (rule.where !== undefined && !rule.where(feature.properties))) {
+            if (feature.type === 1) {
                 continue
             }
-            for (const ring of feature.loadGeometry()) {
-                // Tiles repeat geometry past their edges; polyline drops whatever is outside the card.
-                const points = ring.map((point): [number, number] => [left + point.x * unit, top + point.y * unit])
-                const part = polyline(points, width, height, feature.type === 3)
-                if (part !== '') {
-                    parts.push(part)
-                }
+            // Tiles repeat geometry past their edges; polyline drops whatever is outside the card.
+            const path = feature.loadGeometry()
+                .map(ring => polyline(ring.map((point): [number, number] => [left + point.x * unit, top + point.y * unit]), width, height, feature.type === 3))
+                .join('')
+            if (path !== '') {
+                result.push({ feature, path })
             }
         }
     }
-    if (parts.length === 0) {
-        return ''
-    }
+    cache.set(sourceLayer, result)
+    return result
+}
 
+/** One path per distinct paint, since a dense tile holds thousands of roads for resvg to parse. */
+function groupedPaths(features: DecodedFeature[], paintOf: (feature: VectorTileFeature) => string | undefined): string {
+    const groups = new Map<string, string[]>()
+    for (const { feature, path } of features) {
+        const paint = paintOf(feature)
+        if (paint === undefined) {
+            continue
+        }
+        let group = groups.get(paint)
+        if (group === undefined) {
+            group = []
+            groups.set(paint, group)
+        }
+        group.push(path)
+    }
+    return Array.from(groups, ([paint, paths]) => `<path d="${paths.join('')}" ${paint}/>`).join('')
+}
+
+function rulePath(rule: Rule, strokeWidth: number, tiles: Tile[], width: number, height: number, cache: Map<string, DecodedFeature[]>): string {
     const paint = rule.fill !== undefined
         ? `fill="${rule.fill}"`
         : `fill="none" stroke="${rule.stroke}" stroke-width="${strokeWidth.toFixed(2)}" stroke-linejoin="round" stroke-linecap="round"${rule.dash === undefined ? '' : ` stroke-dasharray="${rule.dash}"`}`
     const opacity = rule.opacity === undefined ? '' : ` opacity="${rule.opacity}"`
-    return `<path d="${parts.join('')}" ${paint}${opacity}/>`
+    return groupedPaths(
+        decodedFeatures(tiles, rule.layer, width, height, cache),
+        feature => rule.where === undefined || rule.where(feature.properties) ? `${paint}${opacity}` : undefined,
+    )
 }
 
 /** The map's own subnational outlines, filtered the way the site's overlay layer filters them. */
@@ -210,12 +241,13 @@ export async function basemap(layout: MapLayout, width: number, height: number, 
     if (tiles.length === 0) {
         return { under: '', over: '' }
     }
+    const cache = new Map<string, DecodedFeature[]>()
     const painted = rules
         .filter(rule => rule.minZoom === undefined || layout.zoom >= rule.minZoom)
-        .map(rule => rulePath(rule, rule.width === undefined ? 1 : widthAt(rule.width, layout.zoom), tiles, width, height))
+        .map(rule => rulePath(rule, rule.width === undefined ? 1 : widthAt(rule.width, layout.zoom), tiles, width, height, cache))
         .join('')
     return {
         under: `<rect width="${width}" height="${height}" fill="${background}"/>${painted}`,
-        over: outlines === undefined ? '' : rulePath({ ...subnationals, stroke: outlines.color }, outlines.weight, tiles, width, height),
+        over: outlines === undefined ? '' : rulePath({ ...subnationals, stroke: outlines.color }, outlines.weight, tiles, width, height, cache),
     }
 }
