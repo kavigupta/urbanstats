@@ -17,7 +17,7 @@ const maxZoom = 17
 export interface MapLayout {
     /** Box pixels per unit of projected space, chosen so the rings fill the box. */
     scale: number
-    /** What line widths are picked against */
+    /** The tile zoom whose detail suits the box's scale. */
     zoom: number
     /** The box's top-left corner, in that same scaled space. */
     originX: number

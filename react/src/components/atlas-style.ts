@@ -1,6 +1,6 @@
 import Color from 'color'
 
-import type { Polygon } from './map-common'
+import { Polygon } from './map-common'
 
 export const haloOpacity = 0.35
 
