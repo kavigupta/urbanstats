@@ -6,6 +6,7 @@ import numpy as np
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
+from urbanstats.compatibility.compatibility import without_loaded_values
 from urbanstats.data.gpw import load_full_ghs_zarr, lon_from_col_idx
 from urbanstats.features.within_distance import haversine
 from urbanstats.geometry.rasterize import (
@@ -56,6 +57,7 @@ class LandRleSummary:
     buffered_bounds: Tuple[int, int, int, int]
 
 
+@without_loaded_values
 @permacache(
     "population_density/relationship_equirectangular/land_rle_summaries_for_shapefile_4"
 )
