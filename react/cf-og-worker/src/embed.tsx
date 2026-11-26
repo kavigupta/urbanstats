@@ -4,6 +4,7 @@
  */
 import React, { ReactElement, ReactNode, cloneElement, isValidElement } from 'react'
 
+import { atlasStyle, haloOpacity } from '../../src/components/atlas-style'
 import { percentileSuffix } from '../../src/components/display-stats'
 import { tileAttribution } from '../../src/components/map-common-utils'
 import { renderQuantity } from '../../src/components/unit-display'
@@ -118,11 +119,17 @@ function attribution(width: number): ReactElement {
 async function mapPanel(shapes: { rings: Ring[], color: string }[], { width, height }: { width: number, height: number }, tileOrigin: string): Promise<ReactElement> {
     const layout = fitRings(shapes.flatMap(shape => shape.rings), width, height)
     const paint = await basemap(layout, width, height, tileOrigin)
-    const drawn = shapes
-        .map(({ rings, color }) => ({ color, d: rings.map(ring => ringPath(ring, layout, width, height)).join('') }))
+    const paths = shapes
+        .map(({ rings, color }) => ({ style: atlasStyle(color, 0.25, true), d: rings.map(ring => ringPath(ring, layout, width, height)).join('') }))
         .filter(shape => shape.d !== '')
-        .map(shape => `<path d="${shape.d}" fill="${shape.color}" fill-opacity="0.2" stroke="${shape.color}" stroke-width="2.5" stroke-linejoin="round" fill-rule="evenodd"/>`)
-        .join('')
+    // Layered like the site's maps: every fill, then every halo, then every outline.
+    // The halo is a stroke twice its width, clipped to the shape so only the inner half shows.
+    const drawn = [
+        ...paths.map(({ d }, i) => `<clipPath id="halo-${i}"><path d="${d}" clip-rule="evenodd"/></clipPath>`),
+        ...paths.map(({ d, style }) => `<path d="${d}" fill="${style.fillColor}" fill-opacity="${style.fillOpacity}" fill-rule="evenodd"/>`),
+        ...paths.map(({ d, style }, i) => `<path d="${d}" fill="none" stroke="${style.haloColor}" stroke-opacity="${haloOpacity}" stroke-width="${style.haloWidth! * 2}" stroke-linejoin="round" clip-path="url(#halo-${i})"/>`),
+        ...paths.map(({ d, style }) => `<path d="${d}" fill="none" stroke="${style.color}" stroke-width="${style.weight}" stroke-linejoin="round"/>`),
+    ].join('')
     return (
         <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
             <div style={{ display: 'flex', overflow: 'hidden', width, height, flexShrink: 0, borderRadius: 5 }}>

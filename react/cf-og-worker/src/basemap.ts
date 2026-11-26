@@ -1,10 +1,12 @@
 /*
  * Paints openfreemap's vector tiles into SVG by hand, since maplibre needs a GL context and a DOM.
- * The styling approximates openfreemap's "bright" rather than implementing the maplibre style spec.
+ * Fill and line layers follow the site's own style; labels, icons, blur and the transit source are left out.
  */
-import { VectorTile, VectorTileLayer } from '@mapbox/vector-tile'
+import { VectorTile, VectorTileFeature } from '@mapbox/vector-tile'
+import { FeatureFilter, StylePropertyExpression, featureFilter, latest, normalizePropertyExpression } from '@maplibre/maplibre-gl-style-spec'
 import Pbf from 'pbf'
 
+import mapStyleJson from '../../src/data/map_style.json'
 import { LineStyle } from '../../src/mapper/settings/utils'
 
 import { MapLayout, polyline } from './map-layout'
@@ -12,78 +14,96 @@ import { MapLayout, polyline } from './map-layout'
 /** openfreemap has no tiles past this zoom. */
 const dataMaxZoom = 14
 
-type Props = Record<string, string | number | boolean>
+// MapLibre draws the world this many pixels wide at zoom 0
+const worldPxAtZoom0 = 512
 
-interface Rule {
-    layer: string
-    /** Absent means all of the layer's features. */
-    where?: (props: Props) => boolean
-    fill?: string
-    stroke?: string
-    width?: [zoom: number, px: number][]
-    opacity?: number
-    dash?: string
-    minZoom?: number
+interface StyleLayer {
+    'id': string
+    'type': string
+    'source'?: string
+    'source-layer'?: string
+    'minzoom'?: number
+    'maxzoom'?: number
+    'filter'?: unknown
+    'paint'?: Record<string, unknown>
+    'layout'?: Record<string, unknown>
 }
 
-function widthAt(stops: [number, number][], zoom: number): number {
-    if (zoom <= stops[0][0]) {
-        return stops[0][1]
-    }
-    for (let i = 1; i < stops.length; i++) {
-        const [z0, w0] = stops[i - 1]
-        const [z1, w1] = stops[i]
-        if (zoom <= z1) {
-            return w0 + (w1 - w0) * (zoom - z0) / (z1 - z0)
+const styleLayers = (mapStyleJson as unknown as { layers: StyleLayer[] }).layers
+
+const background = (styleLayers.find(layer => layer.type === 'background') as unknown as { paint: { 'background-color': string } }).paint['background-color']
+
+interface PaintedLayer {
+    sourceLayer: string
+    type: 'fill' | 'line'
+    minzoom: number
+    maxzoom: number
+    filter: FeatureFilter
+    property: (name: string) => StylePropertyExpression | undefined
+}
+
+let paintedLayers: PaintedLayer[] | undefined
+
+/** Compiled on first use, since startup CPU is billed on every cold start. */
+function compiledLayers(): PaintedLayer[] {
+    return paintedLayers ??= styleLayers.flatMap((layer): PaintedLayer[] => {
+        if ((layer.type !== 'fill' && layer.type !== 'line') || layer.source !== 'openmaptiles' || layer['source-layer'] === undefined || layer.layout?.visibility === 'none') {
+            return []
         }
-    }
-    return stops[stops.length - 1][1]
+        const type = layer.type
+        const spec = latest as Record<string, Record<string, Parameters<typeof normalizePropertyExpression>[1]>>
+        const specs = { ...spec[`paint_${type}`], ...spec[`layout_${type}`] }
+        const values = { ...layer.layout, ...layer.paint }
+        const compiled = new Map<string, StylePropertyExpression>()
+        return [{
+            sourceLayer: layer['source-layer'],
+            type,
+            minzoom: layer.minzoom ?? 0,
+            maxzoom: layer.maxzoom ?? Infinity,
+            filter: featureFilter(layer.filter),
+            property: (name) => {
+                let expression = compiled.get(name)
+                if (expression === undefined) {
+                    const value = values[name] ?? specs[name].default
+                    if (value === undefined) {
+                        return undefined
+                    }
+                    expression = normalizePropertyExpression(value as never, specs[name])
+                    compiled.set(name, expression)
+                }
+                return expression
+            },
+        }]
+    })
 }
 
-const roadClass = (...classes: string[]) => (props: Props): boolean => classes.includes(String(props.class))
+function svgColor(value: unknown): { color: string, opacity: number } {
+    const { r, g, b, a } = value as { r: number, g: number, b: number, a: number }
+    // style-spec's Color is premultiplied
+    const channel = (c: number): number => Math.round(a === 0 ? 0 : c / a * 255)
+    return { color: `rgb(${channel(r)},${channel(g)},${channel(b)})`, opacity: a }
+}
 
-const motorwayWidth: [number, number][] = [[5, 0.5], [7, 1.5], [12, 6], [16, 14]]
-const trunkWidth: [number, number][] = [[7, 0.5], [9, 1.5], [12, 5], [16, 13]]
-const secondaryWidth: [number, number][] = [[9, 0.5], [13, 4], [16, 11]]
-const minorWidth: [number, number][] = [[12, 0.5], [14, 3], [16, 8]]
-
-/* eslint-disable no-restricted-syntax -- openfreemap's "bright" palette, read off its style JSON. */
-const background = '#f8f4f0'
-
-const rules: Rule[] = [
-    { layer: 'landcover', where: p => p.class === 'wood', fill: '#66aa44', opacity: 0.1 },
-    { layer: 'landcover', where: p => p.class === 'grass', fill: '#d8e8c8' },
-    { layer: 'landcover', where: p => p.class === 'sand', fill: '#f5eebc' },
-    { layer: 'landcover', where: p => p.class === 'ice', fill: '#ffffff', opacity: 0.5 },
-    { layer: 'landuse', where: p => p.class === 'residential' || p.class === 'suburb', fill: '#eae6e1', opacity: 0.4 },
-    { layer: 'landuse', where: p => p.class === 'commercial', fill: '#f2caca', opacity: 0.23 },
-    { layer: 'landuse', where: p => p.class === 'industrial', fill: '#fff4c2', opacity: 0.34 },
-    { layer: 'landuse', where: p => p.class === 'cemetery', fill: '#e0e4dd' },
-    { layer: 'landuse', where: p => p.class === 'hospital', fill: '#ffddee' },
-    { layer: 'landuse', where: p => p.class === 'school', fill: '#f0e8f8' },
-    { layer: 'park', fill: '#d8e8c8', opacity: 0.35 },
-    { layer: 'water', where: p => p.intermittent !== 1 && p.brunnel !== 'tunnel', fill: '#aecfe2' },
-    { layer: 'waterway', stroke: '#a0c8f0', width: [[10, 0.8], [14, 1.5], [17, 4]] },
-    { layer: 'aeroway', where: p => p.class === 'runway' || p.class === 'taxiway', stroke: '#dddddd', width: [[11, 2], [16, 12]] },
-
-    // Casings first, all of them, so a road passing beneath another does not cut a notch in it.
-    { layer: 'transportation', where: roadClass('minor', 'service', 'track'), stroke: '#cfcdca', width: minorWidth, minZoom: 12 },
-    { layer: 'transportation', where: roadClass('secondary', 'tertiary'), stroke: '#e9ac77', width: secondaryWidth },
-    { layer: 'transportation', where: roadClass('trunk', 'primary'), stroke: '#e9ac77', width: trunkWidth },
-    { layer: 'transportation', where: roadClass('motorway'), stroke: '#e9ac77', width: motorwayWidth },
-
-    { layer: 'transportation', where: roadClass('path'), stroke: '#ccbbaa', width: [[14, 0.8], [18, 3]], minZoom: 14 },
-    { layer: 'transportation', where: roadClass('rail'), stroke: '#bbbbbb', width: [[12, 0.5], [18, 2]], minZoom: 11 },
-    { layer: 'building', fill: '#e0dcd8', minZoom: 14 },
-    { layer: 'transportation', where: roadClass('minor', 'service', 'track'), stroke: '#ffffff', width: minorWidth.map(([z, w]): [number, number] => [z, Math.max(w - 1.2, 0.4)]), minZoom: 12 },
-    { layer: 'transportation', where: roadClass('secondary', 'tertiary'), stroke: '#ffeeaa', width: secondaryWidth.map(([z, w]): [number, number] => [z, Math.max(w - 1.4, 0.4)]) },
-    { layer: 'transportation', where: roadClass('trunk', 'primary'), stroke: '#ffeeaa', width: trunkWidth.map(([z, w]): [number, number] => [z, Math.max(w - 1.6, 0.4)]) },
-    { layer: 'transportation', where: roadClass('motorway'), stroke: '#ffcc88', width: motorwayWidth.map(([z, w]): [number, number] => [z, Math.max(w - 1.8, 0.4)]) },
-
-    { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 6 && p.maritime !== 1, stroke: '#b3b3b3', width: [[7, 1], [11, 2]], dash: '2 2' },
-    { layer: 'boundary', where: p => Number(p.admin_level) === 2 && p.maritime !== 1, stroke: '#a8a6b0', width: [[3, 1], [12, 3]] },
-]
-/* eslint-enable no-restricted-syntax */
+/** The SVG attributes a feature is painted with, or undefined if it isn't drawn. Features with equal attributes share a path. */
+function paintFor(layer: PaintedLayer, zoom: number, feature: VectorTileFeature): string | undefined {
+    const globals = { zoom }
+    const get = (name: string): unknown => layer.property(name)?.evaluate(globals, feature)
+    if (layer.type === 'fill') {
+        const { color, opacity } = svgColor(get('fill-color'))
+        const total = opacity * (get('fill-opacity') as number)
+        return total <= 0 ? undefined : `fill="${color}" fill-opacity="${total.toFixed(3)}"`
+    }
+    const { color, opacity } = svgColor(get('line-color'))
+    const total = opacity * (get('line-opacity') as number)
+    const width = get('line-width') as number
+    if (total <= 0 || width <= 0) {
+        return undefined
+    }
+    // maplibre's dashes are in line widths
+    const dashes = get('line-dasharray') as number[] | undefined
+    const dash = dashes === undefined || dashes.length === 0 ? '' : ` stroke-dasharray="${dashes.map(d => (d * width).toFixed(2)).join(' ')}"`
+    return `fill="none" stroke="${color}" stroke-opacity="${total.toFixed(3)}" stroke-width="${width.toFixed(2)}" stroke-linecap="${get('line-cap') as string}" stroke-linejoin="${get('line-join') as string}"${dash}`
+}
 
 /** The site draws a map's subnational outlines above its shapes, so the two halves are separate. */
 export interface PaintedBasemap {
@@ -163,45 +183,65 @@ async function coveringTiles(layout: MapLayout, width: number, height: number, t
     return loaded.filter(tile => tile !== undefined)
 }
 
-/** One path for all matching features, since a dense tile holds thousands of roads for resvg to parse. */
-function rulePath(rule: Rule, strokeWidth: number, tiles: Tile[], width: number, height: number): string {
-    const parts: string[] = []
+interface DecodedFeature {
+    feature: VectorTileFeature
+    /** The feature's outline in the card's map box; empty if it misses the box. */
+    path: string
+}
+
+/** Each tile's features decoded once, since every style layer of a source layer reads them all. */
+function decodedFeatures(tiles: Tile[], sourceLayer: string, width: number, height: number, cache: Map<string, DecodedFeature[]>): DecodedFeature[] {
+    let result = cache.get(sourceLayer)
+    if (result !== undefined) {
+        return result
+    }
+    result = []
     for (const { tile, left, top, px } of tiles) {
-        if (!Object.hasOwn(tile.layers, rule.layer)) {
+        if (!Object.hasOwn(tile.layers, sourceLayer)) {
             continue
         }
-        const layer: VectorTileLayer = tile.layers[rule.layer]
+        const layer = tile.layers[sourceLayer]
         const unit = px / layer.extent
         for (let i = 0; i < layer.length; i++) {
             const feature = layer.feature(i)
-            if (feature.type === 1 || (rule.where !== undefined && !rule.where(feature.properties))) {
+            if (feature.type === 1) {
                 continue
             }
-            for (const ring of feature.loadGeometry()) {
-                // Tiles repeat geometry past their edges; polyline drops whatever is outside the card.
-                const points = ring.map((point): [number, number] => [left + point.x * unit, top + point.y * unit])
-                const part = polyline(points, width, height, feature.type === 3)
-                if (part !== '') {
-                    parts.push(part)
-                }
+            // Tiles repeat geometry past their edges; polyline drops whatever is outside the card.
+            const path = feature.loadGeometry()
+                .map(ring => polyline(ring.map((point): [number, number] => [left + point.x * unit, top + point.y * unit]), width, height, feature.type === 3))
+                .join('')
+            if (path !== '') {
+                result.push({ feature, path })
             }
         }
     }
-    if (parts.length === 0) {
-        return ''
-    }
+    cache.set(sourceLayer, result)
+    return result
+}
 
-    const paint = rule.fill !== undefined
-        ? `fill="${rule.fill}"`
-        : `fill="none" stroke="${rule.stroke}" stroke-width="${strokeWidth.toFixed(2)}" stroke-linejoin="round" stroke-linecap="round"${rule.dash === undefined ? '' : ` stroke-dasharray="${rule.dash}"`}`
-    const opacity = rule.opacity === undefined ? '' : ` opacity="${rule.opacity}"`
-    return `<path d="${parts.join('')}" ${paint}${opacity}/>`
+/** One path per distinct paint, since a dense tile holds thousands of roads for resvg to parse. */
+function groupedPaths(features: DecodedFeature[], paintOf: (feature: VectorTileFeature) => string | undefined): string {
+    const groups = new Map<string, string[]>()
+    for (const { feature, path } of features) {
+        const paint = paintOf(feature)
+        if (paint === undefined) {
+            continue
+        }
+        let group = groups.get(paint)
+        if (group === undefined) {
+            group = []
+            groups.set(paint, group)
+        }
+        group.push(path)
+    }
+    return Array.from(groups, ([paint, paths]) => `<path d="${paths.join('')}" ${paint}/>`).join('')
 }
 
 /** The map's own subnational outlines, filtered the way the site's overlay layer filters them. */
-const subnationals: Rule = {
-    layer: 'boundary',
-    where: p => Number(p.admin_level) <= 4 && p.maritime !== 1 && p.disputed !== 1 && !Object.hasOwn(p, 'claimed_by'),
+function isSubnational(feature: VectorTileFeature): boolean {
+    const p = feature.properties
+    return Number(p.admin_level) <= 4 && p.maritime !== 1 && p.disputed !== 1 && !Object.hasOwn(p, 'claimed_by')
 }
 
 /** SVG markup sized to the map box. Both halves empty if no tile could be loaded. */
@@ -210,12 +250,18 @@ export async function basemap(layout: MapLayout, width: number, height: number, 
     if (tiles.length === 0) {
         return { under: '', over: '' }
     }
-    const painted = rules
-        .filter(rule => rule.minZoom === undefined || layout.zoom >= rule.minZoom)
-        .map(rule => rulePath(rule, rule.width === undefined ? 1 : widthAt(rule.width, layout.zoom), tiles, width, height))
+    const zoom = Math.log2(layout.scale / worldPxAtZoom0)
+    const cache = new Map<string, DecodedFeature[]>()
+    const painted = compiledLayers()
+        .filter(layer => zoom >= layer.minzoom && zoom < layer.maxzoom)
+        .map(layer => groupedPaths(
+            decodedFeatures(tiles, layer.sourceLayer, width, height, cache).filter(({ feature }) => layer.filter.filter({ zoom }, feature as never)),
+            feature => paintFor(layer, zoom, feature),
+        ))
         .join('')
+    const outlinePaint = outlines === undefined ? '' : `fill="none" stroke="${outlines.color}" stroke-width="${outlines.weight.toFixed(2)}" stroke-linejoin="round" stroke-linecap="round"`
     return {
         under: `<rect width="${width}" height="${height}" fill="${background}"/>${painted}`,
-        over: outlines === undefined ? '' : rulePath({ ...subnationals, stroke: outlines.color }, outlines.weight, tiles, width, height),
+        over: outlines === undefined ? '' : groupedPaths(decodedFeatures(tiles, 'boundary', width, height, cache), feature => isSubnational(feature) ? outlinePaint : undefined),
     }
 }
