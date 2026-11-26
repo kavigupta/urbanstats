@@ -4,6 +4,9 @@ compatibility_date = "2026-08-01"
 # Bundled dependencies reach for `process` without guarding on it (satori's style layer reads
 # `process.env.JEST_WORKER_ID`), so the Worker needs node's globals.
 compatibility_flags = ["nodejs_compat"]
+minify = true
+# Maps minified stack traces in production logs back to the source.
+upload_source_maps = true
 
 # Only pages whose embeds vary by query string, plus the renderer. Patterns match the query string too,
 # hence the trailing `*`. Must stay above the first [table], or wrangler silently deploys no routes.
