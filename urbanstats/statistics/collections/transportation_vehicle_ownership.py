@@ -4,11 +4,15 @@ from urbanstats.games.quiz_question_metadata import (
     QuizQuestionDescriptor,
     QuizQuestionSkip,
 )
-from urbanstats.statistics.statistic_collection import ACSStatisticsColection
+from urbanstats.statistics.national_census import (
+    ACSCounts,
+    AustralianCounts,
+    NationalCensusStatistics,
+)
 from urbanstats.statistics.utils import fractionalize
 
 
-class TransportationVehicleOwnershipStatistics(ACSStatisticsColection):
+class TransportationVehicleOwnershipStatistics(NationalCensusStatistics):
     def name_for_each_statistic(self):
         return {
             "vehicle_ownership_none": "Households With no Vehicle %",
@@ -43,22 +47,38 @@ class TransportationVehicleOwnershipStatistics(ACSStatisticsColection):
             ),
         }
 
-    def mutate_acs_results(self, statistics_table):
+    def mutate_counts(self, counts):
         fractionalize(
-            statistics_table,
+            counts,
             "vehicle_ownership_none",
             "vehicle_ownership_1",
             "vehicle_ownership_at_least_2",
         )
 
-        statistics_table["vehicle_ownership_at_least_1"] = (
-            statistics_table["vehicle_ownership_1"]
-            + statistics_table["vehicle_ownership_at_least_2"]
+        counts["vehicle_ownership_at_least_1"] = (
+            counts["vehicle_ownership_1"] + counts["vehicle_ownership_at_least_2"]
         )
-        del statistics_table["vehicle_ownership_1"]
+        del counts["vehicle_ownership_1"]
 
-    def acs_name(self):
-        return "car_ownership"
+    def country_inputs(self):
+        return {
+            "USA": ACSCounts(self.acs_entity()),
+            "Australia": AustralianCounts(self.abs_tables(), weight="dwellings"),
+        }
+
+    def abs_tables(self):
+        # Occupied private dwellings; not stated is left out of the denominator
+        return {
+            "G34": {
+                "vehicle_ownership_none": ["Num_MVs_per_dweling_0_MVs"],
+                "vehicle_ownership_1": ["Num_MVs_per_dweling_1_MVs"],
+                "vehicle_ownership_at_least_2": [
+                    "Num_MVs_per_dweling_2_MVs",
+                    "Num_MVs_per_dweling_3_MVs",
+                    "Num_MVs_per_dweling_4mo_MVs",
+                ],
+            }
+        }
 
     def acs_entity(self):
         return ACSDataEntity(
