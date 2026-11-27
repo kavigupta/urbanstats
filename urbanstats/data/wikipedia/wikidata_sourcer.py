@@ -27,6 +27,8 @@ class SimpleWikidataSourcer(WikidataSourcer):
 
     # pylint: disable=arguments-differ
     def compute_wikidata(self, value):
+        if value is None:
+            return None
         return query_sparlql(self.sparql_column, value)
 
 
