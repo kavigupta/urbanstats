@@ -1,10 +1,11 @@
 /*
  * Paints openfreemap's vector tiles into SVG by hand, since maplibre needs a GL context and a DOM.
- * The styling approximates openfreemap's "bright" rather than implementing the maplibre style spec.
+ * The paint comes from the site's style, through card_basemap.json; which features each rule draws is written here.
  */
 import { VectorTile, VectorTileFeature } from '@mapbox/vector-tile'
 import Pbf from 'pbf'
 
+import cardBasemap from '../../src/data/card_basemap.json'
 import { LineStyle } from '../../src/mapper/settings/utils'
 
 import { MapLayout, polyline } from './map-layout'
@@ -14,19 +15,25 @@ const dataMaxZoom = 14
 
 type Props = Record<string, string | number | boolean>
 
-interface Rule {
-    layer: string
-    /** Absent means all of the layer's features. */
-    where?: (props: Props) => boolean
-    fill?: string
-    stroke?: string
-    width?: [zoom: number, px: number][]
-    opacity?: number
-    dash?: string
+type Stops<T> = [zoom: number, value: T][]
+
+interface Paint {
+    fill?: Stops<string>
+    stroke?: Stops<string>
+    width?: Stops<number>
+    opacity?: Stops<number>
+    /** In line widths */
+    dash?: number[]
     minZoom?: number
 }
 
-function widthAt(stops: [number, number][], zoom: number): number {
+interface Rule extends Paint {
+    layer: string
+    /** Absent means all of the layer's features. */
+    where?: (props: Props) => boolean
+}
+
+function numberAt(stops: Stops<number>, zoom: number): number {
     if (zoom <= stops[0][0]) {
         return stops[0][1]
     }
@@ -40,49 +47,61 @@ function widthAt(stops: [number, number][], zoom: number): number {
     return stops[stops.length - 1][1]
 }
 
+function colorAt(stops: Stops<string>, zoom: number): string {
+    if (stops.length === 1) {
+        return stops[0][1]
+    }
+    const channel = (c: number): number => Math.round(numberAt(stops.map(([z, color]) => [z, parseInt(color.slice(1 + 2 * c, 3 + 2 * c), 16)]), zoom))
+    return `rgb(${channel(0)},${channel(1)},${channel(2)})`
+}
+
 const roadClass = (...classes: string[]) => (props: Props): boolean => classes.includes(String(props.class))
 
-const motorwayWidth: [number, number][] = [[8.5, 0], [9, 1.15], [12, 1.3], [15, 1.6], [17, 2.6], [20, 5]]
-const motorwayCasingWidth: [number, number][] = [[8, 1.1], [9, 3.45], [12, 3.9], [15, 4.8], [17, 7.8], [20, 15]]
-const trunkWidth: [number, number][] = [[6, 1.6], [12, 2.08], [15, 2.56], [17, 4.16], [20, 8]]
-const secondaryWidth: [number, number][] = [[6, 1.25], [12, 1.625], [15, 2], [17, 3.25], [20, 6.25]]
-const minorWidth: [number, number][] = [[6, 1], [12, 1.3], [15, 1.6], [17, 2.6], [20, 5]]
+const paints = cardBasemap.layers as unknown as Record<keyof typeof cardBasemap.layers, Paint>
 
-/* eslint-disable no-restricted-syntax -- The site's map style, read off map_style.json. */
-const background = '#fff8f0'
+const background = cardBasemap.background
 
 const isBorder = (p: Props): boolean => p.disputed !== 1 && !Object.hasOwn(p, 'claimed_by')
 
 const rules: Rule[] = [
     // The band along each border, under everything else.
-    { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 4 && isBorder(p), stroke: '#fde2c0', width: [[3, 2.5], [8, 5.5], [14, 9]], minZoom: 5 },
-    { layer: 'boundary', where: p => Number(p.admin_level) === 2 && p.maritime !== 1 && isBorder(p), stroke: '#fcddb3', width: [[3, 4], [8, 8], [14, 12.5]] },
+    { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 4 && isBorder(p), ...paints['boundary_3-highlight/4'] },
+    { layer: 'boundary', where: p => Number(p.admin_level) === 2 && p.maritime !== 1 && isBorder(p), ...paints['boundary_2-highlight/2'] },
 
-    { layer: 'landcover', where: p => p.class === 'wood', fill: '#b9d896' },
-    { layer: 'landcover', where: p => p.class === 'grass' && p.subclass !== 'scrub' && p.subclass !== 'heath', fill: '#d6e5bc' },
-    { layer: 'landcover', where: p => p.class === 'grass' && (p.subclass === 'scrub' || p.subclass === 'heath'), fill: '#dee0b4' },
-    { layer: 'landcover', where: p => p.class === 'sand', fill: '#e6daac' },
-    { layer: 'landcover', where: p => p.subclass === 'glacier' || p.subclass === 'ice_shelf', fill: '#ffffff', opacity: 0.5 },
-    { layer: 'landuse', where: p => ['dam', 'garages', 'industrial', 'hospital', 'school'].includes(String(p.class)), fill: '#f4dbe3' },
-    { layer: 'landuse', where: p => p.class === 'cemetery', fill: '#d6e5bc' },
-    { layer: 'park', where: p => ['national_park', 'wilderness_preserve', 'State Park', 'public_park'].includes(String(p.class)), fill: '#d6e5bc' },
-    { layer: 'water', where: p => p.intermittent !== 1 && p.brunnel !== 'tunnel', fill: '#77cacc' },
-    { layer: 'waterway', where: p => p.brunnel !== 'tunnel', stroke: '#77cacc', width: [[10, 0.8], [14, 1.5], [17, 4]] },
-    { layer: 'aeroway', where: p => p.class === 'runway' || p.class === 'taxiway', stroke: '#cba9da', width: [[11, 2], [16, 12]], minZoom: 12 },
+    { layer: 'landcover', where: p => p.class === 'wood', ...paints['landcover-wood'] },
+    { layer: 'landcover', where: p => p.class === 'grass' && p.subclass !== 'scrub' && p.subclass !== 'heath', ...paints['landcover-grass'] },
+    { layer: 'landcover', where: p => p.class === 'grass' && (p.subclass === 'scrub' || p.subclass === 'heath'), ...paints['landcover-scrub'] },
+    { layer: 'landcover', where: p => p.class === 'sand', ...paints['landcover-sand'] },
+    { layer: 'landcover', where: p => p.subclass === 'glacier', ...paints['landcover-glacier'] },
+    { layer: 'landcover', where: p => p.subclass === 'ice_shelf', ...paints['landcover-ice-shelf'] },
+    { layer: 'landuse', where: p => ['dam', 'garages', 'industrial'].includes(String(p.class)), ...paints['landuse-industrial'] },
+    { layer: 'landuse', where: p => p.class === 'hospital', ...paints['landuse-hospital'] },
+    { layer: 'landuse', where: p => p.class === 'school', ...paints['landuse-school'] },
+    { layer: 'landuse', where: p => p.class === 'cemetery', ...paints['landuse-cemetery'] },
+    { layer: 'park', where: p => ['national_park', 'wilderness_preserve', 'State Park'].includes(String(p.class)), ...paints['park-fill'] },
+    { layer: 'park', where: p => p.class === 'public_park', ...paints['landcover-grass-park'] },
+    { layer: 'water', where: p => p.intermittent !== 1 && p.brunnel !== 'tunnel', ...paints.water },
+    { layer: 'waterway', where: p => p.class === 'river' && p.brunnel !== 'tunnel', ...paints['waterway-river'] },
+    { layer: 'waterway', where: p => (p.class === 'stream' || p.class === 'canal') && p.brunnel !== 'tunnel', ...paints['waterway-stream-canal'] },
+    { layer: 'waterway', where: p => !['river', 'stream', 'canal'].includes(String(p.class)), ...paints['waterway-other'] },
+    { layer: 'aeroway', where: p => p.class === 'taxiway', ...paints['aeroway-taxiway-casing'] },
+    { layer: 'aeroway', where: p => p.class === 'runway', ...paints['aeroway-runway-casing'] },
 
     // Casings first, so a road passing beneath another does not cut a notch in it. Only the motorway's shows.
-    { layer: 'transportation', where: roadClass('motorway'), stroke: '#f96d6d', width: motorwayCasingWidth, minZoom: 5 },
+    { layer: 'transportation', where: roadClass('motorway'), ...paints['highway-motorway-casing'] },
 
-    { layer: 'transportation', where: roadClass('rail', 'transit'), stroke: '#8e8e8e', width: minorWidth },
-    { layer: 'transportation', where: roadClass('minor', 'service', 'track'), stroke: '#c1beba', width: minorWidth, minZoom: 14 },
-    { layer: 'transportation', where: roadClass('secondary', 'tertiary'), stroke: '#959496', width: secondaryWidth },
-    { layer: 'transportation', where: roadClass('trunk', 'primary'), stroke: '#f96d6d', width: trunkWidth },
-    { layer: 'transportation', where: roadClass('motorway'), stroke: '#f7aa41', width: motorwayWidth },
+    { layer: 'transportation', where: roadClass('rail'), ...paints.railway },
+    { layer: 'transportation', where: roadClass('transit'), ...paints['railway-transit'] },
+    { layer: 'transportation', where: roadClass('minor', 'service', 'track'), ...paints['highway-minor'] },
+    { layer: 'transportation', where: roadClass('secondary', 'tertiary'), ...paints['highway-secondary-tertiary'] },
+    { layer: 'transportation', where: roadClass('primary'), ...paints['highway-primary'] },
+    { layer: 'transportation', where: roadClass('trunk'), ...paints['highway-trunk'] },
+    { layer: 'transportation', where: roadClass('motorway'), ...paints['highway-motorway'] },
 
-    { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 6 && p.maritime !== 1 && isBorder(p), stroke: '#4e525a', width: [[3, 0.5], [8, 1.1], [14, 1.8]], dash: '6 2 1 2', minZoom: 7 },
-    { layer: 'boundary', where: p => Number(p.admin_level) === 2 && p.maritime !== 1 && isBorder(p), stroke: '#4e525a', width: [[3, 0.8], [8, 1.6], [14, 2.5]], dash: '9 3 1.5 3' },
+    { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 4 && p.maritime !== 1 && isBorder(p), ...paints['boundary_3/4'] },
+    { layer: 'boundary', where: p => Number(p.admin_level) >= 5 && Number(p.admin_level) <= 6 && p.maritime !== 1 && isBorder(p), ...paints['boundary_3/6'] },
+    { layer: 'boundary', where: p => Number(p.admin_level) === 2 && p.maritime !== 1 && isBorder(p), ...paints['boundary_2/2'] },
 ]
-/* eslint-enable no-restricted-syntax */
 
 /** The site draws a map's subnational outlines above its shapes, so the two halves are separate. */
 export interface PaintedBasemap {
@@ -217,11 +236,16 @@ function groupedPaths(features: DecodedFeature[], paintOf: (feature: VectorTileF
     return Array.from(groups, ([paint, paths]) => `<path d="${paths.join('')}" ${paint}/>`).join('')
 }
 
-function rulePath(rule: Rule, strokeWidth: number, tiles: Tile[], width: number, height: number, cache: Map<string, DecodedFeature[]>): string {
+function rulePath(rule: Rule, zoom: number, tiles: Tile[], width: number, height: number, cache: Map<string, DecodedFeature[]>): string {
+    const strokeWidth = rule.width === undefined ? 1 : numberAt(rule.width, zoom)
+    const opacityValue = rule.opacity === undefined ? 1 : numberAt(rule.opacity, zoom)
+    if (strokeWidth <= 0 || opacityValue <= 0) {
+        return ''
+    }
     const paint = rule.fill !== undefined
-        ? `fill="${rule.fill}"`
-        : `fill="none" stroke="${rule.stroke}" stroke-width="${strokeWidth.toFixed(2)}" stroke-linejoin="round" stroke-linecap="round"${rule.dash === undefined ? '' : ` stroke-dasharray="${rule.dash}"`}`
-    const opacity = rule.opacity === undefined ? '' : ` opacity="${rule.opacity}"`
+        ? `fill="${colorAt(rule.fill, zoom)}"`
+        : `fill="none" stroke="${colorAt(rule.stroke!, zoom)}" stroke-width="${strokeWidth.toFixed(2)}" stroke-linejoin="round" stroke-linecap="round"${rule.dash === undefined ? '' : ` stroke-dasharray="${rule.dash.map(d => (d * strokeWidth).toFixed(2)).join(' ')}"`}`
+    const opacity = rule.opacity === undefined ? '' : ` opacity="${opacityValue.toFixed(3)}"`
     return groupedPaths(
         decodedFeatures(tiles, rule.layer, width, height, cache),
         feature => rule.where === undefined || rule.where(feature.properties) ? `${paint}${opacity}` : undefined,
@@ -243,10 +267,10 @@ export async function basemap(layout: MapLayout, width: number, height: number, 
     const cache = new Map<string, DecodedFeature[]>()
     const painted = rules
         .filter(rule => rule.minZoom === undefined || layout.zoom >= rule.minZoom)
-        .map(rule => rulePath(rule, rule.width === undefined ? 1 : widthAt(rule.width, layout.zoom), tiles, width, height, cache))
+        .map(rule => rulePath(rule, layout.zoom, tiles, width, height, cache))
         .join('')
     return {
         under: `<rect width="${width}" height="${height}" fill="${background}"/>${painted}`,
-        over: outlines === undefined ? '' : rulePath({ ...subnationals, stroke: outlines.color }, outlines.weight, tiles, width, height, cache),
+        over: outlines === undefined ? '' : rulePath({ ...subnationals, stroke: [[0, outlines.color]], width: [[0, outlines.weight]] }, layout.zoom, tiles, width, height, cache),
     }
 }
