@@ -9,7 +9,8 @@ export type Ring = [number, number][]
 
 export interface Bounds { minX: number, maxX: number, minY: number, maxY: number }
 
-const tileSize = 256
+// MapLibre draws the world this many pixels wide at zoom 0
+const worldPxAtZoom0 = 512
 
 /** Tiles stop adding detail past this. */
 const maxZoom = 17
@@ -17,7 +18,7 @@ const maxZoom = 17
 export interface MapLayout {
     /** Box pixels per unit of projected space, chosen so the rings fill the box. */
     scale: number
-    /** What line widths are picked against */
+    /** MapLibre's zoom at this scale, which the basemap's style is read at. */
     zoom: number
     /** The box's top-left corner, in that same scaled space. */
     originX: number
@@ -27,7 +28,7 @@ export interface MapLayout {
 function layoutAround(centerX: number, centerY: number, scale: number, width: number, height: number): MapLayout {
     return {
         scale,
-        zoom: Math.max(0, Math.min(maxZoom, Math.round(Math.log2(scale / tileSize)))),
+        zoom: Math.max(0, Math.min(maxZoom, Math.log2(scale / worldPxAtZoom0))),
         originX: centerX * scale - width / 2,
         originY: centerY * scale - height / 2,
     }
@@ -55,7 +56,7 @@ export function fitRings(rings: Ring[], width: number, height: number): MapLayou
     const pad = 8
     const fit = Math.min((width - pad * 2) / (maxX - minX || 1), (height - pad * 2) / (maxY - minY || 1))
     // A shape too small for maxZoom's detail stays small rather than filling the box.
-    const scale = Math.min(fit, tileSize * 2 ** (maxZoom + 1))
+    const scale = Math.min(fit, worldPxAtZoom0 * 2 ** maxZoom)
     return layoutAround((minX + maxX) / 2, (minY + maxY) / 2, scale, width, height)
 }
 

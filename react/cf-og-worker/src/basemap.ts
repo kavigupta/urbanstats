@@ -144,8 +144,9 @@ function tilesAt(zoom: number, layout: MapLayout, width: number, height: number)
 }
 
 async function coveringTiles(layout: MapLayout, width: number, height: number, tileOrigin: string, budget: number): Promise<Tile[]> {
+    // As maplibre picks a vector source's tiles
+    let zoom = Math.min(Math.floor(layout.zoom), dataMaxZoom)
     // A card with several insets could otherwise exceed the Worker's subrequest limit.
-    let zoom = Math.min(layout.zoom, dataMaxZoom)
     while (zoom > 0 && tilesAt(zoom, layout, width, height).length > budget) {
         zoom--
     }
