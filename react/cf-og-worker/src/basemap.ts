@@ -1,12 +1,10 @@
 /*
  * Paints openfreemap's vector tiles into SVG by hand, since maplibre needs a GL context and a DOM.
- * Fill and line layers follow the site's own style; labels, icons, blur and the transit source are left out.
+ * The styling approximates openfreemap's "bright" rather than implementing the maplibre style spec.
  */
 import { VectorTile, VectorTileFeature } from '@mapbox/vector-tile'
-import { FeatureFilter, StyleSpecification, StylePropertyExpression, featureFilter, latest, normalizePropertyExpression } from '@maplibre/maplibre-gl-style-spec'
 import Pbf from 'pbf'
 
-import mapStyleJson from '../../src/data/map_style.json'
 import { LineStyle } from '../../src/mapper/settings/utils'
 
 import { MapLayout, polyline } from './map-layout'
@@ -14,79 +12,77 @@ import { MapLayout, polyline } from './map-layout'
 /** openfreemap has no tiles past this zoom. */
 const dataMaxZoom = 14
 
-// MapLibre draws the world this many pixels wide at zoom 0
-const worldPxAtZoom0 = 512
+type Props = Record<string, string | number | boolean>
 
-const styleLayers = (mapStyleJson as unknown as StyleSpecification).layers
-
-const background = (styleLayers.find(layer => layer.type === 'background')!).paint!['background-color'] as string
-
-const paintedProperties = {
-    fill: ['fill-color', 'fill-opacity'],
-    line: ['line-color', 'line-opacity', 'line-width', 'line-dasharray', 'line-cap', 'line-join'],
+interface Rule {
+    layer: string
+    /** Absent means all of the layer's features. */
+    where?: (props: Props) => boolean
+    fill?: string
+    stroke?: string
+    width?: [zoom: number, px: number][]
+    opacity?: number
+    dash?: string
+    minZoom?: number
 }
 
-interface PaintedLayer {
-    sourceLayer: string
-    type: 'fill' | 'line'
-    minzoom: number
-    maxzoom: number
-    filter: FeatureFilter
-    properties: Record<string, StylePropertyExpression | undefined>
-}
-
-let paintedLayers: PaintedLayer[] | undefined
-
-/** Compiled on first use, since startup CPU is billed on every cold start. */
-function compiledLayers(): PaintedLayer[] {
-    return paintedLayers ??= styleLayers.flatMap((layer): PaintedLayer[] => {
-        if ((layer.type !== 'fill' && layer.type !== 'line') || layer.source !== 'openmaptiles' || layer['source-layer'] === undefined || layer.layout?.visibility === 'none') {
-            return []
+function widthAt(stops: [number, number][], zoom: number): number {
+    if (zoom <= stops[0][0]) {
+        return stops[0][1]
+    }
+    for (let i = 1; i < stops.length; i++) {
+        const [z0, w0] = stops[i - 1]
+        const [z1, w1] = stops[i]
+        if (zoom <= z1) {
+            return w0 + (w1 - w0) * (zoom - z0) / (z1 - z0)
         }
-        const spec = latest as Record<string, Record<string, Parameters<typeof normalizePropertyExpression>[1]>>
-        const specs = { ...spec[`paint_${layer.type}`], ...spec[`layout_${layer.type}`] }
-        const values: Record<string, unknown> = { ...layer.layout, ...layer.paint }
-        return [{
-            sourceLayer: layer['source-layer'],
-            type: layer.type,
-            minzoom: layer.minzoom ?? 0,
-            maxzoom: layer.maxzoom ?? Infinity,
-            filter: featureFilter(layer.filter),
-            properties: Object.fromEntries(paintedProperties[layer.type].map((name) => {
-                const value = values[name] ?? specs[name].default
-                return [name, value === undefined ? undefined : normalizePropertyExpression(value as never, specs[name])]
-            })),
-        }]
-    })
+    }
+    return stops[stops.length - 1][1]
 }
 
-function svgColor(value: unknown): { color: string, opacity: number } {
-    const { r, g, b, a } = value as { r: number, g: number, b: number, a: number }
-    // style-spec's Color is premultiplied
-    const channel = (c: number): number => Math.round(a === 0 ? 0 : c / a * 255)
-    return { color: `rgb(${channel(r)},${channel(g)},${channel(b)})`, opacity: a }
-}
+const roadClass = (...classes: string[]) => (props: Props): boolean => classes.includes(String(props.class))
 
-/** The SVG attributes a feature is painted with, or undefined if it isn't drawn. Features with equal attributes share a path. */
-function paintFor(layer: PaintedLayer, zoom: number, feature: VectorTileFeature): string | undefined {
-    const globals = { zoom }
-    const get = (name: string): unknown => layer.properties[name]?.evaluate(globals, feature)
-    if (layer.type === 'fill') {
-        const { color, opacity } = svgColor(get('fill-color'))
-        const total = opacity * (get('fill-opacity') as number)
-        return total <= 0 ? undefined : `fill="${color}" fill-opacity="${total.toFixed(3)}"`
-    }
-    const { color, opacity } = svgColor(get('line-color'))
-    const total = opacity * (get('line-opacity') as number)
-    const width = get('line-width') as number
-    if (total <= 0 || width <= 0) {
-        return undefined
-    }
-    // maplibre's dashes are in line widths
-    const dashes = get('line-dasharray') as number[] | undefined
-    const dash = dashes === undefined || dashes.length === 0 ? '' : ` stroke-dasharray="${dashes.map(d => (d * width).toFixed(2)).join(' ')}"`
-    return `fill="none" stroke="${color}" stroke-opacity="${total.toFixed(3)}" stroke-width="${width.toFixed(2)}" stroke-linecap="${get('line-cap') as string}" stroke-linejoin="${get('line-join') as string}"${dash}`
-}
+const motorwayWidth: [number, number][] = [[8.5, 0], [9, 1.15], [12, 1.3], [15, 1.6], [17, 2.6], [20, 5]]
+const motorwayCasingWidth: [number, number][] = [[8, 1.1], [9, 3.45], [12, 3.9], [15, 4.8], [17, 7.8], [20, 15]]
+const trunkWidth: [number, number][] = [[6, 1.6], [12, 2.08], [15, 2.56], [17, 4.16], [20, 8]]
+const secondaryWidth: [number, number][] = [[6, 1.25], [12, 1.625], [15, 2], [17, 3.25], [20, 6.25]]
+const minorWidth: [number, number][] = [[6, 1], [12, 1.3], [15, 1.6], [17, 2.6], [20, 5]]
+
+/* eslint-disable no-restricted-syntax -- The site's map style, read off map_style.json. */
+const background = '#fff8f0'
+
+const isBorder = (p: Props): boolean => p.disputed !== 1 && !Object.hasOwn(p, 'claimed_by')
+
+const rules: Rule[] = [
+    // The band along each border, under everything else.
+    { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 4 && isBorder(p), stroke: '#fde2c0', width: [[3, 2.5], [8, 5.5], [14, 9]], minZoom: 5 },
+    { layer: 'boundary', where: p => Number(p.admin_level) === 2 && p.maritime !== 1 && isBorder(p), stroke: '#fcddb3', width: [[3, 4], [8, 8], [14, 12.5]] },
+
+    { layer: 'landcover', where: p => p.class === 'wood', fill: '#b9d896' },
+    { layer: 'landcover', where: p => p.class === 'grass' && p.subclass !== 'scrub' && p.subclass !== 'heath', fill: '#d6e5bc' },
+    { layer: 'landcover', where: p => p.class === 'grass' && (p.subclass === 'scrub' || p.subclass === 'heath'), fill: '#dee0b4' },
+    { layer: 'landcover', where: p => p.class === 'sand', fill: '#e6daac' },
+    { layer: 'landcover', where: p => p.subclass === 'glacier' || p.subclass === 'ice_shelf', fill: '#ffffff', opacity: 0.5 },
+    { layer: 'landuse', where: p => ['dam', 'garages', 'industrial', 'hospital', 'school'].includes(String(p.class)), fill: '#f4dbe3' },
+    { layer: 'landuse', where: p => p.class === 'cemetery', fill: '#d6e5bc' },
+    { layer: 'park', where: p => ['national_park', 'wilderness_preserve', 'State Park', 'public_park'].includes(String(p.class)), fill: '#d6e5bc' },
+    { layer: 'water', where: p => p.intermittent !== 1 && p.brunnel !== 'tunnel', fill: '#77cacc' },
+    { layer: 'waterway', where: p => p.brunnel !== 'tunnel', stroke: '#77cacc', width: [[10, 0.8], [14, 1.5], [17, 4]] },
+    { layer: 'aeroway', where: p => p.class === 'runway' || p.class === 'taxiway', stroke: '#cba9da', width: [[11, 2], [16, 12]], minZoom: 12 },
+
+    // Casings first, so a road passing beneath another does not cut a notch in it. Only the motorway's shows.
+    { layer: 'transportation', where: roadClass('motorway'), stroke: '#f96d6d', width: motorwayCasingWidth, minZoom: 5 },
+
+    { layer: 'transportation', where: roadClass('rail', 'transit'), stroke: '#8e8e8e', width: minorWidth },
+    { layer: 'transportation', where: roadClass('minor', 'service', 'track'), stroke: '#c1beba', width: minorWidth, minZoom: 14 },
+    { layer: 'transportation', where: roadClass('secondary', 'tertiary'), stroke: '#959496', width: secondaryWidth },
+    { layer: 'transportation', where: roadClass('trunk', 'primary'), stroke: '#f96d6d', width: trunkWidth },
+    { layer: 'transportation', where: roadClass('motorway'), stroke: '#f7aa41', width: motorwayWidth },
+
+    { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 6 && p.maritime !== 1 && isBorder(p), stroke: '#4e525a', width: [[3, 0.5], [8, 1.1], [14, 1.8]], dash: '6 2 1 2', minZoom: 7 },
+    { layer: 'boundary', where: p => Number(p.admin_level) === 2 && p.maritime !== 1 && isBorder(p), stroke: '#4e525a', width: [[3, 0.8], [8, 1.6], [14, 2.5]], dash: '9 3 1.5 3' },
+]
+/* eslint-enable no-restricted-syntax */
 
 /** The site draws a map's subnational outlines above its shapes, so the two halves are separate. */
 export interface PaintedBasemap {
@@ -221,10 +217,21 @@ function groupedPaths(features: DecodedFeature[], paintOf: (feature: VectorTileF
     return Array.from(groups, ([paint, paths]) => `<path d="${paths.join('')}" ${paint}/>`).join('')
 }
 
+function rulePath(rule: Rule, strokeWidth: number, tiles: Tile[], width: number, height: number, cache: Map<string, DecodedFeature[]>): string {
+    const paint = rule.fill !== undefined
+        ? `fill="${rule.fill}"`
+        : `fill="none" stroke="${rule.stroke}" stroke-width="${strokeWidth.toFixed(2)}" stroke-linejoin="round" stroke-linecap="round"${rule.dash === undefined ? '' : ` stroke-dasharray="${rule.dash}"`}`
+    const opacity = rule.opacity === undefined ? '' : ` opacity="${rule.opacity}"`
+    return groupedPaths(
+        decodedFeatures(tiles, rule.layer, width, height, cache),
+        feature => rule.where === undefined || rule.where(feature.properties) ? `${paint}${opacity}` : undefined,
+    )
+}
+
 /** The map's own subnational outlines, filtered the way the site's overlay layer filters them. */
-function isSubnational(feature: VectorTileFeature): boolean {
-    const p = feature.properties
-    return Number(p.admin_level) <= 4 && p.maritime !== 1 && p.disputed !== 1 && !Object.hasOwn(p, 'claimed_by')
+const subnationals: Rule = {
+    layer: 'boundary',
+    where: p => Number(p.admin_level) <= 4 && p.maritime !== 1 && p.disputed !== 1 && !Object.hasOwn(p, 'claimed_by'),
 }
 
 /** SVG markup sized to the map box. Both halves empty if no tile could be loaded. */
@@ -233,18 +240,13 @@ export async function basemap(layout: MapLayout, width: number, height: number, 
     if (tiles.length === 0) {
         return { under: '', over: '' }
     }
-    const zoom = Math.log2(layout.scale / worldPxAtZoom0)
     const cache = new Map<string, DecodedFeature[]>()
-    const painted = compiledLayers()
-        .filter(layer => zoom >= layer.minzoom && zoom < layer.maxzoom)
-        .map(layer => groupedPaths(
-            decodedFeatures(tiles, layer.sourceLayer, width, height, cache).filter(({ feature }) => layer.filter.filter({ zoom }, feature as never)),
-            feature => paintFor(layer, zoom, feature),
-        ))
+    const painted = rules
+        .filter(rule => rule.minZoom === undefined || layout.zoom >= rule.minZoom)
+        .map(rule => rulePath(rule, rule.width === undefined ? 1 : widthAt(rule.width, layout.zoom), tiles, width, height, cache))
         .join('')
-    const outlinePaint = outlines === undefined ? '' : `fill="none" stroke="${outlines.color}" stroke-width="${outlines.weight.toFixed(2)}" stroke-linejoin="round" stroke-linecap="round"`
     return {
         under: `<rect width="${width}" height="${height}" fill="${background}"/>${painted}`,
-        over: outlines === undefined ? '' : groupedPaths(decodedFeatures(tiles, 'boundary', width, height, cache), feature => isSubnational(feature) ? outlinePaint : undefined),
+        over: outlines === undefined ? '' : rulePath({ ...subnationals, stroke: outlines.color }, outlines.weight, tiles, width, height, cache),
     }
 }
