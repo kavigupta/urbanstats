@@ -29,6 +29,7 @@ from urbanstats.statistics.collections.census_national import (
     CensusDensity2020,
     CensusHousing2020,
     CensusRace2020,
+    CensusVacancy2020,
 )
 from urbanstats.statistics.collections.education_gender_gap import (
     EducationGenderGapStatistics,
@@ -102,6 +103,7 @@ statistic_collections = (
     CensusDensity2020(),
     CensusRace2020(),
     CensusHousing2020(),
+    CensusVacancy2020(),
     Census2020(),
     CensusDensity2010(),
     Census2010(),

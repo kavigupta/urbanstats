@@ -15,7 +15,6 @@ from urbanstats.data.census_blocks import (
 from urbanstats.data.census_histogram import census_histogram
 from urbanstats.data.gpw import median_from_histogram
 from urbanstats.games.quiz_question_metadata import (
-    HOUSING,
     POPULATION_OR_DENSITY_CHANGE,
     QuizQuestionDescriptor,
     QuizQuestionSkip,
@@ -319,14 +318,15 @@ class CensusChange(USAStatistics):
 
 
 class Census2020(CensusForPreviousYear):
-    """The 2020 statistics the Canadian census doesn't have."""
+    """Only population_18, for other collections; the 2020 statistics are in census_national."""
 
-    version = 6
+    version = 7
     merged_keys = (
         *DENSITY_KEYS,
         *race_names,
         "housing_per_pop",
         "housing_per_person",
+        "vacancy",
     )
 
     def year(self):
@@ -343,7 +343,7 @@ class Census2020(CensusForPreviousYear):
             return "population"
         if k == "sd" or k.startswith("ad_") or k.startswith("md_"):
             return "density"
-        if k in ["housing_per_pop", "vacancy", "housing_per_person"]:
+        if k in ["housing_per_pop", "housing_per_person"]:
             return "housing-census"
         if k in race_names:
             return "race"
@@ -356,15 +356,7 @@ class Census2020(CensusForPreviousYear):
         }
 
     def quiz_question_descriptors(self):
-        return {
-            "vacancy": QuizQuestionDescriptor(
-                "higher % of units that are vacant"
-                "!TOOLTIP Vacancy is the % of housing units that were not occupied on April 1, 2020 (census night)."
-                " This includes vacation homes but does *not* include units that were not occupied due to the pandemic"
-                ", the census attempted to account for this.",
-                HOUSING,
-            ),
-        }
+        return {}
 
 
 class Census2010(CensusForPreviousYear):

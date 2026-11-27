@@ -9862,12 +9862,11 @@ completed = [
     ("G37", "R_Tot_Total", "Rented Total Total"),
     ("G37", "Oth_ten_type_Total", "Other tenure type Total"),
     ("G37", "Ten_type_NS_Total", "Tenure type not stated Total"),
+    # Vacancy %: unoccupied private dwellings over all private dwellings
+    ("G36", "Unoccupied_PDs_Dwgs", "Unoccupied private dwellings Dwellings"),
+    ("G36", "Total_PDs_Dwellings", "Total private dwellings Dwellings"),
 ]
 
 # vulture: ignore -- these are lists of cells used to track progress on
 get_to_these_now = [
-    # Vacancy %, merged with the US one. The ABS counts a dwelling as unoccupied if nobody was
-    # there on census night, even if its residents were only away, so it reads higher than the US's.
-    ("G36", "Unoccupied_PDs_Dwgs", "Unoccupied private dwellings Dwellings"),
-    ("G36", "Total_PDs_Dwellings", "Total private dwellings Dwellings"),
 ]

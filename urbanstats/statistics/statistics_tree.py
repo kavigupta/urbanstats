@@ -879,7 +879,7 @@ statistics_tree = StatisticTree(
             contents={
                 **census_basics_multi_source("housing_per_pop"),
                 **census_basics_multi_source("housing_per_person"),
-                **census_basics("vacancy", change=False),
+                **census_basics_multi_source("vacancy"),
                 **in_subcategory(
                     "rent_burden",
                     "Rent Burden",

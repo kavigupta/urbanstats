@@ -167,8 +167,8 @@ export function DataCreditPanel(): ReactNode {
                             All data listed in this section is collected from the 2020 US Census. Population, density,
                             race, and housing units per person and per adult are also available in Canada, from the 2021
                             Canadian Census (see Canadian Data below), and the two countries&apos; values are combined into
-                            one National Census statistic. Population and density are also available in Australia, from the
-                            2021 Australian Census (see Australian Data below), and are combined in the same way.
+                            one National Census statistic. Population, density, and vacancy are also available in Australia,
+                            from the 2021 Australian Census (see Australian Data below), and are combined in the same way.
 
                             <NRef name="population">Population</NRef>
                             <div>
@@ -1117,7 +1117,7 @@ export function DataCreditPanel(): ReactNode {
                                 {' '}
                                 <a href="https://www.abs.gov.au/census/find-census-data/datapacks">DataPacks</a>
                                 . We treat these as effectively equivalent to ACS data published by census tract, disaggregating
-                                them to the mesh block level using population (or, for household income, household size, renter %, and vehicle ownership, dwellings) as a weight,
+                                them to the mesh block level using population (or, for household income, household size, renter %, vacancy, and vehicle ownership, dwellings) as a weight,
                                 and then aggregating to the geography of interest.
                                 <p>
                                     For Generation and Marriage, we use the same definitions as the US data. For Language, Other at
@@ -1135,6 +1135,8 @@ export function DataCreditPanel(): ReactNode {
                                     roughly line up except for one difference: waste management is under utilities rather than
                                     management, so we specifically have different categories for each of these.
                                     In Renter %, homes that are rent-free, life tenure, etc., are left out of numerators and denominators.
+                                    For Vacancy, the ABS counts a private dwelling as unoccupied if nobody was there on census
+                                    night, even if its residents were only away, so it can read higher than the US figure.
                                 </p>
                             </div>
                         </div>
