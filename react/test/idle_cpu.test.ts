@@ -43,7 +43,7 @@ async function expectIdle(t: TestController): Promise<void> {
     const usage = await idleUsage(t)
     await t.expect(usage.infiniteAnimations).eql([])
     await t.expect(usage.animationFrames).lt(10)
-    await t.expect(usage.taskMs).lt(100)
+    await t.expect(usage.taskMs).lt(50)
 }
 
 urbanstatsFixture('idle home', '/')
