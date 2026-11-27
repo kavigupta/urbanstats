@@ -9847,12 +9847,7 @@ completed = [
     ("G54", "P_Oth_scs_Tot", "PERSONS Other Services Total"),
     ("G54", "P_ID_NS_Tot", "PERSONS Inadequately described Not stated Total"),
     ("G54", "P_Tot_Tot", "PERSONS Total Total"),
-]
-
-# vulture: ignore -- these are lists of cells used to track progress on
-get_to_these_now = [
-    # Household size, merged into HouseholdSizeStatistics with the US and Canada: 1 to 4 people
-    # each, with 5 and 6+ together as 5+.
+    # Household size: 1 to 4 people each, with 5 and 6+ together as 5+
     ("G35", "Num_Psns_UR_1_Total", "Number of Persons usually resident One Total"),
     ("G35", "Num_Psns_UR_2_Total", "Number of Persons usually resident Two Total"),
     ("G35", "Num_Psns_UR_3_Total", "Number of Persons usually resident Three Total"),
@@ -9860,6 +9855,10 @@ get_to_these_now = [
     ("G35", "Num_Psns_UR_5_Total", "Number of Persons usually resident Five Total"),
     ("G35", "Num_Psns_UR_6mo_Total", "Number of Persons usually resident Six or more Total"),
     ("G35", "Total_Total", "Total Total"),
+]
+
+# vulture: ignore -- these are lists of cells used to track progress on
+get_to_these_now = [
     # Renter %, merged into HousingRentOrOwn with the US and Canada: rented (any landlord) is rent,
     # owned outright or with a mortgage is own. Other tenure (rent-free, life tenure, rent/buy,
     # shared equity) and not stated are left out of the denominator.

@@ -414,7 +414,7 @@ export function DataCreditPanel(): ReactNode {
                             Citizenship, language, generation, commute mode and time, industry, marriage, household size, and renter %
                             are also available in Canada, from the 2021 Canadian Census (see Canadian Data below), and the two countries&apos; values
                             are combined into one National Census statistic. Language, generation, marriage, born outside the
-                            country, undergrad and graduate degrees, degree field, household relationship, industry, and vehicle ownership are also available in
+                            country, undergrad and graduate degrees, degree field, household relationship, industry, household size, and vehicle ownership are also available in
                             Australia, from the 2021 Australian Census (see Australian Data below), and are combined in the same way.
 
                             <NRef name="citizenship">Citizenship</NRef>
@@ -1117,7 +1117,7 @@ export function DataCreditPanel(): ReactNode {
                                 {' '}
                                 <a href="https://www.abs.gov.au/census/find-census-data/datapacks">DataPacks</a>
                                 . We treat these as effectively equivalent to ACS data published by census tract, disaggregating
-                                them to the mesh block level using population (or, for household income and vehicle ownership, dwellings) as a weight,
+                                them to the mesh block level using population (or, for household income, household size, and vehicle ownership, dwellings) as a weight,
                                 and then aggregating to the geography of interest.
                                 <p>
                                     For Generation and Marriage, we use the same definitions as the US data. For Language, Other at
