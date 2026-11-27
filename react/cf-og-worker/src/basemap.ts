@@ -53,23 +53,26 @@ const background = '#fff8f0'
 
 const isBorder = (p: Props): boolean => p.disputed !== 1 && !Object.hasOwn(p, 'claimed_by')
 
+// In the style's layer order
 const rules: Rule[] = [
     // The band along each border, under everything else. The country's after the state's, so it stays on top.
     { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 4 && isBorder(p), stroke: '#fde2c0', width: [[3, 2.5], [8, 5.5], [14, 9]], minZoom: 5 },
     { layer: 'boundary', where: p => Number(p.admin_level) === 2 && p.maritime !== 1 && isBorder(p), stroke: '#fcddb3', width: [[3, 4], [8, 8], [14, 12.5]] },
 
+    { layer: 'park', where: p => ['national_park', 'wilderness_preserve', 'State Park'].includes(String(p.class)), fill: '#d6e5bc' },
     { layer: 'landcover', where: p => p.class === 'wood', fill: '#b9d896' },
     { layer: 'landcover', where: p => p.class === 'grass' && p.subclass !== 'scrub' && p.subclass !== 'heath', fill: '#d6e5bc' },
     { layer: 'landcover', where: p => p.class === 'grass' && (p.subclass === 'scrub' || p.subclass === 'heath'), fill: '#dee0b4' },
-    { layer: 'landcover', where: p => p.class === 'sand', fill: '#e6daac' },
-    { layer: 'landcover', where: p => p.subclass === 'glacier' || p.subclass === 'ice_shelf', fill: '#ffffff', opacity: 0.5 },
+    { layer: 'landcover', where: p => p.subclass === 'glacier', fill: '#ffffff', opacity: 0.5 },
     { layer: 'landuse', where: p => ['dam', 'garages', 'industrial', 'hospital', 'school'].includes(String(p.class)), fill: '#f4dbe3' },
     { layer: 'landuse', where: p => p.class === 'cemetery', fill: '#d6e5bc' },
-    { layer: 'park', where: p => ['national_park', 'wilderness_preserve', 'State Park', 'public_park'].includes(String(p.class)), fill: '#d6e5bc' },
-    { layer: 'water', where: p => p.intermittent !== 1 && p.brunnel !== 'tunnel', fill: '#77cacc' },
-    { layer: 'water', where: p => p.intermittent === 1, fill: '#77cacc', opacity: 0.5 },
+    { layer: 'park', where: p => p.class === 'public_park', fill: '#d6e5bc' },
     { layer: 'waterway', where: p => p.intermittent !== 1 && p.brunnel !== 'tunnel', stroke: '#77cacc', width: [[10, 0.8], [14, 1.5], [17, 4]] },
     { layer: 'waterway', where: p => p.intermittent === 1 && p.brunnel !== 'tunnel', stroke: '#77cacc', width: [[10, 0.8], [14, 1.5], [17, 4]], dash: '4 3' },
+    { layer: 'water', where: p => p.intermittent !== 1 && p.brunnel !== 'tunnel', fill: '#77cacc' },
+    { layer: 'water', where: p => p.intermittent === 1, fill: '#77cacc', opacity: 0.5 },
+    { layer: 'landcover', where: p => p.subclass === 'ice_shelf', fill: '#ffffff', opacity: 0.5 },
+    { layer: 'landcover', where: p => p.class === 'sand', fill: '#e6daac' },
     // Buildings are the background's colour, so only their outlines show.
     { layer: 'building', stroke: '#d2cec9', minZoom: 16 },
     { layer: 'aeroway', where: p => p.class === 'runway' || p.class === 'taxiway', stroke: '#cba9da', width: [[11, 2], [16, 12]], minZoom: 12 },
@@ -77,11 +80,11 @@ const rules: Rule[] = [
     // Casings first, so a road passing beneath another does not cut a notch in it. Only the motorway's shows.
     { layer: 'transportation', where: roadClass('motorway'), stroke: '#f96d6d', width: motorwayCasingWidth, minZoom: 5 },
 
-    { layer: 'transportation', where: p => roadClass('rail', 'transit')(p) && p.brunnel !== 'tunnel' && !Object.hasOwn(p, 'service'), stroke: '#8e8e8e', width: minorWidth },
     { layer: 'transportation', where: roadClass('minor', 'service', 'track'), stroke: '#c1beba', width: minorWidth, minZoom: 14 },
     { layer: 'transportation', where: roadClass('secondary', 'tertiary'), stroke: '#959496', width: secondaryWidth },
     { layer: 'transportation', where: roadClass('trunk', 'primary'), stroke: '#f96d6d', width: trunkWidth },
     { layer: 'transportation', where: roadClass('motorway'), stroke: '#f7aa41', width: motorwayWidth },
+    { layer: 'transportation', where: p => roadClass('rail', 'transit')(p) && p.brunnel !== 'tunnel' && !Object.hasOwn(p, 'service'), stroke: '#8e8e8e', width: minorWidth },
 
     { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 4 && p.maritime !== 1 && isBorder(p), stroke: '#4e525a', width: [[3, 0.5], [8, 1.1], [14, 1.8]], dash: '6 2 1 2', minZoom: 5 },
     { layer: 'boundary', where: p => Number(p.admin_level) >= 5 && Number(p.admin_level) <= 6 && p.maritime !== 1 && isBorder(p), stroke: '#4e525a', width: [[3, 0.3], [8, 0.6], [14, 1.1]], dash: '3.6 1.2 0.6 1.2', minZoom: 8 },
