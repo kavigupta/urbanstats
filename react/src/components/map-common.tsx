@@ -21,7 +21,7 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 import { ScreenshotAwareLayer } from './ScreenshotAwareLayer'
 import { haloOpacity } from './atlas-style'
 import { useHaloCollection } from './halo-band'
-import { keptByNoBasemap, tileAttributionParts, urbanStatsLayerPrefix } from './map-common-utils'
+import { keptByNoBasemap, subnationalOutlinesFilter, tileAttributionParts, urbanStatsLayerPrefix } from './map-common-utils'
 import { mapBackgroundColor, mapStyle, mapTransformRequest } from './map-style'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotCallback, useScreenshotMode } from './screenshot'
 
@@ -458,13 +458,7 @@ export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
                 type="line"
                 source="openmaptiles"
                 source-layer="boundary"
-                filter={[
-                    'all',
-                    ['<=', ['get', 'admin_level'], 4],
-                    ['!=', ['get', 'maritime'], 1],
-                    ['!=', ['get', 'disputed'], 1],
-                    ['!', ['has', 'claimed_by']],
-                ]}
+                filter={subnationalOutlinesFilter}
                 paint={{
                     'line-color': basemap.subnationalOutlines.color,
                     'line-width': basemap.subnationalOutlines.weight,

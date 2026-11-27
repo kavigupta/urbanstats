@@ -1,7 +1,440 @@
 {
   "background": "#fff8f0",
-  "layers": {
-    "boundary_3-highlight/2": {
+  "layers": [
+    {
+      "id": "boundary_3-highlight",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
+        [
+          "all",
+          [
+            "==",
+            [
+              "typeof",
+              [
+                "get",
+                "admin_level"
+              ]
+            ],
+            "number"
+          ],
+          [
+            ">=",
+            [
+              "get",
+              "admin_level"
+            ],
+            3
+          ],
+          [
+            "<=",
+            [
+              "get",
+              "admin_level"
+            ],
+            6
+          ],
+          [
+            "!=",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ],
+          [
+            "!",
+            [
+              "has",
+              "claimed_by"
+            ]
+          ]
+        ],
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          3
+        ]
+      ],
+      "stroke": [
+        [
+          5,
+          "#fff8f0"
+        ],
+        [
+          8,
+          "#feecd6"
+        ],
+        [
+          11,
+          "#fcd9aa"
+        ],
+        [
+          15,
+          "#fac987"
+        ]
+      ],
+      "width": [
+        [
+          3,
+          2.5
+        ],
+        [
+          8,
+          5.5
+        ],
+        [
+          14,
+          9.0
+        ]
+      ],
+      "minZoom": 5
+    },
+    {
+      "id": "boundary_3-highlight",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
+        [
+          "all",
+          [
+            "==",
+            [
+              "typeof",
+              [
+                "get",
+                "admin_level"
+              ]
+            ],
+            "number"
+          ],
+          [
+            ">=",
+            [
+              "get",
+              "admin_level"
+            ],
+            3
+          ],
+          [
+            "<=",
+            [
+              "get",
+              "admin_level"
+            ],
+            6
+          ],
+          [
+            "!=",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ],
+          [
+            "!",
+            [
+              "has",
+              "claimed_by"
+            ]
+          ]
+        ],
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          4
+        ]
+      ],
+      "stroke": [
+        [
+          5,
+          "#fff8f0"
+        ],
+        [
+          8,
+          "#feecd6"
+        ],
+        [
+          11,
+          "#fcd9aa"
+        ],
+        [
+          15,
+          "#fac987"
+        ]
+      ],
+      "width": [
+        [
+          3,
+          2.5
+        ],
+        [
+          8,
+          5.5
+        ],
+        [
+          14,
+          9.0
+        ]
+      ],
+      "minZoom": 5
+    },
+    {
+      "id": "boundary_3-highlight",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
+        [
+          "all",
+          [
+            "==",
+            [
+              "typeof",
+              [
+                "get",
+                "admin_level"
+              ]
+            ],
+            "number"
+          ],
+          [
+            ">=",
+            [
+              "get",
+              "admin_level"
+            ],
+            3
+          ],
+          [
+            "<=",
+            [
+              "get",
+              "admin_level"
+            ],
+            6
+          ],
+          [
+            "!=",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ],
+          [
+            "!",
+            [
+              "has",
+              "claimed_by"
+            ]
+          ]
+        ],
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          5
+        ]
+      ],
+      "stroke": [
+        [
+          5,
+          "#fff8f0"
+        ],
+        [
+          8,
+          "#fff8f0"
+        ],
+        [
+          11,
+          "#fef0de"
+        ],
+        [
+          15,
+          "#fbd5a1"
+        ]
+      ],
+      "width": [
+        [
+          3,
+          1.5
+        ],
+        [
+          8,
+          3.0
+        ],
+        [
+          14,
+          5.5
+        ]
+      ],
+      "minZoom": 5
+    },
+    {
+      "id": "boundary_3-highlight",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
+        [
+          "all",
+          [
+            "==",
+            [
+              "typeof",
+              [
+                "get",
+                "admin_level"
+              ]
+            ],
+            "number"
+          ],
+          [
+            ">=",
+            [
+              "get",
+              "admin_level"
+            ],
+            3
+          ],
+          [
+            "<=",
+            [
+              "get",
+              "admin_level"
+            ],
+            6
+          ],
+          [
+            "!=",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ],
+          [
+            "!",
+            [
+              "has",
+              "claimed_by"
+            ]
+          ]
+        ],
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          6
+        ]
+      ],
+      "stroke": [
+        [
+          5,
+          "#fff8f0"
+        ],
+        [
+          8,
+          "#fff8f0"
+        ],
+        [
+          11,
+          "#fef0de"
+        ],
+        [
+          15,
+          "#fbd5a1"
+        ]
+      ],
+      "width": [
+        [
+          3,
+          1.5
+        ],
+        [
+          8,
+          3.0
+        ],
+        [
+          14,
+          5.5
+        ]
+      ],
+      "minZoom": 5
+    },
+    {
+      "id": "boundary_2-highlight",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
+        [
+          "all",
+          [
+            "==",
+            [
+              "get",
+              "admin_level"
+            ],
+            2
+          ],
+          [
+            "!=",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ],
+          [
+            "!",
+            [
+              "has",
+              "claimed_by"
+            ]
+          ],
+          [
+            "any",
+            [
+              "!=",
+              [
+                "get",
+                "maritime"
+              ],
+              1
+            ],
+            [
+              "all",
+              [
+                "has",
+                "adm0_l"
+              ],
+              [
+                "has",
+                "adm0_r"
+              ]
+            ]
+          ]
+        ],
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          2
+        ]
+      ],
       "stroke": [
         [
           5,
@@ -33,150 +466,41 @@
           14,
           12.5
         ]
-      ],
-      "minZoom": 5
+      ]
     },
-    "boundary_3-highlight/3": {
-      "stroke": [
+    {
+      "id": "boundary_disputed-highlight",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
         [
-          5,
-          "#fff8f0"
+          "all",
+          [
+            "!=",
+            [
+              "get",
+              "maritime"
+            ],
+            1
+          ],
+          [
+            "==",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ]
         ],
         [
-          8,
-          "#feecd6"
-        ],
-        [
-          11,
-          "#fcd9aa"
-        ],
-        [
-          15,
-          "#fac987"
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          2
         ]
       ],
-      "width": [
-        [
-          3,
-          2.5
-        ],
-        [
-          8,
-          5.5
-        ],
-        [
-          14,
-          9.0
-        ]
-      ],
-      "minZoom": 5
-    },
-    "boundary_3-highlight/4": {
-      "stroke": [
-        [
-          5,
-          "#fff8f0"
-        ],
-        [
-          8,
-          "#feecd6"
-        ],
-        [
-          11,
-          "#fcd9aa"
-        ],
-        [
-          15,
-          "#fac987"
-        ]
-      ],
-      "width": [
-        [
-          3,
-          2.5
-        ],
-        [
-          8,
-          5.5
-        ],
-        [
-          14,
-          9.0
-        ]
-      ],
-      "minZoom": 5
-    },
-    "boundary_3-highlight/5": {
-      "stroke": [
-        [
-          5,
-          "#fff8f0"
-        ],
-        [
-          8,
-          "#fff8f0"
-        ],
-        [
-          11,
-          "#fef0de"
-        ],
-        [
-          15,
-          "#fbd5a1"
-        ]
-      ],
-      "width": [
-        [
-          3,
-          1.5
-        ],
-        [
-          8,
-          3.0
-        ],
-        [
-          14,
-          5.5
-        ]
-      ],
-      "minZoom": 5
-    },
-    "boundary_3-highlight/6": {
-      "stroke": [
-        [
-          5,
-          "#fff8f0"
-        ],
-        [
-          8,
-          "#fff8f0"
-        ],
-        [
-          11,
-          "#fef0de"
-        ],
-        [
-          15,
-          "#fbd5a1"
-        ]
-      ],
-      "width": [
-        [
-          3,
-          1.5
-        ],
-        [
-          8,
-          3.0
-        ],
-        [
-          14,
-          5.5
-        ]
-      ],
-      "minZoom": 5
-    },
-    "boundary_2-highlight/2": {
       "stroke": [
         [
           5,
@@ -210,7 +534,39 @@
         ]
       ]
     },
-    "boundary_2-highlight/3": {
+    {
+      "id": "boundary_disputed-highlight",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
+        [
+          "all",
+          [
+            "!=",
+            [
+              "get",
+              "maritime"
+            ],
+            1
+          ],
+          [
+            "==",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ]
+        ],
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          3
+        ]
+      ],
       "stroke": [
         [
           5,
@@ -244,7 +600,39 @@
         ]
       ]
     },
-    "boundary_2-highlight/4": {
+    {
+      "id": "boundary_disputed-highlight",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
+        [
+          "all",
+          [
+            "!=",
+            [
+              "get",
+              "maritime"
+            ],
+            1
+          ],
+          [
+            "==",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ]
+        ],
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          4
+        ]
+      ],
       "stroke": [
         [
           5,
@@ -278,7 +666,39 @@
         ]
       ]
     },
-    "boundary_2-highlight/5": {
+    {
+      "id": "boundary_disputed-highlight",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
+        [
+          "all",
+          [
+            "!=",
+            [
+              "get",
+              "maritime"
+            ],
+            1
+          ],
+          [
+            "==",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ]
+        ],
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          5
+        ]
+      ],
       "stroke": [
         [
           5,
@@ -312,7 +732,39 @@
         ]
       ]
     },
-    "boundary_2-highlight/6": {
+    {
+      "id": "boundary_disputed-highlight",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
+        [
+          "all",
+          [
+            "!=",
+            [
+              "get",
+              "maritime"
+            ],
+            1
+          ],
+          [
+            "==",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ]
+        ],
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          6
+        ]
+      ],
       "stroke": [
         [
           5,
@@ -346,177 +798,38 @@
         ]
       ]
     },
-    "boundary_disputed-highlight/2": {
-      "stroke": [
+    {
+      "id": "park-fill",
+      "sourceLayer": "park",
+      "filter": [
+        "all",
         [
-          5,
-          "#fde8cd"
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "MultiPolygon",
+            "Polygon"
+          ],
+          true,
+          false
         ],
         [
-          8,
-          "#fcddb3"
-        ],
-        [
-          11,
-          "#fbd198"
-        ],
-        [
-          15,
-          "#fac987"
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "national_park",
+            "wilderness_preserve",
+            "State Park"
+          ],
+          true,
+          false
         ]
       ],
-      "width": [
-        [
-          3,
-          4.0
-        ],
-        [
-          8,
-          8.0
-        ],
-        [
-          14,
-          12.5
-        ]
-      ]
-    },
-    "boundary_disputed-highlight/3": {
-      "stroke": [
-        [
-          5,
-          "#fff8f0"
-        ],
-        [
-          8,
-          "#feecd6"
-        ],
-        [
-          11,
-          "#fcd9aa"
-        ],
-        [
-          15,
-          "#fac987"
-        ]
-      ],
-      "width": [
-        [
-          3,
-          2.5
-        ],
-        [
-          8,
-          5.5
-        ],
-        [
-          14,
-          9.0
-        ]
-      ]
-    },
-    "boundary_disputed-highlight/4": {
-      "stroke": [
-        [
-          5,
-          "#fff8f0"
-        ],
-        [
-          8,
-          "#feecd6"
-        ],
-        [
-          11,
-          "#fcd9aa"
-        ],
-        [
-          15,
-          "#fac987"
-        ]
-      ],
-      "width": [
-        [
-          3,
-          2.5
-        ],
-        [
-          8,
-          5.5
-        ],
-        [
-          14,
-          9.0
-        ]
-      ]
-    },
-    "boundary_disputed-highlight/5": {
-      "stroke": [
-        [
-          5,
-          "#fff8f0"
-        ],
-        [
-          8,
-          "#fff8f0"
-        ],
-        [
-          11,
-          "#fef0de"
-        ],
-        [
-          15,
-          "#fbd5a1"
-        ]
-      ],
-      "width": [
-        [
-          3,
-          1.5
-        ],
-        [
-          8,
-          3.0
-        ],
-        [
-          14,
-          5.5
-        ]
-      ]
-    },
-    "boundary_disputed-highlight/6": {
-      "stroke": [
-        [
-          5,
-          "#fff8f0"
-        ],
-        [
-          8,
-          "#fff8f0"
-        ],
-        [
-          11,
-          "#fef0de"
-        ],
-        [
-          15,
-          "#fbd5a1"
-        ]
-      ],
-      "width": [
-        [
-          3,
-          1.5
-        ],
-        [
-          8,
-          3.0
-        ],
-        [
-          14,
-          5.5
-        ]
-      ]
-    },
-    "park-fill": {
       "fill": [
         [
           0,
@@ -524,7 +837,17 @@
         ]
       ]
     },
-    "landcover-wood": {
+    {
+      "id": "landcover-wood",
+      "sourceLayer": "landcover",
+      "filter": [
+        "==",
+        [
+          "get",
+          "class"
+        ],
+        "wood"
+      ],
       "fill": [
         [
           0,
@@ -538,7 +861,33 @@
         ]
       ]
     },
-    "landcover-grass": {
+    {
+      "id": "landcover-grass",
+      "sourceLayer": "landcover",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "grass"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "subclass"
+          ],
+          [
+            "scrub",
+            "heath"
+          ],
+          false,
+          true
+        ]
+      ],
       "fill": [
         [
           0,
@@ -552,7 +901,33 @@
         ]
       ]
     },
-    "landcover-scrub": {
+    {
+      "id": "landcover-scrub",
+      "sourceLayer": "landcover",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "grass"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "subclass"
+          ],
+          [
+            "scrub",
+            "heath"
+          ],
+          true,
+          false
+        ]
+      ],
       "fill": [
         [
           0,
@@ -566,7 +941,17 @@
         ]
       ]
     },
-    "landcover-glacier": {
+    {
+      "id": "landcover-glacier",
+      "sourceLayer": "landcover",
+      "filter": [
+        "==",
+        [
+          "get",
+          "subclass"
+        ],
+        "glacier"
+      ],
       "fill": [
         [
           0,
@@ -584,7 +969,38 @@
         ]
       ]
     },
-    "landuse-industrial": {
+    {
+      "id": "landuse-industrial",
+      "sourceLayer": "landuse",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "MultiPolygon",
+            "Polygon"
+          ],
+          true,
+          false
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "dam",
+            "garages",
+            "industrial"
+          ],
+          true,
+          false
+        ]
+      ],
       "fill": [
         [
           0,
@@ -592,7 +1008,17 @@
         ]
       ]
     },
-    "landuse-cemetery": {
+    {
+      "id": "landuse-cemetery",
+      "sourceLayer": "landuse",
+      "filter": [
+        "==",
+        [
+          "get",
+          "class"
+        ],
+        "cemetery"
+      ],
       "fill": [
         [
           0,
@@ -600,7 +1026,17 @@
         ]
       ]
     },
-    "landuse-hospital": {
+    {
+      "id": "landuse-hospital",
+      "sourceLayer": "landuse",
+      "filter": [
+        "==",
+        [
+          "get",
+          "class"
+        ],
+        "hospital"
+      ],
       "fill": [
         [
           0,
@@ -608,7 +1044,17 @@
         ]
       ]
     },
-    "landuse-school": {
+    {
+      "id": "landuse-school",
+      "sourceLayer": "landuse",
+      "filter": [
+        "==",
+        [
+          "get",
+          "class"
+        ],
+        "school"
+      ],
       "fill": [
         [
           0,
@@ -616,7 +1062,17 @@
         ]
       ]
     },
-    "landcover-grass-park": {
+    {
+      "id": "landcover-grass-park",
+      "sourceLayer": "park",
+      "filter": [
+        "==",
+        [
+          "get",
+          "class"
+        ],
+        "public_park"
+      ],
       "fill": [
         [
           0,
@@ -630,7 +1086,34 @@
         ]
       ]
     },
-    "waterway_tunnel": {
+    {
+      "id": "waterway_tunnel",
+      "sourceLayer": "waterway",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "canal",
+            "river",
+            "stream"
+          ],
+          true,
+          false
+        ],
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -644,27 +1127,27 @@
         ],
         [
           14,
-          0.8128050026505957
+          0.813
         ],
         [
           15,
-          1.2194515060963704
+          1.219
         ],
         [
           16,
-          1.7480919605758771
+          1.748
         ],
         [
           17,
-          2.435324551399236
+          2.435
         ],
         [
           18,
-          3.3287269194696028
+          3.329
         ],
         [
           19,
-          4.49014999796108
+          4.49
         ],
         [
           20,
@@ -672,12 +1155,44 @@
         ]
       ],
       "dash": [
-        2,
-        4
+        [
+          0,
+          [
+            2,
+            4
+          ]
+        ]
       ],
       "minZoom": 14
     },
-    "waterway-other": {
+    {
+      "id": "waterway-other",
+      "sourceLayer": "waterway",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "canal",
+            "river",
+            "stream"
+          ],
+          false,
+          true
+        ],
+        [
+          "==",
+          [
+            "get",
+            "intermittent"
+          ],
+          0
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -691,27 +1206,27 @@
         ],
         [
           14,
-          0.5853104552683444
+          0.585
         ],
         [
           15,
-          0.6962140471171919
+          0.696
         ],
         [
           16,
-          0.8403887165206938
+          0.84
         ],
         [
           17,
-          1.0278157867452462
+          1.028
         ],
         [
           18,
-          1.2714709780371645
+          1.271
         ],
         [
           19,
-          1.588222726716658
+          1.588
         ],
         [
           20,
@@ -719,7 +1234,34 @@
         ]
       ]
     },
-    "waterway-other-intermittent": {
+    {
+      "id": "waterway-other-intermittent",
+      "sourceLayer": "waterway",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "canal",
+            "river",
+            "stream"
+          ],
+          false,
+          true
+        ],
+        [
+          "==",
+          [
+            "get",
+            "intermittent"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -733,27 +1275,27 @@
         ],
         [
           14,
-          0.5853104552683444
+          0.585
         ],
         [
           15,
-          0.6962140471171919
+          0.696
         ],
         [
           16,
-          0.8403887165206938
+          0.84
         ],
         [
           17,
-          1.0278157867452462
+          1.028
         ],
         [
           18,
-          1.2714709780371645
+          1.271
         ],
         [
           19,
-          1.588222726716658
+          1.588
         ],
         [
           20,
@@ -761,11 +1303,50 @@
         ]
       ],
       "dash": [
-        4,
-        3
+        [
+          0,
+          [
+            4,
+            3
+          ]
+        ]
       ]
     },
-    "waterway-stream-canal": {
+    {
+      "id": "waterway-stream-canal",
+      "sourceLayer": "waterway",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "canal",
+            "stream"
+          ],
+          true,
+          false
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "intermittent"
+          ],
+          0
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -779,27 +1360,27 @@
         ],
         [
           14,
-          0.8128050026505957
+          0.813
         ],
         [
           15,
-          1.2194515060963704
+          1.219
         ],
         [
           16,
-          1.7480919605758771
+          1.748
         ],
         [
           17,
-          2.435324551399236
+          2.435
         ],
         [
           18,
-          3.3287269194696028
+          3.329
         ],
         [
           19,
-          4.49014999796108
+          4.49
         ],
         [
           20,
@@ -807,7 +1388,41 @@
         ]
       ]
     },
-    "waterway-stream-canal-intermittent": {
+    {
+      "id": "waterway-stream-canal-intermittent",
+      "sourceLayer": "waterway",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "canal",
+            "stream"
+          ],
+          true,
+          false
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "intermittent"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -821,27 +1436,27 @@
         ],
         [
           14,
-          0.8128050026505957
+          0.813
         ],
         [
           15,
-          1.2194515060963704
+          1.219
         ],
         [
           16,
-          1.7480919605758771
+          1.748
         ],
         [
           17,
-          2.435324551399236
+          2.435
         ],
         [
           18,
-          3.3287269194696028
+          3.329
         ],
         [
           19,
-          4.49014999796108
+          4.49
         ],
         [
           20,
@@ -849,11 +1464,45 @@
         ]
       ],
       "dash": [
-        4,
-        3
+        [
+          0,
+          [
+            4,
+            3
+          ]
+        ]
       ]
     },
-    "waterway-river": {
+    {
+      "id": "waterway-river",
+      "sourceLayer": "waterway",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "river"
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "intermittent"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -867,39 +1516,39 @@
         ],
         [
           11,
-          1.0003183357908676
+          1.0
         ],
         [
           12,
-          1.2407003387399085
+          1.241
         ],
         [
           13,
-          1.5291587422787578
+          1.529
         ],
         [
           14,
-          1.8753088265253768
+          1.875
         ],
         [
           15,
-          2.2906889276213196
+          2.291
         ],
         [
           16,
-          2.789145048936451
+          2.789
         ],
         [
           17,
-          3.387292394514609
+          3.387
         ],
         [
           18,
-          4.105069209208398
+          4.105
         ],
         [
           19,
-          4.9664013868409445
+          4.966
         ],
         [
           20,
@@ -907,7 +1556,36 @@
         ]
       ]
     },
-    "waterway-river-intermittent": {
+    {
+      "id": "waterway-river-intermittent",
+      "sourceLayer": "waterway",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "river"
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "intermittent"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -921,39 +1599,39 @@
         ],
         [
           11,
-          1.0003183357908676
+          1.0
         ],
         [
           12,
-          1.2407003387399085
+          1.241
         ],
         [
           13,
-          1.5291587422787578
+          1.529
         ],
         [
           14,
-          1.8753088265253768
+          1.875
         ],
         [
           15,
-          2.2906889276213196
+          2.291
         ],
         [
           16,
-          2.789145048936451
+          2.789
         ],
         [
           17,
-          3.387292394514609
+          3.387
         ],
         [
           18,
-          4.105069209208398
+          4.105
         ],
         [
           19,
-          4.9664013868409445
+          4.966
         ],
         [
           20,
@@ -961,11 +1639,37 @@
         ]
       ],
       "dash": [
-        3,
-        2.5
+        [
+          0,
+          [
+            3,
+            2.5
+          ]
+        ]
       ]
     },
-    "water": {
+    {
+      "id": "water",
+      "sourceLayer": "water",
+      "filter": [
+        "all",
+        [
+          "!=",
+          [
+            "get",
+            "intermittent"
+          ],
+          1
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
+        ]
+      ],
       "fill": [
         [
           0,
@@ -973,7 +1677,17 @@
         ]
       ]
     },
-    "water-intermittent": {
+    {
+      "id": "water-intermittent",
+      "sourceLayer": "water",
+      "filter": [
+        "==",
+        [
+          "get",
+          "intermittent"
+        ],
+        1
+      ],
       "fill": [
         [
           0,
@@ -987,7 +1701,17 @@
         ]
       ]
     },
-    "landcover-ice-shelf": {
+    {
+      "id": "landcover-ice-shelf",
+      "sourceLayer": "landcover",
+      "filter": [
+        "==",
+        [
+          "get",
+          "subclass"
+        ],
+        "ice_shelf"
+      ],
       "fill": [
         [
           0,
@@ -1005,7 +1729,17 @@
         ]
       ]
     },
-    "landcover-sand": {
+    {
+      "id": "landcover-sand",
+      "sourceLayer": "landcover",
+      "filter": [
+        "==",
+        [
+          "get",
+          "class"
+        ],
+        "sand"
+      ],
       "fill": [
         [
           0,
@@ -1019,7 +1753,9 @@
         ]
       ]
     },
-    "building": {
+    {
+      "id": "building",
+      "sourceLayer": "building",
       "fill": [
         [
           0,
@@ -1027,7 +1763,9 @@
         ]
       ]
     },
-    "building/outline": {
+    {
+      "id": "building",
+      "sourceLayer": "building",
       "stroke": [
         [
           14,
@@ -1045,315 +1783,274 @@
         ]
       ]
     },
-    "tunnel-service-track-casing": {
+    {
+      "id": "tunnel-motorway-link-casing",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "motorway"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           0,
-          "#cfcdca"
+          "#f96d6d"
         ]
       ],
       "width": [
-        [
-          15,
-          1.0
-        ],
-        [
-          16,
-          4.0
-        ],
-        [
-          17,
-          5.3040238450074515
-        ],
-        [
-          18,
-          6.868852459016393
-        ],
-        [
-          19,
-          8.746646795827122
-        ],
-        [
-          20,
-          11
-        ]
-      ],
-      "dash": [
-        0.5,
-        0.25
-      ],
-      "opacity": [
-        [
-          0,
-          0
-        ]
-      ]
-    },
-    "tunnel-minor-casing": {
-      "stroke": [
-        [
-          0,
-          "#cfcdca"
-        ]
-      ],
-      "width": [
-        [
-          12,
-          0.5
-        ],
-        [
-          13,
-          1.0
-        ],
-        [
-          14,
-          4.0
-        ],
-        [
-          15,
-          5.107763204537398
-        ],
-        [
-          16,
-          6.437079049982277
-        ],
-        [
-          17,
-          8.032258064516128
-        ],
-        [
-          18,
-          9.946472881956755
-        ],
-        [
-          19,
-          12.243530662885501
-        ],
-        [
-          20,
-          15
-        ]
-      ],
-      "dash": [
-        0.5,
-        0.25
-      ],
-      "opacity": [
-        [
-          0,
-          0
-        ]
-      ]
-    },
-    "tunnel-link-casing": {
-      "stroke": [
-        [
-          0,
-          "#e9ac77"
-        ]
-      ],
-      "width": [
-        [
-          12,
-          1.0
-        ],
-        [
-          13,
-          3.0
-        ],
-        [
-          14,
-          4.0
-        ],
-        [
-          15,
-          5.107763204537398
-        ],
-        [
-          16,
-          6.437079049982277
-        ],
-        [
-          17,
-          8.032258064516128
-        ],
-        [
-          18,
-          9.946472881956755
-        ],
-        [
-          19,
-          12.243530662885501
-        ],
-        [
-          20,
-          15
-        ]
-      ],
-      "dash": [
-        0.5,
-        0.25
-      ],
-      "opacity": [
-        [
-          0,
-          0
-        ]
-      ]
-    },
-    "tunnel-secondary-tertiary-casing": {
-      "stroke": [
-        [
-          0,
-          "#e9ac77"
-        ]
-      ],
-      "width": [
-        [
-          8,
-          1.5
-        ],
-        [
-          9,
-          1.8916069560086195
-        ],
-        [
-          10,
-          2.361535303218963
-        ],
-        [
-          11,
-          2.925449319871375
-        ],
-        [
-          12,
-          3.6021461398542702
-        ],
-        [
-          13,
-          4.414182323833742
-        ],
-        [
-          14,
-          5.388625744609111
-        ],
-        [
-          15,
-          6.557957849539553
-        ],
-        [
-          16,
-          7.961156375456082
-        ],
-        [
-          17,
-          9.644994606555919
-        ],
-        [
-          18,
-          11.66560048387572
-        ],
-        [
-          19,
-          14.090327536659483
-        ],
-        [
-          20,
-          17
-        ]
-      ],
-      "dash": [
-        0.5,
-        0.25
-      ],
-      "opacity": [
-        [
-          0,
-          0
-        ]
-      ]
-    },
-    "tunnel-trunk-primary-casing": {
-      "stroke": [
-        [
-          0,
-          "#e9ac77"
-        ]
-      ],
-      "width": [
-        [
-          5,
-          0.4
-        ],
         [
           6,
-          0.6
+          0.75
         ],
         [
           7,
-          1.5
+          0.784
         ],
         [
           8,
-          1.9227100222099318
+          0.825
         ],
         [
           9,
-          2.4299620488618503
+          0.859
         ],
         [
           10,
-          3.038664480844152
+          0.9
         ],
         [
           11,
-          3.7691073992229147
+          0.934
         ],
         [
           12,
-          4.6456389012774295
+          0.975
+        ],
+        [
+          12.5,
+          1.013
         ],
         [
           13,
-          5.697476703742846
+          3.85
         ],
         [
           14,
-          6.9596820667013475
+          4.1
         ],
         [
           15,
-          8.474328502251549
+          4.4
         ],
         [
           16,
-          10.291904224911791
+          5.65
         ],
         [
           17,
-          12.47299509210408
+          7.15
         ],
         [
           18,
-          15.090304132734827
+          8.963
         ],
         [
           19,
-          18.231074981491723
+          11.139
         ],
         [
           20,
-          22
+          13.75
         ]
       ],
-      "opacity": [
+      "dash": [
         [
           0,
-          0
+          [
+            10.666666666666666,
+            5.333333333333333
+          ]
+        ],
+        [
+          13,
+          [
+            2.909090909090909,
+            1.4545454545454546
+          ]
         ]
       ]
     },
-    "tunnel-motorway-link": {
+    {
+      "id": "tunnel-motorway-casing",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "motorway"
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
+      "stroke": [
+        [
+          0,
+          "#f96d6d"
+        ]
+      ],
+      "width": [
+        [
+          6,
+          1.0
+        ],
+        [
+          7,
+          1.045
+        ],
+        [
+          8,
+          1.1
+        ],
+        [
+          8.5,
+          1.125
+        ],
+        [
+          9,
+          3.45
+        ],
+        [
+          10,
+          3.6
+        ],
+        [
+          11,
+          3.736
+        ],
+        [
+          12,
+          3.9
+        ],
+        [
+          13,
+          4.147
+        ],
+        [
+          14,
+          4.444
+        ],
+        [
+          15,
+          4.8
+        ],
+        [
+          16,
+          6.164
+        ],
+        [
+          17,
+          7.8
+        ],
+        [
+          18,
+          9.778
+        ],
+        [
+          19,
+          12.152
+        ],
+        [
+          20,
+          15
+        ]
+      ],
+      "dash": [
+        [
+          0,
+          [
+            8.0,
+            4.0
+          ]
+        ],
+        [
+          9,
+          [
+            2.6666666666666665,
+            1.3333333333333333
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "tunnel-motorway-link",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "motorway"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -1371,27 +2068,27 @@
         ],
         [
           14,
-          1.1181818181818182
+          1.118
         ],
         [
           15,
-          1.2000000000000002
+          1.2
         ],
         [
           16,
-          1.540909090909091
+          1.541
         ],
         [
           17,
-          1.9500000000000002
+          1.95
         ],
         [
           18,
-          2.4445054945054947
+          2.445
         ],
         [
           19,
-          3.037912087912088
+          3.038
         ],
         [
           20,
@@ -1399,11 +2096,42 @@
         ]
       ],
       "dash": [
-        10.666666666666666,
-        5.333333333333333
+        [
+          0,
+          [
+            10.666666666666666,
+            5.333333333333333
+          ]
+        ]
       ]
     },
-    "tunnel-service-track": {
+    {
+      "id": "tunnel-service-track",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "service",
+            "track"
+          ],
+          true,
+          false
+        ]
+      ],
       "stroke": [
         [
           12,
@@ -1421,7 +2149,7 @@
         ],
         [
           7,
-          1.0454545454545454
+          1.045
         ],
         [
           8,
@@ -1429,7 +2157,7 @@
         ],
         [
           9,
-          1.1454545454545455
+          1.145
         ],
         [
           10,
@@ -1437,7 +2165,7 @@
         ],
         [
           11,
-          1.2454545454545454
+          1.245
         ],
         [
           12,
@@ -1445,11 +2173,11 @@
         ],
         [
           13,
-          1.3824175824175824
+          1.382
         ],
         [
           14,
-          1.4813186813186814
+          1.481
         ],
         [
           15,
@@ -1457,7 +2185,7 @@
         ],
         [
           16,
-          2.0545454545454547
+          2.055
         ],
         [
           17,
@@ -1465,11 +2193,11 @@
         ],
         [
           18,
-          3.2593406593406593
+          3.259
         ],
         [
           19,
-          4.05054945054945
+          4.051
         ],
         [
           20,
@@ -1477,11 +2205,52 @@
         ]
       ],
       "dash": [
-        8.0,
-        4.0
+        [
+          0,
+          [
+            8.0,
+            4.0
+          ]
+        ]
       ]
     },
-    "tunnel-link": {
+    {
+      "id": "tunnel-link",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "primary",
+            "secondary",
+            "tertiary",
+            "trunk"
+          ],
+          true,
+          false
+        ],
+        [
+          "==",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           8,
@@ -1503,7 +2272,7 @@
         ],
         [
           7,
-          1.3068181818181819
+          1.307
         ],
         [
           8,
@@ -1511,7 +2280,7 @@
         ],
         [
           9,
-          1.4318181818181819
+          1.432
         ],
         [
           10,
@@ -1519,7 +2288,7 @@
         ],
         [
           11,
-          1.5568181818181819
+          1.557
         ],
         [
           12,
@@ -1527,11 +2296,11 @@
         ],
         [
           13,
-          1.728021978021978
+          1.728
         ],
         [
           14,
-          1.8516483516483517
+          1.852
         ],
         [
           15,
@@ -1539,7 +2308,7 @@
         ],
         [
           16,
-          2.5681818181818183
+          2.568
         ],
         [
           17,
@@ -1547,11 +2316,11 @@
         ],
         [
           18,
-          4.074175824175824
+          4.074
         ],
         [
           19,
-          5.063186813186814
+          5.063
         ],
         [
           20,
@@ -1559,11 +2328,37 @@
         ]
       ],
       "dash": [
-        6.4,
-        3.2
+        [
+          0,
+          [
+            6.4,
+            3.2
+          ]
+        ]
       ]
     },
-    "tunnel-minor": {
+    {
+      "id": "tunnel-minor",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "minor"
+        ]
+      ],
       "stroke": [
         [
           12,
@@ -1581,7 +2376,7 @@
         ],
         [
           7,
-          1.0454545454545454
+          1.045
         ],
         [
           8,
@@ -1589,7 +2384,7 @@
         ],
         [
           9,
-          1.1454545454545455
+          1.145
         ],
         [
           10,
@@ -1597,7 +2392,7 @@
         ],
         [
           11,
-          1.2454545454545454
+          1.245
         ],
         [
           12,
@@ -1605,11 +2400,11 @@
         ],
         [
           13,
-          1.3824175824175824
+          1.382
         ],
         [
           14,
-          1.4813186813186814
+          1.481
         ],
         [
           15,
@@ -1617,7 +2412,7 @@
         ],
         [
           16,
-          2.0545454545454547
+          2.055
         ],
         [
           17,
@@ -1625,11 +2420,11 @@
         ],
         [
           18,
-          3.2593406593406593
+          3.259
         ],
         [
           19,
-          4.05054945054945
+          4.051
         ],
         [
           20,
@@ -1637,8 +2432,13 @@
         ]
       ],
       "dash": [
-        8.0,
-        4.0
+        [
+          0,
+          [
+            8.0,
+            4.0
+          ]
+        ]
       ],
       "opacity": [
         [
@@ -1647,7 +2447,41 @@
         ]
       ]
     },
-    "tunnel-secondary-tertiary": {
+    {
+      "id": "tunnel-secondary-tertiary",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "secondary",
+            "tertiary"
+          ],
+          true,
+          false
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           8,
@@ -1669,7 +2503,7 @@
         ],
         [
           7,
-          1.3068181818181819
+          1.307
         ],
         [
           8,
@@ -1677,7 +2511,7 @@
         ],
         [
           9,
-          1.4318181818181819
+          1.432
         ],
         [
           10,
@@ -1685,7 +2519,7 @@
         ],
         [
           11,
-          1.5568181818181819
+          1.557
         ],
         [
           12,
@@ -1693,11 +2527,11 @@
         ],
         [
           13,
-          1.728021978021978
+          1.728
         ],
         [
           14,
-          1.8516483516483517
+          1.852
         ],
         [
           15,
@@ -1705,7 +2539,7 @@
         ],
         [
           16,
-          2.5681818181818183
+          2.568
         ],
         [
           17,
@@ -1713,11 +2547,11 @@
         ],
         [
           18,
-          4.074175824175824
+          4.074
         ],
         [
           19,
-          5.063186813186814
+          5.063
         ],
         [
           20,
@@ -1725,11 +2559,50 @@
         ]
       ],
       "dash": [
-        6.4,
-        3.2
+        [
+          0,
+          [
+            6.4,
+            3.2
+          ]
+        ]
       ]
     },
-    "tunnel-trunk-primary": {
+    {
+      "id": "tunnel-trunk-primary",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "primary",
+            "trunk"
+          ],
+          true,
+          false
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -1743,15 +2616,15 @@
         ],
         [
           7,
-          1.6727272727272728
+          1.673
         ],
         [
           8,
-          1.7600000000000002
+          1.76
         ],
         [
           9,
-          1.8327272727272728
+          1.833
         ],
         [
           10,
@@ -1759,7 +2632,7 @@
         ],
         [
           11,
-          1.9927272727272727
+          1.993
         ],
         [
           12,
@@ -1767,19 +2640,19 @@
         ],
         [
           13,
-          2.211868131868132
+          2.212
         ],
         [
           14,
-          2.3701098901098905
+          2.37
         ],
         [
           15,
-          2.5600000000000005
+          2.56
         ],
         [
           16,
-          3.2872727272727276
+          3.287
         ],
         [
           17,
@@ -1787,11 +2660,11 @@
         ],
         [
           18,
-          5.214945054945055
+          5.215
         ],
         [
           19,
-          6.480879120879122
+          6.481
         ],
         [
           20,
@@ -1799,11 +2672,45 @@
         ]
       ],
       "dash": [
-        5.0,
-        2.5
+        [
+          0,
+          [
+            5.0,
+            2.5
+          ]
+        ]
       ]
     },
-    "tunnel-motorway": {
+    {
+      "id": "tunnel-motorway",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "motorway"
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -1825,7 +2732,7 @@
         ],
         [
           11,
-          1.2454545454545454
+          1.245
         ],
         [
           12,
@@ -1833,11 +2740,11 @@
         ],
         [
           13,
-          1.3824175824175824
+          1.382
         ],
         [
           14,
-          1.4813186813186814
+          1.481
         ],
         [
           15,
@@ -1845,7 +2752,7 @@
         ],
         [
           16,
-          2.0545454545454547
+          2.055
         ],
         [
           17,
@@ -1853,11 +2760,11 @@
         ],
         [
           18,
-          3.2593406593406593
+          3.259
         ],
         [
           19,
-          4.05054945054945
+          4.051
         ],
         [
           20,
@@ -1865,11 +2772,37 @@
         ]
       ],
       "dash": [
-        8.0,
-        4.0
+        [
+          0,
+          [
+            8.0,
+            4.0
+          ]
+        ]
       ]
     },
-    "tunnel-railway": {
+    {
+      "id": "tunnel-railway",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "rail"
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -1883,7 +2816,7 @@
         ],
         [
           7,
-          1.0454545454545454
+          1.045
         ],
         [
           8,
@@ -1891,7 +2824,7 @@
         ],
         [
           9,
-          1.1454545454545455
+          1.145
         ],
         [
           10,
@@ -1899,7 +2832,7 @@
         ],
         [
           11,
-          1.2454545454545454
+          1.245
         ],
         [
           12,
@@ -1907,11 +2840,11 @@
         ],
         [
           13,
-          1.3824175824175824
+          1.382
         ],
         [
           14,
-          1.4813186813186814
+          1.481
         ],
         [
           15,
@@ -1919,7 +2852,7 @@
         ],
         [
           16,
-          2.0545454545454547
+          2.055
         ],
         [
           17,
@@ -1927,11 +2860,11 @@
         ],
         [
           18,
-          3.2593406593406593
+          3.259
         ],
         [
           19,
-          4.05054945054945
+          4.051
         ],
         [
           20,
@@ -1939,11 +2872,30 @@
         ]
       ],
       "dash": [
-        8.0,
-        4.0
+        [
+          0,
+          [
+            8.0,
+            4.0
+          ]
+        ]
       ]
     },
-    "aeroway-taxiway-casing": {
+    {
+      "id": "aeroway-taxiway-casing",
+      "sourceLayer": "aeroway",
+      "filter": [
+        "match",
+        [
+          "get",
+          "class"
+        ],
+        [
+          "taxiway"
+        ],
+        true,
+        false
+      ],
       "stroke": [
         [
           0,
@@ -1957,23 +2909,23 @@
         ],
         [
           12,
-          2.481203007518797
+          2.481
         ],
         [
           13,
-          3.2030075187969924
+          3.203
         ],
         [
           14,
-          4.285714285714286
+          4.286
         ],
         [
           15,
-          5.909774436090226
+          5.91
         ],
         [
           16,
-          8.345864661654137
+          8.346
         ],
         [
           17,
@@ -1988,7 +2940,21 @@
       ],
       "minZoom": 12
     },
-    "aeroway-runway-casing": {
+    {
+      "id": "aeroway-runway-casing",
+      "sourceLayer": "aeroway",
+      "filter": [
+        "match",
+        [
+          "get",
+          "class"
+        ],
+        [
+          "runway"
+        ],
+        true,
+        false
+      ],
       "stroke": [
         [
           0,
@@ -2002,23 +2968,23 @@
         ],
         [
           12,
-          7.406015037593985
+          7.406
         ],
         [
           13,
-          11.015037593984962
+          11.015
         ],
         [
           14,
-          16.42857142857143
+          16.429
         ],
         [
           15,
-          24.548872180451127
+          24.549
         ],
         [
           16,
-          36.72932330827068
+          36.729
         ],
         [
           17,
@@ -2033,7 +2999,37 @@
       ],
       "minZoom": 12
     },
-    "aeroway-area": {
+    {
+      "id": "aeroway-area",
+      "sourceLayer": "aeroway",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "MultiPolygon",
+            "Polygon"
+          ],
+          true,
+          false
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "runway",
+            "taxiway"
+          ],
+          true,
+          false
+        ]
+      ],
       "fill": [
         [
           0,
@@ -2052,7 +3048,36 @@
       ],
       "minZoom": 4
     },
-    "aeroway-taxiway": {
+    {
+      "id": "aeroway-taxiway",
+      "sourceLayer": "aeroway",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "taxiway"
+          ],
+          true,
+          false
+        ],
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "LineString",
+            "MultiLineString"
+          ],
+          true,
+          false
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -2066,23 +3091,23 @@
         ],
         [
           12,
-          1.4330827067669172
+          1.433
         ],
         [
           13,
-          2.082706766917293
+          2.083
         ],
         [
           14,
-          3.057142857142857
+          3.057
         ],
         [
           15,
-          4.518796992481203
+          4.519
         ],
         [
           16,
-          6.711278195488722
+          6.711
         ],
         [
           17,
@@ -2101,7 +3126,36 @@
       ],
       "minZoom": 4
     },
-    "aeroway-runway": {
+    {
+      "id": "aeroway-runway",
+      "sourceLayer": "aeroway",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "runway"
+          ],
+          true,
+          false
+        ],
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "LineString",
+            "MultiLineString"
+          ],
+          true,
+          false
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -2115,23 +3169,23 @@
         ],
         [
           12,
-          6.213533834586466
+          6.214
         ],
         [
           13,
-          9.533834586466165
+          9.534
         ],
         [
           14,
-          14.514285714285714
+          14.514
         ],
         [
           15,
-          21.984962406015036
+          21.985
         ],
         [
           16,
-          33.19097744360902
+          33.191
         ],
         [
           17,
@@ -2150,7 +3204,32 @@
       ],
       "minZoom": 4
     },
-    "road_area_pier": {
+    {
+      "id": "road_area_pier",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "MultiPolygon",
+            "Polygon"
+          ],
+          true,
+          false
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "pier"
+        ]
+      ],
       "fill": [
         [
           0,
@@ -2158,7 +3237,36 @@
         ]
       ]
     },
-    "road_pier": {
+    {
+      "id": "road_pier",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "LineString",
+            "MultiLineString"
+          ],
+          true,
+          false
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "pier"
+          ],
+          true,
+          false
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -2172,7 +3280,7 @@
         ],
         [
           16,
-          2.3636363636363633
+          2.364
         ],
         [
           17,
@@ -2180,7 +3288,36 @@
         ]
       ]
     },
-    "highway-area": {
+    {
+      "id": "highway-area",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "MultiPolygon",
+            "Polygon"
+          ],
+          true,
+          false
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "pier"
+          ],
+          false,
+          true
+        ]
+      ],
       "fill": [
         [
           0,
@@ -2194,7 +3331,41 @@
         ]
       ]
     },
-    "highway-motorway-link-casing": {
+    {
+      "id": "highway-motorway-link-casing",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "brunnel"
+          ],
+          [
+            "bridge",
+            "tunnel"
+          ],
+          false,
+          true
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "motorway"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -2208,39 +3379,39 @@
         ],
         [
           7,
-          0.7840909090909092
+          0.784
         ],
         [
           8,
-          0.8250000000000001
+          0.825
         ],
         [
           9,
-          0.8590909090909091
+          0.859
         ],
         [
           10,
-          0.8999999999999999
+          0.9
         ],
         [
           11,
-          0.9340909090909091
+          0.934
         ],
         [
           12,
-          0.9750000000000001
+          0.975
         ],
         [
           12.5,
-          1.0125000000000002
+          1.013
         ],
         [
           13,
-          3.8500000000000005
+          3.85
         ],
         [
           14,
-          4.1000000000000005
+          4.1
         ],
         [
           15,
@@ -2256,11 +3427,11 @@
         ],
         [
           18,
-          8.963186813186814
+          8.963
         ],
         [
           19,
-          11.13901098901099
+          11.139
         ],
         [
           20,
@@ -2274,334 +3445,41 @@
         ]
       ]
     },
-    "highway-link-casing": {
-      "stroke": [
+    {
+      "id": "highway-motorway-casing",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
         [
-          0,
-          "#e9ac77"
+          "match",
+          [
+            "get",
+            "brunnel"
+          ],
+          [
+            "bridge",
+            "tunnel"
+          ],
+          false,
+          true
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "motorway"
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "ramp"
+          ],
+          1
         ]
       ],
-      "width": [
-        [
-          12,
-          1.0
-        ],
-        [
-          13,
-          3.0
-        ],
-        [
-          14,
-          4.0
-        ],
-        [
-          15,
-          5.107763204537398
-        ],
-        [
-          16,
-          6.437079049982277
-        ],
-        [
-          17,
-          8.032258064516128
-        ],
-        [
-          18,
-          9.946472881956755
-        ],
-        [
-          19,
-          12.243530662885501
-        ],
-        [
-          20,
-          15
-        ]
-      ],
-      "opacity": [
-        [
-          0,
-          0
-        ]
-      ],
-      "minZoom": 13
-    },
-    "highway-minor-casing": {
-      "stroke": [
-        [
-          0,
-          "#cfcdca"
-        ]
-      ],
-      "width": [
-        [
-          12,
-          0.5
-        ],
-        [
-          13,
-          1.0
-        ],
-        [
-          14,
-          4.0
-        ],
-        [
-          15,
-          5.107763204537398
-        ],
-        [
-          16,
-          6.437079049982277
-        ],
-        [
-          17,
-          8.032258064516128
-        ],
-        [
-          18,
-          9.946472881956755
-        ],
-        [
-          19,
-          12.243530662885501
-        ],
-        [
-          20,
-          15
-        ]
-      ],
-      "opacity": [
-        [
-          0,
-          0
-        ]
-      ]
-    },
-    "highway-secondary-tertiary-casing": {
-      "stroke": [
-        [
-          0,
-          "#e9ac77"
-        ]
-      ],
-      "width": [
-        [
-          8,
-          1.5
-        ],
-        [
-          9,
-          1.8916069560086195
-        ],
-        [
-          10,
-          2.361535303218963
-        ],
-        [
-          11,
-          2.925449319871375
-        ],
-        [
-          12,
-          3.6021461398542702
-        ],
-        [
-          13,
-          4.414182323833742
-        ],
-        [
-          14,
-          5.388625744609111
-        ],
-        [
-          15,
-          6.557957849539553
-        ],
-        [
-          16,
-          7.961156375456082
-        ],
-        [
-          17,
-          9.644994606555919
-        ],
-        [
-          18,
-          11.66560048387572
-        ],
-        [
-          19,
-          14.090327536659483
-        ],
-        [
-          20,
-          17
-        ]
-      ],
-      "opacity": [
-        [
-          0,
-          0
-        ]
-      ]
-    },
-    "highway-primary-casing": {
-      "stroke": [
-        [
-          0,
-          "#e9ac77"
-        ]
-      ],
-      "width": [
-        [
-          7,
-          0.0
-        ],
-        [
-          8,
-          0.6
-        ],
-        [
-          9,
-          1.5
-        ],
-        [
-          10,
-          2.1376277801194288
-        ],
-        [
-          11,
-          2.9027811162627435
-        ],
-        [
-          12,
-          3.82096511963472
-        ],
-        [
-          13,
-          4.922785923681094
-        ],
-        [
-          14,
-          6.244970888536739
-        ],
-        [
-          15,
-          7.831592846363515
-        ],
-        [
-          16,
-          9.735539195755647
-        ],
-        [
-          17,
-          12.020274815026205
-        ],
-        [
-          18,
-          14.761957558150874
-        ],
-        [
-          19,
-          18.051976849900477
-        ],
-        [
-          20,
-          22
-        ]
-      ],
-      "opacity": [
-        [
-          0,
-          0
-        ]
-      ],
-      "minZoom": 5
-    },
-    "highway-trunk-casing": {
-      "stroke": [
-        [
-          0,
-          "#e9ac77"
-        ]
-      ],
-      "width": [
-        [
-          5,
-          0.0
-        ],
-        [
-          6,
-          0.6
-        ],
-        [
-          7,
-          1.5
-        ],
-        [
-          8,
-          1.9227100222099318
-        ],
-        [
-          9,
-          2.4299620488618503
-        ],
-        [
-          10,
-          3.038664480844152
-        ],
-        [
-          11,
-          3.7691073992229147
-        ],
-        [
-          12,
-          4.6456389012774295
-        ],
-        [
-          13,
-          5.697476703742846
-        ],
-        [
-          14,
-          6.9596820667013475
-        ],
-        [
-          15,
-          8.474328502251549
-        ],
-        [
-          16,
-          10.291904224911791
-        ],
-        [
-          17,
-          12.47299509210408
-        ],
-        [
-          18,
-          15.090304132734827
-        ],
-        [
-          19,
-          18.231074981491723
-        ],
-        [
-          20,
-          22
-        ]
-      ],
-      "opacity": [
-        [
-          0,
-          0
-        ]
-      ],
-      "minZoom": 5
-    },
-    "highway-motorway-casing": {
       "stroke": [
         [
           0,
@@ -2615,7 +3493,7 @@
         ],
         [
           7,
-          1.0454545454545454
+          1.045
         ],
         [
           8,
@@ -2627,47 +3505,47 @@
         ],
         [
           9,
-          3.4499999999999997
+          3.45
         ],
         [
           10,
-          3.5999999999999996
+          3.6
         ],
         [
           11,
-          3.7363636363636363
+          3.736
         ],
         [
           12,
-          3.9000000000000004
+          3.9
         ],
         [
           13,
-          4.147252747252748
+          4.147
         ],
         [
           14,
-          4.443956043956045
+          4.444
         ],
         [
           15,
-          4.800000000000001
+          4.8
         ],
         [
           16,
-          6.163636363636364
+          6.164
         ],
         [
           17,
-          7.800000000000001
+          7.8
         ],
         [
           18,
-          9.778021978021979
+          9.778
         ],
         [
           19,
-          12.151648351648353
+          12.152
         ],
         [
           20,
@@ -2686,7 +3564,41 @@
       ],
       "minZoom": 4
     },
-    "highway-motorway-link": {
+    {
+      "id": "highway-motorway-link",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "brunnel"
+          ],
+          [
+            "bridge",
+            "tunnel"
+          ],
+          false,
+          true
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "motorway"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -2704,27 +3616,27 @@
         ],
         [
           14,
-          1.1181818181818182
+          1.118
         ],
         [
           15,
-          1.2000000000000002
+          1.2
         ],
         [
           16,
-          1.540909090909091
+          1.541
         ],
         [
           17,
-          1.9500000000000002
+          1.95
         ],
         [
           18,
-          2.4445054945054947
+          2.445
         ],
         [
           19,
-          3.037912087912088
+          3.038
         ],
         [
           20,
@@ -2733,7 +3645,48 @@
       ],
       "minZoom": 12
     },
-    "highway-link": {
+    {
+      "id": "highway-link",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "brunnel"
+          ],
+          [
+            "bridge",
+            "tunnel"
+          ],
+          false,
+          true
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "primary",
+            "secondary",
+            "tertiary",
+            "trunk"
+          ],
+          true,
+          false
+        ],
+        [
+          "==",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           8,
@@ -2755,7 +3708,7 @@
         ],
         [
           7,
-          1.3068181818181819
+          1.307
         ],
         [
           8,
@@ -2763,7 +3716,7 @@
         ],
         [
           9,
-          1.4318181818181819
+          1.432
         ],
         [
           10,
@@ -2771,7 +3724,7 @@
         ],
         [
           11,
-          1.5568181818181819
+          1.557
         ],
         [
           12,
@@ -2779,11 +3732,11 @@
         ],
         [
           13,
-          1.728021978021978
+          1.728
         ],
         [
           14,
-          1.8516483516483517
+          1.852
         ],
         [
           15,
@@ -2791,7 +3744,7 @@
         ],
         [
           16,
-          2.5681818181818183
+          2.568
         ],
         [
           17,
@@ -2799,11 +3752,11 @@
         ],
         [
           18,
-          4.074175824175824
+          4.074
         ],
         [
           19,
-          5.063186813186814
+          5.063
         ],
         [
           20,
@@ -2812,7 +3765,46 @@
       ],
       "minZoom": 13
     },
-    "highway-minor": {
+    {
+      "id": "highway-minor",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "LineString",
+            "MultiLineString"
+          ],
+          true,
+          false
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "minor",
+            "service",
+            "track"
+          ],
+          true,
+          false
+        ]
+      ],
       "stroke": [
         [
           12,
@@ -2830,7 +3822,7 @@
         ],
         [
           7,
-          1.0454545454545454
+          1.045
         ],
         [
           8,
@@ -2838,7 +3830,7 @@
         ],
         [
           9,
-          1.1454545454545455
+          1.145
         ],
         [
           10,
@@ -2846,7 +3838,7 @@
         ],
         [
           11,
-          1.2454545454545454
+          1.245
         ],
         [
           12,
@@ -2854,11 +3846,11 @@
         ],
         [
           13,
-          1.3824175824175824
+          1.382
         ],
         [
           14,
-          1.4813186813186814
+          1.481
         ],
         [
           15,
@@ -2866,7 +3858,7 @@
         ],
         [
           16,
-          2.0545454545454547
+          2.055
         ],
         [
           17,
@@ -2874,11 +3866,11 @@
         ],
         [
           18,
-          3.2593406593406593
+          3.259
         ],
         [
           19,
-          4.05054945054945
+          4.051
         ],
         [
           20,
@@ -2892,7 +3884,46 @@
         ]
       ]
     },
-    "highway-secondary-tertiary": {
+    {
+      "id": "highway-secondary-tertiary",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "get",
+            "brunnel"
+          ],
+          [
+            "bridge",
+            "tunnel"
+          ],
+          false,
+          true
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "secondary",
+            "tertiary"
+          ],
+          true,
+          false
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           8,
@@ -2914,7 +3945,7 @@
         ],
         [
           7,
-          1.3068181818181819
+          1.307
         ],
         [
           8,
@@ -2922,7 +3953,7 @@
         ],
         [
           9,
-          1.4318181818181819
+          1.432
         ],
         [
           10,
@@ -2930,7 +3961,7 @@
         ],
         [
           11,
-          1.5568181818181819
+          1.557
         ],
         [
           12,
@@ -2938,11 +3969,11 @@
         ],
         [
           13,
-          1.728021978021978
+          1.728
         ],
         [
           14,
-          1.8516483516483517
+          1.852
         ],
         [
           15,
@@ -2950,7 +3981,7 @@
         ],
         [
           16,
-          2.5681818181818183
+          2.568
         ],
         [
           17,
@@ -2958,11 +3989,11 @@
         ],
         [
           18,
-          4.074175824175824
+          4.074
         ],
         [
           19,
-          5.063186813186814
+          5.063
         ],
         [
           20,
@@ -2970,7 +4001,57 @@
         ]
       ]
     },
-    "highway-primary": {
+    {
+      "id": "highway-primary",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "LineString",
+            "MultiLineString"
+          ],
+          true,
+          false
+        ],
+        [
+          "match",
+          [
+            "get",
+            "brunnel"
+          ],
+          [
+            "bridge",
+            "tunnel"
+          ],
+          false,
+          true
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "primary"
+          ],
+          true,
+          false
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -2984,15 +4065,15 @@
         ],
         [
           7,
-          1.6727272727272728
+          1.673
         ],
         [
           8,
-          1.7600000000000002
+          1.76
         ],
         [
           9,
-          1.8327272727272728
+          1.833
         ],
         [
           10,
@@ -3000,7 +4081,7 @@
         ],
         [
           11,
-          1.9927272727272727
+          1.993
         ],
         [
           12,
@@ -3008,19 +4089,19 @@
         ],
         [
           13,
-          2.211868131868132
+          2.212
         ],
         [
           14,
-          2.3701098901098905
+          2.37
         ],
         [
           15,
-          2.5600000000000005
+          2.56
         ],
         [
           16,
-          3.2872727272727276
+          3.287
         ],
         [
           17,
@@ -3028,11 +4109,11 @@
         ],
         [
           18,
-          5.214945054945055
+          5.215
         ],
         [
           19,
-          6.480879120879122
+          6.481
         ],
         [
           20,
@@ -3040,7 +4121,57 @@
         ]
       ]
     },
-    "highway-trunk": {
+    {
+      "id": "highway-trunk",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "LineString",
+            "MultiLineString"
+          ],
+          true,
+          false
+        ],
+        [
+          "match",
+          [
+            "get",
+            "brunnel"
+          ],
+          [
+            "bridge",
+            "tunnel"
+          ],
+          false,
+          true
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "trunk"
+          ],
+          true,
+          false
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -3054,15 +4185,15 @@
         ],
         [
           7,
-          1.6727272727272728
+          1.673
         ],
         [
           8,
-          1.7600000000000002
+          1.76
         ],
         [
           9,
-          1.8327272727272728
+          1.833
         ],
         [
           10,
@@ -3070,7 +4201,7 @@
         ],
         [
           11,
-          1.9927272727272727
+          1.993
         ],
         [
           12,
@@ -3078,19 +4209,19 @@
         ],
         [
           13,
-          2.211868131868132
+          2.212
         ],
         [
           14,
-          2.3701098901098905
+          2.37
         ],
         [
           15,
-          2.5600000000000005
+          2.56
         ],
         [
           16,
-          3.2872727272727276
+          3.287
         ],
         [
           17,
@@ -3098,11 +4229,11 @@
         ],
         [
           18,
-          5.214945054945055
+          5.215
         ],
         [
           19,
-          6.480879120879122
+          6.481
         ],
         [
           20,
@@ -3110,7 +4241,53 @@
         ]
       ]
     },
-    "highway-motorway": {
+    {
+      "id": "highway-motorway",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "LineString",
+            "MultiLineString"
+          ],
+          true,
+          false
+        ],
+        [
+          "match",
+          [
+            "get",
+            "brunnel"
+          ],
+          [
+            "bridge",
+            "tunnel"
+          ],
+          false,
+          true
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "motorway"
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -3132,7 +4309,7 @@
         ],
         [
           11,
-          1.2454545454545454
+          1.245
         ],
         [
           12,
@@ -3140,11 +4317,11 @@
         ],
         [
           13,
-          1.3824175824175824
+          1.382
         ],
         [
           14,
-          1.4813186813186814
+          1.481
         ],
         [
           15,
@@ -3152,7 +4329,7 @@
         ],
         [
           16,
-          2.0545454545454547
+          2.055
         ],
         [
           17,
@@ -3160,11 +4337,11 @@
         ],
         [
           18,
-          3.2593406593406593
+          3.259
         ],
         [
           19,
-          4.05054945054945
+          4.051
         ],
         [
           20,
@@ -3173,7 +4350,44 @@
       ],
       "minZoom": 5
     },
-    "railway-transit": {
+    {
+      "id": "railway-transit",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "LineString",
+            "MultiLineString"
+          ],
+          true,
+          false
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "transit"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "brunnel"
+          ],
+          [
+            "tunnel"
+          ],
+          false,
+          true
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -3187,7 +4401,7 @@
         ],
         [
           7,
-          1.0454545454545454
+          1.045
         ],
         [
           8,
@@ -3195,7 +4409,7 @@
         ],
         [
           9,
-          1.1454545454545455
+          1.145
         ],
         [
           10,
@@ -3203,7 +4417,7 @@
         ],
         [
           11,
-          1.2454545454545454
+          1.245
         ],
         [
           12,
@@ -3211,11 +4425,11 @@
         ],
         [
           13,
-          1.3824175824175824
+          1.382
         ],
         [
           14,
-          1.4813186813186814
+          1.481
         ],
         [
           15,
@@ -3223,7 +4437,7 @@
         ],
         [
           16,
-          2.0545454545454547
+          2.055
         ],
         [
           17,
@@ -3231,11 +4445,11 @@
         ],
         [
           18,
-          3.2593406593406593
+          3.259
         ],
         [
           19,
-          4.05054945054945
+          4.051
         ],
         [
           20,
@@ -3243,7 +4457,44 @@
         ]
       ]
     },
-    "railway-transit-hatching": {
+    {
+      "id": "railway-transit-hatching",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "LineString",
+            "MultiLineString"
+          ],
+          true,
+          false
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "transit"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "brunnel"
+          ],
+          [
+            "tunnel"
+          ],
+          false,
+          true
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -3257,23 +4508,23 @@
         ],
         [
           15,
-          4.800000000000001
+          4.8
         ],
         [
           16,
-          6.163636363636364
+          6.164
         ],
         [
           17,
-          7.800000000000001
+          7.8
         ],
         [
           18,
-          9.778021978021979
+          9.778
         ],
         [
           19,
-          12.151648351648353
+          12.152
         ],
         [
           20,
@@ -3281,11 +4532,45 @@
         ]
       ],
       "dash": [
-        0.2,
-        8
+        [
+          0,
+          [
+            0.2,
+            8
+          ]
+        ]
       ]
     },
-    "railway-service": {
+    {
+      "id": "railway-service",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "LineString",
+            "MultiLineString"
+          ],
+          true,
+          false
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "rail"
+        ],
+        [
+          "has",
+          "service"
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -3299,7 +4584,7 @@
         ],
         [
           7,
-          1.0454545454545454
+          1.045
         ],
         [
           8,
@@ -3307,7 +4592,7 @@
         ],
         [
           9,
-          1.1454545454545455
+          1.145
         ],
         [
           10,
@@ -3315,7 +4600,7 @@
         ],
         [
           11,
-          1.2454545454545454
+          1.245
         ],
         [
           12,
@@ -3323,11 +4608,11 @@
         ],
         [
           13,
-          1.3824175824175824
+          1.382
         ],
         [
           14,
-          1.4813186813186814
+          1.481
         ],
         [
           15,
@@ -3335,7 +4620,7 @@
         ],
         [
           16,
-          2.0545454545454547
+          2.055
         ],
         [
           17,
@@ -3343,11 +4628,11 @@
         ],
         [
           18,
-          3.2593406593406593
+          3.259
         ],
         [
           19,
-          4.05054945054945
+          4.051
         ],
         [
           20,
@@ -3356,7 +4641,36 @@
       ],
       "minZoom": 15
     },
-    "railway-service-hatching": {
+    {
+      "id": "railway-service-hatching",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "LineString",
+            "MultiLineString"
+          ],
+          true,
+          false
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "rail"
+        ],
+        [
+          "has",
+          "service"
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -3370,23 +4684,23 @@
         ],
         [
           15,
-          4.800000000000001
+          4.8
         ],
         [
           16,
-          6.163636363636364
+          6.164
         ],
         [
           17,
-          7.800000000000001
+          7.8
         ],
         [
           18,
-          9.778021978021979
+          9.778
         ],
         [
           19,
-          12.151648351648353
+          12.152
         ],
         [
           20,
@@ -3394,12 +4708,62 @@
         ]
       ],
       "dash": [
-        0.2,
-        8
+        [
+          0,
+          [
+            0.2,
+            8
+          ]
+        ]
       ],
       "minZoom": 15
     },
-    "railway": {
+    {
+      "id": "railway",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "LineString",
+            "MultiLineString"
+          ],
+          true,
+          false
+        ],
+        [
+          "!",
+          [
+            "has",
+            "service"
+          ]
+        ],
+        [
+          "match",
+          [
+            "get",
+            "brunnel"
+          ],
+          [
+            "bridge",
+            "tunnel"
+          ],
+          false,
+          true
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "rail"
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -3413,7 +4777,7 @@
         ],
         [
           7,
-          1.0454545454545454
+          1.045
         ],
         [
           8,
@@ -3421,7 +4785,7 @@
         ],
         [
           9,
-          1.1454545454545455
+          1.145
         ],
         [
           10,
@@ -3429,7 +4793,7 @@
         ],
         [
           11,
-          1.2454545454545454
+          1.245
         ],
         [
           12,
@@ -3437,11 +4801,11 @@
         ],
         [
           13,
-          1.3824175824175824
+          1.382
         ],
         [
           14,
-          1.4813186813186814
+          1.481
         ],
         [
           15,
@@ -3449,7 +4813,7 @@
         ],
         [
           16,
-          2.0545454545454547
+          2.055
         ],
         [
           17,
@@ -3457,11 +4821,11 @@
         ],
         [
           18,
-          3.2593406593406593
+          3.259
         ],
         [
           19,
-          4.05054945054945
+          4.051
         ],
         [
           20,
@@ -3469,7 +4833,52 @@
         ]
       ]
     },
-    "railway-hatching": {
+    {
+      "id": "railway-hatching",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "LineString",
+            "MultiLineString"
+          ],
+          true,
+          false
+        ],
+        [
+          "!",
+          [
+            "has",
+            "service"
+          ]
+        ],
+        [
+          "match",
+          [
+            "get",
+            "brunnel"
+          ],
+          [
+            "bridge",
+            "tunnel"
+          ],
+          false,
+          true
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "rail"
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -3483,23 +4892,23 @@
         ],
         [
           15,
-          4.800000000000001
+          4.8
         ],
         [
           16,
-          6.163636363636364
+          6.164
         ],
         [
           17,
-          7.800000000000001
+          7.8
         ],
         [
           18,
-          9.778021978021979
+          9.778
         ],
         [
           19,
-          12.151648351648353
+          12.152
         ],
         [
           20,
@@ -3507,11 +4916,45 @@
         ]
       ],
       "dash": [
-        0.2,
-        8
+        [
+          0,
+          [
+            0.2,
+            8
+          ]
+        ]
       ]
     },
-    "bridge-motorway-link-casing": {
+    {
+      "id": "bridge-motorway-link-casing",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "bridge"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "motorway"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -3525,39 +4968,39 @@
         ],
         [
           7,
-          0.7840909090909092
+          0.784
         ],
         [
           8,
-          0.8250000000000001
+          0.825
         ],
         [
           9,
-          0.8590909090909091
+          0.859
         ],
         [
           10,
-          0.8999999999999999
+          0.9
         ],
         [
           11,
-          0.9340909090909091
+          0.934
         ],
         [
           12,
-          0.9750000000000001
+          0.975
         ],
         [
           12.5,
-          1.0125000000000002
+          1.013
         ],
         [
           13,
-          3.8500000000000005
+          3.85
         ],
         [
           14,
-          4.1000000000000005
+          4.1
         ],
         [
           15,
@@ -3573,11 +5016,11 @@
         ],
         [
           18,
-          8.963186813186814
+          8.963
         ],
         [
           19,
-          11.13901098901099
+          11.139
         ],
         [
           20,
@@ -3591,139 +5034,36 @@
         ]
       ]
     },
-    "bridge-link-casing": {
-      "stroke": [
+    {
+      "id": "bridge-motorway-casing",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
         [
-          0,
-          "#e9ac77"
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "bridge"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "motorway"
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "ramp"
+          ],
+          1
         ]
       ],
-      "width": [
-        [
-          12,
-          1.0
-        ],
-        [
-          13,
-          3.0
-        ],
-        [
-          14,
-          4.0
-        ],
-        [
-          15,
-          5.510586188005543
-        ],
-        [
-          16,
-          7.323289613612195
-        ],
-        [
-          17,
-          9.498533724340177
-        ],
-        [
-          18,
-          12.108826657213756
-        ],
-        [
-          19,
-          15.241178176662048
-        ],
-        [
-          20,
-          19
-        ]
-      ],
-      "opacity": [
-        [
-          0,
-          0
-        ]
-      ]
-    },
-    "bridge-secondary-tertiary-casing": {
-      "stroke": [
-        [
-          0,
-          "#e9ac77"
-        ]
-      ],
-      "width": [
-        [
-          5,
-          0.4
-        ],
-        [
-          6,
-          0.4909090909090909
-        ],
-        [
-          7,
-          0.6
-        ],
-        [
-          8,
-          1.5
-        ],
-        [
-          9,
-          1.992666815623747
-        ],
-        [
-          10,
-          2.5838669943722437
-        ],
-        [
-          11,
-          3.2933072088704396
-        ],
-        [
-          12,
-          4.144635466268275
-        ],
-        [
-          13,
-          5.166229375145676
-        ],
-        [
-          14,
-          6.392142065798559
-        ],
-        [
-          15,
-          7.863237294582018
-        ],
-        [
-          16,
-          9.628551569122168
-        ],
-        [
-          17,
-          11.74692869857035
-        ],
-        [
-          18,
-          14.288981253908165
-        ],
-        [
-          19,
-          17.339444320313547
-        ],
-        [
-          20,
-          21
-        ]
-      ],
-      "opacity": [
-        [
-          0,
-          0
-        ]
-      ]
-    },
-    "bridge-motorway-casing": {
       "stroke": [
         [
           0,
@@ -3737,7 +5077,7 @@
         ],
         [
           7,
-          1.0454545454545454
+          1.045
         ],
         [
           8,
@@ -3749,47 +5089,47 @@
         ],
         [
           9,
-          3.4499999999999997
+          3.45
         ],
         [
           10,
-          3.5999999999999996
+          3.6
         ],
         [
           11,
-          3.7363636363636363
+          3.736
         ],
         [
           12,
-          3.9000000000000004
+          3.9
         ],
         [
           13,
-          4.147252747252748
+          4.147
         ],
         [
           14,
-          4.443956043956045
+          4.444
         ],
         [
           15,
-          4.800000000000001
+          4.8
         ],
         [
           16,
-          6.163636363636364
+          6.164
         ],
         [
           17,
-          7.800000000000001
+          7.8
         ],
         [
           18,
-          9.778021978021979
+          9.778
         ],
         [
           19,
-          12.151648351648353
+          12.152
         ],
         [
           20,
@@ -3797,59 +5137,36 @@
         ]
       ]
     },
-    "bridge-minor-casing": {
-      "stroke": [
+    {
+      "id": "bridge-motorway-link",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
         [
-          0,
-          "#cfcdca"
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "bridge"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "motorway"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "ramp"
+          ],
+          1
         ]
       ],
-      "width": [
-        [
-          12,
-          0.5
-        ],
-        [
-          13,
-          1.0
-        ],
-        [
-          14,
-          6.0
-        ],
-        [
-          15,
-          7.812703425606651
-        ],
-        [
-          16,
-          9.987947536334634
-        ],
-        [
-          17,
-          12.59824046920821
-        ],
-        [
-          18,
-          15.730591988656506
-        ],
-        [
-          19,
-          19.489413811994456
-        ],
-        [
-          20,
-          24
-        ]
-      ],
-      "opacity": [
-        [
-          0,
-          0
-        ]
-      ]
-    },
-    "bridge-motorway-link": {
       "stroke": [
         [
           0,
@@ -3867,27 +5184,27 @@
         ],
         [
           14,
-          1.1181818181818182
+          1.118
         ],
         [
           15,
-          1.2000000000000002
+          1.2
         ],
         [
           16,
-          1.540909090909091
+          1.541
         ],
         [
           17,
-          1.9500000000000002
+          1.95
         ],
         [
           18,
-          2.4445054945054947
+          2.445
         ],
         [
           19,
-          3.037912087912088
+          3.038
         ],
         [
           20,
@@ -3895,7 +5212,43 @@
         ]
       ]
     },
-    "bridge-link": {
+    {
+      "id": "bridge-link",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "bridge"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "primary",
+            "secondary",
+            "tertiary",
+            "trunk"
+          ],
+          true,
+          false
+        ],
+        [
+          "==",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           8,
@@ -3917,7 +5270,7 @@
         ],
         [
           7,
-          1.3068181818181819
+          1.307
         ],
         [
           8,
@@ -3925,7 +5278,7 @@
         ],
         [
           9,
-          1.4318181818181819
+          1.432
         ],
         [
           10,
@@ -3933,7 +5286,7 @@
         ],
         [
           11,
-          1.5568181818181819
+          1.557
         ],
         [
           12,
@@ -3941,11 +5294,11 @@
         ],
         [
           13,
-          1.728021978021978
+          1.728
         ],
         [
           14,
-          1.8516483516483517
+          1.852
         ],
         [
           15,
@@ -3953,7 +5306,7 @@
         ],
         [
           16,
-          2.5681818181818183
+          2.568
         ],
         [
           17,
@@ -3961,11 +5314,11 @@
         ],
         [
           18,
-          4.074175824175824
+          4.074
         ],
         [
           19,
-          5.063186813186814
+          5.063
         ],
         [
           20,
@@ -3973,7 +5326,46 @@
         ]
       ]
     },
-    "bridge-minor": {
+    {
+      "id": "bridge-minor",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "match",
+          [
+            "geometry-type"
+          ],
+          [
+            "LineString",
+            "MultiLineString"
+          ],
+          true,
+          false
+        ],
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "bridge"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "minor",
+            "service",
+            "track"
+          ],
+          true,
+          false
+        ]
+      ],
       "stroke": [
         [
           12,
@@ -3991,7 +5383,7 @@
         ],
         [
           7,
-          1.0454545454545454
+          1.045
         ],
         [
           8,
@@ -3999,7 +5391,7 @@
         ],
         [
           9,
-          1.1454545454545455
+          1.145
         ],
         [
           10,
@@ -4007,7 +5399,7 @@
         ],
         [
           11,
-          1.2454545454545454
+          1.245
         ],
         [
           12,
@@ -4015,11 +5407,11 @@
         ],
         [
           13,
-          1.3824175824175824
+          1.382
         ],
         [
           14,
-          1.4813186813186814
+          1.481
         ],
         [
           15,
@@ -4027,7 +5419,7 @@
         ],
         [
           16,
-          2.0545454545454547
+          2.055
         ],
         [
           17,
@@ -4035,11 +5427,11 @@
         ],
         [
           18,
-          3.2593406593406593
+          3.259
         ],
         [
           19,
-          4.05054945054945
+          4.051
         ],
         [
           20,
@@ -4053,7 +5445,41 @@
         ]
       ]
     },
-    "bridge-secondary-tertiary": {
+    {
+      "id": "bridge-secondary-tertiary",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "bridge"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "secondary",
+            "tertiary"
+          ],
+          true,
+          false
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           8,
@@ -4075,7 +5501,7 @@
         ],
         [
           7,
-          1.3068181818181819
+          1.307
         ],
         [
           8,
@@ -4083,7 +5509,7 @@
         ],
         [
           9,
-          1.4318181818181819
+          1.432
         ],
         [
           10,
@@ -4091,7 +5517,7 @@
         ],
         [
           11,
-          1.5568181818181819
+          1.557
         ],
         [
           12,
@@ -4099,11 +5525,11 @@
         ],
         [
           13,
-          1.728021978021978
+          1.728
         ],
         [
           14,
-          1.8516483516483517
+          1.852
         ],
         [
           15,
@@ -4111,7 +5537,7 @@
         ],
         [
           16,
-          2.5681818181818183
+          2.568
         ],
         [
           17,
@@ -4119,11 +5545,11 @@
         ],
         [
           18,
-          4.074175824175824
+          4.074
         ],
         [
           19,
-          5.063186813186814
+          5.063
         ],
         [
           20,
@@ -4131,7 +5557,41 @@
         ]
       ]
     },
-    "bridge-trunk-primary": {
+    {
+      "id": "bridge-trunk-primary",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "bridge"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "primary",
+            "trunk"
+          ],
+          true,
+          false
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -4145,15 +5605,15 @@
         ],
         [
           7,
-          1.6727272727272728
+          1.673
         ],
         [
           8,
-          1.7600000000000002
+          1.76
         ],
         [
           9,
-          1.8327272727272728
+          1.833
         ],
         [
           10,
@@ -4161,7 +5621,7 @@
         ],
         [
           11,
-          1.9927272727272727
+          1.993
         ],
         [
           12,
@@ -4169,19 +5629,19 @@
         ],
         [
           13,
-          2.211868131868132
+          2.212
         ],
         [
           14,
-          2.3701098901098905
+          2.37
         ],
         [
           15,
-          2.5600000000000005
+          2.56
         ],
         [
           16,
-          3.2872727272727276
+          3.287
         ],
         [
           17,
@@ -4189,11 +5649,11 @@
         ],
         [
           18,
-          5.214945054945055
+          5.215
         ],
         [
           19,
-          6.480879120879122
+          6.481
         ],
         [
           20,
@@ -4201,7 +5661,36 @@
         ]
       ]
     },
-    "bridge-motorway": {
+    {
+      "id": "bridge-motorway",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "bridge"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "motorway"
+        ],
+        [
+          "!=",
+          [
+            "get",
+            "ramp"
+          ],
+          1
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -4223,7 +5712,7 @@
         ],
         [
           11,
-          1.2454545454545454
+          1.245
         ],
         [
           12,
@@ -4231,11 +5720,11 @@
         ],
         [
           13,
-          1.3824175824175824
+          1.382
         ],
         [
           14,
-          1.4813186813186814
+          1.481
         ],
         [
           15,
@@ -4243,7 +5732,7 @@
         ],
         [
           16,
-          2.0545454545454547
+          2.055
         ],
         [
           17,
@@ -4251,11 +5740,11 @@
         ],
         [
           18,
-          3.2593406593406593
+          3.259
         ],
         [
           19,
-          4.05054945054945
+          4.051
         ],
         [
           20,
@@ -4263,7 +5752,28 @@
         ]
       ]
     },
-    "bridge-railway": {
+    {
+      "id": "bridge-railway",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "bridge"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "rail"
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -4277,7 +5787,7 @@
         ],
         [
           7,
-          1.0454545454545454
+          1.045
         ],
         [
           8,
@@ -4285,7 +5795,7 @@
         ],
         [
           9,
-          1.1454545454545455
+          1.145
         ],
         [
           10,
@@ -4293,7 +5803,7 @@
         ],
         [
           11,
-          1.2454545454545454
+          1.245
         ],
         [
           12,
@@ -4301,11 +5811,11 @@
         ],
         [
           13,
-          1.3824175824175824
+          1.382
         ],
         [
           14,
-          1.4813186813186814
+          1.481
         ],
         [
           15,
@@ -4313,7 +5823,7 @@
         ],
         [
           16,
-          2.0545454545454547
+          2.055
         ],
         [
           17,
@@ -4321,11 +5831,11 @@
         ],
         [
           18,
-          3.2593406593406593
+          3.259
         ],
         [
           19,
-          4.05054945054945
+          4.051
         ],
         [
           20,
@@ -4333,7 +5843,28 @@
         ]
       ]
     },
-    "bridge-railway-hatching": {
+    {
+      "id": "bridge-railway-hatching",
+      "sourceLayer": "transportation",
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "get",
+            "brunnel"
+          ],
+          "bridge"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "rail"
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -4347,23 +5878,23 @@
         ],
         [
           15,
-          4.800000000000001
+          4.8
         ],
         [
           16,
-          6.163636363636364
+          6.164
         ],
         [
           17,
-          7.800000000000001
+          7.8
         ],
         [
           18,
-          9.778021978021979
+          9.778
         ],
         [
           19,
-          12.151648351648353
+          12.152
         ],
         [
           20,
@@ -4371,11 +5902,552 @@
         ]
       ],
       "dash": [
-        0.2,
-        8
+        [
+          0,
+          [
+            0.2,
+            8
+          ]
+        ]
       ]
     },
-    "boundary_3/2": {
+    {
+      "id": "cablecar",
+      "sourceLayer": "transportation",
+      "filter": [
+        "==",
+        [
+          "get",
+          "subclass"
+        ],
+        "cable_car"
+      ],
+      "stroke": [
+        [
+          0,
+          "#b3b3b3"
+        ]
+      ],
+      "width": [
+        [
+          11,
+          1
+        ],
+        [
+          19,
+          2.5
+        ]
+      ],
+      "minZoom": 13
+    },
+    {
+      "id": "cablecar-dash",
+      "sourceLayer": "transportation",
+      "filter": [
+        "==",
+        [
+          "get",
+          "subclass"
+        ],
+        "cable_car"
+      ],
+      "stroke": [
+        [
+          0,
+          "#b3b3b3"
+        ]
+      ],
+      "width": [
+        [
+          11,
+          3
+        ],
+        [
+          19,
+          5.5
+        ]
+      ],
+      "dash": [
+        [
+          0,
+          [
+            2,
+            3
+          ]
+        ]
+      ],
+      "minZoom": 13
+    },
+    {
+      "id": "boundary_3",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
+        [
+          "all",
+          [
+            "==",
+            [
+              "typeof",
+              [
+                "get",
+                "admin_level"
+              ]
+            ],
+            "number"
+          ],
+          [
+            ">=",
+            [
+              "get",
+              "admin_level"
+            ],
+            3
+          ],
+          [
+            "<=",
+            [
+              "get",
+              "admin_level"
+            ],
+            6
+          ],
+          [
+            "!=",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ],
+          [
+            "!",
+            [
+              "has",
+              "claimed_by"
+            ]
+          ]
+        ],
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          3
+        ]
+      ],
+      "stroke": [
+        [
+          0,
+          "#4e525a"
+        ]
+      ],
+      "width": [
+        [
+          3,
+          0.5
+        ],
+        [
+          8,
+          1.1
+        ],
+        [
+          14,
+          1.8
+        ]
+      ],
+      "dash": [
+        [
+          0,
+          [
+            6,
+            2,
+            1,
+            2
+          ]
+        ]
+      ],
+      "opacity": [
+        [
+          7,
+          1
+        ],
+        [
+          9,
+          1
+        ]
+      ],
+      "minZoom": 5
+    },
+    {
+      "id": "boundary_3",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
+        [
+          "all",
+          [
+            "==",
+            [
+              "typeof",
+              [
+                "get",
+                "admin_level"
+              ]
+            ],
+            "number"
+          ],
+          [
+            ">=",
+            [
+              "get",
+              "admin_level"
+            ],
+            3
+          ],
+          [
+            "<=",
+            [
+              "get",
+              "admin_level"
+            ],
+            6
+          ],
+          [
+            "!=",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ],
+          [
+            "!",
+            [
+              "has",
+              "claimed_by"
+            ]
+          ]
+        ],
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          4
+        ]
+      ],
+      "stroke": [
+        [
+          0,
+          "#4e525a"
+        ]
+      ],
+      "width": [
+        [
+          3,
+          0.5
+        ],
+        [
+          8,
+          1.1
+        ],
+        [
+          14,
+          1.8
+        ]
+      ],
+      "dash": [
+        [
+          0,
+          [
+            6,
+            2,
+            1,
+            2
+          ]
+        ]
+      ],
+      "opacity": [
+        [
+          7,
+          1
+        ],
+        [
+          9,
+          1
+        ]
+      ],
+      "minZoom": 5
+    },
+    {
+      "id": "boundary_3",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
+        [
+          "all",
+          [
+            "==",
+            [
+              "typeof",
+              [
+                "get",
+                "admin_level"
+              ]
+            ],
+            "number"
+          ],
+          [
+            ">=",
+            [
+              "get",
+              "admin_level"
+            ],
+            3
+          ],
+          [
+            "<=",
+            [
+              "get",
+              "admin_level"
+            ],
+            6
+          ],
+          [
+            "!=",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ],
+          [
+            "!",
+            [
+              "has",
+              "claimed_by"
+            ]
+          ]
+        ],
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          5
+        ]
+      ],
+      "stroke": [
+        [
+          0,
+          "#4e525a"
+        ]
+      ],
+      "width": [
+        [
+          3,
+          0.3
+        ],
+        [
+          8,
+          0.6
+        ],
+        [
+          14,
+          1.1
+        ]
+      ],
+      "dash": [
+        [
+          0,
+          [
+            6,
+            2,
+            1,
+            2
+          ]
+        ]
+      ],
+      "opacity": [
+        [
+          7,
+          0
+        ],
+        [
+          9,
+          1
+        ]
+      ],
+      "minZoom": 5
+    },
+    {
+      "id": "boundary_3",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
+        [
+          "all",
+          [
+            "==",
+            [
+              "typeof",
+              [
+                "get",
+                "admin_level"
+              ]
+            ],
+            "number"
+          ],
+          [
+            ">=",
+            [
+              "get",
+              "admin_level"
+            ],
+            3
+          ],
+          [
+            "<=",
+            [
+              "get",
+              "admin_level"
+            ],
+            6
+          ],
+          [
+            "!=",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ],
+          [
+            "!",
+            [
+              "has",
+              "claimed_by"
+            ]
+          ]
+        ],
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          6
+        ]
+      ],
+      "stroke": [
+        [
+          0,
+          "#4e525a"
+        ]
+      ],
+      "width": [
+        [
+          3,
+          0.3
+        ],
+        [
+          8,
+          0.6
+        ],
+        [
+          14,
+          1.1
+        ]
+      ],
+      "dash": [
+        [
+          0,
+          [
+            6,
+            2,
+            1,
+            2
+          ]
+        ]
+      ],
+      "opacity": [
+        [
+          7,
+          0
+        ],
+        [
+          9,
+          1
+        ]
+      ],
+      "minZoom": 5
+    },
+    {
+      "id": "boundary_2",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
+        [
+          "all",
+          [
+            "==",
+            [
+              "get",
+              "admin_level"
+            ],
+            2
+          ],
+          [
+            "!=",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ],
+          [
+            "!",
+            [
+              "has",
+              "claimed_by"
+            ]
+          ],
+          [
+            "any",
+            [
+              "!=",
+              [
+                "get",
+                "maritime"
+              ],
+              1
+            ],
+            [
+              "all",
+              [
+                "has",
+                "adm0_l"
+              ],
+              [
+                "has",
+                "adm0_r"
+              ]
+            ]
+          ]
+        ],
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          2
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -4397,49 +6469,15 @@
         ]
       ],
       "dash": [
-        6,
-        2,
-        1,
-        2
-      ],
-      "opacity": [
-        [
-          7,
-          1
-        ],
-        [
-          9,
-          1
-        ]
-      ],
-      "minZoom": 5
-    },
-    "boundary_3/3": {
-      "stroke": [
         [
           0,
-          "#4e525a"
+          [
+            6,
+            2,
+            1,
+            2
+          ]
         ]
-      ],
-      "width": [
-        [
-          3,
-          0.5
-        ],
-        [
-          8,
-          1.1
-        ],
-        [
-          14,
-          1.8
-        ]
-      ],
-      "dash": [
-        6,
-        2,
-        1,
-        2
       ],
       "opacity": [
         [
@@ -4450,127 +6488,41 @@
           9,
           1
         ]
-      ],
-      "minZoom": 5
+      ]
     },
-    "boundary_3/4": {
-      "stroke": [
+    {
+      "id": "boundary_disputed",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
         [
-          0,
-          "#4e525a"
-        ]
-      ],
-      "width": [
-        [
-          3,
-          0.5
+          "all",
+          [
+            "!=",
+            [
+              "get",
+              "maritime"
+            ],
+            1
+          ],
+          [
+            "==",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ]
         ],
         [
-          8,
-          1.1
-        ],
-        [
-          14,
-          1.8
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          2
         ]
       ],
-      "dash": [
-        6,
-        2,
-        1,
-        2
-      ],
-      "opacity": [
-        [
-          7,
-          1
-        ],
-        [
-          9,
-          1
-        ]
-      ],
-      "minZoom": 5
-    },
-    "boundary_3/5": {
-      "stroke": [
-        [
-          0,
-          "#4e525a"
-        ]
-      ],
-      "width": [
-        [
-          3,
-          0.3
-        ],
-        [
-          8,
-          0.6
-        ],
-        [
-          14,
-          1.1
-        ]
-      ],
-      "dash": [
-        6,
-        2,
-        1,
-        2
-      ],
-      "opacity": [
-        [
-          7,
-          0
-        ],
-        [
-          9,
-          1
-        ]
-      ],
-      "minZoom": 5
-    },
-    "boundary_3/6": {
-      "stroke": [
-        [
-          0,
-          "#4e525a"
-        ]
-      ],
-      "width": [
-        [
-          3,
-          0.3
-        ],
-        [
-          8,
-          0.6
-        ],
-        [
-          14,
-          1.1
-        ]
-      ],
-      "dash": [
-        6,
-        2,
-        1,
-        2
-      ],
-      "opacity": [
-        [
-          7,
-          0
-        ],
-        [
-          9,
-          1
-        ]
-      ],
-      "minZoom": 5
-    },
-    "boundary_2/2": {
       "stroke": [
         [
           0,
@@ -4592,10 +6544,15 @@
         ]
       ],
       "dash": [
-        6,
-        2,
-        1,
-        2
+        [
+          0,
+          [
+            6,
+            2,
+            1,
+            2
+          ]
+        ]
       ],
       "opacity": [
         [
@@ -4608,7 +6565,39 @@
         ]
       ]
     },
-    "boundary_2/3": {
+    {
+      "id": "boundary_disputed",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
+        [
+          "all",
+          [
+            "!=",
+            [
+              "get",
+              "maritime"
+            ],
+            1
+          ],
+          [
+            "==",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ]
+        ],
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          3
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -4630,10 +6619,15 @@
         ]
       ],
       "dash": [
-        6,
-        2,
-        1,
-        2
+        [
+          0,
+          [
+            6,
+            2,
+            1,
+            2
+          ]
+        ]
       ],
       "opacity": [
         [
@@ -4646,7 +6640,39 @@
         ]
       ]
     },
-    "boundary_2/4": {
+    {
+      "id": "boundary_disputed",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
+        [
+          "all",
+          [
+            "!=",
+            [
+              "get",
+              "maritime"
+            ],
+            1
+          ],
+          [
+            "==",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ]
+        ],
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          4
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -4668,10 +6694,15 @@
         ]
       ],
       "dash": [
-        6,
-        2,
-        1,
-        2
+        [
+          0,
+          [
+            6,
+            2,
+            1,
+            2
+          ]
+        ]
       ],
       "opacity": [
         [
@@ -4684,7 +6715,39 @@
         ]
       ]
     },
-    "boundary_2/5": {
+    {
+      "id": "boundary_disputed",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
+        [
+          "all",
+          [
+            "!=",
+            [
+              "get",
+              "maritime"
+            ],
+            1
+          ],
+          [
+            "==",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ]
+        ],
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          5
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -4706,10 +6769,15 @@
         ]
       ],
       "dash": [
-        6,
-        2,
-        1,
-        2
+        [
+          0,
+          [
+            6,
+            2,
+            1,
+            2
+          ]
+        ]
       ],
       "opacity": [
         [
@@ -4722,7 +6790,39 @@
         ]
       ]
     },
-    "boundary_2/6": {
+    {
+      "id": "boundary_disputed",
+      "sourceLayer": "boundary",
+      "filter": [
+        "all",
+        [
+          "all",
+          [
+            "!=",
+            [
+              "get",
+              "maritime"
+            ],
+            1
+          ],
+          [
+            "==",
+            [
+              "get",
+              "disputed"
+            ],
+            1
+          ]
+        ],
+        [
+          "==",
+          [
+            "get",
+            "admin_level"
+          ],
+          6
+        ]
+      ],
       "stroke": [
         [
           0,
@@ -4744,200 +6844,15 @@
         ]
       ],
       "dash": [
-        6,
-        2,
-        1,
-        2
-      ],
-      "opacity": [
-        [
-          7,
-          0
-        ],
-        [
-          9,
-          1
-        ]
-      ]
-    },
-    "boundary_disputed/2": {
-      "stroke": [
         [
           0,
-          "#4e525a"
+          [
+            6,
+            2,
+            1,
+            2
+          ]
         ]
-      ],
-      "width": [
-        [
-          3,
-          0.8
-        ],
-        [
-          8,
-          1.6
-        ],
-        [
-          14,
-          2.5
-        ]
-      ],
-      "dash": [
-        6,
-        2,
-        1,
-        2
-      ],
-      "opacity": [
-        [
-          7,
-          1
-        ],
-        [
-          9,
-          1
-        ]
-      ]
-    },
-    "boundary_disputed/3": {
-      "stroke": [
-        [
-          0,
-          "#4e525a"
-        ]
-      ],
-      "width": [
-        [
-          3,
-          0.5
-        ],
-        [
-          8,
-          1.1
-        ],
-        [
-          14,
-          1.8
-        ]
-      ],
-      "dash": [
-        6,
-        2,
-        1,
-        2
-      ],
-      "opacity": [
-        [
-          7,
-          1
-        ],
-        [
-          9,
-          1
-        ]
-      ]
-    },
-    "boundary_disputed/4": {
-      "stroke": [
-        [
-          0,
-          "#4e525a"
-        ]
-      ],
-      "width": [
-        [
-          3,
-          0.5
-        ],
-        [
-          8,
-          1.1
-        ],
-        [
-          14,
-          1.8
-        ]
-      ],
-      "dash": [
-        6,
-        2,
-        1,
-        2
-      ],
-      "opacity": [
-        [
-          7,
-          1
-        ],
-        [
-          9,
-          1
-        ]
-      ]
-    },
-    "boundary_disputed/5": {
-      "stroke": [
-        [
-          0,
-          "#4e525a"
-        ]
-      ],
-      "width": [
-        [
-          3,
-          0.3
-        ],
-        [
-          8,
-          0.6
-        ],
-        [
-          14,
-          1.1
-        ]
-      ],
-      "dash": [
-        6,
-        2,
-        1,
-        2
-      ],
-      "opacity": [
-        [
-          7,
-          0
-        ],
-        [
-          9,
-          1
-        ]
-      ]
-    },
-    "boundary_disputed/6": {
-      "stroke": [
-        [
-          0,
-          "#4e525a"
-        ]
-      ],
-      "width": [
-        [
-          3,
-          0.3
-        ],
-        [
-          8,
-          0.6
-        ],
-        [
-          14,
-          1.1
-        ]
-      ],
-      "dash": [
-        6,
-        2,
-        1,
-        2
       ],
       "opacity": [
         [
@@ -4950,5 +6865,5 @@
         ]
       ]
     }
-  }
+  ]
 }
