@@ -64,7 +64,7 @@ const background = cardBasemap.background
 const isBorder = (p: Props): boolean => p.disputed !== 1 && !Object.hasOwn(p, 'claimed_by')
 
 const rules: Rule[] = [
-    // The band along each border, under everything else.
+    // The band along each border, under everything else. The country's after the state's, so it stays on top.
     { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 4 && isBorder(p), ...paints['boundary_3-highlight/4'] },
     { layer: 'boundary', where: p => Number(p.admin_level) === 2 && p.maritime !== 1 && isBorder(p), ...paints['boundary_2-highlight/2'] },
 
@@ -81,17 +81,23 @@ const rules: Rule[] = [
     { layer: 'park', where: p => ['national_park', 'wilderness_preserve', 'State Park'].includes(String(p.class)), ...paints['park-fill'] },
     { layer: 'park', where: p => p.class === 'public_park', ...paints['landcover-grass-park'] },
     { layer: 'water', where: p => p.intermittent !== 1 && p.brunnel !== 'tunnel', ...paints.water },
-    { layer: 'waterway', where: p => p.class === 'river' && p.brunnel !== 'tunnel', ...paints['waterway-river'] },
-    { layer: 'waterway', where: p => (p.class === 'stream' || p.class === 'canal') && p.brunnel !== 'tunnel', ...paints['waterway-stream-canal'] },
-    { layer: 'waterway', where: p => !['river', 'stream', 'canal'].includes(String(p.class)), ...paints['waterway-other'] },
+    { layer: 'water', where: p => p.intermittent === 1, ...paints['water-intermittent'] },
+    { layer: 'waterway', where: p => p.class === 'river' && p.intermittent !== 1 && p.brunnel !== 'tunnel', ...paints['waterway-river'] },
+    { layer: 'waterway', where: p => p.class === 'river' && p.intermittent === 1 && p.brunnel !== 'tunnel', ...paints['waterway-river-intermittent'] },
+    { layer: 'waterway', where: p => (p.class === 'stream' || p.class === 'canal') && p.intermittent !== 1 && p.brunnel !== 'tunnel', ...paints['waterway-stream-canal'] },
+    { layer: 'waterway', where: p => (p.class === 'stream' || p.class === 'canal') && p.intermittent === 1 && p.brunnel !== 'tunnel', ...paints['waterway-stream-canal-intermittent'] },
+    { layer: 'waterway', where: p => !['river', 'stream', 'canal'].includes(String(p.class)) && p.intermittent !== 1, ...paints['waterway-other'] },
+    { layer: 'waterway', where: p => !['river', 'stream', 'canal'].includes(String(p.class)) && p.intermittent === 1, ...paints['waterway-other-intermittent'] },
+    // Buildings are the background's colour, so only their outlines show.
+    { layer: 'building', ...paints['building/outline'] },
     { layer: 'aeroway', where: p => p.class === 'taxiway', ...paints['aeroway-taxiway-casing'] },
     { layer: 'aeroway', where: p => p.class === 'runway', ...paints['aeroway-runway-casing'] },
 
     // Casings first, so a road passing beneath another does not cut a notch in it. Only the motorway's shows.
     { layer: 'transportation', where: roadClass('motorway'), ...paints['highway-motorway-casing'] },
 
-    { layer: 'transportation', where: roadClass('rail'), ...paints.railway },
-    { layer: 'transportation', where: roadClass('transit'), ...paints['railway-transit'] },
+    { layer: 'transportation', where: p => p.class === 'rail' && p.brunnel !== 'tunnel' && !Object.hasOwn(p, 'service'), ...paints.railway },
+    { layer: 'transportation', where: p => p.class === 'transit' && p.brunnel !== 'tunnel', ...paints['railway-transit'] },
     { layer: 'transportation', where: roadClass('minor', 'service', 'track'), ...paints['highway-minor'] },
     { layer: 'transportation', where: roadClass('secondary', 'tertiary'), ...paints['highway-secondary-tertiary'] },
     { layer: 'transportation', where: roadClass('primary'), ...paints['highway-primary'] },

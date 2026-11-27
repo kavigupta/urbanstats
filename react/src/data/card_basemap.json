@@ -1027,6 +1027,24 @@
         ]
       ]
     },
+    "building/outline": {
+      "stroke": [
+        [
+          14,
+          "#fff8f0"
+        ],
+        [
+          16,
+          "#d2cec9"
+        ]
+      ],
+      "width": [
+        [
+          0,
+          1
+        ]
+      ]
+    },
     "tunnel-service-track-casing": {
       "stroke": [
         [

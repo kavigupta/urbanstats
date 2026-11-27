@@ -32,6 +32,9 @@ class RowFunction(ABC):
     def split_part(self, separator, index):
         return SplitPart(self, separator, index)
 
+    def with_year(self, year):
+        return WithYear(self, year)
+
 
 class TableFunction(ABC):
     """An extractor computed from all the rows at once, rather than row by row."""
@@ -116,6 +119,15 @@ class SplitPart(RowFunction):
 
     def __call__(self, row):
         return self.inner(row).split(self.separator)[self.index]
+
+
+@dataclass(frozen=True)
+class WithYear(RowFunction):
+    inner: RowFunction
+    year: RowFunction
+
+    def __call__(self, row):
+        return f"{self.inner(row)} ({self.year(row)})"
 
 
 @dataclass(frozen=True)
