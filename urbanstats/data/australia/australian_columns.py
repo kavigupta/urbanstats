@@ -9855,18 +9855,17 @@ completed = [
     ("G35", "Num_Psns_UR_5_Total", "Number of Persons usually resident Five Total"),
     ("G35", "Num_Psns_UR_6mo_Total", "Number of Persons usually resident Six or more Total"),
     ("G35", "Total_Total", "Total Total"),
-]
-
-# vulture: ignore -- these are lists of cells used to track progress on
-get_to_these_now = [
-    # Renter %, merged into HousingRentOrOwn with the US and Canada: rented (any landlord) is rent,
-    # owned outright or with a mortgage is own. Other tenure (rent-free, life tenure, rent/buy,
-    # shared equity) and not stated are left out of the denominator.
+    # Renter %: rented (any landlord) is rent, owned outright or with a mortgage is own; other tenure
+    # and not stated are left out
     ("G37", "O_OR_Total", "Owned outright Total"),
     ("G37", "O_MTG_Total", "Owned with a mortgage Total"),
     ("G37", "R_Tot_Total", "Rented Total Total"),
     ("G37", "Oth_ten_type_Total", "Other tenure type Total"),
     ("G37", "Ten_type_NS_Total", "Tenure type not stated Total"),
+]
+
+# vulture: ignore -- these are lists of cells used to track progress on
+get_to_these_now = [
     # Vacancy %, merged with the US one. The ABS counts a dwelling as unoccupied if nobody was
     # there on census night, even if its residents were only away, so it reads higher than the US's.
     ("G36", "Unoccupied_PDs_Dwgs", "Unoccupied private dwellings Dwellings"),
