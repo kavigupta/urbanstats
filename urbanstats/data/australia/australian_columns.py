@@ -9816,15 +9816,6 @@ completed = [
     ("G33", "HI_3000_3499_Tot", "3000 3499 Total"),
     ("G33", "HI_3500_3999_Tot", "3500 3999 Total"),
     ("G33", "HI_4000_more_Tot", "4000 or more Total"),
-    # Vehicles per household: none, 1, and 2+ (2, 3 and 4+); not stated is left out
-    ("G34", "Num_MVs_per_dweling_0_MVs", "Number of motor vehicles per dwelling No motor vehicles Dwellings"),
-    ("G34", "Num_MVs_per_dweling_1_MVs", "Number of motor vehicles per dwelling One motor vehicle Dwellings"),
-    ("G34", "Num_MVs_per_dweling_2_MVs", "Number of motor vehicles per dwelling Two motor vehicles Dwellings"),
-    ("G34", "Num_MVs_per_dweling_3_MVs", "Number of motor vehicles per dwelling Three motor vehicles Dwellings"),
-    ("G34", "Num_MVs_per_dweling_4mo_MVs", "Number of motor vehicles per dwelling Four or more motor vehicles Dwellings"),
-    ("G34", "Num_MVs_per_dweling_Tot", "Number of motor vehicles per dwelling Total Dwellings"),
-    ("G34", "Num_MVs_NS", "Number of motor vehicles not stated Dwellings"),
-    ("G34", "Total_dwelings", "Total Dwellings"),
 ]
 
 # vulture: ignore -- these are lists of cells used to track progress on
@@ -9856,6 +9847,16 @@ get_to_these_now = [
     ("G54", "P_Oth_scs_Tot", "PERSONS Other Services Total"),
     ("G54", "P_ID_NS_Tot", "PERSONS Inadequately described Not stated Total"),
     ("G54", "P_Tot_Tot", "PERSONS Total Total"),
+    # Vehicles per household, merged into TransportationVehicleOwnershipStatistics with the US:
+    # none is 0, 1+ is 1 and up, and 2+ is 2 and up. Not stated is left out of the denominator.
+    ("G34", "Num_MVs_per_dweling_0_MVs", "Number of motor vehicles per dwelling No motor vehicles Dwellings"),
+    ("G34", "Num_MVs_per_dweling_1_MVs", "Number of motor vehicles per dwelling One motor vehicle Dwellings"),
+    ("G34", "Num_MVs_per_dweling_2_MVs", "Number of motor vehicles per dwelling Two motor vehicles Dwellings"),
+    ("G34", "Num_MVs_per_dweling_3_MVs", "Number of motor vehicles per dwelling Three motor vehicles Dwellings"),
+    ("G34", "Num_MVs_per_dweling_4mo_MVs", "Number of motor vehicles per dwelling Four or more motor vehicles Dwellings"),
+    ("G34", "Num_MVs_per_dweling_Tot", "Number of motor vehicles per dwelling Total Dwellings"),
+    ("G34", "Num_MVs_NS", "Number of motor vehicles not stated Dwellings"),
+    ("G34", "Total_dwelings", "Total Dwellings"),
     # Household size, merged into HouseholdSizeStatistics with the US and Canada: 1 to 4 people
     # each, with 5 and 6+ together as 5+.
     ("G35", "Num_Psns_UR_1_Total", "Number of Persons usually resident One Total"),
