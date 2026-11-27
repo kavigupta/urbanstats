@@ -1,5 +1,6 @@
-import { StoredProperty } from '../quiz/quiz'
+import { symlinkTargets } from '../load_json'
 import { Universe } from '../universe'
+import { StoredProperty } from '../utils/Property'
 
 import { SYAUHistory, Type, SYAUHistoryForGame, SYAUHistoryKey } from './syau-panel'
 
@@ -23,5 +24,30 @@ export class SYAULocalStorage {
         return [current, (newHistory) => {
             this.history.value = { ...history, [key]: newHistory }
         }]
+    }
+
+    /** Renames guesses of articles that have been renamed since; only names not in `longnames` are looked up. */
+    async normalizeGuesses(typ: Type, universe: Universe, longnames: Set<string>): Promise<void> {
+        const key = `${typ}-${universe}` satisfies SYAUHistoryKey
+        const guessed = (this.history.value[key] as SYAUHistoryForGame | undefined)?.guessed ?? []
+        // just a fallback, since any names that are removed should be migrated;
+        // here to avoid an accidental deletion causing inconsistent state
+        const outdated = guessed.filter(name => !longnames.has(name))
+        if (outdated.length === 0) {
+            return
+        }
+        let targets
+        try {
+            targets = await symlinkTargets(outdated)
+        }
+        catch {
+            // leaves the history as it was, to try again next load
+            return
+        }
+        const renamed = new Map(outdated.map((name, i) => [name, targets[i]]))
+        // reread, since another tab may have added guesses during the lookup
+        const current = (this.history.value[key] as SYAUHistoryForGame | undefined)?.guessed ?? []
+        const normalized = current.map(name => renamed.get(name) ?? name)
+        this.history.value = { ...this.history.value, [key]: { guessed: [...new Set(normalized)] } }
     }
 }

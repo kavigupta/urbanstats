@@ -37,21 +37,26 @@ def strip_suffix(name: str, suffixes: Set[str]) -> str:
     return name
 
 
-# Copy of
-# export function normalize(a: string, handlePunctuation = true): string {
-#     a = a.toLowerCase()
-#     a = a.normalize('NFD')
-#     a = a.replace(/[\u0300-\u036f]/g, '')
-#     if (handlePunctuation) {
-#         a = a.replace(/[,\(\)\[\]]/g, '')
-#         a = a.replaceAll('-', ' ')
-#     }
-#     return a
-# }
+# Copy of normalize in react/src/utils/normalize-string.ts
+FOLDED_LETTERS = {
+    "ß": "ss",
+    "ı": "i",
+    "ł": "l",
+    "đ": "d",
+    "ð": "d",
+    "ø": "o",
+    "æ": "ae",
+    "œ": "oe",
+    "ħ": "h",
+    "ə": "a",
+}
+
+
 def normalize(a: str, handle_punctuation: bool = True) -> str:
     a = a.lower()
     a = unicodedata.normalize("NFD", a)
     a = re.sub(r"[\u0300-\u036f]", "", a)
+    a = "".join(FOLDED_LETTERS.get(c, c) for c in a)
     if handle_punctuation:
         a = re.sub(r"[,\(\)\[\]]", "", a)
         a = a.replace("-", " ")

@@ -69,6 +69,7 @@ function attemptParseExpr(
     switch (expr.type) {
         case 'if':
             return attemptParseMaskedValue(expr, blockIdent, types, typeEnvironment, preserveCustomNodes)
+        case 'split':
         case 'condition':
         case 'binaryOperator':
         case 'assignment':
@@ -452,6 +453,13 @@ export function changeBlockId(expr: UrbanStatsASTExpression, a: string, b: strin
                     condition: recE(e.condition),
                     then: recS(e.then),
                     else: e.else ? recS(e.else) : undefined,
+                    entireLoc: recL(e.entireLoc),
+                }
+            case 'split':
+                return {
+                    type: 'split',
+                    value: recE(e.value),
+                    body: recS(e.body),
                     entireLoc: recL(e.entireLoc),
                 }
             case 'do':

@@ -1,3 +1,4 @@
+import Color from 'color'
 import indefinite from 'indefinite'
 import React, { ReactNode, useMemo, useState } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
@@ -13,6 +14,7 @@ import { IRelatedButton, IRelatedButtons } from '../utils/protos'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 import { NormalizeProto } from '../utils/types'
 
+import { atlasStyle } from './atlas-style'
 import { CommonMaplibreMap, MapAttribution, Polygon, PolygonFeatureCollection, polygonFeatureCollection, useZoomFirstFeature } from './map-common'
 
 interface ArticleMapProps {
@@ -75,13 +77,9 @@ function useArticleFeatures({ articleType, related, longname }: ArticleMapProps)
             return element
         }
 
-        const relateds = [
-            ...getRelated('contained_by'),
-            ...getRelated('intersects'),
-            ...getRelated('borders'),
-            ...getRelated('contains'),
-            ...getRelated('same_geography'),
-        ]
+        const relateds = (['contained_by', 'intersects', 'borders', 'contains', 'same_geography'] as const).flatMap(
+            relationship => getRelated(relationship).map(button => ({ ...button, halo: relationship === 'borders' })),
+        )
 
         const relatedShapes = (() => {
             const result: Polygon[] = []
@@ -94,21 +92,18 @@ function useArticleFeatures({ articleType, related, longname }: ArticleMapProps)
                     continue
                 }
 
-                const color = randomColor(relateds[i].longname)
                 result.push({
                     name: relateds[i].longname,
-                    color, weight: 1, fillColor: color, fillOpacity: 0.1,
+                    ...atlasStyle(randomColor(relateds[i].longname, Color(colors.hueColors.blue).hue(), 60), 0.05, relateds[i].halo),
                 })
             }
             return result
         })()
 
-        const color = colors.hueColors.blue
-
         return polygonFeatureCollection([
             {
                 name: longname,
-                fillOpacity: 0.5, weight: 1, color, fillColor: color,
+                ...atlasStyle(colors.hueColors.blue, 0.25, true),
                 clickable: false,
             },
             ...relatedShapes,

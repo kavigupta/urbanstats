@@ -184,6 +184,18 @@ export async function loadArticleFromConsolidatedShard(shardUrl: string, longnam
     return undefined
 }
 
+/** What each longname is a symlink to, or undefined if it isn't one. Fetches each shard once. */
+export async function symlinkTargets(longnames: string[]): Promise<(string | undefined)[]> {
+    const links = await Promise.all(longnames.map(dataLink))
+    const shards = new Map([...new Set(links)].map(link => [link, getConsolidatedArticlesShard(link)]))
+    return Promise.all(longnames.map(async (longname, i) => {
+        const shard = await shards.get(links[i])
+        if (shard === undefined) return undefined
+        const symIdx = shard.symlinkLinkNames.indexOf(longname)
+        return symIdx >= 0 ? shard.symlinkTargetNames[symIdx] : undefined
+    }))
+}
+
 /** Load one shape from a consolidated shard (fetch whole .gz via loadProtobuf, find by longname). Resolves symlinks to target. */
 export async function loadFeatureFromConsolidatedShard(shardUrl: string, longname: string): Promise<Feature | undefined> {
     const shard = await getConsolidatedShapesShard(shardUrl)

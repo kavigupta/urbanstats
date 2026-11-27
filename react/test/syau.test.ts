@@ -354,7 +354,7 @@ test('canada-ridings', async (t) => {
     await t.expect(await allSyauPredictions()).eql([])
     await addInputText(t, 'madawaska', '')
     await t.expect(await allSyauPredictions()).eql([
-        '329. Madawaska--Restigouche (Riding)',
+        '329. Madawaska--Restigouche (Riding) (2015)',
     ])
 })
 
@@ -362,5 +362,34 @@ urbanstatsFixture('au-federal-electorates', '/syau.html#typ=AU%20Federal%20Elect
 
 test('australia-federal-electorates', async (t) => {
     await addInputText(t, 'kingsford smith', '')
-    await t.expect(await allSyauPredictions()).eql(['35. Kingsford Smith Division'])
+    await t.expect(await allSyauPredictions()).eql(['32. Kingsford Smith Division (2025)'])
+})
+
+urbanstatsFixture('morocco-urban-centers', '/syau.html#typ=Urban+Center&universe=Morocco')
+
+test('guesses of renamed and removed urban centers', async (t) => {
+    await t.eval(() => {
+        localStorage.setItem('syau_history', JSON.stringify({
+            'Urban Center-Morocco': {
+                guessed: [
+                    'Casablanca Urban Center, Morocco',
+                    'Youssoufia ⵍⵉⵡⵙⵓⴼⵉⵢⴰ اليوسفية Urban Center, Morocco',
+                    'Nonexistent Urban Center, Morocco',
+                ],
+            },
+        }))
+    })
+    await safeReload(t)
+    await assertText(t, '2/65 Urban Centers named, which is 23% of the total population.')
+    await t.expect(await t.eval(() => JSON.parse(localStorage.getItem('syau_history')!) as unknown)).eql({
+        'Urban Center-Morocco': {
+            guessed: [
+                'Casablanca Urban Center, Morocco',
+                'Youssoufia Urban Center, Morocco',
+                'Nonexistent Urban Center, Morocco',
+            ],
+        },
+    })
+    await addInputText(t, 'Youssoufia')
+    await assertText(t, '2/65 Urban Centers named, which is 23% of the total population.')
 })

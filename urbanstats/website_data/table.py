@@ -1,3 +1,4 @@
+import unicodedata
 from collections import Counter
 from functools import lru_cache
 from typing import Any, Dict, Sequence
@@ -215,3 +216,14 @@ def check(names: Sequence[str]) -> None:
     }
     bad_names = [x for x in names if "?" in x and x not in allowed_bad_names]
     assert not bad_names, f"Possible unicode errors?: {bad_names}"
+    bad_characters = [x for x in names if not all(map(allowed_in_name, x))]
+    assert not bad_characters, f"Names with disallowed characters: {bad_characters}"
+
+
+def allowed_in_name(c: str) -> bool:
+    return (
+        (c.isascii() and c.isprintable())
+        or unicodedata.name(c, "").startswith("LATIN")
+        or unicodedata.combining(c) != 0
+        or c in "\u2018\u2019\u02be"
+    )

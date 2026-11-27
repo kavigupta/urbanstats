@@ -50,7 +50,7 @@ function QuickLoad(): ReactNode {
     return <BarLoader color={colors.textMain} cssOverride={style} data-test-id="quickLoad" />
 }
 
-export function LongLoad({ containerStyleOverride, testId }: { containerStyleOverride?: CSSProperties, testId?: string }): ReactNode {
+export function LongLoad({ containerStyleOverride, testId, loading = true }: { containerStyleOverride?: CSSProperties, testId?: string, loading?: boolean }): ReactNode {
     const colors = useColors()
     const containerStyle: CSSProperties = {
         position: 'fixed',
@@ -72,20 +72,23 @@ export function LongLoad({ containerStyleOverride, testId }: { containerStyleOve
     }
     return (
         <div style={containerStyle} data-test-id={testId ?? 'longLoad'}>
-            <MoonLoader color={colors.textMain} cssOverride={loaderStyle} />
+            {/* Unmounted rather than hidden, since a hidden spinner keeps animating */}
+            <MoonLoader color={colors.textMain} cssOverride={loaderStyle} loading={loading} />
         </div>
     )
 }
 
 export function RelativeLoader({ loading }: { loading: boolean }): ReactNode {
     return (
-        <LongLoad containerStyleOverride={{
-            position: 'absolute',
-            transition: 'opacity 0.25s',
-            opacity: loading ? 1 : 0,
-            pointerEvents: 'none',
-            zIndex: zIndex.mapLoading,
-        }}
+        <LongLoad
+            loading={loading}
+            containerStyleOverride={{
+                position: 'absolute',
+                transition: 'opacity 0.25s',
+                opacity: loading ? 1 : 0,
+                pointerEvents: 'none',
+                zIndex: zIndex.mapLoading,
+            }}
         />
     )
 }

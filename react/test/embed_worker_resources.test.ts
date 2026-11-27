@@ -21,7 +21,7 @@ urbanstatsFixture('embed worker resources', '/index.html', async () => {
 test('embed-worker-startup-cost', async (t) => {
     const { gzipKiB, startupCpuMs } = await ogWorkerBundleCost()
     console.warn(`Embed Worker bundle: ${gzipKiB} KiB gzip, ${startupCpuMs} ms startup CPU`)
-    // Currently ~1760. Dropping the panel stubs would add ~900. Cloudflare's ceiling is 3 MiB on free.
+    // Currently ~1720. Dropping the panel stubs would add ~900. Cloudflare's ceiling is 3 MiB on free.
     await t.expect(gzipKiB).lt(2_000)
     // Cloudflare allows 1000, but this sits just above CI's 25-42, since every cold start pays it.
     await t.expect(startupCpuMs).lt(100)

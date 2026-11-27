@@ -1,3 +1,4 @@
+import unicodedata
 from collections import Counter
 from dataclasses import dataclass
 from typing import Any, Tuple
@@ -52,12 +53,34 @@ class SubnationalSuffixes:
     # (name, ISO code) of regions whose subnational region the overlap gets wrong
     overrides: Tuple[Tuple[str, str], ...] = ()
 
+    def names(self, rows):
+        return rows[self.name_column]
+
+
+@dataclass(frozen=True)
+class LatinSubnationalSuffixes(SubnationalSuffixes):
+    """Uses latin_names in place of names that aren't in the Latin alphabet."""
+
+    # (name in name_column, name to use instead)
+    latin_names: Tuple[Tuple[str, str], ...] = ()
+
+    def names(self, rows):
+        names = rows[self.name_column].map(
+            lambda name: dict(self.latin_names).get(name, name)
+        )
+        for name in names:
+            assert all(
+                unicodedata.name(c).startswith("LATIN") for c in name if c.isalpha()
+            ), f"{name!r} needs a Latin name"
+        return names
+
 
 @permacache("urbanstats/special_cases/ghsl_urban_center/compute_subnational_suffixes")
 def compute_subnational_suffixes(suffixes):
     """For each region: subnationals_ISO_CC, subnationals_ISO_CODE, suffix and mid."""
     areas = suffixes.regions.load_rows().copy()
     areas["index_"] = areas.index
+    areas[suffixes.name_column] = suffixes.names(areas)
     snr = suffixes.subnationals.load_rows()
     subnational_classes = classify_areas_by_subnational_region(snr, areas)
     for name, iso_code in suffixes.overrides:
@@ -83,7 +106,7 @@ class SubnationalSuffixedName(TableFunction):
 
     def __call__(self, rows):
         computed = compute_subnational_suffixes(self.suffixes).loc[rows.index]
-        cleanname = rows[self.suffixes.name_column] + computed.mid.apply(
+        cleanname = self.suffixes.names(rows) + computed.mid.apply(
             lambda x: " (" + x + ")" if x else ""
         )
         shortname = cleanname + " " + self.type_name
@@ -100,7 +123,7 @@ def attach_subnational_suffxes(
     subnational_classes,
     *,
     name_column="UC_NM_MN",
-    more_general_direction=False
+    more_general_direction=False,
 ):
     backmap = subnational_classes.loc[areas.index_].applymap(sorted)
     for col in subnational_classes.columns:

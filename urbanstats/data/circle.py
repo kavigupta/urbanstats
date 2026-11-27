@@ -1,8 +1,9 @@
 from collections import Counter, defaultdict
 from colorsys import hsv_to_rgb
 from dataclasses import dataclass
-from typing import List
+from typing import Any, List
 
+import attr
 import geopandas as gpd
 import numpy as np
 import shapely
@@ -11,6 +12,7 @@ import shapely.geometry
 import tqdm.auto as tqdm
 from permacache import drop_if_equal, permacache, stable_hash
 from PIL import Image
+from scipy.optimize import linear_sum_assignment
 
 from urbanstats.data.gpw import load_full_ghs_30_arcsec
 from urbanstats.data.population_overlays import (
@@ -18,7 +20,7 @@ from urbanstats.data.population_overlays import (
     relevant_regions,
 )
 from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
-from urbanstats.geometry.shapefiles.row_functions import column
+from urbanstats.geometry.shapefiles.row_functions import TableFunction
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
 from urbanstats.geometry.shapefiles.source_countries import ContainedWithinCountries
@@ -368,31 +370,58 @@ def specify_duplicates(frame, long_to_short):
     )
 
 
-@permacache(
-    "urbanstats/data/circle/overlapping_circles_frame_8",
-    key_function=dict(country_names=stable_hash, urban_center_names=stable_hash),
-)
-def overlapping_circles_frame(
-    country_names, urban_center_names, population, suffix, max_radius_in_chunks=20
-):
-    print(f"population circles being computed for {suffix}")
+@permacache("urbanstats/data/circle/circles_frame")
+def circles_frame(population, max_radius_in_chunks=20):
     ghs = load_full_ghs_30_arcsec()
     circles = overlapping_circles_fast(
         ghs, population, limit=10**9, max_radius_in_chunks=max_radius_in_chunks
     )
     frame = to_basic_geopandas_frame(ghs.shape, circles)
-    frame, long_to_short = attach_urban_centers_to_frame(frame, urban_center_names)
-    specify_duplicates(frame, long_to_short)
-    countries = relevant_regions(country_names, frame, 3, 0.9)
-    frame["suffix"] = frame.id.apply(lambda x: "-".join(countries[x]))
-    frame["shortname"] = frame.shortname + " " + suffix
-    frame["longname"] = frame["shortname"] + ", " + frame.suffix
     frame.geometry = frame.geometry.intersection(
         shapely.geometry.box(-180, -89, 180, 89)
     )
-    assert len(frame) == len(set(frame.longname))
-    print(f"done with {suffix}")
     return frame
+
+
+@dataclass(frozen=True)
+class CircleNaming:
+    """Names circles after the urban centers they overlap, and the countries they're in."""
+
+    circles: Any  # Geometry
+    country_names: Any  # Names
+    urban_center_names: Any  # Names
+    suffix: str
+
+
+@permacache("urbanstats/data/circle/compute_circle_names")
+def compute_circle_names(naming):
+    """For each circle: shortname and longname."""
+    frame = naming.circles.load_rows().copy()
+    frame, long_to_short = attach_urban_centers_to_frame(
+        frame, naming.urban_center_names
+    )
+    specify_duplicates(frame, long_to_short)
+    countries = relevant_regions(naming.country_names, frame, 3, 0.9)
+    frame["shortname"] = frame.shortname + " " + naming.suffix
+    frame["longname"] = (
+        frame.shortname + ", " + frame.id.apply(lambda x: "-".join(countries[x]))
+    )
+    assert frame.longname.is_unique
+    return frame[["shortname", "longname"]]
+
+
+@dataclass(frozen=True)
+class CircleName(TableFunction):
+    """part is "cleanname", "shortname" or "longname"."""
+
+    naming: CircleNaming
+    part: str
+
+    def __call__(self, rows):
+        names = compute_circle_names(self.naming).loc[rows.index]
+        if self.part == "cleanname":
+            return names.shortname.str.removesuffix(" " + self.naming.suffix)
+        return names[self.part]
 
 
 @dataclass
@@ -408,20 +437,23 @@ class relative:
     to: List[int]
     prefix: str = ""
 
-    def apply_to(self, current_idx, rows, resolution):
+    def angle_revolutions(self, current_idx, rows):
         """
-        Compute the angle of the current_idx relative to the mean centre of the rows in the frame
+        The angle of the current_idx relative to the mean centre of the rows in the frame
         """
         mean_center = np.mean(
             [center_point_of_bbox(rows.iloc[idx].geometry) for idx in self.to], axis=0
         )
         current_center = center_point_of_bbox(rows.iloc[current_idx].geometry)
         delta = current_center - mean_center
-        angle = np.arctan2(delta[1], delta[0])
-        angle_revolutions = angle / (2 * np.pi)
-        angle_revolutions = np.round(angle_revolutions * resolution) / resolution
-        angle_revolutions = angle_revolutions % 1
-        direct = to_cardinal_direction(angle_revolutions)
+        return np.arctan2(delta[1], delta[0]) / (2 * np.pi)
+
+    def apply_to(self, current_idx, rows, resolution):
+        bucket = np.round(self.angle_revolutions(current_idx, rows) * resolution)
+        return self.name_bucket(bucket, resolution)
+
+    def name_bucket(self, bucket, resolution):
+        direct = to_cardinal_direction((bucket / resolution) % 1)
         if self.prefix:
             return f"{self.prefix} {direct}"
         return direct
@@ -560,11 +592,41 @@ def center_point_of_bbox(polygon):
 
 def compute_names(structure, rows):
     resolution = 4
-    while True:
+    while resolution < MAX_RESOLUTION:
         names = [structure[i].apply_to(i, rows, resolution) for i in range(len(rows))]
         if len(set(names)) == len(names):
             return names
         resolution *= 2
+    return names_in_distinct_buckets(structure, rows)
+
+
+# to_cardinal_direction has names for 32 directions
+MAX_RESOLUTION = 32
+
+
+def names_in_distinct_buckets(structure, rows):
+    """
+    Names each relative row with a different direction than the others with its prefix, putting
+    them in the buckets closest to their angles.
+    """
+    names = [structure[i].apply_to(i, rows, MAX_RESOLUTION) for i in range(len(rows))]
+    by_prefix = defaultdict(list)
+    for i in range(len(rows)):
+        if isinstance(structure[i], relative):
+            by_prefix[structure[i].prefix].append(i)
+    for idxs in by_prefix.values():
+        angles = np.array([structure[i].angle_revolutions(i, rows) for i in idxs])
+        buckets = np.arange(MAX_RESOLUTION)
+        distance = (
+            np.abs(angles[:, None] * MAX_RESOLUTION - buckets[None]) % MAX_RESOLUTION
+        )
+        distance = np.minimum(distance, MAX_RESOLUTION - distance)
+        row_idxs, bucket_idxs = linear_sum_assignment(distance)
+        for row_idx, bucket in zip(row_idxs, bucket_idxs):
+            i = idxs[row_idx]
+            names[i] = structure[i].name_bucket(bucket, MAX_RESOLUTION)
+    assert len(set(names)) == len(names), names
+    return names
 
 
 named_populations = {
@@ -605,20 +667,11 @@ def produce_image(population):
 def circle_shapefile_object(country_shapefile, population):
     name = named_populations[population] + " Person Circle"
     version = 27
-    return make_shapefile(
+    shapefile = make_shapefile(
         geometry_key=f"population_circle_{named_populations[population]}_{version}",
-        path=lambda country_names, urban_center_names: overlapping_circles_frame(
-            country_names,
-            urban_center_names,
-            population,
-            named_populations[population] + "PC",
-        ),
-        path_inputs=(country_shapefile.names, URBAN_CENTERS.names),
-        shortname_extractor=column("shortname"),
-        cleanname_extractor=(column("shortname")).removesuffix(
-            " " + named_populations[population] + "PC"
-        ),
-        longname_extractor=column("longname"),
+        path=lambda: circles_frame(population),
+        shortname_extractor=None,
+        longname_extractor=None,
         meta=dict(type=name, source="GHSL", type_category="Kavi"),
         filter=lambda x: True,
         does_overlap_self=False,
@@ -644,4 +697,19 @@ def circle_shapefile_object(country_shapefile, population):
         ),
         include_in_syau=False,
         wikidata_sourcer=None,
+    )
+    naming = CircleNaming(
+        circles=shapefile.geometry,
+        country_names=country_shapefile.names,
+        urban_center_names=URBAN_CENTERS.names,
+        suffix=named_populations[population] + "PC",
+    )
+    return attr.evolve(
+        shapefile,
+        naming=attr.evolve(
+            shapefile.naming,
+            shortname_extractor=CircleName(naming, "shortname"),
+            longname_extractor=CircleName(naming, "longname"),
+            cleanname_extractor=CircleName(naming, "cleanname"),
+        ),
     )

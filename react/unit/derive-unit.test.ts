@@ -108,6 +108,7 @@ for (const [data, expected] of [
     ['if (population > 0) { area } else { area }', '1\u202f234km^{2}'],
     ['if (population > 0) { area }', '1\u202f234km^{2}'],
     ['do { x = area; x }', '1\u202f234km^{2}'],
+    ['do { split (population > 0) { x = area }; x }', '1\u202f234km^{2}'],
     ['[area, area]', '1\u202f234km^{2}'],
     ['sum(area)', '1\u202f234km^{2}'],
 ] as const) {

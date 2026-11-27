@@ -108,14 +108,18 @@ CANADIAN_CENSUS_SUBDIVISIONS = make_shapefile(
     geometry_key="canadian_census_subdivisions_3",
     path=load_csd_shapefile,
     path_inputs=(
-        COUNTRIES.names,
-        SUBNATIONAL_REGIONS.names,
+        COUNTRIES.geometry,
+        SUBNATIONAL_REGIONS.geometry,
         CANADIAN_CENSUS_DIVISIONS.names,
         CANADIAN_CENSUS_DIVISIONS.identified,
     ),
-    shortname_extractor=CensusDivisionName("CSDNAME", "CSDTYPE", cdtype),
-    cleanname_extractor=(column("CSDNAME")).replace("  ", " "),
-    longname_extractor=CensusDivisionName("CSDNAME", "CSDTYPE", cdtype)
+    shortname_extractor=CensusDivisionName("CSDNAME", "CSDTYPE", cdtype).replace(
+        "\x92", "'"
+    ),
+    cleanname_extractor=column("CSDNAME").replace("  ", " ").replace("\x92", "'"),
+    longname_extractor=CensusDivisionName("CSDNAME", "CSDTYPE", cdtype).replace(
+        "\x92", "'"
+    )
     + ", "
     + column("division_longname"),
     additional_columns_computer={"scgc": column("CSDUID")},

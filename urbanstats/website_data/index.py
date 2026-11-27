@@ -1,6 +1,4 @@
 import json
-import re
-import unicodedata
 from typing import Any, List
 
 from urbanstats.geometry.relationship import full_relationships
@@ -84,11 +82,3 @@ def containing_universe_idxs(full: Any) -> List[List[int]]:
         ]
         for ln in full.longname
     ]
-
-
-def normalize(s: str) -> str:
-    # in javascript: return a.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    s = s.lower()
-    s = unicodedata.normalize("NFD", s)
-    s = re.sub(r"[\u0300-\u036f]", "", s)
-    return s

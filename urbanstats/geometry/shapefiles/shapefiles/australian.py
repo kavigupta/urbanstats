@@ -1,5 +1,15 @@
+import re
+from dataclasses import dataclass
+
+import pandas as pd
+
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
-from urbanstats.geometry.shapefiles.row_functions import column
+from urbanstats.geometry.shapefiles.row_functions import (
+    Constant,
+    Lookup,
+    RowFunction,
+    column,
+)
 from urbanstats.geometry.shapefiles.shapefile import make_shapefile
 from urbanstats.geometry.shapefiles.source_countries import InCountry
 from urbanstats.universe.universe_provider.constants import australia_domestic_provider
@@ -18,10 +28,122 @@ NOT_PLACES = (
 # SUAs and postcodes can span states, so their layers have no state column
 LAYERS_WITHOUT_STATE = ("SUA", "POA")
 
+STATES = ("NSW", "Vic.", "Qld", "SA", "WA", "Tas.", "NT", "ACT", "OT")
+
+# places whose names have parentheses in them, which are not part of the ABS's disambiguation
+NAMES_WITH_PARENTHESES = (
+    "Cocos (Keeling) Islands",
+    "Erub (Darnley) Island",
+    "Iama (Yam) Island",
+    "Mer (Murray) Island",
+    "Pukatja (Ernabella)",
+    "Kaltjiti (Fregon)",
+    "Bidyadanga (La Grange)",
+    "Bardi (One Arm Point)",
+    "Gunbalanya (Oenpelli)",
+    "Wurrumiyanga (Nguiu)",
+    "Santa Teresa (Ltyentye Purte)",
+    "Wugular (Beswick)",
+    "Apatula (Finke)",
+    "Kaltukatjara (Docker River)",
+    "Nauiyu Nambiyu (Daly River)",
+    "Nganmarriyanga (Palumpa)",
+    "Robinson River (Mungoorbada)",
+    "Walungurru (Kintore)",
+)
+
+
+def split_parentheticals(name):
+    """(before, parts, after), e.g. "Epping (NSW) - West" gives ("Epping", ["NSW"], " - West")."""
+    proper = next((p for p in NAMES_WITH_PARENTHESES if name.startswith(p)), "")
+    # alternates text, part, text, part, ..., text
+    pieces = re.split(r" \(([^()]*)\)", name[len(proper) :])
+    texts, parts = pieces[0::2], pieces[1::2]
+    if not parts:
+        return name, [], ""
+    assert all(text == "" for text in texts[1:-1]), name
+    assert not any("(" in text or ")" in text for text in texts), name
+    return proper + texts[0], parts, texts[-1]
+
+
+def handle_parenthetical(part, layer, name):
+    """The part as it goes in our name, or None to leave it out."""
+    if part in STATES:
+        # repeats in another state, e.g. Ashfield (NSW)
+        assert layer not in LAYERS_WITHOUT_STATE, name
+        return None
+    if part == "L":
+        # a Locality, a UCL with 200 to 999 people, which UclKind puts in the type instead
+        assert layer == "UCL", name
+        return None
+    if part in ("North", "South", "East", "West"):
+        # e.g. Perth (North) - Highgate
+        assert layer == "SA2", name
+        return part
+    if part.endswith(" Part"):
+        # a UCL split by a state border, e.g. Albury - Wodonga (Albury Part)
+        assert layer == "UCL", name
+        return part
+    if " - " in part:
+        # repeats in the same state, e.g. Enmore (Inner West - NSW)
+        region, _, state = part.rpartition(" - ")
+        assert state in STATES, name
+        assert layer not in LAYERS_WITHOUT_STATE, name
+        return region
+    raise ValueError(f"Unrecognized parenthesized part in ABS name {name!r}")
+
+
+@dataclass(frozen=True)
+class AbsName(RowFunction):
+    inner: RowFunction
+    layer: str
+
+    def __call__(self, row):
+        name = self.inner(row)
+        before, parts, after = split_parentheticals(name)
+        kept = [handle_parenthetical(part, self.layer, name) for part in parts]
+        return before + "".join(f" ({p})" for p in kept if p is not None) + after
+
+
+@dataclass(frozen=True)
+class UclKind(RowFunction):
+    inner: RowFunction
+
+    def __call__(self, row):
+        _, parts, _ = split_parentheticals(self.inner(row))
+        return "Locality [UCL]" if "L" in parts else "Urban Centre [UCL]"
+
 
 # Wikidata's "Australian Statistical Geography 2021 ID" is the layer's code with its name in front,
 # e.g. LGA31000. It only covers some layers.
 ASGS_2021_ID = SimpleWikidataSourcer("wdt:P10112", "asgs_id")
+
+
+@dataclass(frozen=True)
+class AsgsIdIfAny(RowFunction):
+    """The ASGS 2021 ID, or None for a region drawn since 2021"""
+
+    layer: str
+
+    def __call__(self, row):
+        code = row[f"{self.layer}_CODE21"]
+        return None if pd.isna(code) else self.layer + code
+
+
+def dated(shortname, within, start_year):
+    """The shortname with the start year, and make_shapefile's date arguments"""
+    if start_year is None:
+        return shortname, {}
+    if isinstance(start_year, dict):
+        start_date = Lookup(column("STE_NAME21"), start_year)
+        start_date_overall = min(start_year.values())
+    else:
+        start_date, start_date_overall = Constant(start_year), start_year
+    return shortname.with_year(start_date), dict(
+        start_date=start_date,
+        start_date_overall=start_date_overall,
+        longname_sans_date_extractor=shortname + within,
+    )
 
 
 def abs_shapefile(
@@ -33,26 +155,37 @@ def abs_shapefile(
     type_category,
     abbreviation,
     version,
+    year=2021,
+    start_year=None,
     in_wikidata=False,
     include_in_syau=False,
     gridded_data=False,
 ):
-    """`kind` is what the region is called after its name, e.g. "LGA" in "Brisbane LGA", or None."""
-    # pylint: disable=too-many-arguments
-    shortname = column(name_column)
+    """
+    `kind` is what the region is called after its name, e.g. "LGA" in "Brisbane LGA", or None, or a
+    RowFunction if it varies by region. `start_year`, for electoral districts, is the year of the first
+    election they were used at, or a dict of it by state.
+    """
+    # pylint: disable=too-many-arguments,too-many-locals
+    name = AbsName(column(name_column), layer)
+    # a later year's layer carries over the 2021 codes, which regions drawn since then lack
+    asgs_id = layer + column(f"{layer}_CODE21") if year == 2021 else AsgsIdIfAny(layer)
+    shortname = name
     if kind is not None:
-        shortname = shortname + f" {kind}"
+        shortname = shortname + " " + kind
+
     state = "" if layer in LAYERS_WITHOUT_STATE else ", " + column("STE_NAME21")
+    within = state + ", Australia"
+
+    shortname, dates = dated(shortname, within, start_year)
 
     return make_shapefile(
         geometry_key=f"australian_{layer.lower()}_{version}",
-        path=f"{PROCESSED}/{layer}_2021_AUST_SHP.zip",
+        path=f"{PROCESSED}/{layer}_{year}_AUST_SHP.zip",
         shortname_extractor=shortname,
-        cleanname_extractor=column(name_column),
-        longname_extractor=shortname + state + ", Australia",
-        additional_columns_computer=(
-            {"asgs_id": layer + column(f"{layer}_CODE21")} if in_wikidata else {}
-        ),
+        cleanname_extractor=name,
+        longname_extractor=shortname + within,
+        additional_columns_computer=({"asgs_id": asgs_id} if in_wikidata else {}),
         filter=lambda row: not row[name_column].startswith(NOT_PLACES),
         meta=dict(type=type_name, source="ABS", type_category=type_category),
         does_overlap_self=False,
@@ -66,6 +199,7 @@ def abs_shapefile(
         ),
         include_in_syau=include_in_syau,
         wikidata_sourcer=ASGS_2021_ID if in_wikidata else None,
+        **dates,
     )
 
 
@@ -104,7 +238,7 @@ AUSTRALIAN_SUAS = abs_shapefile(
 AUSTRALIAN_UCLS = abs_shapefile(
     layer="UCL",
     name_column="UCL_NAME21",
-    kind="UCL",
+    kind=UclKind(column("UCL_NAME21")),
     type_name="AU UCL",
     type_category="Census",
     abbreviation="UCL",
@@ -134,33 +268,54 @@ AUSTRALIAN_POSTCODES = abs_shapefile(
 )
 AUSTRALIAN_FEDERAL_ELECTORATES = abs_shapefile(
     layer="CED",
-    name_column="CED_NAME21",
+    name_column="CED_NAME25",
     kind="Division",
     type_name="AU Federal Electorate",
     type_category="Political",
     abbreviation="FDIV",
-    version=2,
+    version=3,
+    year=2025,
+    start_year=2025,
     in_wikidata=True,
     include_in_syau=True,
     gridded_data=True,
 )
+# the year each state's districts in ABS's 2025 layer were first used at an election
+STATE_DISTRICT_START_YEARS = {
+    "New South Wales": 2023,
+    "Victoria": 2022,
+    "Queensland": 2017,
+    "Western Australia": 2025,
+    "South Australia": 2026,
+    "Tasmania": 2018,
+    "Northern Territory": 2024,
+    "Australian Capital Territory": 2024,
+}
+# only these have upper house regions
+STATE_UPPER_HOUSE_START_YEARS = {
+    state: STATE_DISTRICT_START_YEARS[state] for state in ("Victoria", "Tasmania")
+}
 AUSTRALIAN_STATE_LOWER_HOUSE_DISTRICTS = abs_shapefile(
     layer="SEDL",
-    name_column="SED_NAME21",
+    name_column="SED_NAME25",
     kind="District",
     type_name="AU State Lower House District",
     type_category="Political",
     abbreviation="STHD",
-    version=1,
+    version=2,
+    year=2025,
+    start_year=STATE_DISTRICT_START_YEARS,
     gridded_data=True,
 )
 AUSTRALIAN_STATE_UPPER_HOUSE_REGIONS = abs_shapefile(
     layer="SEDU",
-    name_column="SED_NAME21",
+    name_column="SED_NAME25",
     kind="Region",
     type_name="AU State Upper House Region",
     type_category="Political",
     abbreviation="STSD",
-    version=1,
+    version=2,
+    year=2025,
+    start_year=STATE_UPPER_HOUSE_START_YEARS,
     gridded_data=True,
 )

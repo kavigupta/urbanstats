@@ -262,6 +262,15 @@ function documentationSection(sortedCategories: [ConstantCategory, [string, USSD
                                 Keep in mind that this is exactly two cases, rather than one for each element. Using mean() reveals this:
                             </p>
                             <StandaloneEditor ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = [50, 61, 70]' + '\n' + 'if (y > 65) { x = mean(x) } else { x = mean(x) }' + '\n' + 'x'} />
+                            <p>
+                                To get one case for each distinct value rather than just true and false, use split.
+                                The block runs once for each distinct value of group, on just the elements that have that value:
+                            </p>
+                            <StandaloneEditor ident="split" getCode={() => 'x = [1, 2, 3, 10, 20]' + '\n' + 'group = ["a", "a", "a", "b", "b"]' + '\n' + 'split (group) { x = x - mean(x) }' + '\n' + 'x'} />
+                            <p>
+                                The value can also be a list of lists, in which case elements are grouped by their whole list:
+                            </p>
+                            <StandaloneEditor ident="split" getCode={() => 'x = [1, 2, 3, 10, 20]' + '\n' + 'group = [["a"], ["a"], ["a"], ["a", "b"], ["a", "b"]]' + '\n' + 'split (group) { x = x - mean(x) }' + '\n' + 'x'} />
                         </>
                     ),
                 },

@@ -58,7 +58,7 @@ CANADIAN_CENSUS_DIVISIONS = make_shapefile(
     path=lambda countries, subnationals: load_canadian_shapefile(
         "named_region_shapefiles/canada/lcd_000a21a_e.zip", countries, subnationals
     ),
-    path_inputs=(COUNTRIES.names, SUBNATIONAL_REGIONS.names),
+    path_inputs=(COUNTRIES.geometry, SUBNATIONAL_REGIONS.geometry),
     shortname_extractor=CensusDivisionName("CDNAME", "CDTYPE", cdtype),
     cleanname_extractor=(column("CDNAME")).replace("  ", " "),
     longname_extractor=CENSUS_DIVISION_LONGNAME,
