@@ -414,7 +414,7 @@ export function DataCreditPanel(): ReactNode {
                             Citizenship, language, generation, commute mode and time, industry, marriage, household size, and renter %
                             are also available in Canada, from the 2021 Canadian Census (see Canadian Data below), and the two countries&apos; values
                             are combined into one National Census statistic. Language, generation, marriage, born outside the
-                            country, undergrad and graduate degrees, degree field, household relationship, and vehicle ownership are also available in
+                            country, undergrad and graduate degrees, degree field, household relationship, industry, and vehicle ownership are also available in
                             Australia, from the 2021 Australian Census (see Australian Data below), and are combined in the same way.
 
                             <NRef name="citizenship">Citizenship</NRef>
@@ -1131,6 +1131,9 @@ export function DataCreditPanel(): ReactNode {
                                     opposite-sex, so only Cohabiting With Partner % is available; one member of each group household
                                     counts as its householder, and people in non-private dwellings count as Other, as the US&apos;s
                                     group quarters do. For Income, we use thresholds in AUD rather than USD.
+                                    For Industry, Australia uses the ANZSIC classifications rather than NAICS, but they all
+                                    roughly line up except for one difference: waste management is under utilities rather than
+                                    management, so we specifically have different categories for each of these.
                                 </p>
                             </div>
                         </div>

@@ -4,10 +4,23 @@ from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import INDUSTRY, QuizQuestionDescriptor
 from urbanstats.statistics.national_census import (
     ACSCounts,
+    AustralianCounts,
     NationalCensusStatistics,
     StatCanCounts,
 )
 from urbanstats.statistics.utils import fractionalize
+
+# ANZSIC's utilities include waste, and its administrative and support services don't, so neither
+# matches its NAICS sector. Management of companies has no ANZSIC division.
+AUSTRALIA_ONLY = {
+    "industry_electricity_gas_water_waste_australia": "Electricity, gas, water and waste services %",
+    "industry_administrative_and_support_australia": "Administrative and support services %",
+}
+US_CANADA_ONLY = (
+    "industry_utilities",
+    "industry_administrative_and_support_and_waste_management_services",
+    "industry_management_of_companies_and_enterprises",
+)
 
 
 class IndustryStatistics(NationalCensusStatistics):
@@ -20,16 +33,35 @@ class IndustryStatistics(NationalCensusStatistics):
         )
 
     def name_for_each_statistic(self):
-        return {k: "Employed in " + v for k, v in industry.industry_display.items()}
+        return {
+            k: "Employed in " + v
+            for k, v in {**industry.industry_display, **AUSTRALIA_ONLY}.items()
+        }
 
     def unit_for_each_statistic(self):
         return self.same_for_each_name("percentage")
 
     def legacy_statistic_names(self):
+        australia_only = {self.name_for_each_statistic()[k] for k in AUSTRALIA_ONLY}
         return {
-            **super().legacy_statistic_names(),
+            **{
+                k: v
+                for k, v in super().legacy_statistic_names().items()
+                if v not in australia_only
+            },
             **{v: f"Employed in {v}" for v in industry.industry_display.values()},
         }
+
+    def countries_for_each_statistic(self):
+        result = {}
+        for name in self.internal_statistic_names_list():
+            if name in AUSTRALIA_ONLY:
+                result[name] = ("Australia",)
+            elif name in US_CANADA_ONLY:
+                result[name] = ("USA", "Canada")
+            else:
+                result[name] = ("USA", "Canada", "Australia")
+        return result
 
     def varname_for_each_statistic(self):
         return {
@@ -55,6 +87,8 @@ class IndustryStatistics(NationalCensusStatistics):
                 "industry_accommodation_and_food_services": "accommodation_food",
                 "industry_other_services,_except_public_administration": "other_services",
                 "industry_public_administration": "public_admin",
+                "industry_electricity_gas_water_waste_australia": "electricity_gas_water_waste",
+                "industry_administrative_and_support_australia": "admin_support",
             }.items()
         }
 
@@ -84,6 +118,8 @@ class IndustryStatistics(NationalCensusStatistics):
             "industry_transportation_and_warehousing": "higher % of workers employed in the transportation and warehousing industry",
             "industry_utilities": "higher % of workers employed in the utilities industry",
             "industry_wholesale_trade": "higher % of workers employed in the wholesale trade industry",
+            "industry_electricity_gas_water_waste_australia": "higher % of workers employed in the electricity, gas, water, and waste services industries",
+            "industry_administrative_and_support_australia": "higher % of workers employed in the administrative and support services industry",
         }
         return QuizQuestionDescriptor.several(
             INDUSTRY,
@@ -161,15 +197,62 @@ class IndustryStatistics(NationalCensusStatistics):
             #
             "industry_public_administration": "executive offices, legislative bodies,"
             " public finance activities, public order and safety activities, etc.",
+            #
+            "industry_electricity_gas_water_waste_australia": "electricity generation, transmission,"
+            " and distribution; gas supply; water supply, sewerage, and drainage; waste collection,"
+            " treatment, and disposal",
+            #
+            "industry_administrative_and_support_australia": "employment services, travel agencies,"
+            " office administrative services, building cleaning, pest control, gardening services, etc.",
         }
 
     def mutate_counts(self, counts):
+        for name in self.internal_statistic_names_list():
+            if name not in counts:
+                counts[name] = 0
         fractionalize(counts, *self.internal_statistic_names_list())
 
     def country_inputs(self):
         return {
             "USA": ACSCounts(self.acs_entity()),
             "Canada": StatCanCounts(self.census_tables_canada()),
+            "Australia": AustralianCounts(self.abs_tables()),
+        }
+
+    def abs_tables(self):
+        # employed people 15 and over; inadequately described and not stated are left out
+        return {
+            "G54": {
+                "industry_agriculture,_forestry,_fishing_and_hunting": [
+                    "P_Ag_For_Fshg_Tot"
+                ],
+                "industry_mining,_quarrying,_and_oil_and_gas_extraction": [
+                    "P_Mining_Tot"
+                ],
+                "industry_manufacturing": ["P_Manufact_Tot"],
+                "industry_electricity_gas_water_waste_australia": [
+                    "P_El_Gas_Wt_Waste_Tot"
+                ],
+                "industry_construction": ["P_Constru_Tot"],
+                "industry_wholesale_trade": ["P_WhlesaleTde_Tot"],
+                "industry_retail_trade": ["P_RetTde_Tot"],
+                "industry_accommodation_and_food_services": ["P_Accom_food_Tot"],
+                "industry_transportation_and_warehousing": ["P_Trans_post_wrehsg_Tot"],
+                "industry_information": ["P_Info_media_teleco_Tot"],
+                "industry_finance_and_insurance": ["P_Fin_Insur_Tot"],
+                "industry_real_estate_and_rental_and_leasing": ["P_RtnHir_REst_Tot"],
+                "industry_professional,_scientific,_and_technical_services": [
+                    "P_Pro_scien_tec_Tot"
+                ],
+                "industry_administrative_and_support_australia": ["P_Admin_supp_Tot"],
+                "industry_public_administration": ["P_Public_admin_sfty_Tot"],
+                "industry_educational_services": ["P_Educ_trng_Tot"],
+                "industry_health_care_and_social_assistance": ["P_HlthCare_SocAs_Tot"],
+                "industry_arts,_entertainment,_and_recreation": ["P_Art_recn_Tot"],
+                "industry_other_services,_except_public_administration": [
+                    "P_Oth_scs_Tot"
+                ],
+            }
         }
 
     def census_tables_canada(self):

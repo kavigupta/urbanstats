@@ -9825,16 +9825,7 @@ completed = [
     ("G34", "Num_MVs_per_dweling_Tot", "Number of motor vehicles per dwelling Total Dwellings"),
     ("G34", "Num_MVs_NS", "Number of motor vehicles not stated Dwellings"),
     ("G34", "Total_dwelings", "Total Dwellings"),
-]
-
-# vulture: ignore -- these are lists of cells used to track progress on
-get_to_these_now = [
-    # Industry, from each division's all-ages total, with not stated left out of the denominator.
-    # Divisions that match a NAICS sector merge into IndustryStatistics with the US and Canada.
-    # Utilities and administrative/support don't match (ANZSIC puts waste under utilities), so
-    # they get Australia-only versions and the US/Canada ones stay US/Canada-only, as with
-    # education_high_school. Management of companies has no ANZSIC division, so it stays
-    # US/Canada-only.
+    # Industry: each division's all-ages total; inadequately described and not stated are left out
     ("G54", "P_Ag_For_Fshg_Tot", "PERSONS Agriculture Forestry and Fishing Total"),
     ("G54", "P_Mining_Tot", "PERSONS Mining Total"),
     ("G54", "P_Manufact_Tot", "PERSONS Manufacturing Total"),
@@ -9856,6 +9847,10 @@ get_to_these_now = [
     ("G54", "P_Oth_scs_Tot", "PERSONS Other Services Total"),
     ("G54", "P_ID_NS_Tot", "PERSONS Inadequately described Not stated Total"),
     ("G54", "P_Tot_Tot", "PERSONS Total Total"),
+]
+
+# vulture: ignore -- these are lists of cells used to track progress on
+get_to_these_now = [
     # Household size, merged into HouseholdSizeStatistics with the US and Canada: 1 to 4 people
     # each, with 5 and 6+ together as 5+.
     ("G35", "Num_Psns_UR_1_Total", "Number of Persons usually resident One Total"),
