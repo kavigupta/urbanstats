@@ -54,7 +54,7 @@ const background = '#fff8f0'
 const isBorder = (p: Props): boolean => p.disputed !== 1 && !Object.hasOwn(p, 'claimed_by')
 
 const rules: Rule[] = [
-    // The band along each border, under everything else.
+    // The band along each border, under everything else. The country's after the state's, so it stays on top.
     { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 4 && isBorder(p), stroke: '#fde2c0', width: [[3, 2.5], [8, 5.5], [14, 9]], minZoom: 5 },
     { layer: 'boundary', where: p => Number(p.admin_level) === 2 && p.maritime !== 1 && isBorder(p), stroke: '#fcddb3', width: [[3, 4], [8, 8], [14, 12.5]] },
 
@@ -67,19 +67,24 @@ const rules: Rule[] = [
     { layer: 'landuse', where: p => p.class === 'cemetery', fill: '#d6e5bc' },
     { layer: 'park', where: p => ['national_park', 'wilderness_preserve', 'State Park', 'public_park'].includes(String(p.class)), fill: '#d6e5bc' },
     { layer: 'water', where: p => p.intermittent !== 1 && p.brunnel !== 'tunnel', fill: '#77cacc' },
-    { layer: 'waterway', where: p => p.brunnel !== 'tunnel', stroke: '#77cacc', width: [[10, 0.8], [14, 1.5], [17, 4]] },
+    { layer: 'water', where: p => p.intermittent === 1, fill: '#77cacc', opacity: 0.5 },
+    { layer: 'waterway', where: p => p.intermittent !== 1 && p.brunnel !== 'tunnel', stroke: '#77cacc', width: [[10, 0.8], [14, 1.5], [17, 4]] },
+    { layer: 'waterway', where: p => p.intermittent === 1 && p.brunnel !== 'tunnel', stroke: '#77cacc', width: [[10, 0.8], [14, 1.5], [17, 4]], dash: '4 3' },
+    // Buildings are the background's colour, so only their outlines show.
+    { layer: 'building', stroke: '#d2cec9', minZoom: 16 },
     { layer: 'aeroway', where: p => p.class === 'runway' || p.class === 'taxiway', stroke: '#cba9da', width: [[11, 2], [16, 12]], minZoom: 12 },
 
     // Casings first, so a road passing beneath another does not cut a notch in it. Only the motorway's shows.
     { layer: 'transportation', where: roadClass('motorway'), stroke: '#f96d6d', width: motorwayCasingWidth, minZoom: 5 },
 
-    { layer: 'transportation', where: roadClass('rail', 'transit'), stroke: '#8e8e8e', width: minorWidth },
+    { layer: 'transportation', where: p => roadClass('rail', 'transit')(p) && p.brunnel !== 'tunnel' && !Object.hasOwn(p, 'service'), stroke: '#8e8e8e', width: minorWidth },
     { layer: 'transportation', where: roadClass('minor', 'service', 'track'), stroke: '#c1beba', width: minorWidth, minZoom: 14 },
     { layer: 'transportation', where: roadClass('secondary', 'tertiary'), stroke: '#959496', width: secondaryWidth },
     { layer: 'transportation', where: roadClass('trunk', 'primary'), stroke: '#f96d6d', width: trunkWidth },
     { layer: 'transportation', where: roadClass('motorway'), stroke: '#f7aa41', width: motorwayWidth },
 
-    { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 6 && p.maritime !== 1 && isBorder(p), stroke: '#4e525a', width: [[3, 0.5], [8, 1.1], [14, 1.8]], dash: '6 2 1 2', minZoom: 7 },
+    { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 4 && p.maritime !== 1 && isBorder(p), stroke: '#4e525a', width: [[3, 0.5], [8, 1.1], [14, 1.8]], dash: '6 2 1 2', minZoom: 5 },
+    { layer: 'boundary', where: p => Number(p.admin_level) >= 5 && Number(p.admin_level) <= 6 && p.maritime !== 1 && isBorder(p), stroke: '#4e525a', width: [[3, 0.3], [8, 0.6], [14, 1.1]], dash: '3.6 1.2 0.6 1.2', minZoom: 8 },
     { layer: 'boundary', where: p => Number(p.admin_level) === 2 && p.maritime !== 1 && isBorder(p), stroke: '#4e525a', width: [[3, 0.8], [8, 1.6], [14, 2.5]], dash: '9 3 1.5 3' },
 ]
 /* eslint-enable no-restricted-syntax */
