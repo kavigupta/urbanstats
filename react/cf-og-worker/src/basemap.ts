@@ -63,31 +63,32 @@ const background = cardBasemap.background
 
 const isBorder = (p: Props): boolean => p.disputed !== 1 && !Object.hasOwn(p, 'claimed_by')
 
+// In the style's layer order
 const rules: Rule[] = [
     // The band along each border, under everything else. The country's after the state's, so it stays on top.
     { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 4 && isBorder(p), ...paints['boundary_3-highlight/4'] },
     { layer: 'boundary', where: p => Number(p.admin_level) === 2 && p.maritime !== 1 && isBorder(p), ...paints['boundary_2-highlight/2'] },
 
+    { layer: 'park', where: p => ['national_park', 'wilderness_preserve', 'State Park'].includes(String(p.class)), ...paints['park-fill'] },
     { layer: 'landcover', where: p => p.class === 'wood', ...paints['landcover-wood'] },
     { layer: 'landcover', where: p => p.class === 'grass' && p.subclass !== 'scrub' && p.subclass !== 'heath', ...paints['landcover-grass'] },
     { layer: 'landcover', where: p => p.class === 'grass' && (p.subclass === 'scrub' || p.subclass === 'heath'), ...paints['landcover-scrub'] },
-    { layer: 'landcover', where: p => p.class === 'sand', ...paints['landcover-sand'] },
     { layer: 'landcover', where: p => p.subclass === 'glacier', ...paints['landcover-glacier'] },
-    { layer: 'landcover', where: p => p.subclass === 'ice_shelf', ...paints['landcover-ice-shelf'] },
     { layer: 'landuse', where: p => ['dam', 'garages', 'industrial'].includes(String(p.class)), ...paints['landuse-industrial'] },
+    { layer: 'landuse', where: p => p.class === 'cemetery', ...paints['landuse-cemetery'] },
     { layer: 'landuse', where: p => p.class === 'hospital', ...paints['landuse-hospital'] },
     { layer: 'landuse', where: p => p.class === 'school', ...paints['landuse-school'] },
-    { layer: 'landuse', where: p => p.class === 'cemetery', ...paints['landuse-cemetery'] },
-    { layer: 'park', where: p => ['national_park', 'wilderness_preserve', 'State Park'].includes(String(p.class)), ...paints['park-fill'] },
     { layer: 'park', where: p => p.class === 'public_park', ...paints['landcover-grass-park'] },
-    { layer: 'water', where: p => p.intermittent !== 1 && p.brunnel !== 'tunnel', ...paints.water },
-    { layer: 'water', where: p => p.intermittent === 1, ...paints['water-intermittent'] },
-    { layer: 'waterway', where: p => p.class === 'river' && p.intermittent !== 1 && p.brunnel !== 'tunnel', ...paints['waterway-river'] },
-    { layer: 'waterway', where: p => p.class === 'river' && p.intermittent === 1 && p.brunnel !== 'tunnel', ...paints['waterway-river-intermittent'] },
-    { layer: 'waterway', where: p => (p.class === 'stream' || p.class === 'canal') && p.intermittent !== 1 && p.brunnel !== 'tunnel', ...paints['waterway-stream-canal'] },
-    { layer: 'waterway', where: p => (p.class === 'stream' || p.class === 'canal') && p.intermittent === 1 && p.brunnel !== 'tunnel', ...paints['waterway-stream-canal-intermittent'] },
     { layer: 'waterway', where: p => !['river', 'stream', 'canal'].includes(String(p.class)) && p.intermittent !== 1, ...paints['waterway-other'] },
     { layer: 'waterway', where: p => !['river', 'stream', 'canal'].includes(String(p.class)) && p.intermittent === 1, ...paints['waterway-other-intermittent'] },
+    { layer: 'waterway', where: p => (p.class === 'stream' || p.class === 'canal') && p.intermittent !== 1 && p.brunnel !== 'tunnel', ...paints['waterway-stream-canal'] },
+    { layer: 'waterway', where: p => (p.class === 'stream' || p.class === 'canal') && p.intermittent === 1 && p.brunnel !== 'tunnel', ...paints['waterway-stream-canal-intermittent'] },
+    { layer: 'waterway', where: p => p.class === 'river' && p.intermittent !== 1 && p.brunnel !== 'tunnel', ...paints['waterway-river'] },
+    { layer: 'waterway', where: p => p.class === 'river' && p.intermittent === 1 && p.brunnel !== 'tunnel', ...paints['waterway-river-intermittent'] },
+    { layer: 'water', where: p => p.intermittent !== 1 && p.brunnel !== 'tunnel', ...paints.water },
+    { layer: 'water', where: p => p.intermittent === 1, ...paints['water-intermittent'] },
+    { layer: 'landcover', where: p => p.subclass === 'ice_shelf', ...paints['landcover-ice-shelf'] },
+    { layer: 'landcover', where: p => p.class === 'sand', ...paints['landcover-sand'] },
     // Buildings are the background's colour, so only their outlines show.
     { layer: 'building', ...paints['building/outline'] },
     { layer: 'aeroway', where: p => p.class === 'taxiway', ...paints['aeroway-taxiway-casing'] },
@@ -96,13 +97,13 @@ const rules: Rule[] = [
     // Casings first, so a road passing beneath another does not cut a notch in it. Only the motorway's shows.
     { layer: 'transportation', where: roadClass('motorway'), ...paints['highway-motorway-casing'] },
 
-    { layer: 'transportation', where: p => p.class === 'rail' && p.brunnel !== 'tunnel' && !Object.hasOwn(p, 'service'), ...paints.railway },
-    { layer: 'transportation', where: p => p.class === 'transit' && p.brunnel !== 'tunnel', ...paints['railway-transit'] },
     { layer: 'transportation', where: roadClass('minor', 'service', 'track'), ...paints['highway-minor'] },
     { layer: 'transportation', where: roadClass('secondary', 'tertiary'), ...paints['highway-secondary-tertiary'] },
     { layer: 'transportation', where: roadClass('primary'), ...paints['highway-primary'] },
     { layer: 'transportation', where: roadClass('trunk'), ...paints['highway-trunk'] },
     { layer: 'transportation', where: roadClass('motorway'), ...paints['highway-motorway'] },
+    { layer: 'transportation', where: p => p.class === 'transit' && p.brunnel !== 'tunnel', ...paints['railway-transit'] },
+    { layer: 'transportation', where: p => p.class === 'rail' && p.brunnel !== 'tunnel' && !Object.hasOwn(p, 'service'), ...paints.railway },
 
     { layer: 'boundary', where: p => Number(p.admin_level) >= 3 && Number(p.admin_level) <= 4 && p.maritime !== 1 && isBorder(p), ...paints['boundary_3/4'] },
     { layer: 'boundary', where: p => Number(p.admin_level) >= 5 && Number(p.admin_level) <= 6 && p.maritime !== 1 && isBorder(p), ...paints['boundary_3/6'] },
