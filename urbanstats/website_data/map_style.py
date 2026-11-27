@@ -7,6 +7,7 @@ import tempfile
 from fontTools.ttLib import TTFont
 from fontTools.varLib import instancer
 
+from urbanstats.website_data.card_basemap import card_basemap
 from urbanstats.website_data.map_restyle import restyle
 
 # name: (variable font, weight, Noto fallback). icons/fonts/noto-glyphs has OpenFreeMap's glyphs for each
@@ -78,11 +79,14 @@ def build_glyphs(fonts_folder: str) -> dict[str, dict[str, object]]:
 
 def build_map_style(site_folder: str) -> None:
     """
-    The map style at react/src/data/map_style.json, and the glyphs, sprites and transit lines it uses in the site.
+    The map style at react/src/data/map_style.json, the link preview card's version of it at
+    react/src/data/card_basemap.json, and the glyphs, sprites and transit lines it uses in the site.
     """
     with open("icons/map_style/bright.json") as f:
         style = json.load(f)
     restyle(style)
+    with open("react/src/data/card_basemap.json", "w") as f:
+        json.dump(card_basemap(style), f, indent=2)
     for layer in style["layers"]:
         if "text-font" in layer.get("layout", {}):
             layer["layout"]["text-font"] = [
