@@ -5,7 +5,7 @@ export default {
             "humanReadableName": "Population [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 0,
-            "index": 356,
+            "index": 358,
             "deprecated": null
         },
         {
@@ -21,7 +21,7 @@ export default {
             "humanReadableName": "Population (2010) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 2,
-            "index": 358,
+            "index": 360,
             "deprecated": null
         },
         {
@@ -29,7 +29,7 @@ export default {
             "humanReadableName": "Population Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 3,
-            "index": 360,
+            "index": 362,
             "deprecated": null
         },
         {
@@ -37,7 +37,7 @@ export default {
             "humanReadableName": "Population (2000)",
             "comesFromMultiSourceSet": false,
             "order": 4,
-            "index": 357,
+            "index": 359,
             "deprecated": null
         },
         {
@@ -45,7 +45,7 @@ export default {
             "humanReadableName": "Population Change (2000-2020)",
             "comesFromMultiSourceSet": false,
             "order": 5,
-            "index": 359,
+            "index": 361,
             "deprecated": null
         },
         {
@@ -117,7 +117,7 @@ export default {
             "humanReadableName": "AW Density [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 14,
-            "index": 385,
+            "index": 387,
             "deprecated": null
         },
         {
@@ -133,7 +133,7 @@ export default {
             "humanReadableName": "AW Density (2010) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 16,
-            "index": 387,
+            "index": 389,
             "deprecated": null
         },
         {
@@ -141,7 +141,7 @@ export default {
             "humanReadableName": "AW Density (2000)",
             "comesFromMultiSourceSet": false,
             "order": 17,
-            "index": 386,
+            "index": 388,
             "deprecated": null
         },
         {
@@ -181,7 +181,7 @@ export default {
             "humanReadableName": "Population Median (Latitude)",
             "comesFromMultiSourceSet": false,
             "order": 22,
-            "index": 361,
+            "index": 363,
             "deprecated": null
         },
         {
@@ -189,7 +189,7 @@ export default {
             "humanReadableName": "Population Median (Longitude)",
             "comesFromMultiSourceSet": false,
             "order": 23,
-            "index": 362,
+            "index": 364,
             "deprecated": null
         },
         {
@@ -197,7 +197,7 @@ export default {
             "humanReadableName": "White % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 24,
-            "index": 429,
+            "index": 431,
             "deprecated": null
         },
         {
@@ -205,7 +205,7 @@ export default {
             "humanReadableName": "White % (2010)",
             "comesFromMultiSourceSet": false,
             "order": 25,
-            "index": 431,
+            "index": 433,
             "deprecated": null
         },
         {
@@ -213,7 +213,7 @@ export default {
             "humanReadableName": "White % (2000)",
             "comesFromMultiSourceSet": false,
             "order": 26,
-            "index": 430,
+            "index": 432,
             "deprecated": null
         },
         {
@@ -293,7 +293,7 @@ export default {
             "humanReadableName": "Native % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 36,
-            "index": 312,
+            "index": 314,
             "deprecated": null
         },
         {
@@ -301,7 +301,7 @@ export default {
             "humanReadableName": "Native % (2010)",
             "comesFromMultiSourceSet": false,
             "order": 37,
-            "index": 314,
+            "index": 316,
             "deprecated": null
         },
         {
@@ -309,7 +309,7 @@ export default {
             "humanReadableName": "Native % (2000)",
             "comesFromMultiSourceSet": false,
             "order": 38,
-            "index": 313,
+            "index": 315,
             "deprecated": null
         },
         {
@@ -341,7 +341,7 @@ export default {
             "humanReadableName": "Other / Mixed % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 42,
-            "index": 350,
+            "index": 352,
             "deprecated": null
         },
         {
@@ -349,7 +349,7 @@ export default {
             "humanReadableName": "Other / Mixed % (2010)",
             "comesFromMultiSourceSet": false,
             "order": 43,
-            "index": 352,
+            "index": 354,
             "deprecated": null
         },
         {
@@ -357,7 +357,7 @@ export default {
             "humanReadableName": "Other / Mixed % (2000)",
             "comesFromMultiSourceSet": false,
             "order": 44,
-            "index": 351,
+            "index": 353,
             "deprecated": null
         },
         {
@@ -405,7 +405,7 @@ export default {
             "humanReadableName": "Segregation (2000) %",
             "comesFromMultiSourceSet": false,
             "order": 50,
-            "index": 393,
+            "index": 395,
             "deprecated": null
         },
         {
@@ -413,7 +413,7 @@ export default {
             "humanReadableName": "Segregation Change (2000-2020) %",
             "comesFromMultiSourceSet": false,
             "order": 51,
-            "index": 396,
+            "index": 398,
             "deprecated": null
         },
         {
@@ -421,7 +421,7 @@ export default {
             "humanReadableName": "Segregation (2010) %",
             "comesFromMultiSourceSet": false,
             "order": 52,
-            "index": 394,
+            "index": 396,
             "deprecated": null
         },
         {
@@ -429,7 +429,7 @@ export default {
             "humanReadableName": "Segregation Change (2010-2020) %",
             "comesFromMultiSourceSet": false,
             "order": 53,
-            "index": 397,
+            "index": 399,
             "deprecated": null
         },
         {
@@ -437,7 +437,7 @@ export default {
             "humanReadableName": "Segregation %",
             "comesFromMultiSourceSet": false,
             "order": 54,
-            "index": 395,
+            "index": 397,
             "deprecated": null
         },
         {
@@ -445,7 +445,7 @@ export default {
             "humanReadableName": "Mean Local Segregation (2000) %",
             "comesFromMultiSourceSet": false,
             "order": 55,
-            "index": 388,
+            "index": 390,
             "deprecated": null
         },
         {
@@ -453,7 +453,7 @@ export default {
             "humanReadableName": "Mean Local Segregation Change (2000-2020) %",
             "comesFromMultiSourceSet": false,
             "order": 56,
-            "index": 391,
+            "index": 393,
             "deprecated": null
         },
         {
@@ -461,7 +461,7 @@ export default {
             "humanReadableName": "Mean Local Segregation (2010) %",
             "comesFromMultiSourceSet": false,
             "order": 57,
-            "index": 389,
+            "index": 391,
             "deprecated": null
         },
         {
@@ -469,7 +469,7 @@ export default {
             "humanReadableName": "Mean Local Segregation Change (2010-2020) %",
             "comesFromMultiSourceSet": false,
             "order": 58,
-            "index": 392,
+            "index": 394,
             "deprecated": null
         },
         {
@@ -477,7 +477,7 @@ export default {
             "humanReadableName": "Mean Local Segregation %",
             "comesFromMultiSourceSet": false,
             "order": 59,
-            "index": 390,
+            "index": 392,
             "deprecated": null
         },
         {
@@ -533,7 +533,7 @@ export default {
             "humanReadableName": "Only English at Home % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 66,
-            "index": 273,
+            "index": 275,
             "deprecated": null
         },
         {
@@ -541,7 +541,7 @@ export default {
             "humanReadableName": "Spanish at Home % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 67,
-            "index": 277,
+            "index": 279,
             "deprecated": null
         },
         {
@@ -549,7 +549,7 @@ export default {
             "humanReadableName": "French at Home %",
             "comesFromMultiSourceSet": false,
             "order": 68,
-            "index": 274,
+            "index": 276,
             "deprecated": null
         },
         {
@@ -557,7 +557,7 @@ export default {
             "humanReadableName": "Other (non-French) at Home %",
             "comesFromMultiSourceSet": false,
             "order": 69,
-            "index": 276,
+            "index": 278,
             "deprecated": null
         },
         {
@@ -565,7 +565,7 @@ export default {
             "humanReadableName": "Other at Home %",
             "comesFromMultiSourceSet": false,
             "order": 70,
-            "index": 275,
+            "index": 277,
             "deprecated": null
         },
         {
@@ -573,7 +573,7 @@ export default {
             "humanReadableName": "No religion % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 71,
-            "index": 370,
+            "index": 372,
             "deprecated": null
         },
         {
@@ -581,7 +581,7 @@ export default {
             "humanReadableName": "Catholic % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 72,
-            "index": 366,
+            "index": 368,
             "deprecated": null
         },
         {
@@ -589,7 +589,7 @@ export default {
             "humanReadableName": "Protestant (non-Catholic Christian) % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 73,
-            "index": 372,
+            "index": 374,
             "deprecated": null
         },
         {
@@ -597,7 +597,7 @@ export default {
             "humanReadableName": "Hindu % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 74,
-            "index": 367,
+            "index": 369,
             "deprecated": null
         },
         {
@@ -605,7 +605,7 @@ export default {
             "humanReadableName": "Jewish % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 75,
-            "index": 368,
+            "index": 370,
             "deprecated": null
         },
         {
@@ -613,7 +613,7 @@ export default {
             "humanReadableName": "Muslim % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 76,
-            "index": 369,
+            "index": 371,
             "deprecated": null
         },
         {
@@ -621,7 +621,7 @@ export default {
             "humanReadableName": "Sikh % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 77,
-            "index": 373,
+            "index": 375,
             "deprecated": null
         },
         {
@@ -629,7 +629,7 @@ export default {
             "humanReadableName": "Buddhist % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 78,
-            "index": 365,
+            "index": 367,
             "deprecated": null
         },
         {
@@ -637,7 +637,7 @@ export default {
             "humanReadableName": "Other religion % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 79,
-            "index": 371,
+            "index": 373,
             "deprecated": null
         },
         {
@@ -813,7 +813,7 @@ export default {
             "humanReadableName": "Median Household Income (USD)",
             "comesFromMultiSourceSet": false,
             "order": 101,
-            "index": 311,
+            "index": 313,
             "deprecated": null
         },
         {
@@ -821,7 +821,7 @@ export default {
             "humanReadableName": "Poverty %",
             "comesFromMultiSourceSet": false,
             "order": 102,
-            "index": 363,
+            "index": 365,
             "deprecated": null
         },
         {
@@ -829,7 +829,7 @@ export default {
             "humanReadableName": "LICO-AT %",
             "comesFromMultiSourceSet": false,
             "order": 103,
-            "index": 282,
+            "index": 284,
             "deprecated": null
         },
         {
@@ -837,7 +837,7 @@ export default {
             "humanReadableName": "LIM-AT %",
             "comesFromMultiSourceSet": false,
             "order": 104,
-            "index": 284,
+            "index": 286,
             "deprecated": null
         },
         {
@@ -1033,11 +1033,11 @@ export default {
             "deprecated": null
         },
         {
-            "varName": "vacancy_rate",
-            "humanReadableName": "Vacancy %",
-            "comesFromMultiSourceSet": false,
+            "varName": "vacancy_rate_census",
+            "humanReadableName": "Vacancy % [National Census]",
+            "comesFromMultiSourceSet": true,
             "order": 129,
-            "index": 423,
+            "index": 425,
             "deprecated": null
         },
         {
@@ -1045,7 +1045,7 @@ export default {
             "humanReadableName": "Vacancy % (2010)",
             "comesFromMultiSourceSet": false,
             "order": 130,
-            "index": 425,
+            "index": 427,
             "deprecated": null
         },
         {
@@ -1053,7 +1053,7 @@ export default {
             "humanReadableName": "Vacancy % (2000)",
             "comesFromMultiSourceSet": false,
             "order": 131,
-            "index": 424,
+            "index": 426,
             "deprecated": null
         },
         {
@@ -1061,7 +1061,7 @@ export default {
             "humanReadableName": "Rent/Income < 20%",
             "comesFromMultiSourceSet": false,
             "order": 132,
-            "index": 383,
+            "index": 385,
             "deprecated": null
         },
         {
@@ -1069,7 +1069,7 @@ export default {
             "humanReadableName": "Rent/Income 20%-40%",
             "comesFromMultiSourceSet": false,
             "order": 133,
-            "index": 380,
+            "index": 382,
             "deprecated": null
         },
         {
@@ -1077,7 +1077,7 @@ export default {
             "humanReadableName": "Rent/Income > 40%",
             "comesFromMultiSourceSet": false,
             "order": 134,
-            "index": 382,
+            "index": 384,
             "deprecated": null
         },
         {
@@ -1085,7 +1085,7 @@ export default {
             "humanReadableName": "1BR Rent < $750 %",
             "comesFromMultiSourceSet": false,
             "order": 135,
-            "index": 376,
+            "index": 378,
             "deprecated": null
         },
         {
@@ -1093,7 +1093,7 @@ export default {
             "humanReadableName": "1BR Rent $750 - $1500 %",
             "comesFromMultiSourceSet": false,
             "order": 136,
-            "index": 374,
+            "index": 376,
             "deprecated": null
         },
         {
@@ -1101,7 +1101,7 @@ export default {
             "humanReadableName": "1BR Rent > $1500 %",
             "comesFromMultiSourceSet": false,
             "order": 137,
-            "index": 375,
+            "index": 377,
             "deprecated": null
         },
         {
@@ -1109,7 +1109,7 @@ export default {
             "humanReadableName": "2BR Rent < $750 %",
             "comesFromMultiSourceSet": false,
             "order": 138,
-            "index": 379,
+            "index": 381,
             "deprecated": null
         },
         {
@@ -1117,7 +1117,7 @@ export default {
             "humanReadableName": "2BR Rent $750 - $1500 %",
             "comesFromMultiSourceSet": false,
             "order": 139,
-            "index": 377,
+            "index": 379,
             "deprecated": null
         },
         {
@@ -1125,7 +1125,7 @@ export default {
             "humanReadableName": "2BR Rent > $1500 %",
             "comesFromMultiSourceSet": false,
             "order": 140,
-            "index": 378,
+            "index": 380,
             "deprecated": null
         },
         {
@@ -1133,7 +1133,7 @@ export default {
             "humanReadableName": "% units built pre-1970",
             "comesFromMultiSourceSet": false,
             "order": 141,
-            "index": 437,
+            "index": 439,
             "deprecated": null
         },
         {
@@ -1141,7 +1141,7 @@ export default {
             "humanReadableName": "% units built in 1970s",
             "comesFromMultiSourceSet": false,
             "order": 142,
-            "index": 438,
+            "index": 440,
             "deprecated": null
         },
         {
@@ -1149,7 +1149,7 @@ export default {
             "humanReadableName": "% units built in 1980s",
             "comesFromMultiSourceSet": false,
             "order": 143,
-            "index": 439,
+            "index": 441,
             "deprecated": null
         },
         {
@@ -1157,7 +1157,7 @@ export default {
             "humanReadableName": "% units built in 1990s",
             "comesFromMultiSourceSet": false,
             "order": 144,
-            "index": 440,
+            "index": 442,
             "deprecated": null
         },
         {
@@ -1165,7 +1165,7 @@ export default {
             "humanReadableName": "% units built in 2000s",
             "comesFromMultiSourceSet": false,
             "order": 145,
-            "index": 441,
+            "index": 443,
             "deprecated": null
         },
         {
@@ -1173,7 +1173,7 @@ export default {
             "humanReadableName": "% units built in 2010s+",
             "comesFromMultiSourceSet": false,
             "order": 146,
-            "index": 442,
+            "index": 444,
             "deprecated": null
         },
         {
@@ -1189,7 +1189,7 @@ export default {
             "humanReadableName": "Renter % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 148,
-            "index": 384,
+            "index": 386,
             "deprecated": null
         },
         {
@@ -1197,7 +1197,7 @@ export default {
             "humanReadableName": "Housing Cost/Income > 30%",
             "comesFromMultiSourceSet": false,
             "order": 149,
-            "index": 381,
+            "index": 383,
             "deprecated": null
         },
         {
@@ -1205,7 +1205,7 @@ export default {
             "humanReadableName": "Commute Car % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 150,
-            "index": 417,
+            "index": 419,
             "deprecated": null
         },
         {
@@ -1213,7 +1213,7 @@ export default {
             "humanReadableName": "Commute Bike % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 151,
-            "index": 415,
+            "index": 417,
             "deprecated": null
         },
         {
@@ -1221,7 +1221,7 @@ export default {
             "humanReadableName": "Commute Walk % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 152,
-            "index": 421,
+            "index": 423,
             "deprecated": null
         },
         {
@@ -1229,7 +1229,7 @@ export default {
             "humanReadableName": "Commute Transit % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 153,
-            "index": 419,
+            "index": 421,
             "deprecated": null
         },
         {
@@ -1237,7 +1237,7 @@ export default {
             "humanReadableName": "Median Commute Time (min) [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 154,
-            "index": 411,
+            "index": 413,
             "deprecated": null
         },
         {
@@ -1245,7 +1245,7 @@ export default {
             "humanReadableName": "Commute Time < 15 min % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 155,
-            "index": 413,
+            "index": 415,
             "deprecated": null
         },
         {
@@ -1253,7 +1253,7 @@ export default {
             "humanReadableName": "Commute Time 15 - 29 min % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 156,
-            "index": 409,
+            "index": 411,
             "deprecated": null
         },
         {
@@ -1261,7 +1261,7 @@ export default {
             "humanReadableName": "Commute Time 30 - 59 min % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 157,
-            "index": 410,
+            "index": 412,
             "deprecated": null
         },
         {
@@ -1269,7 +1269,7 @@ export default {
             "humanReadableName": "Commute Time > 60 min % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 158,
-            "index": 412,
+            "index": 414,
             "deprecated": null
         },
         {
@@ -1277,7 +1277,7 @@ export default {
             "humanReadableName": "Households With no Vehicle %",
             "comesFromMultiSourceSet": false,
             "order": 159,
-            "index": 428,
+            "index": 430,
             "deprecated": null
         },
         {
@@ -1285,7 +1285,7 @@ export default {
             "humanReadableName": "Households With 1+ Vehicles %",
             "comesFromMultiSourceSet": false,
             "order": 160,
-            "index": 426,
+            "index": 428,
             "deprecated": null
         },
         {
@@ -1293,7 +1293,7 @@ export default {
             "humanReadableName": "Households With 2+ Vehicles %",
             "comesFromMultiSourceSet": false,
             "order": 161,
-            "index": 427,
+            "index": 429,
             "deprecated": null
         },
         {
@@ -1301,7 +1301,7 @@ export default {
             "humanReadableName": "Traffic Fatalities Per Capita Per Year",
             "comesFromMultiSourceSet": false,
             "order": 162,
-            "index": 406,
+            "index": 408,
             "deprecated": null
         },
         {
@@ -1309,7 +1309,7 @@ export default {
             "humanReadableName": "Pedestrian/Cyclist Fatalities Per Capita Per Year",
             "comesFromMultiSourceSet": false,
             "order": 163,
-            "index": 408,
+            "index": 410,
             "deprecated": null
         },
         {
@@ -1317,7 +1317,7 @@ export default {
             "humanReadableName": "Total Traffic Fatalities In Last Decade",
             "comesFromMultiSourceSet": false,
             "order": 164,
-            "index": 405,
+            "index": 407,
             "deprecated": null
         },
         {
@@ -1325,7 +1325,7 @@ export default {
             "humanReadableName": "Total Pedestrian/Cyclist Fatalities In Last Decade",
             "comesFromMultiSourceSet": false,
             "order": 165,
-            "index": 407,
+            "index": 409,
             "deprecated": null
         },
         {
@@ -1541,7 +1541,7 @@ export default {
             "humanReadableName": "Life Expectancy (2019)",
             "comesFromMultiSourceSet": false,
             "order": 192,
-            "index": 283,
+            "index": 285,
             "deprecated": null
         },
         {
@@ -1549,7 +1549,7 @@ export default {
             "humanReadableName": "IHME Health Performance Score (2019)",
             "comesFromMultiSourceSet": false,
             "order": 193,
-            "index": 354,
+            "index": 356,
             "deprecated": null
         },
         {
@@ -1557,7 +1557,7 @@ export default {
             "humanReadableName": "PW Mean PM2.5 Pollution",
             "comesFromMultiSourceSet": false,
             "order": 194,
-            "index": 355,
+            "index": 357,
             "deprecated": null
         },
         {
@@ -1613,7 +1613,7 @@ export default {
             "humanReadableName": "Employed in Agriculture, forestry, fishing and hunting % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 201,
-            "index": 251,
+            "index": 252,
             "deprecated": null
         },
         {
@@ -1621,7 +1621,7 @@ export default {
             "humanReadableName": "Employed in Mining, quarrying, and oil and gas extraction % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 202,
-            "index": 260,
+            "index": 262,
             "deprecated": null
         },
         {
@@ -1637,7 +1637,7 @@ export default {
             "humanReadableName": "Employed in Arts, entertainment, and recreation % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 204,
-            "index": 252,
+            "index": 253,
             "deprecated": null
         },
         {
@@ -1645,7 +1645,7 @@ export default {
             "humanReadableName": "Employed in Construction % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 205,
-            "index": 253,
+            "index": 254,
             "deprecated": null
         },
         {
@@ -1653,7 +1653,7 @@ export default {
             "humanReadableName": "Employed in Educational services % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 206,
-            "index": 254,
+            "index": 255,
             "deprecated": null
         },
         {
@@ -1661,7 +1661,7 @@ export default {
             "humanReadableName": "Employed in Health care and social assistance % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 207,
-            "index": 256,
+            "index": 258,
             "deprecated": null
         },
         {
@@ -1669,7 +1669,7 @@ export default {
             "humanReadableName": "Employed in Finance and insurance % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 208,
-            "index": 255,
+            "index": 257,
             "deprecated": null
         },
         {
@@ -1677,7 +1677,7 @@ export default {
             "humanReadableName": "Employed in Real estate and rental and leasing % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 209,
-            "index": 264,
+            "index": 266,
             "deprecated": null
         },
         {
@@ -1685,7 +1685,7 @@ export default {
             "humanReadableName": "Employed in Information % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 210,
-            "index": 257,
+            "index": 259,
             "deprecated": null
         },
         {
@@ -1693,7 +1693,7 @@ export default {
             "humanReadableName": "Employed in Manufacturing % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 211,
-            "index": 259,
+            "index": 261,
             "deprecated": null
         },
         {
@@ -1701,7 +1701,7 @@ export default {
             "humanReadableName": "Employed in Other services, except public administration % [National Census]",
             "comesFromMultiSourceSet": true,
             "order": 212,
-            "index": 261,
+            "index": 263,
             "deprecated": null
         },
         {
@@ -1713,418 +1713,434 @@ export default {
             "deprecated": null
         },
         {
+            "varName": "industry_admin_support_census",
+            "humanReadableName": "Employed in Administrative and support services % [National Census]",
+            "comesFromMultiSourceSet": true,
+            "order": 214,
+            "index": 251,
+            "deprecated": null
+        },
+        {
             "varName": "industry_management_census",
             "humanReadableName": "Employed in Management of companies and enterprises % [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 214,
-            "index": 258,
+            "order": 215,
+            "index": 260,
             "deprecated": null
         },
         {
             "varName": "industry_professional_scientific_technical_census",
             "humanReadableName": "Employed in Professional, scientific, and technical services % [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 215,
-            "index": 262,
+            "order": 216,
+            "index": 264,
             "deprecated": null
         },
         {
             "varName": "industry_public_admin_census",
             "humanReadableName": "Employed in Public administration % [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 216,
-            "index": 263,
+            "order": 217,
+            "index": 265,
             "deprecated": null
         },
         {
             "varName": "industry_retail_trade_census",
             "humanReadableName": "Employed in Retail trade % [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 217,
-            "index": 265,
+            "order": 218,
+            "index": 267,
             "deprecated": null
         },
         {
             "varName": "industry_transportation_warehousing_census",
             "humanReadableName": "Employed in Transportation and warehousing % [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 218,
-            "index": 266,
+            "order": 219,
+            "index": 268,
             "deprecated": null
         },
         {
             "varName": "industry_utilities_census",
             "humanReadableName": "Employed in Utilities % [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 219,
-            "index": 267,
+            "order": 220,
+            "index": 269,
+            "deprecated": null
+        },
+        {
+            "varName": "industry_electricity_gas_water_waste_census",
+            "humanReadableName": "Employed in Electricity, gas, water and waste services % [National Census]",
+            "comesFromMultiSourceSet": true,
+            "order": 221,
+            "index": 256,
             "deprecated": null
         },
         {
             "varName": "industry_wholesale_trade_census",
             "humanReadableName": "Employed in Wholesale trade % [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 220,
-            "index": 268,
+            "order": 222,
+            "index": 270,
             "deprecated": null
         },
         {
             "varName": "occupation_architects_engineers",
             "humanReadableName": "Architecture and engineering occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 221,
-            "index": 315,
+            "order": 223,
+            "index": 317,
             "deprecated": null
         },
         {
             "varName": "occupation_computer_math",
             "humanReadableName": "Computer and mathematical occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 222,
-            "index": 322,
+            "order": 224,
+            "index": 324,
             "deprecated": null
         },
         {
             "varName": "occupation_scientists",
             "humanReadableName": "Life, physical, and social science occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 223,
-            "index": 337,
+            "order": 225,
+            "index": 339,
             "deprecated": null
         },
         {
             "varName": "occupation_arts_media",
             "humanReadableName": "Arts, design, entertainment, sports, and media occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 224,
-            "index": 317,
+            "order": 226,
+            "index": 319,
             "deprecated": null
         },
         {
             "varName": "occupation_social_service",
             "humanReadableName": "Community and social service occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 225,
-            "index": 321,
+            "order": 227,
+            "index": 323,
             "deprecated": null
         },
         {
             "varName": "occupation_education",
             "humanReadableName": "Educational instruction, and library occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 226,
-            "index": 325,
+            "order": 228,
+            "index": 327,
             "deprecated": null
         },
         {
             "varName": "occupation_legal",
             "humanReadableName": "Legal occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 227,
-            "index": 335,
+            "order": 229,
+            "index": 337,
             "deprecated": null
         },
         {
             "varName": "occupation_health_practitioners",
             "humanReadableName": "Health diagnosing and treating practitioners and other technical occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 228,
-            "index": 330,
+            "order": 230,
+            "index": 332,
             "deprecated": null
         },
         {
             "varName": "occupation_health_technicians",
             "humanReadableName": "Health technologists and technicians %",
             "comesFromMultiSourceSet": false,
-            "order": 229,
-            "index": 331,
+            "order": 231,
+            "index": 333,
             "deprecated": null
         },
         {
             "varName": "occupation_business_finance",
             "humanReadableName": "Business and financial operations occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 230,
-            "index": 319,
+            "order": 232,
+            "index": 321,
             "deprecated": null
         },
         {
             "varName": "occupation_management",
             "humanReadableName": "Management occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 231,
-            "index": 338,
+            "order": 233,
+            "index": 340,
             "deprecated": null
         },
         {
             "varName": "occupation_construction",
             "humanReadableName": "Construction and extraction occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 232,
-            "index": 323,
+            "order": 234,
+            "index": 325,
             "deprecated": null
         },
         {
             "varName": "occupation_agriculture",
             "humanReadableName": "Farming, fishing, and forestry occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 233,
-            "index": 326,
+            "order": 235,
+            "index": 328,
             "deprecated": null
         },
         {
             "varName": "occupation_maintenance",
             "humanReadableName": "Installation, maintenance, and repair occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 234,
-            "index": 333,
+            "order": 236,
+            "index": 335,
             "deprecated": null
         },
         {
             "varName": "occupation_material_moving",
             "humanReadableName": "Material moving occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 235,
-            "index": 340,
+            "order": 237,
+            "index": 342,
             "deprecated": null
         },
         {
             "varName": "occupation_production",
             "humanReadableName": "Production occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 236,
-            "index": 345,
+            "order": 238,
+            "index": 347,
             "deprecated": null
         },
         {
             "varName": "occupation_transportation",
             "humanReadableName": "Transportation occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 237,
-            "index": 349,
+            "order": 239,
+            "index": 351,
             "deprecated": null
         },
         {
             "varName": "occupation_office_admin",
             "humanReadableName": "Office and administrative support occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 238,
-            "index": 343,
+            "order": 240,
+            "index": 345,
             "deprecated": null
         },
         {
             "varName": "occupation_sales",
             "humanReadableName": "Sales and related occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 239,
-            "index": 346,
+            "order": 241,
+            "index": 348,
             "deprecated": null
         },
         {
             "varName": "occupation_cleaning_maintenance",
             "humanReadableName": "Building and grounds cleaning and maintenance occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 240,
-            "index": 318,
+            "order": 242,
+            "index": 320,
             "deprecated": null
         },
         {
             "varName": "occupation_food_service",
             "humanReadableName": "Food preparation and serving related occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 241,
-            "index": 328,
+            "order": 243,
+            "index": 330,
             "deprecated": null
         },
         {
             "varName": "occupation_healthcare_support",
             "humanReadableName": "Healthcare support occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 242,
-            "index": 332,
+            "order": 244,
+            "index": 334,
             "deprecated": null
         },
         {
             "varName": "occupation_personal_care",
             "humanReadableName": "Personal care and service occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 243,
-            "index": 344,
+            "order": 245,
+            "index": 346,
             "deprecated": null
         },
         {
             "varName": "occupation_firefighting",
             "humanReadableName": "Firefighting and prevention, and other protective service workers including supervisors %",
             "comesFromMultiSourceSet": false,
-            "order": 244,
-            "index": 327,
+            "order": 246,
+            "index": 329,
             "deprecated": null
         },
         {
             "varName": "occupation_law_enforcement",
             "humanReadableName": "Law enforcement workers including supervisors %",
             "comesFromMultiSourceSet": false,
-            "order": 245,
-            "index": 334,
+            "order": 247,
+            "index": 336,
             "deprecated": null
         },
         {
             "varName": "occupation_legislative_senior_management",
             "humanReadableName": "Legislative and senior management occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 246,
-            "index": 336,
+            "order": 248,
+            "index": 338,
             "deprecated": null
         },
         {
             "varName": "occupation_business_finance_admin",
             "humanReadableName": "Business, finance and administration occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 247,
-            "index": 320,
+            "order": 249,
+            "index": 322,
             "deprecated": null
         },
         {
             "varName": "occupation_natural_applied_sciences",
             "humanReadableName": "Natural and applied sciences occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 248,
-            "index": 341,
+            "order": 250,
+            "index": 343,
             "deprecated": null
         },
         {
             "varName": "occupation_health",
             "humanReadableName": "Health occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 249,
-            "index": 329,
+            "order": 251,
+            "index": 331,
             "deprecated": null
         },
         {
             "varName": "occupation_education_law_social_community_government",
             "humanReadableName": "Education, law, social, community and government occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 250,
-            "index": 324,
+            "order": 252,
+            "index": 326,
             "deprecated": null
         },
         {
             "varName": "occupation_art_culture_recreation_sport",
             "humanReadableName": "Art, culture, recreation and sport occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 251,
-            "index": 316,
+            "order": 253,
+            "index": 318,
             "deprecated": null
         },
         {
             "varName": "occupation_sales_service",
             "humanReadableName": "Sales and service occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 252,
-            "index": 347,
+            "order": 254,
+            "index": 349,
             "deprecated": null
         },
         {
             "varName": "occupation_trades_transport_equipment",
             "humanReadableName": "Trades, transport and equipment operators occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 253,
-            "index": 348,
+            "order": 255,
+            "index": 350,
             "deprecated": null
         },
         {
             "varName": "occupation_natural_resources_agriculture",
             "humanReadableName": "Natural resources and agriculture occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 254,
-            "index": 342,
+            "order": 256,
+            "index": 344,
             "deprecated": null
         },
         {
             "varName": "occupation_manufacturing_utilities",
             "humanReadableName": "Manufacturing and utilities occupations %",
             "comesFromMultiSourceSet": false,
-            "order": 255,
-            "index": 339,
+            "order": 257,
+            "index": 341,
             "deprecated": null
         },
         {
             "varName": "single_householder",
             "humanReadableName": "Not Cohabiting With Partner %",
             "comesFromMultiSourceSet": false,
-            "order": 256,
-            "index": 404,
+            "order": 258,
+            "index": 406,
             "deprecated": null
         },
         {
             "varName": "cohabiting",
             "humanReadableName": "Cohabiting With Partner %",
             "comesFromMultiSourceSet": false,
-            "order": 257,
-            "index": 400,
+            "order": 259,
+            "index": 402,
             "deprecated": null
         },
         {
             "varName": "cohabiting_gay",
             "humanReadableName": "Cohabiting With Partner (Gay) %",
             "comesFromMultiSourceSet": false,
-            "order": 258,
-            "index": 401,
+            "order": 260,
+            "index": 403,
             "deprecated": null
         },
         {
             "varName": "cohabiting_straight",
             "humanReadableName": "Cohabiting With Partner (Straight) %",
             "comesFromMultiSourceSet": false,
-            "order": 259,
-            "index": 402,
+            "order": 261,
+            "index": 404,
             "deprecated": null
         },
         {
             "varName": "living_with_parents",
             "humanReadableName": "Living With Parents %",
             "comesFromMultiSourceSet": false,
-            "order": 260,
-            "index": 399,
+            "order": 262,
+            "index": 401,
             "deprecated": null
         },
         {
             "varName": "other_living_situation",
             "humanReadableName": "Other Living Situation %",
             "comesFromMultiSourceSet": false,
-            "order": 261,
-            "index": 403,
+            "order": 263,
+            "index": 405,
             "deprecated": null
         },
         {
             "varName": "never_married_census",
             "humanReadableName": "Never Married % [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 262,
-            "index": 287,
+            "order": 264,
+            "index": 289,
             "deprecated": null
         },
         {
             "varName": "married_census",
             "humanReadableName": "Married (not divorced) % [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 263,
-            "index": 286,
+            "order": 265,
+            "index": 288,
             "deprecated": null
         },
         {
             "varName": "divorced_census",
             "humanReadableName": "Divorced % [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 264,
-            "index": 285,
+            "order": 266,
+            "index": 287,
             "deprecated": null
         },
         {
             "varName": "pres_2008_margin",
             "humanReadableName": "2008 Presidential Election",
             "comesFromMultiSourceSet": false,
-            "order": 265,
+            "order": 267,
             "index": 0,
             "deprecated": null
         },
@@ -2132,7 +2148,7 @@ export default {
             "varName": "pres_swing_2008_2012",
             "humanReadableName": "2008-2012 Swing",
             "comesFromMultiSourceSet": false,
-            "order": 266,
+            "order": 268,
             "index": 1,
             "deprecated": null
         },
@@ -2140,7 +2156,7 @@ export default {
             "varName": "pres_2012_margin",
             "humanReadableName": "2012 Presidential Election",
             "comesFromMultiSourceSet": false,
-            "order": 267,
+            "order": 269,
             "index": 2,
             "deprecated": null
         },
@@ -2148,7 +2164,7 @@ export default {
             "varName": "pres_swing_2012_2016",
             "humanReadableName": "2012-2016 Swing",
             "comesFromMultiSourceSet": false,
-            "order": 268,
+            "order": 270,
             "index": 3,
             "deprecated": null
         },
@@ -2156,7 +2172,7 @@ export default {
             "varName": "pres_2016_margin",
             "humanReadableName": "2016 Presidential Election",
             "comesFromMultiSourceSet": false,
-            "order": 269,
+            "order": 271,
             "index": 16,
             "deprecated": null
         },
@@ -2164,7 +2180,7 @@ export default {
             "varName": "pres_swing_2016_2020",
             "humanReadableName": "2016-2020 Swing",
             "comesFromMultiSourceSet": false,
-            "order": 270,
+            "order": 272,
             "index": 17,
             "deprecated": null
         },
@@ -2172,7 +2188,7 @@ export default {
             "varName": "pres_2020_margin",
             "humanReadableName": "2020 Presidential Election",
             "comesFromMultiSourceSet": false,
-            "order": 271,
+            "order": 273,
             "index": 32,
             "deprecated": null
         },
@@ -2180,7 +2196,7 @@ export default {
             "varName": "pres_swing_2020_2024",
             "humanReadableName": "2020-2024 Swing",
             "comesFromMultiSourceSet": false,
-            "order": 272,
+            "order": 274,
             "index": 33,
             "deprecated": null
         },
@@ -2188,7 +2204,7 @@ export default {
             "varName": "pres_2024_margin",
             "humanReadableName": "2024 Presidential Election",
             "comesFromMultiSourceSet": false,
-            "order": 273,
+            "order": 275,
             "index": 48,
             "deprecated": null
         },
@@ -2196,7 +2212,7 @@ export default {
             "varName": "canada_2015ge_coalition_margin",
             "humanReadableName": "2015GE 2-Coalition Margin",
             "comesFromMultiSourceSet": false,
-            "order": 274,
+            "order": 276,
             "index": 15,
             "deprecated": null
         },
@@ -2204,7 +2220,7 @@ export default {
             "varName": "canada_swing_2015_2019_coalition_margin",
             "humanReadableName": "2015-2019 Swing 2-Coalition Margin",
             "comesFromMultiSourceSet": false,
-            "order": 275,
+            "order": 277,
             "index": 9,
             "deprecated": null
         },
@@ -2212,7 +2228,7 @@ export default {
             "varName": "canada_2019ge_coalition_margin",
             "humanReadableName": "2019GE 2-Coalition Margin",
             "comesFromMultiSourceSet": false,
-            "order": 276,
+            "order": 278,
             "index": 31,
             "deprecated": null
         },
@@ -2220,7 +2236,7 @@ export default {
             "varName": "canada_swing_2019_2021_coalition_margin",
             "humanReadableName": "2019-2021 Swing 2-Coalition Margin",
             "comesFromMultiSourceSet": false,
-            "order": 277,
+            "order": 279,
             "index": 24,
             "deprecated": null
         },
@@ -2228,7 +2244,7 @@ export default {
             "varName": "canada_2021ge_coalition_margin",
             "humanReadableName": "2021GE 2-Coalition Margin",
             "comesFromMultiSourceSet": false,
-            "order": 278,
+            "order": 280,
             "index": 47,
             "deprecated": null
         },
@@ -2236,7 +2252,7 @@ export default {
             "varName": "canada_swing_2021_2025_coalition_margin",
             "humanReadableName": "2021-2025 Swing 2-Coalition Margin",
             "comesFromMultiSourceSet": false,
-            "order": 279,
+            "order": 281,
             "index": 40,
             "deprecated": null
         },
@@ -2244,7 +2260,7 @@ export default {
             "varName": "canada_2025ge_coalition_margin",
             "humanReadableName": "2025GE 2-Coalition Margin",
             "comesFromMultiSourceSet": false,
-            "order": 280,
+            "order": 282,
             "index": 55,
             "deprecated": null
         },
@@ -2252,7 +2268,7 @@ export default {
             "varName": "canada_2015ge_lib_voteshare",
             "humanReadableName": "2015GE Lib %",
             "comesFromMultiSourceSet": false,
-            "order": 281,
+            "order": 283,
             "index": 13,
             "deprecated": null
         },
@@ -2260,7 +2276,7 @@ export default {
             "varName": "canada_swing_2015_2019_lib",
             "humanReadableName": "2015-2019 Swing Lib %",
             "comesFromMultiSourceSet": false,
-            "order": 282,
+            "order": 284,
             "index": 7,
             "deprecated": null
         },
@@ -2268,7 +2284,7 @@ export default {
             "varName": "canada_2019ge_lib_voteshare",
             "humanReadableName": "2019GE Lib %",
             "comesFromMultiSourceSet": false,
-            "order": 283,
+            "order": 285,
             "index": 28,
             "deprecated": null
         },
@@ -2276,7 +2292,7 @@ export default {
             "varName": "canada_swing_2019_2021_lib",
             "humanReadableName": "2019-2021 Swing Lib %",
             "comesFromMultiSourceSet": false,
-            "order": 284,
+            "order": 286,
             "index": 21,
             "deprecated": null
         },
@@ -2284,7 +2300,7 @@ export default {
             "varName": "canada_2021ge_lib_voteshare",
             "humanReadableName": "2021GE Lib %",
             "comesFromMultiSourceSet": false,
-            "order": 285,
+            "order": 287,
             "index": 44,
             "deprecated": null
         },
@@ -2292,7 +2308,7 @@ export default {
             "varName": "canada_swing_2021_2025_lib",
             "humanReadableName": "2021-2025 Swing Lib %",
             "comesFromMultiSourceSet": false,
-            "order": 286,
+            "order": 288,
             "index": 37,
             "deprecated": null
         },
@@ -2300,7 +2316,7 @@ export default {
             "varName": "canada_2025ge_lib_voteshare",
             "humanReadableName": "2025GE Lib %",
             "comesFromMultiSourceSet": false,
-            "order": 287,
+            "order": 289,
             "index": 52,
             "deprecated": null
         },
@@ -2308,7 +2324,7 @@ export default {
             "varName": "canada_2015ge_con_voteshare",
             "humanReadableName": "2015GE Con %",
             "comesFromMultiSourceSet": false,
-            "order": 288,
+            "order": 290,
             "index": 11,
             "deprecated": null
         },
@@ -2316,7 +2332,7 @@ export default {
             "varName": "canada_swing_2015_2019_con",
             "humanReadableName": "2015-2019 Swing Con %",
             "comesFromMultiSourceSet": false,
-            "order": 289,
+            "order": 291,
             "index": 5,
             "deprecated": null
         },
@@ -2324,7 +2340,7 @@ export default {
             "varName": "canada_2019ge_con_voteshare",
             "humanReadableName": "2019GE Con %",
             "comesFromMultiSourceSet": false,
-            "order": 290,
+            "order": 292,
             "index": 26,
             "deprecated": null
         },
@@ -2332,7 +2348,7 @@ export default {
             "varName": "canada_swing_2019_2021_con",
             "humanReadableName": "2019-2021 Swing Con %",
             "comesFromMultiSourceSet": false,
-            "order": 291,
+            "order": 293,
             "index": 19,
             "deprecated": null
         },
@@ -2340,7 +2356,7 @@ export default {
             "varName": "canada_2021ge_con_voteshare",
             "humanReadableName": "2021GE Con %",
             "comesFromMultiSourceSet": false,
-            "order": 292,
+            "order": 294,
             "index": 42,
             "deprecated": null
         },
@@ -2348,7 +2364,7 @@ export default {
             "varName": "canada_swing_2021_2025_con",
             "humanReadableName": "2021-2025 Swing Con %",
             "comesFromMultiSourceSet": false,
-            "order": 293,
+            "order": 295,
             "index": 35,
             "deprecated": null
         },
@@ -2356,7 +2372,7 @@ export default {
             "varName": "canada_2025ge_con_voteshare",
             "humanReadableName": "2025GE Con %",
             "comesFromMultiSourceSet": false,
-            "order": 294,
+            "order": 296,
             "index": 50,
             "deprecated": null
         },
@@ -2364,7 +2380,7 @@ export default {
             "varName": "canada_2015ge_ndp_voteshare",
             "humanReadableName": "2015GE NDP %",
             "comesFromMultiSourceSet": false,
-            "order": 295,
+            "order": 297,
             "index": 14,
             "deprecated": null
         },
@@ -2372,7 +2388,7 @@ export default {
             "varName": "canada_swing_2015_2019_ndp",
             "humanReadableName": "2015-2019 Swing NDP %",
             "comesFromMultiSourceSet": false,
-            "order": 296,
+            "order": 298,
             "index": 8,
             "deprecated": null
         },
@@ -2380,7 +2396,7 @@ export default {
             "varName": "canada_2019ge_ndp_voteshare",
             "humanReadableName": "2019GE NDP %",
             "comesFromMultiSourceSet": false,
-            "order": 297,
+            "order": 299,
             "index": 29,
             "deprecated": null
         },
@@ -2388,7 +2404,7 @@ export default {
             "varName": "canada_swing_2019_2021_ndp",
             "humanReadableName": "2019-2021 Swing NDP %",
             "comesFromMultiSourceSet": false,
-            "order": 298,
+            "order": 300,
             "index": 22,
             "deprecated": null
         },
@@ -2396,7 +2412,7 @@ export default {
             "varName": "canada_2021ge_ndp_voteshare",
             "humanReadableName": "2021GE NDP %",
             "comesFromMultiSourceSet": false,
-            "order": 299,
+            "order": 301,
             "index": 45,
             "deprecated": null
         },
@@ -2404,7 +2420,7 @@ export default {
             "varName": "canada_swing_2021_2025_ndp",
             "humanReadableName": "2021-2025 Swing NDP %",
             "comesFromMultiSourceSet": false,
-            "order": 300,
+            "order": 302,
             "index": 38,
             "deprecated": null
         },
@@ -2412,7 +2428,7 @@ export default {
             "varName": "canada_2025ge_ndp_voteshare",
             "humanReadableName": "2025GE NDP %",
             "comesFromMultiSourceSet": false,
-            "order": 301,
+            "order": 303,
             "index": 53,
             "deprecated": null
         },
@@ -2420,7 +2436,7 @@ export default {
             "varName": "canada_2015ge_bq_voteshare",
             "humanReadableName": "2015GE BQ %",
             "comesFromMultiSourceSet": false,
-            "order": 302,
+            "order": 304,
             "index": 10,
             "deprecated": null
         },
@@ -2428,7 +2444,7 @@ export default {
             "varName": "canada_swing_2015_2019_bq",
             "humanReadableName": "2015-2019 Swing BQ %",
             "comesFromMultiSourceSet": false,
-            "order": 303,
+            "order": 305,
             "index": 4,
             "deprecated": null
         },
@@ -2436,7 +2452,7 @@ export default {
             "varName": "canada_2019ge_bq_voteshare",
             "humanReadableName": "2019GE BQ %",
             "comesFromMultiSourceSet": false,
-            "order": 304,
+            "order": 306,
             "index": 25,
             "deprecated": null
         },
@@ -2444,7 +2460,7 @@ export default {
             "varName": "canada_swing_2019_2021_bq",
             "humanReadableName": "2019-2021 Swing BQ %",
             "comesFromMultiSourceSet": false,
-            "order": 305,
+            "order": 307,
             "index": 18,
             "deprecated": null
         },
@@ -2452,7 +2468,7 @@ export default {
             "varName": "canada_2021ge_bq_voteshare",
             "humanReadableName": "2021GE BQ %",
             "comesFromMultiSourceSet": false,
-            "order": 306,
+            "order": 308,
             "index": 41,
             "deprecated": null
         },
@@ -2460,7 +2476,7 @@ export default {
             "varName": "canada_swing_2021_2025_bq",
             "humanReadableName": "2021-2025 Swing BQ %",
             "comesFromMultiSourceSet": false,
-            "order": 307,
+            "order": 309,
             "index": 34,
             "deprecated": null
         },
@@ -2468,7 +2484,7 @@ export default {
             "varName": "canada_2025ge_bq_voteshare",
             "humanReadableName": "2025GE BQ %",
             "comesFromMultiSourceSet": false,
-            "order": 308,
+            "order": 310,
             "index": 49,
             "deprecated": null
         },
@@ -2476,7 +2492,7 @@ export default {
             "varName": "canada_2015ge_grn_voteshare",
             "humanReadableName": "2015GE Grn %",
             "comesFromMultiSourceSet": false,
-            "order": 309,
+            "order": 311,
             "index": 12,
             "deprecated": null
         },
@@ -2484,7 +2500,7 @@ export default {
             "varName": "canada_swing_2015_2019_grn",
             "humanReadableName": "2015-2019 Swing Grn %",
             "comesFromMultiSourceSet": false,
-            "order": 310,
+            "order": 312,
             "index": 6,
             "deprecated": null
         },
@@ -2492,7 +2508,7 @@ export default {
             "varName": "canada_2019ge_grn_voteshare",
             "humanReadableName": "2019GE Grn %",
             "comesFromMultiSourceSet": false,
-            "order": 311,
+            "order": 313,
             "index": 27,
             "deprecated": null
         },
@@ -2500,7 +2516,7 @@ export default {
             "varName": "canada_swing_2019_2021_grn",
             "humanReadableName": "2019-2021 Swing Grn %",
             "comesFromMultiSourceSet": false,
-            "order": 312,
+            "order": 314,
             "index": 20,
             "deprecated": null
         },
@@ -2508,7 +2524,7 @@ export default {
             "varName": "canada_2021ge_grn_voteshare",
             "humanReadableName": "2021GE Grn %",
             "comesFromMultiSourceSet": false,
-            "order": 313,
+            "order": 315,
             "index": 43,
             "deprecated": null
         },
@@ -2516,7 +2532,7 @@ export default {
             "varName": "canada_swing_2021_2025_grn",
             "humanReadableName": "2021-2025 Swing Grn %",
             "comesFromMultiSourceSet": false,
-            "order": 314,
+            "order": 316,
             "index": 36,
             "deprecated": null
         },
@@ -2524,7 +2540,7 @@ export default {
             "varName": "canada_2025ge_grn_voteshare",
             "humanReadableName": "2025GE Grn %",
             "comesFromMultiSourceSet": false,
-            "order": 315,
+            "order": 317,
             "index": 51,
             "deprecated": null
         },
@@ -2532,7 +2548,7 @@ export default {
             "varName": "canada_2019ge_ppc_voteshare",
             "humanReadableName": "2019GE PPC %",
             "comesFromMultiSourceSet": false,
-            "order": 316,
+            "order": 318,
             "index": 30,
             "deprecated": null
         },
@@ -2540,7 +2556,7 @@ export default {
             "varName": "canada_swing_2019_2021_ppc",
             "humanReadableName": "2019-2021 Swing PPC %",
             "comesFromMultiSourceSet": false,
-            "order": 317,
+            "order": 319,
             "index": 23,
             "deprecated": null
         },
@@ -2548,7 +2564,7 @@ export default {
             "varName": "canada_2021ge_ppc_voteshare",
             "humanReadableName": "2021GE PPC %",
             "comesFromMultiSourceSet": false,
-            "order": 318,
+            "order": 320,
             "index": 46,
             "deprecated": null
         },
@@ -2556,7 +2572,7 @@ export default {
             "varName": "canada_swing_2021_2025_ppc",
             "humanReadableName": "2021-2025 Swing PPC %",
             "comesFromMultiSourceSet": false,
-            "order": 319,
+            "order": 321,
             "index": 39,
             "deprecated": null
         },
@@ -2564,7 +2580,7 @@ export default {
             "varName": "canada_2025ge_ppc_voteshare",
             "humanReadableName": "2025GE PPC %",
             "comesFromMultiSourceSet": false,
-            "order": 320,
+            "order": 322,
             "index": 54,
             "deprecated": null
         },
@@ -2572,143 +2588,143 @@ export default {
             "varName": "park_1km",
             "humanReadableName": "PW Mean % of parkland within 1km",
             "comesFromMultiSourceSet": false,
-            "order": 321,
-            "index": 353,
+            "order": 323,
+            "index": 355,
             "deprecated": null
         },
         {
             "varName": "hospital_within_10km",
             "humanReadableName": "Within 10km of Hospital %",
             "comesFromMultiSourceSet": false,
-            "order": 322,
-            "index": 435,
+            "order": 324,
+            "index": 437,
             "deprecated": null
         },
         {
             "varName": "hospital_mean_dist",
             "humanReadableName": "Mean distance to nearest Hospital",
             "comesFromMultiSourceSet": false,
-            "order": 323,
-            "index": 293,
+            "order": 325,
+            "index": 295,
             "deprecated": null
         },
         {
             "varName": "school_within_2km",
             "humanReadableName": "Within 2km of Public School %",
             "comesFromMultiSourceSet": false,
-            "order": 324,
-            "index": 436,
+            "order": 326,
+            "index": 438,
             "deprecated": null
         },
         {
             "varName": "school_mean_dist",
             "humanReadableName": "Mean distance to nearest Public School",
             "comesFromMultiSourceSet": false,
-            "order": 325,
-            "index": 294,
+            "order": 327,
+            "index": 296,
             "deprecated": null
         },
         {
             "varName": "airport_within_30km",
             "humanReadableName": "Within 30km of Airport %",
             "comesFromMultiSourceSet": false,
-            "order": 326,
-            "index": 434,
+            "order": 328,
+            "index": 436,
             "deprecated": null
         },
         {
             "varName": "airport_mean_dist",
             "humanReadableName": "Mean distance to nearest Airport",
             "comesFromMultiSourceSet": false,
-            "order": 327,
-            "index": 292,
+            "order": 329,
+            "index": 294,
             "deprecated": null
         },
         {
             "varName": "superfund_within_10km",
             "humanReadableName": "Within 10km of Active Superfund Site %",
             "comesFromMultiSourceSet": false,
-            "order": 328,
-            "index": 433,
+            "order": 330,
+            "index": 435,
             "deprecated": null
         },
         {
             "varName": "superfund_mean_dist",
             "humanReadableName": "Mean distance to nearest Active Superfund Site",
             "comesFromMultiSourceSet": false,
-            "order": 329,
-            "index": 291,
+            "order": 331,
+            "index": 293,
             "deprecated": null
         },
         {
             "varName": "grocery_store_within_half_mile",
             "humanReadableName": "Within 0.5mi of a grocery store %",
             "comesFromMultiSourceSet": false,
-            "order": 330,
-            "index": 281,
+            "order": 332,
+            "index": 283,
             "deprecated": null
         },
         {
             "varName": "grocery_store_within_one_mile",
             "humanReadableName": "Within 1mi of a grocery store %",
             "comesFromMultiSourceSet": false,
-            "order": 331,
-            "index": 279,
+            "order": 333,
+            "index": 281,
             "deprecated": null
         },
         {
             "varName": "grocery_store_within_ten_miles",
             "humanReadableName": "Within 10mi of a grocery store %",
             "comesFromMultiSourceSet": false,
-            "order": 332,
-            "index": 278,
+            "order": 334,
+            "index": 280,
             "deprecated": null
         },
         {
             "varName": "grocery_store_within_twenty_miles",
             "humanReadableName": "Within 20mi of a grocery store %",
             "comesFromMultiSourceSet": false,
-            "order": 333,
-            "index": 280,
+            "order": 335,
+            "index": 282,
             "deprecated": null
         },
         {
             "varName": "high_temp",
             "humanReadableName": "Mean high temp",
             "comesFromMultiSourceSet": false,
-            "order": 334,
-            "index": 297,
+            "order": 336,
+            "index": 299,
             "deprecated": null
         },
         {
             "varName": "low_temp",
             "humanReadableName": "Mean low temp",
             "comesFromMultiSourceSet": false,
-            "order": 335,
-            "index": 306,
+            "order": 337,
+            "index": 308,
             "deprecated": null
         },
         {
             "varName": "high_heat_index",
             "humanReadableName": "Mean high heat index",
             "comesFromMultiSourceSet": false,
-            "order": 336,
-            "index": 296,
+            "order": 338,
+            "index": 298,
             "deprecated": null
         },
         {
             "varName": "high_dewpoint",
             "humanReadableName": "Mean high dewpt",
             "comesFromMultiSourceSet": false,
-            "order": 337,
-            "index": 295,
+            "order": 339,
+            "index": 297,
             "deprecated": null
         },
         {
             "varName": "hot_days",
             "humanReadableName": "High temperature Above 90\u00b0F %",
             "comesFromMultiSourceSet": false,
-            "order": 338,
+            "order": 340,
             "index": 166,
             "deprecated": null
         },
@@ -2716,7 +2732,7 @@ export default {
             "varName": "moderate_temp_days",
             "humanReadableName": "High temperature Between 40 and 90\u00b0F %",
             "comesFromMultiSourceSet": false,
-            "order": 339,
+            "order": 341,
             "index": 168,
             "deprecated": null
         },
@@ -2724,7 +2740,7 @@ export default {
             "varName": "cold_days",
             "humanReadableName": "High temperature Below 40\u00b0F %",
             "comesFromMultiSourceSet": false,
-            "order": 340,
+            "order": 342,
             "index": 167,
             "deprecated": null
         },
@@ -2732,7 +2748,7 @@ export default {
             "varName": "humid_days",
             "humanReadableName": "Humid days (dewpt > 70\u00b0F) %",
             "comesFromMultiSourceSet": false,
-            "order": 341,
+            "order": 343,
             "index": 171,
             "deprecated": null
         },
@@ -2740,7 +2756,7 @@ export default {
             "varName": "moderate_humidity_days",
             "humanReadableName": "Non-humid, Non-dry days (50\u00b0F < dewpt < 70\u00b0F) %",
             "comesFromMultiSourceSet": false,
-            "order": 342,
+            "order": 344,
             "index": 170,
             "deprecated": null
         },
@@ -2748,7 +2764,7 @@ export default {
             "varName": "dry_days",
             "humanReadableName": "Dry days (dewpt < 50\u00b0F) %",
             "comesFromMultiSourceSet": false,
-            "order": 343,
+            "order": 345,
             "index": 169,
             "deprecated": null
         },
@@ -2756,7 +2772,7 @@ export default {
             "varName": "sunny_hours",
             "humanReadableName": "Mean sunny hours",
             "comesFromMultiSourceSet": false,
-            "order": 344,
+            "order": 346,
             "index": 223,
             "deprecated": null
         },
@@ -2764,127 +2780,127 @@ export default {
             "varName": "rainfall",
             "humanReadableName": "Rainfall",
             "comesFromMultiSourceSet": false,
-            "order": 345,
-            "index": 364,
+            "order": 347,
+            "index": 366,
             "deprecated": null
         },
         {
             "varName": "snowfall",
             "humanReadableName": "Snowfall [rain-equivalent]",
             "comesFromMultiSourceSet": false,
-            "order": 346,
-            "index": 398,
+            "order": 348,
+            "index": 400,
             "deprecated": null
         },
         {
             "varName": "windy_days",
             "humanReadableName": "High windspeed (>10mph) days %",
             "comesFromMultiSourceSet": false,
-            "order": 347,
-            "index": 432,
+            "order": 349,
+            "index": 434,
             "deprecated": null
         },
         {
             "varName": "high_temp_djf",
             "humanReadableName": "Mean high temperature in Dec/Jan/Feb",
             "comesFromMultiSourceSet": false,
-            "order": 348,
-            "index": 298,
+            "order": 350,
+            "index": 300,
             "deprecated": null
         },
         {
             "varName": "high_temp_mam",
             "humanReadableName": "Mean high temperature in Mar/Apr/May",
             "comesFromMultiSourceSet": false,
-            "order": 349,
-            "index": 301,
+            "order": 351,
+            "index": 303,
             "deprecated": null
         },
         {
             "varName": "high_temp_jja",
             "humanReadableName": "Mean high temperature in Jun/Jul/Aug",
             "comesFromMultiSourceSet": false,
-            "order": 350,
-            "index": 300,
+            "order": 352,
+            "index": 302,
             "deprecated": null
         },
         {
             "varName": "high_temp_son",
             "humanReadableName": "Mean high temperature in Sep/Oct/Nov",
             "comesFromMultiSourceSet": false,
-            "order": 351,
-            "index": 302,
+            "order": 353,
+            "index": 304,
             "deprecated": null
         },
         {
             "varName": "low_temp_djf",
             "humanReadableName": "Mean low temperature in Dec/Jan/Feb",
             "comesFromMultiSourceSet": false,
-            "order": 352,
-            "index": 307,
+            "order": 354,
+            "index": 309,
             "deprecated": null
         },
         {
             "varName": "low_temp_mam",
             "humanReadableName": "Mean low temperature in Mar/Apr/May",
             "comesFromMultiSourceSet": false,
-            "order": 353,
-            "index": 309,
+            "order": 355,
+            "index": 311,
             "deprecated": null
         },
         {
             "varName": "low_temp_jja",
             "humanReadableName": "Mean low temperature in Jun/Jul/Aug",
             "comesFromMultiSourceSet": false,
-            "order": 354,
-            "index": 308,
+            "order": 356,
+            "index": 310,
             "deprecated": null
         },
         {
             "varName": "low_temp_son",
             "humanReadableName": "Mean low temperature in Sep/Oct/Nov",
             "comesFromMultiSourceSet": false,
-            "order": 355,
-            "index": 310,
+            "order": 357,
+            "index": 312,
             "deprecated": null
         },
         {
             "varName": "no_internet",
             "humanReadableName": "No internet access %",
             "comesFromMultiSourceSet": false,
-            "order": 356,
-            "index": 272,
+            "order": 358,
+            "index": 274,
             "deprecated": null
         },
         {
             "varName": "uninsured",
             "humanReadableName": "Uninsured %",
             "comesFromMultiSourceSet": false,
-            "order": 357,
-            "index": 270,
+            "order": 359,
+            "index": 272,
             "deprecated": null
         },
         {
             "varName": "public_insurance",
             "humanReadableName": "Public Insurance %",
             "comesFromMultiSourceSet": false,
-            "order": 358,
-            "index": 269,
+            "order": 360,
+            "index": 271,
             "deprecated": null
         },
         {
             "varName": "private_insurance",
             "humanReadableName": "Private Insurance %",
             "comesFromMultiSourceSet": false,
-            "order": 359,
-            "index": 271,
+            "order": 361,
+            "index": 273,
             "deprecated": null
         },
         {
             "varName": "density_pw_250m_census",
             "humanReadableName": "PW Density (r=250m) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 360,
+            "order": 362,
             "index": 82,
             "deprecated": null
         },
@@ -2892,7 +2908,7 @@ export default {
             "varName": "density_pw_250m_2010_census",
             "humanReadableName": "PW Density (r=250m) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 361,
+            "order": 363,
             "index": 84,
             "deprecated": null
         },
@@ -2900,7 +2916,7 @@ export default {
             "varName": "density_pw_250m_change_2010_2020_census",
             "humanReadableName": "PW Density (r=250m) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 362,
+            "order": 364,
             "index": 88,
             "deprecated": null
         },
@@ -2908,7 +2924,7 @@ export default {
             "varName": "density_pw_250m_abs_change_2010_2020_census",
             "humanReadableName": "PW Density (r=250m) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 363,
+            "order": 365,
             "index": 86,
             "deprecated": null
         },
@@ -2916,7 +2932,7 @@ export default {
             "varName": "density_pw_250m_2000",
             "humanReadableName": "PW Density (r=250m) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 364,
+            "order": 366,
             "index": 83,
             "deprecated": null
         },
@@ -2924,7 +2940,7 @@ export default {
             "varName": "density_pw_250m_change_2000_2020",
             "humanReadableName": "PW Density (r=250m) Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 365,
+            "order": 367,
             "index": 87,
             "deprecated": null
         },
@@ -2932,7 +2948,7 @@ export default {
             "varName": "density_pw_250m_abs_change_2000_2020",
             "humanReadableName": "PW Density (r=250m) Absolute Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 366,
+            "order": 368,
             "index": 85,
             "deprecated": null
         },
@@ -2940,7 +2956,7 @@ export default {
             "varName": "density_pw_500m_census",
             "humanReadableName": "PW Density (r=500m) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 367,
+            "order": 369,
             "index": 89,
             "deprecated": null
         },
@@ -2948,7 +2964,7 @@ export default {
             "varName": "density_pw_500m_2010_census",
             "humanReadableName": "PW Density (r=500m) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 368,
+            "order": 370,
             "index": 91,
             "deprecated": null
         },
@@ -2956,7 +2972,7 @@ export default {
             "varName": "density_pw_500m_change_2010_2020_census",
             "humanReadableName": "PW Density (r=500m) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 369,
+            "order": 371,
             "index": 95,
             "deprecated": null
         },
@@ -2964,7 +2980,7 @@ export default {
             "varName": "density_pw_500m_abs_change_2010_2020_census",
             "humanReadableName": "PW Density (r=500m) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 370,
+            "order": 372,
             "index": 93,
             "deprecated": null
         },
@@ -2972,7 +2988,7 @@ export default {
             "varName": "density_pw_500m_2000",
             "humanReadableName": "PW Density (r=500m) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 371,
+            "order": 373,
             "index": 90,
             "deprecated": null
         },
@@ -2980,7 +2996,7 @@ export default {
             "varName": "density_pw_500m_change_2000_2020",
             "humanReadableName": "PW Density (r=500m) Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 372,
+            "order": 374,
             "index": 94,
             "deprecated": null
         },
@@ -2988,7 +3004,7 @@ export default {
             "varName": "density_pw_500m_abs_change_2000_2020",
             "humanReadableName": "PW Density (r=500m) Absolute Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 373,
+            "order": 375,
             "index": 92,
             "deprecated": null
         },
@@ -2996,7 +3012,7 @@ export default {
             "varName": "density_pw_1mi_census",
             "humanReadableName": "PW Density (r=1mi) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 374,
+            "order": 376,
             "index": 97,
             "deprecated": null
         },
@@ -3004,7 +3020,7 @@ export default {
             "varName": "density_pw_1mi_ghsl",
             "humanReadableName": "PW Density (r=1mi) [GHS-POP]",
             "comesFromMultiSourceSet": true,
-            "order": 375,
+            "order": 377,
             "index": 196,
             "deprecated": null
         },
@@ -3012,7 +3028,7 @@ export default {
             "varName": "density_pw_1mi_2010_census",
             "humanReadableName": "PW Density (r=1mi) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 376,
+            "order": 378,
             "index": 99,
             "deprecated": null
         },
@@ -3020,7 +3036,7 @@ export default {
             "varName": "density_pw_1mi_change_2010_2020_census",
             "humanReadableName": "PW Density (r=1mi) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 377,
+            "order": 379,
             "index": 103,
             "deprecated": null
         },
@@ -3028,7 +3044,7 @@ export default {
             "varName": "density_pw_1mi_abs_change_2010_2020_census",
             "humanReadableName": "PW Density (r=1mi) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 378,
+            "order": 380,
             "index": 101,
             "deprecated": null
         },
@@ -3036,7 +3052,7 @@ export default {
             "varName": "density_pw_1mi_2000",
             "humanReadableName": "PW Density (r=1mi) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 379,
+            "order": 381,
             "index": 98,
             "deprecated": null
         },
@@ -3044,7 +3060,7 @@ export default {
             "varName": "density_pw_1mi_change_2000_2020",
             "humanReadableName": "PW Density (r=1mi) Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 380,
+            "order": 382,
             "index": 102,
             "deprecated": null
         },
@@ -3052,7 +3068,7 @@ export default {
             "varName": "density_pw_1mi_abs_change_2000_2020",
             "humanReadableName": "PW Density (r=1mi) Absolute Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 381,
+            "order": 383,
             "index": 100,
             "deprecated": null
         },
@@ -3060,7 +3076,7 @@ export default {
             "varName": "density_pw_2km_census",
             "humanReadableName": "PW Density (r=2km) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 382,
+            "order": 384,
             "index": 117,
             "deprecated": null
         },
@@ -3068,7 +3084,7 @@ export default {
             "varName": "density_pw_2km_ghsl",
             "humanReadableName": "PW Density (r=2km) [GHS-POP]",
             "comesFromMultiSourceSet": true,
-            "order": 383,
+            "order": 385,
             "index": 198,
             "deprecated": null
         },
@@ -3076,7 +3092,7 @@ export default {
             "varName": "density_pw_2km_2010_census",
             "humanReadableName": "PW Density (r=2km) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 384,
+            "order": 386,
             "index": 119,
             "deprecated": null
         },
@@ -3084,7 +3100,7 @@ export default {
             "varName": "density_pw_2km_change_2010_2020_census",
             "humanReadableName": "PW Density (r=2km) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 385,
+            "order": 387,
             "index": 123,
             "deprecated": null
         },
@@ -3092,7 +3108,7 @@ export default {
             "varName": "density_pw_2km_abs_change_2010_2020_census",
             "humanReadableName": "PW Density (r=2km) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 386,
+            "order": 388,
             "index": 121,
             "deprecated": null
         },
@@ -3100,7 +3116,7 @@ export default {
             "varName": "density_pw_2km_2000",
             "humanReadableName": "PW Density (r=2km) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 387,
+            "order": 389,
             "index": 118,
             "deprecated": null
         },
@@ -3108,7 +3124,7 @@ export default {
             "varName": "density_pw_2km_change_2000_2020",
             "humanReadableName": "PW Density (r=2km) Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 388,
+            "order": 390,
             "index": 122,
             "deprecated": null
         },
@@ -3116,7 +3132,7 @@ export default {
             "varName": "density_pw_2km_abs_change_2000_2020",
             "humanReadableName": "PW Density (r=2km) Absolute Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 389,
+            "order": 391,
             "index": 120,
             "deprecated": null
         },
@@ -3124,7 +3140,7 @@ export default {
             "varName": "density_pw_4km_census",
             "humanReadableName": "PW Density (r=4km) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 390,
+            "order": 392,
             "index": 131,
             "deprecated": null
         },
@@ -3132,7 +3148,7 @@ export default {
             "varName": "density_pw_4km_ghsl",
             "humanReadableName": "PW Density (r=4km) [GHS-POP]",
             "comesFromMultiSourceSet": true,
-            "order": 391,
+            "order": 393,
             "index": 200,
             "deprecated": null
         },
@@ -3140,7 +3156,7 @@ export default {
             "varName": "density_pw_4km_2010_census",
             "humanReadableName": "PW Density (r=4km) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 392,
+            "order": 394,
             "index": 133,
             "deprecated": null
         },
@@ -3148,7 +3164,7 @@ export default {
             "varName": "density_pw_4km_change_2010_2020_census",
             "humanReadableName": "PW Density (r=4km) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 393,
+            "order": 395,
             "index": 137,
             "deprecated": null
         },
@@ -3156,7 +3172,7 @@ export default {
             "varName": "density_pw_4km_abs_change_2010_2020_census",
             "humanReadableName": "PW Density (r=4km) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 394,
+            "order": 396,
             "index": 135,
             "deprecated": null
         },
@@ -3164,7 +3180,7 @@ export default {
             "varName": "density_pw_4km_2000",
             "humanReadableName": "PW Density (r=4km) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 395,
+            "order": 397,
             "index": 132,
             "deprecated": null
         },
@@ -3172,7 +3188,7 @@ export default {
             "varName": "density_pw_4km_change_2000_2020",
             "humanReadableName": "PW Density (r=4km) Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 396,
+            "order": 398,
             "index": 136,
             "deprecated": null
         },
@@ -3180,7 +3196,7 @@ export default {
             "varName": "density_pw_4km_abs_change_2000_2020",
             "humanReadableName": "PW Density (r=4km) Absolute Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 397,
+            "order": 399,
             "index": 134,
             "deprecated": null
         },
@@ -3188,7 +3204,7 @@ export default {
             "varName": "density_pw_8km_census",
             "humanReadableName": "PW Density (r=8km) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 398,
+            "order": 400,
             "index": 145,
             "deprecated": null
         },
@@ -3196,7 +3212,7 @@ export default {
             "varName": "density_pw_8km_ghsl",
             "humanReadableName": "PW Density (r=8km) [GHS-POP]",
             "comesFromMultiSourceSet": true,
-            "order": 399,
+            "order": 401,
             "index": 202,
             "deprecated": null
         },
@@ -3204,7 +3220,7 @@ export default {
             "varName": "density_pw_8km_2010_census",
             "humanReadableName": "PW Density (r=8km) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 400,
+            "order": 402,
             "index": 147,
             "deprecated": null
         },
@@ -3212,7 +3228,7 @@ export default {
             "varName": "density_pw_8km_change_2010_2020_census",
             "humanReadableName": "PW Density (r=8km) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 401,
+            "order": 403,
             "index": 151,
             "deprecated": null
         },
@@ -3220,7 +3236,7 @@ export default {
             "varName": "density_pw_8km_abs_change_2010_2020_census",
             "humanReadableName": "PW Density (r=8km) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 402,
+            "order": 404,
             "index": 149,
             "deprecated": null
         },
@@ -3228,7 +3244,7 @@ export default {
             "varName": "density_pw_8km_2000",
             "humanReadableName": "PW Density (r=8km) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 403,
+            "order": 405,
             "index": 146,
             "deprecated": null
         },
@@ -3236,7 +3252,7 @@ export default {
             "varName": "density_pw_8km_change_2000_2020",
             "humanReadableName": "PW Density (r=8km) Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 404,
+            "order": 406,
             "index": 150,
             "deprecated": null
         },
@@ -3244,7 +3260,7 @@ export default {
             "varName": "density_pw_8km_abs_change_2000_2020",
             "humanReadableName": "PW Density (r=8km) Absolute Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 405,
+            "order": 407,
             "index": 148,
             "deprecated": null
         },
@@ -3252,7 +3268,7 @@ export default {
             "varName": "density_pw_16km_census",
             "humanReadableName": "PW Density (r=16km) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 406,
+            "order": 408,
             "index": 104,
             "deprecated": null
         },
@@ -3260,7 +3276,7 @@ export default {
             "varName": "density_pw_16km_ghsl",
             "humanReadableName": "PW Density (r=16km) [GHS-POP]",
             "comesFromMultiSourceSet": true,
-            "order": 407,
+            "order": 409,
             "index": 197,
             "deprecated": null
         },
@@ -3268,7 +3284,7 @@ export default {
             "varName": "density_pw_16km_2010_census",
             "humanReadableName": "PW Density (r=16km) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 408,
+            "order": 410,
             "index": 106,
             "deprecated": null
         },
@@ -3276,7 +3292,7 @@ export default {
             "varName": "density_pw_16km_change_2010_2020_census",
             "humanReadableName": "PW Density (r=16km) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 409,
+            "order": 411,
             "index": 110,
             "deprecated": null
         },
@@ -3284,7 +3300,7 @@ export default {
             "varName": "density_pw_16km_abs_change_2010_2020_census",
             "humanReadableName": "PW Density (r=16km) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 410,
+            "order": 412,
             "index": 108,
             "deprecated": null
         },
@@ -3292,7 +3308,7 @@ export default {
             "varName": "density_pw_16km_2000",
             "humanReadableName": "PW Density (r=16km) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 411,
+            "order": 413,
             "index": 105,
             "deprecated": null
         },
@@ -3300,7 +3316,7 @@ export default {
             "varName": "density_pw_16km_change_2000_2020",
             "humanReadableName": "PW Density (r=16km) Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 412,
+            "order": 414,
             "index": 109,
             "deprecated": null
         },
@@ -3308,7 +3324,7 @@ export default {
             "varName": "density_pw_16km_abs_change_2000_2020",
             "humanReadableName": "PW Density (r=16km) Absolute Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 413,
+            "order": 415,
             "index": 107,
             "deprecated": null
         },
@@ -3316,7 +3332,7 @@ export default {
             "varName": "density_pw_32km_census",
             "humanReadableName": "PW Density (r=32km) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 414,
+            "order": 416,
             "index": 124,
             "deprecated": null
         },
@@ -3324,7 +3340,7 @@ export default {
             "varName": "density_pw_32km_ghsl",
             "humanReadableName": "PW Density (r=32km) [GHS-POP]",
             "comesFromMultiSourceSet": true,
-            "order": 415,
+            "order": 417,
             "index": 199,
             "deprecated": null
         },
@@ -3332,7 +3348,7 @@ export default {
             "varName": "density_pw_32km_2010_census",
             "humanReadableName": "PW Density (r=32km) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 416,
+            "order": 418,
             "index": 126,
             "deprecated": null
         },
@@ -3340,7 +3356,7 @@ export default {
             "varName": "density_pw_32km_change_2010_2020_census",
             "humanReadableName": "PW Density (r=32km) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 417,
+            "order": 419,
             "index": 130,
             "deprecated": null
         },
@@ -3348,7 +3364,7 @@ export default {
             "varName": "density_pw_32km_abs_change_2010_2020_census",
             "humanReadableName": "PW Density (r=32km) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 418,
+            "order": 420,
             "index": 128,
             "deprecated": null
         },
@@ -3356,7 +3372,7 @@ export default {
             "varName": "density_pw_32km_2000",
             "humanReadableName": "PW Density (r=32km) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 419,
+            "order": 421,
             "index": 125,
             "deprecated": null
         },
@@ -3364,7 +3380,7 @@ export default {
             "varName": "density_pw_32km_change_2000_2020",
             "humanReadableName": "PW Density (r=32km) Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 420,
+            "order": 422,
             "index": 129,
             "deprecated": null
         },
@@ -3372,7 +3388,7 @@ export default {
             "varName": "density_pw_32km_abs_change_2000_2020",
             "humanReadableName": "PW Density (r=32km) Absolute Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 421,
+            "order": 423,
             "index": 127,
             "deprecated": null
         },
@@ -3380,7 +3396,7 @@ export default {
             "varName": "density_pw_64km_census",
             "humanReadableName": "PW Density (r=64km) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 422,
+            "order": 424,
             "index": 138,
             "deprecated": null
         },
@@ -3388,7 +3404,7 @@ export default {
             "varName": "density_pw_64km_ghsl",
             "humanReadableName": "PW Density (r=64km) [GHS-POP]",
             "comesFromMultiSourceSet": true,
-            "order": 423,
+            "order": 425,
             "index": 201,
             "deprecated": null
         },
@@ -3396,7 +3412,7 @@ export default {
             "varName": "density_pw_64km_2010_census",
             "humanReadableName": "PW Density (r=64km) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 424,
+            "order": 426,
             "index": 140,
             "deprecated": null
         },
@@ -3404,7 +3420,7 @@ export default {
             "varName": "density_pw_64km_change_2010_2020_census",
             "humanReadableName": "PW Density (r=64km) Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 425,
+            "order": 427,
             "index": 144,
             "deprecated": null
         },
@@ -3412,7 +3428,7 @@ export default {
             "varName": "density_pw_64km_abs_change_2010_2020_census",
             "humanReadableName": "PW Density (r=64km) Absolute Change (2010-2020) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 426,
+            "order": 428,
             "index": 142,
             "deprecated": null
         },
@@ -3420,7 +3436,7 @@ export default {
             "varName": "density_pw_64km_2000",
             "humanReadableName": "PW Density (r=64km) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 427,
+            "order": 429,
             "index": 139,
             "deprecated": null
         },
@@ -3428,7 +3444,7 @@ export default {
             "varName": "density_pw_64km_change_2000_2020",
             "humanReadableName": "PW Density (r=64km) Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 428,
+            "order": 430,
             "index": 143,
             "deprecated": null
         },
@@ -3436,7 +3452,7 @@ export default {
             "varName": "density_pw_64km_abs_change_2000_2020",
             "humanReadableName": "PW Density (r=64km) Absolute Change (2000-2020)",
             "comesFromMultiSourceSet": false,
-            "order": 429,
+            "order": 431,
             "index": 141,
             "deprecated": null
         },
@@ -3444,15 +3460,15 @@ export default {
             "varName": "density_pw_median_1km_census",
             "humanReadableName": "PW Median Density (r=1km) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 430,
-            "index": 288,
+            "order": 432,
+            "index": 290,
             "deprecated": null
         },
         {
             "varName": "density_pw_median_1km_ghsl",
             "humanReadableName": "PW Median Density (r=1km) [GHS-POP]",
             "comesFromMultiSourceSet": true,
-            "order": 431,
+            "order": 433,
             "index": 203,
             "deprecated": null
         },
@@ -3460,88 +3476,88 @@ export default {
             "varName": "density_pw_median_1km_2010_census",
             "humanReadableName": "PW Median Density (r=1km) (2010) [National Census]",
             "comesFromMultiSourceSet": true,
-            "order": 432,
-            "index": 290,
+            "order": 434,
+            "index": 292,
             "deprecated": null
         },
         {
             "varName": "density_pw_median_1km_2000",
             "humanReadableName": "PW Median Density (r=1km) (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 433,
-            "index": 289,
+            "order": 435,
+            "index": 291,
             "deprecated": null
         },
         {
             "varName": "high_temp_summer",
             "humanReadableName": "Mean high temperature in summer",
             "comesFromMultiSourceSet": false,
-            "order": 434,
-            "index": 304,
+            "order": 436,
+            "index": 306,
             "deprecated": "Use high_temp_jja (Mean high temperature in Jun/Jul/Aug) instead, which uses month-based seasons instead and is valid in the southern hemisphere"
         },
         {
             "varName": "high_temp_winter",
             "humanReadableName": "Mean high temperature in winter",
             "comesFromMultiSourceSet": false,
-            "order": 435,
-            "index": 305,
+            "order": 437,
+            "index": 307,
             "deprecated": "Use high_temp_djf (Mean high temperature in Dec/Jan/Feb) instead, which uses month-based seasons instead and is valid in the southern hemisphere"
         },
         {
             "varName": "high_temp_fall",
             "humanReadableName": "Mean high temperature in fall",
             "comesFromMultiSourceSet": false,
-            "order": 436,
-            "index": 299,
+            "order": 438,
+            "index": 301,
             "deprecated": "Use high_temp_son (Mean high temperature in Sep/Oct/Nov) instead, which uses month-based seasons instead and is valid in the southern hemisphere"
         },
         {
             "varName": "high_temp_spring",
             "humanReadableName": "Mean high temperature in spring",
             "comesFromMultiSourceSet": false,
-            "order": 437,
-            "index": 303,
+            "order": 439,
+            "index": 305,
             "deprecated": "Use high_temp_mam (Mean high temperature in Mar/Apr/May) instead, which uses month-based seasons instead and is valid in the southern hemisphere"
         },
         {
             "varName": "commute_car_incl_wfh",
             "humanReadableName": "Commute Car % (incl WFH)",
             "comesFromMultiSourceSet": false,
-            "order": 438,
-            "index": 416,
+            "order": 440,
+            "index": 418,
             "deprecated": "Use commute_car (Commute Car %) instead, which excludes work-from-home from the denominator and is more accurate for comparisons"
         },
         {
             "varName": "commute_bike_incl_wfh",
             "humanReadableName": "Commute Bike % (incl WFH)",
             "comesFromMultiSourceSet": false,
-            "order": 439,
-            "index": 414,
+            "order": 441,
+            "index": 416,
             "deprecated": "Use commute_bike (Commute Bike %) instead, which excludes work-from-home from the denominator and is more accurate for comparisons"
         },
         {
             "varName": "commute_walk_incl_wfh",
             "humanReadableName": "Commute Walk % (incl WFH)",
             "comesFromMultiSourceSet": false,
-            "order": 440,
-            "index": 420,
+            "order": 442,
+            "index": 422,
             "deprecated": "Use commute_walk (Commute Walk %) instead, which excludes work-from-home from the denominator and is more accurate for comparisons"
         },
         {
             "varName": "commute_transit_incl_wfh",
             "humanReadableName": "Commute Transit % (incl WFH)",
             "comesFromMultiSourceSet": false,
-            "order": 441,
-            "index": 418,
+            "order": 443,
+            "index": 420,
             "deprecated": "Use commute_transit (Commute Transit %) instead, which excludes work-from-home from the denominator and is more accurate for comparisons"
         },
         {
             "varName": "commute_work_from_home_incl_wfh",
             "humanReadableName": "Commute Work From Home % (incl WFH)",
             "comesFromMultiSourceSet": false,
-            "order": 442,
-            "index": 422,
+            "order": 444,
+            "index": 424,
             "deprecated": "This statistic is deprecated because it is highly inconsistent across time"
         }
     ],
@@ -3946,6 +3962,15 @@ export default {
             }
         ],
         [
+            "vacancy_rate",
+            {
+                "individualVariables": [
+                    "vacancy_rate_census"
+                ],
+                "humanReadableName": "Vacancy %"
+            }
+        ],
+        [
             "household_size_pw",
             {
                 "individualVariables": [
@@ -4162,6 +4187,15 @@ export default {
             }
         ],
         [
+            "industry_admin_support",
+            {
+                "individualVariables": [
+                    "industry_admin_support_census"
+                ],
+                "humanReadableName": "Employed in Administrative and support services %"
+            }
+        ],
+        [
             "industry_management",
             {
                 "individualVariables": [
@@ -4213,6 +4247,15 @@ export default {
                     "industry_utilities_census"
                 ],
                 "humanReadableName": "Employed in Utilities %"
+            }
+        ],
+        [
+            "industry_electricity_gas_water_waste",
+            {
+                "individualVariables": [
+                    "industry_electricity_gas_water_waste_census"
+                ],
+                "humanReadableName": "Employed in Electricity, gas, water and waste services %"
             }
         ],
         [

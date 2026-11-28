@@ -268,6 +268,8 @@ export default [
     "industry_and_occupation",
     "industry_and_occupation",
     "industry_and_occupation",
+    "industry_and_occupation",
+    "industry_and_occupation",
     "insurance",
     "insurance",
     "insurance",

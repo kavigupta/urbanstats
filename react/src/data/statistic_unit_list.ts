@@ -282,6 +282,8 @@ export default [
     "percentage",
     "percentage",
     "percentage",
+    "percentage",
+    "percentage",
     "number",
     "percentage",
     "percentage",

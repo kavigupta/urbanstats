@@ -731,7 +731,8 @@ export default [
     ],
     [
         "USA",
-        "Canada"
+        "Canada",
+        "Australia"
     ],
     [
         "USA",
@@ -782,7 +783,53 @@ export default [
     ],
     [
         "USA",
+        "Canada",
+        "Australia"
+    ],
+    [
+        "USA",
         "Canada"
+    ],
+    [
+        "Australia"
+    ],
+    [
+        "USA",
+        "Canada",
+        "Australia"
+    ],
+    [
+        "USA",
+        "Canada",
+        "Australia"
+    ],
+    [
+        "USA",
+        "Canada",
+        "Australia"
+    ],
+    [
+        "USA",
+        "Canada",
+        "Australia"
+    ],
+    [
+        "Australia"
+    ],
+    [
+        "USA",
+        "Canada",
+        "Australia"
+    ],
+    [
+        "USA",
+        "Canada",
+        "Australia"
+    ],
+    [
+        "USA",
+        "Canada",
+        "Australia"
     ],
     [
         "USA",
@@ -790,7 +837,43 @@ export default [
     ],
     [
         "USA",
-        "Canada"
+        "Canada",
+        "Australia"
+    ],
+    [
+        "USA",
+        "Canada",
+        "Australia"
+    ],
+    [
+        "USA",
+        "Canada",
+        "Australia"
+    ],
+    [
+        "USA",
+        "Canada",
+        "Australia"
+    ],
+    [
+        "USA",
+        "Canada",
+        "Australia"
+    ],
+    [
+        "USA",
+        "Canada",
+        "Australia"
+    ],
+    [
+        "USA",
+        "Canada",
+        "Australia"
+    ],
+    [
+        "USA",
+        "Canada",
+        "Australia"
     ],
     [
         "USA",
@@ -798,67 +881,8 @@ export default [
     ],
     [
         "USA",
-        "Canada"
-    ],
-    [
-        "USA",
-        "Canada"
-    ],
-    [
-        "USA",
-        "Canada"
-    ],
-    [
-        "USA",
-        "Canada"
-    ],
-    [
-        "USA",
-        "Canada"
-    ],
-    [
-        "USA",
-        "Canada"
-    ],
-    [
-        "USA",
-        "Canada"
-    ],
-    [
-        "USA",
-        "Canada"
-    ],
-    [
-        "USA",
-        "Canada"
-    ],
-    [
-        "USA",
-        "Canada"
-    ],
-    [
-        "USA",
-        "Canada"
-    ],
-    [
-        "USA",
-        "Canada"
-    ],
-    [
-        "USA",
-        "Canada"
-    ],
-    [
-        "USA",
-        "Canada"
-    ],
-    [
-        "USA",
-        "Canada"
-    ],
-    [
-        "USA",
-        "Canada"
+        "Canada",
+        "Australia"
     ],
     [
         "USA"
@@ -1197,7 +1221,8 @@ export default [
     ],
     [
         "USA",
-        "Canada"
+        "Canada",
+        "Australia"
     ],
     [
         "USA",
@@ -1328,7 +1353,8 @@ export default [
         "USA"
     ],
     [
-        "USA"
+        "USA",
+        "Australia"
     ],
     [
         "USA"
@@ -1337,13 +1363,16 @@ export default [
         "USA"
     ],
     [
-        "USA"
+        "USA",
+        "Australia"
     ],
     [
-        "USA"
+        "USA",
+        "Australia"
     ],
     [
-        "USA"
+        "USA",
+        "Australia"
     ],
     [
         "USA",

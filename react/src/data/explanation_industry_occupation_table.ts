@@ -79,6 +79,14 @@ export default {
         [
             "Employed in Wholesale trade %",
             "wholesalers of all kinds of goods"
+        ],
+        [
+            "Employed in Electricity, gas, water and waste services %",
+            "electricity generation, transmission, and distribution; gas supply; water supply, sewerage, and drainage; waste collection, treatment, and disposal"
+        ],
+        [
+            "Employed in Administrative and support services %",
+            "employment services, travel agencies, office administrative services, building cleaning, pest control, gardening services, etc."
         ]
     ],
     "occupation": [
