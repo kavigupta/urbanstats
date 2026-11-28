@@ -5,6 +5,7 @@ from urbanstats.statistics.collections.census_canada_housing_rent import (
 )
 from urbanstats.statistics.national_census import (
     ACSCounts,
+    AustralianCounts,
     NationalCensusStatistics,
     StatCanCounts,
 )
@@ -48,6 +49,16 @@ class HousingRentOrOwn(NationalCensusStatistics):
         return {
             "USA": ACSCounts(self.acs_entity()),
             "Canada": StatCanCounts(canadian_tenure_and_burden_tables()),
+            "Australia": AustralianCounts(self.abs_tables(), weight="dwellings"),
+        }
+
+    def abs_tables(self):
+        # other tenure (rent-free, life tenure, rent/buy, shared equity) and not stated are left out
+        return {
+            "G37": {
+                "rent_or_own_rent": ["R_Tot_Total"],
+                "rent_or_own_own": ["O_OR_Total", "O_MTG_Total"],
+            }
         }
 
     def acs_entity(self):

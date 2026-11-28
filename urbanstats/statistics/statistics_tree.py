@@ -843,6 +843,12 @@ statistics_tree = StatisticTree(
                         "household_income_above_100_cad",
                         source=population_census,
                     ),
+                    just_2020(
+                        "household_income_under_52k_australia",
+                        "household_income_52k_to_104k_australia",
+                        "household_income_over_104k_australia",
+                        source=population_census,
+                    ),
                 ),
                 **in_subcategory(
                     "individual_income",
@@ -859,6 +865,12 @@ statistics_tree = StatisticTree(
                         "individual_income_above_100_cad",
                         source=population_census,
                     ),
+                    just_2020(
+                        "individual_income_under_52k_australia",
+                        "individual_income_52k_to_104k_australia",
+                        "individual_income_over_104k_australia",
+                        source=population_census,
+                    ),
                 ),
             },
         ),
@@ -867,7 +879,7 @@ statistics_tree = StatisticTree(
             contents={
                 **census_basics_multi_source("housing_per_pop"),
                 **census_basics_multi_source("housing_per_person"),
-                **census_basics("vacancy", change=False),
+                **census_basics_multi_source("vacancy"),
                 **in_subcategory(
                     "rent_burden",
                     "Rent Burden",
@@ -1045,12 +1057,14 @@ statistics_tree = StatisticTree(
             "industry_manufacturing",
             "industry_other_services,_except_public_administration",
             "industry_administrative_and_support_and_waste_management_services",
+            "industry_administrative_and_support_australia",
             "industry_management_of_companies_and_enterprises",
             "industry_professional,_scientific,_and_technical_services",
             "industry_public_administration",
             "industry_retail_trade",
             "industry_transportation_and_warehousing",
             "industry_utilities",
+            "industry_electricity_gas_water_waste_australia",
             "industry_wholesale_trade",
         ),
         "occupation": StatisticCategory(
@@ -1107,6 +1121,7 @@ statistics_tree = StatisticTree(
                     "Household Relationship",
                     just_2020(
                         "sors_unpartnered_householder",
+                        "sors_cohabiting_partnered",
                         "sors_cohabiting_partnered_gay",
                         "sors_cohabiting_partnered_straight",
                         "sors_child",

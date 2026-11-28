@@ -595,3 +595,13 @@ Add Australian census geographies (#2618)
 822     shape
 1515    data
 3599    total
+
+add ABS cell mapping for the Australian census (#2515)
+
+59      index
+140     consolidated
+178     quiz_sampling_info
+808     order
+821     shape
+1537    data
+3655    total

@@ -1,13 +1,73 @@
-from urbanstats.acs.load import ACSDataEntity
+from dataclasses import dataclass
+from typing import Tuple
+
+import pandas as pd
+
+from urbanstats.acs.load import ACSDataEntity, aggregated_acs_data
 from urbanstats.games.quiz_question_metadata import (
     EDUCATION_FIELD,
     EDUCATION_LEVEL,
     QuizQuestionDescriptor,
 )
-from urbanstats.statistics.statistic_collection import ACSStatisticsColection
+from urbanstats.statistics.national_census import (
+    AustralianCounts,
+    NationalCensusStatistics,
+)
+
+FIELDS = (
+    "education_field_stem",
+    "education_field_humanities",
+    "education_field_business",
+)
+
+# 25 and over, matching the US. 85 and over is named differently (P_BachDeg_85ov), so by_age adds it.
+AGES_25_TO_84 = ["25_34", "35_44", "45_54", "55_64", "65_74", "75_84"]
 
 
-class EducationStatistics(ACSStatisticsColection):
+def by_age(prefix, suffix=""):
+    """A cell's codes for each age group from 25 up, e.g. P_BachDeg_25_34 ... P_BachDeg_85ov."""
+    return [f"{prefix}_{a}{suffix}" for a in AGES_25_TO_84] + [f"{prefix}_85ov"]
+
+
+@dataclass(frozen=True)
+class USEducationCounts:
+    entities: Tuple[ACSDataEntity, ...]
+
+    def compute(self, shapefile):
+        return pd.concat(
+            [aggregated_acs_data(2020, e, shapefile.geometry) for e in self.entities],
+            axis=1,
+        )
+
+
+@dataclass(frozen=True)
+class AustralianEducationCounts(AustralianCounts):
+    """
+    In the US's columns, with everyone without a degree under education_no, as there is no high
+    school count.
+
+    G50 gives the field of every non-school qualification, certificates included, so like Canada the
+    split between fields is applied to the people with at least a bachelor's.
+    """
+
+    def compute(self, shapefile):
+        c = super().compute(shapefile)
+        answered = c.total - c.level_unknown
+        degree = c.bachelor_or_graduate_diploma + c.postgraduate
+        field_total = sum(c[field] for field in FIELDS)
+        return pd.DataFrame(
+            {
+                "education_no": answered - degree,
+                "education_ugrad": c.bachelor_or_graduate_diploma,
+                "education_grad": c.postgraduate,
+                **{field: c[field] / field_total * degree for field in FIELDS},
+            }
+        )
+
+
+class EducationStatistics(NationalCensusStatistics):
+    version = 1
+
     def name_for_each_statistic(self):
         return {
             "education_high_school": "High School %",
@@ -54,32 +114,74 @@ class EducationStatistics(ACSStatisticsColection):
             ),
         }
 
-    def mutate_acs_results(self, statistics_table):
-        education_denominator = (
-            statistics_table.education_no
-            + statistics_table.education_high_school
-            + statistics_table.education_ugrad
-            + statistics_table.education_grad
-        )
-        statistics_table["education_high_school"] = (
-            statistics_table.education_high_school
-            + statistics_table.education_ugrad
-            + statistics_table.education_grad
-        ) / education_denominator
-        statistics_table["education_ugrad"] = (
-            statistics_table.education_ugrad + statistics_table.education_grad
-        ) / education_denominator
-        statistics_table["education_grad"] = (
-            statistics_table.education_grad / education_denominator
-        )
-        del statistics_table["education_no"]
+    def countries_for_each_statistic(self):
+        return {
+            name: ("USA",) if name == "education_high_school" else ("USA", "Australia")
+            for name in self.internal_statistic_names_list()
+        }
 
-        for column in (
-            "education_field_stem",
-            "education_field_humanities",
-            "education_field_business",
-        ):
-            statistics_table[column] = statistics_table[column] / education_denominator
+    def country_inputs(self):
+        return {
+            "USA": USEducationCounts(tuple(self.acs_entity_dict().values())),
+            "Australia": AustralianEducationCounts(self.abs_tables()),
+        }
+
+    def abs_tables(self):
+        return {
+            # highest year of school, which counts everyone who has left school, so it gives the
+            # denominator
+            "G16": {"total": by_age("P_Tot", suffix="_yrs")},
+            # level of highest non-school qualification, which only counts people with a qualification
+            # or who did not say whether they have one
+            "G49": {
+                "postgraduate": by_age("P_PGrad_Deg"),
+                # graduate diplomas and certificates sit above a bachelor's but are not graduate
+                # degrees, as with Canada's university certificates above bachelor level
+                "bachelor_or_graduate_diploma": by_age("P_BachDeg")
+                + by_age("P_GradDip_and_GradCert"),
+                # includes people who did not say whether they have a qualification, who are left
+                # out of the denominator
+                "level_unknown": by_age("P_Lev_Edu_IDes") + by_age("P_Lev_Edu_NS"),
+            },
+            "G50": {
+                "education_field_stem": by_age("P_NatPhyl_Scn")
+                + by_age("P_InfoTech")
+                + by_age("P_Eng_RelTec")
+                + by_age("P_ArchtBldng")
+                + by_age("P_Ag_Envir_Rltd_Sts")
+                + by_age("P_Health"),
+                "education_field_humanities": by_age("P_Educ")
+                + by_age("P_Society_Cult")
+                + by_age("P_Creative_Arts")
+                + by_age("P_Fd_Hosp_Psnl_Svcs")
+                + by_age("P_MixFld_Prgm"),
+                "education_field_business": by_age("P_Mgnt_Com"),
+            },
+        }
+
+    def mutate_counts(self, counts):
+        # Australia has no high school count
+        if "education_high_school" not in counts:
+            counts["education_high_school"] = 0
+        education_denominator = (
+            counts.education_no
+            + counts.education_high_school
+            + counts.education_ugrad
+            + counts.education_grad
+        )
+        counts["education_high_school"] = (
+            counts.education_high_school
+            + counts.education_ugrad
+            + counts.education_grad
+        ) / education_denominator
+        counts["education_ugrad"] = (
+            counts.education_ugrad + counts.education_grad
+        ) / education_denominator
+        counts["education_grad"] = counts.education_grad / education_denominator
+        del counts["education_no"]
+
+        for column in FIELDS:
+            counts[column] = counts[column] / education_denominator
 
     def acs_entity_dict(self):
         return dict(
@@ -143,14 +245,4 @@ class EducationStatistics(ACSStatisticsColection):
                     ],
                 },
             ),
-        )
-
-    def acs_name(self):
-        raise NotImplementedError(
-            "This method should not be called since acs_entity_dict is defined"
-        )
-
-    def acs_entity(self):
-        raise NotImplementedError(
-            "This method should not be called since acs_entity_dict is defined"
         )

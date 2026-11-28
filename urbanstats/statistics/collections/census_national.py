@@ -35,7 +35,10 @@ from urbanstats.statistics.collections.census_canada_housing_rent import (
 )
 from urbanstats.statistics.collections.census_canada_race import CanadianRaceCounts
 from urbanstats.statistics.extra_statistics import HistogramSpec
-from urbanstats.statistics.national_census import NationalCensusStatistics
+from urbanstats.statistics.national_census import (
+    AustralianCounts,
+    NationalCensusStatistics,
+)
 from urbanstats.statistics.statistic_collection import compute_subset_statistics
 from urbanstats.statistics.utils import fractionalize
 
@@ -400,3 +403,57 @@ class CensusHousing2020(NationalCensusStatistics):
         counts["housing_per_person"] = (
             counts["housing_units"] / counts["housing_population"]
         )
+
+
+@dataclass(frozen=True)
+class USCensusVacancy:
+    def compute(self, shapefile):
+        t = aggregate_basics_of_year(shapefile.geometry, 2020)
+        return pd.DataFrame(
+            {"vacancy_vacant": t["vacant_2020"], "vacancy_total": t["total_2020"]}
+        )
+
+
+class CensusVacancy2020(NationalCensusStatistics):
+    version = 1
+
+    def name_for_each_statistic(self):
+        return {"vacancy": "Vacancy %"}
+
+    def unit_for_each_statistic(self):
+        return self.same_for_each_name("percentage")
+
+    def varname_for_each_statistic(self):
+        return {"vacancy": "vacancy_rate"}
+
+    def explanation_page_for_each_statistic(self):
+        return self.same_for_each_name("housing-census")
+
+    def quiz_question_descriptors(self):
+        return {
+            "vacancy": QuizQuestionDescriptor(
+                "higher % of units that are vacant"
+                "!TOOLTIP Vacancy is the % of housing units that were not occupied on census night."
+                " In the US, this includes vacation homes but does *not* include units that were"
+                " not occupied due to the pandemic, the census attempted to account for this.",
+                HOUSING,
+            ),
+        }
+
+    def country_inputs(self):
+        return {
+            "USA": USCensusVacancy(),
+            "Australia": AustralianCounts(self.abs_tables(), weight="dwellings"),
+        }
+
+    def abs_tables(self):
+        # private dwellings; unoccupied includes ones whose residents were away on census night
+        return {
+            "G36": {
+                "vacancy_vacant": ["Unoccupied_PDs_Dwgs"],
+                "vacancy_total": ["Total_PDs_Dwellings"],
+            }
+        }
+
+    def mutate_counts(self, counts):
+        counts["vacancy"] = counts["vacancy_vacant"] / counts["vacancy_total"]

@@ -4,11 +4,12 @@ from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import HOUSING, QuizQuestionDescriptor
 from urbanstats.statistics.national_census import (
     ACSCounts,
+    AustralianCounts,
     NationalCensusStatistics,
     StatCanCounts,
 )
 
-# Canada's top bin is 5+; 5.75 is the size that makes US regions' values from 5+ match those from
+# Canada's and Australia's top bin is 5+; 5.75 is the size that makes US regions' values from 5+ match those from
 # the ACS's 5, 6, and 7+ bins best.
 HOUSEHOLD_SIZES = {
     "household_size_1": 1,
@@ -60,6 +61,21 @@ class HouseholdSizeStatistics(NationalCensusStatistics):
         return {
             "USA": ACSCounts(self.acs_entity()),
             "Canada": StatCanCounts(self.census_tables_canada()),
+            "Australia": AustralianCounts(self.abs_tables(), weight="dwellings"),
+        }
+
+    def abs_tables(self):
+        return {
+            "G35": {
+                "household_size_1": ["Num_Psns_UR_1_Total"],
+                "household_size_2": ["Num_Psns_UR_2_Total"],
+                "household_size_3": ["Num_Psns_UR_3_Total"],
+                "household_size_4": ["Num_Psns_UR_4_Total"],
+                "household_size_5_plus": [
+                    "Num_Psns_UR_5_Total",
+                    "Num_Psns_UR_6mo_Total",
+                ],
+            }
         }
 
     def census_tables_canada(self):
